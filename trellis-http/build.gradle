@@ -1,0 +1,74 @@
+apply plugin: 'osgi'
+
+description = 'Trellis HTTP API'
+
+ext {
+    moduleName = 'org.trellisldp.http'
+}
+
+dependencies {
+    api group: 'io.dropwizard.metrics', name: 'metrics-annotation', version: metricsVersion
+    api group: 'javax.annotation', name: 'javax.annotation-api', version: javaxAnnotationsVersion
+    api group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: jaxrsVersion
+    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.javax-inject', version: javaxInjectVersion
+    api project(':trellis-api')
+
+    implementation group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
+    implementation group: 'commons-io', name: 'commons-io', version: commonsIoVersion
+    implementation group: 'javax.json', name: 'javax.json-api', version: javaxJsonVersion
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    implementation project(':trellis-vocabulary')
+
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    testImplementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
+    testImplementation group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
+    testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
+    testImplementation group: 'org.glassfish', name: 'javax.json', version: jsonVersion
+    testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-server', version: jerseyVersion
+    testImplementation group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-inmemory', version: jerseyVersion
+    testImplementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: jerseyVersion
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation project(':trellis-audit')
+    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-id')
+    testImplementation project(':trellis-io-jena')
+
+    testRuntimeClasspath group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+}
+
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Automatic-Module-Name', moduleName
+        instruction 'Import-Package', '*'
+        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+        instruction 'Require-Capability', '''\
+            osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",
+            osgi.serviceloader;
+                filter:="(osgi.serviceloader=org.trellisldp.api.AuditService)";
+                resolution:=optional; cardinality:=optional,
+            osgi.serviceloader;
+                filter:="(osgi.serviceloader=org.trellisldp.api.ConstraintService)";
+                resolution:=optional; cardinality:=multiple
+            '''
+    }
+}
+
+artifacts {
+    archives javadocJar
+    archives sourceJar
+    archives (file('build/resources/main/features.xml')) {
+        classifier 'features'
+        type 'xml'
+    }
+}
+

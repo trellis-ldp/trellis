@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="trellis-http-${project.version}">
+  <feature name="trellis-http" version="${project.version}">
+    <details>Installs the Trellis HTTP bundle</details>
+
+    <feature version="${trellisVersionRange}">trellis-api</feature>
+    <feature version="${trellisVersionRange}">trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
+    <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
+    <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-annotation/${metricsVersion}</bundle>
+    <bundle dependency="true">mvn:javax.json/javax.json-api/${javaxJsonVersion}</bundle>
+    <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/${javaxInjectVersion}</bundle>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
+  </feature>
+</features>
