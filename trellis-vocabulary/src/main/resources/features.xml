@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="trellis-vocabulary-${project.version}">
+  <feature name="trellis-vocabulary" version="${project.version}">
+    <details>Installs the Trellis Vocabulary bundle</details>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-vocabulary/${project.version}</bundle>
+  </feature>
+</features>
