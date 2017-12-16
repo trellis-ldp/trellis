@@ -5,6 +5,7 @@ include ':trellis-vocabulary'
 
 include ':trellis-agent'
 include ':trellis-audit'
+include ':trellis-constraint-rules'
 include ':trellis-io-jena'
 
 project(':trellis-api').projectDir = "$rootDir/trellis-api" as File
@@ -13,4 +14,5 @@ project(':trellis-vocabulary').projectDir = "$rootDir/trellis-vocabulary" as Fil
 
 project(':trellis-agent').projectDir = "$rootDir/trellis-agent" as File
 project(':trellis-audit').projectDir = "$rootDir/trellis-audit" as File
+project(':trellis-constraint-rules').projectDir = "$rootDir/trellis-constraint-rules" as File
 project(':trellis-io-jena').projectDir = "$rootDir/trellis-io-jena" as File

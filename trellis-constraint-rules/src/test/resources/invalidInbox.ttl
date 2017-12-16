@@ -1,0 +1,6 @@
+@prefix ldp: <http://www.w3.org/ns/ldp#>
+@prefix dc: <http://purl.org/dc/terms/>
+
+<> ldp:inbox "invalid range"@en ;
+    dc:title "Some Title"@en .
+

@@ -1,0 +1,8 @@
+@prefix ldp: <http://www.w3.org/ns/ldp#>
+@prefix dc: <http://purl.org/dc/terms/>
+
+<> ldp:membershipResource <trellis:repository/some-resource> ;
+   ldp:insertedContentRelation ldp:MemberSubject ;
+   ldp:hasMemberRelation dc:isPartOf .
+<#hash> dc:title "Some Title"@en .
+

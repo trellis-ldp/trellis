@@ -1,0 +1,6 @@
+@prefix ldp: <http://www.w3.org/ns/ldp#>
+@prefix dc: <http://purl.org/dc/terms/>
+
+<> dc:title "Some Title"@en ;
+    ldp:membershipResource <trellis:repository/test> .
+

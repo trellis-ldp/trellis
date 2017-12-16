@@ -1,0 +1,51 @@
+apply plugin: 'osgi'
+
+description = 'Trellis Constraint Rules'
+
+ext {
+    moduleName = 'org.trellisldp.constraint'
+}
+
+dependencies {
+    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api project(':trellis-api')
+
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    implementation project(':trellis-vocabulary')
+
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testImplementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+}
+
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Automatic-Module-Name', moduleName
+        instruction 'Import-Package', '*'
+        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+        instruction 'Require-Capability', '''\
+            osgi.extender;
+                filter:="(osgi.extender=osgi.serviceloader.registrar)";
+                resolution:=optional'''
+        instruction 'Provide-Capability', '''\
+            osgi.serviceloader;
+                osgi.serviceloader=org.trellisldp.api.ConstraintService'''
+    }
+}
+
+artifacts {
+    archives javadocJar
+    archives sourceJar
+    archives (file('build/resources/main/features.xml')) {
+        classifier 'features'
+        type 'xml'
+    }
+}
