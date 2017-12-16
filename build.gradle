@@ -1,0 +1,297 @@
+plugins {
+    id 'com.github.hierynomus.license' version '0.14.0'
+    id 'com.github.ben-manes.versions' version '0.17.0'
+    id 'net.researchgate.release' version '2.6.0'
+    id 'org.sonarqube' version '2.6.1'
+}
+
+allprojects {
+
+    apply plugin: 'maven'
+    apply plugin: 'jacoco'
+
+    ext {
+        jacocoVersion = '0.7.9'
+    }
+
+
+    jacoco {
+        toolVersion = jacocoVersion
+    }
+
+
+    group = 'org.trellisldp'
+
+    repositories {
+        jcenter()
+        mavenCentral()
+        mavenLocal()
+    }
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
+
+    release {
+        tagTemplate = '$name-$version'
+        git {
+            signTag = true
+        }
+    }
+
+}
+
+subprojects {
+
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: 'checkstyle'
+    apply plugin: 'com.github.hierynomus.license'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    ext {
+        vendor = 'Trellis LDP'
+        homepage = 'http://www.trellisldp.org'
+        docURL = 'http://www.trellisldp.org/apidocs'
+        license = 'Apache 2'
+
+        /* Dependencies */
+        commonsCodecVersion = '1.11'
+        commonsIoVersion = '2.6'
+        commonsRdfVersion = '0.3.0-incubating'
+        commonsTextVersion = '1.1'
+        jacksonVersion = '2.9.2'
+        javaxAnnotationsVersion = '1.3.1'
+        javaxInjectVersion = '1_2'
+        javaxJsonVersion = '1.1.2'
+        jaxrsVersion = '2.1'
+        jenaVersion = '3.5.0'
+        metricsVersion = '3.2.5'
+        mustacheVersion = '0.9.5_1'
+        slf4jVersion = '1.7.25'
+        xercesVersion = '2.11.0'
+
+        /* Testing */
+        apiguardianVersion = '1.0.0'
+        jerseyVersion = '2.26'
+        jsonVersion = '1.1.2'
+        junitVersion = '5.0.2'
+        junitPlatformVersion = '1.0.2'
+        logbackVersion = '1.2.3'
+        mockitoVersion = '2.12.0'
+
+        /* OSGi */
+        spiflyVersion = '1.0.8'
+        projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
+        trellisVersionRange = '[0.5,1)'
+        jenaVersionRange = '[3.5,4)'
+    }
+
+    test {
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+        if (org.gradle.internal.jvm.Jvm.current().getJavaVersion().isJava9Compatible()) {
+            jvmArgs '--add-modules', 'java.xml.bind'
+        }
+    }
+
+    checkstyle {
+        configFile = rootProject.file('build/checkstyle/checkstyle.xml')
+        configProperties.checkstyleConfigDir = rootProject.file('build/checkstyle/')
+        toolVersion = '8.1'
+    }
+
+    task javadocJar(type: Jar) {
+        classifier 'javadoc'
+        from javadoc
+    }
+
+    task sourceJar(type: Jar) {
+        classifier 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar
+        archives sourceJar
+    }
+
+    license {
+        include "**/*.java"
+        header rootProject.file('build/license/HEADER.txt')
+        strictCheck true
+        mapping {
+            java = 'SLASHSTAR_STYLE'
+        }
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled = true
+            html.enabled = true
+        }
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+            }
+        }
+    }
+
+    processResources {
+        outputs.upToDateWhen { false }
+        expand project.properties
+    }
+
+    signing {
+        required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories.mavenDeployer {
+            def sonatypeUsername = project.hasProperty('ossrhUsername') ? ossrhUsername : ""
+            def sonatypePassword = project.hasProperty('ossrhPassword') ? ossrhPassword : ""
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                packaging 'jar'
+                url 'http://www.trellisldp.org'
+                inceptionYear '2017'
+                name 'Trellis Repository'
+                description 'The core components for a trellis repository'
+
+                organization {
+                    name project.vendor
+                    url project.homepage
+                }
+
+                developers {
+                    developer {
+                        id 'acoburn'
+                        name 'Aaron Coburn'
+                        email 'acoburn @ (domain of organization url)'
+                        organization = 'Amherst College'
+                        organizationUrl 'https://www.amherst.edu'
+                        roles {
+                            role 'developer'
+                        }
+                        timezone '-5'
+                    }
+                }
+
+                scm {
+                    connection 'scm:git:git://github.com/trellis-ldp/trellis.git'
+                    developerConnection 'scm:git:git@github.com/trellis-ldp/trellis.git'
+                    url 'https://github.com/trellis-ldp/trellis'
+                    tag 'HEAD'
+                }
+
+                licenses {
+                    license {
+                        name 'Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0'
+                        comments 'Copyright (c) 2017 Trellis LDP'
+                    }
+                }
+            }
+        }
+    }
+
+
+    task docs(type: Javadoc) {
+        outputs.upToDateWhen { false }
+        source sourceSets.main.allJava
+        classpath = files(sourceSets.main.compileClasspath)
+        destinationDir = new File(projectDir, "docs/${version}")
+        options {
+            links "http://docs.oracle.com/javase/8/docs/api/"
+            links "https://commons.apache.org/proper/commons-rdf/apidocs/"
+        }
+    }
+
+    afterReleaseBuild.dependsOn docs
+    afterReleaseBuild.dependsOn uploadArchives
+}
+
+apply plugin: 'java'
+
+configurations {
+    buildToolsConfig
+}
+
+dependencies {
+    buildToolsConfig 'org.trellisldp:trellis-build-tools:0.2.0'
+}
+
+
+task processBuildTools(type: Copy) {
+    from {
+        configurations.buildToolsConfig.collect {
+            zipTree(it).matching {
+                include 'checkstyle/*.xml'
+                include 'license/*.txt'
+            }
+        }
+    }
+    into 'build'
+}
+
+task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
+    outputs.upToDateWhen { false }
+    destinationDir = new File(projectDir, "docs/apidocs")
+    title = "Trellis Linked Data Server Documentation"
+    exclude '**/impl/*'
+    options.with {
+        memberLevel = JavadocMemberLevel.PUBLIC
+        links "http://docs.oracle.com/javase/8/docs/api/"
+        links 'http://docs.oracle.com/javaee/7/api/'
+        links 'https://kafka.apache.org/0110/javadoc/'
+        links 'http://curator.apache.org/apidocs/'
+        links 'https://trellis-ldp.github.io/trellis/apidocs/'
+        links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
+    }
+
+    source subprojects.collect {project -> project.sourceSets.main.allJava }
+    classpath = files(subprojects.collect {project -> project.sourceSets.main.compileClasspath})
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "Trellis Repository"
+        property "sonar.projectKey", "org.trellisldp:trellis"
+        property "sonar.links.homepage", "https://github.com/trellis-ldp/trellis"
+        property "sonar.links.issue", "https://github.com/trellis-ldp/trellis/issues"
+        property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis.git"
+    }
+}
+
+task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
+    dependsOn = subprojects.test
+    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories =  files(subprojects.sourceSets.main.output)
+    executionData = files(subprojects.jacocoTestReport.executionData)
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+}
+
+check.dependsOn processBuildTools
+
