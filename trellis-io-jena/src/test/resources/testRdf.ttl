@@ -1,0 +1,6 @@
+@prefix dc: <http://purl.org/dc/terms/>
+@prefix dctype: <http://purl.org/dc/dcmitype/>
+
+<> a dctype:Text ;
+    dc:title "A title" ;
+    dc:spatial <http://sws.geonames.org/4929022/> .
