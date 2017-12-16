@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="trellis-id-${project.version}">
+  <feature name="trellis-id" version="${project.version}">
+    <details>Installs the Trellis ID generator service</details>
+
+    <feature version="${trellisVersionRange}">trellis-api</feature>
+
+    <bundle>mvn:org.trellisldp/trellis-id/${project.version}</bundle>
+  </feature>
+</features>
