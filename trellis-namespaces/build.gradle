@@ -1,0 +1,42 @@
+apply plugin: 'osgi'
+
+description = 'Trellis Namespace Manageer'
+
+ext {
+    moduleName = 'org.trellisldp.namespaces'
+}
+
+dependencies {
+    api project(':trellis-api')
+
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
+}
+
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Automatic-Module-Name', moduleName
+        instruction 'Import-Package', '*'
+        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+    }
+}
+
+artifacts {
+    archives javadocJar
+    archives sourceJar
+    archives (file('build/resources/main/features.xml')) {
+        classifier 'features'
+        type 'xml'
+    }
+}
+

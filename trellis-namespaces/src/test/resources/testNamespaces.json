@@ -1,0 +1,5 @@
+{
+    "dcterms" : "http://purl.org/dc/terms/" ,
+    "ldp" : "http://www.w3.org/ns/ldp#" ,
+    "foo" : [ "bar" , "baz" ]
+}

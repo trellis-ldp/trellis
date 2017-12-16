@@ -10,6 +10,7 @@ include ':trellis-constraint-rules'
 include ':trellis-event-serialization'
 include ':trellis-id'
 include ':trellis-io-jena'
+include ':trellis-namespaces'
 
 project(':trellis-api').projectDir = "$rootDir/trellis-api" as File
 project(':trellis-http').projectDir = "$rootDir/trellis-http" as File
@@ -22,3 +23,4 @@ project(':trellis-constraint-rules').projectDir = "$rootDir/trellis-constraint-r
 project(':trellis-event-serialization').projectDir = "$rootDir/trellis-event-serialization" as File
 project(':trellis-id').projectDir = "$rootDir/trellis-id" as File
 project(':trellis-io-jena').projectDir = "$rootDir/trellis-io-jena" as File
+project(':trellis-namespaces').projectDir = "$rootDir/trellis-namespaces" as File
