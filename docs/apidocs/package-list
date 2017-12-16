@@ -1,0 +1,12 @@
+org.trellisldp.agent
+org.trellisldp.api
+org.trellisldp.audit
+org.trellisldp.binary
+org.trellisldp.constraint
+org.trellisldp.http
+org.trellisldp.http.domain
+org.trellisldp.id
+org.trellisldp.io
+org.trellisldp.namespaces
+org.trellisldp.vocabulary
+org.trellisldp.webac
