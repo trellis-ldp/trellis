@@ -210,7 +210,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     protected BinaryService mockBinaryService;
 
     @Mock
-    protected BinaryService.MultipartUploader mockBinaryResolver;
+    protected BinaryService.MultipartCapable mockBinaryResolver;
 
     @Mock
     protected AccessControlService mockAccessControlService;

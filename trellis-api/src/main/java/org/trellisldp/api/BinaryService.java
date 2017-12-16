@@ -89,9 +89,9 @@ public interface BinaryService {
     }
 
     /**
-     * A multipart uploader interface.
+     * A multipart upload-capable interface.
      */
-    interface MultipartUploader {
+    interface MultipartCapable {
         /**
          * Initiate a multi-part upload.
          * @param identifier the object identifier

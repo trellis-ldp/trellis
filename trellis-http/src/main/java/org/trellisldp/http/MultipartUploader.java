@@ -112,7 +112,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
 
     private static final List<String> READ_METHODS = asList("GET", "HEAD", "OPTIONS");
 
-    private final BinaryService.MultipartUploader binaryService;
+    private final BinaryService.MultipartCapable binaryService;
 
     private final ResourceService resourceService;
 
@@ -124,7 +124,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
      * @param binaryService the binary service
      * @param baseUrl the base URL
      */
-    public MultipartUploader(final ResourceService resourceService, final BinaryService.MultipartUploader binaryService,
+    public MultipartUploader(final ResourceService resourceService, final BinaryService.MultipartCapable binaryService,
             final String baseUrl) {
 
         this.baseUrl = baseUrl;
