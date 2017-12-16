@@ -11,6 +11,7 @@ include ':trellis-event-serialization'
 include ':trellis-id'
 include ':trellis-io-jena'
 include ':trellis-namespaces'
+include ':trellis-webac'
 
 project(':trellis-api').projectDir = "$rootDir/trellis-api" as File
 project(':trellis-http').projectDir = "$rootDir/trellis-http" as File
@@ -24,3 +25,4 @@ project(':trellis-event-serialization').projectDir = "$rootDir/trellis-event-ser
 project(':trellis-id').projectDir = "$rootDir/trellis-id" as File
 project(':trellis-io-jena').projectDir = "$rootDir/trellis-io-jena" as File
 project(':trellis-namespaces').projectDir = "$rootDir/trellis-namespaces" as File
+project(':trellis-webac').projectDir = "$rootDir/trellis-webac" as File

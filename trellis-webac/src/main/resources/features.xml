@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="trellis-webac-${project.version}">
+
+  <feature name="trellis-webac" version="${project.version}">
+    <details>Installs the Trellis WebAC bundle</details>
+
+    <feature version="${trellisVersionRange}">trellis-api</feature>
+    <feature version="${trellisVersionRange}">trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
+  </feature>
+</features>
