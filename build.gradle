@@ -300,11 +300,4 @@ coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
 }
 
-task.coveralls {
-    dependsOn check
-    onlyIf {
-        System.env.'CI' && !JavaVersion.current().isJava9Compatible()
-    }
-}
-
 check.dependsOn processBuildTools
