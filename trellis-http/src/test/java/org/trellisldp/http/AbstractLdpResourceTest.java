@@ -88,7 +88,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -187,13 +186,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static final String BASE_URL = "http://example.org/";
 
-    protected static final Map<String, String> partitions = new HashMap<String, String>() { {
-        put(REPO1, BASE_URL);
-        put(REPO2, BASE_URL);
-        put(REPO3, BASE_URL);
-        put(REPO4, BASE_URL);
-    }};
-
     protected static final Set<IRI> allModes = new HashSet<>();
 
     static {
@@ -243,7 +235,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResourceService.get(any(IRI.class), any(Instant.class)))
             .thenReturn(of(mockVersionedResource));
         when(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_PREFIX + "partition/resource"))))
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_PREFIX + "repository/resource"))))
             .thenReturn(of(mockResource));
         when(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
@@ -454,7 +446,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetDefaultType2() {
-        final Response res = target("partition/resource").request().get();
+        final Response res = target("repository/resource").request().get();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
@@ -1114,7 +1106,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetTimeMapLinkDefaultFormat2() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
-        final Response res = target("partition/resource").queryParam("ext", "timemap").request().get();
+        final Response res = target("repository/resource").queryParam("ext", "timemap").request().get();
 
         assertEquals(OK, res.getStatusInfo());
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
@@ -2560,7 +2552,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     /**
-     * An other partition
+     * An other location
      */
     @Test
     public void testOtherParition() {

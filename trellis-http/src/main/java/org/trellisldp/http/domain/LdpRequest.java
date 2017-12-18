@@ -35,9 +35,6 @@ public class LdpRequest {
     @Context
     private ContainerRequestContext ctx;
 
-    @PathParam("partition")
-    private String partition;
-
     @PathParam("path")
     private String path;
 
