@@ -3,6 +3,7 @@ org.trellisldp.api
 org.trellisldp.audit
 org.trellisldp.binary
 org.trellisldp.constraint
+org.trellisldp.event
 org.trellisldp.http
 org.trellisldp.http.domain
 org.trellisldp.id
