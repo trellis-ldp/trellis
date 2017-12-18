@@ -301,7 +301,7 @@ coveralls {
 }
 
 tasks.coveralls {
-    dependsOn 'check'
+    dependsOn 'jacocoRootReport'
 }
 
 check.dependsOn processBuildTools
