@@ -15,11 +15,9 @@ allprojects {
         jacocoVersion = '0.7.9'
     }
 
-
     jacoco {
         toolVersion = jacocoVersion
     }
-
 
     group = 'org.trellisldp'
 
@@ -71,7 +69,7 @@ subprojects {
         javaxInjectVersion = '1_2'
         javaxJsonVersion = '1.1.2'
         jaxrsVersion = '2.1'
-        jenaVersion = '3.5.0'
+        jenaVersion = '3.6.0'
         metricsVersion = '3.2.5'
         mustacheVersion = '0.9.5_1'
         slf4jVersion = '1.7.25'
