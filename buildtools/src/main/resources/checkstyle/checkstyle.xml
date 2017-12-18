@@ -125,6 +125,7 @@
       <property name="throwsIndent" value="8"/>
     </module>
     <module name="SuppressWarningsHolder"/>
+    <module name="FinalClass"/>
     <module name="FinalLocalVariable"/>
     <module name="FinalParameters"/>
     <module name="GenericWhitespace"/>
