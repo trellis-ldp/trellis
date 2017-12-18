@@ -39,9 +39,9 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
@@ -57,6 +57,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
@@ -73,19 +76,16 @@ import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.RDF.type;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
@@ -142,59 +142,59 @@ import org.trellisldp.vocabulary.XSD;
 @RunWith(JUnitPlatform.class)
 abstract class AbstractLdpResourceTest extends JerseyTest {
 
-    protected final static IOService ioService = new JenaIOService(null);
+    protected static final IOService ioService = new JenaIOService(null);
 
-    private final static int timestamp = 1496262729;
+    private static final int timestamp = 1496262729;
 
-    private final static Instant time = ofEpochSecond(timestamp);
+    private static final Instant time = ofEpochSecond(timestamp);
 
-    private final static ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final static RDF rdf = getInstance();
+    private static final RDF rdf = getInstance();
 
-    private final static IRI agent = rdf.createIRI("user:agent");
+    private static final IRI agent = rdf.createIRI("user:agent");
 
-    private final static String UPLOAD_SESSION_ID = "upload-session-id";
+    private static final String UPLOAD_SESSION_ID = "upload-session-id";
 
-    private final static BlankNode bnode = rdf.createBlankNode();
+    private static final BlankNode bnode = rdf.createBlankNode();
 
-    private final static String BINARY_MIME_TYPE = "text/plain";
+    private static final String BINARY_MIME_TYPE = "text/plain";
 
-    private final static Long BINARY_SIZE = 100L;
+    private static final Long BINARY_SIZE = 100L;
 
-    private final static String REPO1 = "repo1";
-    private final static String REPO2 = "repo2";
-    private final static String REPO3 = "repo3";
-    private final static String REPO4 = "repo4";
+    private static final String REPO1 = "repo1";
+    private static final String REPO2 = "repo2";
+    private static final String REPO3 = "repo3";
+    private static final String REPO4 = "repo4";
 
-    private final static String RANDOM_VALUE = "randomValue";
+    private static final String RANDOM_VALUE = "randomValue";
 
-    private final static String RESOURCE_PATH = REPO1 + "/resource";
-    private final static String CHILD_PATH = RESOURCE_PATH + "/child";
-    private final static String BINARY_PATH = REPO1 + "/binary";
-    private final static String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
-    private final static String DELETED_PATH = REPO1 + "/deleted";
-    private final static String USER_DELETED_PATH = REPO1 + "/userdeleted";
+    private static final String RESOURCE_PATH = REPO1 + "/resource";
+    private static final String CHILD_PATH = RESOURCE_PATH + "/child";
+    private static final String BINARY_PATH = REPO1 + "/binary";
+    private static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
+    private static final String DELETED_PATH = REPO1 + "/deleted";
+    private static final String USER_DELETED_PATH = REPO1 + "/userdeleted";
 
-    private final static IRI identifier = rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH);
-    private final static IRI root = rdf.createIRI(TRELLIS_PREFIX + REPO1);
-    private final static IRI binaryIdentifier = rdf.createIRI(TRELLIS_PREFIX + BINARY_PATH);
-    private final static IRI binaryInternalIdentifier = rdf.createIRI("file:some/file");
-    private final static IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_PREFIX + NON_EXISTENT_PATH);
-    private final static IRI childIdentifier = rdf.createIRI(TRELLIS_PREFIX + CHILD_PATH);
-    private final static IRI deletedIdentifier = rdf.createIRI(TRELLIS_PREFIX + DELETED_PATH);
-    private final static IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_PREFIX + USER_DELETED_PATH);
+    private static final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH);
+    private static final IRI root = rdf.createIRI(TRELLIS_PREFIX + REPO1);
+    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_PREFIX + BINARY_PATH);
+    private static final IRI binaryInternalIdentifier = rdf.createIRI("file:some/file");
+    private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_PREFIX + NON_EXISTENT_PATH);
+    private static final IRI childIdentifier = rdf.createIRI(TRELLIS_PREFIX + CHILD_PATH);
+    private static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_PREFIX + DELETED_PATH);
+    private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_PREFIX + USER_DELETED_PATH);
 
-    protected final static String BASE_URL = "http://example.org/";
+    protected static final String BASE_URL = "http://example.org/";
 
-    protected final static Map<String, String> partitions = new HashMap<String, String>() { {
+    protected static final Map<String, String> partitions = new HashMap<String, String>() { {
         put(REPO1, BASE_URL);
         put(REPO2, BASE_URL);
         put(REPO3, BASE_URL);
         put(REPO4, BASE_URL);
     }};
 
-    protected final static Set<IRI> allModes = new HashSet<>();
+    protected static final Set<IRI> allModes = new HashSet<>();
 
     static {
         allModes.add(ACL.Append);

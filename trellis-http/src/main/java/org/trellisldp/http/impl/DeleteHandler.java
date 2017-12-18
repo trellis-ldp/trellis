@@ -23,8 +23,8 @@ import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
-import java.util.stream.Stream;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;

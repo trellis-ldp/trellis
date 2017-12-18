@@ -30,8 +30,8 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -76,8 +76,8 @@ import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.XSD;
 import org.trellisldp.vocabulary.Trellis;
+import org.trellisldp.vocabulary.XSD;
 
 /**
  * @author acoburn
@@ -86,46 +86,46 @@ import org.trellisldp.vocabulary.Trellis;
 @RunWith(JUnitPlatform.class)
 public class CORSResourceTest extends JerseyTest {
 
-    protected final static IOService ioService = new JenaIOService(null);
+    protected static final IOService ioService = new JenaIOService(null);
 
-    private final static int timestamp = 1496262729;
+    private static final int timestamp = 1496262729;
 
-    private final static Instant time = ofEpochSecond(timestamp);
+    private static final Instant time = ofEpochSecond(timestamp);
 
-    private final static RDF rdf = getInstance();
+    private static final RDF rdf = getInstance();
 
-    private final static IRI agent = rdf.createIRI("user:agent");
+    private static final IRI agent = rdf.createIRI("user:agent");
 
-    private final static String UPLOAD_SESSION_ID = "upload-session-id";
+    private static final String UPLOAD_SESSION_ID = "upload-session-id";
 
-    private final static BlankNode bnode = rdf.createBlankNode();
+    private static final BlankNode bnode = rdf.createBlankNode();
 
-    private final static String BINARY_MIME_TYPE = "text/plain";
+    private static final String BINARY_MIME_TYPE = "text/plain";
 
-    private final static Long BINARY_SIZE = 100L;
+    private static final Long BINARY_SIZE = 100L;
 
-    private final static String REPO1 = "repo1";
-    private final static String REPO2 = "repo2";
-    private final static String REPO3 = "repo3";
-    private final static String REPO4 = "repo4";
+    private static final String REPO1 = "repo1";
+    private static final String REPO2 = "repo2";
+    private static final String REPO3 = "repo3";
+    private static final String REPO4 = "repo4";
 
-    private final static String BASE_URL = "http://example.org/";
+    private static final String BASE_URL = "http://example.org/";
 
-    private final static String RANDOM_VALUE = "randomValue";
+    private static final String RANDOM_VALUE = "randomValue";
 
-    private final static String RESOURCE_PATH = REPO1 + "/resource";
-    private final static String CHILD_PATH = RESOURCE_PATH + "/child";
-    private final static String BINARY_PATH = REPO1 + "/binary";
-    private final static String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
+    private static final String RESOURCE_PATH = REPO1 + "/resource";
+    private static final String CHILD_PATH = RESOURCE_PATH + "/child";
+    private static final String BINARY_PATH = REPO1 + "/binary";
+    private static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
 
-    private final static IRI identifier = rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH);
-    private final static IRI root = rdf.createIRI(TRELLIS_PREFIX + REPO1);
-    private final static IRI binaryIdentifier = rdf.createIRI(TRELLIS_PREFIX + BINARY_PATH);
-    private final static IRI binaryInternalIdentifier = rdf.createIRI("file:some/file");
-    private final static IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_PREFIX + NON_EXISTENT_PATH);
-    private final static IRI childIdentifier = rdf.createIRI(TRELLIS_PREFIX + CHILD_PATH);
+    private static final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH);
+    private static final IRI root = rdf.createIRI(TRELLIS_PREFIX + REPO1);
+    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_PREFIX + BINARY_PATH);
+    private static final IRI binaryInternalIdentifier = rdf.createIRI("file:some/file");
+    private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_PREFIX + NON_EXISTENT_PATH);
+    private static final IRI childIdentifier = rdf.createIRI(TRELLIS_PREFIX + CHILD_PATH);
 
-    protected final static Set<IRI> allModes = new HashSet<>();
+    protected static final Set<IRI> allModes = new HashSet<>();
 
     static {
         allModes.add(ACL.Append);

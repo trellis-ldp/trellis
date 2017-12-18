@@ -15,15 +15,13 @@ package org.trellisldp.io.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-
+import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-
 import org.trellisldp.vocabulary.DC;
 
 /**

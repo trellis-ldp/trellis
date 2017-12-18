@@ -33,16 +33,16 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
-import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
-import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
@@ -89,11 +89,11 @@ import org.trellisldp.vocabulary.Trellis;
 @RunWith(JUnitPlatform.class)
 public class PatchHandlerTest {
 
-    private final static Instant time = ofEpochSecond(1496262729);
-    private final static String baseUrl = "http://localhost:8080/repo/";
-    private final static RDF rdf = getInstance();
-    private final static String insert = "INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}";
-    private final static IRI identifier = rdf.createIRI("trellis:resource");
+    private static final Instant time = ofEpochSecond(1496262729);
+    private static final String baseUrl = "http://localhost:8080/repo/";
+    private static final RDF rdf = getInstance();
+    private static final String insert = "INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}";
+    private static final IRI identifier = rdf.createIRI("trellis:resource");
 
     @Mock
     private ResourceService mockResourceService;

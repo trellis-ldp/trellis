@@ -35,7 +35,7 @@ public interface BinaryService {
     /**
      * A multipart upload container.
      */
-    public class MultipartUpload {
+    class MultipartUpload {
         private final Binary binary;
         private final String baseUrl;
         private final String path;

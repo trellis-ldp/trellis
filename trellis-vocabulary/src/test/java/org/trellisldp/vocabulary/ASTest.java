@@ -16,9 +16,9 @@ package org.trellisldp.vocabulary;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.riot.RDFParser;
+import org.junit.Test;
 
 /**
  * @author acoburn

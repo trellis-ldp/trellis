@@ -24,9 +24,9 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 
 import java.io.IOException;
 import java.util.HashSet;

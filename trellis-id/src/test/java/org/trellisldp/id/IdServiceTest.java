@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Supplier;
 
-import org.trellisldp.api.IdentifierService;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.trellisldp.api.IdentifierService;
 
 /**
  * @author acoburn

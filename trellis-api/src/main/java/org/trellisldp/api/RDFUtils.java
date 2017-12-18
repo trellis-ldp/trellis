@@ -13,8 +13,8 @@
  */
 package org.trellisldp.api;
 
-import static java.util.stream.Collector.of;
 import static java.util.stream.Collector.Characteristics.UNORDERED;
+import static java.util.stream.Collector.of;
 
 import java.util.ServiceLoader;
 import java.util.stream.Collector;

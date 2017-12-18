@@ -15,7 +15,6 @@ package org.trellisldp.webac;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.trellisldp.vocabulary.RDF.type;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.Set;
 import java.util.function.Function;
@@ -72,41 +72,41 @@ public class WebACServiceTest {
 
     private AccessControlService testService;
 
-    private final static IRI nonexistentIRI = rdf.createIRI("trellis:repository/parent/child/nonexistent");
+    private static final IRI nonexistentIRI = rdf.createIRI("trellis:repository/parent/child/nonexistent");
 
-    private final static IRI resourceIRI = rdf.createIRI("trellis:repository/parent/child/resource");
+    private static final IRI resourceIRI = rdf.createIRI("trellis:repository/parent/child/resource");
 
-    private final static IRI childIRI = rdf.createIRI("trellis:repository/parent/child");
+    private static final IRI childIRI = rdf.createIRI("trellis:repository/parent/child");
 
-    private final static IRI parentIRI = rdf.createIRI("trellis:repository/parent");
+    private static final IRI parentIRI = rdf.createIRI("trellis:repository/parent");
 
-    private final static IRI rootIRI = rdf.createIRI("trellis:repository");
+    private static final IRI rootIRI = rdf.createIRI("trellis:repository");
 
-    private final static IRI authIRI1 = rdf.createIRI("trellis:repository/acl/public/auth1");
+    private static final IRI authIRI1 = rdf.createIRI("trellis:repository/acl/public/auth1");
 
-    private final static IRI authIRI2 = rdf.createIRI("trellis:repository/acl/public/auth2");
+    private static final IRI authIRI2 = rdf.createIRI("trellis:repository/acl/public/auth2");
 
-    private final static IRI authIRI3 = rdf.createIRI("trellis:repository/acl/public/auth3");
+    private static final IRI authIRI3 = rdf.createIRI("trellis:repository/acl/public/auth3");
 
-    private final static IRI authIRI4 = rdf.createIRI("trellis:repository/acl/public/auth4");
+    private static final IRI authIRI4 = rdf.createIRI("trellis:repository/acl/public/auth4");
 
-    private final static IRI authIRI5 = rdf.createIRI("trellis:repository/acl/private/auth5");
+    private static final IRI authIRI5 = rdf.createIRI("trellis:repository/acl/private/auth5");
 
-    private final static IRI authIRI6 = rdf.createIRI("trellis:repository/acl/private/auth6");
+    private static final IRI authIRI6 = rdf.createIRI("trellis:repository/acl/private/auth6");
 
-    private final static IRI authIRI7 = rdf.createIRI("trellis:repository/acl/private/auth7");
+    private static final IRI authIRI7 = rdf.createIRI("trellis:repository/acl/private/auth7");
 
-    private final static IRI authIRI8 = rdf.createIRI("trellis:repository/acl/private/auth8");
+    private static final IRI authIRI8 = rdf.createIRI("trellis:repository/acl/private/auth8");
 
-    private final static IRI bseegerIRI = rdf.createIRI("info:user/bseeger");
+    private static final IRI bseegerIRI = rdf.createIRI("info:user/bseeger");
 
-    private final static IRI acoburnIRI = rdf.createIRI("info:user/acoburn");
+    private static final IRI acoburnIRI = rdf.createIRI("info:user/acoburn");
 
-    private final static IRI agentIRI = rdf.createIRI("info:user/agent");
+    private static final IRI agentIRI = rdf.createIRI("info:user/agent");
 
-    private final static IRI groupIRI = rdf.createIRI("trellis:repository/group/test");
+    private static final IRI groupIRI = rdf.createIRI("trellis:repository/group/test");
 
-    private final static IRI groupIRI2 = rdf.createIRI("trellis:repository/group/test/");
+    private static final IRI groupIRI2 = rdf.createIRI("trellis:repository/group/test/");
 
     @BeforeEach
     @SuppressWarnings("unchecked")

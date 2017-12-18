@@ -31,8 +31,8 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
@@ -82,9 +82,9 @@ import org.trellisldp.vocabulary.LDP;
 @RunWith(JUnitPlatform.class)
 public class PostHandlerTest {
 
-    private final static Instant time = ofEpochSecond(1496262729);
-    private final static String baseUrl = "http://example.org/repo/";
-    private final static RDF rdf = getInstance();
+    private static final Instant time = ofEpochSecond(1496262729);
+    private static final String baseUrl = "http://example.org/repo/";
+    private static final RDF rdf = getInstance();
     private File entity;
 
     @Mock

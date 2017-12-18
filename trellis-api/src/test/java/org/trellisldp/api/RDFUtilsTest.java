@@ -17,8 +17,8 @@ import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.api.RDFUtils.toGraph;
 import static org.trellisldp.api.RDFUtils.toDataset;
+import static org.trellisldp.api.RDFUtils.toGraph;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;

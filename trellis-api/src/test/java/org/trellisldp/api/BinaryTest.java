@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitPlatform.class)
 public class BinaryTest {
 
-    private final static RDF rdf = new SimpleRDF();
+    private static final RDF rdf = new SimpleRDF();
 
     private final Long size = 10L;
     private final String mimeType = "text/plain";

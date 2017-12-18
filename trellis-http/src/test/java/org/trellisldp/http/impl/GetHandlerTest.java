@@ -109,10 +109,10 @@ import org.trellisldp.vocabulary.Trellis;
 @RunWith(JUnitPlatform.class)
 public class GetHandlerTest {
 
-    private final static Instant time = ofEpochSecond(1496262729);
-    private final static Instant binaryTime = ofEpochSecond(1496262750);
-    private final static String baseUrl = "http://localhost:8080/repo/";
-    private final static RDF rdf = getInstance();
+    private static final Instant time = ofEpochSecond(1496262729);
+    private static final Instant binaryTime = ofEpochSecond(1496262750);
+    private static final String baseUrl = "http://localhost:8080/repo/";
+    private static final RDF rdf = getInstance();
 
     private Binary testBinary = new Binary(rdf.createIRI("file:testResource.txt"), binaryTime, "text/plain", 100L);
 

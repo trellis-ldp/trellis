@@ -36,13 +36,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
 import java.io.File;
 import java.io.InputStream;
@@ -83,11 +83,11 @@ import org.trellisldp.vocabulary.LDP;
 @RunWith(JUnitPlatform.class)
 public class PutHandlerTest {
 
-    private final static Instant time = ofEpochSecond(1496262729);
-    private final static Instant binaryTime = ofEpochSecond(1496262750);
+    private static final Instant time = ofEpochSecond(1496262729);
+    private static final Instant binaryTime = ofEpochSecond(1496262750);
 
-    private final static String baseUrl = "http://localhost:8080/repo/";
-    private final static RDF rdf = getInstance();
+    private static final String baseUrl = "http://localhost:8080/repo/";
+    private static final RDF rdf = getInstance();
     private final Binary testBinary = new Binary(rdf.createIRI("file:binary.txt"), binaryTime, "text/plain", null);
 
     @Mock

@@ -33,11 +33,11 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
+import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
 
 import java.time.Instant;
 import java.util.stream.Stream;
@@ -80,17 +80,17 @@ import org.trellisldp.vocabulary.Trellis;
 @RunWith(JUnitPlatform.class)
 public class LdpUnauthorizedResourceTest extends JerseyTest {
 
-    private final static IOService ioService = new JenaIOService(null);
+    private static final IOService ioService = new JenaIOService(null);
 
-    private final static Instant time = ofEpochSecond(1496262729);
+    private static final Instant time = ofEpochSecond(1496262729);
 
-    private final static RDF rdf = getInstance();
+    private static final RDF rdf = getInstance();
 
-    private final static IRI identifier = rdf.createIRI("trellis:repo1/resource");
+    private static final IRI identifier = rdf.createIRI("trellis:repo1/resource");
 
-    private final static IRI agent = rdf.createIRI("user:agent");
+    private static final IRI agent = rdf.createIRI("user:agent");
 
-    private final static BlankNode bnode = rdf.createBlankNode();
+    private static final BlankNode bnode = rdf.createBlankNode();
 
     @Mock
     private ResourceService mockResourceService;

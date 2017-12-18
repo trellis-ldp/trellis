@@ -68,10 +68,10 @@ import org.trellisldp.vocabulary.XSD;
 @RunWith(JUnitPlatform.class)
 public class DeleteHandlerTest {
 
-    private final static RDF rdf = getInstance();
-    private final static Instant time = ofEpochSecond(1496262729);
-    private final static String baseUrl = "http://localhost:8080/repo";
-    private final static Literal date = rdf.createLiteral(time.toString(), XSD.dateTime);
+    private static final RDF rdf = getInstance();
+    private static final Instant time = ofEpochSecond(1496262729);
+    private static final String baseUrl = "http://localhost:8080/repo";
+    private static final Literal date = rdf.createLiteral(time.toString(), XSD.dateTime);
 
     @Mock
     private ResourceService mockResourceService;

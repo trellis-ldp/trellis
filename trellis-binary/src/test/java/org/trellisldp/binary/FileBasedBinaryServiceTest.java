@@ -26,10 +26,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
@@ -52,14 +52,14 @@ import org.trellisldp.id.UUIDGenerator;
 @RunWith(JUnitPlatform.class)
 public class FileBasedBinaryServiceTest {
 
-    private final static String testDoc = "test.txt";
+    private static final String testDoc = "test.txt";
 
-    private final static RDF rdf = new SimpleRDF();
+    private static final RDF rdf = new SimpleRDF();
 
-    private final static String directory = new File(FileBasedBinaryService.class.getResource("/" + testDoc).getPath())
+    private static final String directory = new File(FileBasedBinaryService.class.getResource("/" + testDoc).getPath())
         .getParent();
 
-    private final static IRI file = rdf.createIRI("file:" + testDoc);
+    private static final IRI file = rdf.createIRI("file:" + testDoc);
     private final IdentifierService idService = new UUIDGenerator();
 
     @Mock

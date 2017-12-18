@@ -21,10 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.lang.reflect.Field;
 import java.util.stream.Stream;
 
 import org.apache.jena.graph.Graph;

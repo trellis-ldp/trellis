@@ -35,8 +35,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.io.impl.IOUtils.getJsonLdProfile;
 import static org.trellisldp.vocabulary.JSONLD.URI;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;

@@ -17,8 +17,8 @@ import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,14 +29,13 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.rdf.api.IRI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-
-import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
@@ -48,14 +47,14 @@ import org.trellisldp.vocabulary.ACL;
 @RunWith(JUnitPlatform.class)
 public class WebACFilterTest {
 
-    private final static String REPO1 = "repo1";
-    private final static String REPO2 = "repo2";
-    private final static String REPO3 = "repo3";
-    private final static String REPO4 = "repo4";
+    private static final String REPO1 = "repo1";
+    private static final String REPO2 = "repo2";
+    private static final String REPO3 = "repo3";
+    private static final String REPO4 = "repo4";
 
-    private final static String BASE_URL = "http://example.org/";
+    private static final String BASE_URL = "http://example.org/";
 
-    private final static Set<IRI> allModes = new HashSet<>();
+    private static final Set<IRI> allModes = new HashSet<>();
 
     static {
         allModes.add(ACL.Append);

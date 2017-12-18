@@ -18,13 +18,41 @@
   </module>
   <!-- License Header module disabled in favor of license-maven-plugin -->
   <module name="TreeWalker">
+
     <!-- Checks for redundant import statements -->
     <module name="RedundantImport"/>
+
     <!-- Checks for unused import statements -->
     <module name="UnusedImports"/>
+
+    <module name="RedundantModifier">
+      <!-- Checks for redundant modifiers on various symbol definitions.
+          See: http://checkstyle.sourceforge.net/config_modifier.html#RedundantModifier
+      -->
+      <property name="tokens" value="METHOD_DEF, VARIABLE_DEF, ANNOTATION_FIELD_DEF, INTERFACE_DEF, CLASS_DEF, ENUM_DEF"/>
+    </module>
+
+    <module name="ImportOrder">
+      <property name="severity" value="error"/>
+      <!-- This ensures that static imports go first. -->
+      <property name="option" value="top"/>
+      <property name="sortStaticImportsAlphabetically" value="true"/>
+      <property name="tokens" value="STATIC_IMPORT, IMPORT"/>
+    </module>
+
+    <module name="ModifierOrder">
+      <!-- Warn if modifier order is inconsistent with JLS3 8.1.1, 8.3.1, and
+               8.4.3.  The prescribed order is:
+               public, protected, private, abstract, static, final, transient, volatile,
+               synchronized, native, strictfp
+          -->
+      <property name="severity" value="error"/>
+    </module>
+
     <!-- Check that finds import statements that use the * notation. -->
     <module name="AvoidStarImport"/>
     <!-- Checks for long lines. -->
+
     <module name="LineLength">
       <property name="max" value="120"/>
     </module>
@@ -43,11 +71,7 @@
       <property name="allowUnknownTags" value="true"/>
       <property name="allowMissingParamTags" value="false"/>
     </module>
-    <!-- Ensure files have the Javadoc @author tag -->
-    <module name="Regexp">
-      <property name="format" value=" \* \@author "/>
-      <property name="message" value="Javadoc @author tag"/>
-    </module>
+
     <module name="JavadocMethod">
       <property name="scope" value="public"/>
       <property name="allowUndeclaredRTE" value="true"/>
@@ -55,6 +79,7 @@
       <property name="allowMissingThrowsTags" value="true"/>
       <property name="allowMissingReturnTag" value="true"/>
     </module>
+
     <!-- K&R style braces -->
     <module name="NeedBraces"/>
     <module name="LeftCurly"/>
@@ -74,6 +99,7 @@
     <module name="HideUtilityClassConstructor"/>
     <module name="MultipleVariableDeclarations"/>
   </module>
+
   <!-- No Trailing Whitespace, except on lines that only have an asterisk (e.g. Javadoc comments) -->
   <module name="RegexpSingleline">
     <property name="format" value="(?&lt;!\*)\s+$|\*\s\s+$"/>

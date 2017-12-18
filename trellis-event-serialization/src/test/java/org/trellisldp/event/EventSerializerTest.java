@@ -27,13 +27,13 @@ import static org.trellisldp.vocabulary.AS.Create;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.PROV.Activity;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.trellisldp.vocabulary.AS;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
+import org.trellisldp.vocabulary.AS;
 
 /**
  * @author acoburn

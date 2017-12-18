@@ -24,13 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -58,11 +58,11 @@ import org.trellisldp.id.UUIDGenerator;
 @RunWith(JUnitPlatform.class)
 public class HttpBasedBinaryServiceTest {
 
-    private final static RDF rdf = new SimpleRDF();
+    private static final RDF rdf = new SimpleRDF();
 
-    private final static IRI resource = rdf.createIRI("http://www.trellisldp.org/ns/trellis.ttl");
-    private final static IRI sslResource = rdf.createIRI("https://s3.amazonaws.com/www.trellisldp.org/ns/trellis.ttl");
-    private final static IdentifierService idService = new UUIDGenerator();
+    private static final IRI resource = rdf.createIRI("http://www.trellisldp.org/ns/trellis.ttl");
+    private static final IRI sslResource = rdf.createIRI("https://s3.amazonaws.com/www.trellisldp.org/ns/trellis.ttl");
+    private static final IdentifierService idService = new UUIDGenerator();
 
     @Mock
     private Client mockClient;
