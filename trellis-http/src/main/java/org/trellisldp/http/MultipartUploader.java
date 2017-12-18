@@ -119,7 +119,8 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
     private final String baseUrl;
 
     /**
-     * Create a multipart uploader object
+     * Create a multipart uploader object.
+     *
      * @param resourceService the resource service
      * @param binaryService the binary service
      * @param baseUrl the base URL
@@ -181,9 +182,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
     }
 
     /**
-     * Get a list of the uploads
-     * @param id the upload id
-     * @return a response
+     * Get a list of the uploads.
      *
      * <p>Note: the response structure will be like this:</p>
      * <pre>{
@@ -191,6 +190,9 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
      *   "2": "otherhash",
      *   "3": "anotherhash"
      * }</pre>
+     *
+     * @param id the upload id
+     * @return a response
      */
     @GET
     @Timed
@@ -207,10 +209,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
     }
 
     /**
-     * Create a binary from a collection of uploaded parts
-     * @param id the identifier
-     * @param input the input value
-     * @return a response
+     * Create a binary from a collection of uploaded parts.
      *
      * <p>Note: The structure should be like this:</p>
      * <pre>{
@@ -218,6 +217,10 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
      *   "2": "otherhash",
      *   "3": "anotherhash"
      * }</pre>
+     *
+     * @param id the identifier
+     * @param input the input value
+     * @return a response
      */
     @POST
     @Timed
@@ -262,16 +265,17 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
     }
 
     /**
-     *  Add a segment of a binary
-     *  @param id the upload session identifier
-     *  @param partNumber the part number
-     *  @param part the input stream
-     *  @return a response
+     *  Add a segment of a binary.
      *
      *  <p>Note: the response will be a json structure, such as:</p>
      *  <pre>{
      *    "digest": "a-hash"
      *  }</pre>
+     *
+     *  @param id the upload session identifier
+     *  @param partNumber the part number
+     *  @param part the input stream
+     *  @return a response
      */
     @PUT
     @Timed
@@ -293,7 +297,8 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
     }
 
     /**
-     * Abort an upload process
+     * Abort an upload process.
+     *
      * @param id the upload identifier
      */
     @DELETE

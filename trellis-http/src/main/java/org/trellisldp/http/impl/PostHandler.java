@@ -58,7 +58,7 @@ import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.XSD;
 
 /**
- * The POST response handler
+ * The POST response handler.
  *
  * @author acoburn
  */
@@ -69,7 +69,8 @@ public class PostHandler extends ContentBearingHandler {
     private final String id;
 
     /**
-     * Create a builder for an LDP POST response
+     * Create a builder for an LDP POST response.
+     *
      * @param req the LDP request
      * @param id the new resource's identifier
      * @param entity the entity
@@ -85,7 +86,8 @@ public class PostHandler extends ContentBearingHandler {
     }
 
     /**
-     * Create a new resource
+     * Create a new resource.
+     *
      * @return the response builder
      */
     public ResponseBuilder createResource() {

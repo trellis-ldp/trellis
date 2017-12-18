@@ -11,18 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.agent;
-
 /**
+ * Implementation classes for the jena-based input/output service.
+ *
  * @author acoburn
  */
-public class SimpleAgent extends PrefixingAgent {
-
-    /**
-     * Create an agent service with no prefixing value.
-     */
-    public SimpleAgent() {
-        super("");
-    }
-
-}
+package org.trellisldp.io.impl;

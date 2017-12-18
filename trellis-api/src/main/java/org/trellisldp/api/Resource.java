@@ -37,19 +37,21 @@ import org.apache.commons.rdf.api.Triple;
 public interface Resource {
 
     /**
-     * Get an identifier for this resource
+     * Get an identifier for this resource.
+     *
      * @return the identifier
      */
     IRI getIdentifier();
 
     /**
-     * Get the LDP interaction model for this resource
+     * Get the LDP interaction model for this resource.
+     *
      * @return the interaction model
      */
     IRI getInteractionModel();
 
     /**
-     * Retrieve the membership resource if this is an LDP Direct or Indirect container
+     * Retrieve the membership resource if this is an LDP Direct or Indirect container.
      *
      * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
      *
@@ -60,7 +62,7 @@ public interface Resource {
     }
 
     /**
-     * Retrieve the member relation if this is an LDP Direct or Indirect container
+     * Retrieve the member relation if this is an LDP Direct or Indirect container.
      *
      * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
      *
@@ -71,7 +73,7 @@ public interface Resource {
     }
 
     /**
-     * Retrieve the member of relation IRI
+     * Retrieve the member of relation IRI.
      *
      * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
      *
@@ -82,7 +84,7 @@ public interface Resource {
     }
 
     /**
-     * Retrieve the inserted content relation if this is an LDP Indirect container
+     * Retrieve the inserted content relation if this is an LDP Indirect container.
      *
      * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
      *
@@ -93,19 +95,22 @@ public interface Resource {
     }
 
     /**
-     * Retrieve a collection of Mementos for this resource
+     * Retrieve a collection of Mementos for this resource.
+     *
      * @return a stream of known Mementos
      */
     List<VersionRange> getMementos();
 
     /**
-     * Retrieve the RDF Quads for a resource
+     * Retrieve the RDF Quads for a resource.
+     *
      * @return the RDF quads
      */
     Stream<? extends Quad> stream();
 
     /**
-     * Retrieve the RDF Triples for a given named graph
+     * Retrieve the RDF Triples for a given named graph.
+     *
      * @param graphName the named graph
      * @return the RDF triples
      */
@@ -114,7 +119,8 @@ public interface Resource {
     }
 
     /**
-     * Retrieve the RDF Triples for a set of named graphs
+     * Retrieve the RDF Triples for a set of named graphs.
+     *
      * @param graphNames the named graphs
      * @return the RDF triples
      */
@@ -124,7 +130,7 @@ public interface Resource {
     }
 
     /**
-     * Retrieve a Binary for this resouce, if it is a LDP-NR
+     * Retrieve a Binary for this resouce, if it is a LDP-NR.
      *
      * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
      *
@@ -135,7 +141,8 @@ public interface Resource {
     }
 
     /**
-     * Test whether this resource is a Memento resource
+     * Test whether this resource is a Memento resource.
+     *
      * @return true if this is a Memento resource; false otherwise
      */
     default Boolean isMemento() {
@@ -143,13 +150,15 @@ public interface Resource {
     }
 
     /**
-     * Get the last modified date
+     * Get the last modified date.
+     *
      * @return the last-modified date
      */
     Instant getModified();
 
     /**
-     * Test whether this resource has an ACL resource
+     * Test whether this resource has an ACL resource.
+     *
      * @return true if this resource has and ACL resource; false otherwise
      */
     Boolean hasAcl();

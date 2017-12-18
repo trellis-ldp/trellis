@@ -96,7 +96,8 @@ public final class MementoResource {
     private final Resource resource;
 
     /**
-     * Wrap a resource in some Memento-specific response builders
+     * Wrap a resource in some Memento-specific response builders.
+     *
      * @param resource the resource
      */
     public MementoResource(final Resource resource) {
@@ -104,7 +105,8 @@ public final class MementoResource {
     }
 
     /**
-     * Create a response builder for a TimeMap response
+     * Create a response builder for a TimeMap response.
+     *
      * @param baseUrl the base URL
      * @param req the LDP request
      * @param serializer the serializer to use
@@ -162,7 +164,8 @@ public final class MementoResource {
     }
 
     /**
-     * Create a response builder for a TimeGate response
+     * Create a response builder for a TimeGate response.
+     *
      * @param req the LDP request
      * @param baseUrl the base URL
      * @return a response builder object
@@ -177,7 +180,8 @@ public final class MementoResource {
     }
 
     /**
-     * Retrieve all of the Memento-related link headers given a stream of VersionRange objects
+     * Retrieve all of the Memento-related link headers given a stream of VersionRange objects.
+     *
      * @param identifier the public identifier for the resource
      * @param mementos a stream of memento values
      * @return a stream of link headers

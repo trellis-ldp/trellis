@@ -44,7 +44,7 @@ public class Binary {
     private final Instant modified;
 
     /**
-     * A simple Binary object
+     * A simple Binary object.
      * @param identifier the identifier
      * @param modified the modified date
      * @param mimeType the mimeType
@@ -61,7 +61,7 @@ public class Binary {
     }
 
     /**
-     * Retrieve an IRI identifying the location of the binary
+     * Retrieve an IRI identifying the location of the binary.
      * @return the resource content
      */
     public IRI getIdentifier() {
@@ -69,7 +69,7 @@ public class Binary {
     }
 
     /**
-     * Retrieve the mime-type of the resource, if one was specified
+     * Retrieve the mime-type of the resource, if one was specified.
      * @return the mime-type
      */
     public Optional<String> getMimeType() {
@@ -77,7 +77,7 @@ public class Binary {
     }
 
     /**
-     * Retrieve the size of the binary, if known
+     * Retrieve the size of the binary, if known.
      * @return the binary size
      */
     public Optional<Long> getSize() {
@@ -85,7 +85,7 @@ public class Binary {
     }
 
     /**
-     * Retrieve the last-modified date of the binary
+     * Retrieve the last-modified date of the binary.
      * @return the last-modified date
      */
     public Instant getModified() {

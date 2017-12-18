@@ -27,7 +27,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 
 /**
- * A class representing an HTTP Accept-Datetime header
+ * A class representing an HTTP Accept-Datetime header.
  *
  * @author acoburn
  */
@@ -38,7 +38,8 @@ public class AcceptDatetime {
     private final Instant datetime;
 
     /**
-     * Create an Accept-Datetime header object
+     * Create an Accept-Datetime header object.
+     *
      * @param datetime the date time in RFC 1123 format
      */
     public AcceptDatetime(final Instant datetime) {
@@ -46,7 +47,8 @@ public class AcceptDatetime {
     }
 
     /**
-     * Retrieve the corresponding instant
+     * Retrieve the corresponding instant.
+     *
      * @return the instant
      */
     public Instant getInstant() {
@@ -59,7 +61,8 @@ public class AcceptDatetime {
     }
 
     /**
-     * Create an Accept-Datetime header object from a string
+     * Create an Accept-Datetime header object from a string.
+     *
      * @param value the header value
      * @return an AcceptDatetime object or null if the value is not parseable
      */

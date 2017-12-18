@@ -21,7 +21,7 @@ import java.util.Optional;
 public interface ActivityStreamService {
 
     /**
-     * Serialize an event as an Activity Stream message
+     * Serialize an event as an Activity Stream message.
      * @param event the event
      * @return a serialization
      */

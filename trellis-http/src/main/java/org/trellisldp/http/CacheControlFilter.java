@@ -34,7 +34,8 @@ public class CacheControlFilter implements ContainerResponseFilter {
     private final Integer cacheAge;
 
     /**
-     * Create a new CacheControl Decorator
+     * Create a new CacheControl Decorator.
+     *
      * @param cacheAge the length of time to cache resources
      */
     public CacheControlFilter(final Integer cacheAge) {

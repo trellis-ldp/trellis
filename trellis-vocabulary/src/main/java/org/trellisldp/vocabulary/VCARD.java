@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the W3C vCARD Vocabulary
+ * RDF Terms from the W3C vCARD Vocabulary.
  *
  * @see <a href="https://www.w3.org/TR/vcard-rdf">vCARD</a>
  *

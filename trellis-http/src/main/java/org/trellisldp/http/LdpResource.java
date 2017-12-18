@@ -108,7 +108,8 @@ public class LdpResource implements ContainerRequestFilter {
     protected final String baseUrl;
 
     /**
-     * Create a partitioned LdpResource
+     * Create an LdpResource.
+     *
      * @param resourceService the resource service
      * @param ioService the i/o service
      * @param binaryService the datastream service
@@ -183,7 +184,8 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     /**
-     * Perform a GET operation on an LDP Resource
+     * Perform a GET operation on an LDP Resource.
+     *
      * @param req the request parameters
      * @return the response
      *
@@ -197,7 +199,8 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     /**
-     * Perform a HEAD operation on an LDP Resource
+     * Perform a HEAD operation on an LDP Resource.
+     *
      * @param req the request parameters
      * @return the response
      *
@@ -243,7 +246,8 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     /**
-     * Perform an OPTIONS operation on an LDP Resource
+     * Perform an OPTIONS operation on an LDP Resource.
+     *
      * @param req the request
      * @return the response
      */
@@ -266,7 +270,8 @@ public class LdpResource implements ContainerRequestFilter {
 
 
     /**
-     * Perform a PATCH operation on an LDP Resource
+     * Perform a PATCH operation on an LDP Resource.
+     *
      * @param req the request
      * @param body the body
      * @return the response
@@ -285,7 +290,8 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     /**
-     * Perform a DELETE operation on an LDP Resource
+     * Perform a DELETE operation on an LDP Resource.
+     *
      * @param req the request
      * @return the response
      */
@@ -302,7 +308,8 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     /**
-     * Perform a POST operation on a LDP Resource
+     * Perform a POST operation on a LDP Resource.
+     *
      * @param req the request
      * @param body the body
      * @return the response
@@ -335,7 +342,8 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     /**
-     * Perform a PUT operation on a LDP Resource
+     * Perform a PUT operation on a LDP Resource.
+     *
      * @param req the request
      * @param body the body
      * @return the response

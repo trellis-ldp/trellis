@@ -71,7 +71,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
 
     /**
-     * Create a new WebAc-based auth filter
+     * Create a new WebAc-based auth filter.
+     *
      * @param challenges the challenges
      * @param accessService the access service
      */

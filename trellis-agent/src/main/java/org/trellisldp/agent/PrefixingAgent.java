@@ -30,7 +30,8 @@ public class PrefixingAgent implements AgentService {
     private final String prefix;
 
     /**
-     * Create a prefixing agent service
+     * Create a prefixing agent service.
+     *
      * @param prefix the prefix to apply to usernames
      */
     public PrefixingAgent(final String prefix) {

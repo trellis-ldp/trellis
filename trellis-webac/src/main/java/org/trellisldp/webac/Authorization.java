@@ -27,13 +27,14 @@ import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.vocabulary.ACL;
 
 /**
- * This class provides access to data defined in an WebAC Authorization graph. Access to a resource can be
- * controlled via WebAccessControl, an RDF-based access control system. A resource can define an ACL resource
- * via the Link header, using rel=acl. It can also point to an ACL resource using a triple in the resource's own
- * RDF graph via acl:accessControl. Absent an acl:accessControl triple, the parent resource is checked, up to the
- * server's root resource.
+ * This class provides access to data defined in an WebAC Authorization graph.
  *
- * An ACL resource may contain multiple acl:Authorization sections. In an LDP context, this may be represented with
+ * <p>Access to a resource can be controlled via WebAccessControl, an RDF-based access control system. A resource
+ * can define an ACL resource via the Link header, using rel=acl. It can also point to an ACL resource using a triple
+ * in the resource's own RDF graph via acl:accessControl. Absent an acl:accessControl triple, the parent resource
+ * is checked, up to the server's root resource.
+ *
+ * <p>An ACL resource may contain multiple acl:Authorization sections. In an LDP context, this may be represented with
  * ldp:contains triples. Another common pattern is to refer to the acl:Authorization sections with blank nodes.
  *
  * @see <a href="https://www.w3.org/wiki/WebAccessControl">W3C WebAccessControl</a>
@@ -47,7 +48,8 @@ public class Authorization {
     private final Map<IRI, Set<IRI>> dataMap = new HashMap<>();
 
     /**
-     * Create an Authorization object from a graph and an identifier
+     * Create an Authorization object from a graph and an identifier.
+     *
      * @param identifier the identifier
      * @param graph the graph
      * @return the Authorization object
@@ -57,7 +59,8 @@ public class Authorization {
     }
 
     /**
-     * Create an Authorization object from an RDF graph
+     * Create an Authorization object from an RDF graph.
+     *
      * @param identifier the subject IRI
      * @param graph the RDF graph
      */
@@ -80,7 +83,8 @@ public class Authorization {
     }
 
     /**
-     * Retrieve the identifier for this Authorization
+     * Retrieve the identifier for this Authorization.
+     *
      * @return the identifier
      */
     public BlankNodeOrIRI getIdentifier() {
@@ -88,7 +92,8 @@ public class Authorization {
     }
 
     /**
-     * Retrieve the agents that are associated with this Authorization
+     * Retrieve the agents that are associated with this Authorization.
+     *
      * @return the Agent values
      */
     public Set<IRI> getAgent() {
@@ -96,7 +101,8 @@ public class Authorization {
     }
 
     /**
-     * Retrieve the agent classes that are associated with this Authorization
+     * Retrieve the agent classes that are associated with this Authorization.
+     *
      * @return the Agent class values
      */
     public Set<IRI> getAgentClass() {
@@ -104,7 +110,8 @@ public class Authorization {
     }
 
     /**
-     * Retrieve the agent groups that are associated with this Authorization
+     * Retrieve the agent groups that are associated with this Authorization.
+     *
      * @return the Agent groups values
      */
     public Set<IRI> getAgentGroup() {
@@ -112,7 +119,8 @@ public class Authorization {
     }
 
     /**
-     * Retrieve the access modes that are associated with this Authorization
+     * Retrieve the access modes that are associated with this Authorization.
+     *
      * @return the access mode values
      */
     public Set<IRI> getMode() {
@@ -120,7 +128,8 @@ public class Authorization {
     }
 
     /**
-     * Retrieve the resource identifiers to which this Authorization applies
+     * Retrieve the resource identifiers to which this Authorization applies.
+     *
      * @return the accessTo values
      */
     public Set<IRI> getAccessTo() {
@@ -128,7 +137,8 @@ public class Authorization {
     }
 
     /**
-     * Retrieve the directories for which this authorization is used for new resources in the container
+     * Retrieve the directories for which this authorization is used for new resources in the container.
+     *
      * @return the resource identifiers
      */
     public Set<IRI> getDefault() {

@@ -49,7 +49,7 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
 
 /**
- * The OPTIONS response builder
+ * The OPTIONS response builder.
  *
  * @author acoburn
  */
@@ -58,7 +58,8 @@ public class OptionsHandler extends BaseLdpHandler {
     private static final Logger LOGGER = getLogger(OptionsHandler.class);
 
     /**
-     * An OPTIONS response builder
+     * An OPTIONS response builder.
+     *
      * @param req the LDP request
      * @param resourceService the resource service
      * @param baseUrl the base URL
@@ -68,7 +69,8 @@ public class OptionsHandler extends BaseLdpHandler {
     }
 
     /**
-     * Build the representation for the given resource
+     * Build the representation for the given resource.
+     *
      * @param res the resource
      * @return the response builder
      */

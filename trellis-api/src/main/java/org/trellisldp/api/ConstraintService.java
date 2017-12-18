@@ -27,7 +27,8 @@ import org.apache.commons.rdf.api.IRI;
 public interface ConstraintService {
 
     /**
-     * Check a graph against an LDP interaction model
+     * Check a graph against an LDP interaction model.
+     *
      * @param interactionModel the interaction model
      * @param domain the domain of the resource
      * @param graph the graph

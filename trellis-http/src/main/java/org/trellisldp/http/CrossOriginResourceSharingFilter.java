@@ -65,7 +65,8 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
     private final Integer cacheSeconds;
 
     /**
-     * Create a CORS filter
+     * Create a CORS filter.
+     *
      * @param origins a collection of allowed origin values
      * @param allowedMethods a collection of allowed methods
      * @param allowedHeaders a collection of allowed headers

@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the W3C SKOS Vocabulary
+ * RDF Terms from the W3C SKOS Vocabulary.
  *
  * @see <a href="https://www.w3.org/2009/08/skos-reference/skos.html">W3C SKOS Vocabulary</a>
  *

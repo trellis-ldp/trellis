@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the W3C OWL-Time Vocabulary
+ * RDF Terms from the W3C OWL-Time Vocabulary.
  *
  * @see <a href="https://www.w3.org/TR/owl-time/">OWL-Time Ontology</a>
  *

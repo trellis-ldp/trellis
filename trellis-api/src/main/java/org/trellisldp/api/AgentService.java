@@ -23,7 +23,7 @@ import org.apache.commons.rdf.api.IRI;
 public interface AgentService {
 
     /**
-     * Convert an agent String into an IRI
+     * Convert an agent String into an IRI.
      * @param agent the agent as a string
      * @return the agent as an IRI
      */

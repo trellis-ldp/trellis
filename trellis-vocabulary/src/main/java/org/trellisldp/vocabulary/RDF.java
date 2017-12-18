@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the W3C RDF Syntax Vocabulary
+ * RDF Terms from the W3C RDF Syntax Vocabulary.
  *
  * @see <a href="https://www.w3.org/TR/rdf-schema/">RDF Schema 1.1</a> and
  * <a href="https://www.w3.org/TR/rdf11-concepts/">RDF 1.1 Concepts and Abstract Syntax</a>

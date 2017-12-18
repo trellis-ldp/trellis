@@ -70,7 +70,8 @@ public class HttpBasedBinaryService implements BinaryService {
     private final Supplier<String> idSupplier;
 
     /**
-     * Create an Http-based binary service using the default HTTP client
+     * Create an Http-based binary service using the default HTTP client.
+     *
      * @param idSupplier an identifier supplier
      */
     public HttpBasedBinaryService(final Supplier<String> idSupplier) {
@@ -78,7 +79,8 @@ public class HttpBasedBinaryService implements BinaryService {
     }
 
     /**
-     * Create an Http-based binary service with a provided client
+     * Create an Http-based binary service with a provided client.
+     *
      * @param idSupplier an identifier supplier
      * @param client the client
      */

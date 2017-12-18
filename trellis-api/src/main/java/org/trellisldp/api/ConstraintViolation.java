@@ -32,7 +32,7 @@ public class ConstraintViolation {
     private final List<? extends Triple> triples;
 
     /**
-     * Create a new constraint violation
+     * Create a new constraint violation.
      * @param constraint the constraint IRI
      * @param triple the triple
      */
@@ -41,7 +41,7 @@ public class ConstraintViolation {
     }
 
     /**
-     * Create a new constraint violation
+     * Create a new constraint violation.
      * @param constraint the constraint IRI
      * @param triples the triples
      */
@@ -51,7 +51,7 @@ public class ConstraintViolation {
     }
 
     /**
-     * Get the constraint IRI for this violation
+     * Get the constraint IRI for this violation.
      * @return the constraint IRI
      */
     public IRI getConstraint() {
@@ -59,7 +59,7 @@ public class ConstraintViolation {
     }
 
     /**
-     * Get the triples causing the constraint violation
+     * Get the triples causing the constraint violation.
      * @return the triples
      */
     public List<? extends Triple> getTriples() {

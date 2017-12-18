@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 public interface IdentifierService {
 
     /**
-     * Get a Supplier that generates Strings with the provided prefix
+     * Get a Supplier that generates Strings with the provided prefix.
      * @param prefix the prefix
      * @param hierarchy the levels of hierarchy to add
      * @param length the length of each level of hierarchy
@@ -32,14 +32,14 @@ public interface IdentifierService {
     Supplier<String> getSupplier(String prefix, Integer hierarchy, Integer length);
 
     /**
-     * Get a Supplier that generates Strings with the provided prefix
+     * Get a Supplier that generates Strings with the provided prefix.
      * @param prefix the prefix
      * @return a String Supplier
      */
     Supplier<String> getSupplier(String prefix);
 
     /**
-     * Get a Supplier that generates Strings with the provided prefix
+     * Get a Supplier that generates Strings with the provided prefix.
      * @return a String Supplier
      */
     Supplier<String> getSupplier();

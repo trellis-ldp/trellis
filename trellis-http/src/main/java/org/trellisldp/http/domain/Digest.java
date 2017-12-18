@@ -14,7 +14,7 @@
 package org.trellisldp.http.domain;
 
 /**
- * A class representing an HTTP Digest header
+ * A class representing an HTTP Digest header.
  *
  * @author acoburn
  *
@@ -27,7 +27,8 @@ public class Digest {
     private final String digestValue;
 
     /**
-     * Create a Digest header representation
+     * Create a Digest header representation.
+     *
      * @param algorithm the algorithm
      * @param digestValue the digest
      */
@@ -37,7 +38,8 @@ public class Digest {
     }
 
     /**
-     * Get the algorithm
+     * Get the algorithm.
+     *
      * @return the algorithms
      */
     public String getAlgorithm() {
@@ -45,7 +47,8 @@ public class Digest {
     }
 
     /**
-     * Get the digest value
+     * Get the digest value.
+     *
      * @return the digest
      */
     public String getDigest() {
@@ -53,7 +56,8 @@ public class Digest {
     }
 
     /**
-     * Get a Digest object from a string-based header value
+     * Get a Digest object from a string-based header value.
+     *
      * @param value the header value
      * @return a Digest object or null if the value is invalid
      */

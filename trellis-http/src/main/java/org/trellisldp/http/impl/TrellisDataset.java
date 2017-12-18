@@ -36,7 +36,8 @@ public class TrellisDataset implements AutoCloseable {
     private final Dataset dataset;
 
     /**
-     * Create a new dataset
+     * Create a new dataset.
+     *
      * @param dataset the dataset
      */
     public TrellisDataset(final Dataset dataset) {
@@ -54,7 +55,8 @@ public class TrellisDataset implements AutoCloseable {
     }
 
     /**
-     * Add a quad to the dataset
+     * Add a quad to the dataset.
+     *
      * @param quad an RDF Quad
      */
     public void add(final Quad quad) {
@@ -62,7 +64,8 @@ public class TrellisDataset implements AutoCloseable {
     }
 
     /**
-     * Get a graph from the dataset
+     * Get a graph from the dataset.
+     *
      * @param graphName the graph name
      * @return the graph
      */
@@ -71,7 +74,8 @@ public class TrellisDataset implements AutoCloseable {
     }
 
     /**
-     * Get the underlying dataset
+     * Get the underlying dataset.
+     *
      * @return the dataset
      */
     public Dataset asDataset() {
@@ -79,7 +83,8 @@ public class TrellisDataset implements AutoCloseable {
     }
 
     /**
-     * Create a new dataset
+     * Create a new dataset.
+     *
      * @return a dataset
      */
     public static TrellisDataset createDataset() {

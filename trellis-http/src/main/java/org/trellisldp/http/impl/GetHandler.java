@@ -99,7 +99,7 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
 
 /**
- * The GET response builder
+ * The GET response builder.
  *
  * @author acoburn
  */
@@ -111,7 +111,8 @@ public class GetHandler extends BaseLdpHandler {
     private final BinaryService binaryService;
 
     /**
-     * A GET response builder
+     * A GET response builder.
+     *
      * @param req the LDP request
      * @param resourceService the resource service
      * @param ioService the serialization service
@@ -126,7 +127,8 @@ public class GetHandler extends BaseLdpHandler {
     }
 
     /**
-     * Build the representation for the given resource
+     * Build the representation for the given resource.
+     *
      * @param res the resource
      * @return the response builder
      */

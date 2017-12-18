@@ -76,7 +76,7 @@ import org.trellisldp.api.RuntimeRepositoryException;
 import org.trellisldp.io.impl.HtmlSerializer;
 
 /**
- * An IOService implemented using Jena
+ * An IOService implemented using Jena.
  *
  * @author acoburn
  */
@@ -99,7 +99,8 @@ public class JenaIOService implements IOService {
     private final HtmlSerializer htmlSerializer;
 
     /**
-     * Create a serialization service
+     * Create a serialization service.
+     *
      * @param namespaceService the namespace service
      */
     public JenaIOService(final NamespaceService namespaceService) {
@@ -107,7 +108,8 @@ public class JenaIOService implements IOService {
     }
 
     /**
-     * Create a serialization service
+     * Create a serialization service.
+     *
      * @param namespaceService the namespace service
      * @param properties additional properties for the HTML view
      */
@@ -116,7 +118,8 @@ public class JenaIOService implements IOService {
     }
 
     /**
-     * Create a serialization service
+     * Create a serialization service.
+     *
      * @param namespaceService the namespace service
      * @param properties additional properties for the HTML view
      * @param whitelist a whitelist of JSON-LD profiles

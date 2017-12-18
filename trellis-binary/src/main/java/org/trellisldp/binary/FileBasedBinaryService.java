@@ -64,7 +64,8 @@ public class FileBasedBinaryService implements BinaryService {
     private final Supplier<String> idSupplier;
 
     /**
-     * Create a File-based Binary service
+     * Create a File-based Binary service.
+     *
      * @param basePath the base file path
      * @param idSupplier an identifier supplier
      */

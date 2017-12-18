@@ -58,7 +58,7 @@ import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
 
 /**
- * RDF Utility functions
+ * RDF Utility functions.
  *
  * @author acoburn
  */
@@ -69,7 +69,7 @@ public final class RdfUtils {
     private static final RDF rdf = getInstance();
 
     /**
-     * A mapping of LDP types to their supertype
+     * A mapping of LDP types to their supertype.
      */
     public static final Map<IRI, IRI> superClassOf;
 
@@ -85,7 +85,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Get all of the LDP resource (super) types for the given LDP interaction model
+     * Get all of the LDP resource (super) types for the given LDP interaction model.
+     *
      * @param interactionModel the interaction model
      * @return a stream of types
      */
@@ -95,7 +96,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Create a filter based on a Prefer header
+     * Create a filter based on a Prefer header.
+     *
      * @param prefer the Prefer header
      * @return a suitable predicate for filtering a stream of quads
      */
@@ -111,6 +113,7 @@ public final class RdfUtils {
 
     /**
      * Create a Linked Data Fragments filter.
+     *
      * @param subject the LDF subject
      * @param predicate the LDF predicate
      * @param object the LDF object
@@ -129,7 +132,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Convert triples from a skolemized form to an externa form
+     * Convert triples from a skolemized form to an externa form.
+     *
      * @param svc the resourceService
      * @param baseUrl the base URL
      * @return a mapping function
@@ -140,7 +144,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Convert triples from an external form to a skolemized form
+     * Convert triples from an external form to a skolemized form.
+     *
      * @param svc the resourceService
      * @param baseUrl the base URL
      * @return a mapping function
@@ -151,7 +156,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Convert quads from a skolemized form to an external form
+     * Convert quads from a skolemized form to an external form.
+     *
      * @param svc the resource service
      * @param baseUrl the base URL
      * @return a mapping function
@@ -163,7 +169,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Convert quads from an external form to a skolemized form
+     * Convert quads from an external form to a skolemized form.
+     *
      * @param svc the resource service
      * @param baseUrl the base URL
      * @return a mapping function
@@ -176,6 +183,7 @@ public final class RdfUtils {
 
     /**
      * Given a list of acceptable media types, get an RDF syntax.
+     *
      * @param acceptableTypes the types from HTTP headers
      * @param mimeType an additional "default" mimeType to match
      * @return an RDFSyntax
@@ -206,7 +214,8 @@ public final class RdfUtils {
 
     /**
      * Given a list of acceptable media types and an RDF syntax, get the relevant profile data, if
-     * relevant
+     * relevant.
+     *
      * @param acceptableTypes the types from HTTP headers
      * @param syntax an RDF syntax
      * @return a profile IRI if relevant
@@ -222,7 +231,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Get a default profile IRI from the syntax and/or identifier
+     * Get a default profile IRI from the syntax and/or identifier.
+     *
      * @param syntax the RDF syntax
      * @param identifier the resource identifier
      * @return a profile IRI usable by the output streamer
@@ -232,7 +242,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Check if the resource has a deleted mark
+     * Check if the resource has a deleted mark.
+     *
      * @param res the resource
      * @return true if the resource has been deleted; false otherwise
      */
@@ -243,7 +254,8 @@ public final class RdfUtils {
     }
 
     /**
-     * Get a default profile IRI from the syntax and/or identifier
+     * Get a default profile IRI from the syntax and/or identifier.
+     *
      * @param syntax the RDF syntax
      * @param identifier the resource identifier
      * @return a profile IRI usable by the output streamer

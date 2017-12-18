@@ -45,7 +45,8 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     private final List<String> adminUsers;
 
     /**
-     * Create an authorization filter
+     * Create an authorization filter.
+     *
      * @param agentService the agent service
      * @param adminUsers users that should be treated as repository administrators
      */

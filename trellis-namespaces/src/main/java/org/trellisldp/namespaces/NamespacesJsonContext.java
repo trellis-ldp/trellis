@@ -47,7 +47,7 @@ public class NamespacesJsonContext implements NamespaceService {
     private final Map<String, String> dataRev = new ConcurrentHashMap<>();
 
     /**
-     * Create a JSON-based Namespace service
+     * Create a JSON-based Namespace service.
      * @param filePath the file path
      */
     public NamespacesJsonContext(final String filePath) {

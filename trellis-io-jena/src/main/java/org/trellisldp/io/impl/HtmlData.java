@@ -50,7 +50,8 @@ public class HtmlData {
     private final Map<String, String> properties;
 
     /**
-     * Create an HTML Data object
+     * Create an HTML Data object.
+     *
      * @param namespaceService the namespace service
      * @param subject the subject
      * @param triples the triples
@@ -65,7 +66,8 @@ public class HtmlData {
     }
 
     /**
-     * Get the triples
+     * Get the triples.
+     *
      * @return the labelled triples
      */
     public List<LabelledTriple> getTriples() {
@@ -74,7 +76,8 @@ public class HtmlData {
     }
 
     /**
-     * Get any CSS document URLs
+     * Get any CSS document URLs.
+     *
      * @return a list of any CSS documents
      */
     public List<String> getCss() {
@@ -83,7 +86,8 @@ public class HtmlData {
     }
 
     /**
-     * Get a Icon URL
+     * Get a Icon URL.
+     *
      * @return the location of an icon, if one exists
      */
     public String getIcon() {
@@ -91,7 +95,8 @@ public class HtmlData {
     }
 
     /**
-     * Get a list of javascript document URLs
+     * Get a list of javascript document URLs.
+     *
      * @return a list of JS documents
      */
     public List<String> getJs() {
@@ -100,7 +105,8 @@ public class HtmlData {
     }
 
     /**
-     * Get the title
+     * Get the title.
+     *
      * @return a title for the resource
      */
     public String getTitle() {
@@ -160,5 +166,3 @@ public class HtmlData {
     private static final Comparator<LabelledTriple> sortObjects = (q1, q2) ->
         q1.getObject().compareTo(q2.getObject());
 }
-
-

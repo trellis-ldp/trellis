@@ -72,7 +72,8 @@ public class WebACService implements AccessControlService {
     private final CacheService<String, Set<IRI>> cache;
 
     /**
-     * Create a WebAC-based authorization service
+     * Create a WebAC-based authorization service.
+     *
      * @param resourceService the resource service
      */
     public WebACService(final ResourceService resourceService) {
@@ -80,7 +81,8 @@ public class WebACService implements AccessControlService {
     }
 
     /**
-     * Create a WebAC-based authorization service
+     * Create a WebAC-based authorization service.
+     *
      * @param resourceService the resource service
      * @param cache a cache (may be null if caching is not desired)
      */
@@ -192,7 +194,8 @@ public class WebACService implements AccessControlService {
     }
 
     /**
-     * Clean the identifier
+     * Clean the identifier.
+     *
      * @param identifier the identifier
      * @return the cleaned identifier
      */
@@ -205,7 +208,8 @@ public class WebACService implements AccessControlService {
     }
 
     /**
-     * Clean the identifier
+     * Clean the identifier.
+     *
      * @param identifier the identifier
      * @return the cleaned identifier
      */

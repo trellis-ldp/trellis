@@ -31,7 +31,7 @@ import org.apache.commons.rdf.api.Triple;
 public interface IOService {
 
     /**
-     * Serialize the triple stream in a concrete RDF syntax
+     * Serialize the triple stream in a concrete RDF syntax.
      * @param triples the stream of triples
      * @param output the output stream
      * @param syntax the output format
@@ -40,7 +40,7 @@ public interface IOService {
     void write(Stream<? extends Triple> triples, OutputStream output, RDFSyntax syntax, IRI... profiles);
 
     /**
-     * Read an input stream into a stream of triples
+     * Read an input stream into a stream of triples.
      * @param input the input stream
      * @param context the RDF context
      * @param syntax the RDF syntax
@@ -49,7 +49,7 @@ public interface IOService {
     Stream<? extends Triple> read(InputStream input, String context, RDFSyntax syntax);
 
     /**
-     * Apply a Sparql-Update operation over a Graph
+     * Apply a Sparql-Update operation over a Graph.
      * @param graph the input graph
      * @param update the sparql-update request
      * @param context the context to resolve relative IRIs

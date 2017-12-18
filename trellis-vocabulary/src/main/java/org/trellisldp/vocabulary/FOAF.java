@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the FOAF Vocabulary
+ * RDF Terms from the FOAF Vocabulary.
  *
  * @see <a href="http://xmlns.com/foaf/spec/">Foaf Vocabulary</a>
  *

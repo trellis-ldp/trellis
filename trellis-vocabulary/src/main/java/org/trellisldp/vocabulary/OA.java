@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the OA Vocabulary
+ * RDF Terms from the OA Vocabulary.
  *
  * @see <a href="https://www.w3.org/ns/oa">OA Vocabulary</a>
  *

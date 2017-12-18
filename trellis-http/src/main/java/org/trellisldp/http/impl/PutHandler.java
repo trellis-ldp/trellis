@@ -71,7 +71,7 @@ import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.XSD;
 
 /**
- * The PUT response handler
+ * The PUT response handler.
  *
  * @author acoburn
  */
@@ -80,7 +80,8 @@ public class PutHandler extends ContentBearingHandler {
     private static final Logger LOGGER = getLogger(PutHandler.class);
 
     /**
-     * Create a builder for an LDP POST response
+     * Create a builder for an LDP POST response.
+     *
      * @param req the LDP request
      * @param entity the entity
      * @param resourceService the resource service
@@ -123,7 +124,8 @@ public class PutHandler extends ContentBearingHandler {
     }
 
     /**
-     * Set the data for a resource
+     * Set the data for a resource.
+     *
      * @return the response builder
      */
     public ResponseBuilder createResource() {
@@ -131,7 +133,8 @@ public class PutHandler extends ContentBearingHandler {
     }
 
     /**
-     * Set the data for a resource
+     * Set the data for a resource.
+     *
      * @param res the resource
      * @return the response builder
      */

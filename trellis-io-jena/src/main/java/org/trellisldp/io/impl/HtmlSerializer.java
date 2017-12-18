@@ -47,7 +47,8 @@ public class HtmlSerializer {
     private final Map<String, String> properties;
 
     /**
-     * Create a ResourceView object
+     * Create a ResourceView object.
+     *
      * @param namespaceService a namespace service
      * @param template the template name
      * @param properties additional HTML-related properties, e.g. URLs for icon, css, js
@@ -72,7 +73,8 @@ public class HtmlSerializer {
     }
 
     /**
-     * Send the content to an output stream
+     * Send the content to an output stream.
+     *
      * @param out the output stream
      * @param triples the triples
      * @param subject the subject

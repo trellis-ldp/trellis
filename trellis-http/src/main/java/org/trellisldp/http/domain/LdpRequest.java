@@ -90,7 +90,8 @@ public class LdpRequest {
     private Digest digest;
 
     /**
-     * Get the Content-Type header
+     * Get the Content-Type header.
+     *
      * @return the Content-Type header
      */
     public String getContentType() {
@@ -98,7 +99,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the slug header
+     * Get the slug header.
+     *
      * @return the value of the slug header
      */
     public String getSlug() {
@@ -106,7 +108,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the Link header
+     * Get the Link header.
+     *
      * @return the Link header
      */
     public Link getLink() {
@@ -114,7 +117,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the Accept-Datetime value
+     * Get the Accept-Datetime value.
+     *
      * @return the accept-datetime header
      */
     public AcceptDatetime getDatetime() {
@@ -122,7 +126,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the prefer header
+     * Get the prefer header.
+     *
      * @return the Prefer header
      */
     public Prefer getPrefer() {
@@ -130,7 +135,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the Want-Digest header
+     * Get the Want-Digest header.
+     *
      * @return the Want-Digest header
      */
     public WantDigest getWantDigest() {
@@ -138,7 +144,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the Digest header
+     * Get the Digest header.
+     *
      * @return the Digest header
      */
     public Digest getDigest() {
@@ -146,7 +153,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the range header
+     * Get the range header.
+     *
      * @return the range header
      */
     public Range getRange() {
@@ -154,7 +162,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the path
+     * Get the path.
+     *
      * @return the path
      */
     public String getPath() {
@@ -165,7 +174,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the version value
+     * Get the version value.
+     *
      * @return the version query parameter
      */
     public Version getVersion() {
@@ -173,7 +183,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the ext value
+     * Get the ext value.
+     *
      * @return the ext query parameter
      */
     public String getExt() {
@@ -181,7 +192,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the request value
+     * Get the request value.
+     *
      * @return the request
      */
     public Request getRequest() {
@@ -189,7 +201,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get the HTTP headers
+     * Get the HTTP headers.
+     *
      * @return the http headers
      */
     public HttpHeaders getHeaders() {
@@ -197,7 +210,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get a user session
+     * Get a user session.
+     *
      * @return a session
      */
     public Session getSession() {
@@ -206,6 +220,7 @@ public class LdpRequest {
 
     /**
      * Get the subject filter.
+     *
      * @return the subject filter
      */
     public String getSubject() {
@@ -214,6 +229,7 @@ public class LdpRequest {
 
     /**
      * Get the predicate filter.
+     *
      * @return the predicate filter
      */
     public String getPredicate() {
@@ -222,6 +238,7 @@ public class LdpRequest {
 
     /**
      * Get the object filter.
+     *
      * @return the object filter
      */
     public String getObject() {
@@ -229,7 +246,8 @@ public class LdpRequest {
     }
 
     /**
-     * Get a base url value
+     * Get a base url value.
+     *
      * @return the baseUrl as a string
      */
     public String getBaseUrl() {

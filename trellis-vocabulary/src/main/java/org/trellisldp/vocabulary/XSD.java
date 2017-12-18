@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the XML Schema Datatype Vocabulary
+ * RDF Terms from the XML Schema Datatype Vocabulary.
  *
  * @see <a href="https://www.w3.org/TR/xmlschema-2/">XML Schema Part 2</a>
  *

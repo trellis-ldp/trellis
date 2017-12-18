@@ -28,7 +28,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 /**
- * A class representing an HTTP Want-Digest header
+ * A class representing an HTTP Want-Digest header.
  *
  * @author acoburn
  *
@@ -41,7 +41,8 @@ public class WantDigest {
     private final List<String> algorithms;
 
     /**
-     * Create a Want-Digest header representation
+     * Create a Want-Digest header representation.
+     *
      * @param wantDigest the value of the Want-Digest header
      */
     public WantDigest(final String wantDigest) {
@@ -60,7 +61,8 @@ public class WantDigest {
     }
 
     /**
-     * Fetch the list of specified algorithms in preference order
+     * Fetch the list of specified algorithms in preference order.
+     *
      * @return the algorithms
      */
     public List<String> getAlgorithms() {

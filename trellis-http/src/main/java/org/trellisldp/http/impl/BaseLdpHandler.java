@@ -69,7 +69,8 @@ public class BaseLdpHandler {
     protected final ResourceService resourceService;
 
     /**
-     * A base class for response handling
+     * A base class for response handling.
+     *
      * @param req the LDP request
      * @param resourceService the resource service
      * @param baseUrl the base URL
@@ -81,7 +82,8 @@ public class BaseLdpHandler {
     }
 
     /**
-     * Check if this is a deleted resource, and if so return an appropriate response
+     * Check if this is a deleted resource, and if so return an appropriate response.
+     *
      * @param res the resource
      * @param identifier the identifier
      * @throws WebApplicationException a 410 Gone exception
@@ -95,7 +97,8 @@ public class BaseLdpHandler {
     }
 
     /**
-     * Get the baseUrl for the request
+     * Get the baseUrl for the request.
+     *
      * @return the baseUrl
      */
     protected String getBaseUrl() {
@@ -103,7 +106,8 @@ public class BaseLdpHandler {
     }
 
     /**
-     * Check the request for a cache-related response
+     * Check the request for a cache-related response.
+     *
      * @param request the request
      * @param modified the modified time
      * @param etag the etag

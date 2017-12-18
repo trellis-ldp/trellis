@@ -48,7 +48,7 @@ import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 
 /**
- * A common base class for PUT/POST requests
+ * A common base class for PUT/POST requests.
  *
  * @author acoburn
  */
@@ -59,7 +59,8 @@ class ContentBearingHandler extends BaseLdpHandler {
     protected final File entity;
 
     /**
-     * Create a builder for an LDP POST response
+     * Create a builder for an LDP POST response.
+     *
      * @param baseUrl the base URL
      * @param req the LDP request
      * @param entity the entity

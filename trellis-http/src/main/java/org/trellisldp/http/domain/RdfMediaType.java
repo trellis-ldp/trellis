@@ -22,7 +22,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 
 /**
- * RDF-based {@link MediaType} definitions
+ * RDF-based {@link MediaType} definitions.
  *
  * @author acoburn
  */

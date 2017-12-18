@@ -38,7 +38,7 @@ import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 
 /**
- * The DELETE response builder
+ * The DELETE response builder.
  *
  * @author acoburn
  */
@@ -47,7 +47,8 @@ public class DeleteHandler extends BaseLdpHandler {
     private static final Logger LOGGER = getLogger(DeleteHandler.class);
 
     /**
-     * Create a builder for an LDP DELETE response
+     * Create a builder for an LDP DELETE response.
+     *
      * @param req the LDP request
      * @param resourceService the resource service
      * @param baseUrl the base URL
@@ -57,7 +58,8 @@ public class DeleteHandler extends BaseLdpHandler {
     }
 
     /**
-     * Delete the given resource
+     * Delete the given resource.
+     *
      * @param res the resource
      * @return a response builder
      */

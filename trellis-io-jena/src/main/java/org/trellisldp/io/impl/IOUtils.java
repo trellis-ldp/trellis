@@ -33,7 +33,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.jena.riot.RDFFormat;
 
 /**
- * Utilities used with the Jena-IO package
+ * Utilities used with the Jena-IO package.
+ *
  * @author acoburn
  */
 public final class IOUtils {
@@ -47,8 +48,9 @@ public final class IOUtils {
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     /**
-     * This will combine multiple JSON-LD profiles into a single profile. For example,
-     * jsonld:compacted + jsonld:flattened = jsonld:compacted_flattened
+     * Combine multiple JSON-LD profiles into a single profile.
+     *
+     * <p>For example, jsonld:compacted + jsonld:flattened = jsonld:compacted_flattened
      * The default (i.e. no arguments) is jsonld:expanded
      * Multiple, conflicting profiles (e.g. jsonld:compacted + jsonld:expanded) will result
      * in a "last profile wins" situation. Profile IRIs that are not part of the JSON-LD
@@ -78,7 +80,8 @@ public final class IOUtils {
     }
 
     /**
-     * Get the JSON-LD profile for the given profile(s)
+     * Get the JSON-LD profile for the given profile(s).
+     *
      * @param profiles the profiles
      * @return the RDFFormat
      */

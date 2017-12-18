@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the W3C PROV Ontology
+ * RDF Terms from the W3C PROV Ontology.
  *
  * @see <a href="https://www.w3.org/TR/prov-o/">PROV Ontology</a>
  *

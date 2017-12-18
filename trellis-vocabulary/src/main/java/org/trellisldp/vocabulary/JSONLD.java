@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * JSON-LD vocabulary terms
+ * JSON-LD vocabulary terms.
  *
  * @see <a href="https://www.w3.org/ns/json-ld">The JSON-LD Vocabulary</a>
  *

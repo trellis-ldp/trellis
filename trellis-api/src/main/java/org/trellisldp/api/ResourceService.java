@@ -41,14 +41,16 @@ import org.apache.commons.rdf.api.Triple;
 public interface ResourceService {
 
     /**
-     * Get a resource from the given location
+     * Get a resource from the given location.
+     *
      * @param identifier the resource identifier
      * @return the resource
      */
     Optional<Resource> get(IRI identifier);
 
     /**
-     * Get a resource from the given location and time
+     * Get a resource from the given location and time.
+     *
      * @param identifier the resource identifier
      * @param time the time
      * @return the resource
@@ -56,7 +58,8 @@ public interface ResourceService {
     Optional<Resource> get(IRI identifier, Instant time);
 
     /**
-     * Put a resource into the repository
+     * Put a resource into the repository.
+     *
      * @param identifier the identifier for the new resource
      * @param ixnModel the LDP interaction model for this resource
      * @param dataset the dataset
@@ -65,11 +68,13 @@ public interface ResourceService {
     Future<Boolean> put(IRI identifier, IRI ixnModel, Dataset dataset);
 
     /**
-     * Get the identifier for the structurally-logical container for the resource
+     * Get the identifier for the structurally-logical container for the resource.
+     *
+     * <p>Note: The returned identifier is not guaranteed to exist.
+     *
      * @param identifier the identifier
      * @return an identifier for the structurally-logical container
      *
-     * Note: The returned identifier is not guaranteed to exist
      */
     default Optional<IRI> getContainer(final IRI identifier) {
         final String id = identifier.getIRIString();
@@ -78,7 +83,8 @@ public interface ResourceService {
     }
 
     /**
-     * Compact (i.e. remove the history) of a resource
+     * Compact (rewrite the history) of a resource.
+     *
      * @param identifier the identifier
      * @param from a time after which a resource is to be compacted
      * @param until a time before which a resource is to be compacted
@@ -87,20 +93,23 @@ public interface ResourceService {
     Stream<IRI> compact(IRI identifier, Instant from, Instant until);
 
     /**
-     * Purge a resource from the repository
+     * Purge a resource from the repository.
+     *
      * @param identifier the identifier
      * @return a stream of binary IRIs that can be safely purged
      */
     Stream<IRI> purge(IRI identifier);
 
     /**
-     * Scan the resources
+     * Scan the resources.
+     *
      * @return a stream of RDF Triples, containing the resource and its LDP type
      */
     Stream<? extends Triple> scan();
 
     /**
-     * Skolemize a blank node
+     * Skolemize a blank node.
+     *
      * @param term the RDF term
      * @return a skolemized node, if a blank node; otherwise the original term
      */
@@ -112,7 +121,8 @@ public interface ResourceService {
     }
 
     /**
-     * Un-skolemize a blank node
+     * Un-skolemize a blank node.
+     *
      * @param term the RDF term
      * @return a blank node, if a previously-skolemized node; otherwise the original term
      */
@@ -128,7 +138,8 @@ public interface ResourceService {
     }
 
     /**
-     * Return an "internal" representation of an RDF term
+     * Return an "internal" representation of an RDF term.
+     *
      * @param <T> the type of RDF term
      * @param term the RDF term
      * @param baseUrl the base URL of the domain
@@ -147,7 +158,8 @@ public interface ResourceService {
     }
 
     /**
-     * Return an "external" representation of an RDF term
+     * Return an "external" representation of an RDF term.
+     *
      * @param <T> the type of RDF term
      * @param term the RDF term
      * @param baseUrl the base URL of the domain
@@ -166,7 +178,8 @@ public interface ResourceService {
     }
 
     /**
-     * Export the complete repository as a stream of Quads
+     * Export the complete repository as a stream of Quads.
+     *
      * @param graphNames the graph names to export
      * @return a stream of quads, where each named graph refers to the resource identifier
      */
@@ -179,7 +192,8 @@ public interface ResourceService {
     }
 
     /**
-     * An identifier supplier
+     * An identifier supplier.
+     *
      * @return a supplier of identifiers for new resources
      */
     Supplier<String> getIdentifierSupplier();

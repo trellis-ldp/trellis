@@ -27,7 +27,7 @@ import org.trellisldp.api.Event;
 import org.trellisldp.vocabulary.AS;
 
 /**
- * A structure used for serializing an Event into an ActivityStream 2.0 JSON object
+ * A structure used for serializing an Event into an ActivityStream 2.0 JSON object.
  *
  * @see <a href="https://www.w3.org/TR/activitystreams-core/">Activity Streams 2.0</a>
  *
@@ -38,7 +38,7 @@ import org.trellisldp.vocabulary.AS;
 class ActivityStreamMessage {
 
     /**
-     * The target resource of a message
+     * The target resource of a message.
      */
     @JsonInclude(NON_ABSENT)
     static class EventResource {
@@ -46,7 +46,8 @@ class ActivityStreamMessage {
         private List<String> type;
 
         /**
-         * Create a new event resource target
+         * Create a new event resource target.
+         *
          * @param id the identifier
          * @param type the types
          */
@@ -56,7 +57,8 @@ class ActivityStreamMessage {
         }
 
         /**
-         * Get the identifier
+         * Get the identifier.
+         *
          * @return the id
          */
         public String getId() {
@@ -64,7 +66,8 @@ class ActivityStreamMessage {
         }
 
         /**
-         * Get the resource types
+         * Get the resource types.
+         *
          * @return the types
          */
         public List<String> getType() {
@@ -80,7 +83,8 @@ class ActivityStreamMessage {
     private String published;
 
     /**
-     * Get the event identifier
+     * Get the event identifier.
+     *
      * @return the event identifier
      */
     public String getId() {
@@ -88,7 +92,8 @@ class ActivityStreamMessage {
     }
 
     /**
-     * Get the event types
+     * Get the event types.
+     *
      * @return the event types
      */
     public List<String> getType() {
@@ -96,28 +101,28 @@ class ActivityStreamMessage {
     }
 
     /**
-     * The inbox assocated with the resource
+     * The inbox assocated with the resource.
      */
     public String getInbox() {
         return inbox;
     }
 
     /**
-     * The actors associated with this event
+     * The actors associated with this event.
      */
     public List<String> getActor() {
         return actor;
     }
 
     /**
-     * The target resource
+     * The target resource.
      */
     public EventResource getObject() {
         return object;
     }
 
     /**
-     * The created date
+     * The created date.
      */
     @JsonProperty("published")
     public String getPublished() {
@@ -125,13 +130,14 @@ class ActivityStreamMessage {
     }
 
     /**
-     * The JSON-LD context
+     * The JSON-LD context.
      */
     @JsonProperty("@context")
     public String context = "https://www.w3.org/ns/activitystreams";
 
     /**
-     * Populate a ActivityStreamMessage from an Event
+     * Populate a ActivityStreamMessage from an Event.
+     *
      * @param event The event
      * @return an ActivityStreamMessage
      */

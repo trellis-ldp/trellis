@@ -37,17 +37,17 @@ public final class RDFUtils {
     private static RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
     /**
-     * The internal trellis prefix
+     * The internal trellis prefix.
      */
     public static final String TRELLIS_PREFIX = "trellis:";
 
     /**
-     * The internal blank node prefix
+     * The internal blank node prefix.
      */
     public static final String TRELLIS_BNODE_PREFIX = "trellis:bnode/";
 
     /**
-     * Get the Commons RDF instance in use
+     * Get the Commons RDF instance in use.
      * @return the RDF instance
      */
     public static RDF getInstance() {
@@ -55,7 +55,7 @@ public final class RDFUtils {
     }
 
     /**
-     * Collect a stream of Triples into a Graph
+     * Collect a stream of Triples into a Graph.
      * @return a graph
      */
     public static Collector<Triple, ?, Graph> toGraph() {
@@ -66,7 +66,7 @@ public final class RDFUtils {
     }
 
     /**
-     * Collect a stream of Quads into a Dataset
+     * Collect a stream of Quads into a Dataset.
      * @return a dataset
      */
     public static Collector<Quad, ?, Dataset> toDataset() {

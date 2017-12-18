@@ -38,7 +38,8 @@ public class HttpSession implements Session {
     private final Instant created;
 
     /**
-     * Create an HTTP-based session
+     * Create an HTTP-based session.
+     *
      * @param agent the agent
      * @param delegatedBy the delegatedBy value
      */
@@ -49,7 +50,8 @@ public class HttpSession implements Session {
     }
 
     /**
-     * Create an HTTP-based session
+     * Create an HTTP-based session.
+     *
      * @param agent the agent
      */
     public HttpSession(final IRI agent) {
@@ -57,7 +59,7 @@ public class HttpSession implements Session {
     }
 
     /**
-     * Create an HTTP-based session
+     * Create an HTTP-based session.
      */
     public HttpSession() {
         this(AnonymousUser);

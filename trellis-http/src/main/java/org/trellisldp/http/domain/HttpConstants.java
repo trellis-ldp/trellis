@@ -25,7 +25,7 @@ import java.util.Set;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * A collection of constant values used by the Trellis HTTP layer
+ * A collection of constant values used by the Trellis HTTP layer.
  *
  * @author acoburn
  */

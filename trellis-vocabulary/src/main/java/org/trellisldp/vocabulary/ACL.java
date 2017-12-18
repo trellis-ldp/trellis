@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the W3C ACL Vocabulary
+ * RDF Terms from the W3C ACL Vocabulary.
  *
  * @see <a href="https://www.w3.org/wiki/WebAccessControl">WebAccessControl Wiki</a>
  *

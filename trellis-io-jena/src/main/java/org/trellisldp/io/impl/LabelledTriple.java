@@ -20,7 +20,7 @@ import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Triple;
 
 /**
- * A triple object with additional labels
+ * A triple object with additional labels.
  *
  * @author acoburn
  */
@@ -31,7 +31,8 @@ public class LabelledTriple {
     private final String objLabel;
 
     /**
-     * Create a LabelledTriple
+     * Create a LabelledTriple.
+     *
      * @param triple the triple
      * @param predicate the label for the predicate
      * @param object the label for the object
@@ -43,7 +44,8 @@ public class LabelledTriple {
     }
 
     /**
-     * Get the subject of the triple as a string
+     * Get the subject of the triple as a string.
+     *
      * @return a string form of the subject
      */
     public String getSubject() {
@@ -54,7 +56,8 @@ public class LabelledTriple {
     }
 
     /**
-     * Get the predicate of the triple as a string
+     * Get the predicate of the triple as a string.
+     *
      * @return the string form of the predicate
      */
     public String getPredicate() {
@@ -62,7 +65,8 @@ public class LabelledTriple {
     }
 
     /**
-     * Get the object of the triple as a string
+     * Get the object of the triple as a string.
+     *
      * @return the string form of the object
      */
     public String getObject() {
@@ -75,7 +79,8 @@ public class LabelledTriple {
     }
 
     /**
-     * Get the label for the predicate
+     * Get the label for the predicate.
+     *
      * @return the predicate label
      */
     public String getPredicateLabel() {
@@ -86,7 +91,8 @@ public class LabelledTriple {
     }
 
     /**
-     * Get the label for the object
+     * Get the label for the object.
+     *
      * @return the object label
      */
     public String getObjectLabel() {
@@ -97,7 +103,8 @@ public class LabelledTriple {
     }
 
     /**
-     * Determine whether the object is an IRI
+     * Determine whether the object is an IRI.
+     *
      * @return true if the object is an IRI; false otherwise
      */
     public Boolean getObjectIsIRI() {

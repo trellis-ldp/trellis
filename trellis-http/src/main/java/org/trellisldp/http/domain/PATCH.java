@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 import javax.ws.rs.HttpMethod;
 
 /**
- * PATCH HTTP method
+ * PATCH HTTP method.
  *
  * @author acoburn
  */

@@ -24,7 +24,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 
 /**
- * A class representing an HTTP Range header
+ * A class representing an HTTP Range header.
  *
  * @author acoburn
  */
@@ -37,7 +37,8 @@ public class Range {
     private final Integer to;
 
     /**
-     * Create a Range object
+     * Create a Range object.
+     *
      * @param from the from value
      * @param to the to value
      */
@@ -47,7 +48,8 @@ public class Range {
     }
 
     /**
-     * Get the from value
+     * Get the from value.
+     *
      * @return the byte offset
      */
     public Integer getFrom() {
@@ -55,7 +57,8 @@ public class Range {
     }
 
     /**
-     * Get the to value
+     * Get the to value.
+     *
      * @return the byte end
      */
     public Integer getTo() {
@@ -63,7 +66,8 @@ public class Range {
     }
 
     /**
-     * Get a Range object from a header value
+     * Get a Range object from a header value.
+     *
      * @param value the header value
      * @return the Range object or null if the value is not parseable
      */

@@ -3,20 +3,26 @@
     "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
     "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
+
   <!-- Suppress -->
   <module name="SuppressionFilter">
     <property name="file" value="${checkstyleConfigDir}/suppressions.xml"/>
   </module>
+
   <!-- Ignore module-info.java files when compiling with JDK 9 -->
   <module name="BeforeExecutionExclusionFileFilter">
     <property name="fileNamePattern" value="module\-info\.java$"/>
   </module>
+
   <!-- Checks that there are no tab characters ('\t') in the source code. -->
   <module name="FileTabCharacter">
     <property name="eachLine" value="true"/>
     <property name="fileExtensions" value="java,css,js,xml"/>
   </module>
-  <!-- License Header module disabled in favor of license-maven-plugin -->
+
+  <!-- Check that every module has a package-info.java file. -->
+  <module name="JavadocPackage"/>
+
   <module name="TreeWalker">
 
     <!-- Checks for redundant import statements -->
@@ -56,18 +62,13 @@
     <module name="LineLength">
       <property name="max" value="120"/>
     </module>
-    <!-- Write Javadocs for public methods and classes. Keep it short and to the point
-         /**
-          * @author Joe Developer
-          * @date MMM DD, YYYY
-          */
-         public class MyClass
-    -->
+
+    <!-- Javadoc Checks -->
+    <module name="JavadocParagraph"/>
+
     <module name="JavadocType">
       <property name="scope" value="public"/>
       <property name="excludeScope" value="anoninner"/>
-      <!-- Contrary to expectation only checks for author tags without an author -->
-      <property name="authorFormat" value="\S"/>
       <property name="allowUnknownTags" value="true"/>
       <property name="allowMissingParamTags" value="false"/>
     </module>
@@ -78,6 +79,11 @@
       <property name="allowMissingParamTags" value="true"/>
       <property name="allowMissingThrowsTags" value="true"/>
       <property name="allowMissingReturnTag" value="true"/>
+    </module>
+
+    <module name="JavadocStyle">
+      <property name="severity" value="error"/>
+      <property name="checkHtml" value="true"/>
     </module>
 
     <!-- K&R style braces -->

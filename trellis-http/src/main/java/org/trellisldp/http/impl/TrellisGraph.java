@@ -34,7 +34,8 @@ public class TrellisGraph implements AutoCloseable {
     private final Graph graph;
 
     /**
-     * Create a new graph
+     * Create a new graph.
+     *
      * @param graph the graph
      */
     public TrellisGraph(final Graph graph) {
@@ -52,7 +53,8 @@ public class TrellisGraph implements AutoCloseable {
     }
 
     /**
-     * Add a triple to the graph
+     * Add a triple to the graph.
+     *
      * @param triple an RDF Triple
      */
     public void add(final Triple triple) {
@@ -60,7 +62,8 @@ public class TrellisGraph implements AutoCloseable {
     }
 
     /**
-     * Stream triples from the graph
+     * Stream triples from the graph.
+     *
      * @return a stream of triples
      */
     public Stream<? extends Triple> stream() {
@@ -68,7 +71,8 @@ public class TrellisGraph implements AutoCloseable {
     }
 
     /**
-     * Get the underlying graph
+     * Get the underlying graph.
+     *
      * @return the graph
      */
     public Graph asGraph() {
@@ -76,7 +80,8 @@ public class TrellisGraph implements AutoCloseable {
     }
 
     /**
-     * Create a new graph
+     * Create a new graph.
+     *
      * @return a graph
      */
     public static TrellisGraph createGraph() {

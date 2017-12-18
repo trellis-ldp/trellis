@@ -23,14 +23,15 @@ public class RuntimeRepositoryException extends RuntimeException {
     private static final long serialVersionUID = 8046489554418284257L;
 
     /**
-     * Create a new RuntimeRepositoryException
+     * Create a new RuntimeRepositoryException.
      */
     public RuntimeRepositoryException() {
         super();
     }
 
     /**
-     * Create a new RuntimeRepositoryException with a custom message
+     * Create a new RuntimeRepositoryException with a custom message.
+     *
      * @param message the message
      */
     public RuntimeRepositoryException(final String message) {
@@ -38,7 +39,8 @@ public class RuntimeRepositoryException extends RuntimeException {
     }
 
     /**
-     * Create a new RuntimeRepositoryException with a custom message and known cause
+     * Create a new RuntimeRepositoryException with a custom message and known cause.
+     *
      * @param message the message
      * @param cause the cause
      */
@@ -47,7 +49,8 @@ public class RuntimeRepositoryException extends RuntimeException {
     }
 
     /**
-     * Create a new RuntimeRepositoryException with a known cause
+     * Create a new RuntimeRepositoryException with a known cause.
+     *
      * @param cause the cause
      */
     public RuntimeRepositoryException(final Throwable cause) {

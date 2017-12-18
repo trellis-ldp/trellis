@@ -22,7 +22,7 @@ package org.trellisldp.api;
 public interface EventService {
 
     /**
-     * Emit an event to the event service
+     * Emit an event to the event service.
      * @param event the event
      */
     void emit(Event event);

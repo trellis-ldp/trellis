@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the LDP Vocabulary
+ * RDF Terms from the LDP Vocabulary.
  *
  * @see <a href="https://www.w3.org/ns/ldp">LDP Vocabulary</a>
  *

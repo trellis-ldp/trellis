@@ -23,34 +23,38 @@ import org.apache.commons.rdf.api.IRI;
  * All changes made during the session will be persisted to durable storage with the save()
  * method.
  *
- * A session may or may not expire. If an expriation has been set, that expiry may be extended.
+ * <p>A session may or may not expire. If an expriation has been set, that expiry may be extended.
  *
- * Users, groups and delegates are represented as IRIs.
+ * <p>Users, groups and delegates are represented as IRIs.
  *
  * @author acoburn
  */
 public interface Session {
 
     /**
-     * Get a session identifier
+     * Get a session identifier.
+     *
      * @return a session identifier
      */
     IRI getIdentifier();
 
     /**
-     * Get an agent identifier
+     * Get an agent identifier.
+     *
      * @return an identifier for a user/agent
      */
     IRI getAgent();
 
     /**
-     * Get the user that delegated access, if one exists
+     * Get the user that delegated access, if one exists.
+     *
      * @return the user who delegated access
      */
     Optional<IRI> getDelegatedBy();
 
     /**
      * Get the date when the session was created.
+     *
      * @return the creation date
      */
     Instant getCreated();

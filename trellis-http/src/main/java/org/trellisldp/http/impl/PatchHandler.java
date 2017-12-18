@@ -71,7 +71,7 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
 
 /**
- * The PATCH response builder
+ * The PATCH response builder.
  *
  * @author acoburn
  */
@@ -83,7 +83,8 @@ public class PatchHandler extends BaseLdpHandler {
     private final String sparqlUpdate;
 
     /**
-     * Create a handler for PATCH operations
+     * Create a handler for PATCH operations.
+     *
      * @param req the LDP request
      * @param sparqlUpdate the sparql update body
      * @param resourceService the resource service
@@ -116,7 +117,8 @@ public class PatchHandler extends BaseLdpHandler {
     }
 
     /**
-     * Update a resource with Sparql-Update and build an HTTP response
+     * Update a resource with Sparql-Update and build an HTTP response.
+     *
      * @param res the resource
      * @return the Response builder
      */

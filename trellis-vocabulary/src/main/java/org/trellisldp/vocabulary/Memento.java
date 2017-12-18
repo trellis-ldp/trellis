@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the Memento Vocabulary
+ * RDF Terms from the Memento Vocabulary.
  *
  * @see <a href="https://tools.ietf.org/html/rfc7089">HTTP Framework for Time-Based Access to Resource States</a>
  *

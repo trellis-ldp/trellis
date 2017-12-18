@@ -16,7 +16,7 @@ package org.trellisldp.vocabulary;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * RDF Terms from the Dublin Core Vocabulary
+ * RDF Terms from the Dublin Core Vocabulary.
  *
  * @see <a href="http://dublincore.org/documents/dcmi-terms/">DCMI Metadata Terms</a>
  *

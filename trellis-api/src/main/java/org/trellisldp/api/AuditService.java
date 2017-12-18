@@ -24,7 +24,7 @@ import org.apache.commons.rdf.api.Quad;
 public interface AuditService {
 
     /**
-     * Generate the audit quads for a Create event
+     * Generate the audit quads for a Create event.
      * @param identifier the resource identifier
      * @param session the session data
      * @return the list of quads
@@ -32,7 +32,7 @@ public interface AuditService {
     List<Quad> creation(IRI identifier, Session session);
 
     /**
-     * Generate the audit quads for a Delete event
+     * Generate the audit quads for a Delete event.
      * @param identifier the resource identifier
      * @param session the session data
      * @return the list of quads
@@ -40,7 +40,7 @@ public interface AuditService {
     List<Quad> deletion(IRI identifier, Session session);
 
     /**
-     * Generate the audit quads for an Update event
+     * Generate the audit quads for an Update event.
      * @param identifier the resource identifier
      * @param session the session data
      * @return the list of quads

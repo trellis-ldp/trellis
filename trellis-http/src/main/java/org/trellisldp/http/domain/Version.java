@@ -26,7 +26,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 
 /**
- * A class representing a version URI parameter
+ * A class representing a version URI parameter.
  *
  * @author acoburn
  */
@@ -37,7 +37,8 @@ public class Version {
     private final Instant time;
 
     /**
-     * Create a Version parameter
+     * Create a Version parameter.
+     *
      * @param time the version timestamp
      */
     public Version(final Instant time) {
@@ -45,7 +46,8 @@ public class Version {
     }
 
     /**
-     * Retrieve the instant
+     * Retrieve the instant.
+     *
      * @return the instant
      */
     public Instant getInstant() {
@@ -69,7 +71,8 @@ public class Version {
     }
 
     /**
-     * Create a Version object from a string value
+     * Create a Version object from a string value.
+     *
      * @param value the header value
      * @return a Version header or null if the value is not parseable
      */
