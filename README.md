@@ -106,7 +106,9 @@ implementations.
 
 ## Building
 
- * All projects are written in Java and require at least Java 8. All projects can be built with Gradle.
+ * Trellis is written in Java and requires at least Java 8. It can be built with Gradle.
 
-    ./gradlew install
+```
+$ ./gradlew install
+````
 
