@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+<module name="Checker">
+  <!-- Suppress -->
+  <module name="SuppressionFilter">
+    <property name="file" value="${checkstyleConfigDir}/suppressions.xml"/>
+  </module>
+  <!-- Ignore module-info.java files when compiling with JDK 9 -->
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value="module\-info\.java$"/>
+  </module>
+  <!-- Checks that there are no tab characters ('\t') in the source code. -->
+  <module name="FileTabCharacter">
+    <property name="eachLine" value="true"/>
+    <property name="fileExtensions" value="java,css,js,xml"/>
+  </module>
+  <!-- License Header module disabled in favor of license-maven-plugin -->
+  <module name="TreeWalker">
+    <!-- Checks for redundant import statements -->
+    <module name="RedundantImport"/>
+    <!-- Checks for unused import statements -->
+    <module name="UnusedImports"/>
+    <!-- Check that finds import statements that use the * notation. -->
+    <module name="AvoidStarImport"/>
+    <!-- Checks for long lines. -->
+    <module name="LineLength">
+      <property name="max" value="120"/>
+    </module>
+    <!-- Write Javadocs for public methods and classes. Keep it short and to the point
+         /**
+          * @author Joe Developer
+          * @date MMM DD, YYYY
+          */
+         public class MyClass
+    -->
+    <module name="JavadocType">
+      <property name="scope" value="public"/>
+      <property name="excludeScope" value="anoninner"/>
+      <!-- Contrary to expectation only checks for author tags without an author -->
+      <property name="authorFormat" value="\S"/>
+      <property name="allowUnknownTags" value="true"/>
+      <property name="allowMissingParamTags" value="false"/>
+    </module>
+    <!-- Ensure files have the Javadoc @author tag -->
+    <module name="Regexp">
+      <property name="format" value=" \* \@author "/>
+      <property name="message" value="Javadoc @author tag"/>
+    </module>
+    <module name="JavadocMethod">
+      <property name="scope" value="public"/>
+      <property name="allowUndeclaredRTE" value="true"/>
+      <property name="allowMissingParamTags" value="true"/>
+      <property name="allowMissingThrowsTags" value="true"/>
+      <property name="allowMissingReturnTag" value="true"/>
+    </module>
+    <!-- K&R style braces -->
+    <module name="NeedBraces"/>
+    <module name="LeftCurly"/>
+    <module name="RightCurly"/>
+    <module name="WhitespaceAround">
+      <property name="tokens"
+        value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND"
+      />
+    </module>
+    <module name="Indentation">
+      <property name="throwsIndent" value="8"/>
+    </module>
+    <module name="SuppressWarningsHolder"/>
+    <module name="FinalLocalVariable"/>
+    <module name="FinalParameters"/>
+    <module name="GenericWhitespace"/>
+    <module name="HideUtilityClassConstructor"/>
+    <module name="MultipleVariableDeclarations"/>
+  </module>
+  <!-- No Trailing Whitespace, except on lines that only have an asterisk (e.g. Javadoc comments) -->
+  <module name="RegexpSingleline">
+    <property name="format" value="(?&lt;!\*)\s+$|\*\s\s+$"/>
+    <property name="message" value="Trailing whitespace"/>
+    <property name="fileExtensions" value="java,css,js,xml"/>
+  </module>
+  <module name="SuppressWarningsFilter" />
+</module>
+
