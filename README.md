@@ -14,7 +14,7 @@ A [mailing list](https://groups.google.com/group/trellis-ldp) is available to an
 
 General documentation for Trellis is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
 
-Javadocs for each project is available at https://trellis-ldp.github.io/trellis/apidocs/
+Javadocs are available at https://trellis-ldp.github.io/trellis/apidocs/
 
 ## Features
 
