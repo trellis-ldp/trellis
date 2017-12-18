@@ -300,4 +300,8 @@ coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
 }
 
+tasks.coveralls {
+    dependsOn 'check'
+}
+
 check.dependsOn processBuildTools
