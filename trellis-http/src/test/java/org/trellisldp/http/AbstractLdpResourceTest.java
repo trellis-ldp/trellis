@@ -162,9 +162,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     private static final Long BINARY_SIZE = 100L;
 
     private static final String REPO1 = "repo1";
-    private static final String REPO2 = "repo2";
-    private static final String REPO3 = "repo3";
-    private static final String REPO4 = "repo4";
 
     private static final String RANDOM_VALUE = "randomValue";
 
