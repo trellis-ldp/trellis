@@ -43,6 +43,8 @@ public final class HttpConstants {
 
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 
+    public static final String EXT = "ext";
+
     public static final String DIGEST = "Digest";
 
     public static final String LINK_TEMPLATE = "Link-Template";

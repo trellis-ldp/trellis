@@ -76,8 +76,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param challenges the challenges
      * @param accessService the access service
      */
-    public WebAcFilter(final List<String> challenges,
-            final AccessControlService accessService) {
+    public WebAcFilter(final List<String> challenges, final AccessControlService accessService) {
         this.accessService = accessService;
         this.challenges = challenges.isEmpty() ? singletonList(BASIC_AUTH) : challenges;
     }
@@ -96,7 +95,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final String method = ctx.getMethod();
 
         final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_PREFIX + path), s);
-        if (ctx.getUriInfo().getQueryParameters().getOrDefault("ext", emptyList()).contains(HttpConstants.ACL)) {
+        if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
+                .contains(HttpConstants.ACL)) {
             verifyCanControl(modes, s, path);
         } else if (readable.contains(method)) {
             verifyCanRead(modes, s, path);
@@ -111,10 +111,10 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-        if (!req.getUriInfo().getQueryParameters().containsKey("ext") ||
-                !req.getUriInfo().getQueryParameters().get("ext").contains("acl")) {
+        if (!req.getUriInfo().getQueryParameters().containsKey(HttpConstants.EXT) ||
+                !req.getUriInfo().getQueryParameters().get(HttpConstants.EXT).contains(HttpConstants.ACL)) {
             res.getHeaders().add(LINK, fromUri(req.getUriInfo().getAbsolutePathBuilder()
-                    .queryParam("ext", "acl").build()).rel(HttpConstants.ACL).build());
+                    .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(HttpConstants.ACL).build());
         }
     }
 
