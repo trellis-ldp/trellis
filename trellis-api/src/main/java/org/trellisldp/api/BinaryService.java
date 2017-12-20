@@ -43,6 +43,7 @@ public interface BinaryService {
 
         /**
          * Create a Multipart Upload object.
+         *
          * @param baseUrl the base URL
          * @param path the path
          * @param session the session
@@ -57,6 +58,7 @@ public interface BinaryService {
 
         /**
          * The binary object.
+         *
          * @return the binary
          */
         public Binary getBinary() {
@@ -65,6 +67,7 @@ public interface BinaryService {
 
         /**
          * The path.
+         *
          * @return the path
          */
         public String getPath() {
@@ -73,6 +76,7 @@ public interface BinaryService {
 
         /**
          * The base URL.
+         *
          * @return the base URL
          */
         public String getBaseUrl() {
@@ -81,6 +85,7 @@ public interface BinaryService {
 
         /**
          * The Session.
+         *
          * @return the session
          */
         public Session getSession() {
@@ -94,6 +99,7 @@ public interface BinaryService {
     interface MultipartCapable {
         /**
          * Initiate a multi-part upload.
+         *
          * @param identifier the object identifier
          * @param mimeType the mimeType of the object
          * @return an upload session identifier
@@ -102,6 +108,7 @@ public interface BinaryService {
 
         /**
          * Upload a part.
+         *
          * @param identifier the upload identifier
          * @param partNumber the part number
          * @param content the content to upload
@@ -111,6 +118,7 @@ public interface BinaryService {
 
         /**
          * Complete a multi-part upload.
+         *
          * @param identifier the upload identifier
          * @param partDigests digest values for each part
          * @return a multipart upload object
@@ -119,12 +127,14 @@ public interface BinaryService {
 
         /**
          * Abort the upload for the given identifier.
+         *
          * @param identifier the upload identifier
          */
         void abortUpload(String identifier);
 
         /**
          * Test whether the provided identifier exists.
+         *
          * @param identifier the upload identifier
          * @return true if the session exists; false otherwise
          */
@@ -132,6 +142,7 @@ public interface BinaryService {
 
         /**
          * List the uploaded parts.
+         *
          * @param identifier the upload identifier
          * @return a list of uploaded parts and their digests
          */
@@ -140,6 +151,7 @@ public interface BinaryService {
 
     /**
      * Get the content of the binary object.
+     *
      * @param identifier an identifier used for locating the binary object
      * @return the content
      */
@@ -147,6 +159,7 @@ public interface BinaryService {
 
     /**
      * Test whether a binary object exists at the given URI.
+     *
      * @param identifier the binary object identifier
      * @return whether the binary object exists
      */
@@ -154,6 +167,7 @@ public interface BinaryService {
 
     /**
      * Set the content for a binary object.
+     *
      * @param identifier the binary object identifier
      * @param stream the content
      */
@@ -163,6 +177,7 @@ public interface BinaryService {
 
     /**
      * Set the content for a binary object.
+     *
      * @param identifier the binary object identifier
      * @param stream the content
      * @param metadata any user metadata
@@ -171,19 +186,20 @@ public interface BinaryService {
 
     /**
      * Purge the content from its corresponding datastore.
+     *
      * @param identifier the binary object identifier
      */
     void purgeContent(IRI identifier);
 
     /**
      * Calculate the digest for a binary object.
+     *
+     * <p>Note: as per RFC 3230, the digest value is calculated over the entire resource,
+     * not just the HTTP payload.
+     *
      * @param identifier the identifier
      * @param algorithm the algorithm
      * @return the digest
-     *
-     * <p>Note: as per RFC 3230, the digest value is calculated over the entire resource,
-     * not just the HTTP payload.</p>
-     *
      */
     default Optional<String> calculateDigest(IRI identifier, String algorithm) {
         return getContent(identifier).flatMap(stream -> digest(algorithm, stream));
@@ -191,23 +207,26 @@ public interface BinaryService {
 
     /**
      * Get a list of supported algorithms.
+     *
      * @return the supported digest algorithms
      */
     Set<String> supportedAlgorithms();
 
     /**
      * Get the digest for an input stream.
+     *
+     * <p>Note: the digest likely uses the base64 encoding, but the specific encoding is defined
+     * for each algorithm at https://www.iana.org/assignments/http-dig-alg/http-dig-alg.xhtml
+     *
      * @param algorithm the algorithm to use
      * @param stream the input stream
      * @return a string representation of the digest
-     *
-     * <p>Note: the digest likely uses the base64 encoding, but the specific encoding is defined
-     * for each algorithm at https://www.iana.org/assignments/http-dig-alg/http-dig-alg.xhtml</p>
      */
     Optional<String> digest(String algorithm, InputStream stream);
 
     /**
      * Get a supplier of identifiers.
+     *
      * @return an identifier supplier for this service
      */
     Supplier<String> getIdentifierSupplier();

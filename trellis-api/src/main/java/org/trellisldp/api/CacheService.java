@@ -24,6 +24,7 @@ public interface CacheService<K, V> {
 
     /**
      * Get a value from the cache.
+     *
      * @param key the key
      * @param mappingFunction attempts to compute a mapping for the specified key
      * @return a value for that key or null

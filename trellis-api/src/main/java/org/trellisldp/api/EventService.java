@@ -23,6 +23,7 @@ public interface EventService {
 
     /**
      * Emit an event to the event service.
+     *
      * @param event the event
      */
     void emit(Event event);

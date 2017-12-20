@@ -16,12 +16,16 @@ package org.trellisldp.api;
 import java.util.Optional;
 
 /**
+ * A service interface for serializing an {@link Event} object into a
+ * {@link String} suitable for an external notification processor.
+ *
  * @author acoburn
  */
 public interface ActivityStreamService {
 
     /**
      * Serialize an event as an Activity Stream message.
+     *
      * @param event the event
      * @return a serialization
      */

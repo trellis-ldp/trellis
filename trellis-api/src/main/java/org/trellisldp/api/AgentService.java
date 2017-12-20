@@ -16,14 +16,19 @@ package org.trellisldp.api;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * This service provides some useful methods for handling user values.
+ * This service provides a mechanism for converting an agent {@link String}
+ * into an {@link IRI}.
+ *
+ * <p>Depending on the implementation used, this conversion may involve a mapping,
+ * a prefixing or a simple conversion of a string-based IRI into an {@link IRI} object.
  *
  * @author acoburn
  */
 public interface AgentService {
 
     /**
-     * Convert an agent String into an IRI.
+     * Convert an agent {@link String} into an {@link IRI}.
+     *
      * @param agent the agent as a string
      * @return the agent as an IRI
      */

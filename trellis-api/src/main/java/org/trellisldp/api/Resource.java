@@ -64,7 +64,7 @@ public interface Resource {
     /**
      * Retrieve the member relation if this is an LDP Direct or Indirect container.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
+     * <p>Note: Other resource types will always return an empty {@link Optional} value.
      *
      * @return the ldp:hasMemberRelation IRI
      */
@@ -75,7 +75,7 @@ public interface Resource {
     /**
      * Retrieve the member of relation IRI.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
+     * <p>Note: Other resource types will always return an empty {@link Optional} value.
      *
      * @return the ldp:isMemberOfRelation IRI
      */
@@ -86,7 +86,7 @@ public interface Resource {
     /**
      * Retrieve the inserted content relation if this is an LDP Indirect container.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
+     * <p>Note: Other resource types will always return an empty {@link Optional} value.
      *
      * @return the inserted content relation
      */
@@ -132,7 +132,7 @@ public interface Resource {
     /**
      * Retrieve a Binary for this resouce, if it is a LDP-NR.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
+     * <p>Note: Other resource types will always return an empty {@link Optional} value.
      *
      * @return the binary object
      */

@@ -19,12 +19,16 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 
 /**
+ * A service for producing audit-related {@link Quad} values for creation,
+ * deletion and modification operation.
+ *
  * @author acoburn
  */
 public interface AuditService {
 
     /**
      * Generate the audit quads for a Create event.
+     *
      * @param identifier the resource identifier
      * @param session the session data
      * @return the list of quads
@@ -33,6 +37,7 @@ public interface AuditService {
 
     /**
      * Generate the audit quads for a Delete event.
+     *
      * @param identifier the resource identifier
      * @param session the session data
      * @return the list of quads
@@ -41,6 +46,7 @@ public interface AuditService {
 
     /**
      * Generate the audit quads for an Update event.
+     *
      * @param identifier the resource identifier
      * @param session the session data
      * @return the list of quads

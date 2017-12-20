@@ -31,6 +31,7 @@ public interface AccessControlService {
     /**
      * Get the allowable access modes for the given session
      * to the specified resource.
+     *
      * @param identifier the resource identifier
      * @param session the agent's session
      * @return a set of allowable access modes

@@ -48,6 +48,7 @@ public final class RDFUtils {
 
     /**
      * Get the Commons RDF instance in use.
+     *
      * @return the RDF instance
      */
     public static RDF getInstance() {
@@ -56,6 +57,7 @@ public final class RDFUtils {
 
     /**
      * Collect a stream of Triples into a Graph.
+     *
      * @return a graph
      */
     public static Collector<Triple, ?, Graph> toGraph() {
@@ -67,6 +69,7 @@ public final class RDFUtils {
 
     /**
      * Collect a stream of Quads into a Dataset.
+     *
      * @return a dataset
      */
     public static Collector<Quad, ?, Dataset> toDataset() {

@@ -26,12 +26,14 @@ public interface NamespaceService {
 
     /**
      * Fetch the entire namespace mapping.
+     *
      * @return the namespace mapping as prefix, namespace pairs
      */
     Map<String, String> getNamespaces();
 
     /**
      * Fetch the namespace for a particular prefix.
+     *
      * @param prefix the prefix
      * @return the corresponding namespace
      */
@@ -39,6 +41,7 @@ public interface NamespaceService {
 
     /**
      * Fetch the prefix for a particular namespace.
+     *
      * @param namespace the namespace
      * @return the corresponding prefix
      */
@@ -46,10 +49,10 @@ public interface NamespaceService {
 
     /**
      * Set the namespace for a given prefix.
+     *
      * @param prefix the prefix
      * @param namespace the namespace
      * @return whether the new prefix was set
      */
     Boolean setPrefix(String prefix, String namespace);
-
 }
