@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="trellis-${project.version}">
+
+  <feature name="trellis-api" version="${project.version}">
+    <details>Installs the Trellis API bundle</details>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-api/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-agent" version="${project.version}">
+    <details>Installs the Trellis Agent service bundle</details>
+
+    <feature>trellis-api</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-agent/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-audit" version="${project.version}">
+    <details>Installs the Trellis Audit bundle</details>
+
+    <feature>trellis-api</feature>
+    <feature>trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-audit/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-binary" version="${project.version}">
+    <details>Installs the Trellis Binary service bundle</details>
+
+    <feature>trellis-api</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-binary/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-constraint-rules" version="${project.version}">
+    <details>Installs the Trellis Constraint rules service bundle</details>
+
+    <feature>trellis-api</feature>
+    <feature>trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-constraint-rules/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-event-serialization" version="${project.version}">
+    <details>Installs the Trellis Event Serialization bundle</details>
+
+    <feature>trellis-api</feature>
+    <feature>trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.datatype/jackson-datatype-jsr310/${jacksonVersion}</bundle>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-event-serialization/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-http" version="${project.version}">
+    <details>Installs the Trellis HTTP bundle</details>
+
+    <feature>trellis-api</feature>
+    <feature>trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
+    <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
+    <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-annotation/${metricsVersion}</bundle>
+    <bundle dependency="true">mvn:javax.json/javax.json-api/${javaxJsonVersion}</bundle>
+    <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/${javaxInjectVersion}</bundle>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-id" version="${project.version}">
+    <details>Installs the Trellis ID generator service</details>
+
+    <feature>trellis-api</feature>
+
+    <bundle>mvn:org.trellisldp/trellis-id/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-io-jena" version="${project.version}">
+    <details>Installs the Jena-backed serialization service</details>
+
+    <feature>commons-rdf-jena</feature>
+    <feature>trellis-api</feature>
+    <feature>trellis-vocabulary</feature>
+
+    <bundle>mvn:org.trellisldp/trellis-io-jena/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-namespaces" version="${project.version}">
+    <details>Installs the Trellis JSON-file-based Namespace service</details>
+
+    <feature>trellis-api</feature>
+
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-namespaces/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-vocabulary" version="${project.version}">
+    <details>Installs the Trellis Vocabulary bundle</details>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-vocabulary/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-webac" version="${project.version}">
+    <details>Installs the Trellis WebAC bundle</details>
+
+    <feature>trellis-api</feature>
+    <feature>trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
+  </feature>
+
+  <feature name="commons-rdf-jena" version="${commonsRdfVersion}">
+    <feature version="${jenaVersionRange}">jena</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.mustache-compiler/${mustacheVersion}</bundle>
+
+    <!-- transitively required by jena -->
+    <bundle dependency="true">wrap:mvn:com.google.errorprone/error_prone_annotations/2.1.1</bundle>
+
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle>mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
+  </feature>
+
+</features>

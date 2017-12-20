@@ -42,12 +42,3 @@ jar {
     }
 }
 
-artifacts {
-    archives javadocJar
-    archives sourceJar
-    archives (file('build/resources/main/features.xml')) {
-        classifier 'features'
-        type 'xml'
-    }
-}
-
