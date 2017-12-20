@@ -9,6 +9,7 @@
   <suppress checks="JavadocType" files="src[/\\]test[/\\]java"/>
   <suppress checks="JavadocStyleCheck" files="src[/\\]test[/\\]java"/>
   <suppress checks="IndentationCheck" files=".*\.java$"/>
+  <suppress checks="MultipleStringLiterals" files="src[/\\]test[/\\]java"/>
   <suppress checks="MultipleVariableDeclarations" files="src[/\\]test[/\\]java"/>
 </suppressions>
 

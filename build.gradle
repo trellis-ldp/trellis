@@ -63,8 +63,6 @@ subprojects {
         commonsCodecVersion = '1.11'
         commonsIoVersion = '2.6'
         commonsRdfVersion = '0.3.0-incubating'
-        commonsTextVersion = '1.2'
-        jacksonVersion = '2.9.3'
         javaxAnnotationsVersion = '1.3.1'
         javaxInjectVersion = '1_2'
         javaxJsonVersion = '1.1.2'
@@ -73,21 +71,22 @@ subprojects {
         metricsVersion = '3.2.5'
         mustacheVersion = '0.9.5_1'
         slf4jVersion = '1.7.25'
-        xercesVersion = '2.11.0'
 
         /* Testing */
         apiguardianVersion = '1.0.0'
+        commonsTextVersion = '1.2'
+        jacksonVersion = '2.9.3'
         jerseyVersion = '2.26'
         jsonVersion = '1.1.2'
         junitVersion = '5.0.2'
         junitPlatformVersion = '1.0.2'
         logbackVersion = '1.2.3'
         mockitoVersion = '2.13.0'
+        xercesVersion = '2.11.0'
 
         /* OSGi */
         spiflyVersion = '1.0.8'
         projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
-        trellisVersionRange = '[0.5,1)'
         jenaVersionRange = '[3.5,4)'
     }
 
