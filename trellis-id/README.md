@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-id/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-id/)
 
-An ID-generation service for a trellis repository.
+An ID-generation service for a Trellis server.
 
 ## Building
 

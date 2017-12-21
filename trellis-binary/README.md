@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-binary/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-binary/)
 
-A binary object service for a trellis repository.
+A binary object service for a Trellis server.
 
 ## Building
 

@@ -19,7 +19,7 @@ import java.util.Optional;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * This interface represents a user's session when interacting with a repository resource.
+ * This interface represents a user's session when interacting with a Trellis resource.
  *
  * <p>Users, groups and delegates are represented as {@link IRI}s.
  *

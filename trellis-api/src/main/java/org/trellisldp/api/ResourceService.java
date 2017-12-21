@@ -34,7 +34,7 @@ import org.apache.commons.rdf.api.Triple;
 
 /**
  * The ResourceService provides methods for creating, retrieving and manipulating
- * repository resources.
+ * Trellis resources.
  *
  * @author acoburn
  */
@@ -58,7 +58,7 @@ public interface ResourceService {
     Optional<Resource> get(IRI identifier, Instant time);
 
     /**
-     * Put a resource into the repository.
+     * Put a resource into the server.
      *
      * @param identifier the identifier for the new resource
      * @param ixnModel the LDP interaction model for this resource
@@ -93,7 +93,7 @@ public interface ResourceService {
     Stream<IRI> compact(IRI identifier, Instant from, Instant until);
 
     /**
-     * Purge a resource from the repository.
+     * Purge a resource from the server.
      *
      * @param identifier the identifier
      * @return a stream of binary IRIs that can be safely purged
@@ -178,7 +178,7 @@ public interface ResourceService {
     }
 
     /**
-     * Export the complete repository as a stream of Quads.
+     * Export the server's resources as a stream of {@link Quad}s.
      *
      * @param graphNames the graph names to export
      * @return a stream of quads, where each named graph refers to the resource identifier

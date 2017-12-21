@@ -1,5 +1,5 @@
 # trellis-http
-The HTTP abstractions for a Trellis repository
+The HTTP abstractions for a Trellis server.
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-http/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-http/)
 

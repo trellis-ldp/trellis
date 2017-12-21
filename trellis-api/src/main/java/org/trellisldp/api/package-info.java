@@ -15,7 +15,7 @@
  * Trellis Application Programming Interfaces
  *
  * <p>This package provides the core resource abstractions used to describe
- * repository resources.</p>
+ * Trellis resources.</p>
  *
  * @author acoburn
  */

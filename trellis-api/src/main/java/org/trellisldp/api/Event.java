@@ -20,8 +20,9 @@ import java.util.Optional;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * This represents the data for a public repository event.
- * These events must be serialized as a conforming ActivityStream.
+ * This represents the data for a server event.
+ *
+ * <p>It is expected that these events are serialized as conforming ActivityStream messages.
  *
  * @see <a href="https://www.w3.org/TR/activitystreams-core/">Activity Streams 2.0</a>
  *

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Namespaces may be stored globally across the repository, and the NamespaceService
+ * Namespaces may be stored globally across the server, and the NamespaceService
  * provides a mechanism for retrieving and setting namespace values.
  *
  * @author acoburn

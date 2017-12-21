@@ -122,7 +122,7 @@ public class LdpConstraints implements ConstraintService {
         propertiesWithUriRange.contains(triple.getPredicate()) && !(triple.getObject() instanceof IRI))
         .or(triple -> RDF.type.equals(triple.getPredicate()) && !(triple.getObject() instanceof IRI));
 
-    // Verify that the range of the property is in the repository domain
+    // Verify that the range of the property is in the server's domain
     private static Predicate<Triple> inDomainRangeFilter(final String domain) {
         return triple -> propertiesWithInDomainRange.contains(triple.getPredicate()) &&
             !triple.getObject().ntriplesString().startsWith("<" + domain);

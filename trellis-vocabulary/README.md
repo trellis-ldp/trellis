@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-vocabulary/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-vocabulary/)
 
-RDF vocabularies used by a trellis repository
+RDF vocabularies used by a Trellis server.
 
 ## Vocabularies
 

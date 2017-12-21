@@ -15,8 +15,8 @@
  * Trellis WebAC Authorization service
  *
  * <p>This package implements a WebAC Authorization service that can
- * be used with a Trellis repository. This service is independent of
- * the particular Trellis implementation.</p>
+ * be used with a Trellis server. This service is independent of
+ * the particular Trellis implementation.
  *
  * @see <a href="https://www.w3.org/wiki/WebAccessControl">W3C WebAccessControl</a>
  * and <a href="https://github.com/solid/web-access-control-spec">Solid WebAC specification</a>

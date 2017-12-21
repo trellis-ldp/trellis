@@ -14,7 +14,7 @@
 /**
  * Trellis HTTP Interfaces
  *
- * <p>This package provides the core HTTP interfaces for accessing and manipulating repository resoures.</p>
+ * <p>This package provides the core HTTP interfaces for accessing and manipulating Trellis resoures.</p>
  *
  * @author acoburn
  */

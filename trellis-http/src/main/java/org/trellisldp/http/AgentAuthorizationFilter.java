@@ -36,11 +36,11 @@ import org.trellisldp.http.impl.HttpSession;
  * A {@link ContainerRequestFilter} that converts a {@link java.security.Principal} into an
  * {@link org.apache.commons.rdf.api.IRI}-based WebID.
  *
- * <p>When no {@link java.security.Principal} is defined, an anonymous user is used
+ * <p>When no {@link java.security.Principal} is defined, an anonymous agent is used
  * ({@code http://www.trellisldp.org/ns/trellis#AnonymousAgent}).
  *
  * <p>When a {@link java.security.Principal} matches one of the elements defined in
- * {@code adminUsers}, then the WebID is set as a repository administrator
+ * {@code adminUsers}, then the WebID is set as an administrator agent
  * ({@code http://www.trellisldp.org/ns/trellis#AdministratorAgent}).
  *
  * @author acoburn
@@ -58,7 +58,7 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
      * Create an authorization filter.
      *
      * @param agentService the agent service
-     * @param adminUsers users that should be treated as repository administrators
+     * @param adminUsers users that should be treated as server administrators
      */
     public AgentAuthorizationFilter(final AgentService agentService, final List<String> adminUsers) {
         this.agentService = agentService;

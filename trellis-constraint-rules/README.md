@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-constraint-rules/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-constraint-rules/)
 
-A set of constraints on a trellis repository defining the rules that govern valid RDF.
+A set of constraints on a Trellis server defining the rules that govern valid RDF.
 
 These rules consist of:
 

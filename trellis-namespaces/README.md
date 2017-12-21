@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-namespaces/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-namespaces/)
 
-A namespace service for a trellis repository.
+A namespace service for a Trellis server.
 
 ## Building
 
