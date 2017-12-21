@@ -217,8 +217,10 @@ subprojects {
         classpath = files(sourceSets.main.compileClasspath)
         destinationDir = new File(projectDir, "docs/${version}")
         options {
-            links "http://docs.oracle.com/javase/8/docs/api/"
-            links "https://commons.apache.org/proper/commons-rdf/apidocs/"
+            links "https://docs.oracle.com/javase/8/docs/api/"
+            links 'https://docs.oracle.com/javaee/7/api/'
+            links 'https://trellis-ldp.github.io/trellis/apidocs/'
+            links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
         }
     }
 
@@ -233,12 +235,10 @@ task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
     destinationDir = new File(projectDir, "docs/apidocs")
     title = "Trellis Linked Data Server Documentation"
     exclude '**/impl/*'
-    options.with {
+    options {
         memberLevel = JavadocMemberLevel.PUBLIC
-        links "http://docs.oracle.com/javase/8/docs/api/"
-        links 'http://docs.oracle.com/javaee/7/api/'
-        links 'https://kafka.apache.org/0110/javadoc/'
-        links 'http://curator.apache.org/apidocs/'
+        links "https://docs.oracle.com/javase/8/docs/api/"
+        links 'https://docs.oracle.com/javaee/7/api/'
         links 'https://trellis-ldp.github.io/trellis/apidocs/'
         links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
     }
