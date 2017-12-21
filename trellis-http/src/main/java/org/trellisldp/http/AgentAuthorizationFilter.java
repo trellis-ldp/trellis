@@ -33,6 +33,16 @@ import org.trellisldp.api.AgentService;
 import org.trellisldp.http.impl.HttpSession;
 
 /**
+ * A {@link ContainerRequestFilter} that converts a {@link java.security.Principal} into an
+ * {@link org.apache.commons.rdf.api.IRI}-based WebID.
+ *
+ * <p>When no {@link java.security.Principal} is defined, an anonymous user is used
+ * ({@code http://www.trellisldp.org/ns/trellis#AnonymousUser}).
+ *
+ * <p>When a {@link java.security.Principal} matches one of the elements defined in
+ * {@code adminUsers}, then the WebID is set as a repository administrator
+ * ({@code http://www.trellisldp.org/ns/trellis#RepositoryAdministrator}).
+ *
  * @author acoburn
  */
 @PreMatching

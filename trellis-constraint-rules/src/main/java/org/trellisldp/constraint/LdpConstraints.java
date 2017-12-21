@@ -48,6 +48,21 @@ import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
+ * A set of constraints applied to user-provided graphs.
+ *
+ * <p>This class includes the following restrictions on a provided {@link Graph}:
+ * <ul>
+ * <li>Prevent LDP types to be set explicitly (Link headers should be used).</li>
+ * <li>Direct Containers require certain defined predicates (as defined by LDP).</li>
+ * <li>Indirect Containers require certain defined predicates (as defined by LDP).</li>
+ * <li>ldp:contains triples may not be set directly (as defined by LDP).</li>
+ * <li>ldp:contains may not be used as a membership property.</li>
+ * <li>rdf:type may not be used as a membership property.</li>
+ * <li>any rdf:type {@link Triple} requires an {@link IRI} as object.</li>
+ * <li>any ldp:inbox {@link Triple} requires an {@link IRI} as object.</li>
+ * <li>any oa:annotationService {@link Triple} requires an {@link IRI} as object.</li>
+ * </ul>
+ *
  * @author acoburn
  */
 public class LdpConstraints implements ConstraintService {

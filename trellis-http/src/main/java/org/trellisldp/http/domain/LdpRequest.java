@@ -28,6 +28,8 @@ import javax.ws.rs.core.UriInfo;
 import org.trellisldp.api.Session;
 
 /**
+ * A class representing an HTTP request with various LDP-related headers and query parameters.
+ *
  * @author acoburn
  */
 public class LdpRequest {

@@ -54,6 +54,10 @@ import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
+ * A {@link ContainerRequestFilter} that implements WebAC-based authorization.
+ *
+ * @see <a href="https://github.com/solid/web-access-control-spec">SOLID WebACL Specification</a>
+ *
  * @author acoburn
  */
 @PreMatching

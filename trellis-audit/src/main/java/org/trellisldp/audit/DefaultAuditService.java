@@ -32,6 +32,11 @@ import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.XSD;
 
 /**
+ * An {@link AuditService} that generates Audit-related {@link Quad}s for various write operations.
+ *
+ * <p>This class makes use of the {@link PROV} vocabulary and {@link BlankNode} objects in a
+ * {@code http://www.trellisldp.org/ns/trellis#PreferAudit} named graph.
+ *
  * @author acoburn
  */
 public class DefaultAuditService implements AuditService {

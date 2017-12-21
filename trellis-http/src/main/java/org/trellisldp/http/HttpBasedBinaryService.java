@@ -53,6 +53,20 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
+ * A {@link BinaryService} implementation that stores LDP-NR resources at HTTP
+ * locations via {@code GET} and {@code PUT}.
+ *
+ * <p>This service supports the following digest algorithms:
+ * <ul>
+ * <li>MD5</li>
+ * <li>MD2</li>
+ * <li>SHA</li>
+ * <li>SHA-1</li>
+ * <li>SHA-256</li>
+ * <li>SHA-384</li>
+ * <li>SHA-512</li>
+ * </ul>
+ *
  * @author acoburn
  */
 public class HttpBasedBinaryService implements BinaryService {

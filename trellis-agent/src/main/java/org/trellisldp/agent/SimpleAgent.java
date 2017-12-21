@@ -14,6 +14,9 @@
 package org.trellisldp.agent;
 
 /**
+ * An {@link org.trellisldp.api.AgentService} implementation that converts user strings
+ * directly to {@link org.apache.commons.rdf.api.IRI}s with no prefixing or other mapping.
+ *
  * @author acoburn
  */
 public class SimpleAgent extends PrefixingAgent {

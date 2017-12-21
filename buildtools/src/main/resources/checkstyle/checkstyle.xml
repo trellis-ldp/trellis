@@ -67,18 +67,15 @@
     <module name="JavadocParagraph"/>
 
     <module name="JavadocType">
+      <property name="severity" value="error"/>
       <property name="scope" value="public"/>
       <property name="excludeScope" value="anoninner"/>
-      <property name="allowUnknownTags" value="true"/>
       <property name="allowMissingParamTags" value="false"/>
     </module>
 
     <module name="JavadocMethod">
       <property name="scope" value="public"/>
       <property name="allowUndeclaredRTE" value="true"/>
-      <property name="allowMissingParamTags" value="true"/>
-      <property name="allowMissingThrowsTags" value="true"/>
-      <property name="allowMissingReturnTag" value="true"/>
     </module>
 
     <module name="JavadocStyle">

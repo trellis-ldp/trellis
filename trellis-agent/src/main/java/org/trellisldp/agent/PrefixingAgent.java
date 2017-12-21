@@ -21,6 +21,8 @@ import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.AgentService;
 
 /**
+ * An {@link AgentService} implementation which applies a fixed prefix to each user.
+ *
  * @author acoburn
  */
 public class PrefixingAgent implements AgentService {

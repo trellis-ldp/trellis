@@ -50,6 +50,19 @@ import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
 
 /**
+ * A {@link BinaryService} implementation that stores LDP-NR resources as files on a local filesystem.
+ *
+ * <p>This service supports the following digest algorithms:
+ * <ul>
+ * <li>MD5</li>
+ * <li>MD2</li>
+ * <li>SHA</li>
+ * <li>SHA-1</li>
+ * <li>SHA-256</li>
+ * <li>SHA-384</li>
+ * <li>SHA-512</li>
+ * </ul>
+ *
  * @author acoburn
  */
 public class FileBasedBinaryService implements BinaryService {
@@ -57,6 +70,7 @@ public class FileBasedBinaryService implements BinaryService {
     private static final Logger LOGGER = getLogger(FileBasedBinaryService.class);
     private static final String SHA = "SHA";
 
+    // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
     private static final Set<String> algorithms = asList(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512).stream()
         .collect(toSet());
 

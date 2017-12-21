@@ -50,6 +50,9 @@ import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.VCARD;
 
 /**
+ * An {@link AccessControlService} implementation, based on the rules defined by WebAC.
+ *
+ * @see <a href="https://github.com/solid/web-access-control-spec">SOLID Web Access Control</a>
  *
  * @author acoburn
  */

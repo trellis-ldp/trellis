@@ -38,6 +38,11 @@ import javax.ws.rs.container.PreMatching;
 
 
 /**
+ * A {@link ContainerResponseFilter} that adds CORS-related headers to HTTP responses.
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">Cross-Origin
+ * Resource Sharing</a>
+ *
  * @author acoburn
  */
 @PreMatching

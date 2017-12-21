@@ -26,6 +26,9 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.CacheControl;
 
 /**
+ * A {@link ContainerResponseFilter} that adds Cache-Control headers to all
+ * {@code GET} responses.
+ *
  * @author acoburn
  */
 @Priority(USER)

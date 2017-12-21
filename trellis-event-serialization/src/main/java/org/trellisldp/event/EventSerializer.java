@@ -27,6 +27,9 @@ import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 
 /**
+ * An {@link ActivityStreamService} that serializes an {@link Event} object
+ * into an ActivityStream-compliant JSON string.
+ *
  * @author acoburn
  */
 public class EventSerializer implements ActivityStreamService {

@@ -84,6 +84,10 @@ import org.trellisldp.http.impl.RdfUtils;
 import org.trellisldp.vocabulary.LDP;
 
 /**
+ * A {@link ContainerRequestFilter} that also matches path-based HTTP resource operations.
+ *
+ * <p>Requests are pre-filtered to validate incoming request headers and query parameters.
+ *
  * @author acoburn
  */
 @PreMatching

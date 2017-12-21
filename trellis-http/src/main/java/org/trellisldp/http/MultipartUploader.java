@@ -93,6 +93,8 @@ import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.XSD;
 
 /**
+ * An HTTP-based mechanism for uploading large LDP-NR resources via multi-part (chunked) operations.
+ *
  * @author acoburn
  */
 @PreMatching
@@ -132,8 +134,6 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
         this.resourceService = resourceService;
         this.binaryService = binaryService;
     }
-
-
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
