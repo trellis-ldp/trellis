@@ -76,7 +76,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeRepositoryException;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -261,7 +261,7 @@ public class PatchHandlerTest {
 
     @Test
     public void testError2() {
-        doThrow(RuntimeRepositoryException.class).when(mockIoService)
+        doThrow(RuntimeTrellisException.class).when(mockIoService)
             .update(any(Graph.class), eq(insert), eq(identifier.getIRIString()));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 

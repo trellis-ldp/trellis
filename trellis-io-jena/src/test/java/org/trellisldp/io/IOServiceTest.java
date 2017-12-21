@@ -77,7 +77,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.RuntimeRepositoryException;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
@@ -291,7 +291,7 @@ public class IOServiceTest {
     @Test
     public void testMalformedInput() {
         final ByteArrayInputStream in = new ByteArrayInputStream("<> <ex:test> a Literal\" . ".getBytes(UTF_8));
-        assertThrows(RuntimeRepositoryException.class, () -> service.read(in, null, TURTLE));
+        assertThrows(RuntimeTrellisException.class, () -> service.read(in, null, TURTLE));
     }
 
     @Test
@@ -411,19 +411,19 @@ public class IOServiceTest {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
-        assertThrows(RuntimeRepositoryException.class, () -> service.update(graph, "blah blah blah blah blah", null));
+        assertThrows(RuntimeTrellisException.class, () -> service.update(graph, "blah blah blah blah blah", null));
     }
 
     @Test
     public void testReadError() throws IOException {
         doThrow(new IOException()).when(mockInputStream).read(any(byte[].class), anyInt(), anyInt());
-        assertThrows(RuntimeRepositoryException.class, () -> service.read(mockInputStream, "context", TURTLE));
+        assertThrows(RuntimeTrellisException.class, () -> service.read(mockInputStream, "context", TURTLE));
     }
 
     @Test
     public void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
-        assertThrows(RuntimeRepositoryException.class, () -> service.write(getTriples(), mockOutputStream, TURTLE));
+        assertThrows(RuntimeTrellisException.class, () -> service.write(getTriples(), mockOutputStream, TURTLE));
     }
 
     @Test

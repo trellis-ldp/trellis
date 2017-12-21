@@ -50,7 +50,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.RuntimeRepositoryException;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
@@ -122,7 +122,7 @@ public class HttpBasedBinaryService implements BinaryService {
         final Boolean ok = res.getStatusInfo().getFamily().equals(SUCCESSFUL);
         res.close();
         if (!ok) {
-            throw new RuntimeRepositoryException("HTTP PUT request to " + identifier + " failed with a " +
+            throw new RuntimeTrellisException("HTTP PUT request to " + identifier + " failed with a " +
                     res.getStatusInfo());
         }
     }
@@ -135,7 +135,7 @@ public class HttpBasedBinaryService implements BinaryService {
         final Boolean ok = res.getStatusInfo().getFamily().equals(SUCCESSFUL);
         res.close();
         if (!ok) {
-            throw new RuntimeRepositoryException("HTTP DELETE request to " + identifier + " failed with a " +
+            throw new RuntimeTrellisException("HTTP DELETE request to " + identifier + " failed with a " +
                     res.getStatusInfo());
 
         }

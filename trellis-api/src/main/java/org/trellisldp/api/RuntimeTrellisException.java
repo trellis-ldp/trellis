@@ -14,46 +14,46 @@
 package org.trellisldp.api;
 
 /**
- * Base class for all trellis unchecked exceptions.
+ * Exception marker for all Trellis unchecked exceptions.
  *
  * @author acoburn
  */
-public class RuntimeRepositoryException extends RuntimeException {
+public class RuntimeTrellisException extends RuntimeException {
 
     private static final long serialVersionUID = 8046489554418284257L;
 
     /**
-     * Create a new RuntimeRepositoryException.
+     * Create a new RuntimeTrellisException.
      */
-    public RuntimeRepositoryException() {
+    public RuntimeTrellisException() {
         super();
     }
 
     /**
-     * Create a new RuntimeRepositoryException with a custom message.
+     * Create a new RuntimeTrellisException with a custom message.
      *
      * @param message the message
      */
-    public RuntimeRepositoryException(final String message) {
+    public RuntimeTrellisException(final String message) {
         super(message);
     }
 
     /**
-     * Create a new RuntimeRepositoryException with a custom message and known cause.
+     * Create a new RuntimeTrellisException with a custom message and known cause.
      *
      * @param message the message
      * @param cause the cause
      */
-    public RuntimeRepositoryException(final String message, final Throwable cause) {
+    public RuntimeTrellisException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * Create a new RuntimeRepositoryException with a known cause.
+     * Create a new RuntimeTrellisException with a known cause.
      *
      * @param cause the cause
      */
-    public RuntimeRepositoryException(final Throwable cause) {
+    public RuntimeTrellisException(final Throwable cause) {
         super(cause);
     }
 }

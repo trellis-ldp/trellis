@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
-import org.trellisldp.api.RuntimeRepositoryException;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.id.UUIDGenerator;
 
 /**
@@ -147,7 +147,7 @@ public class HttpBasedBinaryServiceTest {
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
 
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
-        assertThrows(RuntimeRepositoryException.class, () -> resolver.setContent(sslResource, inputStream));
+        assertThrows(RuntimeTrellisException.class, () -> resolver.setContent(sslResource, inputStream));
     }
 
     @Test
@@ -176,7 +176,7 @@ public class HttpBasedBinaryServiceTest {
         when(mockStatusType.toString()).thenReturn("BAD REQUEST");
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
                 mockClient);
-        assertThrows(RuntimeRepositoryException.class, () -> resolver.purgeContent(sslResource));
+        assertThrows(RuntimeTrellisException.class, () -> resolver.purgeContent(sslResource));
     }
 
     @Test
@@ -188,7 +188,7 @@ public class HttpBasedBinaryServiceTest {
                 mockClient);
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
 
-        assertThrows(RuntimeRepositoryException.class, () ->
+        assertThrows(RuntimeTrellisException.class, () ->
                 resolver.setContent(resource, inputStream));
     }
 
@@ -199,7 +199,7 @@ public class HttpBasedBinaryServiceTest {
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
                 mockClient);
 
-        assertThrows(RuntimeRepositoryException.class, () ->
+        assertThrows(RuntimeTrellisException.class, () ->
             resolver.purgeContent(resource));
     }
 

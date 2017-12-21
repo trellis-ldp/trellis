@@ -24,25 +24,25 @@ import org.junit.runner.RunWith;
  * @author acoburn
  */
 @RunWith(JUnitPlatform.class)
-public class RepositoryRuntimeExceptionTest {
+public class TrellisRuntimeExceptionTest {
 
     @Test
     public void testException1() {
-        final RuntimeException ex = new RuntimeRepositoryException();
+        final RuntimeException ex = new RuntimeTrellisException();
         assertNull(ex.getMessage());
     }
 
     @Test
     public void testException2() {
         final String msg = "the cause";
-        final RuntimeException ex = new RuntimeRepositoryException(msg);
+        final RuntimeException ex = new RuntimeTrellisException(msg);
         assertEquals(msg, ex.getMessage());
     }
 
     @Test
     public void testException3() {
         final Throwable cause = new Throwable("an error");
-        final RuntimeException ex = new RuntimeRepositoryException(cause);
+        final RuntimeException ex = new RuntimeTrellisException(cause);
         assertEquals(cause, ex.getCause());
     }
 
@@ -50,7 +50,7 @@ public class RepositoryRuntimeExceptionTest {
     public void testException4() {
         final Throwable cause = new Throwable("an error");
         final String msg = "The message";
-        final RuntimeException ex = new RuntimeRepositoryException(msg, cause);
+        final RuntimeException ex = new RuntimeTrellisException(msg, cause);
         assertEquals(cause, ex.getCause());
         assertEquals(msg, ex.getMessage());
     }

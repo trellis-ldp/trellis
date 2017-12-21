@@ -72,7 +72,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.RuntimeRepositoryException;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.io.impl.HtmlSerializer;
 
 /**
@@ -148,7 +148,7 @@ public class JenaIOService implements IOService {
                 htmlSerializer.write(output, triples, profiles.length > 0 ? profiles[0] : null);
             } else {
                 final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
-                        new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
+                        new RuntimeTrellisException("Invalid content type: " + syntax.mediaType));
 
                 final RDFFormat format = defaultSerialization(lang);
 
@@ -173,7 +173,7 @@ public class JenaIOService implements IOService {
                 }
             }
         } catch (final AtlasException ex) {
-            throw new RuntimeRepositoryException(ex);
+            throw new RuntimeTrellisException(ex);
         }
     }
 
@@ -227,7 +227,7 @@ public class JenaIOService implements IOService {
         try {
             final org.apache.jena.graph.Graph graph = createDefaultGraph();
             final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
-                    new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
+                    new RuntimeTrellisException("Unsupported RDF Syntax: " + syntax.mediaType));
 
             RDFParser.source(input).lang(lang).base(base).parse(graph);
 
@@ -244,7 +244,7 @@ public class JenaIOService implements IOService {
             }
             return rdf.asGraph(graph).stream();
         } catch (final RiotException | AtlasException ex) {
-            throw new RuntimeRepositoryException(ex);
+            throw new RuntimeTrellisException(ex);
         }
     }
 
@@ -255,7 +255,7 @@ public class JenaIOService implements IOService {
         try {
             execute(create(update, base), rdf.asJenaGraph(graph));
         } catch (final UpdateException | QueryParseException ex) {
-            throw new RuntimeRepositoryException(ex);
+            throw new RuntimeTrellisException(ex);
         }
     }
 }

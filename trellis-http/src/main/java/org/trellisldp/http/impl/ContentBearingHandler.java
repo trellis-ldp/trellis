@@ -42,7 +42,7 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeRepositoryException;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
@@ -84,7 +84,7 @@ class ContentBearingHandler extends BaseLdpHandler {
                 .map(triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(),
                             triple.getObject()))
                 .forEachOrdered(dataset::add);
-        } catch (final RuntimeRepositoryException ex) {
+        } catch (final RuntimeTrellisException ex) {
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
         } catch (final IOException ex) {
             throw new WebApplicationException("Error processing input", ex);

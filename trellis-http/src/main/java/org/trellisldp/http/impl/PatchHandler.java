@@ -63,7 +63,7 @@ import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeRepositoryException;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
@@ -108,7 +108,7 @@ public class PatchHandler extends BaseLdpHandler {
             ioService.update(graph.asGraph(), sparqlUpdate, TRELLIS_PREFIX + req.getPath() +
                     (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().collect(toList());
-        } catch (final RuntimeRepositoryException ex) {
+        } catch (final RuntimeTrellisException ex) {
             LOGGER.warn(ex.getMessage());
             throw new BadRequestException("Invalid RDF: " + ex.getMessage());
         }
