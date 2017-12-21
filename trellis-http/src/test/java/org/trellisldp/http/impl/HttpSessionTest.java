@@ -37,7 +37,7 @@ public class HttpSessionTest {
     public void testHttpSession() {
         final Instant time = now();
         final Session session = new HttpSession();
-        assertEquals(Trellis.AnonymousUser, session.getAgent());
+        assertEquals(Trellis.AnonymousAgent, session.getAgent());
         assertFalse(session.getDelegatedBy().isPresent());
         assertTrue(session.getIdentifier().getIRIString().startsWith("trellis:session/"));
         final Session session2 = new HttpSession();

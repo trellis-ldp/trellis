@@ -99,7 +99,7 @@ public class WebACService implements AccessControlService {
     public Set<IRI> getAccessModes(final IRI identifier, final Session session) {
         requireNonNull(session, "A non-null session must be provided!");
 
-        if (Trellis.RepositoryAdministrator.equals(session.getAgent())) {
+        if (Trellis.AdministratorAgent.equals(session.getAgent())) {
             return unmodifiableSet(allModes);
         }
 
@@ -143,7 +143,7 @@ public class WebACService implements AccessControlService {
 
     private Predicate<Authorization> agentFilter(final IRI agent) {
         return auth -> auth.getAgentClass().contains(FOAF.Agent) ||
-            (auth.getAgentClass().contains(ACL.AuthenticatedAgent) && !Trellis.AnonymousUser.equals(agent)) ||
+            (auth.getAgentClass().contains(ACL.AuthenticatedAgent) && !Trellis.AnonymousAgent.equals(agent)) ||
             auth.getAgent().contains(agent) || auth.getAgentGroup().stream().anyMatch(isAgentInGroup(agent));
     }
 

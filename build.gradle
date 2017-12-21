@@ -170,8 +170,8 @@ subprojects {
                 packaging 'jar'
                 url 'http://www.trellisldp.org'
                 inceptionYear '2017'
-                name 'Trellis Repository'
-                description 'The core components for a trellis repository'
+                name 'Trellis Linked Data Server'
+                description 'The core components for a Trellis linked data server'
 
                 organization {
                     name project.vendor
@@ -249,7 +249,7 @@ task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
 
 sonarqube {
     properties {
-        property "sonar.projectName", "Trellis Repository"
+        property "sonar.projectName", "Trellis Linked Data Server"
         property "sonar.projectKey", "org.trellisldp:trellis"
         property "sonar.links.homepage", "https://github.com/trellis-ldp/trellis"
         property "sonar.links.issue", "https://github.com/trellis-ldp/trellis/issues"

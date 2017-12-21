@@ -125,7 +125,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Append) && !modes.contains(ACL.Write)) {
             LOGGER.warn("User: {} cannot Append to {}", session.getAgent(), path);
-            if (Trellis.AnonymousUser.equals(session.getAgent())) {
+            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
@@ -136,7 +136,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private void verifyCanControl(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Control)) {
             LOGGER.warn("User: {} cannot Control {}", session.getAgent(), path);
-            if (Trellis.AnonymousUser.equals(session.getAgent())) {
+            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
@@ -147,7 +147,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private void verifyCanWrite(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Write)) {
             LOGGER.warn("User: {} cannot Write to {}", session.getAgent(), path);
-            if (Trellis.AnonymousUser.equals(session.getAgent())) {
+            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
@@ -158,7 +158,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private void verifyCanRead(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Read)) {
             LOGGER.warn("User: {} cannot Read from {}", session.getAgent(), path);
-            if (Trellis.AnonymousUser.equals(session.getAgent())) {
+            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }

@@ -18,7 +18,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.vocabulary.Trellis.AnonymousUser;
+import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -62,7 +62,7 @@ public class HttpSession implements Session {
      * Create an HTTP-based session.
      */
     public HttpSession() {
-        this(AnonymousUser);
+        this(AnonymousAgent);
     }
 
     @Override

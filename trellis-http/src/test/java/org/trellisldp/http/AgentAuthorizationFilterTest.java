@@ -65,7 +65,7 @@ public class AgentAuthorizationFilterTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockAgentService.asAgent(any())).thenReturn(Trellis.AnonymousUser);
+        when(mockAgentService.asAgent(any())).thenReturn(Trellis.AnonymousAgent);
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
     }
@@ -77,6 +77,6 @@ public class AgentAuthorizationFilterTest {
 
         filter.filter(mockContext);
         verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
-        assertEquals(Trellis.AnonymousUser, sessionArgument.getValue().getAgent());
+        assertEquals(Trellis.AnonymousAgent, sessionArgument.getValue().getAgent());
     }
 }

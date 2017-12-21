@@ -308,7 +308,7 @@ public class WebACServiceTest {
 
     @Test
     public void testAdmin1() {
-        when(mockSession.getAgent()).thenReturn(Trellis.RepositoryAdministrator);
+        when(mockSession.getAgent()).thenReturn(Trellis.AdministratorAgent);
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Append));
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Append));
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Append));
@@ -410,7 +410,7 @@ public class WebACServiceTest {
 
     @Test
     public void testFoafAgent() {
-        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousUser);
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockChildResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI1, type, ACL.Authorization),
                 rdf.createTriple(authIRI1, ACL.mode, ACL.Read),
@@ -607,7 +607,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI5, ACL.agentClass, ACL.AuthenticatedAgent),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Append)));
-        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousUser);
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
 
         assertFalse(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Read));
         assertFalse(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Append));

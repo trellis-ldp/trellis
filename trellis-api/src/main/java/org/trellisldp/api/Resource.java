@@ -28,7 +28,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 
 /**
- * The central abstraction for a trellis-based repository.
+ * The central resource abstraction for a Trellis-based linked data server.
  *
  * @see <a href="https://www.w3.org/TR/ldp/">Linked Data Platform Specification</a>
  *

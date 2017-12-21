@@ -102,7 +102,7 @@ public class DeleteHandlerTest {
         when(mockResourceService.skolemize(eq(iri))).thenReturn(iri);
         when(mockResourceService.skolemize(eq(AS.Delete))).thenReturn(AS.Delete);
         when(mockResourceService.skolemize(eq(PROV.Activity))).thenReturn(PROV.Activity);
-        when(mockResourceService.skolemize(eq(Trellis.AnonymousUser))).thenReturn(Trellis.AnonymousUser);
+        when(mockResourceService.skolemize(eq(Trellis.AnonymousAgent))).thenReturn(Trellis.AnonymousAgent);
         when(mockResourceService.skolemize(eq(date))).thenReturn(date);
         when(mockResourceService.put(eq(iri), any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
 
@@ -112,7 +112,7 @@ public class DeleteHandlerTest {
         when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
 
         when(mockSession.getCreated()).thenReturn(time);
-        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousUser);
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getDelegatedBy()).thenReturn(empty());
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);

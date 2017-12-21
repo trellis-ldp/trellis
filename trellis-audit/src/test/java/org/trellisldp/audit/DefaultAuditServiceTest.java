@@ -57,9 +57,9 @@ public class DefaultAuditServiceTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousUser);
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getCreated()).thenReturn(created);
-        when(mockSession.getDelegatedBy()).thenReturn(of(Trellis.RepositoryAdministrator));
+        when(mockSession.getDelegatedBy()).thenReturn(of(Trellis.AdministratorAgent));
     }
 
     @Test
@@ -71,8 +71,8 @@ public class DefaultAuditServiceTest {
         assertTrue(dataset.contains(null, null, type, PROV.Activity));
         assertTrue(dataset.contains(null, null, type, AS.Create));
         assertTrue(dataset.contains(null, subject, PROV.wasGeneratedBy, null));
-        assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousUser));
-        assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.RepositoryAdministrator));
+        assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousAgent));
+        assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.AdministratorAgent));
         assertTrue(dataset.contains(null, null, PROV.startedAtTime,
                     rdf.createLiteral(created.toString(), XSD.dateTime)));
         assertEquals(6L, dataset.size());
@@ -87,8 +87,8 @@ public class DefaultAuditServiceTest {
         assertTrue(dataset.contains(null, null, type, PROV.Activity));
         assertTrue(dataset.contains(null, null, type, AS.Delete));
         assertTrue(dataset.contains(null, subject, PROV.wasGeneratedBy, null));
-        assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousUser));
-        assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.RepositoryAdministrator));
+        assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousAgent));
+        assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.AdministratorAgent));
         assertTrue(dataset.contains(null, null, PROV.startedAtTime,
                     rdf.createLiteral(created.toString(), XSD.dateTime)));
         assertEquals(6L, dataset.size());
@@ -103,8 +103,8 @@ public class DefaultAuditServiceTest {
         assertTrue(dataset.contains(null, null, type, PROV.Activity));
         assertTrue(dataset.contains(null, null, type, AS.Update));
         assertTrue(dataset.contains(null, subject, PROV.wasGeneratedBy, null));
-        assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousUser));
-        assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.RepositoryAdministrator));
+        assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousAgent));
+        assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.AdministratorAgent));
         assertTrue(dataset.contains(null, null, PROV.startedAtTime,
                     rdf.createLiteral(created.toString(), XSD.dateTime)));
         assertEquals(6L, dataset.size());

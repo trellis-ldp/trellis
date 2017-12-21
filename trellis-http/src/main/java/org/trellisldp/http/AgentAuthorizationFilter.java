@@ -17,7 +17,7 @@ import static java.util.Objects.isNull;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
-import static org.trellisldp.vocabulary.Trellis.RepositoryAdministrator;
+import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,11 +37,11 @@ import org.trellisldp.http.impl.HttpSession;
  * {@link org.apache.commons.rdf.api.IRI}-based WebID.
  *
  * <p>When no {@link java.security.Principal} is defined, an anonymous user is used
- * ({@code http://www.trellisldp.org/ns/trellis#AnonymousUser}).
+ * ({@code http://www.trellisldp.org/ns/trellis#AnonymousAgent}).
  *
  * <p>When a {@link java.security.Principal} matches one of the elements defined in
  * {@code adminUsers}, then the WebID is set as a repository administrator
- * ({@code http://www.trellisldp.org/ns/trellis#RepositoryAdministrator}).
+ * ({@code http://www.trellisldp.org/ns/trellis#AdministratorAgent}).
  *
  * @author acoburn
  */
@@ -72,7 +72,7 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
         if (isNull(sec.getUserPrincipal())) {
             ctx.setProperty(SESSION_PROPERTY, new HttpSession());
         } else if (adminUsers.contains(sec.getUserPrincipal().getName())) {
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession(RepositoryAdministrator));
+            ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent));
         } else if (sec.getUserPrincipal().getName().isEmpty()) {
             ctx.setProperty(SESSION_PROPERTY, new HttpSession());
         } else {

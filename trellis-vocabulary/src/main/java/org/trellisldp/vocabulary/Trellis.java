@@ -36,7 +36,8 @@ public final class Trellis extends BaseVocabulary {
     public static final IRI multipartUploadService = createIRI(URI + "multipartUploadService");
 
     /* Named Individuals */
-    public static final IRI AnonymousUser = createIRI(URI + "AnonymousUser");
+    public static final IRI AdministratorAgent = createIRI(URI + "AdministratorAgent");
+    public static final IRI AnonymousAgent = createIRI(URI + "AnonymousAgent");
     public static final IRI InvalidType = createIRI(URI + "InvalidType");
     public static final IRI InvalidRange = createIRI(URI + "InvalidRange");
     public static final IRI InvalidCardinality = createIRI(URI + "InvalidCardinality");
@@ -45,7 +46,6 @@ public final class Trellis extends BaseVocabulary {
     public static final IRI PreferAudit = createIRI(URI + "PreferAudit");
     public static final IRI PreferServerManaged = createIRI(URI + "PreferServerManaged");
     public static final IRI PreferUserManaged = createIRI(URI + "PreferUserManaged");
-    public static final IRI RepositoryAdministrator = createIRI(URI + "RepositoryAdministrator");
 
     private Trellis() {
         super();

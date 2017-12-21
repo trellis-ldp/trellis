@@ -2,7 +2,7 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/)
 
-The core APIs for a Trellis-based repository.
+The core APIs for a Trellis-based linked data server.
 
 ## Building
 
