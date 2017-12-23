@@ -5,6 +5,7 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 [![Build Status](https://travis-ci.org/trellis-ldp/trellis.png?branch=master)](https://travis-ci.org/trellis-ldp/trellis)
 [![Build status](https://ci.appveyor.com/api/projects/status/nvdwx442663ib39d?svg=true)](https://ci.appveyor.com/project/acoburn/trellis)
 [![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/)
 
 ## Mailing list
 
