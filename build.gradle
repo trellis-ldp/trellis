@@ -72,6 +72,9 @@ subprojects {
         mustacheVersion = '0.9.5_1'
         slf4jVersion = '1.7.25'
 
+        /* Transitive dependencies (for Karaf provisioning) */
+        guavaVersion = '20.0' // mustache 0.9.5
+
         /* Testing */
         apiguardianVersion = '1.0.0'
         commonsTextVersion = '1.2'

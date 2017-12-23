@@ -18,7 +18,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * RDF Terms from the trellis vocabulary.
  *
- * @see <a href="http://www.trellisldp.org/ns/trellis">Trellis vocabulary</a>
+ * @see <a href="https://www.trellisldp.org/ns/trellis.html">Trellis vocabulary</a>
  *
  * @author acoburn
  */

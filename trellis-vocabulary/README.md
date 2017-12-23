@@ -20,7 +20,7 @@ The following vocabularies are defined in this package:
   * `RDF` and `RDFS`: [RDF Schema 1.1](https://www.w3.org/TR/rdf-schema/) (W3C)
   * `SKOS`: [Simple Knowledge Organization System](https://www.w3.org/2009/08/skos-reference/skos.html) (W3C)
   * `Time`: [OWL-Time](https://www.w3.org/TR/owl-time/) (W3C)
-  * `Trellis`: [Trellis Vocabulary](http://www.trellisldp.org/ns/trellis)
+  * `Trellis`: [Trellis Vocabulary](https://www.trellisldp.org/ns/trellis.html)
   * `VCARD`: [vCard Ontology](https://www.w3.org/TR/vcard-rdf) (W3C)
   * `XSD`: [XML Schema](https://www.w3.org/TR/xmlschema-2/) (W3C)
 
