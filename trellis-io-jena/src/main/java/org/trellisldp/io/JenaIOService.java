@@ -23,7 +23,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
-import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
 import static org.apache.jena.riot.RDFFormat.JSONLD_COMPACT_FLAT;
@@ -144,11 +144,11 @@ public class JenaIOService implements IOService {
         requireNonNull(syntax, "The RDF syntax value may not be null!");
 
         try {
-            if (RDFA_HTML.equals(syntax)) {
+            if (RDFA.equals(syntax)) {
                 htmlSerializer.write(output, triples, profiles.length > 0 ? profiles[0] : null);
             } else {
                 final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
-                        new RuntimeTrellisException("Invalid content type: " + syntax.mediaType));
+                        new RuntimeTrellisException("Invalid content type: " + syntax.mediaType()));
 
                 final RDFFormat format = defaultSerialization(lang);
 
@@ -227,7 +227,7 @@ public class JenaIOService implements IOService {
         try {
             final org.apache.jena.graph.Graph graph = createDefaultGraph();
             final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
-                    new RuntimeTrellisException("Unsupported RDF Syntax: " + syntax.mediaType));
+                    new RuntimeTrellisException("Unsupported RDF Syntax: " + syntax.mediaType()));
 
             RDFParser.source(input).lang(lang).base(base).parse(graph);
 

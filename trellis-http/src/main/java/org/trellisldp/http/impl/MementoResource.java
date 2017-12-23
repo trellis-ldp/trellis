@@ -143,7 +143,7 @@ public final class MementoResource {
                 }
             };
 
-            return builder.type(syntax.mediaType).entity(stream);
+            return builder.type(syntax.mediaType()).entity(stream);
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)

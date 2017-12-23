@@ -38,7 +38,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.notModified;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
-import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -410,7 +410,7 @@ public class GetHandlerTest {
     @Test
     public void testGetHTML() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA_HTML.mediaType)));
+        when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
                 mockIoService, mockBinaryService, null);

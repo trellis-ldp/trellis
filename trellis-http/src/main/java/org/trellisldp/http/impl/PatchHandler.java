@@ -200,7 +200,7 @@ public class PatchHandler extends BaseLdpHandler {
                             }
                         };
 
-                        return builder.header(PREFERENCE_APPLIED, "return=representation").type(syntax.mediaType)
+                        return builder.header(PREFERENCE_APPLIED, "return=representation").type(syntax.mediaType())
                                .entity(stream);
                     }).orElseGet(() -> builder.status(NO_CONTENT));
             }

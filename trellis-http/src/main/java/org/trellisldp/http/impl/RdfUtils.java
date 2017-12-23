@@ -19,7 +19,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.concat;
-import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -261,7 +261,7 @@ public final class RdfUtils {
      * @return a profile IRI usable by the output streamer
      */
     public static IRI getDefaultProfile(final RDFSyntax syntax, final IRI identifier) {
-        return RDFA_HTML.equals(syntax) ? identifier : expanded;
+        return RDFA.equals(syntax) ? identifier : expanded;
     }
 
     private RdfUtils() {

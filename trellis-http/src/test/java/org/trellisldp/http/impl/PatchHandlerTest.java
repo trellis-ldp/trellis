@@ -23,7 +23,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -203,7 +203,7 @@ public class PatchHandlerTest {
         when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
         when(mockLdpRequest.getHeaders().getAcceptableMediaTypes())
-            .thenReturn(singletonList(MediaType.valueOf(RDFA_HTML.mediaType)));
+            .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert,
                 mockResourceService, mockIoService, null);

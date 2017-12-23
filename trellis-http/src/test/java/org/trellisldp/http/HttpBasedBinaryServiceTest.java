@@ -60,8 +60,7 @@ public class HttpBasedBinaryServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
 
-    private static final IRI resource = rdf.createIRI("http://www.trellisldp.org/ns/trellis.ttl");
-    private static final IRI sslResource = rdf.createIRI("https://s3.amazonaws.com/www.trellisldp.org/ns/trellis.ttl");
+    private static final IRI resource = rdf.createIRI("https://www.trellisldp.org/ns/trellis.ttl");
     private static final IdentifierService idService = new UUIDGenerator();
 
     @Mock
@@ -101,7 +100,6 @@ public class HttpBasedBinaryServiceTest {
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
 
         assertTrue(resolver.exists(resource));
-        assertTrue(resolver.exists(sslResource));
         assertFalse(resolver.exists(rdf.createIRI("http://www.trellisldp.org/ns/non-existent.ttl")));
     }
 
@@ -136,8 +134,8 @@ public class HttpBasedBinaryServiceTest {
     public void testGetSslContent() {
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
 
-        assertTrue(resolver.getContent(sslResource).isPresent());
-        assertTrue(resolver.getContent(sslResource).map(this::uncheckedToString).get()
+        assertTrue(resolver.getContent(resource).isPresent());
+        assertTrue(resolver.getContent(resource).map(this::uncheckedToString).get()
                 .contains("owl:Ontology"));
     }
 
@@ -147,7 +145,7 @@ public class HttpBasedBinaryServiceTest {
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
 
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
-        assertThrows(RuntimeTrellisException.class, () -> resolver.setContent(sslResource, inputStream));
+        assertThrows(RuntimeTrellisException.class, () -> resolver.setContent(resource, inputStream));
     }
 
     @Test
@@ -156,7 +154,7 @@ public class HttpBasedBinaryServiceTest {
                 mockClient);
         final String contents = "A new resource";
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
-        resolver.setContent(sslResource, inputStream);
+        resolver.setContent(resource, inputStream);
 
         verify(mockInvocationBuilder).put(any(Entity.class));
     }
@@ -165,7 +163,7 @@ public class HttpBasedBinaryServiceTest {
     public void testMockedDelete() throws IOException {
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
                 mockClient);
-        resolver.purgeContent(sslResource);
+        resolver.purgeContent(resource);
 
         verify(mockInvocationBuilder).delete();
     }
@@ -176,7 +174,7 @@ public class HttpBasedBinaryServiceTest {
         when(mockStatusType.toString()).thenReturn("BAD REQUEST");
         final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
                 mockClient);
-        assertThrows(RuntimeTrellisException.class, () -> resolver.purgeContent(sslResource));
+        assertThrows(RuntimeTrellisException.class, () -> resolver.purgeContent(resource));
     }
 
     @Test

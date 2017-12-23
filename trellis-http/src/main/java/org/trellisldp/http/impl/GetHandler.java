@@ -312,7 +312,7 @@ public class GetHandler extends BaseLdpHandler {
         if (isNull(req.getExt())) {
             syntax.ifPresent(s -> {
                 builder.header(VARY, PREFER);
-                builder.type(s.mediaType);
+                builder.type(s.mediaType());
             });
 
             model = res.getBinary().isPresent() && syntax.isPresent() ? LDP.RDFSource : res.getInteractionModel();

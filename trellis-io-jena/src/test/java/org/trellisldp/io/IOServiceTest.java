@@ -20,7 +20,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
-import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFXML;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
@@ -335,7 +335,7 @@ public class IOServiceTest {
     @Test
     public void testHtmlSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA_HTML);
+        service.write(getComplexTriples(), out, RDFA);
         final String html = new String(out.toByteArray(), UTF_8);
         assertTrue(html.contains("<title>A title</title>"));
         assertTrue(html.contains("_:B"));
@@ -349,7 +349,7 @@ public class IOServiceTest {
     @Test
     public void testHtmlSerializer2() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA_HTML, rdf.createIRI("http://example.org/"));
+        service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
         final String html = new String(out.toByteArray(), UTF_8);
         assertTrue(html.contains("<title>A title</title>"));
         assertTrue(html.contains("_:B"));
@@ -372,7 +372,7 @@ public class IOServiceTest {
         final IOService service4 = new JenaIOService(mockNamespaceService, properties);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA_HTML, rdf.createIRI("http://example.org/"));
+        service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
         final String html = new String(out.toByteArray(), UTF_8);
         assertTrue(html.contains("<title>A title</title>"));
         assertTrue(html.contains("_:B"));
@@ -395,7 +395,7 @@ public class IOServiceTest {
         final IOService service4 = new JenaIOService(mockNamespaceService, properties);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA_HTML, rdf.createIRI("http://example.org/"));
+        service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
         final String html = new String(out.toByteArray(), UTF_8);
         assertTrue(html.contains("<title>A title</title>"));
         assertTrue(html.contains("_:B"));
