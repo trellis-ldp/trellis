@@ -266,7 +266,7 @@ task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
     sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
     classDirectories =  files(subprojects.sourceSets.main.output)
-    executionData = files(subprojects.jacocoTestReport.executionData)
+    executionData = files(subprojects.findAll { it.name != 'trellis-karaf' }.jacocoTestReport.executionData)
     reports {
         html.enabled = true
         xml.enabled = true
