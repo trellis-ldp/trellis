@@ -93,6 +93,12 @@ subprojects {
         jenaVersionRange = '[3.5,4)'
     }
 
+    jar {
+        from ("$rootDir/LICENSE") {
+            into "META-INF"
+        }
+    }
+
     test {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
         if (org.gradle.internal.jvm.Jvm.current().getJavaVersion().isJava9Compatible()) {
@@ -108,11 +114,17 @@ subprojects {
 
     task javadocJar(type: Jar) {
         classifier 'javadoc'
+        from ("$rootDir/LICENSE") {
+            into "META-INF"
+        }
         from javadoc
     }
 
     task sourceJar(type: Jar) {
         classifier 'sources'
+        from ("$rootDir/LICENSE") {
+            into "META-INF"
+        }
         from sourceSets.main.allSource
     }
 
