@@ -145,7 +145,8 @@
     <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
   </feature>
 
-  <feature name="commons-rdf-jena" version="${commonsRdfVersion}">
+  <feature name="commons-rdf-jena" version="${project.version}">
+    <feature prerequisite="true">wrap</feature>
     <feature version="${jenaVersionRange}">jena</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>

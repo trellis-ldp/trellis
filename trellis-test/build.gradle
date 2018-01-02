@@ -1,0 +1,123 @@
+buildscript {
+    repositories {
+      jcenter()
+    }
+}
+
+description = """OSGi Integration tests for Trellis components"""
+
+def randomPort() {
+    try {
+        ServerSocket server = new ServerSocket()
+        server.setReuseAddress(true)
+        server.bind(new InetSocketAddress(0))
+        int port = server.getLocalPort()
+        server.close()
+        return port
+    } catch (IOException e) {
+        throw new IOException('Failed to find random free port', e)
+    }
+}
+
+ext {
+    karafVersion = '4.1.4'
+    osgiVersion = '4.3.1'
+	paxExamVersion = '4.11.0'
+    hk2Version = '2.4.0'
+}
+
+repositories {
+  jcenter()
+  mavenLocal()
+  mavenCentral()
+}
+
+configurations {
+    karafDistro {
+        description = 'Configuration used to isolate the dependency on the Karaf distro'
+        transitive = false
+    }
+}
+
+dependencies {
+    testCompile project(':trellis-agent')
+    testCompile project(':trellis-api')
+    testCompile project(':trellis-audit')
+    testCompile project(':trellis-binary')
+    testCompile project(':trellis-constraint-rules')
+    testCompile project(':trellis-event-serialization')
+    testCompile project(':trellis-http')
+    testCompile project(':trellis-id')
+    testCompile project(':trellis-io-jena')
+    testCompile project(':trellis-namespaces')
+    testCompile project(':trellis-vocabulary')
+    testCompile project(':trellis-webac')
+    testCompile project(':trellis-karaf')
+
+    testCompile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
+    testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion
+    testCompile group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: karafVersion
+	testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam', version: paxExamVersion
+    testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-junit4', version: paxExamVersion
+    testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-container-karaf', version: paxExamVersion
+    testCompile group: 'org.osgi', name: 'org.osgi.core', version: osgiVersion
+    testCompile group: 'org.osgi', name: 'org.osgi.compendium', version: osgiVersion
+    testCompile group: 'org.glassfish.hk2.external', name: 'javax.inject', version: hk2Version
+
+    testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
+
+    karafDistro group: 'org.apache.karaf', name: 'apache-karaf', version: karafVersion, ext: 'zip'
+}
+
+
+task generateDependsFile {
+    // This is useful for the org.ops4j.pax.exam.CoreOptions.maven() stuff
+    File outputFileDir = project.file( "${project.buildDir}/classes/java/test/META-INF/maven/" )
+    File outputFile = new File( outputFileDir, 'dependencies.properties' )
+    outputs.file outputFile
+
+    doFirst {
+        outputFileDir.mkdirs()
+        Properties properties = new Properties();
+
+        // first we add our GAV info
+        properties.setProperty( "groupId", "${project.group}" );
+        properties.setProperty( "artifactId", project.name );
+        properties.setProperty( "version", "${project.version}" );
+        properties.setProperty( "${project.group}/${project.name}/version", "${project.version}" );
+
+        // then for all our deps
+        project.configurations.testRuntime.resolvedConfiguration.resolvedArtifacts.each {
+            final String keyBase = it.moduleVersion.id.group + '/' + it.moduleVersion.id.name;
+            properties.setProperty( "${keyBase}/scope", "compile" )
+            properties.setProperty( "${keyBase}/type", it.extension )
+            properties.setProperty( "${keyBase}/version", it.moduleVersion.id.version )
+        }
+
+        FileOutputStream outputStream = new FileOutputStream( outputFile );
+        try {
+            properties.store( outputStream, "Generated from Gradle for PaxExam testing" )
+        }
+        finally {
+            outputStream.close()
+        }
+    }
+}
+
+test {
+    systemProperty 'karaf.version', karafVersion
+    systemProperty 'karaf.commonsIo.version', commonsIoVersion
+    systemProperty 'jena.version', jenaVersion
+
+    systemProperty 'karaf.ssh.port', randomPort()
+    systemProperty 'karaf.rmiServer.port', randomPort()
+    systemProperty 'karaf.rmiRegistry.port', randomPort()
+
+}
+
+tasks.test.dependsOn tasks.generateDependsFile
+
+rootProject.childProjects.findAll { n, p -> p != project }.each { n, p ->
+    tasks.test.dependsOn p.tasks.install
+}
+

@@ -1,7 +1,7 @@
 .gradle
 build
 /bin/
-*/docs/*-SNAPSHOT/
+*/docs/
 .classpath
 .project
 .settings/

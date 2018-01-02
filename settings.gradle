@@ -14,6 +14,7 @@ include ':trellis-namespaces'
 include ':trellis-webac'
 
 include ':trellis-karaf'
+include ':trellis-test'
 
 project(':trellis-api').projectDir = "$rootDir/trellis-api" as File
 project(':trellis-http').projectDir = "$rootDir/trellis-http" as File
@@ -30,3 +31,4 @@ project(':trellis-namespaces').projectDir = "$rootDir/trellis-namespaces" as Fil
 project(':trellis-webac').projectDir = "$rootDir/trellis-webac" as File
 
 project(':trellis-karaf').projectDir = "$rootDir/trellis-karaf" as File
+project(':trellis-test').projectDir = "$rootDir/trellis-test" as File
