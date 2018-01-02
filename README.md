@@ -5,17 +5,14 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 [![Build Status](https://travis-ci.org/trellis-ldp/trellis.png?branch=master)](https://travis-ci.org/trellis-ldp/trellis)
 [![Build status](https://ci.appveyor.com/api/projects/status/nvdwx442663ib39d?svg=true)](https://ci.appveyor.com/project/acoburn/trellis)
 [![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
+[![Javadoc](https://javadoc-badge.appspot.com/org.trellisldp/trellis-api.svg?label=javadoc)](https://trellis-ldp.github.io/trellis/apidocs/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/)
+
+General documentation for Trellis is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
 
 ## Mailing list
 
 A [mailing list](https://groups.google.com/group/trellis-ldp) is available to anyone who is interested in using, contributing to or simply learning more about Trellis.
-
-## Documentation
-
-General documentation for Trellis is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
-
-Javadocs are available at https://trellis-ldp.github.io/trellis/apidocs/
 
 ## Features
 
@@ -83,7 +80,8 @@ All source code is open source and licensed as Apache 2. Contributions are welco
 
 ### Trellis Vocabulary
 
-This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the Trellis-specific RDF terms.
+This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the Trellis-specific RDF terms, which
+are also [published online](https://www.trellisldp.org/ns/trellis.html).
 
 ### Implementations
 
@@ -98,7 +96,6 @@ implementations.
   * [Commons-RDF](https://commons.apache.org/proper/commons-rdf/) -- for RDF abstractions
   * [Jena](https://jena.apache.org/) -- for RDF I/O processing
   * [Jackson](https://github.com/FasterXML/jackson) -- for JSON processing
-  * [Jersey](https://jersey.java.net/) -- for HTTP processing
 
 ## Related projects
 
