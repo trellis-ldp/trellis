@@ -1,6 +1,6 @@
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix dc: <http://purl.org/dc/terms/> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
 <https://www.trellisldp.org/> a doap:Project ;
     doap:license <http://www.apache.org/licenses/LICENSE-2.0> ;
