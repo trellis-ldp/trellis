@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="css/trellis.css" />
+    <link rel="icon" href="img/trellis.png"/>
+    <title>Trellis LDP</title>
+</head>
+<body typeof="doap:Project schema:SoftwareApplication"
+      prefix="rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# rdfs: http://www.w3.org/2000/01/rdf-schema# dcterms: http://purl.org/dc/terms/ foaf: http://xmlns.com/foaf/0.1/ skos: http://www.w3.org/2004/02/skos/core# prov: http://www.w3.org/ns/prov# schema: http://schema.org/ doap: http://usefulinc.com/ns/doap# asfext: http://projects.apache.org/ns/asfext#">
+   <header>
+     <a href="https://github.com/trellis-ldp/trellis"><img style="position: absolute; top: 0; right: 0; border: 0;"
+           src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67"
+           alt="Fork me on GitHub"
+           data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
+      <h1 property="rdfs:label doap:name schema:name"><img src="img/trellis_white.png">Trellis LDP</h1>
+      <p property="doap:shortdesc dcterms:abstract">A scalable platform for building <a href="https://www.w3.org/TR/ldp/">linked data</a> applications.</p>
+    </header>
+    <nav>
+      <ul>
+        <li><a property="doap:homepage" href="https://www.trellisldp.org/">Home</a></li>
+        <li><a property="rdfs:seeAlso" href="https://trellis-ldp.github.io/trellis/apidocs/">Documentation</a></li>
+        <li><a property="rdfs:seeAlso" href="https://www.trellisldp.org/ns/trellis.html">Vocabulary</a></li>
+        <li><a property="doap:repository" href="https://github.com/trellis-ldp/trellis">Source&nbsp;Code</a></li>
+        <li><a property="doap:mailing-list" href="https://groups.google.com/group/trellis-ldp">Mailing&nbsp;List</a></li>
+        <li><a property="doap:wiki" href="https://github.com/trellis-ldp/trellis/wiki">Wiki</a></li>
+        <!--<li><a property="doap:download-page" href="https://github.com/trellis-ldp/trellis-rosid/releases">Downloads</a></li>-->
+        <li><a property="rdfs:seeAlso" href="https://www.trellisldp.org/doap.ttl">DOAP</a></li>
+      </ul>
+    </nav>
+    <main>
+      <h2>Features</h2>
+      <p property="doap:description schema:description dcterms:description">Trellis is a linked data server that can be used for storing large volumes of content, particularly in cases where that content is stored for years and decades.</p>
+
+      <section property="schema:featureList">
+        <h3>Scalability</h3>
+        <p>
+          Trellis has been built on components that already support horizontal scalability: Kafka, Zookeeper and Spark. While it is
+          possible to run Trellis on a single machine, scaling out across a cluster is well-defined and supported. Trellis is
+          "eventually consistent", meaning that many operations run asynchronously. While this makes the system very responsive, it
+          also means that clients cannot expect operations to be atomic. In general, per-resource operations are atomic; operations
+          that cause other resources to change are handled asynchronously.
+        </p>
+      </section>
+
+      <section property="schema:featureList">
+        <h3>Durability</h3>
+        <p>
+          Data integrity is vitally important for content that is stored for years and decades. Trellis makes it possible to retrieve
+          the state of any resource at any, arbitrary point in time. This also means that nothing is ever truly deleted (though if you
+          need to purge a resource from the persistence layer, there is a mechanism for that). For every operation that changes a
+          resource, there is a full audit log available through standard LDP mechanisms. This audit log lists who made what change and
+          when that change was made.
+        </p>
+      </section>
+
+      <section property="schema:featureList">
+        <h3>Modularity</h3>
+        <p>
+          The overall code base for Trellis is small, and it is divided up into even smaller modules each of which can be maintained
+          independently. This simplifies maintenance and it also makes it easy to customize individual components as needed. Trellis
+          has also been designed to fully support OSGi deployment (scheduled for the 0.2.0 release).
+        </p>
+      </section>
+
+      <section property="schema:featureList">
+        <h3>Flexibility</h3>
+        <p>
+          Because Trellis is built on top of LDP, clients that interact with it tend to use a lot of RDF (e.g. JSON-LD). Trellis
+          enforces only a very minimal set of restrictions on what RDF is allowable: basically, if LDP prohibits it, Trellis does not
+          allow it, but otherwise, pretty much anything goes. You can use any RDF vocabulary; you can store binaries of any type. Any
+          special handling of particular content types needs to be handled in another layer of your software stack.
+        </p>
+      </section>
+
+      <section property="schema:featureList">
+        <h3>Web Standards</h3>
+        <p>
+          There are a lot of standards in existence. Trellis has selected to conform to a collection of well-defined and broadly used
+          specifications because doing so provides a solid and well-understood foundation for interacting with the software. This also
+          makes the Trellis API stable and consistent.
+        </p>
+      </section>
+
+      <section property="schema:featureList">
+        <h3>External Integrations</h3>
+        <p>
+          Any time a resource is created, modified or deleted, a notification is made available, making it easy to use an integration
+          framework to connect Trellis to external applications. The notifications provide enough information to make informed routing
+          decisions without being too heavy.
+        </p>
+      </section>
+
+      <h2>Underlying Specifications</h2>
+      <p>Trellis is an <a href="https://tools.ietf.org/html/rfc7231">HTTP/1.1</a> server designed to comply with the following specifications:</p>
+
+      <ul>
+        <li><a property="doap:implements" href="https://www.w3.org/TR/ldp/">W3C LDP Server</a></li>
+        <li><a property="doap:implements" href="https://www.w3.org/TR/activitystreams-core/">W3C Activity Streams</a></li>
+        <li><a property="doap:implements" href="https://tools.ietf.org/html/rfc7089">RFC 7089</a> (HTTP Framework for Time-Based Access to Resource States -- Memento)</li>
+        <li><a property="doap:implements" href="https://tools.ietf.org/html/rfc3230">RFC 3230</a> (Instance Digests in HTTP)</li>
+        <li><a property="doap:implements" href="https://github.com/solid/solid-spec#authorization-and-access-control">Solid WebAC</a> (Authorization and Access Control)</li>
+      </ul>
+
+      <h2>Source Code</h2>
+      <p>
+        All source code is open and licensed as <a href="http://www.apache.org/licenses/LICENSE-2.0" property="schema:license doap:license">Apache 2</a>. Contributions are welcome.
+        Project source code and additional information is available on github.com at <a property="doap:repository" href="https://github.com/trellis-ldp/trellis">trellis-ldp/trellis</a>.
+        Trellis is written primarily in <span property="doap:programming-language doap:platform">Java</span>.
+      </p>
+    </main>
+    <footer>
+    </footer>
+</body>
+</html>
+
