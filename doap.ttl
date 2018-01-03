@@ -5,8 +5,8 @@
 <https://www.trellisldp.org/> a doap:Project ;
     doap:license <http://www.apache.org/licenses/LICENSE-2.0> ;
     doap:homepage <https://www.trellisldp.org/> ;
-    doap:shortdesc "Trellis is a linked data server" ;
-    doap:description "Trellis is a modular linked data server that can be used for managing and disseminating digital content. It implements the Linked Data Platform" ;
+    doap:name "Trellis LDP"@en ;
+    doap:description "Trellis is a modular linked data server that can be used for managing and disseminating digital content. It implements the Linked Data Platform"@en ;
     doap:wiki <https://github.com/trellis-ldp/trellis/wiki> ;
     doap:programming-language "Java" ;
     doap:repository
@@ -17,27 +17,27 @@
     doap:developer <https://acoburn.people.amherst.edu/#i> ;
     doap:implements
         [ a doap:Specification ;
-            doap:name "Linked Data Platform" ;
-            doap:description "The W3C Linked Data Platform" ;
+            doap:name "Linked Data Platform"@en ;
+            doap:description "The W3C Linked Data Platform"@en ;
             dc:identifier "ldp" ;
             rdfs:seeAlso <https://www.w3.org/TR/ldp/> ] ,
         [ a doap:Specification ;
-            doap:name "Activity Streams" ;
-            doap:description "W3C Activity Streams 2.0" ;
+            doap:name "Activity Streams"@en ;
+            doap:description "W3C Activity Streams 2.0"@en ;
             dc:identifier "as" ;
             rdfs:seeAlso <https://www.w3.org/TR/activitystreams-core/> ] ,
         [ a doap:Specification ;
-            doap:name "Memento" ;
-            doap:description "RFC 7089: HTTP Framework for Time-Based Access to Resource States" ;
+            doap:name "Memento"@en ;
+            doap:description "RFC 7089: HTTP Framework for Time-Based Access to Resource States"@en ;
             dc:identifier "memento" ;
             rdfs:seeAlso <https://tools.ietf.org/html/rfc7089> ] ,
         [ a doap:Specification ;
-            doap:name "Instance Digests" ;
-            doap:description "RFC 3230: Instance Digests in HTTP" ;
+            doap:name "Instance Digests"@en ;
+            doap:description "RFC 3230: Instance Digests in HTTP"@en ;
             dc:identifier "digest" ;
             rdfs:seeAlso <https://tools.ietf.org/html/rfc3230> ] ,
         [ a doap:Specification ;
-            doap:name "Web Access Control" ;
-            doap:description "SOLID WebAC: Authorization and Access Control" ;
+            doap:name "Web Access Control"@en ;
+            doap:description "SOLID WebAC: Authorization and Access Control"@en ;
             dc:identifier "webac" ;
             rdfs:seeAlso <https://github.com/solid/solid-spec#authorization-and-access-control> ] .
