@@ -1,0 +1,43 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+
+<https://www.trellisldp.org/> a doap:Project ;
+    doap:license <http://www.apache.org/licenses/LICENSE-2.0> ;
+    doap:homepage <https://www.trellisldp.org/> ;
+    doap:shortdesc "Trellis is a linked data server" ;
+    doap:description "Trellis is a modular linked data server that can be used for managing and disseminating digital content. It implements the Linked Data Platform" ;
+    doap:wiki <https://github.com/trellis-ldp/trellis/wiki> ;
+    doap:programming-language "Java" ;
+    doap:repository
+        [ a doap:GitRepository ;
+            doap:location <https://github.com/trellis-ldp/trellis.git> ;
+            doap:browse <https://github.com/trellis-ldp/trellis> ] ;
+    doap:maintainer <https://acoburn.people.amherst.edu/#i> ;
+    doap:developer <https://acoburn.people.amherst.edu/#i> ;
+    doap:implements
+        [ a doap:Specification ;
+            doap:name "Linked Data Platform" ;
+            doap:description "The W3C Linked Data Platform" ;
+            dc:identifier "ldp" ;
+            rdfs:seeAlso <https://www.w3.org/TR/ldp/> ] ,
+        [ a doap:Specification ;
+            doap:name "Activity Streams" ;
+            doap:description "W3C Activity Streams 2.0" ;
+            dc:identifier "as" ;
+            rdfs:seeAlso <https://www.w3.org/TR/activitystreams-core/> ] ,
+        [ a doap:Specification ;
+            doap:name "Memento" ;
+            doap:description "RFC 7089: HTTP Framework for Time-Based Access to Resource States" ;
+            dc:identifier "memento" ;
+            rdfs:seeAlso <https://tools.ietf.org/html/rfc7089> ] ,
+        [ a doap:Specification ;
+            doap:name "Instance Digests" ;
+            doap:description "RFC 3230: Instance Digests in HTTP" ;
+            dc:identifier "digest" ;
+            rdfs:seeAlso <https://tools.ietf.org/html/rfc3230> ] ,
+        [ a doap:Specification ;
+            doap:name "Web Access Control" ;
+            doap:description "SOLID WebAC: Authorization and Access Control" ;
+            dc:identifier "webac" ;
+            rdfs:seeAlso <https://github.com/solid/solid-spec#authorization-and-access-control> ] .

@@ -8,7 +8,7 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 [![Javadoc](https://javadoc-badge.appspot.com/org.trellisldp/trellis-api.svg?label=javadoc)](https://trellis-ldp.github.io/trellis/apidocs/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/)
 
-General documentation for Trellis is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
+General documentation for [Trellis](https://www.trellisldp.org) is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
 
 ## Mailing list
 
@@ -81,7 +81,8 @@ All source code is open source and licensed as Apache 2. Contributions are welco
 ### Trellis Vocabulary
 
 This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the Trellis-specific RDF terms, which
-are also [published online](https://www.trellisldp.org/ns/trellis.html).
+are also [published online](https://www.trellisldp.org/ns/trellis.html). A [DOAP](doap.ttl) file
+describes the Trellis project in a machine-readable format.
 
 ### Implementations
 
@@ -91,7 +92,7 @@ implementations.
 
  * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A Kafka-based application that uses file-based persistence.
 
-## Main dependencies
+## Principle dependencies
 
   * [Commons-RDF](https://commons.apache.org/proper/commons-rdf/) -- for RDF abstractions
   * [Jena](https://jena.apache.org/) -- for RDF I/O processing
