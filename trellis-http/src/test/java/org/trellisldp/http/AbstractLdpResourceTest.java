@@ -92,6 +92,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -216,6 +218,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Mock
     private InputStream mockInputStream;
+
+    @Mock
+    private Future<Boolean> mockFuture;
 
     @BeforeAll
     public void before() throws Exception {
@@ -1958,6 +1963,32 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPostInterrupted() throws Exception {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + CHILD_PATH)), eq(LDP.RDFSource),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
+    public void testPostFutureException() throws Exception {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + CHILD_PATH)), eq(LDP.RDFSource),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(ExecutionException.class).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
     public void testPostVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2125,6 +2156,32 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
+    @Test
+    public void testPutInterrupted() throws Exception {
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Link", LDP.Container + "; rel=\"type\"")
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
+    public void testPutFutureException() throws Exception {
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(ExecutionException.class).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Link", LDP.Container + "; rel=\"type\"")
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -2391,6 +2448,28 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testDeleteInterrupted() throws Exception {
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request().delete();
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
+    public void testDeleteFutureException() throws Exception {
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(ExecutionException.class).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request().delete();
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
     public void testDeleteNoChildren2() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.empty());
@@ -2529,6 +2608,33 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertEquals(OK, res.getStatusInfo());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
+
+    @Test
+    public void testPatchInterrupted() throws Exception {
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
+    public void testPatchFutureException() throws Exception {
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
+                    any(Dataset.class))).thenReturn(mockFuture);
+        doThrow(ExecutionException.class).when(mockFuture).get();
+
+        final Response res = target(RESOURCE_PATH).request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
 
     @Test
     public void testPatchUpload() {
