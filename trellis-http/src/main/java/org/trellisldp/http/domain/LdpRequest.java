@@ -166,9 +166,6 @@ public class LdpRequest {
      * @return the path
      */
     public String getPath() {
-        if (path.startsWith("/")) {
-            return path.substring(1);
-        }
         return path;
     }
 
