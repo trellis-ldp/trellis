@@ -102,7 +102,11 @@ public class BaseLdpHandler {
      * @return the baseUrl
      */
     protected String getBaseUrl() {
-        return ofNullable(baseUrl).orElseGet(req::getBaseUrl);
+        final String base = ofNullable(baseUrl).orElseGet(req::getBaseUrl);
+        if (base.endsWith("/")) {
+            return base;
+        }
+        return base + "/";
     }
 
     /**

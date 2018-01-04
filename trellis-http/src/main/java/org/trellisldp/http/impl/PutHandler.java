@@ -157,8 +157,7 @@ public class PutHandler extends ContentBearingHandler {
 
         LOGGER.info("Setting resource as {}", identifier);
 
-        final IRI heuristicType = nonNull(req.getContentType()) && !rdfSyntax.isPresent() ?
-            LDP.NonRDFSource : LDP.RDFSource;
+        final IRI heuristicType = rdfSyntax.isPresent() ? LDP.RDFSource : LDP.NonRDFSource;
 
         final IRI defaultType = ofNullable(res).map(Resource::getInteractionModel).orElse(heuristicType);
 

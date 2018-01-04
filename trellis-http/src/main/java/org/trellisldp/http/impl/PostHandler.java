@@ -102,7 +102,7 @@ public class PostHandler extends ContentBearingHandler {
         final Optional<RDFSyntax> rdfSyntax = ofNullable(contentType).flatMap(RDFSyntax::byMediaType)
             .filter(SUPPORTED_RDF_TYPES::contains);
 
-        final IRI defaultType = nonNull(contentType) && !rdfSyntax.isPresent() ? LDP.NonRDFSource : LDP.RDFSource;
+        final IRI defaultType = rdfSyntax.isPresent() ? LDP.RDFSource : LDP.NonRDFSource;
         final IRI internalId = rdf.createIRI(TRELLIS_PREFIX + req.getPath() + separator + id);
 
         // Add LDP type (ldp:Resource results in the defaultType)
