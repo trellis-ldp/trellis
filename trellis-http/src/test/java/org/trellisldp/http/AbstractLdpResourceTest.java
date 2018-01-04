@@ -2780,9 +2780,53 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testMultipartPostNotFound() {
+        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,
+                new HttpSession(), mockBinary);
+
+        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(false);
+
+        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
+            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
+        assertEquals(NOT_FOUND, res.getStatusInfo());
+    }
+
+    @Test
     public void testMultipartPostError() {
         when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
+        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,
+                new HttpSession(), mockBinary);
+
+        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
+        when(mockBinaryResolver.completeUpload(eq(UPLOAD_SESSION_ID), any())).thenReturn(upload);
+
+        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
+            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
+    public void testMultipartPostExecutionError() throws Exception {
+        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(mockFuture);
+        doThrow(ExecutionException.class).when(mockFuture).get();
+        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,
+                new HttpSession(), mockBinary);
+
+        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
+        when(mockBinaryResolver.completeUpload(eq(UPLOAD_SESSION_ID), any())).thenReturn(upload);
+
+        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
+            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
+    public void testMultipartPostInterruptedExecutionError() throws Exception {
+        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(mockFuture);
+        doThrow(InterruptedException.class).when(mockFuture).get();
         final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,
                 new HttpSession(), mockBinary);
 
