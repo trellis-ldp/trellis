@@ -61,6 +61,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Graph;
+import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
@@ -99,6 +100,9 @@ public class IOServiceTest {
 
     @Mock
     private CacheService<String, String> mockCache;
+
+    @Mock
+    private RDFSyntax mockSyntax;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -443,6 +447,23 @@ public class IOServiceTest {
         assertEquals(1L, graph.size());
         assertEquals("<trellis:repository>", graph.stream().findFirst().map(Triple::getSubject)
                 .map(RDFTerm::ntriplesString).get());
+    }
+
+    @Test
+    public void testWriteInvalidSyntax() {
+        when(mockSyntax.mediaType()).thenReturn("fake/mediatype");
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        assertThrows(RuntimeTrellisException.class, () -> service.write(getTriples(), out, mockSyntax));
+    }
+
+    @Test
+    public void testReadInvalidSyntax() {
+        when(mockSyntax.mediaType()).thenReturn("fake/mediatype");
+        final String output = "blah blah blah";
+
+        assertThrows(RuntimeTrellisException.class, () ->
+                service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, mockSyntax));
     }
 
     private static Stream<Triple> getTriples() {
