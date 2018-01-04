@@ -175,7 +175,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     private static final String USER_DELETED_PATH = REPO1 + "/userdeleted";
 
     private static final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH);
-    private static final IRI root = rdf.createIRI(TRELLIS_PREFIX + REPO1);
+    private static final IRI root = rdf.createIRI(TRELLIS_PREFIX);
     private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_PREFIX + BINARY_PATH);
     private static final IRI binaryInternalIdentifier = rdf.createIRI("file:some/file");
     private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_PREFIX + NON_EXISTENT_PATH);
@@ -479,7 +479,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetRootSlash() {
-        final Response res = target(REPO1 + "/").request().get();
+        final Response res = target("/").request().get();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
@@ -488,7 +488,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetRoot() {
-        final Response res = target(REPO1).request().get();
+        final Response res = target("").request().get();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
