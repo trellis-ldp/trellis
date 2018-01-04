@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class Trellis extends BaseVocabulary {
+public final class Trellis {
 
     /* Namespace */
     public static final String URI = "http://www.trellisldp.org/ns/trellis#";
@@ -48,6 +50,6 @@ public final class Trellis extends BaseVocabulary {
     public static final IRI PreferUserManaged = createIRI(URI + "PreferUserManaged");
 
     private Trellis() {
-        super();
+        // prevent instantiation
     }
 }

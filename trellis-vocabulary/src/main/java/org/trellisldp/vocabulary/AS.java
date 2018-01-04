@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class AS extends BaseVocabulary {
+public final class AS {
 
     /* Namespace */
     public static final String URI = "https://www.w3.org/ns/activitystreams#";
@@ -169,6 +171,6 @@ public final class AS extends BaseVocabulary {
     public static final IRI source = createIRI(URI + "source");
 
     private AS() {
-        super();
+        // prevent instantiation
     }
 }

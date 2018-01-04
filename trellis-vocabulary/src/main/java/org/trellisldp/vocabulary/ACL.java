@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class ACL extends BaseVocabulary {
+public final class ACL {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/ns/auth/acl#";
@@ -50,6 +52,6 @@ public final class ACL extends BaseVocabulary {
     public static final IRI owner = createIRI(URI + "owner");
 
     private ACL() {
-        super();
+        // prevent instantiation
     }
 }

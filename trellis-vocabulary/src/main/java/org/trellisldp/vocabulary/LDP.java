@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class LDP extends BaseVocabulary {
+public final class LDP {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/ns/ldp#";
@@ -68,6 +70,6 @@ public final class LDP extends BaseVocabulary {
     public static final IRI MemberSubject = createIRI(URI + "MemberSubject");
 
     private LDP() {
-        super();
+        // prevent instantiation
     }
 }

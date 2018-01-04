@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class DC extends BaseVocabulary {
+public final class DC {
 
     /* Namespace */
     public static final String URI = "http://purl.org/dc/terms/";
@@ -109,7 +111,7 @@ public final class DC extends BaseVocabulary {
     public static final IRI valid = createIRI(URI + "valid");
 
     private DC() {
-        super();
+        // prevent instantiation
     }
 }
 

@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class PROV extends BaseVocabulary {
+public final class PROV {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/ns/prov#";
@@ -119,6 +121,6 @@ public final class PROV extends BaseVocabulary {
     public static final IRI wasInfluencedBy = createIRI(URI + "wasInfluencedBy");
 
     private PROV() {
-        super();
+        // prevent instantiation
     }
 }

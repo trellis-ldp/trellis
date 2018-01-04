@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class Memento extends BaseVocabulary {
+public final class Memento {
 
     /* Namespace */
     public static final String URI = "http://mementoweb.org/ns#";
@@ -41,6 +43,6 @@ public final class Memento extends BaseVocabulary {
     public static final IRI original = createIRI(URI + "original");
 
     private Memento() {
-        super();
+        // prevent instantiation
     }
 }

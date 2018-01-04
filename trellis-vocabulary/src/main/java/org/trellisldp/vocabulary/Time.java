@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class Time extends BaseVocabulary {
+public final class Time {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/2006/time#";
@@ -129,6 +131,6 @@ public final class Time extends BaseVocabulary {
     public static final IRI Wednesday = createIRI(URI + "Wednesday");
 
     private Time() {
-        super();
+        // prevent instantiation
     }
 }

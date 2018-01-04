@@ -21,15 +21,15 @@ import org.apache.commons.rdf.api.RDF;
 /**
  * @author acoburn
  */
-class BaseVocabulary {
+final class VocabUtils {
 
     private static RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
-    protected static IRI createIRI(final String uri) {
+    public static IRI createIRI(final String uri) {
         return rdf.createIRI(uri);
     }
 
-    protected BaseVocabulary() {
-        // prevent direct instantiation
+    private VocabUtils() {
+        // prevent instantiation
     }
 }

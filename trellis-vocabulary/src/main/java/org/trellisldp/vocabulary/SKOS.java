@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class SKOS extends BaseVocabulary {
+public final class SKOS {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/2004/02/skos/core#";
@@ -64,6 +66,6 @@ public final class SKOS extends BaseVocabulary {
     public static final IRI closeMatch = createIRI(URI + "closeMatch");
 
     private SKOS() {
-        super();
+        // prevent instantiation
     }
 }

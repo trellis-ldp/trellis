@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class VCARD extends BaseVocabulary {
+public final class VCARD {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/2006/vcard/ns#";
@@ -145,6 +147,6 @@ public final class VCARD extends BaseVocabulary {
     public static final IRI value = createIRI(URI + "value");
 
     private VCARD() {
-        super();
+        // prevent instantiation
     }
 }

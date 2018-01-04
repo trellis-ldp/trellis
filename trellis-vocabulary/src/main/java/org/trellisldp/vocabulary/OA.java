@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class OA extends BaseVocabulary {
+public final class OA {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/ns/oa#";
@@ -103,6 +105,6 @@ public final class OA extends BaseVocabulary {
     public static final IRI PreferContainedIRIs = createIRI(URI + "PreferContainedIRIs");
 
     private OA() {
-        super();
+        // prevent instantiation
     }
 }

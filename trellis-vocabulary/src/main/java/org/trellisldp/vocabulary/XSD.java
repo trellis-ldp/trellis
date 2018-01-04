@@ -13,6 +13,8 @@
  */
 package org.trellisldp.vocabulary;
 
+import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -22,7 +24,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public final class XSD extends BaseVocabulary {
+public final class XSD {
 
     /* Namespace */
     public static final String URI = "http://www.w3.org/2001/XMLSchema#";
@@ -66,6 +68,6 @@ public final class XSD extends BaseVocabulary {
     public static final IRI yearMonthDuration = createIRI(URI + "yearMonthDuration");
 
     private XSD() {
-        super();
+        // prevent instantiation
     }
 }
