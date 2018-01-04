@@ -92,7 +92,8 @@ public class PostHandler extends ContentBearingHandler {
      */
     public ResponseBuilder createResource() {
         final String baseUrl = getBaseUrl();
-        final String identifier = baseUrl + req.getPath() + id;
+        final String separator = req.getPath().isEmpty() ? "" : "/";
+        final String identifier = baseUrl + req.getPath() + separator + id;
         final String contentType = req.getContentType();
         final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
 
@@ -102,7 +103,7 @@ public class PostHandler extends ContentBearingHandler {
             .filter(SUPPORTED_RDF_TYPES::contains);
 
         final IRI defaultType = nonNull(contentType) && !rdfSyntax.isPresent() ? LDP.NonRDFSource : LDP.RDFSource;
-        final IRI internalId = rdf.createIRI(TRELLIS_PREFIX + req.getPath() + id);
+        final IRI internalId = rdf.createIRI(TRELLIS_PREFIX + req.getPath() + separator + id);
 
         // Add LDP type (ldp:Resource results in the defaultType)
         final IRI ldpType = ofNullable(req.getLink())

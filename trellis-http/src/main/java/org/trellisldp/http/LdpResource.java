@@ -328,18 +328,19 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
-        final String identifier = "/" + ofNullable(req.getSlug())
+        final String identifier = ofNullable(req.getSlug())
             .orElseGet(resourceService.getIdentifierSupplier());
 
         final PostHandler postHandler = new PostHandler(req, identifier, body, resourceService,
                 ioService, binaryService, urlBase);
+        final String separator = path.isEmpty() ? "" : "/";
 
         // First check if this is a container
         final Optional<Resource> parent = resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path));
         if (parent.isPresent()) {
             final Optional<IRI> ixModel = parent.map(Resource::getInteractionModel);
             if (ixModel.filter(type -> ldpResourceTypes(type).anyMatch(LDP.Container::equals)).isPresent()) {
-                return resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path + identifier), MAX)
+                return resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path + separator + identifier), MAX)
                     .map(x -> status(CONFLICT)).orElseGet(postHandler::createResource).build();
             } else if (parent.filter(RdfUtils::isDeleted).isPresent()) {
                 return status(GONE).build();
