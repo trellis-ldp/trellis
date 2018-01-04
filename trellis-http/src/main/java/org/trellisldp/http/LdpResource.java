@@ -217,8 +217,12 @@ public class LdpResource implements ContainerRequestFilter {
         return fetchResource(req);
     }
 
+    private String getBaseUrl(final LdpRequest req) {
+        return nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+    }
+
     private Response fetchResource(final LdpRequest req) {
-        final String urlBase = nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
         final GetHandler getHandler = new GetHandler(req, resourceService, ioService, binaryService, urlBase);
 
@@ -259,7 +263,7 @@ public class LdpResource implements ContainerRequestFilter {
     @Timed
     public Response options(@BeanParam final LdpRequest req) {
 
-        final String urlBase = nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
         final OptionsHandler optionsHandler = new OptionsHandler(req, resourceService, urlBase);
 
@@ -285,7 +289,7 @@ public class LdpResource implements ContainerRequestFilter {
     @Consumes("application/sparql-update")
     public Response updateResource(@BeanParam final LdpRequest req, final String body) {
 
-        final String urlBase = nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, resourceService, ioService, urlBase);
 
@@ -303,7 +307,7 @@ public class LdpResource implements ContainerRequestFilter {
     @Timed
     public Response deleteResource(@BeanParam final LdpRequest req) {
 
-        final String urlBase = nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, resourceService, urlBase);
 
@@ -322,7 +326,7 @@ public class LdpResource implements ContainerRequestFilter {
     @Timed
     public Response createResource(@BeanParam final LdpRequest req, final File body) {
 
-        final String urlBase = nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
         final String identifier = "/" + ofNullable(req.getSlug())
             .orElseGet(resourceService.getIdentifierSupplier());
@@ -356,7 +360,7 @@ public class LdpResource implements ContainerRequestFilter {
     @Timed
     public Response setResource(@BeanParam final LdpRequest req, final File body) {
 
-        final String urlBase = nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, resourceService, ioService,
                 binaryService, urlBase);

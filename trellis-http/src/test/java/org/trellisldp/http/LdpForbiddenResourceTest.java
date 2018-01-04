@@ -16,18 +16,21 @@ package org.trellisldp.http;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
@@ -44,6 +47,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.RDFTerm;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
@@ -105,17 +109,21 @@ public class LdpForbiddenResourceTest extends JerseyTest {
     @Mock
     private AgentService mockAgentService;
 
+    private String BASE_URL = "";
+
     @Override
     public Application configure() {
 
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
 
+        BASE_URL = getBaseUri().toString();
+
         final ResourceConfig config = new ResourceConfig();
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new AgentAuthorizationFilter(mockAgentService, emptyList()));
         config.register(new WebAcFilter(emptyList(), mockAccessControlService));
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, "http://example.org/"));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, null));
         return config;
     }
 
@@ -162,6 +170,27 @@ public class LdpForbiddenResourceTest extends JerseyTest {
                 }
                 return (IRI) inv.getArgument(0);
             });
+        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
+            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            if (term instanceof IRI) {
+                final String iri = ((IRI) term).getIRIString();
+                if (iri.startsWith(BASE_URL)) {
+                    return rdf.createIRI(TRELLIS_PREFIX + iri.substring(BASE_URL.length()));
+                }
+            }
+            return term;
+        });
+        when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
+            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            if (term instanceof IRI) {
+                final String iri = ((IRI) term).getIRIString();
+                if (iri.startsWith(TRELLIS_PREFIX)) {
+                    return rdf.createIRI(BASE_URL + iri.substring(TRELLIS_PREFIX.length()));
+                }
+            }
+            return term;
+        });
+
 
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
@@ -327,6 +356,16 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource/").request().delete();
 
         assertEquals(FORBIDDEN, res.getStatusInfo());
+    }
+
+    @Test
+    public void testHasAccess() {
+        when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class)))
+            .thenReturn(singleton(ACL.Read));
+
+        final Response res = target("repo1/resource/").request().get();
+
+        assertEquals(OK, res.getStatusInfo());
     }
 
     @Test
