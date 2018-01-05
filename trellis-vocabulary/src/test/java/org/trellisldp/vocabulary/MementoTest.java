@@ -13,11 +13,6 @@
  */
 package org.trellisldp.vocabulary;
 
-import static org.apache.jena.graph.Factory.createDefaultGraph;
-
-import org.apache.jena.graph.Graph;
-import org.apache.jena.riot.RDFParser;
-
 /**
  * Test the Memento Vocabulary Class
  * @author acoburn
@@ -27,14 +22,6 @@ public class MementoTest extends AbstractVocabularyTest {
     @Override
     public String namespace() {
         return "http://mementoweb.org/ns#";
-    }
-
-    @Override
-    protected Graph getVocabulary(final String url) {
-        final Graph graph = createDefaultGraph();
-        // TODO - once the Memento vocabulary supports conneg, this will be unnecessary
-        RDFParser.source("http://mementoweb.org/ns.jsonld").parse(graph);
-        return graph;
     }
 
     @Override
