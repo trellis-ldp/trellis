@@ -1870,6 +1870,22 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPostRoot() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenReturn(empty());
+
+        final Response res = target("").request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(BASE_URL + RANDOM_VALUE, res.getLocation().toString());
+        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
+    }
+
+    @Test
     public void testPostInvalidLink() {
         final Response res = target(RESOURCE_PATH).request().header("Link", "I never really liked his friends")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
