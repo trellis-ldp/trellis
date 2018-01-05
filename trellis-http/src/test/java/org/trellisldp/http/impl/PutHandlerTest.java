@@ -302,7 +302,7 @@ public class PutHandlerTest {
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService, never()).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
     }
 
     @Test

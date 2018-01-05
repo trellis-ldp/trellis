@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
@@ -80,7 +81,7 @@ public class PutHandler extends ContentBearingHandler {
     private static final Logger LOGGER = getLogger(PutHandler.class);
 
     /**
-     * Create a builder for an LDP POST response.
+     * Create a builder for an LDP PUT response.
      *
      * @param req the LDP request
      * @param entity the entity
@@ -157,7 +158,8 @@ public class PutHandler extends ContentBearingHandler {
 
         LOGGER.info("Setting resource as {}", identifier);
 
-        final IRI heuristicType = rdfSyntax.isPresent() ? LDP.RDFSource : LDP.NonRDFSource;
+        final IRI heuristicType = nonNull(req.getContentType()) && !rdfSyntax.isPresent()
+            ? LDP.NonRDFSource : LDP.RDFSource;
 
         final IRI defaultType = ofNullable(res).map(Resource::getInteractionModel).orElse(heuristicType);
 
@@ -184,13 +186,7 @@ public class PutHandler extends ContentBearingHandler {
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
             // Add user-supplied data
-            if (rdfSyntax.isPresent()) {
-                readEntityIntoDataset(identifier, baseUrl, graphName, rdfSyntax.get(), dataset);
-
-                // Check for any constraints
-                checkConstraint(dataset, PreferUserManaged, ldpType, baseUrl, rdfSyntax.get());
-
-            } else {
+            if (LDP.NonRDFSource.equals(ldpType)) {
                 // Check the expected digest value
                 final Digest digest = req.getDigest();
                 if (nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest())) {
@@ -211,6 +207,12 @@ public class PutHandler extends ContentBearingHandler {
                             rdf.createLiteral(ofNullable(req.getContentType()).orElse(APPLICATION_OCTET_STREAM))));
                 dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.extent,
                             rdf.createLiteral(Long.toString(entity.length()), XSD.long_)));
+
+            } else {
+                readEntityIntoDataset(identifier, baseUrl, graphName, rdfSyntax.orElse(TURTLE), dataset);
+
+                // Check for any constraints
+                checkConstraint(dataset, PreferUserManaged, ldpType, baseUrl, rdfSyntax.orElse(TURTLE));
             }
 
             if (nonNull(res)) {

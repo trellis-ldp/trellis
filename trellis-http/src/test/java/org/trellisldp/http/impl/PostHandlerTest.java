@@ -160,9 +160,9 @@ public class PostHandlerTest {
         final Response res = postHandler.createResource().build();
         assertEquals(CREATED, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
+        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
     }
 
@@ -194,9 +194,9 @@ public class PostHandlerTest {
         final Response res = postHandler.createResource().build();
         assertEquals(CREATED, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
+        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
     }
 
