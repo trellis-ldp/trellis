@@ -14,6 +14,13 @@ General documentation for [Trellis](https://www.trellisldp.org) is available on 
 
 A [mailing list](https://groups.google.com/group/trellis-ldp) is available to anyone who is interested in using, contributing to or simply learning more about Trellis.
 
+## Downloads
+
+Core artifacts are available from Maven Central. Deployable applications, based on particular implementations will be availabe
+from the respective repositories.
+
+One such implementation, based on a distributed Kafka-based event bus can be downloaded at: https://github.com/trellis-ldp/trellis-rosid/releases
+
 ## Features
 
 Trellis has been designed with four primary goals:
