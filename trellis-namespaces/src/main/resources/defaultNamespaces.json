@@ -5,6 +5,7 @@
     "dc11" : "http://purl.org/dc/elements/1.1/",
     "geo" : "http://www.w3.org/2003/01/geo/wgs84_pos#",
     "ldp" : "http://www.w3.org/ns/ldp#",
+    "memento" : "http://mementoweb.org/ns#",
     "owl" : "http://www.w3.org/2002/07/owl#",
     "prov" : "http://www.w3.org/ns/prov#",
     "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",

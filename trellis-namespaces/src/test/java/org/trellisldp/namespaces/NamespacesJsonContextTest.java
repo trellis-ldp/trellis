@@ -51,16 +51,16 @@ public class NamespacesJsonContextTest {
         final File file = new File(NamespacesJsonContext.class.getResource(nsDoc).getPath());
         final String filename = file.getParent() + "/" + randomFilename();
         final NamespacesJsonContext svc1 = new NamespacesJsonContext(filename);
-        assertEquals(14, svc1.getNamespaces().size());
+        assertEquals(15, svc1.getNamespaces().size());
         assertFalse(svc1.getNamespace("jsonld").isPresent());
         assertFalse(svc1.getPrefix(JSONLD).isPresent());
         assertTrue(svc1.setPrefix("jsonld", JSONLD));
-        assertEquals(15, svc1.getNamespaces().size());
+        assertEquals(16, svc1.getNamespaces().size());
         assertEquals(JSONLD, svc1.getNamespace("jsonld").get());
         assertEquals("jsonld", svc1.getPrefix(JSONLD).get());
 
         final NamespacesJsonContext svc2 = new NamespacesJsonContext(filename);
-        assertEquals(15, svc2.getNamespaces().size());
+        assertEquals(16, svc2.getNamespaces().size());
         assertEquals(JSONLD, svc2.getNamespace("jsonld").get());
         assertFalse(svc2.setPrefix("jsonld", JSONLD));
     }
