@@ -1,7 +1,5 @@
 # trellis-vocabulary
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-vocabulary/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-vocabulary/)
-
 RDF vocabularies used by a Trellis server.
 
 ## Vocabularies
@@ -24,8 +22,3 @@ The following vocabularies are defined in this package:
   * `VCARD`: [vCard Ontology](https://www.w3.org/TR/vcard-rdf) (W3C)
   * `XSD`: [XML Schema](https://www.w3.org/TR/xmlschema-2/) (W3C)
 
-## Building
-
-This code requires Java 8 and can be built with Gradle:
-
-    ./gradlew install

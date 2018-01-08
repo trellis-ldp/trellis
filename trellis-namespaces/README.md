@@ -1,11 +1,26 @@
 # trellis-namespaces
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-namespaces/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-namespaces/)
+This module implements a simple namespace prefixing service, which reads from (and stores changes to) a simple JSON-based document.
 
-A namespace service for a Trellis server.
+A number of namespace prefixes are defined by default as:
 
-## Building
+```javascript
+{
+    "acl" : "http://www.w3.org/ns/auth/acl#",
+    "as" : "https://www.w3.org/ns/activitystreams#",
+    "dc" : "http://purl.org/dc/terms/",
+    "dc11" : "http://purl.org/dc/elements/1.1/",
+    "geo" : "http://www.w3.org/2003/01/geo/wgs84_pos#",
+    "ldp" : "http://www.w3.org/ns/ldp#",
+    "memento" : "http://mementoweb.org/ns#",
+    "owl" : "http://www.w3.org/2002/07/owl#",
+    "prov" : "http://www.w3.org/ns/prov#",
+    "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+    "schema" : "http://schema.org/",
+    "skos" : "http://www.w3.org/2004/02/skos/core#",
+    "time" : "http://www.w3.org/2006/time#" ,
+    "xsd" : "http://www.w3.org/2001/XMLSchema#"
+}
+```
 
-This code requires Java 8 and can be built with Gradle:
-
-    ./gradlew install

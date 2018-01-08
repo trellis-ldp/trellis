@@ -1,11 +1,8 @@
 # trellis-io-jena
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-io-jena/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-io-jena/)
+This module implements the Trellis IOService using [Apache Jena](https://jena.apache.org).
+This service handles all read (deserialization), write (serialization) and update (sparql-update)
+operations, converting InputStreams into RDF-based structures.
 
-A Jena-backed serialization service for resources in a Trellis server.
+This is the only core module that depends on a concrete RDF serialization library.
 
-## Building
-
-This code requires Java 8 and can be built with Gradle:
-
-    ./gradlew install

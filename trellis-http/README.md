@@ -1,10 +1,7 @@
 # trellis-http
-The HTTP abstractions for a Trellis server.
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-http/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-http/)
+This module defines all of the HTTP interactions for a Trellis server. This module is independent of any particular service implementations.
 
-## Building
+The interaction patterns defined here conform to the [W3C LDP](https://www.w3.org/TR/ldp/), [Memento](https://tools.ietf.org/html/rfc7089)
+and [Instance Digest](https://tools.ietf.org/html/rfc3230) specifications.
 
-This code requires Java 8 and can be built with Gradle:
-
-    ./gradlew install

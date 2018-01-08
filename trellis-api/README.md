@@ -1,11 +1,4 @@
 # trellis-api
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-api/)
+The core APIs for a Trellis-based linked data server. This module provides the core abstractions and interfaces for a Trellis server.
 
-The core APIs for a Trellis-based linked data server.
-
-## Building
-
-This code requires Java 8 and can be built with Gradle:
-
-    ./gradlew install
