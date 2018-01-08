@@ -309,23 +309,23 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
+        when(mockDeletedResource.isDeleted()).thenReturn(true);
         when(mockDeletedResource.getMementos()).thenReturn(emptyList());
         when(mockDeletedResource.getInteractionModel()).thenReturn(LDP.Resource);
         when(mockDeletedResource.getModified()).thenReturn(time);
         when(mockDeletedResource.getBinary()).thenReturn(empty());
         when(mockDeletedResource.isMemento()).thenReturn(false);
         when(mockDeletedResource.getIdentifier()).thenReturn(identifier);
-        when(mockDeletedResource.getExtraLinkRelations()).thenAnswer(inv ->
-                Stream.of(new SimpleEntry<>(Trellis.DeletedResource.getIRIString(), "type")));
+        when(mockDeletedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockUserDeletedResource.getMementos()).thenReturn(emptyList());
         when(mockUserDeletedResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockUserDeletedResource.getModified()).thenReturn(time);
         when(mockUserDeletedResource.getBinary()).thenReturn(empty());
         when(mockUserDeletedResource.isMemento()).thenReturn(false);
+        when(mockUserDeletedResource.isDeleted()).thenReturn(true);
         when(mockUserDeletedResource.getIdentifier()).thenReturn(identifier);
-        when(mockUserDeletedResource.getExtraLinkRelations()).thenAnswer(inv ->
-                Stream.of(new SimpleEntry<>(Trellis.DeletedResource.getIRIString(), "type")));
+        when(mockUserDeletedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockResourceService.unskolemize(any(IRI.class)))
             .thenAnswer(inv -> {
@@ -1508,16 +1508,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetUserDeleted() {
-        // Just setting the Trellis.DeletedResource type shouldn't, itself, lead to a 410 GONE response
-        final Response res = target(USER_DELETED_PATH).request().get();
-
-        assertEquals(OK, res.getStatusInfo());
-    }
-
-    @Test
     public void testGetLdpResource() {
-        when(mockDeletedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        when(mockDeletedResource.isDeleted()).thenReturn(false);
         final Response res = target(DELETED_PATH).request().get();
 
         assertEquals(OK, res.getStatusInfo());

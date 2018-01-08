@@ -33,7 +33,6 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Stream;
 
 import javax.ws.rs.WebApplicationException;
@@ -57,7 +56,6 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.AS;
-import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.XSD;
@@ -156,9 +154,7 @@ public class DeleteHandlerTest {
 
     @Test
     public void testGetDeleted() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Resource);
-        when(mockResource.getExtraLinkRelations()).thenAnswer(inv ->
-                Stream.of(new SimpleEntry<>(Trellis.DeletedResource.getIRIString(), "type")));
+        when(mockResource.isDeleted()).thenReturn(true);
 
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, baseUrl);
 

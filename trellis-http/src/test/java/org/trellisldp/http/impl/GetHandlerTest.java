@@ -101,7 +101,6 @@ import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
 import org.trellisldp.vocabulary.SKOS;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -497,9 +496,7 @@ public class GetHandlerTest {
 
     @Test
     public void testGetDeleted() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Resource);
-        when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.of(
-                    new SimpleEntry<>(Trellis.DeletedResource.getIRIString(), "type")));
+        when(mockResource.isDeleted()).thenReturn(true);
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
                 mockIoService, mockBinaryService, null);

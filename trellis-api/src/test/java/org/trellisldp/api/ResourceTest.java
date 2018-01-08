@@ -61,6 +61,7 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).stream(anyCollection());
         doCallRealMethod().when(mockResource).getBinary();
         doCallRealMethod().when(mockResource).isMemento();
+        doCallRealMethod().when(mockResource).isDeleted();
         doCallRealMethod().when(mockResource).getExtraLinkRelations();
 
         when(mockResource.stream()).thenAnswer((x) -> empty());
@@ -78,6 +79,7 @@ public class ResourceTest {
         assertFalse(mockResource.getBinary().isPresent());
         assertFalse(mockResource.isMemento());
         assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent());
+        assertFalse(mockResource.isDeleted());
     }
 
     @Test
@@ -97,5 +99,6 @@ public class ResourceTest {
         assertFalse(mockResource.getBinary().isPresent());
         assertFalse(mockResource.isMemento());
         assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent());
+        assertFalse(mockResource.isDeleted());
     }
 }

@@ -80,7 +80,6 @@ import org.trellisldp.http.impl.OptionsHandler;
 import org.trellisldp.http.impl.PatchHandler;
 import org.trellisldp.http.impl.PostHandler;
 import org.trellisldp.http.impl.PutHandler;
-import org.trellisldp.http.impl.RdfUtils;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -342,7 +341,7 @@ public class LdpResource implements ContainerRequestFilter {
             if (ixModel.filter(type -> ldpResourceTypes(type).anyMatch(LDP.Container::equals)).isPresent()) {
                 return resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path + separator + identifier), MAX)
                     .map(x -> status(CONFLICT)).orElseGet(postHandler::createResource).build();
-            } else if (parent.filter(RdfUtils::isDeleted).isPresent()) {
+            } else if (parent.filter(Resource::isDeleted).isPresent()) {
                 return status(GONE).build();
             }
             return status(METHOD_NOT_ALLOWED).build();
@@ -366,7 +365,7 @@ public class LdpResource implements ContainerRequestFilter {
         final PutHandler putHandler = new PutHandler(req, body, resourceService, ioService,
                 binaryService, urlBase);
 
-        return resourceService.get(identifier, MAX).filter(res -> !RdfUtils.isDeleted(res))
+        return resourceService.get(identifier, MAX).filter(res -> !res.isDeleted())
             .map(putHandler::setResource).orElseGet(putHandler::createResource).build();
     }
 }

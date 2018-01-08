@@ -45,7 +45,6 @@ import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.time.Instant;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Date;
 import java.util.function.Predicate;
 
@@ -223,9 +222,7 @@ public class PatchHandlerTest {
 
     @Test
     public void testDeleted() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Resource);
-        when(mockResource.getExtraLinkRelations()).thenAnswer(inv ->
-                of(new SimpleEntry<>(Trellis.DeletedResource.getIRIString(), "type")));
+        when(mockResource.isDeleted()).thenReturn(true);
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert,

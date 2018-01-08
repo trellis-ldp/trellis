@@ -89,7 +89,7 @@ public class BaseLdpHandler {
      * @throws WebApplicationException a 410 Gone exception
      */
     protected static void checkDeleted(final Resource res, final String identifier) {
-       if (RdfUtils.isDeleted(res)) {
+        if (res.isDeleted()) {
             throw new WebApplicationException(status(GONE)
                     .links(MementoResource.getMementoLinks(identifier, res.getMementos())
                     .toArray(Link[]::new)).build());
