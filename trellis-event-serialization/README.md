@@ -1,11 +1,22 @@
 # trellis-event-serialization
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-event-serialization/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-event-serialization/)
+A serialization service for a Trellis event stream. Specifically, this converts a Trellis Event into
+a serialized JSON-LD String.
 
-A serialization service for a Trellis event stream
+For example, this implementation will serialize an update event into structures such as:
 
-## Building
+```javascript
+{
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "id": "urn:uuid:031b0857-b1bd-4f19-989d-1ab0e22ca57c",
+  "type": ["Update" , "http://www.w3.org/ns/prov#Activity"],
+  "actor": ["https://acoburn.people.amherst.edu/"],
+  "object": {
+    "id": "http://localhost:8080/resource",
+    "type": ["http://www.w3.org/ns/ldp#Container"]
+  }
+}
+```
 
-This code requires Java 8 and can be built with Gradle:
+These notifications conform to the [W3C Activity Streams](https://www.w3.org/TR/activitystreams-core/) specification.
 
-    ./gradlew install
