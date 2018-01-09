@@ -36,6 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -47,6 +48,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
@@ -115,9 +117,17 @@ public class HttpBasedBinaryService implements BinaryService {
     }
 
     @Override
-    public Optional<InputStream> getContent(final IRI identifier) {
+    public Optional<InputStream> getContent(final IRI identifier, final List<Range<Integer>> ranges) {
         requireNonNull(identifier,  NON_NULL_IDENTIFIER);
-        final Response res = httpClient.target(identifier.getIRIString()).request().get();
+        requireNonNull(ranges, "Byte ranges may not be null");
+        final Response res;
+        if (ranges.isEmpty()) {
+            res = httpClient.target(identifier.getIRIString()).request().get();
+        } else {
+            final StringBuilder builder = new StringBuilder();
+            ranges.forEach(r -> builder.append(r.getMinimum() + "-" + r.getMaximum()));
+            res = httpClient.target(identifier.getIRIString()).request().header("Range", "bytes=" + builder).get();
+        }
         LOGGER.info("HTTP GET request to {} returned status {}", identifier, res.getStatus());
         if (res.hasEntity()) {
             return of(res.getEntity()).map(x -> (InputStream) x);

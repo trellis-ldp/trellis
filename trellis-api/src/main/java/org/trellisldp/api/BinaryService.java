@@ -13,15 +13,18 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 
 /**
@@ -153,9 +156,20 @@ public interface BinaryService {
      * Get the content of the binary object.
      *
      * @param identifier an identifier used for locating the binary object
+     * @param ranges any segment ranges requested
      * @return the content
      */
-    Optional<InputStream> getContent(IRI identifier);
+    Optional<InputStream> getContent(IRI identifier, List<Range<Integer>> ranges);
+
+    /**
+     * Get the content of the binary object.
+     *
+     * @param identifier an identifier used for locating the binary object
+     * @return the content
+     */
+    default Optional<InputStream> getContent(IRI identifier) {
+        return getContent(identifier, emptyList());
+    }
 
     /**
      * Test whether a binary object exists at the given URI.

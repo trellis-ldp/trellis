@@ -86,6 +86,7 @@ public class HttpBasedBinaryServiceTest {
         initMocks(this);
         when(mockClient.target(anyString())).thenReturn(mockWebTarget);
         when(mockWebTarget.request()).thenReturn(mockInvocationBuilder);
+        when(mockInvocationBuilder.header(anyString(), anyString())).thenReturn(mockInvocationBuilder);
         when(mockInvocationBuilder.put(any(Entity.class))).thenReturn(mockResponse);
         when(mockInvocationBuilder.delete()).thenReturn(mockResponse);
         when(mockInvocationBuilder.get()).thenReturn(mockResponse);

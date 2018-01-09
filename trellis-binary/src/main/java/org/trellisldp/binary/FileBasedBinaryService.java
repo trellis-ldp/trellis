@@ -32,19 +32,23 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Vector;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
@@ -94,11 +98,22 @@ public class FileBasedBinaryService implements BinaryService {
     }
 
     @Override
-    public Optional<InputStream> getContent(final IRI identifier) {
+    public Optional<InputStream> getContent(final IRI identifier, final List<Range<Integer>> ranges) {
+        requireNonNull(ranges, "Byte ranges may not be null");
         return getFileFromIdentifier(identifier).map(file -> {
             try {
-                return new FileInputStream(file);
-            } catch (final FileNotFoundException ex) {
+                if (ranges.isEmpty()) {
+                    return new FileInputStream(file);
+                } else {
+                    final Vector<InputStream> v = new Vector<>();
+                    for (Range<Integer> r : ranges) {
+                        final InputStream input = new FileInputStream(file);
+                        input.skip(r.getMinimum());
+                        v.add(new BoundedInputStream(input, r.getMaximum() - r.getMinimum()));
+                    }
+                    return new SequenceInputStream(v.elements());
+                }
+            } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
         });

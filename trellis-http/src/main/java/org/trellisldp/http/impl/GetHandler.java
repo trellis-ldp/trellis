@@ -35,6 +35,7 @@ import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.lang3.Range.between;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
@@ -81,7 +82,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -94,6 +94,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.WantDigest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
@@ -265,22 +266,8 @@ public class GetHandler extends BaseLdpHandler {
             @Override
             public void write(final OutputStream out) throws IOException {
                 // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
-                try (final InputStream binary = binaryService.getContent(dsid).orElseThrow(() ->
-                        new IOException("Could not retrieve content from " + dsid))) {
-                    if (isNull(req.getRange())) {
-                        IOUtils.copy(binary, out);
-                    } else {
-                        // Range Requests
-                        final long skipped = binary.skip(req.getRange().getFrom());
-                        if (skipped < req.getRange().getFrom()) {
-                            LOGGER.warn("Trying to skip more data available in the input stream! {}, {}",
-                                    skipped, req.getRange().getFrom());
-                        }
-                        try (final InputStream sliced = new BoundedInputStream(binary,
-                                    req.getRange().getTo() - req.getRange().getFrom())) {
-                            IOUtils.copy(sliced, out);
-                        }
-                    }
+                try (final InputStream binary = getBinaryStream(dsid, req.getRange())) {
+                    IOUtils.copy(binary, out);
                 } catch (final IOException ex) {
                     throw new WebApplicationException("Error processing binary content: " +
                             ex.getMessage());
@@ -289,6 +276,13 @@ public class GetHandler extends BaseLdpHandler {
         };
 
         return builder.entity(stream);
+    }
+
+    private InputStream getBinaryStream(final IRI dsid, final Range range) throws IOException {
+        final Optional<InputStream> content = isNull(range)
+            ? binaryService.getContent(dsid)
+            : binaryService.getContent(dsid, singletonList(between(range.getFrom(), range.getTo())));
+        return content.orElseThrow(() -> new IOException("Could not retrieve content from: " + dsid));
     }
 
     private Optional<String> getBinaryDigest(final IRI dsid, final String algorithm) {

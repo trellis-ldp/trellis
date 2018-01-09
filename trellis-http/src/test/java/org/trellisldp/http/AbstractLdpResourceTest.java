@@ -22,6 +22,7 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -297,6 +298,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
         when(mockBinaryService.digest(eq("MD5"), any(InputStream.class))).thenReturn(of("md5-digest"));
         when(mockBinaryService.digest(eq("SHA"), any(InputStream.class))).thenReturn(of("sha1-digest"));
+        when(mockBinaryService.getContent(eq(binaryInternalIdentifier), eq(singletonList(between(3, 10)))))
+            .thenAnswer(x -> of(new ByteArrayInputStream("e input".getBytes(UTF_8))));
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier)))
             .thenAnswer(x -> of(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
         when(mockBinaryService.getIdentifierSupplier()).thenReturn(() -> RANDOM_VALUE);
@@ -718,37 +721,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("e input", entity);
-    }
-
-    @Test
-    public void testGetBinaryRangeExceed() throws IOException {
-        final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=300-400").get();
-
-        assertEquals(OK, res.getStatusInfo());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-
-        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-        assertNotNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertTrue(varies.contains(RANGE));
-        assertTrue(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
-
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("", entity);
     }
 
     @Test
