@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
@@ -99,7 +100,7 @@ public interface Resource {
      *
      * @return a stream of known Mementos
      */
-    List<VersionRange> getMementos();
+    List<Range<Instant>> getMementos();
 
     /**
      * Retrieve the RDF Quads for a resource.

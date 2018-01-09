@@ -23,6 +23,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.commons.lang3.Range.between;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,7 +72,6 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
-import org.trellisldp.api.VersionRange;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -199,9 +199,9 @@ public class CORSResourceTest extends JerseyTest {
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
 
         when(mockVersionedResource.getMementos()).thenReturn(asList(
-                new VersionRange(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                new VersionRange(ofEpochSecond(timestamp - 1000), time),
-                new VersionRange(time, ofEpochSecond(timestamp + 1000))));
+                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
+                between(ofEpochSecond(timestamp - 1000), time),
+                between(time, ofEpochSecond(timestamp + 1000))));
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockVersionedResource.getModified()).thenReturn(time);
         when(mockVersionedResource.getBinary()).thenReturn(empty());

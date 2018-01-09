@@ -32,6 +32,7 @@ import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.UriBuilder.fromUri;
+import static org.apache.commons.lang3.Range.between;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.impl.RdfUtils.getProfile;
@@ -47,6 +48,7 @@ import static org.trellisldp.vocabulary.XSD.dateTime;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -58,6 +60,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -65,7 +68,6 @@ import org.apache.commons.rdf.api.Triple;
 
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.VersionRange;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.Memento;
 import org.trellisldp.vocabulary.Time;
@@ -180,13 +182,13 @@ public final class MementoResource {
     }
 
     /**
-     * Retrieve all of the Memento-related link headers given a stream of VersionRange objects.
+     * Retrieve all of the Memento-related link headers given a stream of Range objects.
      *
      * @param identifier the public identifier for the resource
      * @param mementos a stream of memento values
      * @return a stream of link headers
      */
-    public static Stream<Link> getMementoLinks(final String identifier, final List<VersionRange> mementos) {
+    public static Stream<Link> getMementoLinks(final String identifier, final List<Range<Instant>> mementos) {
         return concat(getTimeMap(identifier, mementos.stream()), mementos.stream().map(mementoToLink(identifier)));
     }
 
@@ -227,20 +229,19 @@ public final class MementoResource {
         return buffer.stream();
     };
 
-    private static Stream<Link> getTimeMap(final String identifier, final Stream<VersionRange> mementos) {
-        return mementos.reduce((acc, x) -> new VersionRange(acc.getFrom(), x.getUntil()))
-            .map(x -> Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP)
-                    .type(APPLICATION_LINK_FORMAT)
-                    .param(FROM, ofInstant(x.getFrom().minusNanos(1L).plusSeconds(1L), UTC).format(RFC_1123_DATE_TIME))
-                    .param(UNTIL, ofInstant(x.getUntil(), UTC).format(RFC_1123_DATE_TIME)).build())
-                // TODO use Optional::stream with JDK9
-                .map(Stream::of).orElseGet(Stream::empty);
+    private static Stream<Link> getTimeMap(final String identifier, final Stream<Range<Instant>> mementos) {
+        return mementos.reduce((acc, x) -> between(acc.getMinimum(), x.getMaximum()))
+            .map(x -> Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
+                .param(FROM, ofInstant(x.getMinimum().minusNanos(1L).plusSeconds(1L), UTC).format(RFC_1123_DATE_TIME))
+                .param(UNTIL, ofInstant(x.getMaximum(), UTC).format(RFC_1123_DATE_TIME)).build())
+            // TODO use Optional::stream with JDK9
+            .map(Stream::of).orElseGet(Stream::empty);
     }
 
-    private static Function<VersionRange, Link> mementoToLink(final String identifier) {
+    private static Function<Range<Instant>, Link> mementoToLink(final String identifier) {
         return range ->
-            Link.fromUri(identifier + "?version=" + range.getFrom().toEpochMilli()).rel(MEMENTO)
-                .param(DATETIME, ofInstant(range.getFrom().minusNanos(1L).plusSeconds(1L), UTC)
+            Link.fromUri(identifier + "?version=" + range.getMinimum().toEpochMilli()).rel(MEMENTO)
+                .param(DATETIME, ofInstant(range.getMinimum().minusNanos(1L).plusSeconds(1L), UTC)
                         .format(RFC_1123_DATE_TIME)).build();
     }
 }
