@@ -14,9 +14,11 @@
 package org.trellisldp.http;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static org.apache.commons.lang3.Range.between;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,6 +33,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -129,6 +132,18 @@ public class HttpBasedBinaryServiceTest {
         assertTrue(resolver.getContent(resource).isPresent());
         assertTrue(resolver.getContent(resource).map(this::uncheckedToString).get()
                 .contains("owl:Ontology"));
+    }
+
+    @Test
+    public void testGetContentSegment() {
+        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
+
+        final Optional<InputStream> res = resolver.getContent(resource, singletonList(between(5, 20)));
+        assertTrue(res.isPresent());
+        final String str = res.map(this::uncheckedToString).get();
+
+        assertFalse(str.contains("owl:Ontology"));
+        assertEquals(16, str.length());
     }
 
     @Test

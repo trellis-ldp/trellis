@@ -40,6 +40,7 @@
 
     <feature>trellis-api</feature>
 
+    <bundle dependency="true">mvn:org.apache.commons/commons-collections4/${commonsCollectionsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
 

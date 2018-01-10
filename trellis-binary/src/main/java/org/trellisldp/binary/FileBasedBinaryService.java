@@ -28,6 +28,7 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
+import static org.apache.commons.collections4.IteratorUtils.asEnumeration;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -38,11 +39,11 @@ import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Vector;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -105,13 +106,14 @@ public class FileBasedBinaryService implements BinaryService {
                 if (ranges.isEmpty()) {
                     return new FileInputStream(file);
                 } else {
-                    final Vector<InputStream> v = new Vector<>();
-                    for (Range<Integer> r : ranges) {
+                    final List<InputStream> iss = new ArrayList<>();
+                    for (final Range<Integer> r : ranges) {
                         final InputStream input = new FileInputStream(file);
-                        input.skip(r.getMinimum());
-                        v.add(new BoundedInputStream(input, r.getMaximum() - r.getMinimum()));
+                        final long skipped = input.skip(r.getMinimum());
+                        LOGGER.debug("Skipped {} bytes", skipped);
+                        iss.add(new BoundedInputStream(input, r.getMaximum() - r.getMinimum()));
                     }
-                    return new SequenceInputStream(v.elements());
+                    return new SequenceInputStream(asEnumeration(iss.iterator()));
                 }
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);

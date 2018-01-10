@@ -61,6 +61,7 @@ subprojects {
 
         /* Dependencies */
         commonsCodecVersion = '1.11'
+        commonsCollectionsVersion = '4.1'
         commonsIoVersion = '2.6'
         commonsLangVersion = '3.7'
         commonsRdfVersion = '0.5.0'

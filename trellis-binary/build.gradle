@@ -12,6 +12,7 @@ dependencies {
 
     implementation group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
     implementation group: 'commons-io', name: 'commons-io', version: commonsIoVersion
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: commonsCollectionsVersion
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
     testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
