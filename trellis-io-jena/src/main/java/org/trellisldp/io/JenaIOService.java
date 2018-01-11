@@ -87,8 +87,8 @@ public class JenaIOService implements IOService {
     private static final JenaRDF rdf = new JenaRDF();
 
     private static final Map<String, String> defaultProperties = unmodifiableMap(of(
-        new SimpleEntry<>("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png"),
-        new SimpleEntry<>("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css"))
+        new SimpleEntry<>("icon", "//www.trellisldp.org/assets/img/trellis.png"),
+        new SimpleEntry<>("css", "//www.trellisldp.org/assets/css/trellis.css"))
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     private final Set<String> whitelist;

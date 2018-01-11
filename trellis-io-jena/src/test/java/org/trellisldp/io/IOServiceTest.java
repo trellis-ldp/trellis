@@ -113,10 +113,8 @@ public class IOServiceTest {
         namespaces.put("rdf", RDF.uri);
 
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
 
         service = new JenaIOService(mockNamespaceService, properties,
                 singleton("http://www.w3.org/ns/anno.jsonld"), singleton("http://www.trellisldp.org/ns/"), mockCache);
@@ -217,10 +215,8 @@ public class IOServiceTest {
     @Test
     public void testJsonLdNullCache() throws UnsupportedEncodingException {
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final IOService myservice = new JenaIOService(null, properties, emptySet(),
@@ -367,10 +363,8 @@ public class IOServiceTest {
     @Test
     public void testHtmlSerializer3() {
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
         properties.put("template", "/resource-test.mustache");
 
         final IOService service4 = new JenaIOService(mockNamespaceService, properties);
@@ -390,10 +384,8 @@ public class IOServiceTest {
     @Test
     public void testHtmlSerializer4() throws Exception {
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css",
-                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
         properties.put("template", getClass().getResource("/resource-test.mustache").toURI().getPath());
 
         final IOService service4 = new JenaIOService(mockNamespaceService, properties);
