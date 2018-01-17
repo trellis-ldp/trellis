@@ -78,8 +78,12 @@ public interface ResourceService {
      */
     default Optional<IRI> getContainer(final IRI identifier) {
         final String id = identifier.getIRIString();
-        return of(id).map(x -> x.lastIndexOf('/')).filter(idx -> idx > 0).map(idx -> id.substring(0, idx))
-            .map(getInstance()::createIRI);
+        final Optional<IRI> parent = of(id).map(x -> x.lastIndexOf('/')).filter(idx -> idx > 0)
+            .map(idx -> id.substring(0, idx)).map(getInstance()::createIRI);
+        if (parent.isPresent()) {
+            return parent;
+        }
+        return of(TRELLIS_PREFIX).filter(x -> !id.equals(x)).map(getInstance()::createIRI);
     }
 
     /**
@@ -134,7 +138,6 @@ public interface ResourceService {
             }
         }
         return term;
-
     }
 
     /**

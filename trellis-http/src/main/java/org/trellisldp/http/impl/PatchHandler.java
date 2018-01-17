@@ -67,6 +67,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
 
@@ -158,6 +159,9 @@ public class PatchHandler extends BaseLdpHandler {
 
             // Add existing LDP type
             dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), RDF.type, res.getInteractionModel()));
+
+            // Add baseUrl
+            dataset.add(rdf.createQuad(null, res.getIdentifier(), DC.isPartOf, rdf.createIRI(baseUrl)));
 
             // Check any constraints
             final List<ConstraintViolation> violations = constraintServices.stream()

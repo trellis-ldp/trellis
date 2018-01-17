@@ -1,0 +1,38 @@
+apply plugin: 'osgi'
+
+description = 'Trellis Triplestore'
+
+ext {
+    moduleName = 'org.trellisldp.triplestore'
+}
+
+dependencies {
+    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api project(':trellis-api')
+
+    implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    implementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
+    implementation project(':trellis-vocabulary')
+
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation project(':trellis-audit');
+    testImplementation project(':trellis-id');
+}
+
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Automatic-Module-Name', moduleName
+        instruction 'Import-Package', '*'
+        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+    }
+}
+

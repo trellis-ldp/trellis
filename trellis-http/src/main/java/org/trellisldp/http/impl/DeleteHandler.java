@@ -35,6 +35,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -83,6 +84,9 @@ public class DeleteHandler extends BaseLdpHandler {
             // Add the audit quads
             audit.ifPresent(svc -> svc.deletion(res.getIdentifier(), session).stream()
                     .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
+
+            // Add the baseURL
+            dataset.add(rdf.createQuad(null, res.getIdentifier(), DC.isPartOf, rdf.createIRI(baseUrl)));
 
             // When deleting just the ACL graph, keep the user managed triples in tact
             if (ACL.equals(req.getExt())) {

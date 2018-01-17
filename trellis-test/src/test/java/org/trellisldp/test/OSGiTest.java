@@ -97,6 +97,13 @@ public class OSGiTest {
     }
 
     @Test
+    public void testTriplestoreInstallation() throws Exception {
+        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
+        featuresService.installFeature("trellis-triplestore");
+        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
+    }
+
+    @Test
     public void testHttpInstallation() throws Exception {
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-http")));
         featuresService.installFeature("trellis-http");

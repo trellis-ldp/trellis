@@ -185,6 +185,9 @@ public class PutHandler extends ContentBearingHandler {
             // Add LDP type
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
+            // Add the base URL
+            dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
+
             // Add user-supplied data
             if (LDP.NonRDFSource.equals(ldpType)) {
                 // Check the expected digest value

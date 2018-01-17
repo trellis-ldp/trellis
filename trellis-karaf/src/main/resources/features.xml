@@ -126,6 +126,16 @@
     <bundle>mvn:org.trellisldp/trellis-namespaces/${project.version}</bundle>
   </feature>
 
+  <feature name="trellis-triplestore" version="${project.version}">
+    <details>Installs the Triplestore-based Resource service</details>
+
+    <feature>commons-rdf-jena</feature>
+    <feature>trellis-api</feature>
+    <feature>trellis-vocabulary</feature>
+
+    <bundle>mvn:org.trellisldp/trellis-triplestore/${project.version}</bundle>
+  </feature>
+
   <feature name="trellis-vocabulary" version="${project.version}">
     <details>Installs the Trellis Vocabulary bundle</details>
 

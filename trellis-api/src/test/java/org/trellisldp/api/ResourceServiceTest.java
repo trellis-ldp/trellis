@@ -36,7 +36,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.simple.SimpleRDF;
+import org.apache.commons.rdf.jena.JenaRDF;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ import org.trellisldp.vocabulary.Trellis;
 @RunWith(JUnitPlatform.class)
 public class ResourceServiceTest {
 
-    private static final RDF rdf = new SimpleRDF();
+    private static final RDF rdf = new JenaRDF();
     private static final IRI existing = rdf.createIRI("trellis:repository/existing");
 
     @Mock
@@ -114,8 +114,11 @@ public class ResourceServiceTest {
 
     @Test
     public void testGetContainer() {
-        final IRI root = rdf.createIRI("trellis:repository");
-        assertEquals(of(root), mockResourceService.getContainer(existing));
+        final IRI root = rdf.createIRI("trellis:");
+        final IRI resource = rdf.createIRI("trellis:resource");
+        final IRI child = rdf.createIRI("trellis:resource/child");
+        assertEquals(of(root), mockResourceService.getContainer(resource));
+        assertEquals(of(resource), mockResourceService.getContainer(child));
         assertFalse(mockResourceService.getContainer(root).isPresent());
     }
 

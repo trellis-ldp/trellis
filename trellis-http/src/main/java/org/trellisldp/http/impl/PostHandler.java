@@ -122,6 +122,7 @@ public class PostHandler extends ContentBearingHandler {
                     svc.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                 .forEachOrdered(dataset::add));
 
+            dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
             // Add user-supplied data
