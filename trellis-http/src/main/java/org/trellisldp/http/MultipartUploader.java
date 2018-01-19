@@ -19,7 +19,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
@@ -51,9 +53,10 @@ import com.codahale.metrics.annotation.Timed;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Priority;
@@ -106,7 +109,8 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
 
     private static final RDF rdf = getInstance();
 
-    private static AuditService audit = ServiceLoader.load(AuditService.class).iterator().next();
+    private static Optional<AuditService> audit = of(load(AuditService.class).iterator())
+        .filter(Iterator::hasNext).map(Iterator::next);
 
     private static final Logger LOGGER = getLogger(MultipartUploader.class);
 
@@ -243,8 +247,8 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
             final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + upload.getPath());
 
             // Add Audit quads
-            audit.creation(identifier, upload.getSession()).stream()
-                .map(skolemizeQuads(resourceService, upload.getBaseUrl())).forEachOrdered(dataset::add);
+            audit.ifPresent(svc -> svc.creation(identifier, upload.getSession()).stream()
+                .map(skolemizeQuads(resourceService, upload.getBaseUrl())).forEachOrdered(dataset::add));
             dataset.add(rdf.createQuad(PreferServerManaged, identifier, type, NonRDFSource));
             dataset.add(rdf.createQuad(PreferServerManaged, identifier, DC.hasPart,
                         upload.getBinary().getIdentifier()));
