@@ -15,7 +15,6 @@ package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -46,7 +45,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
-import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDFTerm;
@@ -56,6 +54,8 @@ import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.modify.request.QuadDataAcc;
+import org.apache.jena.sparql.modify.request.UpdateDataInsert;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
@@ -279,23 +279,30 @@ public class TriplestoreResourceService implements ResourceService {
         req.add("DELETE WHERE { GRAPH <" + identifier.getIRIString() + "?ext=acl> { ?s ?p ?o } }");
         req.add("DELETE WHERE { GRAPH " + PreferServerManaged + " { " + identifier + " ?p ?o } }");
         if (isDelete) {
-            req.add("INSERT DATA {"
-                + "GRAPH " + PreferServerManaged + " {" + dataset.getGraph(PreferServerManaged).map(Graph::stream)
-                    .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
-                + "GRAPH <" + identifier.getIRIString() + "?ext=audit> {" + dataset.getGraph(PreferAudit)
-                    .map(Graph::stream).orElseGet(Stream::empty)
-                    .map(Triple::toString).collect(joining(NL)) + "}}");
+            final QuadDataAcc sink = new QuadDataAcc();
+            dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
+                .map(rdf::asJenaQuad).forEach(sink::addQuad);
+            dataset.getGraph(PreferAudit).ifPresent(g -> g.stream().map(t ->
+                        rdf.createQuad(rdf.createIRI(identifier.getIRIString() + "?ext=audit"),
+                            t.getSubject(), t.getPredicate(), t.getObject()))
+                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
+            req.add(new UpdateDataInsert(sink));
         } else {
-            req.add("INSERT DATA {"
-                + "GRAPH " + PreferServerManaged + " {" + dataset.getGraph(PreferServerManaged).map(Graph::stream)
-                    .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
-                + "GRAPH " + identifier + " {" + dataset.getGraph(PreferUserManaged).map(Graph::stream)
-                    .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
-                + "GRAPH <" + identifier.getIRIString() + "?ext=acl> {" + dataset.getGraph(PreferAccessControl)
-                    .map(Graph::stream).orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}"
-                + "GRAPH <" + identifier.getIRIString() + "?ext=audit> {" + dataset.getGraph(PreferAudit)
-                    .map(Graph::stream).orElseGet(Stream::empty).map(Triple::toString)
-                    .collect(joining(NL)) + "}}");
+            final QuadDataAcc sink = new QuadDataAcc();
+            dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
+                .map(rdf::asJenaQuad).forEach(sink::addQuad);
+            dataset.getGraph(PreferUserManaged).ifPresent(g -> g.stream()
+                    .map(t -> rdf.createQuad(identifier, t.getSubject(), t.getPredicate(), t.getObject()))
+                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
+            dataset.getGraph(PreferAccessControl).ifPresent(g -> g.stream().map(t ->
+                        rdf.createQuad(rdf.createIRI(identifier.getIRIString() + "?ext=acl"),
+                            t.getSubject(), t.getPredicate(), t.getObject()))
+                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
+            dataset.getGraph(PreferAudit).ifPresent(g -> g.stream().map(t ->
+                        rdf.createQuad(rdf.createIRI(identifier.getIRIString() + "?ext=audit"),
+                            t.getSubject(), t.getPredicate(), t.getObject()))
+                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
+            req.add(new UpdateDataInsert(sink));
         }
 
         if (isCreate) {
