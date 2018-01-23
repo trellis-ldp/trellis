@@ -114,11 +114,6 @@ public class TriplestoreResourceService implements ResourceService {
     public Future<Boolean> put(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
         return supplyAsync(() -> {
             final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
-            final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
-
-            // Get the base URL
-            final Optional<String> baseUrl = dataset.getGraph().stream(identifier, DC.isPartOf, null)
-                .map(Triple::getObject).map(term -> ((IRI) term).getIRIString()).findAny();
 
             // Set the LDP type
             dataset.remove(of(PreferServerManaged), identifier, RDF.type, null);
@@ -149,163 +144,12 @@ public class TriplestoreResourceService implements ResourceService {
 
                 // TODO save current state of resource to the versioning system
             }
-
-            // Set the time
             final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
-            dataset.add(PreferServerManaged, identifier, DC.modified, time);
-
-            /*
-             * DELETE WHERE { GRAPH <IDENTIFIER> { ?s ?p ?o } };
-             * DELETE WHERE { GRAPH <IDENTIFIER?ext=acl> { ?s ?p ?o } };
-             * DELETE WHERE { GRAPH trellis:PreferServerManaged { <IDENTIFIER> ?p ?o } };
-             * INSERT DATA {
-             *   GRAPH <IDENTIFIER> { ... }
-             *   GRAPH <IDENTIFIER?ext=acl> { ... }
-             *   GRAPH trellis:PreferServerManaged { ... }
-             *   GRAPH <IDENTIFIER?ext=audit> { ... }
-             * };
-             * // this next clause happens first in an HTTP delete operation
-             * WITH trellis:PreferServerManaged
-             *   DELETE { ?parent dc:modified ?x }
-             *   INSERT { ?parent dc:modified <TIME> }
-             *   WHERE {
-             *     <IDENTIFIER> dc:isPartOf ?parent .
-             *     ?parent rdf:type ldp:Container
-             * }
-             */
-            // TODO -- start using Jena primitives instead of String concatenation
-            final UpdateRequest req = new UpdateRequest();
-            if (isDelete) {
-                // The parent container's modified date is updated on delete and create actions.
-                req.add("WITH " + PreferServerManaged
-                        + "DELETE" + BRL + "?parent" + WS + DC.modified + WS + "?modified" + BRR
-                        + "INSERT" + BRL + "?parent" + WS + DC.modified + WS + time + BRR
-                        + "WHERE" + BRL + identifier + WS + DC.isPartOf + WS + "?parent . "
-                            + "?parent" + WS + DC.modified + WS + "?modified . "
-                            + "MINUS { ?parent " + RDF.type + WS + LDP.RDFSource + BRR
-                            + "MINUS { ?parent " + RDF.type + WS + LDP.NonRDFSource + BRR + BRR);
-
-                // Likewise the member resource.
-                req.add("WITH  " + PreferServerManaged
-                        + "DELETE { ?member " + DC.modified + WS + "?modified }"
-                        + "INSERT { ?member " + DC.modified + WS + time + BRR
-                        + "WHERE { " + identifier + WS + DC.isPartOf + "   ?parent . "
-                            + "?parent " + LDP.membershipResource + " ?member ."
-                            + "?member " + DC.modified + "  ?modified }");
-            }
-
-            req.add("DELETE WHERE { GRAPH " + identifier + " { ?s ?p ?o } };");
-            req.add("DELETE WHERE { GRAPH <" + identifier.getIRIString() + "?ext=acl> { ?s ?p ?o } }");
-            req.add("DELETE WHERE { GRAPH " + PreferServerManaged + " { " + identifier + " ?p ?o } }");
-            if (isDelete) {
-                req.add("INSERT DATA {"
-                    + "GRAPH " + PreferServerManaged + " {" + dataset.getGraph(PreferServerManaged).map(Graph::stream)
-                        .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
-                    + "GRAPH <" + identifier.getIRIString() + "?ext=audit> {" + dataset.getGraph(PreferAudit)
-                        .map(Graph::stream).orElseGet(Stream::empty)
-                        .map(Triple::toString).collect(joining(NL)) + "}}");
-            } else {
-                req.add("INSERT DATA {"
-                    + "GRAPH " + PreferServerManaged + " {" + dataset.getGraph(PreferServerManaged).map(Graph::stream)
-                        .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
-                    + "GRAPH " + identifier + " {" + dataset.getGraph(PreferUserManaged).map(Graph::stream)
-                        .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
-                    + "GRAPH <" + identifier.getIRIString() + "?ext=acl> {" + dataset.getGraph(PreferAccessControl)
-                        .map(Graph::stream).orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}"
-                    + "GRAPH <" + identifier.getIRIString() + "?ext=audit> {" + dataset.getGraph(PreferAudit)
-                        .map(Graph::stream).orElseGet(Stream::empty).map(Triple::toString)
-                        .collect(joining(NL)) + "}}");
-            }
-
-            if (isCreate) {
-                // The parent container's modified date is updated on delete and create actions.
-                req.add("WITH  " + PreferServerManaged
-                        + " DELETE { ?parent " + DC.modified + " ?modified } "
-                        + " INSERT { ?parent " + DC.modified + WS + time + BRR
-                        + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent . "
-                            + "?parent " + DC.modified + " ?modified . "
-                            + "MINUS {  ?parent " + RDF.type + WS + LDP.RDFSource + BRR
-                            + "MINUS {  ?parent " + RDF.type + WS + LDP.NonRDFSource + BRR + BRR);
-
-                // Likewise the member resource.
-                req.add("WITH  " + PreferServerManaged
-                        + " DELETE { ?member " + DC.modified + " ?modified } "
-                        + " INSERT { ?member " + DC.modified + WS + time + BRR
-                        + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent . "
-                            + " ?parent " + LDP.membershipResource + " ?member ."
-                            + " ?parent " + LDP.hasMemberRelation + " ?any ."
-                            + " ?member " + DC.modified + " ?modified }");
-            } else if (!isDelete) {
-                // Indirect containers member resources are _always_ updated.
-                req.add("WITH " + PreferServerManaged
-                        + " DELETE { ?member " + DC.modified + " ?modified } "
-                        + " INSERT { ?member " + DC.modified + WS + time + BRR
-                        + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent ."
-                            + "  ?parent " + LDP.membershipResource + " ?member ."
-                            + "  ?parent " + RDF.type + WS + LDP.IndirectContainer + " ."
-                            + "  ?member " + DC.modified + " ?modified }");
-            }
 
             try {
-                rdfConnection.update(req);
+                rdfConnection.update(buildUpdateRequest(identifier, time, dataset));
+                emitEvents(identifier, time, dataset);
 
-                eventService.ifPresent(svc -> {
-                    svc.emit(new SimpleEvent(getUrl(identifier, baseUrl), dataset));
-                    getContainer(identifier).ifPresent(parent -> {
-                        /*
-                         * SELECT ?predicate ?object ?subject ?memberDate
-                         * WHERE {
-                         *   GRAPH trellis:PreferServerManaged {
-                         *     <PARENT> rdf:type ?predicate
-                         *     <PARENT> dc:modified ?object
-                         *     OPTIONAL {
-                         *       <PARENT> ldp:memberResource ?subject
-                         *       ?subject dc:modified ?memberDate
-                         *     }
-                         *   }
-                         * }
-                         */
-                        final Var memberDate = Var.alloc("memberDate");
-
-                        final Query q = new Query();
-                        q.setQuerySelectType();
-                        q.addResultVar(memberDate);
-                        q.addResultVar(SUBJECT);
-                        q.addResultVar(PREDICATE);
-                        q.addResultVar(OBJECT);
-
-                        final ElementPathBlock epb1 = new ElementPathBlock();
-                        epb1.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(RDF.type), PREDICATE));
-                        epb1.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(DC.modified), OBJECT));
-
-                        final ElementPathBlock epb2 = new ElementPathBlock();
-                        epb2.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(LDP.membershipResource), SUBJECT));
-                        epb2.addTriple(create(SUBJECT, rdf.asJenaNode(DC.modified), memberDate));
-
-                        final ElementGroup eg = new ElementGroup();
-                        eg.addElement(epb1);
-                        eg.addElement(new ElementOptional(epb2));
-                        q.setQueryPattern(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), eg));
-                        rdfConnection.querySelect(q, qs -> {
-                            final IRI type = getPredicate(qs);
-                            final Optional<IRI> member = ofNullable(qs.get("subject")).map(RDFNode::asNode)
-                                .map(rdf::asRDFTerm).map(t -> (IRI) t).filter(t -> !t.equals(parent));
-                            final Boolean memberIsModified = ofNullable(qs.get("memberDate"))
-                                .map(RDFNode::asNode).map(rdf::asRDFTerm).filter(time::equals).isPresent();
-                            if (isCreate || isDelete) {
-                                if (type.getIRIString().endsWith("Container")) {
-                                    svc.emit(new SimpleEvent(getUrl(parent, baseUrl), dataset));
-                                }
-                                if (LDP.DirectContainer.equals(type) && memberIsModified) {
-                                    member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, baseUrl), dataset)));
-                                }
-                            }
-                            if (LDP.IndirectContainer.equals(type)) {
-                                member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, baseUrl), dataset)));
-                            }
-                        });
-                    });
-                });
                 return true;
             } catch (final Exception ex) {
                 LOGGER.error("Could not update data: {}", ex.getMessage());
@@ -313,6 +157,178 @@ public class TriplestoreResourceService implements ResourceService {
             return false;
         });
     }
+
+    private void emitEvents(final IRI identifier, final Literal time, final Dataset dataset) {
+
+        // Get the base URL
+        final Optional<String> baseUrl = dataset.getGraph().stream(identifier, DC.isPartOf, null)
+            .map(Triple::getObject).map(term -> ((IRI) term).getIRIString()).findAny();
+
+        eventService.ifPresent(svc -> {
+            svc.emit(new SimpleEvent(getUrl(identifier, baseUrl), dataset));
+            getContainer(identifier).ifPresent(parent ->
+                    emitEventsForAdjacentResources(svc, parent, time, baseUrl, dataset));
+        });
+    }
+
+    private void emitEventsForAdjacentResources(final EventService svc, final IRI parent,
+            final Literal time, final Optional<String> baseUrl, final Dataset dataset) {
+        /*
+         * SELECT ?predicate ?object ?subject ?memberDate
+         * WHERE {
+         *   GRAPH trellis:PreferServerManaged {
+         *     <PARENT> rdf:type ?predicate
+         *     <PARENT> dc:modified ?object
+         *     OPTIONAL {
+         *       <PARENT> ldp:memberResource ?subject
+         *       ?subject dc:modified ?memberDate
+         *     }
+         *   }
+         * }
+         */
+        final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
+        final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
+        final Var memberDate = Var.alloc("memberDate");
+
+        final Query q = new Query();
+        q.setQuerySelectType();
+        q.addResultVar(memberDate);
+        q.addResultVar(SUBJECT);
+        q.addResultVar(PREDICATE);
+        q.addResultVar(OBJECT);
+
+        final ElementPathBlock epb1 = new ElementPathBlock();
+        epb1.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(RDF.type), PREDICATE));
+        epb1.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(DC.modified), OBJECT));
+
+        final ElementPathBlock epb2 = new ElementPathBlock();
+        epb2.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(LDP.membershipResource), SUBJECT));
+        epb2.addTriple(create(SUBJECT, rdf.asJenaNode(DC.modified), memberDate));
+
+        final ElementGroup eg = new ElementGroup();
+        eg.addElement(epb1);
+        eg.addElement(new ElementOptional(epb2));
+        q.setQueryPattern(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), eg));
+        rdfConnection.querySelect(q, qs -> {
+            final IRI type = getPredicate(qs);
+            final Optional<IRI> member = ofNullable(qs.get("subject")).map(RDFNode::asNode)
+                .map(rdf::asRDFTerm).map(t -> (IRI) t).filter(t -> !t.equals(parent));
+            final Boolean memberIsModified = ofNullable(qs.get("memberDate"))
+                .map(RDFNode::asNode).map(rdf::asRDFTerm).filter(time::equals).isPresent();
+            if (isCreate || isDelete) {
+                if (type.getIRIString().endsWith("Container")) {
+                    svc.emit(new SimpleEvent(getUrl(parent, baseUrl), dataset));
+                }
+                if (LDP.DirectContainer.equals(type) && memberIsModified) {
+                    member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, baseUrl), dataset)));
+                }
+            }
+            if (LDP.IndirectContainer.equals(type)) {
+                member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, baseUrl), dataset)));
+            }
+        });
+    }
+
+    private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset) {
+        /*
+         * DELETE WHERE { GRAPH <IDENTIFIER> { ?s ?p ?o } };
+         * DELETE WHERE { GRAPH <IDENTIFIER?ext=acl> { ?s ?p ?o } };
+         * DELETE WHERE { GRAPH trellis:PreferServerManaged { <IDENTIFIER> ?p ?o } };
+         * INSERT DATA {
+         *   GRAPH <IDENTIFIER> { ... }
+         *   GRAPH <IDENTIFIER?ext=acl> { ... }
+         *   GRAPH trellis:PreferServerManaged { ... }
+         *   GRAPH <IDENTIFIER?ext=audit> { ... }
+         * };
+         * // this next clause happens first in an HTTP delete operation
+         * WITH trellis:PreferServerManaged
+         *   DELETE { ?parent dc:modified ?x }
+         *   INSERT { ?parent dc:modified <TIME> }
+         *   WHERE {
+         *     <IDENTIFIER> dc:isPartOf ?parent .
+         *     ?parent rdf:type ldp:Container
+         * }
+         */
+        // TODO -- start using Jena primitives instead of String concatenation
+        // Set the time
+        dataset.add(PreferServerManaged, identifier, DC.modified, time);
+
+        final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
+        final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
+        final UpdateRequest req = new UpdateRequest();
+        if (isDelete) {
+            // The parent container's modified date is updated on delete and create actions.
+            req.add("WITH " + PreferServerManaged
+                    + "DELETE" + BRL + "?parent" + WS + DC.modified + WS + "?modified" + BRR
+                    + "INSERT" + BRL + "?parent" + WS + DC.modified + WS + time + BRR
+                    + "WHERE" + BRL + identifier + WS + DC.isPartOf + WS + "?parent . "
+                        + "?parent" + WS + DC.modified + WS + "?modified . "
+                        + "MINUS { ?parent " + RDF.type + WS + LDP.RDFSource + BRR
+                        + "MINUS { ?parent " + RDF.type + WS + LDP.NonRDFSource + BRR + BRR);
+
+            // Likewise the member resource.
+            req.add("WITH  " + PreferServerManaged
+                    + "DELETE { ?member " + DC.modified + WS + "?modified }"
+                    + "INSERT { ?member " + DC.modified + WS + time + BRR
+                    + "WHERE { " + identifier + WS + DC.isPartOf + "   ?parent . "
+                        + "?parent " + LDP.membershipResource + " ?member ."
+                        + "?member " + DC.modified + "  ?modified }");
+        }
+
+        req.add("DELETE WHERE { GRAPH " + identifier + " { ?s ?p ?o } };");
+        req.add("DELETE WHERE { GRAPH <" + identifier.getIRIString() + "?ext=acl> { ?s ?p ?o } }");
+        req.add("DELETE WHERE { GRAPH " + PreferServerManaged + " { " + identifier + " ?p ?o } }");
+        if (isDelete) {
+            req.add("INSERT DATA {"
+                + "GRAPH " + PreferServerManaged + " {" + dataset.getGraph(PreferServerManaged).map(Graph::stream)
+                    .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
+                + "GRAPH <" + identifier.getIRIString() + "?ext=audit> {" + dataset.getGraph(PreferAudit)
+                    .map(Graph::stream).orElseGet(Stream::empty)
+                    .map(Triple::toString).collect(joining(NL)) + "}}");
+        } else {
+            req.add("INSERT DATA {"
+                + "GRAPH " + PreferServerManaged + " {" + dataset.getGraph(PreferServerManaged).map(Graph::stream)
+                    .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
+                + "GRAPH " + identifier + " {" + dataset.getGraph(PreferUserManaged).map(Graph::stream)
+                    .orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}\n"
+                + "GRAPH <" + identifier.getIRIString() + "?ext=acl> {" + dataset.getGraph(PreferAccessControl)
+                    .map(Graph::stream).orElseGet(Stream::empty).map(Triple::toString).collect(joining(NL)) + "}"
+                + "GRAPH <" + identifier.getIRIString() + "?ext=audit> {" + dataset.getGraph(PreferAudit)
+                    .map(Graph::stream).orElseGet(Stream::empty).map(Triple::toString)
+                    .collect(joining(NL)) + "}}");
+        }
+
+        if (isCreate) {
+            // The parent container's modified date is updated on delete and create actions.
+            req.add("WITH  " + PreferServerManaged
+                    + " DELETE { ?parent " + DC.modified + " ?modified } "
+                    + " INSERT { ?parent " + DC.modified + WS + time + BRR
+                    + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent . "
+                        + "?parent " + DC.modified + " ?modified . "
+                        + "MINUS {  ?parent " + RDF.type + WS + LDP.RDFSource + BRR
+                        + "MINUS {  ?parent " + RDF.type + WS + LDP.NonRDFSource + BRR + BRR);
+
+            // Likewise the member resource.
+            req.add("WITH  " + PreferServerManaged
+                    + " DELETE { ?member " + DC.modified + " ?modified } "
+                    + " INSERT { ?member " + DC.modified + WS + time + BRR
+                    + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent . "
+                        + " ?parent " + LDP.membershipResource + " ?member ."
+                        + " ?parent " + LDP.hasMemberRelation + " ?any ."
+                        + " ?member " + DC.modified + " ?modified }");
+        } else if (!isDelete) {
+            // Indirect containers member resources are _always_ updated.
+            req.add("WITH " + PreferServerManaged
+                    + " DELETE { ?member " + DC.modified + " ?modified } "
+                    + " INSERT { ?member " + DC.modified + WS + time + BRR
+                    + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent ."
+                        + "  ?parent " + LDP.membershipResource + " ?member ."
+                        + "  ?parent " + RDF.type + WS + LDP.IndirectContainer + " ."
+                        + "  ?member " + DC.modified + " ?modified }");
+        }
+        return req;
+    }
+
 
     private String getUrl(final IRI identifier, final Optional<String> baseUrl) {
         if (baseUrl.isPresent()) {

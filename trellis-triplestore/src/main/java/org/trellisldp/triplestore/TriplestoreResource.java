@@ -133,14 +133,11 @@ public class TriplestoreResource implements Resource {
         final ElementPathBlock epb = new ElementPathBlock();
         epb.addTriple(create(rdf.asJenaNode(identifier), PREDICATE, OBJECT));
 
-        final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
-
         final ElementGroup elg = new ElementGroup();
-        elg.addElement(ng);
+        elg.addElement(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb));
         q.setQueryPattern(elg);
 
-        rdfConnection.querySelect(q, qs ->
-            graph.add(identifier, getPredicate(qs), getObject(qs)));
+        rdfConnection.querySelect(q, qs -> graph.add(identifier, getPredicate(qs), getObject(qs)));
     }
 
     @Override
@@ -242,37 +239,10 @@ public class TriplestoreResource implements Resource {
                     triple.getSubject(), triple.getPredicate(), triple.getObject()));
     }
 
-    private Stream<Quad> fetchAuditQuads() {
+    private Stream<Quad> fetchAllFromGraph(final String fromGraphName, final IRI toGraphName) {
         /*
          * SELECT ?subject ?predicate ?object
-         * WHERE { GRAPH <IDENTIFIER?ext=audit> { ?subject ?predicate ?object } }
-        */
-        final Query q = new Query();
-        q.setQuerySelectType();
-        q.addResultVar(SUBJECT);
-        q.addResultVar(PREDICATE);
-        q.addResultVar(OBJECT);
-
-        final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(SUBJECT, PREDICATE, OBJECT));
-
-        final ElementNamedGraph ng = new ElementNamedGraph(createURI(identifier.getIRIString() + "?ext=audit"), epb);
-
-        final ElementGroup elg = new ElementGroup();
-        elg.addElement(ng);
-
-        q.setQueryPattern(elg);
-
-        final Stream.Builder<Quad> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(Trellis.PreferAudit,
-                        getSubject(qs), getPredicate(qs), getObject(qs))));
-        return builder.build();
-    }
-
-    private Stream<Quad> fetchAclQuads() {
-        /*
-         * SELECT ?subject ?predicate ?object
-         * WHERE { GRAPH <IDENTIFIER?ext=audit> { ?subject ?predicate ?object } }
+         * WHERE { GRAPH <GRAPH_NAME> { ?subject ?predicate ?object } }
          */
         final Query q = new Query();
         q.setQuerySelectType();
@@ -283,17 +253,31 @@ public class TriplestoreResource implements Resource {
         final ElementPathBlock epb = new ElementPathBlock();
         epb.addTriple(create(SUBJECT, PREDICATE, OBJECT));
 
-        final ElementNamedGraph ng = new ElementNamedGraph(createURI(identifier.getIRIString() + "?ext=acl"), epb);
-
         final ElementGroup elg = new ElementGroup();
-        elg.addElement(ng);
+        elg.addElement(new ElementNamedGraph(createURI(fromGraphName), epb));
 
         q.setQueryPattern(elg);
 
         final Stream.Builder<Quad> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(Trellis.PreferAccessControl,
+        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(toGraphName,
                         getSubject(qs), getPredicate(qs), getObject(qs))));
         return builder.build();
+    }
+
+    private Stream<Quad> fetchAuditQuads() {
+        /*
+         * SELECT ?subject ?predicate ?object
+         * WHERE { GRAPH <IDENTIFIER?ext=audit> { ?subject ?predicate ?object } }
+        */
+        return fetchAllFromGraph(identifier.getIRIString() + "?ext=audit", Trellis.PreferAudit);
+    }
+
+    private Stream<Quad> fetchAclQuads() {
+        /*
+         * SELECT ?subject ?predicate ?object
+         * WHERE { GRAPH <IDENTIFIER?ext=audit> { ?subject ?predicate ?object } }
+         */
+        return fetchAllFromGraph(identifier.getIRIString() + "?ext=acl", Trellis.PreferAccessControl);
     }
 
     private Stream<Quad> fetchMembershipQuads() {
@@ -490,24 +474,6 @@ public class TriplestoreResource implements Resource {
          * SELECT ?subject ?predicate ?object
          * WHERE { GRAPH <IDENTIFIER> { ?subject ?predicate ?object } }
         */
-        final Query q = new Query();
-        q.setQuerySelectType();
-        q.addResultVar(SUBJECT);
-        q.addResultVar(PREDICATE);
-        q.addResultVar(OBJECT);
-
-        final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(SUBJECT, PREDICATE, OBJECT));
-
-        final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(identifier), epb);
-
-        final ElementGroup elg = new ElementGroup();
-        elg.addElement(ng);
-        q.setQueryPattern(elg);
-
-        final Stream.Builder<Quad> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(Trellis.PreferUserManaged,
-                        getSubject(qs), getPredicate(qs), getObject(qs))));
-        return builder.build();
+        return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
     }
 }
