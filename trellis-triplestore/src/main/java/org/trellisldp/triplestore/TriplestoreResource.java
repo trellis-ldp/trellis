@@ -124,6 +124,7 @@ public class TriplestoreResource implements Resource {
          *   GRAPH <http://www.trellisldp.org/ns/trellis#PreferServerManaged> {
          *     <identifier> ?predicate ?object } }
          */
+        LOGGER.debug("Fetching data from RDF datastore");
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(PREDICATE);

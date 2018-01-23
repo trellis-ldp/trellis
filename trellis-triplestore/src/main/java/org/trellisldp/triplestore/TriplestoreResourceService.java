@@ -45,7 +45,6 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -386,21 +385,19 @@ public class TriplestoreResourceService implements ResourceService {
              *       acl:accessTo <IDENTIFIER> }
              * }
              */
+            // TODO -- refactor this using Jena objects instead of String concatenation
             final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
-            final BlankNode bnode = rdf.createBlankNode();
             final IRI auth = rdf.createIRI(TRELLIS_PREFIX + "#auth");
-            final Dataset dataset = rdf.createDataset();
-            dataset.add(PreferServerManaged, root, RDF.type, LDP.Container);
-            auditService.ifPresent(svc -> svc.creation(root, new SimpleSession(AdministratorAgent))
-                    .forEach(dataset::add));
+            final String auditTriples = auditService.map(svc ->
+                    svc.creation(root, new SimpleSession(AdministratorAgent)).stream()
+                        .map(quad -> quad.getSubject() + " " + quad.getPredicate() + " " + quad.getObject() + " . ")
+                        .collect(joining("\n"))).orElse("");
 
             final UpdateRequest update = new UpdateRequest();
             update.add("INSERT DATA { GRAPH " + PreferServerManaged + BRL
                         + rdf.createTriple(root, RDF.type, LDP.Container)
                         + rdf.createTriple(root, DC.modified, time) + BRR
-                    + " GRAPH <" + root.getIRIString() + "?ext=audit> {"
-                        + dataset.getGraph(PreferAudit).map(Graph::stream).orElseGet(Stream::empty)
-                            .map(Triple::toString).collect(joining("\n")) + BRR
+                    + " GRAPH <" + root.getIRIString() + "?ext=audit> {" + auditTriples + BRR
                     + " GRAPH <" + root.getIRIString() + "?ext=acl> {"
                         + rdf.createTriple(auth, ACL.mode, ACL.Read)
                         + rdf.createTriple(auth, ACL.mode, ACL.Write)
