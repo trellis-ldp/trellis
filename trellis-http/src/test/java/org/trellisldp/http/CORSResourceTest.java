@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 
@@ -118,12 +118,12 @@ public class CORSResourceTest extends JerseyTest {
     private static final String BINARY_PATH = REPO1 + "/binary";
     private static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
 
-    private static final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + RESOURCE_PATH);
-    private static final IRI root = rdf.createIRI(TRELLIS_PREFIX + REPO1);
-    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_PREFIX + BINARY_PATH);
+    private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
+    private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX + REPO1);
+    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
     private static final IRI binaryInternalIdentifier = rdf.createIRI("file:some/file");
-    private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_PREFIX + NON_EXISTENT_PATH);
-    private static final IRI childIdentifier = rdf.createIRI(TRELLIS_PREFIX + CHILD_PATH);
+    private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
+    private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
 
     protected static final Set<IRI> allModes = new HashSet<>();
 
@@ -222,7 +222,7 @@ public class CORSResourceTest extends JerseyTest {
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(BASE_URL)) {
-                    return rdf.createIRI(TRELLIS_PREFIX + iri.substring(BASE_URL.length()));
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(BASE_URL.length()));
                 }
             }
             return term;
@@ -231,8 +231,8 @@ public class CORSResourceTest extends JerseyTest {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(TRELLIS_PREFIX)) {
-                    return rdf.createIRI(BASE_URL + iri.substring(TRELLIS_PREFIX.length()));
+                if (iri.startsWith(TRELLIS_DATA_PREFIX)) {
+                    return rdf.createIRI(BASE_URL + iri.substring(TRELLIS_DATA_PREFIX.length()));
                 }
             }
             return term;

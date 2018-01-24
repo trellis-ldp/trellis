@@ -30,6 +30,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 
 import java.time.Instant;
 
@@ -68,7 +69,7 @@ public class TriplestoreResourceServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
     private static final IdentifierService idService = new UUIDGenerator();
-    private static final IRI root = rdf.createIRI("trellis:");
+    private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final String baseUrl = "http://example.com/";
 
     private final Instant created = now();
@@ -101,8 +102,8 @@ public class TriplestoreResourceServiceTest {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
-        assertFalse(svc.get(rdf.createIRI("trellis:missing")).isPresent());
-        assertFalse(svc.get(rdf.createIRI("trellis:missing"), now()).isPresent());
+        assertFalse(svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).isPresent());
+        assertFalse(svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing"), now()).isPresent());
     }
 
     @Test
@@ -110,7 +111,8 @@ public class TriplestoreResourceServiceTest {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
-        assertThrows(UnsupportedOperationException.class, () -> svc.purge(rdf.createIRI("trellis:identifier")));
+        assertThrows(UnsupportedOperationException.class, () ->
+                svc.purge(rdf.createIRI(TRELLIS_DATA_PREFIX + "identifier")));
     }
 
     @Test
@@ -119,27 +121,26 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
         assertThrows(UnsupportedOperationException.class, () ->
-                svc.compact(rdf.createIRI("trellis:identifier"), now(), now()));
+                svc.compact(rdf.createIRI(TRELLIS_DATA_PREFIX + "identifier"), now(), now()));
     }
 
     @Test
     public void testScan() {
+        final IRI one = rdf.createIRI(TRELLIS_DATA_PREFIX + "1");
+        final IRI two = rdf.createIRI(TRELLIS_DATA_PREFIX + "2");
+        final IRI three = rdf.createIRI(TRELLIS_DATA_PREFIX + "3");
         final JenaDataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferServerManaged, rdf.createIRI("trellis:1"), RDF.type, LDP.Container);
-        dataset.add(Trellis.PreferServerManaged, rdf.createIRI("trellis:2"), RDF.type, LDP.NonRDFSource);
-        dataset.add(Trellis.PreferServerManaged, rdf.createIRI("trellis:3"), RDF.type, LDP.RDFSource);
+        dataset.add(Trellis.PreferServerManaged, one, RDF.type, LDP.Container);
+        dataset.add(Trellis.PreferServerManaged, two, RDF.type, LDP.NonRDFSource);
+        dataset.add(Trellis.PreferServerManaged, three, RDF.type, LDP.RDFSource);
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
         assertEquals(4L, svc.scan().count());
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(root)
-                    && t.getObject().equals(LDP.Container)));
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(rdf.createIRI("trellis:1"))
-                    && t.getObject().equals(LDP.Container)));
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(rdf.createIRI("trellis:2"))
-                    && t.getObject().equals(LDP.NonRDFSource)));
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(rdf.createIRI("trellis:3"))
-                    && t.getObject().equals(LDP.RDFSource)));
+        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(root) && t.getObject().equals(LDP.Container)));
+        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(one) && t.getObject().equals(LDP.Container)));
+        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(two) && t.getObject().equals(LDP.NonRDFSource)));
+        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(three) && t.getObject().equals(LDP.RDFSource)));
     }
 
     @Test
@@ -191,8 +192,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(rdf.createDataset().asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         assertFalse(svc.getContainer(root).isPresent());
         assertTrue(svc.getContainer(resource).isPresent());
         assertEquals(root, svc.getContainer(resource).get());
@@ -207,7 +208,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, null);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -243,7 +244,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI binary = rdf.createIRI("foo:binary");
         final Instant binaryTime = now();
         final Dataset dataset = rdf.createDataset();
@@ -284,7 +285,7 @@ public class TriplestoreResourceServiceTest {
         });
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI("trellis:resource/notachild");
+        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
         dataset.clear();
         dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
@@ -329,7 +330,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -364,7 +365,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
@@ -449,7 +450,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = spy(new TriplestoreResourceService(rdfConnection, idService, mockEventService));
 
-        final IRI resource = rdf.createIRI("trellis:resource5");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource5");
         // build a dataset without the baseURL data
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -475,7 +476,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -513,7 +514,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -593,7 +594,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -631,7 +632,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
@@ -716,8 +717,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI members = rdf.createIRI("trellis:members");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -793,7 +794,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -853,8 +854,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI members = rdf.createIRI("trellis:members");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -890,7 +891,7 @@ public class TriplestoreResourceServiceTest {
 
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI("trellis:resource2");
+        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
         dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -974,7 +975,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
@@ -1027,7 +1028,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(9)).emit(any());
 
         // Now add a child resources to the other ldp-dc
-        final IRI child2 = rdf.createIRI("trellis:resource2/child");
+        final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         dataset.clear();
         dataset.add(null, child2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
@@ -1087,8 +1088,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI members = rdf.createIRI("trellis:members");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -1125,7 +1126,7 @@ public class TriplestoreResourceServiceTest {
 
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI("trellis:resource2");
+        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
         dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
@@ -1209,7 +1210,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
@@ -1260,7 +1261,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(8)).emit(any());
 
         // Now add a child resources to the other ldp-dc
-        final IRI child2 = rdf.createIRI("trellis:resource2/child");
+        final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         dataset.clear();
         dataset.add(null, child2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
@@ -1318,8 +1319,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI members = rdf.createIRI("trellis:members");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -1396,7 +1397,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
@@ -1457,8 +1458,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI members = rdf.createIRI("trellis:members");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -1535,7 +1536,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
@@ -1596,8 +1597,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI members = rdf.createIRI("trellis:members");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -1675,7 +1676,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label1 = rdf.createLiteral("Label", "en");
         final Literal label2 = rdf.createLiteral("Zeichnung", "de");
         dataset.clear();
@@ -1741,8 +1742,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI members = rdf.createIRI("trellis:members");
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -1779,7 +1780,7 @@ public class TriplestoreResourceServiceTest {
 
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI("trellis:resource2");
+        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
         dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
@@ -1864,7 +1865,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-ic
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
         dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
@@ -1918,7 +1919,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(9)).emit(any());
 
         // Now add the child resources to the ldp-ic
-        final IRI child2 = rdf.createIRI("trellis:resource2/child");
+        final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         final Literal label2 = rdf.createLiteral("label2");
         dataset.clear();
         dataset.add(null, child2, DC.isPartOf, rdf.createIRI(baseUrl));

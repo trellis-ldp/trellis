@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
@@ -131,7 +131,7 @@ public class PutHandlerTest {
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(baseUrl)) {
-                    return rdf.createIRI(TRELLIS_PREFIX + iri.substring(baseUrl.length()));
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(baseUrl.length()));
                 }
             }
             return term;
@@ -339,7 +339,7 @@ public class PutHandlerTest {
     @Test
     public void testError() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + "resource")), any(IRI.class),
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
                     any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());

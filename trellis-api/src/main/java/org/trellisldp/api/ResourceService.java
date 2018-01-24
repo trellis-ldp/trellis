@@ -13,9 +13,10 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
@@ -77,13 +78,9 @@ public interface ResourceService {
      *
      */
     default Optional<IRI> getContainer(final IRI identifier) {
-        final String id = identifier.getIRIString();
-        final Optional<IRI> parent = of(id).map(x -> x.lastIndexOf('/')).filter(idx -> idx > 0)
-            .map(idx -> id.substring(0, idx)).map(getInstance()::createIRI);
-        if (parent.isPresent()) {
-            return parent;
-        }
-        return of(TRELLIS_PREFIX).filter(x -> !id.equals(x)).map(getInstance()::createIRI);
+        final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
+        return of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
+                    .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(getInstance()::createIRI);
     }
 
     /**
@@ -153,7 +150,7 @@ public interface ResourceService {
             final String iri = ((IRI) term).getIRIString();
             if (iri.startsWith(baseUrl)) {
                 @SuppressWarnings("unchecked")
-                final T t = (T) getInstance().createIRI(TRELLIS_PREFIX + iri.substring(baseUrl.length()));
+                final T t = (T) getInstance().createIRI(TRELLIS_DATA_PREFIX + iri.substring(baseUrl.length()));
                 return t;
             }
         }
@@ -171,9 +168,9 @@ public interface ResourceService {
     default <T extends RDFTerm> T toExternal(final T term, final String baseUrl) {
         if (term instanceof IRI) {
             final String iri = ((IRI) term).getIRIString();
-            if (iri.startsWith(TRELLIS_PREFIX)) {
+            if (iri.startsWith(TRELLIS_DATA_PREFIX)) {
                 @SuppressWarnings("unchecked")
-                final T t = (T) getInstance().createIRI(baseUrl + iri.substring(TRELLIS_PREFIX.length()));
+                final T t = (T) getInstance().createIRI(baseUrl + iri.substring(TRELLIS_DATA_PREFIX.length()));
                 return t;
             }
         }

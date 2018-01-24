@@ -28,7 +28,7 @@ import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
@@ -222,7 +222,7 @@ public class LdpResource implements ContainerRequestFilter {
 
     private Response fetchResource(final LdpRequest req) {
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final GetHandler getHandler = new GetHandler(req, resourceService, ioService, binaryService, urlBase);
 
         // Fetch a versioned resource
@@ -263,7 +263,7 @@ public class LdpResource implements ContainerRequestFilter {
     public Response options(@BeanParam final LdpRequest req) {
 
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final OptionsHandler optionsHandler = new OptionsHandler(req, resourceService, urlBase);
 
         if (nonNull(req.getVersion())) {
@@ -289,7 +289,7 @@ public class LdpResource implements ContainerRequestFilter {
     public Response updateResource(@BeanParam final LdpRequest req, final String body) {
 
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, resourceService, ioService, urlBase);
 
         return resourceService.get(identifier, MAX).map(patchHandler::updateResource)
@@ -307,7 +307,7 @@ public class LdpResource implements ContainerRequestFilter {
     public Response deleteResource(@BeanParam final LdpRequest req) {
 
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, resourceService, urlBase);
 
         return resourceService.get(identifier, MAX).map(deleteHandler::deleteResource)
@@ -335,11 +335,11 @@ public class LdpResource implements ContainerRequestFilter {
         final String separator = path.isEmpty() ? "" : "/";
 
         // First check if this is a container
-        final Optional<Resource> parent = resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path));
+        final Optional<Resource> parent = resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
         if (parent.isPresent()) {
             final Optional<IRI> ixModel = parent.map(Resource::getInteractionModel);
             if (ixModel.filter(type -> ldpResourceTypes(type).anyMatch(LDP.Container::equals)).isPresent()) {
-                return resourceService.get(rdf.createIRI(TRELLIS_PREFIX + path + separator + identifier), MAX)
+                return resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier), MAX)
                     .map(x -> status(CONFLICT)).orElseGet(postHandler::createResource).build();
             } else if (parent.filter(Resource::isDeleted).isPresent()) {
                 return status(GONE).build();
@@ -361,7 +361,7 @@ public class LdpResource implements ContainerRequestFilter {
     public Response setResource(@BeanParam final LdpRequest req, final File body) {
 
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, resourceService, ioService,
                 binaryService, urlBase);
 

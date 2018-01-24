@@ -37,7 +37,7 @@ import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.UPLOADS;
 import static org.trellisldp.http.domain.HttpConstants.UPLOAD_PREFIX;
@@ -154,8 +154,8 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
                     .orElse(APPLICATION_OCTET_STREAM);
                 final String identifier = ofNullable(ctx.getHeaderString("Slug"))
                     .orElseGet(resourceService.getIdentifierSupplier());
-                final String uploadId = binaryService.initiateUpload(rdf.createIRI(TRELLIS_PREFIX + path + identifier),
-                                contentType);
+                final String uploadId = binaryService.initiateUpload(rdf.createIRI(TRELLIS_DATA_PREFIX + path
+                            + identifier), contentType);
                 if (isNull(uploadId)) {
                     throw new WebApplicationException("Cannot initiate multipart upload", BAD_REQUEST);
                 }
@@ -244,7 +244,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
         final BinaryService.MultipartUpload upload = binaryService.completeUpload(id, partDigests);
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
-            final IRI identifier = rdf.createIRI(TRELLIS_PREFIX + upload.getPath());
+            final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + upload.getPath());
 
             // Add Audit quads
             audit.ifPresent(svc -> svc.creation(identifier, upload.getSession()).stream()

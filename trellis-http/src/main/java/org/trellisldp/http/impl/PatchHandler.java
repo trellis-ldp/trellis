@@ -26,7 +26,7 @@ import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
@@ -106,7 +106,7 @@ public class PatchHandler extends BaseLdpHandler {
             try (final Stream<? extends Triple> stream = res.stream(graphName)) {
                 stream.forEachOrdered(graph::add);
             }
-            ioService.update(graph.asGraph(), sparqlUpdate, TRELLIS_PREFIX + req.getPath() +
+            ioService.update(graph.asGraph(), sparqlUpdate, TRELLIS_DATA_PREFIX + req.getPath() +
                     (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().collect(toList());
         } catch (final RuntimeTrellisException ex) {

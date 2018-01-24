@@ -16,7 +16,7 @@ package org.trellisldp.http.impl;
 import static java.time.Instant.now;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SCHEME;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
 
@@ -32,7 +32,7 @@ import org.trellisldp.api.Session;
  */
 public class HttpSession implements Session {
 
-    private final IRI identifier = getInstance().createIRI(TRELLIS_PREFIX + "session/" + randomUUID());
+    private final IRI identifier = getInstance().createIRI(TRELLIS_SCHEME + "session/" + randomUUID());
     private final IRI agent;
     private final IRI delegatedBy;
     private final Instant created;

@@ -27,7 +27,7 @@ import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
@@ -103,7 +103,7 @@ public class PostHandler extends ContentBearingHandler {
             .filter(SUPPORTED_RDF_TYPES::contains);
 
         final IRI defaultType = nonNull(contentType) && !rdfSyntax.isPresent() ? LDP.NonRDFSource : LDP.RDFSource;
-        final IRI internalId = rdf.createIRI(TRELLIS_PREFIX + req.getPath() + separator + id);
+        final IRI internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath() + separator + id);
 
         // Add LDP type (ldp:Resource results in the defaultType)
         final IRI ldpType = ofNullable(req.getLink())
@@ -150,7 +150,7 @@ public class PostHandler extends ContentBearingHandler {
                 readEntityIntoDataset(identifier, baseUrl, PreferUserManaged, rdfSyntax.orElse(TURTLE), dataset);
 
                 // Check for any constraints
-                checkConstraint(dataset, PreferUserManaged, ldpType, TRELLIS_PREFIX, rdfSyntax.orElse(TURTLE));
+                checkConstraint(dataset, PreferUserManaged, ldpType, TRELLIS_DATA_PREFIX, rdfSyntax.orElse(TURTLE));
             }
 
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {

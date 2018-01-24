@@ -15,7 +15,7 @@ package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
 import static java.util.UUID.randomUUID;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
@@ -30,7 +30,7 @@ import org.trellisldp.api.Session;
 class SimpleSession implements Session {
 
     private final Instant created = now();
-    private final IRI identifier = getInstance().createIRI(TRELLIS_PREFIX + "session/" + randomUUID());
+    private final IRI identifier = getInstance().createIRI(TRELLIS_SESSION_PREFIX + randomUUID());
     private final IRI agent;
 
     public SimpleSession(final IRI agent) {

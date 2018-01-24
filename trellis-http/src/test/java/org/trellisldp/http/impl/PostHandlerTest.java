@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.io.File;
@@ -127,7 +127,7 @@ public class PostHandlerTest {
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(baseUrl)) {
-                    return rdf.createIRI(TRELLIS_PREFIX + iri.substring(baseUrl.length()));
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(baseUrl.length()));
                 }
             }
             return term;
@@ -238,7 +238,7 @@ public class PostHandlerTest {
     @Test
     public void testEntity() throws IOException {
         final String path = "newresource";
-        final IRI identifier = rdf.createIRI("trellis:" + path);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
         final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
                         rdf.createLiteral("A title"));
         when(mockIoService.read(any(), any(), eq(TURTLE))).thenAnswer(x -> Stream.of(triple));
@@ -266,7 +266,7 @@ public class PostHandlerTest {
 
     @Test
     public void testEntity2() throws IOException {
-        final IRI identifier = rdf.createIRI("trellis:newresource");
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource");
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
         when(mockRequest.getContentType()).thenReturn("text/plain");
 
@@ -293,7 +293,7 @@ public class PostHandlerTest {
 
     @Test
     public void testEntity3() throws IOException {
-        final IRI identifier = rdf.createIRI("trellis:newresource");
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource");
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
         when(mockRequest.getContentType()).thenReturn("text/plain");
         when(mockRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
@@ -357,7 +357,7 @@ public class PostHandlerTest {
 
     @Test
     public void testEntityError() {
-        final IRI identifier = rdf.createIRI("trellis:newresource");
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource");
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
         when(mockRequest.getContentType()).thenReturn("text/plain");
 
@@ -369,7 +369,7 @@ public class PostHandlerTest {
 
     @Test
     public void testError() throws IOException {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + "newresource")), any(IRI.class),
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(IRI.class),
                     any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockRequest.getContentType()).thenReturn("text/turtle");
 

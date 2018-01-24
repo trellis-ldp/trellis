@@ -23,7 +23,7 @@ import static java.util.stream.Stream.builder;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
@@ -113,7 +113,7 @@ public class TriplestoreResourceService implements ResourceService {
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
         this.rdfConnection = rdfConnection;
-        this.supplier = identifierService.getSupplier(TRELLIS_PREFIX);
+        this.supplier = identifierService.getSupplier(TRELLIS_DATA_PREFIX);
         this.eventService = ofNullable(eventService);
         init();
     }
@@ -466,7 +466,7 @@ public class TriplestoreResourceService implements ResourceService {
      * </code></pre></p>
      */
     private void init() {
-        final IRI root = rdf.createIRI(TRELLIS_PREFIX);
+        final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(OBJECT);
@@ -485,7 +485,7 @@ public class TriplestoreResourceService implements ResourceService {
         rdfConnection.querySelect(q, qs -> builder.accept(getObject(qs)));
         if (!builder.build().findFirst().isPresent()) {
             final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
-            final IRI auth = rdf.createIRI(TRELLIS_PREFIX + "#auth");
+            final IRI auth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
             final UpdateRequest update = new UpdateRequest();
 
             final QuadDataAcc sink = new QuadDataAcc();

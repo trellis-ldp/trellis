@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
@@ -118,7 +118,7 @@ public class DeleteHandlerTest {
             if (term instanceof IRI) {
                 final String iriString = ((IRI) term).getIRIString();
                 if (iriString.startsWith(base)) {
-                    return rdf.createIRI(TRELLIS_PREFIX + iriString.substring(base.length()));
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iriString.substring(base.length()));
                 }
             }
             return term;

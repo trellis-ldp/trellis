@@ -37,7 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
@@ -92,7 +92,7 @@ public class PatchHandlerTest {
     private static final String baseUrl = "http://localhost:8080/repo/";
     private static final RDF rdf = getInstance();
     private static final String insert = "INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}";
-    private static final IRI identifier = rdf.createIRI("trellis:resource");
+    private static final IRI identifier = rdf.createIRI("trellis:data/resource");
 
     @Mock
     private ResourceService mockResourceService;
@@ -135,7 +135,7 @@ public class PatchHandlerTest {
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(base)) {
-                    return rdf.createIRI(TRELLIS_PREFIX + iri.substring(base.length()));
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(base.length()));
                 }
             }
             return term;
@@ -245,7 +245,7 @@ public class PatchHandlerTest {
 
     @Test
     public void testError() {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_PREFIX + "resource")), any(IRI.class),
+        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
                     any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 

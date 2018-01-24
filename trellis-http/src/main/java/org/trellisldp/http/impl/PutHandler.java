@@ -29,7 +29,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
@@ -172,7 +172,7 @@ public class PutHandler extends ContentBearingHandler {
             return status(CONFLICT).entity("Cannot change the LDP type to " + ldpType).type(TEXT_PLAIN);
         }
 
-        final IRI internalId = rdf.createIRI(TRELLIS_PREFIX + req.getPath());
+        final IRI internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
             final IRI graphName = getActiveGraphName();

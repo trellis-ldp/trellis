@@ -24,7 +24,7 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 
@@ -98,7 +98,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         }
         final String method = ctx.getMethod();
 
-        final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_PREFIX + path), s);
+        final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + path), s);
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
                 .contains(HttpConstants.ACL)) {
             verifyCanControl(modes, s, path);

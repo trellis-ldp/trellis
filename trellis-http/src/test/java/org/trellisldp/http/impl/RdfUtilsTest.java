@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
@@ -116,7 +116,7 @@ public class RdfUtilsTest {
 
     @Test
     public void testFilterPrefer() {
-        final IRI iri = rdf.createIRI("trellis:repository/resource");
+        final IRI iri = rdf.createIRI("trellis:data/repository/resource");
         final Quad q1 = rdf.createQuad(Trellis.PreferAudit, iri, DC.creator, rdf.createLiteral("me"));
         final Quad q2 = rdf.createQuad(Trellis.PreferServerManaged, iri, DC.modified, rdf.createLiteral("now"));
         final Quad q3 = rdf.createQuad(Trellis.PreferUserManaged, iri, DC.subject, rdf.createLiteral("subj"));
@@ -139,7 +139,7 @@ public class RdfUtilsTest {
 
     @Test
     public void testSkolemize() {
-        final IRI iri = rdf.createIRI("trellis:repository/resource");
+        final IRI iri = rdf.createIRI("trellis:data/repository/resource");
         final String baseUrl = "http://example.org/";
         final IRI anonIri = rdf.createIRI(TRELLIS_BNODE_PREFIX + "foo");
         final Literal literal = rdf.createLiteral("A title");
@@ -161,8 +161,8 @@ public class RdfUtilsTest {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);
             if (term instanceof IRI) {
                 final String iriString = ((IRI) term).getIRIString();
-                if (iriString.startsWith(TRELLIS_PREFIX)) {
-                    return rdf.createIRI(baseUrl + iriString.substring(TRELLIS_PREFIX.length()));
+                if (iriString.startsWith(TRELLIS_DATA_PREFIX)) {
+                    return rdf.createIRI(baseUrl + iriString.substring(TRELLIS_DATA_PREFIX.length()));
                 }
             }
             return term;
@@ -172,7 +172,7 @@ public class RdfUtilsTest {
             if (term instanceof IRI) {
                 final String iriString = ((IRI) term).getIRIString();
                 if (iriString.startsWith(baseUrl)) {
-                    return rdf.createIRI(TRELLIS_PREFIX + iriString.substring(baseUrl.length()));
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iriString.substring(baseUrl.length()));
                 }
             }
             return term;

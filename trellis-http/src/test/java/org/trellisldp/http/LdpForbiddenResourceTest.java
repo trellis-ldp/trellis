@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
@@ -85,7 +85,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
     private static final RDF rdf = getInstance();
 
-    private static final IRI identifier = rdf.createIRI("trellis:repo1/resource");
+    private static final IRI identifier = rdf.createIRI("trellis:data/resource");
 
     private static final IRI agent = rdf.createIRI("user:agent");
 
@@ -175,7 +175,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(BASE_URL)) {
-                    return rdf.createIRI(TRELLIS_PREFIX + iri.substring(BASE_URL.length()));
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(BASE_URL.length()));
                 }
             }
             return term;
@@ -184,8 +184,8 @@ public class LdpForbiddenResourceTest extends JerseyTest {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(TRELLIS_PREFIX)) {
-                    return rdf.createIRI(BASE_URL + iri.substring(TRELLIS_PREFIX.length()));
+                if (iri.startsWith(TRELLIS_DATA_PREFIX)) {
+                    return rdf.createIRI(BASE_URL + iri.substring(TRELLIS_DATA_PREFIX.length()));
                 }
             }
             return term;

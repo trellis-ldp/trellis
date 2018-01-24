@@ -114,9 +114,9 @@ public class ResourceServiceTest {
 
     @Test
     public void testGetContainer() {
-        final IRI root = rdf.createIRI("trellis:");
-        final IRI resource = rdf.createIRI("trellis:resource");
-        final IRI child = rdf.createIRI("trellis:resource/child");
+        final IRI root = rdf.createIRI("trellis:data/");
+        final IRI resource = rdf.createIRI("trellis:data/resource");
+        final IRI child = rdf.createIRI("trellis:data/resource/child");
         assertEquals(of(root), mockResourceService.getContainer(resource));
         assertEquals(of(resource), mockResourceService.getContainer(child));
         assertFalse(mockResourceService.getContainer(root).isPresent());
@@ -126,7 +126,7 @@ public class ResourceServiceTest {
     public void testInternalExternal() {
         final String baseUrl = "http://example.com/";
         final IRI external = rdf.createIRI(baseUrl + "repository/resource");
-        final IRI internal = rdf.createIRI("trellis:repository/resource");
+        final IRI internal = rdf.createIRI("trellis:data/repository/resource");
         final IRI other = rdf.createIRI("http://example.org/repository/resource");
         assertEquals(internal, mockResourceService.toInternal(external, baseUrl));
         assertEquals(external, mockResourceService.toExternal(internal, baseUrl));

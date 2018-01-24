@@ -37,14 +37,24 @@ public final class RDFUtils {
     private static RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
     /**
-     * The internal trellis prefix.
+     * The internal trellis scheme.
      */
-    public static final String TRELLIS_PREFIX = "trellis:";
+    public static final String TRELLIS_SCHEME = "trellis:";
 
     /**
-     * The internal blank node prefix.
+     * The default internal IRI for the root container.
      */
-    public static final String TRELLIS_BNODE_PREFIX = "trellis:bnode/";
+    public static final String TRELLIS_DATA_PREFIX = TRELLIS_SCHEME + "data/";
+
+    /**
+     * The default internal blank node prefix.
+     */
+    public static final String TRELLIS_BNODE_PREFIX = TRELLIS_SCHEME + "bnode/";
+
+    /**
+     * The default internal session prefix.
+     */
+    public static final String TRELLIS_SESSION_PREFIX = TRELLIS_SCHEME + "session/";
 
     /**
      * Get the Commons RDF instance in use.
