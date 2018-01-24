@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -41,6 +42,7 @@ import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -79,6 +81,9 @@ public class TriplestoreResourceServiceTest {
 
     @Mock
     private EventService mockEventService;
+
+    @Mock
+    private RDFConnection mockRdfConnection;
 
     @BeforeEach
     public void setUp() {
@@ -188,7 +193,17 @@ public class TriplestoreResourceServiceTest {
         });
     }
 
-    @Test void testGetContainer() {
+    @Test
+    public void testRDFConnectionError() throws Exception {
+        final ResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService, mockEventService);
+        doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection).update(any(UpdateRequest.class));
+
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        assertFalse(svc.put(resource, LDP.RDFSource, rdf.createDataset()).get());
+    }
+
+    @Test
+    public void testGetContainer() {
         final RDFConnection rdfConnection = connect(wrap(rdf.createDataset().asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
