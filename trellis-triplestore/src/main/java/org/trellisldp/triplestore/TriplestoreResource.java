@@ -116,14 +116,18 @@ public class TriplestoreResource implements Resource {
 
     /**
      * Fetch data for this resource.
+     *
+     * <p>This is equivalent to the following SPARQL query:
+     * <pre><code>
+     * SELECT ?predicate ?object
+     * WHERE
+     *   GRAPH trellis:PreferServerManaged {
+     *     IDENTIFIER ?predicate ?object }
+     *   }
+     * }
+     * </code></pre>
      */
     protected void fetchData() {
-        /*
-         * SELECT ?predicate ?object
-         * WHERE {
-         *   GRAPH <http://www.trellisldp.org/ns/trellis#PreferServerManaged> {
-         *     <identifier> ?predicate ?object } }
-         */
         LOGGER.debug("Fetching data from RDF datastore");
         final Query q = new Query();
         q.setQuerySelectType();
@@ -239,11 +243,15 @@ public class TriplestoreResource implements Resource {
                     triple.getSubject(), triple.getPredicate(), triple.getObject()));
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?subject ?predicate ?object
+     * WHERE { GRAPH fromGraphName { ?subject ?predicate ?object } }
+     * </code></pre>
+     */
     private Stream<Quad> fetchAllFromGraph(final String fromGraphName, final IRI toGraphName) {
-        /*
-         * SELECT ?subject ?predicate ?object
-         * WHERE { GRAPH <GRAPH_NAME> { ?subject ?predicate ?object } }
-         */
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(SUBJECT);
@@ -264,19 +272,27 @@ public class TriplestoreResource implements Resource {
         return builder.build();
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?subject ?predicate ?object
+     * WHERE { GRAPH IDENTIFIER?ext=audit { ?subject ?predicate ?object } }
+     * </code></pre>
+    */
     private Stream<Quad> fetchAuditQuads() {
-        /*
-         * SELECT ?subject ?predicate ?object
-         * WHERE { GRAPH <IDENTIFIER?ext=audit> { ?subject ?predicate ?object } }
-        */
         return fetchAllFromGraph(identifier.getIRIString() + "?ext=audit", Trellis.PreferAudit);
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?subject ?predicate ?object
+     * WHERE { GRAPH IDENTIFIER?ext=acl { ?subject ?predicate ?object } }
+     * </code></pre>
+    */
     private Stream<Quad> fetchAclQuads() {
-        /*
-         * SELECT ?subject ?predicate ?object
-         * WHERE { GRAPH <IDENTIFIER?ext=audit> { ?subject ?predicate ?object } }
-         */
         return fetchAllFromGraph(identifier.getIRIString() + "?ext=acl", Trellis.PreferAccessControl);
     }
 
@@ -286,21 +302,24 @@ public class TriplestoreResource implements Resource {
                 concat(fetchDirectMemberQuads(), fetchDirectMemberQuadsInverse()));
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?predicate ?object
+     * WHERE {
+     *   GRAPH trellis:PreferServerManaged {
+     *      ?subject ldp:membershipResource IDENTIFIER
+     *      AND ?subject rdf:type ldp:IndirectContainer
+     *      AND ?subject ldp:membershipRelation ?predicate
+     *      AND ?subject ldp:insertedContentRelation ?o
+     *      AND ?s dc:isPartOf ?subject
+     *   }
+     *   GRAPH ?s { ?s ?o ?object }
+     * }
+     * </code></pre>
+     */
     private Stream<Quad> fetchIndirectMemberQuads() {
-        /*
-         * SELECT ?predicate ?object
-         * WHERE {
-         *   GRAPH trellis:PreferServerManaged {
-         *      ?subject ldp:membershipResource <IDENTIFIER>
-         *      AND ?subject rdf:type ldp:IndirectContainer
-         *      AND ?subject ldp:membershipRelation ?predicate
-         *      AND ?subject ldp:insertedContentRelation ?o
-         *      AND ?s dc:isPartOf ?subject
-         *   }
-         *   GRAPH ?s { ?s ?o ?object }
-         * }
-         */
-
         final Var s = Var.alloc("s");
         final Var o = Var.alloc("o");
 
@@ -331,19 +350,23 @@ public class TriplestoreResource implements Resource {
         return builder.build();
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?predicate ?object
+     * WHERE {
+     *   GRAPH trellis:PreferServerManaged {
+     *      ?subject ldp:membershipResource IDENTIFIER
+     *      AND ?subject rdf:type ldp:IndirectContainer
+     *      AND ?subject ldp:membershipRelation ?predicate
+     *      AND ?subject ldp:insertedContentRelation ldp:MemberSubject
+     *      AND ?object dc:isPartOf ?subject
+     *   }
+     * }
+     * </code></pre>
+     */
     private Stream<Quad> fetchIndirectMemberDefaultContent() {
-        /*
-         * SELECT ?predicate ?object
-         * WHERE {
-         *   GRAPH trellis:PreferServerManaged {
-         *      ?subject ldp:membershipResource <IDENTIFIER>
-         *      AND ?subject rdf:type ldp:IndirectContainer
-         *      AND ?subject ldp:membershipRelation ?predicate
-         *      AND ?subject ldp:insertedContentRelation ldp:MemberSubject
-         *      AND ?object dc:isPartOf ?subject
-         *   }
-         * }
-         */
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(PREDICATE);
@@ -369,17 +392,21 @@ public class TriplestoreResource implements Resource {
         return builder.build();
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?predicate ?object
+     * WHERE {
+     *   GRAPH trellis:PreferServerManaged {
+     *      ?subject ldp:membershipResource IDENTIFIER
+     *      AND ?subject rdf:type ldp:DirectContainer
+     *      AND ?subject ldp:hasMemberRelation ?predicate
+     *      AND ?object dc:isPartOf ?subject }
+     * }
+     * </code></pre>
+     */
     private Stream<Quad> fetchDirectMemberQuads() {
-        /*
-         * SELECT ?predicate ?object
-         * WHERE {
-         *   GRAPH trellis:PreferServerManaged {
-         *      ?subject ldp:membershipResource <IDENTIFIER>
-         *      AND ?subject rdf:type ldp:DirectContainer
-         *      AND ?subject ldp:hasMemberRelation ?predicate
-         *      AND ?object dc:isPartOf ?subject }
-         * }
-         */
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(PREDICATE);
@@ -404,18 +431,22 @@ public class TriplestoreResource implements Resource {
         return builder.build();
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?predicate ?object
+     * WHERE {
+     *   GRAPH trellis:PreferServerManaged {
+     *      IDENTIFIER dc:isPartOf ?subject .
+     *      ?subject rdf:type ldp:DirectContainer .
+     *      ?subject ldp:isMemberOfRelation ?predicate .
+     *      ?subject ldp:membershipResource ?object .
+     *   }
+     * }
+     * </code></pre>
+     */
     private Stream<Quad> fetchDirectMemberQuadsInverse() {
-        /*
-         * SELECT ?predicate ?object
-         * WHERE {
-         *   GRAPH trellis:PreferServerManaged {
-         *      <IDENTIFIER> dc:isPartOf ?subject .
-         *      ?subject rdf:type ldp:DirectContainer .
-         *      ?subject ldp:isMemberOfRelation ?predicate .
-         *      ?subject ldp:membershipResource ?object .
-         *   }
-         * }
-         */
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(PREDICATE);
@@ -440,14 +471,18 @@ public class TriplestoreResource implements Resource {
         return builder.build();
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?object
+     * WHERE {
+     *   GRAPH trellis:PreferServerManaged { ?object dc:isPartOf IDENTIFIER }
+     * }
+     * </code></pre>
+     */
     private Stream<Quad> fetchContainmentQuads() {
         if (getInteractionModel().getIRIString().endsWith("Container")) {
-            /*
-             * SELECT ?object
-             * WHERE {
-             *   GRAPH trellis:PreferServerManaged { ?object dc:isPartOf <IDENTIFIER> }
-             * }
-             */
             final Query q = new Query();
             q.setQuerySelectType();
             q.addResultVar(OBJECT);
@@ -469,11 +504,15 @@ public class TriplestoreResource implements Resource {
         return Stream.empty();
     }
 
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * SELECT ?subject ?predicate ?object
+     * WHERE { GRAPH IDENTIFIER { ?subject ?predicate ?object } }
+     * </code></pre>
+     */
     private Stream<Quad> fetchUserQuads() {
-        /*
-         * SELECT ?subject ?predicate ?object
-         * WHERE { GRAPH <IDENTIFIER> { ?subject ?predicate ?object } }
-        */
         return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
     }
 }

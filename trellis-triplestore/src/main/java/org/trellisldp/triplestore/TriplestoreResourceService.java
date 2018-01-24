@@ -14,12 +14,13 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Stream.builder;
+import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_PREFIX;
@@ -50,16 +51,23 @@ import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.modify.request.QuadDataAcc;
 import org.apache.jena.sparql.modify.request.UpdateDataInsert;
+import org.apache.jena.sparql.modify.request.UpdateDeleteInsert;
+import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
 import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementMinus;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
+import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
@@ -81,10 +89,10 @@ import org.trellisldp.vocabulary.XSD;
  */
 public class TriplestoreResourceService implements ResourceService {
 
-    private static final String NL = "\n";
-    private static final String WS = " ";
-    private static final String BRR = " } ";
-    private static final String BRL = " { ";
+    private static final Var PARENT = Var.alloc("parent");
+    private static final Var MODIFIED = Var.alloc("modified");
+    private static final Var MEMBER = Var.alloc("member");
+    private static final Var ANY = Var.alloc("any");
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
@@ -171,21 +179,25 @@ public class TriplestoreResourceService implements ResourceService {
         });
     }
 
+    /**
+     * The following SPARQL query is equivalent to the code below.
+     *
+     * <p><pre><code>
+     * SELECT ?predicate ?object ?subject ?memberDate
+     * WHERE {
+     *   GRAPH trellis:PreferServerManaged {
+     *     PARENT rdf:type ?predicate
+     *     PARENT dc:modified ?object
+     *     OPTIONAL {
+     *       PARENT ldp:memberResource ?subject
+     *       ?subject dc:modified ?memberDate
+     *     }
+     *   }
+     * }
+     * </code></pre></p>
+     */
     private void emitEventsForAdjacentResources(final EventService svc, final IRI parent,
             final Literal time, final Optional<String> baseUrl, final Dataset dataset) {
-        /*
-         * SELECT ?predicate ?object ?subject ?memberDate
-         * WHERE {
-         *   GRAPH trellis:PreferServerManaged {
-         *     <PARENT> rdf:type ?predicate
-         *     <PARENT> dc:modified ?object
-         *     OPTIONAL {
-         *       <PARENT> ldp:memberResource ?subject
-         *       ?subject dc:modified ?memberDate
-         *     }
-         *   }
-         * }
-         */
         final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
         final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
         final Var memberDate = Var.alloc("memberDate");
@@ -229,113 +241,166 @@ public class TriplestoreResourceService implements ResourceService {
         });
     }
 
+    /**
+     * This is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * WITH trellis:PreferServerManaged
+     *   DELETE { ?parent dc:modified ?modified }
+     *   INSERT { ?parent dc:modified TIME }
+     *   WHERE {
+     *     IDENTIFIER dc:isPartOf ?parent .
+     *     ?parent dc:modified ?modified .
+     *     MINUS { ?parent a ldp:RDFSource }
+     *     MINUS { ?parent a ldp:NonRDFSource }
+     * }
+     * </code></pre></p>
+     */
+    private Update getParentUpdateModificationRequest(final IRI identifier, final Literal time) {
+        final UpdateDeleteInsert modify = new UpdateDeleteInsert();
+        modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
+        modify.getDeleteAcc().addTriple(create(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
+        modify.getInsertAcc().addTriple(create(PARENT, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+        final ElementGroup eg = new ElementGroup();
+        final ElementPathBlock epb1 = new ElementPathBlock();
+        epb1.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
+        epb1.addTriple(create(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
+        eg.addElement(epb1);
+        final ElementPathBlock epb2 = new ElementPathBlock();
+        epb2.addTriple(create(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.RDFSource)));
+        eg.addElement(new ElementMinus(epb2));
+        final ElementPathBlock epb3 = new ElementPathBlock();
+        epb3.addTriple(create(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
+        eg.addElement(new ElementMinus(epb3));
+        modify.setElement(eg);
+        return modify;
+    }
+
+    /**
+     * This is equivalent to the SPARQL below.
+     *
+     * <p><pre><code>
+     * WITH trellis:PreferServerManaged
+     *   DELETE { ?member dc:modified ?modified }
+     *   INSERT { ?member dc:modified TIME }
+     *   WHERE {
+     *     IDENTIFIER dc:isPartOf ?parent .
+     *     ?parent ldp:membershipResource ?member .
+     *     ?parent ldp:hasMemberRelation ?any .
+     *     ?member dc:modified ?modified
+     * }
+     * </code></pre></p>
+     */
+    private Update getMemberUpdateModificationRequest(final IRI identifier, final Literal time) {
+        final UpdateDeleteInsert modify = new UpdateDeleteInsert();
+        modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
+        modify.getDeleteAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+        modify.getInsertAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+        final ElementPathBlock epb = new ElementPathBlock();
+        epb.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
+        epb.addTriple(create(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
+        epb.addTriple(create(PARENT, rdf.asJenaNode(LDP.hasMemberRelation), ANY));
+        epb.addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+        modify.setElement(epb);
+        return modify;
+    }
+
+    private Node getAclIRI(final IRI identifier) {
+        return createURI(identifier.getIRIString() + "?ext=acl");
+    }
+
+    private Node getAuditIRI(final IRI identifier) {
+        return createURI(identifier.getIRIString() + "?ext=audit");
+    }
+
+    /**
+     * This is equivalent to the SPARQL below.
+     *
+     * <p><pre><code>
+     * DELETE WHERE { GRAPH IDENTIFIER { ?s ?p ?o } };
+     * DELETE WHERE { GRAPH IDENTIFIER?ext=acl { ?s ?p ?o } };
+     * DELETE WHERE { GRAPH trellis:PreferServerManaged { IDENTIFIER ?p ?o } };
+     * INSERT DATA {
+     *   GRAPH IDENTIFIER { ... }
+     *   GRAPH IDENTIFIER?ext=acl { ... }
+     *   GRAPH trellis:PreferServerManaged { ... }
+     *   GRAPH IDENTIFIER?ext=audit { ... }
+     * };
+     * // this next clause happens first in an HTTP delete operation
+     * WITH trellis:PreferServerManaged
+     *   DELETE { ?parent dc:modified ?x }
+     *   INSERT { ?parent dc:modified TIME }
+     *   WHERE {
+     *     IDENTIFIER dc:isPartOf ?parent .
+     *     ?parent rdf:type ldp:Container
+     * }
+     * </code></pre></p>
+     */
     private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset) {
-        /*
-         * DELETE WHERE { GRAPH <IDENTIFIER> { ?s ?p ?o } };
-         * DELETE WHERE { GRAPH <IDENTIFIER?ext=acl> { ?s ?p ?o } };
-         * DELETE WHERE { GRAPH trellis:PreferServerManaged { <IDENTIFIER> ?p ?o } };
-         * INSERT DATA {
-         *   GRAPH <IDENTIFIER> { ... }
-         *   GRAPH <IDENTIFIER?ext=acl> { ... }
-         *   GRAPH trellis:PreferServerManaged { ... }
-         *   GRAPH <IDENTIFIER?ext=audit> { ... }
-         * };
-         * // this next clause happens first in an HTTP delete operation
-         * WITH trellis:PreferServerManaged
-         *   DELETE { ?parent dc:modified ?x }
-         *   INSERT { ?parent dc:modified <TIME> }
-         *   WHERE {
-         *     <IDENTIFIER> dc:isPartOf ?parent .
-         *     ?parent rdf:type ldp:Container
-         * }
-         */
-        // TODO -- start using Jena primitives instead of String concatenation
+        final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
+        final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
+
         // Set the time
         dataset.add(PreferServerManaged, identifier, DC.modified, time);
 
-        final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
-        final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
         final UpdateRequest req = new UpdateRequest();
         if (isDelete) {
-            // The parent container's modified date is updated on delete and create actions.
-            req.add("WITH " + PreferServerManaged
-                    + "DELETE" + BRL + "?parent" + WS + DC.modified + WS + "?modified" + BRR
-                    + "INSERT" + BRL + "?parent" + WS + DC.modified + WS + time + BRR
-                    + "WHERE" + BRL + identifier + WS + DC.isPartOf + WS + "?parent . "
-                        + "?parent" + WS + DC.modified + WS + "?modified . "
-                        + "MINUS { ?parent " + RDF.type + WS + LDP.RDFSource + BRR
-                        + "MINUS { ?parent " + RDF.type + WS + LDP.NonRDFSource + BRR + BRR);
+            // Update the parent container's modified date
+            req.add(getParentUpdateModificationRequest(identifier, time));
 
             // Likewise the member resource.
-            req.add("WITH  " + PreferServerManaged
-                    + "DELETE { ?member " + DC.modified + WS + "?modified }"
-                    + "INSERT { ?member " + DC.modified + WS + time + BRR
-                    + "WHERE { " + identifier + WS + DC.isPartOf + "   ?parent . "
-                        + "?parent " + LDP.membershipResource + " ?member ."
-                        + "?member " + DC.modified + "  ?modified }");
+            req.add(getMemberUpdateModificationRequest(identifier, time));
         }
 
-        req.add("DELETE WHERE { GRAPH " + identifier + " { ?s ?p ?o } };");
-        req.add("DELETE WHERE { GRAPH <" + identifier.getIRIString() + "?ext=acl> { ?s ?p ?o } }");
-        req.add("DELETE WHERE { GRAPH " + PreferServerManaged + " { " + identifier + " ?p ?o } }");
+        req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(rdf.asJenaNode(identifier),
+                                SUBJECT, PREDICATE, OBJECT)))));
+        req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(
+                                getAclIRI(identifier), SUBJECT, PREDICATE, OBJECT)))));
+        req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(rdf.asJenaNode(PreferServerManaged),
+                                rdf.asJenaNode(identifier), PREDICATE, OBJECT)))));
         if (isDelete) {
             final QuadDataAcc sink = new QuadDataAcc();
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
-                .map(rdf::asJenaQuad).forEach(sink::addQuad);
-            dataset.getGraph(PreferAudit).ifPresent(g -> g.stream().map(t ->
-                        rdf.createQuad(rdf.createIRI(identifier.getIRIString() + "?ext=audit"),
-                            t.getSubject(), t.getPredicate(), t.getObject()))
-                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
+                    .map(rdf::asJenaQuad).forEach(sink::addQuad);
+            dataset.getGraph(PreferAudit).ifPresent(g -> g.stream()
+                    .map(t -> new Quad(getAuditIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
             req.add(new UpdateDataInsert(sink));
         } else {
             final QuadDataAcc sink = new QuadDataAcc();
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
-                .map(rdf::asJenaQuad).forEach(sink::addQuad);
+                    .map(rdf::asJenaQuad).forEach(sink::addQuad);
             dataset.getGraph(PreferUserManaged).ifPresent(g -> g.stream()
-                    .map(t -> rdf.createQuad(identifier, t.getSubject(), t.getPredicate(), t.getObject()))
-                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
-            dataset.getGraph(PreferAccessControl).ifPresent(g -> g.stream().map(t ->
-                        rdf.createQuad(rdf.createIRI(identifier.getIRIString() + "?ext=acl"),
-                            t.getSubject(), t.getPredicate(), t.getObject()))
-                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
-            dataset.getGraph(PreferAudit).ifPresent(g -> g.stream().map(t ->
-                        rdf.createQuad(rdf.createIRI(identifier.getIRIString() + "?ext=audit"),
-                            t.getSubject(), t.getPredicate(), t.getObject()))
-                    .map(rdf::asJenaQuad).forEach(sink::addQuad));
+                    .map(t -> new Quad(rdf.asJenaNode(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
+            dataset.getGraph(PreferAccessControl).ifPresent(g -> g.stream()
+                    .map(t -> new Quad(getAclIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
+            dataset.getGraph(PreferAudit).ifPresent(g -> g.stream()
+                    .map(t -> new Quad(getAuditIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
             req.add(new UpdateDataInsert(sink));
         }
 
         if (isCreate) {
-            // The parent container's modified date is updated on delete and create actions.
-            req.add("WITH  " + PreferServerManaged
-                    + " DELETE { ?parent " + DC.modified + " ?modified } "
-                    + " INSERT { ?parent " + DC.modified + WS + time + BRR
-                    + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent . "
-                        + "?parent " + DC.modified + " ?modified . "
-                        + "MINUS {  ?parent " + RDF.type + WS + LDP.RDFSource + BRR
-                        + "MINUS {  ?parent " + RDF.type + WS + LDP.NonRDFSource + BRR + BRR);
+            // Update the parent's modification date
+            req.add(getParentUpdateModificationRequest(identifier, time));
 
-            // Likewise the member resource.
-            req.add("WITH  " + PreferServerManaged
-                    + " DELETE { ?member " + DC.modified + " ?modified } "
-                    + " INSERT { ?member " + DC.modified + WS + time + BRR
-                    + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent . "
-                        + " ?parent " + LDP.membershipResource + " ?member ."
-                        + " ?parent " + LDP.hasMemberRelation + " ?any ."
-                        + " ?member " + DC.modified + " ?modified }");
+            // Likewise update the member resource.
+            req.add(getMemberUpdateModificationRequest(identifier, time));
+
         } else if (!isDelete) {
             // Indirect containers member resources are _always_ updated.
-            req.add("WITH " + PreferServerManaged
-                    + " DELETE { ?member " + DC.modified + " ?modified } "
-                    + " INSERT { ?member " + DC.modified + WS + time + BRR
-                    + " WHERE { " + identifier + WS + DC.isPartOf + " ?parent ."
-                        + "  ?parent " + LDP.membershipResource + " ?member ."
-                        + "  ?parent " + RDF.type + WS + LDP.IndirectContainer + " ."
-                        + "  ?member " + DC.modified + " ?modified }");
+            final UpdateDeleteInsert modify = new UpdateDeleteInsert();
+            modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
+            modify.getDeleteAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+            modify.getInsertAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+            final ElementPathBlock epb = new ElementPathBlock();
+            epb.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), MODIFIED));
+            epb.addTriple(create(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
+            epb.addTriple(create(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
+            epb.addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+            modify.setElement(epb);
+            req.add(modify);
         }
         return req;
     }
-
 
     private String getUrl(final IRI identifier, final Optional<String> baseUrl) {
         if (baseUrl.isPresent()) {
@@ -373,6 +438,33 @@ public class TriplestoreResourceService implements ResourceService {
         return builder.build();
     }
 
+    /**
+     * This code is equivalent to the SPARQL queries below.
+     *
+     * <p><pre><code>
+     * SELECT ?object WHERE {
+     *   GRAPH trellis:PreferServerManaged { IDENTIFIER rdf:type ?object }
+     * }
+     * </code></pre></p>
+     *
+     * <p><pre><code>
+     * INSERT DATA {
+     *   GRAPH trellis:PreferServerManaged {
+     *     IDENTIFIER rdf:type ldp:Container ;
+     *                dc:modified "NOW"^^xsd:dateTime }
+     *   GRAPH IDENTIFIER?ext=audit {
+     *     IDENTIFIER prov:wasGeneratedBy [
+     *       rdf:type prov:Activity , as:Create ;
+     *       prov:wasAssociatedWith trellis:AdministorAgent ;
+     *       prov:startedAtTime "TIME"^^xsd:dateTime ] }
+     *   GRAPH IDENTIFIER?ext=acl {
+     *     IDENTIFIER acl:mode acl.Read , acl:Write , acl:Control ;
+     *       acl:agentClass foaf:Agent ;
+     *       acl:accessTo IDENTIFIER }
+     * }
+     *
+     * </code></pre></p>
+     */
     private void init() {
         final IRI root = rdf.createIRI(TRELLIS_PREFIX);
         final Query q = new Query();
@@ -392,42 +484,32 @@ public class TriplestoreResourceService implements ResourceService {
         final Stream.Builder<RDFTerm> builder = builder();
         rdfConnection.querySelect(q, qs -> builder.accept(getObject(qs)));
         if (!builder.build().findFirst().isPresent()) {
-            /*
-             * INSERT DATA {
-             *   GRAPH trellis:PreferServerManaged {
-             *     <IDENTIFIER> rdf:type ldp:Container ;
-             *                  dc:modified "NOW"^^xsd:dateTime }
-             *   GRAPH <IDENTIFIER?ext=audit> {
-             *     <IDENTIFIER> PROV.wasGeneratedBy [
-             *       rdf:type prov:Activity , as:Create ;
-             *       prov:wasAssociatedWith trellis:AdministorAgent ;
-             *       prov:startedAtTime "TIME"^^xsd:dateTime ] }
-             *   GRAPH <IDENTIFIER?ext=acl> {
-             *     <IDENTIFIER> acl:mode acl.Read , acl:Write , acl:Control ;
-             *       acl:agentClass foaf:Agent ;
-             *       acl:accessTo <IDENTIFIER> }
-             * }
-             */
-            // TODO -- refactor this using Jena objects instead of String concatenation
             final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
             final IRI auth = rdf.createIRI(TRELLIS_PREFIX + "#auth");
-            final String auditTriples = auditService.map(svc ->
-                    svc.creation(root, new SimpleSession(AdministratorAgent)).stream()
-                        .map(quad -> quad.getSubject() + " " + quad.getPredicate() + " " + quad.getObject() + " . ")
-                        .collect(joining("\n"))).orElse("");
-
             final UpdateRequest update = new UpdateRequest();
-            update.add("INSERT DATA { GRAPH " + PreferServerManaged + BRL
-                        + rdf.createTriple(root, RDF.type, LDP.Container)
-                        + rdf.createTriple(root, DC.modified, time) + BRR
-                    + " GRAPH <" + root.getIRIString() + "?ext=audit> {" + auditTriples + BRR
-                    + " GRAPH <" + root.getIRIString() + "?ext=acl> {"
-                        + rdf.createTriple(auth, ACL.mode, ACL.Read)
-                        + rdf.createTriple(auth, ACL.mode, ACL.Write)
-                        + rdf.createTriple(auth, ACL.mode, ACL.Control)
-                        + rdf.createTriple(auth, ACL.agentClass, FOAF.Agent)
-                        + rdf.createTriple(auth, ACL.accessTo, root) + BRR + BRR);
 
+            final QuadDataAcc sink = new QuadDataAcc();
+            sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
+                            rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.Container))));
+            sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
+                            rdf.asJenaNode(DC.modified), rdf.asJenaNode(time))));
+
+            auditService.ifPresent(svc -> svc.creation(root, new SimpleSession(AdministratorAgent)).stream()
+                    .map(quad -> new Quad(getAuditIRI(root), rdf.asJenaTriple(quad.asTriple())))
+                    .forEach(sink::addQuad));
+
+            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+                            rdf.asJenaNode(ACL.Read))));
+            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+                            rdf.asJenaNode(ACL.Write))));
+            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+                            rdf.asJenaNode(ACL.Control))));
+            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.agentClass),
+                            rdf.asJenaNode(FOAF.Agent))));
+            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.accessTo),
+                            rdf.asJenaNode(root))));
+
+            update.add(new UpdateDataInsert(sink));
             rdfConnection.update(update);
         }
     }
