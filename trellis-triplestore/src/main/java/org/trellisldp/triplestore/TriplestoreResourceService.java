@@ -73,6 +73,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.vocabulary.ACL;
@@ -99,22 +100,25 @@ public class TriplestoreResourceService implements ResourceService {
     private static Optional<AuditService> auditService = findFirst(AuditService.class);
 
     private final Supplier<String> supplier;
-    private final Optional<EventService> eventService;
     private final RDFConnection rdfConnection;
+    private final Optional<EventService> eventService;
+    private final Optional<MementoService> mementoService;
 
     /**
      * Create a triplestore-backed resource service.
      * @param rdfConnection the connection to an RDF datastore
      * @param identifierService an ID supplier service
+     * @param mementoService a service for memento resources
      * @param eventService an event service
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
-            final EventService eventService) {
+            final MementoService mementoService, final EventService eventService) {
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
         this.rdfConnection = rdfConnection;
         this.supplier = identifierService.getSupplier(TRELLIS_DATA_PREFIX);
         this.eventService = ofNullable(eventService);
+        this.mementoService = ofNullable(mementoService);
         init();
     }
 
@@ -122,6 +126,7 @@ public class TriplestoreResourceService implements ResourceService {
     public Future<Boolean> put(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
         return supplyAsync(() -> {
             final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
+            final Instant eventTime = now();
 
             // Set the LDP type
             dataset.remove(of(PreferServerManaged), identifier, RDF.type, null);
@@ -150,9 +155,10 @@ public class TriplestoreResourceService implements ResourceService {
                 getContainer(identifier).ifPresent(parent ->
                         dataset.add(PreferServerManaged, identifier, DC.isPartOf, parent));
 
-                // TODO save current state of resource to the versioning system
+                mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
+                            svc.put(identifier, eventTime, res.stream())));
             }
-            final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
+            final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
 
             try {
                 rdfConnection.update(buildUpdateRequest(identifier, time, dataset));
@@ -516,8 +522,7 @@ public class TriplestoreResourceService implements ResourceService {
 
     @Override
     public Optional<Resource> get(final IRI identifier, final Instant time) {
-        // TODO -- add versioning support via local files
-        return get(identifier);
+        return mementoService.map(svc -> svc.get(identifier, time)).orElseGet(() -> get(identifier));
     }
 
     @Override
