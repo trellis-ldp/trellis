@@ -28,6 +28,7 @@ import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -102,7 +104,7 @@ public class ResourceServiceTest {
         when(mockResource.getIdentifier()).thenReturn(existing);
         when(mockResource.stream(eq(graphs))).thenAnswer(inv ->
                 Stream.of(rdf.createTriple(existing, DC.title, rdf.createLiteral("A title"))));
-        when(mockResourceService.get(eq(existing))).thenReturn(of(mockResource));
+        Mockito.<Optional<? extends Resource>>when(mockResourceService.get(eq(existing))).thenReturn(of(mockResource));
 
         final List<Quad> export = mockResourceService.export(graphs).collect(toList());
         assertEquals(1L, export.size());

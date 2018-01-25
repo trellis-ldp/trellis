@@ -25,7 +25,7 @@ public class OATest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<OA> vocabulary() {
         return OA.class;
     }
 }

@@ -30,7 +30,7 @@ public class JSONLDTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<JSONLD> vocabulary() {
         return JSONLD.class;
     }
 }

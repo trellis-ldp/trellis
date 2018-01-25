@@ -25,7 +25,7 @@ public class VCARDTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<VCARD> vocabulary() {
         return VCARD.class;
     }
 }

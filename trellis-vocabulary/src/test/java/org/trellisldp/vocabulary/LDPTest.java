@@ -25,7 +25,7 @@ public class LDPTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<LDP> vocabulary() {
         return LDP.class;
     }
 }

@@ -25,7 +25,7 @@ public class MementoTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<Memento> vocabulary() {
         return Memento.class;
     }
 }

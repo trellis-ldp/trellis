@@ -25,7 +25,7 @@ public class FOAFTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<FOAF> vocabulary() {
         return FOAF.class;
     }
 }

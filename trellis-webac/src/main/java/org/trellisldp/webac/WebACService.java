@@ -19,7 +19,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toGraph;
@@ -132,8 +131,8 @@ public class WebACService implements AccessControlService {
             .collect(toSet());
     }
 
-    private Optional<Resource> getNearestResource(final IRI identifier) {
-        final Optional<Resource> res = resourceService.get(identifier);
+    private Optional<? extends Resource> getNearestResource(final IRI identifier) {
+        final Optional<? extends Resource> res = resourceService.get(identifier);
         // TODO -- JDK9 refactor with Optional::or
         if (res.isPresent()) {
             return res;

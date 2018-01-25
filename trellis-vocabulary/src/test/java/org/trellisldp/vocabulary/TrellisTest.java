@@ -25,7 +25,7 @@ public class TrellisTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<Trellis> vocabulary() {
         return Trellis.class;
     }
 }

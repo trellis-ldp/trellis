@@ -97,13 +97,13 @@ public class EventSerializerTest {
         assertTrue(map.containsKey("object"));
         assertTrue(map.containsKey("published"));
 
-        final List types = (List) map.get("type");
+        final List<?> types = (List<?>) map.get("type");
         assertTrue(types.contains("Create"));
         assertTrue(types.contains(Activity.getIRIString()));
 
         assertTrue(AS.URI.contains((String) map.get("@context")));
 
-        final List actor = (List) map.get("actor");
+        final List<?> actor = (List<?>) map.get("actor");
         assertTrue(actor.contains("info:user/test"));
 
         assertTrue(map.get("id").equals("info:event/12345"));
@@ -131,7 +131,7 @@ public class EventSerializerTest {
         assertTrue(map.containsKey("object"));
         assertTrue(map.containsKey("published"));
 
-        final List types = (List) map.get("type");
+        final List<?> types = (List<?>) map.get("type");
         assertTrue(types.contains("Create"));
 
         @SuppressWarnings("unchecked")

@@ -19,8 +19,6 @@ import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.trellisldp.vocabulary.RDF.type;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;

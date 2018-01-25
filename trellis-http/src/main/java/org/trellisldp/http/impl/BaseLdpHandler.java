@@ -24,8 +24,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.vocabulary.LDP.Resource;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;

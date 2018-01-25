@@ -37,6 +37,7 @@ import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
@@ -58,7 +59,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-
+import org.mockito.Mockito;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
@@ -139,8 +140,10 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
     @BeforeEach
     public void setUpMocks() {
-        when(mockResourceService.get(any(IRI.class), any(Instant.class))).thenReturn(of(mockVersionedResource));
-        when(mockResourceService.get(any(IRI.class))).thenReturn(of(mockResource));
+        Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class), any(Instant.class)))
+                        .thenReturn(of(mockVersionedResource));
+        Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class)))
+                        .thenReturn(of(mockResource));
         when(mockResourceService.getMementos(any())).thenReturn(emptyList());
 
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());

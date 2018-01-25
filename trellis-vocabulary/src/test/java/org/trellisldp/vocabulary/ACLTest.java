@@ -25,7 +25,7 @@ public class ACLTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<ACL> vocabulary() {
         return ACL.class;
     }
 }

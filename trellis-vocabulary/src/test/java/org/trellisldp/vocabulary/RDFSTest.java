@@ -25,7 +25,7 @@ public class RDFSTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<RDFS> vocabulary() {
         return RDFS.class;
     }
 }
