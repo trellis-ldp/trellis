@@ -48,7 +48,7 @@ public abstract class AbstractVocabularyTest {
 
     public abstract String namespace();
 
-    public abstract Class vocabulary();
+    public abstract Class<?> vocabulary();
 
     public Boolean isStrict() {
         return true;

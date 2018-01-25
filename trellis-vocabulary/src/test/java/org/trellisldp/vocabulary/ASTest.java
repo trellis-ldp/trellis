@@ -25,11 +25,13 @@ import org.junit.Test;
  */
 public class ASTest extends AbstractVocabularyTest {
 
+    @Override
     public String namespace() {
         return "https://www.w3.org/ns/activitystreams#";
     }
 
-    public Class vocabulary() {
+    @Override
+    public Class<AS> vocabulary() {
         return AS.class;
     }
 

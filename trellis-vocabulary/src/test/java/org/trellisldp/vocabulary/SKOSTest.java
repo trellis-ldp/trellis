@@ -25,7 +25,7 @@ public class SKOSTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<SKOS> vocabulary() {
         return SKOS.class;
     }
 }

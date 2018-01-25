@@ -25,7 +25,7 @@ public class PROVTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<PROV> vocabulary() {
         return PROV.class;
     }
 }

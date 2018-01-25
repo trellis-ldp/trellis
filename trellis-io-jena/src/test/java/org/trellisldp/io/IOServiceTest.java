@@ -132,8 +132,8 @@ public class IOServiceTest {
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/dcmitype/")))
             .thenReturn(Optional.of("dcmitype"));
         when(mockCache.get(anyString(), any(Function.class))).thenAnswer(inv -> {
-            final String key = (String) inv.getArgument(0);
-            final Function mapper = (Function<String, String>) inv.getArgument(1);
+            final String key = inv.getArgument(0);
+            final Function<String, String> mapper = inv.getArgument(1);
             return mapper.apply(key);
         });
     }

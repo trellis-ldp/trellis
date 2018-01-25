@@ -25,7 +25,7 @@ public class DCTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<DC> vocabulary() {
         return DC.class;
     }
 }

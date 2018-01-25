@@ -25,7 +25,7 @@ public class TimeTest extends AbstractVocabularyTest {
     }
 
     @Override
-    public Class vocabulary() {
+    public Class<Time> vocabulary() {
         return Time.class;
     }
 }

@@ -13,7 +13,6 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;

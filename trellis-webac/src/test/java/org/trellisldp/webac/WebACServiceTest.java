@@ -116,8 +116,8 @@ public class WebACServiceTest {
         testService = new WebACService(mockResourceService);
 
         when(mockCache.get(anyString(), any(Function.class))).thenAnswer(inv -> {
-            final String key = (String) inv.getArgument(0);
-            final Function mapper = (Function<String, String>) inv.getArgument(1);
+            final String key = inv.getArgument(0);
+            final Function<String, String> mapper = inv.getArgument(1);
             return mapper.apply(key);
         });
 
