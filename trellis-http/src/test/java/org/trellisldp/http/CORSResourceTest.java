@@ -41,6 +41,7 @@ import static org.trellisldp.vocabulary.RDF.type;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -63,7 +64,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-
+import org.mockito.Mockito;
+import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.Binary;
@@ -179,16 +181,21 @@ public class CORSResourceTest extends JerseyTest {
         super.tearDown();
     }
 
+    private static OngoingStubbing<Optional<? extends Resource>> whenResource(
+                    final Optional<? extends Resource> methodCall) {
+        return Mockito.<Optional<? extends Resource>>when(methodCall);
+    }
+
     @BeforeEach
     public void setUpMocks() {
-        when(mockResourceService.get(any(IRI.class), any(Instant.class)))
+        whenResource(mockResourceService.get(any(IRI.class), any(Instant.class)))
             .thenReturn(of(mockVersionedResource));
-        when(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
-        when(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
+        whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
+        whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
         when(mockResourceService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
-        when(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
-        when(mockResourceService.get(eq(binaryIdentifier), any(Instant.class)))
+        whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
+        whenResource(mockResourceService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(of(mockBinaryVersionedResource));
         when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
         when(mockResourceService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());

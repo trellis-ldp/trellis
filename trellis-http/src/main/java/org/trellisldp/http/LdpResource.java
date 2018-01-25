@@ -335,7 +335,7 @@ public class LdpResource implements ContainerRequestFilter {
         final String separator = path.isEmpty() ? "" : "/";
 
         // First check if this is a container
-        final Optional<Resource> parent = resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
+        final Optional<? extends Resource> parent = resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
         if (parent.isPresent()) {
             final Optional<IRI> ixModel = parent.map(Resource::getInteractionModel);
             if (ixModel.filter(type -> ldpResourceTypes(type).anyMatch(LDP.Container::equals)).isPresent()) {

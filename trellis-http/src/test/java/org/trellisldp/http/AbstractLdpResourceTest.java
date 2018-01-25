@@ -93,6 +93,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -119,7 +120,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-
+import org.mockito.Mockito;
+import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.Binary;
@@ -233,28 +235,33 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         super.tearDown();
     }
 
+    private static OngoingStubbing<Optional<? extends Resource>> whenResource(
+                    final Optional<? extends Resource> methodCall) {
+        return Mockito.<Optional<? extends Resource>>when(methodCall);
+    }
+
     @BeforeEach
     public void setUpMocks() {
-        when(mockResourceService.get(any(IRI.class), any(Instant.class)))
+        whenResource(mockResourceService.get(any(IRI.class), any(Instant.class)))
             .thenReturn(of(mockVersionedResource));
-        when(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
+        whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
+        whenResource(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
             .thenReturn(of(mockResource));
-        when(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
+        whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
         when(mockResourceService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
-        when(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
-        when(mockResourceService.get(eq(binaryIdentifier), any(Instant.class)))
+        whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
+        whenResource(mockResourceService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(of(mockBinaryVersionedResource));
         when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
         when(mockResourceService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());
-        when(mockResourceService.get(eq(deletedIdentifier))).thenReturn(of(mockDeletedResource));
-        when(mockResourceService.get(eq(deletedIdentifier), any(Instant.class)))
+        whenResource(mockResourceService.get(eq(deletedIdentifier))).thenReturn(of(mockDeletedResource));
+        whenResource(mockResourceService.get(eq(deletedIdentifier), any(Instant.class)))
             .thenReturn(of(mockDeletedResource));
         when(mockResourceService.getIdentifierSupplier()).thenReturn(() -> RANDOM_VALUE);
 
-        when(mockResourceService.get(eq(userDeletedIdentifier))).thenReturn(of(mockUserDeletedResource));
-        when(mockResourceService.get(eq(userDeletedIdentifier), any(Instant.class)))
+        whenResource(mockResourceService.get(eq(userDeletedIdentifier))).thenReturn(of(mockUserDeletedResource));
+        whenResource(mockResourceService.get(eq(userDeletedIdentifier), any(Instant.class)))
             .thenReturn(of(mockUserDeletedResource));
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);

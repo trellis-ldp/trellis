@@ -131,8 +131,8 @@ public class WebACService implements AccessControlService {
             .collect(toSet());
     }
 
-    private Optional<Resource> getNearestResource(final IRI identifier) {
-        final Optional<Resource> res = resourceService.get(identifier);
+    private Optional<? extends Resource> getNearestResource(final IRI identifier) {
+        final Optional<? extends Resource> res = resourceService.get(identifier);
         // TODO -- JDK9 refactor with Optional::or
         if (res.isPresent()) {
             return res;

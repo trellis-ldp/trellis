@@ -48,7 +48,7 @@ public interface ResourceService {
      * @param identifier the resource identifier
      * @return the resource
      */
-    Optional<Resource> get(IRI identifier);
+    Optional<? extends Resource> get(IRI identifier);
 
     /**
      * Get a resource from the given location and time.
@@ -57,7 +57,7 @@ public interface ResourceService {
      * @param time the time
      * @return the resource
      */
-    Optional<Resource> get(IRI identifier, Instant time);
+    Optional<? extends Resource> get(IRI identifier, Instant time);
 
     /**
      * Put a resource into the server.
