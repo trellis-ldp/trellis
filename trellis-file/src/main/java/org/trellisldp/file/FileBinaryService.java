@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.binary;
+package org.trellisldp.file;
 
 import static java.nio.file.Files.copy;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -67,12 +67,10 @@ import org.trellisldp.api.BinaryService;
  * <li>SHA-384</li>
  * <li>SHA-512</li>
  * </ul>
- *
- * @author acoburn
  */
-public class FileBasedBinaryService implements BinaryService {
+public class FileBinaryService implements BinaryService {
 
-    private static final Logger LOGGER = getLogger(FileBasedBinaryService.class);
+    private static final Logger LOGGER = getLogger(FileBinaryService.class);
     private static final String SHA = "SHA";
 
     // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
@@ -88,7 +86,7 @@ public class FileBasedBinaryService implements BinaryService {
      * @param basePath the base file path
      * @param idSupplier an identifier supplier
      */
-    public FileBasedBinaryService(final String basePath, final Supplier<String> idSupplier) {
+    public FileBinaryService(final String basePath, final Supplier<String> idSupplier) {
         this.basePath = basePath;
         this.idSupplier = idSupplier;
     }

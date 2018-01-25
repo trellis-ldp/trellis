@@ -35,8 +35,8 @@
     <bundle>mvn:org.trellisldp/trellis-audit/${project.version}</bundle>
   </feature>
 
-  <feature name="trellis-binary" version="${project.version}">
-    <details>Installs the Trellis Binary service bundle</details>
+  <feature name="trellis-file" version="${project.version}">
+    <details>Installs the Trellis File-based service bundle</details>
 
     <feature>trellis-api</feature>
 
@@ -44,7 +44,7 @@
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
 
-    <bundle>mvn:org.trellisldp/trellis-binary/${project.version}</bundle>
+    <bundle>mvn:org.trellisldp/trellis-file/${project.version}</bundle>
   </feature>
 
   <feature name="trellis-constraint-rules" version="${project.version}">

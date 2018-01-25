@@ -163,14 +163,16 @@ public class TriplestoreResourceService implements ResourceService {
                 getContainer(identifier).ifPresent(parent ->
                         dataset.add(PreferServerManaged, identifier, DC.isPartOf, parent));
 
-                mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
-                            svc.put(identifier, eventTime, res.stream())));
             }
             final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
 
             try {
                 rdfConnection.update(buildUpdateRequest(identifier, time, dataset));
                 emitEvents(identifier, time, dataset);
+                if (!isDelete) {
+                    mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
+                                svc.put(identifier, eventTime, res.stream())));
+                }
 
                 return true;
             } catch (final Exception ex) {

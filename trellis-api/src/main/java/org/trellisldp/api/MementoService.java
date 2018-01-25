@@ -52,7 +52,8 @@ public interface MementoService {
     /**
      * Delete a Memento resource.
      * @param identifier the resource identifier
+     * @param time the version at the given time
      * @return true on success; false otherwise
      */
-    Boolean delete(IRI identifier);
+    Boolean delete(IRI identifier, Instant time);
 }

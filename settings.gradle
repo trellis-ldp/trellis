@@ -5,9 +5,9 @@ include ':trellis-vocabulary'
 
 include ':trellis-agent'
 include ':trellis-audit'
-include ':trellis-binary'
 include ':trellis-constraint-rules'
 include ':trellis-event-serialization'
+include ':trellis-file'
 include ':trellis-id'
 include ':trellis-io-jena'
 include ':trellis-namespaces'
@@ -23,9 +23,9 @@ project(':trellis-vocabulary').projectDir = "$rootDir/trellis-vocabulary" as Fil
 
 project(':trellis-agent').projectDir = "$rootDir/trellis-agent" as File
 project(':trellis-audit').projectDir = "$rootDir/trellis-audit" as File
-project(':trellis-binary').projectDir = "$rootDir/trellis-binary" as File
 project(':trellis-constraint-rules').projectDir = "$rootDir/trellis-constraint-rules" as File
 project(':trellis-event-serialization').projectDir = "$rootDir/trellis-event-serialization" as File
+project(':trellis-file').projectDir = "$rootDir/trellis-file" as File
 project(':trellis-id').projectDir = "$rootDir/trellis-id" as File
 project(':trellis-io-jena').projectDir = "$rootDir/trellis-io-jena" as File
 project(':trellis-namespaces').projectDir = "$rootDir/trellis-namespaces" as File

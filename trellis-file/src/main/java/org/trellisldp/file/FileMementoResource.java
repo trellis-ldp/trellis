@@ -11,12 +11,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.trellisldp.file;
+
+import java.io.File;
+
+import org.apache.commons.rdf.api.IRI;
+
 /**
- * Trellis Binary Service Implementation
- *
- * <p>This package implements the main Binary Service
- * abstractions for storing and retrieving binary content.</p>
- *
- * @author acoburn
+ * A File-based resource that is also a Memento.
  */
-package org.trellisldp.binary;
+public class FileMementoResource extends FileResource {
+
+    /**
+     * Create a Memento resource that is backed by an NQuads file.
+     * @param identifier the resource identifier
+     * @param file the file
+     */
+    public FileMementoResource(final IRI identifier, final File file) {
+        super(identifier, file);
+    }
+
+    @Override
+    public Boolean isMemento() {
+        return true;
+    }
+
+}

@@ -139,10 +139,10 @@ public class OSGiTest {
     }
 
     @Test
-    public void testBinaryInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-binary")));
-        featuresService.installFeature("trellis-binary");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-binary")));
+    public void testFileInstallation() throws Exception {
+        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-file")));
+        featuresService.installFeature("trellis-file");
+        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-file")));
     }
 
     @Test

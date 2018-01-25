@@ -1,0 +1,130 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.trellisldp.file;
+
+import static java.lang.System.lineSeparator;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.deleteIfExists;
+import static java.nio.file.Files.newBufferedWriter;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static java.util.Collections.emptyList;
+import static java.util.Optional.of;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
+import org.slf4j.Logger;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.api.Resource;
+
+/**
+ * A file-based versioning system.
+ */
+public class FileMementoService implements MementoService {
+
+    private static final Logger LOGGER = getLogger(FileMementoService.class);
+
+    private final File directory;
+
+    /**
+     * Create a file-based memento service.
+     *
+     * @param directory the base directory where versions are stored
+     */
+    public FileMementoService(final String directory) {
+        this.directory = new File(directory);
+        init();
+    }
+
+    @Override
+    public void put(final IRI identifier, final Instant time, final Stream<? extends Quad> data) {
+        final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+        if (!resourceDir.exists()) {
+            resourceDir.mkdirs();
+        }
+
+        try (final BufferedWriter writer = newBufferedWriter(getNquadsFile(resourceDir, time).toPath(), UTF_8, CREATE,
+                    WRITE, TRUNCATE_EXISTING)) {
+            final Iterator<String> lineIter = data.map(FileUtils::serializeQuad).iterator();
+            while (lineIter.hasNext()) {
+                writer.write(lineIter.next() + lineSeparator());
+            }
+        } catch (final IOException ex) {
+            LOGGER.error("Error writing resource version for {}: {}", identifier.getIRIString(), ex.getMessage());
+        }
+    }
+
+    @Override
+    public Optional<Resource> get(final IRI identifier, final Instant time) {
+        final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+        final File file = getNquadsFile(resourceDir, time);
+        if (file.exists()) {
+            return of(new FileMementoResource(identifier, file));
+        }
+        return list(identifier).stream().filter(v -> !v.isAfter(time)).max((t1, t2) -> t1.compareTo(t2))
+                .map(t -> getNquadsFile(resourceDir, t)).map(f -> new FileMementoResource(identifier, f));
+    }
+
+    @Override
+    public List<Instant> list(final IRI identifier) {
+        final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+        if (!resourceDir.exists()) {
+            return emptyList();
+        }
+
+        final List<Instant> instants = new ArrayList<>();
+        try (final Stream<Path> files = Files.list(resourceDir.toPath())) {
+            files.map(Path::toString).filter(path -> path.endsWith(".nq")).map(FilenameUtils::getBaseName)
+                .map(Long::parseLong).map(Instant::ofEpochSecond).forEach(instants::add);
+        } catch (final IOException ex) {
+            LOGGER.error("Error fetching memento list for {}: {}", identifier, ex.getMessage());
+        }
+        return instants;
+    }
+
+    @Override
+    public Boolean delete(final IRI identifier, final Instant time) {
+        try {
+            return deleteIfExists(getNquadsFile(FileUtils.getResourceDirectory(directory, identifier), time).toPath());
+        } catch (final IOException ex) {
+            LOGGER.error("Could not delete Memento for {} at {}: {}", identifier, time, ex.getMessage());
+        }
+        return false;
+    }
+
+    private void init() {
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+    }
+
+    private File getNquadsFile(final File dir, final Instant time) {
+        return new File(dir, Long.toString(time.getEpochSecond()) + ".nq");
+    }
+}
