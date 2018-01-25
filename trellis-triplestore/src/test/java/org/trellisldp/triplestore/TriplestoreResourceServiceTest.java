@@ -14,8 +14,11 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
+import static java.time.Instant.parse;
+import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -105,6 +109,27 @@ public class TriplestoreResourceServiceTest {
                 mockMementoService, mockEventService);
         assertNotEquals(svc.getIdentifierSupplier().get(), svc.getIdentifierSupplier().get());
         assertNotEquals(svc.getIdentifierSupplier().get(), svc.getIdentifierSupplier().get());
+    }
+
+    @Test
+    public void testMementoService() {
+        final JenaDataset dataset = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
+                mockMementoService, mockEventService);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final Instant time1 = parse("2014-10-14T12:00:00Z");
+        final Instant time2 = parse("2018-01-03T12:00:00Z");
+        final Instant time3 = parse("2018-01-03T14:30:00Z");
+        final Instant time4 = now();
+        when(mockMementoService.list(eq(identifier))).thenReturn(asList(time2, time3, time1, time4));
+        assertTrue(svc.getMementos(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).isEmpty());
+        assertEquals(4L, svc.getMementos(identifier).size());
+        assertTrue(svc.getMementos(identifier).contains(between(time1, time2)));
+        assertTrue(svc.getMementos(identifier).contains(between(time2, time3)));
+        assertTrue(svc.getMementos(identifier).contains(between(time3, time4)));
+        assertTrue(svc.getMementos(identifier).stream().filter(range -> range.getMinimum().equals(time4))
+                .findFirst().isPresent());
     }
 
     @Test

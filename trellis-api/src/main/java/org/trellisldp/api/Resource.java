@@ -18,12 +18,10 @@ import static java.util.Optional.empty;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
@@ -94,13 +92,6 @@ public interface Resource {
     default Optional<IRI> getInsertedContentRelation() {
         return empty();
     }
-
-    /**
-     * Retrieve a collection of Mementos for this resource.
-     *
-     * @return a stream of known Mementos
-     */
-    List<Range<Instant>> getMementos();
 
     /**
      * Retrieve the RDF Quads for a resource.

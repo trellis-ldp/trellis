@@ -92,7 +92,7 @@ public class DeleteHandlerTest {
         final IRI iri = rdf.createIRI("trellis:repo");
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getIdentifier()).thenReturn(iri);
-        when(mockResource.getMementos()).thenReturn(emptyList());
+        when(mockResourceService.getMementos(any())).thenReturn(emptyList());
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockResourceService.skolemize(any(BlankNode.class)))

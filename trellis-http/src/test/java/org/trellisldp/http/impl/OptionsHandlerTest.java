@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -84,7 +85,7 @@ public class OptionsHandlerTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockResource.getMementos()).thenReturn(emptyList());
+        when(mockResourceService.getMementos(any())).thenReturn(emptyList());
         when(mockResource.isMemento()).thenReturn(false);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> empty());
         when(mockRequest.getBaseUrl()).thenReturn(baseUrl);

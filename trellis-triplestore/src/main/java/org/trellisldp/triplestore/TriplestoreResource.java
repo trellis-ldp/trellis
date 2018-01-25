@@ -13,15 +13,11 @@
  */
 package org.trellisldp.triplestore;
 
-import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
-import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -34,16 +30,13 @@ import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
 import static org.trellisldp.triplestore.TriplestoreUtils.getSubject;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
@@ -61,7 +54,6 @@ import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -183,30 +175,6 @@ public class TriplestoreResource implements Resource {
     @Override
     public Optional<IRI> getInsertedContentRelation() {
         return graph.stream(identifier, LDP.insertedContentRelation, null).map(t -> (IRI) t.getObject()).findFirst();
-    }
-
-    @Override
-    public List<Range<Instant>> getMementos() {
-        // TODO -- reimplement this with a working versioning system
-        final List<Instant> mementos = graph.stream(identifier, PROV.generatedAtTime, null)
-            .map(triple -> (Literal) triple.getObject()).map(Literal::getLexicalForm).map(Instant::parse).sorted()
-            .collect(toList());
-
-        final List<Range<Instant>> versions = new ArrayList<>();
-        Instant last = null;
-        for (final Instant time : mementos) {
-            if (nonNull(last)) {
-                versions.add(between(last, time));
-            }
-            last = time;
-        }
-        final Instant mod = getModified();
-        requireNonNull(mod, "resource modification value is null!");
-
-        if (nonNull(last)) {
-            versions.add(between(last, mod));
-        }
-        return unmodifiableList(versions);
     }
 
     @Override

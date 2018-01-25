@@ -88,10 +88,10 @@ public class BaseLdpHandler {
      * @param identifier the identifier
      * @throws WebApplicationException a 410 Gone exception
      */
-    protected static void checkDeleted(final Resource res, final String identifier) {
+    protected void checkDeleted(final Resource res, final String identifier) {
         if (res.isDeleted()) {
             throw new WebApplicationException(status(GONE)
-                    .links(MementoResource.getMementoLinks(identifier, res.getMementos())
+                    .links(MementoResource.getMementoLinks(identifier, resourceService.getMementos(res.getIdentifier()))
                     .toArray(Link[]::new)).build());
         }
     }

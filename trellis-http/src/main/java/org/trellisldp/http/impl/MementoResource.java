@@ -33,6 +33,7 @@ import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.Range.between;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.impl.RdfUtils.getProfile;
@@ -67,7 +68,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 
 import org.trellisldp.api.IOService;
-import org.trellisldp.api.Resource;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.Memento;
 import org.trellisldp.vocabulary.Time;
@@ -95,15 +96,15 @@ public final class MementoResource {
 
     private static final String TIMEMAP_PARAM = "?ext=timemap";
 
-    private final Resource resource;
+    private final ResourceService resourceService;
 
     /**
      * Wrap a resource in some Memento-specific response builders.
      *
-     * @param resource the resource
+     * @param resourceService the resource service
      */
-    public MementoResource(final Resource resource) {
-        this.resource = resource;
+    public MementoResource(final ResourceService resourceService) {
+        this.resourceService = resourceService;
     }
 
     /**
@@ -119,7 +120,9 @@ public final class MementoResource {
 
         final List<MediaType> acceptableTypes = req.getHeaders().getAcceptableMediaTypes();
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
-        final List<Link> links = getMementoLinks(identifier, resource.getMementos()).collect(toList());
+        final IRI internalIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final List<Link> links = getMementoLinks(identifier, resourceService.getMementos(internalIdentifier))
+            .collect(toList());
 
         final Response.ResponseBuilder builder = Response.ok().link(identifier, ORIGINAL + " " + TIMEGATE);
         builder.links(links.toArray(new Link[0])).link(Resource.getIRIString(), "type")
@@ -174,10 +177,11 @@ public final class MementoResource {
      */
     public Response.ResponseBuilder getTimeGateBuilder(final LdpRequest req, final String baseUrl) {
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
+        final IRI internalIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         return Response.status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().toEpochMilli()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
-            .links(getMementoLinks(identifier, resource.getMementos()).toArray(Link[]::new))
+            .links(getMementoLinks(identifier, resourceService.getMementos(internalIdentifier)).toArray(Link[]::new))
             .header(VARY, ACCEPT_DATETIME);
     }
 

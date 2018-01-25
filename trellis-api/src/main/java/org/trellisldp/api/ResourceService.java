@@ -21,11 +21,13 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -82,6 +84,14 @@ public interface ResourceService {
         return of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
                     .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(getInstance()::createIRI);
     }
+
+    /**
+     * Retrieve a list of Mementos for this resource.
+     *
+     * @param identifier the resource identifier
+     * @return a stream of known Mementos
+     */
+    List<Range<Instant>> getMementos(IRI identifier);
 
     /**
      * Compact (rewrite the history) of a resource.

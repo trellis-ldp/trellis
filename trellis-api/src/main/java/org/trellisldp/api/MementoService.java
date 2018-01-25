@@ -48,4 +48,11 @@ public interface MementoService {
      * @return a list of Memento dateTimes
      */
     List<Instant> list(IRI identifier);
+
+    /**
+     * Delete a Memento resource.
+     * @param identifier the resource identifier
+     * @return true on success; false otherwise
+     */
+    Boolean delete(IRI identifier);
 }

@@ -234,15 +234,15 @@ public class LdpResource implements ContainerRequestFilter {
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.info("Getting timemap resource");
-            return resourceService.get(identifier).map(MementoResource::new)
-                .map(res -> res.getTimeMapBuilder(req, ioService, urlBase))
+            return resourceService.get(identifier)
+                .map(res -> new MementoResource(resourceService).getTimeMapBuilder(req, ioService, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
             LOGGER.info("Getting timegate resource: {}", req.getDatetime().getInstant());
             return resourceService.get(identifier, req.getDatetime().getInstant())
-                .map(MementoResource::new).map(res -> res.getTimeGateBuilder(req, urlBase))
+                .map(res -> new MementoResource(resourceService).getTimeGateBuilder(req, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 

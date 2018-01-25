@@ -46,7 +46,6 @@ import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
@@ -124,7 +123,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
@@ -155,7 +153,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
@@ -190,7 +187,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertFalse(res.getBinary().isPresent());
         assertTrue(res.hasAcl());
         assertFalse(res.isDeleted());
@@ -232,7 +228,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertTrue(res.getBinary().isPresent());
         res.getBinary().ifPresent(b -> {
             assertEquals(binaryIdentifier, b.getIdentifier());
@@ -274,7 +269,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
@@ -310,7 +304,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
@@ -351,7 +344,6 @@ public class TriplestoreResourceTest {
         assertTrue(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
@@ -370,7 +362,6 @@ public class TriplestoreResourceTest {
         assertFalse(res2.getMemberRelation().isPresent());
         assertFalse(res2.getMemberOfRelation().isPresent());
         assertFalse(res2.getInsertedContentRelation().isPresent());
-        assertTrue(res2.getMementos().isEmpty());
         assertFalse(res2.getBinary().isPresent());
         assertFalse(res2.hasAcl());
         assertFalse(res2.isDeleted());
@@ -419,7 +410,6 @@ public class TriplestoreResourceTest {
         assertTrue(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertTrue(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMementos().isEmpty());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
@@ -438,7 +428,6 @@ public class TriplestoreResourceTest {
         assertFalse(res2.getMemberRelation().isPresent());
         assertFalse(res2.getMemberOfRelation().isPresent());
         assertFalse(res2.getInsertedContentRelation().isPresent());
-        assertTrue(res2.getMementos().isEmpty());
         assertFalse(res2.getBinary().isPresent());
         assertFalse(res2.hasAcl());
         assertFalse(res2.isDeleted());
@@ -450,44 +439,4 @@ public class TriplestoreResourceTest {
                 .filter(t -> DC.relation.equals(t.getPredicate())).count());
         assertEquals(8L, res2.stream().count());
     }
-
-    @Test
-    public void testMementos() {
-        final String time = "2018-01-12T14:02:00Z";
-        final String memento1 = "2017-11-05T12:00:00Z";
-        final String memento2 = "2017-11-17T12:00:00Z";
-        final String memento3 = "2017-12-11T12:00:00Z";
-        final JenaDataset dataset = rdf.createDataset();
-        dataset.add(identifier, identifier, RDF.type, SKOS.Concept);
-        dataset.add(identifier, identifier, SKOS.prefLabel, rdf.createLiteral("resource"));
-        dataset.add(other, other, SKOS.prefLabel, rdf.createLiteral("other"));
-        dataset.add(Trellis.PreferServerManaged, identifier, RDF.type, LDP.RDFSource);
-        dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
-        dataset.add(Trellis.PreferServerManaged, identifier, PROV.generatedAtTime,
-                rdf.createLiteral(memento1, XSD.dateTime));
-        dataset.add(Trellis.PreferServerManaged, identifier, PROV.generatedAtTime,
-                rdf.createLiteral(memento2, XSD.dateTime));
-        dataset.add(Trellis.PreferServerManaged, identifier, PROV.generatedAtTime,
-                rdf.createLiteral(memento3, XSD.dateTime));
-
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier);
-        res.fetchData();
-        assertTrue(res.exists());
-        assertEquals(identifier, res.getIdentifier());
-        assertEquals(LDP.RDFSource, res.getInteractionModel());
-        assertEquals(parse(time), res.getModified());
-        assertFalse(res.getMembershipResource().isPresent());
-        assertFalse(res.getMemberRelation().isPresent());
-        assertFalse(res.getMemberOfRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().isPresent());
-        assertEquals(3L, res.getMementos().size());
-        assertFalse(res.getBinary().isPresent());
-        assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
-        assertEquals(5L, res.stream(singleton(Trellis.PreferServerManaged)).count());
-        assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
-        assertEquals(7L, res.stream().count());
-    }
-
 }

@@ -162,7 +162,8 @@ public class GetHandler extends BaseLdpHandler {
         // Only show memento links for the user-managed graph (not ACL)
         if (!ACL.equals(req.getExt())) {
             builder.link(identifier, "original timegate")
-                .links(MementoResource.getMementoLinks(identifier, res.getMementos()).toArray(Link[]::new));
+                .links(MementoResource.getMementoLinks(identifier, resourceService.getMementos(res.getIdentifier()))
+                        .toArray(Link[]::new));
         }
 
         // URI Template

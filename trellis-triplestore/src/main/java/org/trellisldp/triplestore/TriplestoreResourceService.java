@@ -14,12 +14,17 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.sort;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Stream.builder;
+import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -40,11 +45,14 @@ import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
@@ -171,6 +179,26 @@ public class TriplestoreResourceService implements ResourceService {
             return false;
         });
     }
+
+    @Override
+    public List<Range<Instant>> getMementos(final IRI identifier) {
+        final List<Instant> mementos = mementoService.map(svc -> svc.list(identifier)).orElse(emptyList());
+        sort(mementos);
+
+        final List<Range<Instant>> versions = new ArrayList<>();
+        Instant last = null;
+        for (final Instant time : mementos) {
+            if (nonNull(last)) {
+                versions.add(between(last, time));
+            }
+            last = time;
+        }
+        if (nonNull(last)) {
+            versions.add(between(last, now()));
+        }
+        return unmodifiableList(versions);
+    }
+
 
     private void emitEvents(final IRI identifier, final Literal time, final Dataset dataset) {
 

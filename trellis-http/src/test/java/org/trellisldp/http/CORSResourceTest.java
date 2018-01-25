@@ -198,7 +198,7 @@ public class CORSResourceTest extends JerseyTest {
 
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
 
-        when(mockVersionedResource.getMementos()).thenReturn(asList(
+        when(mockResourceService.getMementos(eq(identifier))).thenReturn(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
                 between(time, ofEpochSecond(timestamp + 1000))));
@@ -209,7 +209,6 @@ public class CORSResourceTest extends JerseyTest {
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
-        when(mockResource.getMementos()).thenReturn(emptyList());
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinary()).thenReturn(empty());

@@ -139,7 +139,7 @@ public class GetHandlerTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockResource.getMementos()).thenReturn(emptyList());
+        when(mockResourceService.getMementos(any())).thenReturn(emptyList());
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinary()).thenReturn(empty());
