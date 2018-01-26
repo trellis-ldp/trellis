@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -103,14 +102,4 @@ public class FileUtilsTest {
         assertEquals("<trellis:data/resource> <http://purl.org/dc/terms/subject> <http://example.org> .",
                 FileUtils.serializeQuad(quad));
     }
-
-    @Test
-    public void testDirectory() {
-        final File dir = new File("/var/lib/trellis");
-        final File resDir1 = FileUtils.getResourceDirectory(dir, rdf.createIRI("trellis:data/resource"));
-        assertEquals("/var/lib/trellis/35/97/1a/f68d4d5afced3770fc13fb8e560dc253", resDir1.getAbsolutePath());
-        final File resDir2 = FileUtils.getResourceDirectory(dir, rdf.createIRI("trellis:data/resource/2"));
-        assertEquals("/var/lib/trellis/de/79/19/b43b345b666ac3dab33585181e216228", resDir2.getAbsolutePath());
-    }
-
 }
