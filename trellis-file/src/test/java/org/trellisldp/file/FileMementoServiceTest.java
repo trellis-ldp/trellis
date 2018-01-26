@@ -57,11 +57,9 @@ public class FileMementoServiceTest {
                     "/readonly/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
         readonly.setWritable(true);
 
-        final File unreadable = new File(dir, "unreadable");
-        if (unreadable.exists()) {
-            unreadable.setReadable(true);
-            deleteDirectory(unreadable);
-        }
+        final File unreadable = new File(FileMementoServiceTest.class.getResource(
+                    "/unreadable/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
+        unreadable.setReadable(true);
     }
 
     @Test
@@ -152,9 +150,9 @@ public class FileMementoServiceTest {
     public void testAccessUnreadable() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
 
-        final File dir = new File(getClass().getResource("/versions").getFile()).getParentFile();
-        final File unreadable = new File(dir, "unreadable");
-        unreadable.mkdirs();
+        final File dir = new File(getClass().getResource("/unreadable").getFile());
+        final File unreadable = new File(getClass().getResource(
+                    "/unreadable/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
         assumeTrue(unreadable.setReadable(false));
 
         final MementoService svc = new FileMementoService(dir.getAbsolutePath());
