@@ -30,4 +30,4 @@ matrix:
     - env: JDK_RELEASE='JDK 10 Early-Access'
 
 after_success:
-    - test "$JDK_RELEASE" != "JDK 10 Early-Access" && ./gradlew jacocoRootReport coveralls sonarqube
+    - sh ./buildtools/src/install/report.sh
