@@ -16,7 +16,6 @@ matrix:
     # JDK 8
     - jdk: oraclejdk8
       env: JDK_RELEASE='JDK 1.8'
-      script: ./gradlew clean check install jacocoRootReport coveralls sonarqube
 
     # JDK 9
     - jdk: oraclejdk9
@@ -29,3 +28,6 @@ matrix:
 
   allow_failures:
     - env: JDK_RELEASE='JDK 10 Early-Access'
+
+after_success:
+    - test "$JDK_RELEASE" != "JDK 10 Early-Access" && ./gradlew jacocoRootReport coveralls sonarqube
