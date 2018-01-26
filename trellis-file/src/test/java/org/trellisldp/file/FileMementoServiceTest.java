@@ -30,6 +30,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -44,12 +45,34 @@ public class FileMementoServiceTest {
 
     private static final RDF rdf = new JenaRDF();
 
+    @BeforeAll
+    public static void setUp() throws IOException {
+        final File readonly = new File(FileMementoServiceTest.class.getResource(
+                    "/readonly/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
+        readonly.setReadOnly();
+
+        final File dir = new File(FileMementoServiceTest.class.getResource("/versions").getFile()).getParentFile();
+        final File unreadable = new File(dir, "unreadable");
+        unreadable.mkdirs();
+        unreadable.setReadable(false);
+    }
+
     @AfterAll
     public static void cleanUp() throws IOException {
         final File dir = new File(FileMementoServiceTest.class.getResource("/versions").getFile()).getParentFile();
         final File vDir = new File(dir, "versions2");
         if (vDir.exists()) {
             deleteDirectory(vDir);
+        }
+
+        final File readonly = new File(FileMementoServiceTest.class.getResource(
+                    "/readonly/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
+        readonly.setWritable(true);
+
+        final File unreadable = new File(dir, "unreadable");
+        if (unreadable.exists()) {
+            unreadable.setReadable(true);
+            deleteDirectory(unreadable);
         }
     }
 
@@ -111,6 +134,34 @@ public class FileMementoServiceTest {
         assertTrue(svc.delete(identifier, time.plusSeconds(10)));
         assertEquals(1L, svc.list(identifier).size());
 
+    }
+
+    @Test
+    public void testUnwritableVersionSystem() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final File dir = new File(getClass().getResource("/readonly").getFile());
+        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+        assertEquals(2L, svc.list(identifier).size());
+        final File file = new File(getClass().getResource("/resource.nq").getFile());
+        assertTrue(file.exists());
+        final Resource res = new FileResource(identifier, file);
+
+        final Instant time = parse("2017-02-16T11:15:01Z");
+        svc.put(identifier, time.plusSeconds(10), res.stream());
+
+        assertEquals(2L, svc.list(identifier).size());
+        assertFalse(svc.delete(identifier, time));
+        assertFalse(svc.delete(identifier, time.plusSeconds(10)));
+        assertEquals(2L, svc.list(identifier).size());
+    }
+
+    @Test
+    public void testAccessUnreadable() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final File dir = new File(getClass().getResource("/unreadable").getFile()).getParentFile();
+        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+
+        assertTrue(svc.list(identifier).isEmpty());
     }
 
 }
