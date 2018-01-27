@@ -68,6 +68,8 @@ public class TriplestoreResourceTest {
     private static final IRI aclId = rdf.createIRI("trellis:resource?ext=acl");
     private static final IRI aclSubject = rdf.createIRI("trellis:resource#auth");
     private static final IRI other = rdf.createIRI("trellis:other");
+
+
     private static final AuditService auditService = new DefaultAuditService();
 
     private final Instant created = now();

@@ -24,7 +24,7 @@ import org.apache.commons.rdf.api.Quad;
  *
  * @author acoburn
  */
-public interface AuditService {
+public interface AuditService extends AppendService<Resource> {
 
     /**
      * Generate the audit quads for a Create event.

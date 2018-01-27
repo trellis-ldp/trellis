@@ -166,17 +166,16 @@ public class OSGiTest {
         assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
     }
 
-    @SuppressWarnings("unchecked")
     protected <T> T getOsgiService(final Class<T> type, final String filter, final long timeout) {
         try {
-            final ServiceTracker tracker = new ServiceTracker(bundleContext,
+            final ServiceTracker<?, T> tracker = new ServiceTracker<>(bundleContext,
                     createFilter("(&(" + OBJECTCLASS + "=" + type.getName() + ")" + filter + ")"), null);
             tracker.open(true);
-            final Object svc = type.cast(tracker.waitForService(timeout));
+            final T svc = tracker.waitForService(timeout);
             if (svc == null) {
                 throw new RuntimeException("Gave up waiting for service " + filter);
             }
-            return type.cast(svc);
+            return svc;
         } catch (InvalidSyntaxException e) {
             throw new IllegalArgumentException("Invalid filter", e);
         } catch (InterruptedException e) {
