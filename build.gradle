@@ -80,7 +80,7 @@ subprojects {
         /* Testing */
         apiguardianVersion = '1.0.0'
         commonsTextVersion = '1.2'
-        jacksonVersion = '2.9.3'
+        jacksonVersion = '2.9.4'
         jerseyVersion = '2.26'
         jsonVersion = '1.1.2'
         junitVersion = '5.0.2'
