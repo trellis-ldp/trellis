@@ -17,7 +17,7 @@ package org.trellisldp.api;
 import java.util.concurrent.Future;
 
 /**
- * A service that persists resources by replacing their records.
+ * A service that persists resources by <i>replacing</i> their records.
  * 
  * @author ajs6f
  *
@@ -27,7 +27,7 @@ public interface ReplaceService<T> extends RetrievalService<T> {
 
     /**
      * @param resource a resource to persist
-     * @return whether the resource will be successfully persisted
+     * @return whether the resource was successfully persisted
      */
     Future<Boolean> put(T resource);
 

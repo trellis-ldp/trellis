@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 
 /**
  * A service that persists resources by appending to their records. Nothing that
- * is recorded by this service will be deleted by it.
+ * is recorded by {@link #add(Object)} will be deleted by using {@code add} again.
  * 
  * @author ajs6f
  *
@@ -28,7 +28,7 @@ public interface AppendService<T> {
 
     /**
      * @param resource a resource to persist
-     * @return whether the resource will be successfully persisted
+     * @return whether the resource was successfully persisted
      */
     Future<Boolean> add(T resource);
 }

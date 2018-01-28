@@ -103,7 +103,8 @@ public class OSGiTest {
         featuresService.installFeature("trellis-audit");
         assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
         featuresService.uninstallFeature("trellis-audit");
-
+        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
+        
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
         featuresService.installFeature("trellis-triplestore");
         assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
