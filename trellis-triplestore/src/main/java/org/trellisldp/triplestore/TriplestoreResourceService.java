@@ -84,6 +84,7 @@ import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.DC;
@@ -96,7 +97,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * A triplestore-based implementation of the Trellis ResourceService API.
  */
-public class TriplestoreResourceService implements ResourceService {
+public class TriplestoreResourceService extends DefaultAuditService implements ResourceService {
 
     private static final Var PARENT = Var.alloc("parent");
     private static final Var MODIFIED = Var.alloc("modified");

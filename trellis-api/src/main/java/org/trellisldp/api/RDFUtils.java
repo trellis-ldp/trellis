@@ -98,7 +98,7 @@ public final class RDFUtils {
         return new DatasetCollector();
     }
 
-    public static class DatasetCollector implements Collector<Quad, Dataset, Dataset> {
+    static class DatasetCollector implements Collector<Quad, Dataset, Dataset> {
 
         @Override
         public Supplier<Dataset> supplier() {

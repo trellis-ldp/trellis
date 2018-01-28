@@ -30,6 +30,7 @@ import java.io.File;
 import javax.inject.Inject;
 
 import org.apache.karaf.features.FeaturesService;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -97,7 +98,13 @@ public class OSGiTest {
     }
 
     @Test
-    public void testTriplestoreInstallation() throws Exception {
+    public void testAuditAndTriplestoreInstallation() throws Exception {
+        // test these two together because trellis-triplestore depends on trellis-audit
+        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
+        featuresService.installFeature("trellis-audit");
+        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
+        featuresService.uninstallFeature("trellis-audit");
+
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
         featuresService.installFeature("trellis-triplestore");
         assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
@@ -129,13 +136,6 @@ public class OSGiTest {
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
         featuresService.installFeature("trellis-agent");
         assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
-    }
-
-    @Test
-    public void testAuditInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
-        featuresService.installFeature("trellis-audit");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
     }
 
     @Test
