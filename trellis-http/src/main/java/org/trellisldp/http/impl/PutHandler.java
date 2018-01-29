@@ -214,6 +214,17 @@ public class PutHandler extends ContentBearingHandler {
             } else {
                 readEntityIntoDataset(identifier, baseUrl, graphName, rdfSyntax.orElse(TURTLE), dataset);
 
+                // Add any existing binary-related quads.
+                ofNullable(res).flatMap(Resource::getBinary).ifPresent(b -> {
+                    dataset.add(rdf.createQuad(PreferServerManaged, internalId, DC.hasPart, b.getIdentifier()));
+                    dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.modified,
+                                rdf.createLiteral(b.getModified().toString(), XSD.dateTime)));
+                    dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
+                                rdf.createLiteral(b.getMimeType().orElse(APPLICATION_OCTET_STREAM))));
+                    b.getSize().ifPresent(size -> dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(),
+                                    DC.extent, rdf.createLiteral(Long.toString(size), XSD.long_))));
+                });
+
                 // Check for any constraints
                 checkConstraint(dataset, PreferUserManaged, ldpType, baseUrl, rdfSyntax.orElse(TURTLE));
             }
