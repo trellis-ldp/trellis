@@ -17,6 +17,7 @@ import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
@@ -67,8 +68,10 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
+import org.trellisldp.vocabulary.XSD;
 
 /**
  * The PATCH response builder.
@@ -156,8 +159,17 @@ public class PatchHandler extends BaseLdpHandler {
             audit.ifPresent(svc -> svc.update(res.getIdentifier(), session).stream()
                     .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
 
-            // Add existing LDP type
+            // Add existing LDP type, other server-managed triples
             dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), RDF.type, res.getInteractionModel()));
+            res.getBinary().ifPresent(b -> {
+                dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), DC.hasPart, b.getIdentifier()));
+                dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.modified,
+                            rdf.createLiteral(b.getModified().toString(), XSD.dateTime)));
+                dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
+                            rdf.createLiteral(b.getMimeType().orElse(APPLICATION_OCTET_STREAM))));
+                b.getSize().ifPresent(size -> dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(),
+                                DC.extent, rdf.createLiteral(Long.toString(size), XSD.long_))));
+            });
 
             // Check any constraints
             final List<ConstraintViolation> violations = constraintServices.stream()
