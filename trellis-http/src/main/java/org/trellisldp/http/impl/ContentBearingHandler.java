@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Base64.getEncoder;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
@@ -108,6 +109,10 @@ class ContentBearingHandler extends BaseLdpHandler {
             };
             throw new WebApplicationException(err.entity(stream).build());
         }
+    }
+
+    protected Boolean isBadDigest(final Digest digest) {
+        return nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest());
     }
 
     protected String getDigestForEntity(final Digest digest) {

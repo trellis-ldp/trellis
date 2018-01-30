@@ -64,7 +64,6 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -197,8 +196,7 @@ public class PutHandler extends ContentBearingHandler {
             // Add user-supplied data
             if (LDP.NonRDFSource.equals(ldpType) && !rdfSyntax.isPresent()) {
                 // Check the expected digest value
-                final Digest digest = req.getDigest();
-                if (nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest())) {
+                if (isBadDigest(req.getDigest())) {
                     return status(BAD_REQUEST);
                 }
 
@@ -235,20 +233,17 @@ public class PutHandler extends ContentBearingHandler {
                 checkConstraint(dataset, PreferUserManaged, ldpType, baseUrl, rdfSyntax.orElse(TURTLE));
             }
 
-            if (nonNull(res)) {
+            ofNullable(res).ifPresent(r -> {
                 try (final Stream<? extends Triple> remaining = res.stream(otherGraph)) {
                     remaining.map(t -> rdf.createQuad(otherGraph, t.getSubject(), t.getPredicate(), t.getObject()))
                         .forEachOrdered(dataset::add);
                 }
-            }
+            });
 
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
                 final ResponseBuilder builder = status(NO_CONTENT);
-                if (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription) {
-                    ldpResourceTypes(LDP.RDFSource).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
-                } else {
-                    ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
-                }
+                getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
+                    .forEach(type -> builder.link(type, "type"));
                 return builder;
             }
         } catch (final InterruptedException | ExecutionException ex) {
@@ -258,6 +253,13 @@ public class PutHandler extends ContentBearingHandler {
         LOGGER.error("Unable to persist data to location at {}", internalId.getIRIString());
         return serverError().type(TEXT_PLAIN)
             .entity("Unable to persist data. Please consult the logs for more information");
+    }
+
+    private static Stream<IRI> getLdpLinkTypes(final IRI ldpType, final Boolean isBinaryDescription) {
+        if (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription) {
+            return ldpResourceTypes(LDP.RDFSource);
+        }
+        return ldpResourceTypes(ldpType);
     }
 
     private static Function<AuditService, List<Quad>> addAuditQuads(final Resource res, final IRI internalId,
