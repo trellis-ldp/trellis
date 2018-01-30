@@ -504,8 +504,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
 
-        // Jersey's client doesn't parse complex link headers correctly
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        final List<Link> links = getLinks(res);
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
                         .equals(l.getParams().get("datetime")) &&
@@ -794,8 +793,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(res.getAllowedMethods().contains("OPTIONS"));
         assertFalse(res.getAllowedMethods().contains("POST"));
 
-        // Jersey's client doesn't parse complex link headers correctly
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        final List<Link> links = getLinks(res);
 
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
@@ -1142,8 +1140,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
 
-        // Jersey's client doesn't parse complex link headers correctly, so res.getLinks() is not used here
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        final List<Link> links = getLinks(res);
 
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
@@ -1204,8 +1201,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
 
-        // Jersey's client doesn't parse complex link headers correctly, so res.getLinks() is not used here
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        final List<Link> links = getLinks(res);
 
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
@@ -1286,8 +1282,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
 
-        // Jersey's client doesn't parse complex link headers correctly, so res.getLinks() is not used here
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        final List<Link> links = getLinks(res);
 
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
@@ -1362,8 +1357,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
 
-        // Jersey's client doesn't parse complex link headers correctly, so res.getLinks() is not used here
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        final List<Link> links = getLinks(res);
 
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
@@ -1415,8 +1409,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
 
-        // Jersey's client doesn't parse complex link headers correctly, so res.getLinks() is not used here
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        final List<Link> links = getLinks(res);
 
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
@@ -2921,5 +2914,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static Predicate<Link> hasType(final IRI iri) {
         return hasLink(iri, "type");
+    }
+
+    private static List<Link> getLinks(final Response res) {
+        // Jersey's client doesn't parse complex link headers correctly
+        return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
     }
 }
