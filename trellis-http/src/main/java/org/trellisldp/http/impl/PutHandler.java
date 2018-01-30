@@ -163,12 +163,18 @@ public class PutHandler extends ContentBearingHandler {
 
         final IRI defaultType = ofNullable(res).map(Resource::getInteractionModel).orElse(heuristicType);
 
-        final IRI ldpType = ofNullable(req.getLink()).filter(l -> "type".equals(l.getRel()))
-                    .map(Link::getUri).map(URI::toString).filter(l -> l.startsWith(LDP.URI)).map(rdf::createIRI)
-                    .filter(l -> !LDP.Resource.equals(l)).orElse(defaultType);
+        final Boolean isBinaryDescription = nonNull(res) && LDP.NonRDFSource.equals(res.getInteractionModel())
+            && rdfSyntax.isPresent();
 
+        final IRI ldpType = isBinaryDescription ? LDP.NonRDFSource : ofNullable(req.getLink())
+            .filter(l -> "type".equals(l.getRel())).map(Link::getUri).map(URI::toString)
+            .filter(l -> l.startsWith(LDP.URI)).map(rdf::createIRI).filter(l -> !LDP.Resource.equals(l))
+            .orElse(defaultType);
+
+        LOGGER.info("Using LDP Type: {}", ldpType);
         // It is not possible to change the LDP type to a type that is not a subclass
-        if (nonNull(res) && !ldpResourceTypes(ldpType).anyMatch(res.getInteractionModel()::equals)) {
+        if (nonNull(res) && !isBinaryDescription && !ldpResourceTypes(ldpType)
+                .anyMatch(res.getInteractionModel()::equals)) {
             return status(CONFLICT).entity("Cannot change the LDP type to " + ldpType).type(TEXT_PLAIN);
         }
 
@@ -189,7 +195,7 @@ public class PutHandler extends ContentBearingHandler {
             dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
 
             // Add user-supplied data
-            if (LDP.NonRDFSource.equals(ldpType)) {
+            if (LDP.NonRDFSource.equals(ldpType) && !rdfSyntax.isPresent()) {
                 // Check the expected digest value
                 final Digest digest = req.getDigest();
                 if (nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest())) {
@@ -238,8 +244,11 @@ public class PutHandler extends ContentBearingHandler {
 
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
                 final ResponseBuilder builder = status(NO_CONTENT);
-
-                ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+                if (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription) {
+                    ldpResourceTypes(LDP.RDFSource).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+                } else {
+                    ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+                }
                 return builder;
             }
         } catch (final InterruptedException | ExecutionException ex) {

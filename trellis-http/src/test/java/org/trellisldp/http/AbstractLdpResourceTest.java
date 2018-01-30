@@ -2127,6 +2127,19 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPutExistingBinaryDescription() {
+        final Response res = target(BINARY_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
+    @Test
     public void testPutExistingUnknownLink() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
@@ -2507,6 +2520,20 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
+    @Test
+    public void testPatchExistingBinary() {
+        final Response res = target(BINARY_PATH).request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }

@@ -67,6 +67,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import org.trellisldp.api.Binary;
@@ -88,6 +90,7 @@ public class PutHandlerTest {
 
     private static final String baseUrl = "http://localhost:8080/repo/";
     private static final RDF rdf = getInstance();
+    private static final IRI identifier = rdf.createIRI("trellis:data/resource");
     private final Binary testBinary = new Binary(rdf.createIRI("file:binary.txt"), binaryTime, "text/plain", null);
 
     @Mock
@@ -108,10 +111,14 @@ public class PutHandlerTest {
     @Mock
     private LdpRequest mockLdpRequest;
 
+    @Captor
+    private ArgumentCaptor<Dataset> dataset;
+
     @BeforeEach
     public void setUp() {
         initMocks(this);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
         when(mockBinaryService.getIdentifierSupplier()).thenReturn(() -> "file:" + randomUUID());
@@ -249,6 +256,8 @@ public class PutHandlerTest {
 
     @Test
     public void testPutLdpNRDescription() {
+        System.out.println("LDP-NR description");
+        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.RDFSource.getIRIString()).rel("type").build());
@@ -266,10 +275,13 @@ public class PutHandlerTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        System.out.println("End LDP-NR description");
     }
 
     @Test
     public void testPutLdpNRDescription2() {
+        System.out.println("LDP-NR description2");
+        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
@@ -286,6 +298,7 @@ public class PutHandlerTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        System.out.println("end LDP-NR description2");
     }
 
     @Test
@@ -331,9 +344,9 @@ public class PutHandlerTest {
         final Response res = putHandler.setResource(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
+        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
     }
 
     @Test
