@@ -73,6 +73,11 @@ subprojects {
         metricsVersion = '3.2.5'
         mustacheVersion = '0.9.5_1'
         slf4jVersion = '1.7.25'
+        activationApiVersion = '1.2.0'
+        jwtVersion = '0.9.0'
+        jaxbVersion = '2.3.0'
+
+        dropwizardVersion = '1.2.0'
 
         /* Transitive dependencies (for Karaf provisioning) */
         guavaVersion = '20.0' // mustache 0.9.5
@@ -161,7 +166,9 @@ subprojects {
 
     processResources {
         outputs.upToDateWhen { false }
-        expand project.properties
+        filesMatching('**/features.xml') {
+            expand project.properties
+        }
     }
 
     signing {

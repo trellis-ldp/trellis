@@ -1,0 +1,10 @@
+# This file is used for basic authentication. Each user defined
+# here uses three fields separated by colons.
+#
+# username : password : webid
+#
+# The webid value should be a valid URL used to identify the user
+# for the purposes of WebAC authorization.
+#
+# For example:
+# someuser : secret : http://example.org/someuser/

@@ -13,6 +13,7 @@ include ':trellis-io-jena'
 include ':trellis-namespaces'
 include ':trellis-triplestore'
 include ':trellis-webac'
+include ':trellis-app'
 
 include ':trellis-karaf'
 include ':trellis-test'
@@ -31,6 +32,7 @@ project(':trellis-io-jena').projectDir = "$rootDir/trellis-io-jena" as File
 project(':trellis-namespaces').projectDir = "$rootDir/trellis-namespaces" as File
 project(':trellis-triplestore').projectDir = "$rootDir/trellis-triplestore" as File
 project(':trellis-webac').projectDir = "$rootDir/trellis-webac" as File
+project(':trellis-app').projectDir = "$rootDir/trellis-app" as File
 
 project(':trellis-karaf').projectDir = "$rootDir/trellis-karaf" as File
 project(':trellis-test').projectDir = "$rootDir/trellis-test" as File

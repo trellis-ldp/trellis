@@ -1,0 +1,55 @@
+apply plugin: 'java'
+apply plugin: 'distribution'
+apply plugin: 'application'
+
+description = 'Trellis Application'
+mainClassName = 'org.trellisldp.app.TrellisApplication'
+
+dependencies {
+    compile group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
+    compile group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-auth', version: dropwizardVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-metrics', version: dropwizardVersion
+    compile group: 'io.dropwizard', name: 'dropwizard-http2', version: dropwizardVersion
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: jwtVersion
+    compile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
+    compile group: 'org.apache.jena', name: 'jena-tdb2', version: jenaVersion
+    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+
+    compile project(":trellis-constraint-rules")
+    compile project(":trellis-io-jena")
+    compile project(":trellis-id")
+    compile project(":trellis-api")
+    compile project(":trellis-http")
+    compile project(":trellis-vocabulary")
+    compile project(":trellis-file")
+    compile project(":trellis-namespaces")
+    compile project(":trellis-agent")
+    compile project(":trellis-audit")
+    compile project(":trellis-event-serialization")
+    compile project(":trellis-webac")
+    compile project(':trellis-triplestore')
+
+    runtime group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
+
+    testCompile group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+}
+
+artifacts {
+    archives javadocJar
+    archives sourceJar
+}
+
+task copyDistTask(type: Copy) {
+    from 'LICENSE'
+    into 'src/dist'
+}
+
+assembleDist.dependsOn copyDistTask
+

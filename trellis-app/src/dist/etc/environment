@@ -1,0 +1,3 @@
+# Use this file to configure the trellis environment
+
+# JAVA_OPTS="-Xms250m -Xmx1024m"

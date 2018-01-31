@@ -1,0 +1,12 @@
+[Unit]
+Description=trellis
+After=syslog.target
+
+[Service]
+User=trellis
+EnvironmentFile=-/opt/trellis/etc/environment
+ExecStart=/opt/trellis/bin/trellis-app server /opt/trellis/etc/config.yml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

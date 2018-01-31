@@ -125,7 +125,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
         this.rdfConnection = rdfConnection;
-        this.supplier = identifierService.getSupplier(TRELLIS_DATA_PREFIX);
+        this.supplier = identifierService.getSupplier();
         this.eventService = ofNullable(eventService);
         this.mementoService = ofNullable(mementoService);
         init();
