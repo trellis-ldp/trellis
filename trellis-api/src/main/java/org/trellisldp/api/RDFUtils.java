@@ -13,11 +13,22 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.newSetFromMap;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.EnumSet.of;
+import static java.util.stream.Collector.Characteristics.CONCURRENT;
+import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
 import static java.util.stream.Collector.Characteristics.UNORDERED;
-import static java.util.stream.Collector.of;
 
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
@@ -71,7 +82,7 @@ public final class RDFUtils {
      * @return a graph
      */
     public static Collector<Triple, ?, Graph> toGraph() {
-        return of(rdf::createGraph, Graph::add, (left, right) -> {
+        return Collector.of(rdf::createGraph, Graph::add, (left, right) -> {
             right.iterate().forEach(left::add);
             return left;
         }, UNORDERED);
@@ -80,13 +91,88 @@ public final class RDFUtils {
     /**
      * Collect a stream of Quads into a Dataset.
      *
-     * @return a dataset
+     * @return a {@link Collector} that accumulates a {@link Stream} of
+     *         {@link Quad}s into a {@link Dataset}
      */
-    public static Collector<Quad, ?, Dataset> toDataset() {
-        return of(rdf::createDataset, Dataset::add, (left, right) -> {
-            right.iterate().forEach(left::add);
-            return left;
-        }, UNORDERED);
+    public static DatasetCollector toDataset() {
+        return new DatasetCollector();
+    }
+
+    static class DatasetCollector implements Collector<Quad, Dataset, Dataset> {
+
+        @Override
+        public Supplier<Dataset> supplier() {
+            return rdf::createDataset;
+        }
+
+        @Override
+        public BiConsumer<Dataset, Quad> accumulator() {
+            return Dataset::add;
+        }
+
+        @Override
+        public BinaryOperator<Dataset> combiner() {
+            return (left, right) -> {
+                right.iterate().forEach(left::add);
+                return left;
+            };
+        }
+
+        @Override
+        public Function<Dataset, Dataset> finisher() {
+            return x -> x;
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return unmodifiableSet(of(UNORDERED, IDENTITY_FINISH));
+        }
+
+        /**
+         * Collect a stream of {@link Quad}s into a {@link Dataset} with concurrent
+         * operation.
+         *
+         * @return a {@link Collector} that accumulates a {@link Stream} of
+         *         {@link Quad}s into a {@link Dataset}
+         */
+        public ConcurrentDatasetCollector concurrent() {
+            return new ConcurrentDatasetCollector();
+        }
+    }
+
+    private static class ConcurrentDatasetCollector implements Collector<Quad, Set<Quad>, Dataset> {
+
+        @Override
+        public Supplier<Set<Quad>> supplier() {
+            return () -> newSetFromMap(new ConcurrentHashMap<>());
+        }
+
+        @Override
+        public BiConsumer<Set<Quad>, Quad> accumulator() {
+            return Set::add;
+        }
+
+        @Override
+        public BinaryOperator<Set<Quad>> combiner() {
+            return (s1, s2) -> {
+                s1.addAll(s2);
+                return s1;
+            };
+        }
+
+        @Override
+        public Function<Set<Quad>, Dataset> finisher() {
+            return set -> {
+                final Dataset dataset = rdf.createDataset();
+                set.forEach(dataset::add);
+                return dataset;
+            };
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return unmodifiableSet(of(UNORDERED, CONCURRENT));
+        }
     }
 
     private RDFUtils() {

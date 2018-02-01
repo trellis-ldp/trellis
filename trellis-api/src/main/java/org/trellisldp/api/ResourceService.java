@@ -17,6 +17,7 @@ import static java.util.Optional.of;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.RDFUtils.toDataset;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -40,24 +41,12 @@ import org.apache.commons.rdf.api.Triple;
  *
  * @author acoburn
  */
-public interface ResourceService {
+public interface ResourceService extends ReplaceService<Resource> {
 
-    /**
-     * Get a resource from the given location.
-     *
-     * @param identifier the resource identifier
-     * @return the resource
-     */
-    Optional<? extends Resource> get(IRI identifier);
-
-    /**
-     * Get a resource from the given location and time.
-     *
-     * @param identifier the resource identifier
-     * @param time the time
-     * @return the resource
-     */
-    Optional<? extends Resource> get(IRI identifier, Instant time);
+    @Override
+    default Future<Boolean> put(Resource res) {
+        return put(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
+    }
 
     /**
      * Put a resource into the server.

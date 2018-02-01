@@ -131,6 +131,7 @@
 
     <feature>commons-rdf-jena</feature>
     <feature>trellis-api</feature>
+    <feature>trellis-audit</feature>
     <feature>trellis-vocabulary</feature>
 
     <bundle>mvn:org.trellisldp/trellis-triplestore/${project.version}</bundle>
