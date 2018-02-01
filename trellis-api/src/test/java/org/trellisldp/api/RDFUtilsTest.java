@@ -54,6 +54,14 @@ public class RDFUtilsTest {
     }
 
     @Test
+    public void testCollectDatasetConcurrent() {
+        final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
+            .parallel().limit(size).collect(toDataset().concurrent());
+
+        assertTrue(size >= dataset.size());
+    }
+
+    @Test
     public void testCollectDataset() {
         final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toDataset());

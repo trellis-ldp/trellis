@@ -13,6 +13,7 @@
  */
 package org.trellisldp.api;
 
+import static java.time.Instant.now;
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +66,16 @@ public class ResourceServiceTest {
     @Mock
     private static Resource mockResource;
 
+    @Mock
+    private RetrievalService<Resource> mockRetrievalService;
+
+    private static class MyRetrievalService implements RetrievalService<Resource> {
+        @Override
+        public Optional<Resource> get(final IRI id) {
+            return of(mockResource);
+        }
+    }
+
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -74,8 +86,32 @@ public class ResourceServiceTest {
         doCallRealMethod().when(mockResourceService).toInternal(any(), any());
         doCallRealMethod().when(mockResourceService).toExternal(any(), any());
 
+        when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> of(mockResource));
+        doCallRealMethod().when(mockRetrievalService).get(any(IRI.class), any(Instant.class));
+
         when(mockResourceService.scan()).thenAnswer(inv ->
             asList(rdf.createTriple(existing, type, LDP.Container)).stream());
+    }
+
+    @Test
+    public void testRetrievalService2() {
+        final RetrievalService<Resource> svc = new MyRetrievalService();
+        final Optional<? extends Resource> res = svc.get(existing);
+        final Optional<? extends Resource> res2 = svc.get(existing, now());
+        assertTrue(res.isPresent());
+        assertEquals(mockResource, res.get());
+        assertTrue(res2.isPresent());
+        assertEquals(mockResource, res2.get());
+    }
+
+    @Test
+    public void testRetrievalService() {
+        final Optional<? extends Resource> res = mockRetrievalService.get(existing);
+        final Optional<? extends Resource> res2 = mockRetrievalService.get(existing, now());
+        assertTrue(res.isPresent());
+        assertEquals(mockResource, res.get());
+        assertTrue(res2.isPresent());
+        assertEquals(mockResource, res2.get());
     }
 
     @Test

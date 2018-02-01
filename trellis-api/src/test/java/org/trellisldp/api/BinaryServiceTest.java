@@ -13,9 +13,11 @@
  */
 package org.trellisldp.api;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyMap;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -23,9 +25,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
@@ -65,18 +71,29 @@ public class BinaryServiceTest {
         initMocks(this);
         doCallRealMethod().when(mockBinaryService).calculateDigest(any(), any());
         doCallRealMethod().when(mockBinaryService).setContent(any(), any());
-        when(mockBinaryService.getContent(any())).thenReturn(of(mockInputStream));
         when(mockBinaryService.exists(eq(identifier))).thenReturn(true);
         when(mockBinaryService.digest(any(), any())).thenReturn(of(checksum));
     }
 
     @Test
     public void testDefaultMethods() {
+        when(mockBinaryService.getContent(any())).thenReturn(of(mockInputStream));
         final Map<String, String> data = emptyMap();
         mockBinaryService.setContent(identifier, mockInputStream);
         assertEquals(of(checksum), mockBinaryService.calculateDigest(other, "md5"));
         verify(mockBinaryService).setContent(eq(identifier), eq(mockInputStream),
                 eq(emptyMap()));
+        assertEquals(mockInputStream, mockBinaryService.getContent(identifier).get());
+    }
+
+    @Test
+    public void testGetContent() throws IOException {
+        doCallRealMethod().when(mockBinaryService).getContent(eq(identifier));
+        when(mockBinaryService.getContent(eq(identifier), any()))
+            .thenReturn(of(new ByteArrayInputStream("FooBar".getBytes(UTF_8))));
+        final Optional<InputStream> content = mockBinaryService.getContent(identifier);
+        assertTrue(content.isPresent());
+        assertEquals("FooBar", IOUtils.toString(content.get(), UTF_8));
     }
 
     @Test
