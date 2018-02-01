@@ -540,7 +540,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
             final QuadDataAcc sink = new QuadDataAcc();
             sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
-                            rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.Container))));
+                            rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.BasicContainer))));
             sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
                             rdf.asJenaNode(DC.modified), rdf.asJenaNode(time))));
 

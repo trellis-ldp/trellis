@@ -46,9 +46,6 @@ public class TrellisConfiguration extends Configuration {
     private BinaryConfiguration binaries;
 
     @NotNull
-    private String baseUrl;
-
-    @NotNull
     private CORSConfiguration cors = new CORSConfiguration();
 
     @NotNull
@@ -59,6 +56,8 @@ public class TrellisConfiguration extends Configuration {
 
     @NotNull
     private Set<String> whitelistDomains = emptySet();
+
+    private String baseUrl;
 
     private RdfConnectionConfiguration rdfConnection;
 

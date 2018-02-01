@@ -15,6 +15,7 @@ package org.trellisldp.app;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.dropwizard.auth.AuthFilter;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.trellisldp.app.config.RdfConnectionConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
@@ -80,6 +82,34 @@ public class TrellisUtilsTest {
 
         assertFalse(TrellisUtils.getCorsConfiguration(config).isPresent());
     }
+
+    @Test
+    public void testGetRDFConnection() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        assertNotNull(TrellisUtils.getRDFConnection(config));
+        assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
+
+        final RdfConnectionConfiguration c = new RdfConnectionConfiguration();
+        c.setLocation("http://localhost/sparql");
+        config.setRdfstore(c);
+
+        assertNotNull(TrellisUtils.getRDFConnection(config));
+        assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
+
+        c.setLocation("https://localhost/sparql");
+        assertNotNull(TrellisUtils.getRDFConnection(config));
+        assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
+
+        final File dir = new File(new File(getClass().getResource("/data").toURI()), "resources");
+        c.setLocation(dir.getAbsolutePath());
+        assertNotNull(TrellisUtils.getRDFConnection(config));
+        assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
+    }
+
+
 
     @Test
     public void testGetAuthFilters() throws Exception {

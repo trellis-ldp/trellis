@@ -1,0 +1,38 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: 0
+
+logging:
+  level: WARN
+  loggers:
+    org.trellisldp: DEBUG
+    io.dropwizard: INFO
+
+binaries:
+  path: binaries
+
+mementos:
+  path: mementos
+
+namespaces:
+    file: namespaces.json
+
+auth:
+    webac:
+        enabled: true
+    anon:
+        enabled: true
+    jwt:
+        enabled: true
+        base64Encoded: false
+        key: secret
+    basic:
+        enabled: false
+
+cors:
+    enabled: true
+    allowOrigin:
+        - "*"
+    maxAge: 180
+

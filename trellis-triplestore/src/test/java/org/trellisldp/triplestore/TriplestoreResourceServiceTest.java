@@ -176,7 +176,7 @@ public class TriplestoreResourceServiceTest {
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
                 mockMementoService, mockEventService);
         assertEquals(4L, svc.scan().count());
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(root) && t.getObject().equals(LDP.Container)));
+        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(root) && t.getObject().equals(LDP.BasicContainer)));
         assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(one) && t.getObject().equals(LDP.Container)));
         assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(two) && t.getObject().equals(LDP.NonRDFSource)));
         assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(three) && t.getObject().equals(LDP.RDFSource)));
@@ -192,7 +192,7 @@ public class TriplestoreResourceServiceTest {
 
         assertTrue(svc.get(root).isPresent());
         svc.get(root).ifPresent(res -> {
-            assertEquals(LDP.Container, res.getInteractionModel());
+            assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
             assertFalse(res.getModified().isAfter(now()));
@@ -208,7 +208,7 @@ public class TriplestoreResourceServiceTest {
     public void testInitializeRoot2() {
         final Instant early = now();
         final JenaDataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferServerManaged, root, RDF.type, LDP.Container);
+        dataset.add(Trellis.PreferServerManaged, root, RDF.type, LDP.BasicContainer);
         dataset.add(Trellis.PreferServerManaged, root, DC.modified, rdf.createLiteral(early.toString(), XSD.dateTime));
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
@@ -217,7 +217,7 @@ public class TriplestoreResourceServiceTest {
 
         assertTrue(svc.get(root).isPresent());
         svc.get(root).ifPresent(res -> {
-            assertEquals(LDP.Container, res.getInteractionModel());
+            assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertEquals(early, res.getModified());
             assertFalse(res.getModified().isAfter(now()));

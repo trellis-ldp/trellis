@@ -16,14 +16,10 @@ package org.trellisldp.app;
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.TimeUnit.HOURS;
-import static org.apache.jena.query.DatasetFactory.createTxnMem;
-import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
-import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
 import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
+import static org.trellisldp.app.TrellisUtils.getRDFConnection;
 import static org.trellisldp.app.TrellisUtils.getWebacConfiguration;
 
 import io.dropwizard.Application;
@@ -32,7 +28,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.agent.SimpleAgent;
@@ -43,7 +38,6 @@ import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.app.config.RdfConnectionConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.app.health.RDFConnectionHealthCheck;
 import org.trellisldp.file.FileBinaryService;
@@ -87,6 +81,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     public void run(final TrellisConfiguration config,
                     final Environment environment) throws IOException {
 
+        final RDFConnection rdfConnection = getRDFConnection(config);
+
         final String mementoLocation = config.getMementos().getPath();
 
         final String baseUrl = config.getBaseUrl();
@@ -94,22 +90,6 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final IdentifierService idService = new UUIDGenerator();
 
         final MementoService mementoService = new FileMementoService(mementoLocation);
-        final Optional<String> location = ofNullable(config.getRdfstore()).map(RdfConnectionConfiguration::getLocation);
-
-        final RDFConnection rdfConnection;
-        if (!location.isPresent()) {
-            // in-memory
-            rdfConnection = connect(createTxnMem());
-        } else {
-            final String loc = location.get();
-            if (loc.startsWith("http://") || loc.startsWith("https://")) {
-                // Remote
-                rdfConnection = connect(loc);
-            } else {
-                // TDB2
-                rdfConnection = connect(wrap(connectDatasetGraph(loc)));
-            }
-        }
 
         final ResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
                 mementoService, null);

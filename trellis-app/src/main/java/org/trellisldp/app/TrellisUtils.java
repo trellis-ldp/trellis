@@ -16,8 +16,13 @@ package org.trellisldp.app;
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
+import static org.apache.jena.query.DatasetFactory.createTxnMem;
+import static org.apache.jena.query.DatasetFactory.wrap;
+import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
+import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 
 import com.google.common.cache.Cache;
 
@@ -34,6 +39,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.app.auth.AnonymousAuthFilter;
 import org.trellisldp.app.auth.AnonymousAuthenticator;
@@ -41,6 +47,7 @@ import org.trellisldp.app.auth.BasicAuthenticator;
 import org.trellisldp.app.auth.JwtAuthenticator;
 import org.trellisldp.app.config.AuthConfiguration;
 import org.trellisldp.app.config.CORSConfiguration;
+import org.trellisldp.app.config.RdfConnectionConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
@@ -96,6 +103,21 @@ final class TrellisUtils {
             return of(new TrellisCache<>(authCache));
         }
         return empty();
+    }
+
+    public static RDFConnection getRDFConnection(final TrellisConfiguration config) {
+        final Optional<String> location = ofNullable(config.getRdfstore()).map(RdfConnectionConfiguration::getLocation);
+        if (location.isPresent()) {
+            final String loc = location.get();
+            if (loc.startsWith("http://") || loc.startsWith("https://")) {
+                // Remote
+                return connect(loc);
+            }
+            // TDB2
+            return connect(wrap(connectDatasetGraph(loc)));
+        }
+        // in-memory
+        return connect(createTxnMem());
     }
 
     public static Optional<CORSConfiguration> getCorsConfiguration(final TrellisConfiguration config) {

@@ -34,6 +34,8 @@ dependencies {
 
     runtime group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
 
+    testCompile group: 'io.dropwizard', name: 'dropwizard-client', version: dropwizardVersion
+    testCompile group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion
     testCompile group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
     testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
