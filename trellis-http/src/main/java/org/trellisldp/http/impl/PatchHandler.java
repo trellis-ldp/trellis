@@ -197,8 +197,7 @@ public class PatchHandler extends BaseLdpHandler {
 
                 final ResponseBuilder builder = ok();
 
-                ldpResourceTypes(res.getInteractionModel()).map(IRI::getIRIString)
-                    .forEach(type -> builder.link(type, "type"));
+                getLinkTypes(res.getInteractionModel()).forEach(type -> builder.link(type, "type"));
 
                 return ofNullable(req.getPrefer()).flatMap(Prefer::getPreference).filter(PREFER_REPRESENTATION::equals)
                     .map(prefer -> {
@@ -226,5 +225,12 @@ public class PatchHandler extends BaseLdpHandler {
         LOGGER.error("Unable to persist data to location at {}", res.getIdentifier());
         return serverError().type(TEXT_PLAIN)
             .entity("Unable to persist data. Please consult the logs for more information");
+    }
+
+    private static Stream<String> getLinkTypes(final IRI ldpType) {
+        if (LDP.NonRDFSource.equals(ldpType)) {
+            return ldpResourceTypes(LDP.RDFSource).map(IRI::getIRIString);
+        }
+        return ldpResourceTypes(ldpType).map(IRI::getIRIString);
     }
 }

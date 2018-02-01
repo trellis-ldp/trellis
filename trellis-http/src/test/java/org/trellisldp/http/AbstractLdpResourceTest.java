@@ -2532,8 +2532,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
