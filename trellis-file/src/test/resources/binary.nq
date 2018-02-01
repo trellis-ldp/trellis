@@ -1,9 +1,9 @@
 <trellis:data/binary> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#NonRDFSource> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
 <trellis:data/binary> <http://purl.org/dc/terms/modified> "2017-02-16T11:17:00Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
-<trellis:data/binary> <http://purl.org/dc/terms/date> "2017-02-16T11:17:00Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
+<file:path/to/binary> <http://purl.org/dc/terms/modified> "2017-02-16T11:17:00Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
 <trellis:data/binary> <http://purl.org/dc/terms/hasPart> <file:path/to/binary> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
-<trellis:data/binary> <http://purl.org/dc/terms/extent> "10"^^<http://www.w3.org/2001/XMLSchema#long> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
-<trellis:data/binary> <http://purl.org/dc/terms/format> "text/plain" <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
+<file:path/to/binary> <http://purl.org/dc/terms/extent> "10"^^<http://www.w3.org/2001/XMLSchema#long> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
+<file:path/to/binary> <http://purl.org/dc/terms/format> "text/plain" <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
 <trellis:data/binary> <http://www.w3.org/2000/01/rdf-schema#label> "A label"@eng <http://www.trellisldp.org/ns/trellis#PreferUserManaged> .
 <trellis:data/binary> <http://purl.org/dc/terms/subject> <http://example.org/subject> <http://www.trellisldp.org/ns/trellis#PreferUserManaged> .
 

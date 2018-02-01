@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
@@ -44,10 +45,12 @@ import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaGraph;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.query.Query;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
@@ -111,29 +114,56 @@ public class TriplestoreResource implements Resource {
      *
      * <p>This is equivalent to the following SPARQL query:
      * <pre><code>
-     * SELECT ?predicate ?object
-     * WHERE
+     * SELECT ?predicate ?object ?binarySubject ?binaryPredicate ?binaryObject
+     * WHERE {
      *   GRAPH trellis:PreferServerManaged {
-     *     IDENTIFIER ?predicate ?object }
+     *     IDENTIFIER ?predicate ?object
+     *     OPTIONAL {
+     *       IDENTIFIER dc:hasPart ?binarySubject .
+     *       ?binarySubject ?binaryPredicate ?binaryObject
+     *     }
      *   }
      * }
      * </code></pre>
      */
     protected void fetchData() {
         LOGGER.debug("Fetching data from RDF datastore");
+        final Var binarySubject = Var.alloc("binarySubject");
+        final Var binaryPredicate = Var.alloc("binaryPredicate");
+        final Var binaryObject = Var.alloc("binaryObject");
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(PREDICATE);
         q.addResultVar(OBJECT);
+        q.addResultVar(binarySubject);
+        q.addResultVar(binaryPredicate);
+        q.addResultVar(binaryObject);
 
-        final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(rdf.asJenaNode(identifier), PREDICATE, OBJECT));
+        final ElementPathBlock epb1 = new ElementPathBlock();
+        epb1.addTriple(create(rdf.asJenaNode(identifier), PREDICATE, OBJECT));
+
+        final ElementPathBlock epb2 = new ElementPathBlock();
+        epb2.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.hasPart), binarySubject));
+        epb2.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(RDF.type),
+                    rdf.asJenaNode(LDP.NonRDFSource)));
+        epb2.addTriple(create(binarySubject, binaryPredicate, binaryObject));
 
         final ElementGroup elg = new ElementGroup();
-        elg.addElement(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb));
-        q.setQueryPattern(elg);
+        elg.addElement(epb1);
+        elg.addElement(new ElementOptional(epb2));
 
-        rdfConnection.querySelect(q, qs -> graph.add(identifier, getPredicate(qs), getObject(qs)));
+        q.setQueryPattern(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), elg));
+
+        rdfConnection.querySelect(q, qs -> {
+            final RDFNode s = qs.get("binarySubject");
+            final RDFNode p = qs.get("binaryPredicate");
+            final RDFNode o = qs.get("binaryObject");
+            if (nonNull(s) && nonNull(p) && nonNull(o)) {
+                graph.add((BlankNodeOrIRI) rdf.asRDFTerm(s.asNode()), (IRI) rdf.asRDFTerm(p.asNode()),
+                        rdf.asRDFTerm(o.asNode()));
+            }
+            graph.add(identifier, getPredicate(qs), getObject(qs));
+        });
     }
 
     @Override
@@ -179,12 +209,13 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public Optional<Binary> getBinary() {
-        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).findFirst().map(id -> {
-            final Instant date = graph.stream(identifier, DC.date, null).map(Triple::getObject).map(t -> (Literal) t)
+        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(t -> t instanceof IRI)
+                .map(t -> (IRI) t).findFirst().map(id -> {
+            final Instant date = graph.stream(id, DC.modified, null).map(Triple::getObject).map(t -> (Literal) t)
                 .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
-            final String mimeType = graph.stream(identifier, DC.format, null).map(Triple::getObject)
+            final String mimeType = graph.stream(id, DC.format, null).map(Triple::getObject)
                 .map(t -> (Literal) t).map(Literal::getLexicalForm).findFirst().orElse(null);
-            final Long size = graph.stream(identifier, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
+            final Long size = graph.stream(id, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
                 .map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null);
             return new Binary((IRI) id, date, mimeType, size);
         });

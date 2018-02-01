@@ -214,10 +214,11 @@ public class TriplestoreResourceTest {
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
         dataset.add(Trellis.PreferServerManaged, identifier, RDF.type, LDP.NonRDFSource);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
-        dataset.add(Trellis.PreferServerManaged, identifier, DC.date, rdf.createLiteral(binaryTime, XSD.dateTime));
-        dataset.add(Trellis.PreferServerManaged, identifier, DC.extent, rdf.createLiteral(size, XSD.long_));
-        dataset.add(Trellis.PreferServerManaged, identifier, DC.format, rdf.createLiteral(mimeType));
         dataset.add(Trellis.PreferServerManaged, identifier, DC.hasPart, binaryIdentifier);
+        dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.modified,
+                rdf.createLiteral(binaryTime, XSD.dateTime));
+        dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.extent, rdf.createLiteral(size, XSD.long_));
+        dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.format, rdf.createLiteral(mimeType));
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier);

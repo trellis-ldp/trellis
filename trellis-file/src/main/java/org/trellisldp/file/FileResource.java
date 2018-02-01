@@ -85,12 +85,13 @@ public class FileResource implements Resource {
 
     @Override
     public Optional<Binary> getBinary() {
-        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).findFirst().map(id -> {
-            final Instant date = graph.stream(identifier, DC.date, null).map(Triple::getObject).map(t -> (Literal) t)
+        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(t -> t instanceof IRI)
+                .map(t -> (IRI) t).findFirst().map(id -> {
+            final Instant date = graph.stream(id, DC.modified, null).map(Triple::getObject).map(t -> (Literal) t)
                 .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
-            final String mimeType = graph.stream(identifier, DC.format, null).map(Triple::getObject)
+            final String mimeType = graph.stream(id, DC.format, null).map(Triple::getObject)
                 .map(t -> (Literal) t).map(Literal::getLexicalForm).findFirst().orElse(null);
-            final Long size = graph.stream(identifier, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
+            final Long size = graph.stream(id, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
                 .map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null);
             return new Binary((IRI) id, date, mimeType, size);
         });

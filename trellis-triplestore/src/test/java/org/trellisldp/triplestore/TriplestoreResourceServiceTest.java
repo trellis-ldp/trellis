@@ -303,11 +303,12 @@ public class TriplestoreResourceServiceTest {
         final IRI binary = rdf.createIRI("foo:binary");
         final Instant binaryTime = now();
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferServerManaged, resource, DC.date,
-                rdf.createLiteral(binaryTime.toString(), XSD.dateTime));
+        dataset.add(Trellis.PreferServerManaged, resource, RDF.type, LDP.NonRDFSource);
         dataset.add(Trellis.PreferServerManaged, resource, DC.hasPart, binary);
-        dataset.add(Trellis.PreferServerManaged, resource, DC.extent, rdf.createLiteral("10", XSD.long_));
-        dataset.add(Trellis.PreferServerManaged, resource, DC.format, rdf.createLiteral("text/plain"));
+        dataset.add(Trellis.PreferServerManaged, binary, DC.modified,
+                rdf.createLiteral(binaryTime.toString(), XSD.dateTime));
+        dataset.add(Trellis.PreferServerManaged, binary, DC.extent, rdf.createLiteral("10", XSD.long_));
+        dataset.add(Trellis.PreferServerManaged, binary, DC.format, rdf.createLiteral("text/plain"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));

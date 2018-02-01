@@ -14,6 +14,7 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.sort;
@@ -356,6 +357,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * <p><pre><code>
      * DELETE WHERE { GRAPH IDENTIFIER { ?s ?p ?o } };
      * DELETE WHERE { GRAPH IDENTIFIER?ext=acl { ?s ?p ?o } };
+     * DELETE WHERE { GRAPH trellis:PreferServerManaged {
+     *   IDENTIFIER a ldp:NonRDFSource .
+     *   IDENTIFIER dc:hasPart ?s .
+     *   ?s ?p ?o .
+     * }
      * DELETE WHERE { GRAPH trellis:PreferServerManaged { IDENTIFIER ?p ?o } };
      * INSERT DATA {
      *   GRAPH IDENTIFIER { ... }
@@ -393,8 +399,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                                 SUBJECT, PREDICATE, OBJECT)))));
         req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(
                                 getAclIRI(identifier), SUBJECT, PREDICATE, OBJECT)))));
+        req.add(new UpdateDeleteWhere(new QuadAcc(asList(
+                            new Quad(rdf.asJenaNode(PreferServerManaged), rdf.asJenaNode(identifier),
+                                rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)),
+                            new Quad(rdf.asJenaNode(PreferServerManaged), rdf.asJenaNode(identifier),
+                                rdf.asJenaNode(DC.hasPart), SUBJECT),
+                            new Quad(rdf.asJenaNode(PreferServerManaged), SUBJECT, PREDICATE, OBJECT)))));
         req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(rdf.asJenaNode(PreferServerManaged),
                                 rdf.asJenaNode(identifier), PREDICATE, OBJECT)))));
+
         if (isDelete) {
             final QuadDataAcc sink = new QuadDataAcc();
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
