@@ -81,10 +81,6 @@ public class DeleteHandler extends BaseLdpHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
-            // Add the audit quads
-            audit.ifPresent(svc -> svc.deletion(res.getIdentifier(), session).stream()
-                    .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
-
             // Add the baseURL
             dataset.add(rdf.createQuad(null, res.getIdentifier(), DC.isPartOf, rdf.createIRI(baseUrl)));
 
@@ -98,6 +94,17 @@ public class DeleteHandler extends BaseLdpHandler {
 
             // delete the resource
             if (resourceService.put(res.getIdentifier(), LDP.Resource, dataset.asDataset()).get()) {
+
+                // Add the audit quads
+                audit.ifPresent(svc -> {
+                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                        svc.deletion(res.getIdentifier(), session).stream()
+                                        .map(skolemizeQuads(resourceService, baseUrl))
+                                        .forEachOrdered(auditDataset::add);
+                        svc.add(res.getIdentifier(), auditDataset.asDataset());
+                    }
+                });
+
                 return status(NO_CONTENT);
             }
         } catch (final InterruptedException | ExecutionException ex) {

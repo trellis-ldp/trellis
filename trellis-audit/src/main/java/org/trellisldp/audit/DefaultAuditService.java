@@ -24,11 +24,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.apache.commons.rdf.api.BlankNode;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.AuditService;
-import org.trellisldp.api.Resource;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.PROV;
@@ -43,7 +43,7 @@ import org.trellisldp.vocabulary.XSD;
  * graph.
  * 
  * @implSpec This implementation of AuditService does not persist audit
- *           information. Subclass and override {@link #add(Resource)} to add
+ *           information. Subclass and override {@link #add} to add
  *           persistence.
  * 
  * @author acoburn
@@ -83,10 +83,10 @@ public class DefaultAuditService implements AuditService {
     /*
      * Override to provide persistence for audit information.
      * 
-     * @see org.trellisldp.api.AppendService#add(java.lang.Object)
+     * @see org.trellisldp.api.AppendService#add
      */
     @Override
-    public Future<Boolean> add(final Resource resource) {
+    public Future<Boolean> add(final IRI id, final Dataset quads) {
         return CompletableFuture.completedFuture(false);
     }
 }

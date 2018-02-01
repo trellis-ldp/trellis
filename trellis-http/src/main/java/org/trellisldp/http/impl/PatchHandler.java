@@ -155,10 +155,6 @@ public class PatchHandler extends BaseLdpHandler {
                 .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
                 .forEachOrdered(dataset::add);
 
-            // Add audit-related triples
-            audit.ifPresent(svc -> svc.update(res.getIdentifier(), session).stream()
-                    .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
-
             // Add existing LDP type, other server-managed triples
             dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), RDF.type, res.getInteractionModel()));
             res.getBinary().ifPresent(b -> {
@@ -194,6 +190,15 @@ public class PatchHandler extends BaseLdpHandler {
 
             // Save new dataset
             if (resourceService.put(res.getIdentifier(), res.getInteractionModel(), dataset.asDataset()).get()) {
+
+                // Add audit-related triples
+                audit.ifPresent(svc -> {
+                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                        svc.update(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                        .forEachOrdered(auditDataset::add);
+                        svc.add(res.getIdentifier(), auditDataset.asDataset());
+                    }
+                });
 
                 final ResponseBuilder builder = ok();
 
