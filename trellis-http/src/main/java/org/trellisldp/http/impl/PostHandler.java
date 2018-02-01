@@ -117,11 +117,6 @@ public class PostHandler extends ContentBearingHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
-            // Add Audit quads
-            audit.ifPresent(svc ->
-                    svc.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                .forEachOrdered(dataset::add));
-
             dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
@@ -154,6 +149,16 @@ public class PostHandler extends ContentBearingHandler {
             }
 
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
+
+                // Add Audit quads
+                audit.ifPresent(svc -> {
+                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                        svc.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                        .forEachOrdered(auditDataset::add);
+                        svc.add(rdf.createIRI(identifier), auditDataset.asDataset());
+                    }
+                });
+
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
 
                 // Add LDP types

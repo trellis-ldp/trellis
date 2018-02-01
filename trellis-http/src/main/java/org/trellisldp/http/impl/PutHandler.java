@@ -183,10 +183,6 @@ public class PutHandler extends ContentBearingHandler {
             final IRI graphName = getActiveGraphName();
             final IRI otherGraph = getInactiveGraphName();
 
-            // Add audit quads
-            audit.map(addAuditQuads(res, internalId, session)).ifPresent(q ->
-                    q.stream().map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
-
             // Add LDP type
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
@@ -241,6 +237,15 @@ public class PutHandler extends ContentBearingHandler {
             });
 
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
+
+                // Add audit quads
+                audit.map(addAuditQuads(res, internalId, session)).ifPresent(q -> {
+                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                        q.stream().map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
+                        audit.ifPresent(auditSrv -> auditSrv.add(rdf.createIRI(identifier), auditDataset.asDataset()));
+                    }
+                });
+
                 final ResponseBuilder builder = status(NO_CONTENT);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
                     .forEach(type -> builder.link(type, "type"));
