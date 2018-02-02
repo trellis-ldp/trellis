@@ -196,7 +196,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(5L, res.stream(Trellis.PreferAudit).count());
@@ -221,7 +221,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertEquals(early, res.getModified());
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(0L, res.stream(Trellis.PreferAudit).count());
@@ -277,7 +277,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
@@ -323,7 +323,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.NonRDFSource, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertTrue(res.getBinary().isPresent());
             res.getBinary().ifPresent(b -> {
                 assertEquals(binary, b.getIdentifier());
@@ -358,7 +358,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(resource2, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -405,7 +405,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.Container, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
@@ -441,7 +441,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -481,7 +481,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
@@ -556,7 +556,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.Container, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
@@ -596,7 +596,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
             assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
@@ -678,7 +678,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
@@ -717,7 +717,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -757,7 +757,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
@@ -808,7 +808,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
@@ -843,7 +843,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(members, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -884,7 +884,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -949,7 +949,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
@@ -986,7 +986,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
             assertEquals(resource2, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
@@ -1021,7 +1021,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(members, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1070,7 +1070,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater3));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1124,7 +1124,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child2, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater4));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1189,7 +1189,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(of(DC.relation), res.getMemberOfRelation());
@@ -1227,7 +1227,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
             assertEquals(resource2, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
@@ -1262,7 +1262,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(members, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1311,7 +1311,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater3));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1363,7 +1363,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child2, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater4));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1427,7 +1427,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
@@ -1461,7 +1461,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(members, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1504,7 +1504,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1570,7 +1570,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
@@ -1604,7 +1604,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(members, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1647,7 +1647,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1714,7 +1714,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
             assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
@@ -1748,7 +1748,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(members, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1793,7 +1793,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
@@ -1862,7 +1862,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
             assertEquals(resource, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
@@ -1900,7 +1900,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
             assertEquals(resource2, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
@@ -1935,7 +1935,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(members, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater2));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -1985,7 +1985,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater3));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
@@ -2040,7 +2040,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
             assertEquals(child2, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now()));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getModified().isBefore(evenLater4));
             assertFalse(res.getBinary().isPresent());
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
