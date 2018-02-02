@@ -18,6 +18,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -32,6 +33,7 @@ import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
 import java.time.Instant;
 import java.util.stream.Stream;
@@ -56,8 +58,10 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.AS;
+import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.XSD;
@@ -135,6 +139,18 @@ public class DeleteHandlerTest {
 
         final Response res = handler.deleteResource(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
+    }
+
+    @Test
+    public void testBadAudit() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        // will never store audit
+        final AuditService badAuditService = new DefaultAuditService() {};
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, badAuditService, null);
+        final Response res = handler.deleteResource(mockResource).build();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test

@@ -16,8 +16,6 @@ package org.trellisldp.api;
 import static java.util.Collections.emptyList;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -68,19 +66,7 @@ public interface AuditService extends AppendService<IRI, Dataset> {
      * Singleton.
      * TODO make private in Java 9
      */
-    AuditService nullInstance = new AuditService() {
-
-        /*
-         * No audit info will ever be generated, so return true because all audit info
-         * indeed has been persisted.
-         * 
-         * @see org.trellisldp.api.AppendService#add(java.lang.Object, java.lang.Object)
-         */
-        @Override
-        public Future<Boolean> add(final IRI identifier, final Dataset resource) {
-            return CompletableFuture.completedFuture(true);
-        }
-    };
+    AuditService nullInstance = new NoopAuditService();
 
     /**
      * @return an {@code AuditService} that does nothing and throws away all inputs

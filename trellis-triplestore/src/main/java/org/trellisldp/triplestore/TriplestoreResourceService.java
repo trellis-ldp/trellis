@@ -112,7 +112,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
-    private static AuditService auditService = findFirst(AuditService.class).orElse(none());
+    private AuditService auditService;
 
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
@@ -125,15 +125,39 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param identifierService an ID supplier service
      * @param mementoService a service for memento resources
      * @param eventService an event service
+     * @param useSelfForAudit whether to use this service itself to record audit info
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
-            final MementoService mementoService, final EventService eventService) {
+                    final MementoService mementoService, final EventService eventService,
+                    final boolean useSelfForAudit) {
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
         this.rdfConnection = rdfConnection;
         this.supplier = identifierService.getSupplier();
         this.eventService = ofNullable(eventService);
         this.mementoService = ofNullable(mementoService);
+        this.auditService = useSelfForAudit ? this : findFirst(AuditService.class).orElse(none());
+        init();
+    }
+
+    /**
+     * Create a triplestore-backed resource service.
+     * @param rdfConnection the connection to an RDF datastore
+     * @param identifierService an ID supplier service
+     * @param mementoService a service for memento resources
+     * @param eventService an event service
+     * @param auditService an audit service
+     */
+    public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
+            final MementoService mementoService, final EventService eventService, final AuditService auditService) {
+        requireNonNull(rdfConnection, "RDFConnection may not be null!");
+        requireNonNull(identifierService, "IdentifierService may not be null!");
+        requireNonNull(auditService, "AuditService may not be null!");
+        this.rdfConnection = rdfConnection;
+        this.supplier = identifierService.getSupplier();
+        this.eventService = ofNullable(eventService);
+        this.mementoService = ofNullable(mementoService);
+        this.auditService = auditService;
         init();
     }
 
