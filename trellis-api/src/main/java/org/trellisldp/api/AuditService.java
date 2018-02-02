@@ -13,7 +13,11 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.emptyList;
+
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -34,7 +38,9 @@ public interface AuditService extends AppendService<IRI, Dataset> {
      * @param session the session data
      * @return the list of quads
      */
-    List<Quad> creation(IRI identifier, Session session);
+    default List<Quad> creation(IRI identifier, Session session) {
+        return emptyList();
+    }
 
     /**
      * Generate the audit quads for a Delete event.
@@ -43,7 +49,9 @@ public interface AuditService extends AppendService<IRI, Dataset> {
      * @param session the session data
      * @return the list of quads
      */
-    List<Quad> deletion(IRI identifier, Session session);
+    default List<Quad> deletion(IRI identifier, Session session) {
+        return emptyList();
+    }
 
     /**
      * Generate the audit quads for an Update event.
@@ -52,5 +60,25 @@ public interface AuditService extends AppendService<IRI, Dataset> {
      * @param session the session data
      * @return the list of quads
      */
-    List<Quad> update(IRI identifier, Session session);
+    default List<Quad> update(IRI identifier, Session session) {
+        return emptyList();
+    }
+
+    @Override
+    default Future<Boolean> add(IRI identifier, Dataset resource) {
+        return CompletableFuture.completedFuture(false);
+    }
+
+    /**
+     * Singleton.
+     * TODO make private in Java 9
+     */
+    AuditService nullInstance = new AuditService() {};
+
+    /**
+     * @return an {@code AuditService} that does nothing and throws away all inputs
+     */
+    static AuditService none() {
+        return nullInstance;
+    }
 }

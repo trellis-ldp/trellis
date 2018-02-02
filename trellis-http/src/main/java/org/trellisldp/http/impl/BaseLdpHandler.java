@@ -23,6 +23,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class BaseLdpHandler {
 
     protected static final RDF rdf = getInstance();
 
-    protected static Optional<AuditService> audit = loadFirst(AuditService.class);
+    protected static AuditService audit = loadFirst(AuditService.class).orElse(none());
 
     protected static final List<ConstraintService> constraintServices = new ArrayList<>();
 

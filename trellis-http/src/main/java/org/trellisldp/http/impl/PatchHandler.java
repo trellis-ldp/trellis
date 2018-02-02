@@ -192,13 +192,11 @@ public class PatchHandler extends BaseLdpHandler {
             if (resourceService.put(res.getIdentifier(), res.getInteractionModel(), dataset.asDataset()).get()) {
 
                 // Add audit-related triples
-                audit.ifPresent(svc -> {
-                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        svc.update(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                                        .forEachOrdered(auditDataset::add);
-                        svc.add(res.getIdentifier(), auditDataset.asDataset());
-                    }
-                });
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    audit.update(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    audit.add(res.getIdentifier(), auditDataset.asDataset());
+                }
 
                 final ResponseBuilder builder = ok();
 

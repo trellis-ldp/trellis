@@ -151,13 +151,11 @@ public class PostHandler extends ContentBearingHandler {
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
 
                 // Add Audit quads
-                audit.ifPresent(svc -> {
-                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        svc.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                                        .forEachOrdered(auditDataset::add);
-                        svc.add(rdf.createIRI(identifier), auditDataset.asDataset());
-                    }
-                });
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    audit.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    audit.add(rdf.createIRI(identifier), auditDataset.asDataset());
+                }
 
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
 
