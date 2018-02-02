@@ -29,6 +29,7 @@ import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
@@ -107,7 +108,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
-    private static Optional<AuditService> auditService = findFirst(AuditService.class);
+    private static AuditService auditService = findFirst(AuditService.class).orElse(none());
 
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
@@ -544,9 +545,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
                             rdf.asJenaNode(DC.modified), rdf.asJenaNode(time))));
 
-            auditService.ifPresent(svc -> svc.creation(root, new SimpleSession(AdministratorAgent)).stream()
-                    .map(quad -> new Quad(getAuditIRI(root), rdf.asJenaTriple(quad.asTriple())))
-                    .forEach(sink::addQuad));
+            auditService.creation(root, new SimpleSession(AdministratorAgent)).stream()
+                            .map(quad -> new Quad(getAuditIRI(root), rdf.asJenaTriple(quad.asTriple())))
+                            .forEach(sink::addQuad);
 
             sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Read))));
