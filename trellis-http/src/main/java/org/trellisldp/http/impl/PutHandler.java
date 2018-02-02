@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.EntityTag;
@@ -55,7 +54,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
-
 import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
@@ -237,14 +235,12 @@ public class PutHandler extends ContentBearingHandler {
             });
 
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
-
                 // Add audit quads
-                audit.map(addAuditQuads(res, internalId, session)).ifPresent(q -> {
-                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        q.stream().map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
-                        audit.ifPresent(auditSrv -> auditSrv.add(rdf.createIRI(identifier), auditDataset.asDataset()));
-                    }
-                });
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    addAuditQuads(audit, res, internalId, session).stream()
+                                    .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
+                    audit.add(rdf.createIRI(identifier), auditDataset.asDataset());
+                }
 
                 final ResponseBuilder builder = status(NO_CONTENT);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
@@ -267,8 +263,8 @@ public class PutHandler extends ContentBearingHandler {
         return ldpResourceTypes(ldpType);
     }
 
-    private static Function<AuditService, List<Quad>> addAuditQuads(final Resource res, final IRI internalId,
+    private static List<Quad> addAuditQuads(final AuditService svc, final Resource res, final IRI internalId,
             final Session session) {
-        return svc -> nonNull(res) ? svc.update(internalId, session) : svc.creation(internalId, session);
+        return nonNull(res) ? svc.update(internalId, session) : svc.creation(internalId, session);
     }
 }

@@ -96,15 +96,11 @@ public class DeleteHandler extends BaseLdpHandler {
             if (resourceService.put(res.getIdentifier(), LDP.Resource, dataset.asDataset()).get()) {
 
                 // Add the audit quads
-                audit.ifPresent(svc -> {
-                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        svc.deletion(res.getIdentifier(), session).stream()
-                                        .map(skolemizeQuads(resourceService, baseUrl))
-                                        .forEachOrdered(auditDataset::add);
-                        svc.add(res.getIdentifier(), auditDataset.asDataset());
-                    }
-                });
-
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    audit.deletion(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    audit.add(res.getIdentifier(), auditDataset.asDataset());
+                }
                 return status(NO_CONTENT);
             }
         } catch (final InterruptedException | ExecutionException ex) {
