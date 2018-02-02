@@ -70,6 +70,7 @@ subprojects {
         javaxJsonVersion = '1.1.2'
         jaxrsVersion = '2.1'
         jenaVersion = '3.6.0'
+        kafkaVersion = '1.0.0_1'
         metricsVersion = '3.2.5'
         mustacheVersion = '0.9.5_1'
         slf4jVersion = '1.7.25'
@@ -80,7 +81,7 @@ subprojects {
         dropwizardVersion = '1.2.0'
 
         /* Transitive dependencies (for Karaf provisioning) */
-        guavaVersion = '20.0' // mustache 0.9.5
+        guavaVersion = '20.0' // via mustache 0.9.5
 
         /* Testing */
         apiguardianVersion = '1.0.0'

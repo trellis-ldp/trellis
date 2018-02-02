@@ -160,6 +160,13 @@ public class OSGiTest {
     }
 
     @Test
+    public void testKafkaInstallation() throws Exception {
+        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
+        featuresService.installFeature("trellis-kafka");
+        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
+    }
+
+    @Test
     public void testNamespacesInstallation() throws Exception {
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
         featuresService.installFeature("trellis-namespaces");

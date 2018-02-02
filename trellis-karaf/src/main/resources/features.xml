@@ -173,4 +173,15 @@
     <bundle>mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
   </feature>
 
+  <feature name="trellis-kafka" version="${project.version}">
+    <details>Installs the Trellis Kafka service bundle</details>
+
+    <feature>trellis-api</feature>
+
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.kafka-clients/${kafkaVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-kafka/${project.version}</bundle>
+  </feature>
+
 </features>
