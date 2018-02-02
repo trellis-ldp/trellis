@@ -6,7 +6,7 @@ server:
 logging:
   level: WARN
   loggers:
-    org.trellisldp: DEBUG
+    org.trellisldp: INFO
     io.dropwizard: INFO
 
 # Path to binaries
