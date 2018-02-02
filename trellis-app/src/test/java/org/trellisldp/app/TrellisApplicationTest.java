@@ -24,6 +24,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.http.domain.HttpConstants.DIGEST;
@@ -44,6 +45,7 @@ import java.util.function.Predicate;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 
@@ -136,6 +138,7 @@ public class TrellisApplicationTest {
     @Test
     public void testPostBinary() throws IOException {
         final String location;
+        final EntityTag etag1, etag2;
         final String content = "This is a file.";
         try (final Response res = target().request().post(entity(content, TEXT_PLAIN))) {
             assertEquals(201, res.getStatus());
@@ -156,6 +159,8 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
             assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
             assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
+            etag1 = res.getEntityTag();
+            assertFalse(etag1.isWeak());
         }
 
         try (final Response res = target(location).request().accept("text/turtle").get()) {
@@ -168,6 +173,9 @@ public class TrellisApplicationTest {
             final Graph g = rdf.createGraph();
             ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
             assertEquals(0L, g.size());
+            etag2 = res.getEntityTag();
+            assertTrue(etag2.isWeak());
+            assertNotEquals(etag1, etag2);
         }
 
         try (final Response res = target(location).request().method("PATCH",
@@ -190,8 +198,10 @@ public class TrellisApplicationTest {
             ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
             assertEquals(1L, g.size());
             assertTrue(g.contains(rdf.createIRI(location), DC.title, rdf.createLiteral("Title")));
+            assertNotEquals(etag2, res.getEntityTag());
         }
 
+        // Verify that the binary is still accessible
         try (final Response res = target(location).request().get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
@@ -200,8 +210,10 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
             assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
             assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
+            assertEquals(etag1, res.getEntityTag());
         }
 
+        // Test the root container, verifying that the containment triple exists
         try (final Response res = target().request().get()) {
             final Graph g = rdf.createGraph();
             assertEquals(200, res.getStatus());
@@ -211,6 +223,7 @@ public class TrellisApplicationTest {
             assertTrue(g.contains(rdf.createIRI(baseURL), LDP.contains, rdf.createIRI(location)));
         }
 
+        // Test the MD5 algorithm
         try (final Response res = target(location).request().header(WANT_DIGEST, "MD5").get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
@@ -218,6 +231,7 @@ public class TrellisApplicationTest {
             assertEquals("md5=bUMuG430lSc5B2PWyoNIgA==", res.getHeaderString(DIGEST));
         }
 
+        // Test the SHA-256 algorithm
         try (final Response res = target(location).request().header(WANT_DIGEST, "SHA-256").get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
@@ -225,6 +239,7 @@ public class TrellisApplicationTest {
             assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST));
         }
 
+        // Test an unknown digest algorithm
         try (final Response res = target(location).request().header(WANT_DIGEST, "FOO").get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
