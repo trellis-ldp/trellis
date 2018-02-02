@@ -9,12 +9,15 @@ logging:
     org.trellisldp: DEBUG
     io.dropwizard: INFO
 
+# Path to binaries
 binaries:
   path: binaries
 
+# Path to mementos
 mementos:
   path: mementos
 
+# Path to namespace file
 namespaces:
     file: namespaces.json
 
@@ -36,3 +39,8 @@ cors:
         - "*"
     maxAge: 180
 
+# JSON-LD configuration
+jsonLdCacheSize: 10
+jsonLdCacheExpireHours: 24
+jsonLdDomainWhitelist:
+    - https://www.trellisldp.org/

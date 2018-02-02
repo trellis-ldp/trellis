@@ -49,6 +49,10 @@ assets:
         - "http://example.org/styles1.css"
         - "http://example.org/styles2.css"
 
+jsonLdCacheSize: 10
+jsonLdCacheExpireHours: 48
+jsonLdDomainWhitelist:
+    - "https://www.trellisldp.org/"
 jsonLdWhitelist:
     - "http://example.org/context.json"
 

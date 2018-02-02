@@ -27,19 +27,17 @@ logging:
 binaries:
     path: /var/lib/trellis/binaries
 
-resources:
-    path: /var/lib/trellis/resources
+mementos:
+    path: /var/lib/trellis/mementos
+
+# This may refer to a remote Triplestore
+rdfStore:
+    location: /var/lib/trellis/rdf
 
 baseUrl: http://localhost:8080/
 
 namespaces:
     file: /opt/trellis/etc/namespaces.json
-
-zookeeper:
-    ensembleServers: localhost:2181
-
-kafka:
-    bootstrapServers: localhost:9092
 
 auth:
     webac:
@@ -55,7 +53,16 @@ auth:
         usersFile: /opt/trellis/etc/users.auth
 
 cors:
+    enabled: true
     allowOrigin:
         - "*"
     maxAge: 180
+
+# JSON-LD configuration
+jsonLdCacheSize: 10
+jsonLdCacheExpireHours: 24
+# A whitelist of trusted JSON-LD context locations
+jsonLdWhitelist: []
+# A whitelist of trusted domains for JSON-LD context locations
+jsonLdDomainWhitelist: []
 
