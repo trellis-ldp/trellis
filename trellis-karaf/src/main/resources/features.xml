@@ -190,9 +190,20 @@
     <feature>trellis-api</feature>
 
     <bundle dependency="true">mvn:com.rabbitmq/amqp-client/${rabbitMqVersion}</bundle>
-
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-amqp/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-jms" version="${project.version}">
+    <details>Installs the Trellis JMS service bundle</details>
+
+    <feature>trellis-api</feature>
+    <feature>transaction</feature>
+
+    <bundle dependency="true">mvn:javax.jms/javax.jms-api/${jmsApiVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
   </feature>
 </features>

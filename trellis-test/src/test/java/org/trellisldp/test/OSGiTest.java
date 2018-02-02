@@ -177,6 +177,14 @@ public class OSGiTest {
     }
 
     @Test
+    public void testJmsInstallation() throws Exception {
+        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
+        featuresService.installFeature("trellis-event-serialization");
+        featuresService.installFeature("trellis-jms");
+        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
+    }
+
+    @Test
     public void testNamespacesInstallation() throws Exception {
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
         featuresService.installFeature("trellis-namespaces");

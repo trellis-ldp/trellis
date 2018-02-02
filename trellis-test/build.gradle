@@ -50,6 +50,7 @@ dependencies {
     testCompile project(':trellis-http')
     testCompile project(':trellis-id')
     testCompile project(':trellis-io-jena')
+    testCompile project(':trellis-jms')
     testCompile project(':trellis-kafka')
     testCompile project(':trellis-namespaces')
     testCompile project(':trellis-triplestore')
