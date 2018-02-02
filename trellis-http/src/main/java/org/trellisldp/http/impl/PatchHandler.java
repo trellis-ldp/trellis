@@ -16,6 +16,7 @@ package org.trellisldp.http.impl;
 import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -56,6 +57,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
@@ -195,7 +197,13 @@ public class PatchHandler extends BaseLdpHandler {
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     audit.update(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    audit.add(res.getIdentifier(), auditDataset.asDataset());
+                    if (!audit.add(res.getIdentifier(), auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to update resource at {}", res.getIdentifier());
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                        }
                 }
 
                 final ResponseBuilder builder = ok();

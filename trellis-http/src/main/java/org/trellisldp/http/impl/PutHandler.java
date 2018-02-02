@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -55,7 +56,6 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -237,9 +237,15 @@ public class PutHandler extends ContentBearingHandler {
             if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
                 // Add audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    addAuditQuads(audit, res, internalId, session).stream()
-                                    .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
-                    audit.add(rdf.createIRI(identifier), auditDataset.asDataset());
+                    auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    if (!audit.add(internalId, auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to place or replace resource at {}", res.getIdentifier());
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                        }
                 }
 
                 final ResponseBuilder builder = status(NO_CONTENT);
@@ -263,8 +269,7 @@ public class PutHandler extends ContentBearingHandler {
         return ldpResourceTypes(ldpType);
     }
 
-    private static List<Quad> addAuditQuads(final AuditService svc, final Resource res, final IRI internalId,
-            final Session session) {
-        return nonNull(res) ? svc.update(internalId, session) : svc.creation(internalId, session);
+    private static List<Quad> auditQuads(final Resource res, final IRI internalId, final Session session) {
+        return nonNull(res) ? audit.update(internalId, session) : audit.creation(internalId, session);
     }
 }
