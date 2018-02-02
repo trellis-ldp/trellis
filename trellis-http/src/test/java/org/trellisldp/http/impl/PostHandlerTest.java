@@ -38,6 +38,7 @@ import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,6 +73,7 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.DC;
@@ -152,6 +154,20 @@ public class PostHandlerTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+    }
+
+    @Test
+    public void testBadAudit() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
+        // will never store audit
+        final AuditService badAuditService = new DefaultAuditService() {};
+        final PostHandler handler = new PostHandler(mockRequest, null, entity, mockResourceService,
+                        mockIoService, mockBinaryService, null, badAuditService);
+        final Response res = handler.createResource().build();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test

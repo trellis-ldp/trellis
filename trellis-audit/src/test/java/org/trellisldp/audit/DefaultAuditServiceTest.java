@@ -65,7 +65,7 @@ public class DefaultAuditServiceTest {
     @Test
     public void testAuditCreation() {
         final Dataset dataset = rdf.createDataset();
-        final AuditService svc = new DefaultAuditService();
+        final AuditService svc = new DefaultAuditService() {};
         svc.creation(subject, mockSession).forEach(dataset::add);
         assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent());
         assertTrue(dataset.contains(null, null, type, PROV.Activity));
@@ -81,7 +81,7 @@ public class DefaultAuditServiceTest {
     @Test
     public void testAuditDeletion() {
         final Dataset dataset = rdf.createDataset();
-        final AuditService svc = new DefaultAuditService();
+        final AuditService svc = new DefaultAuditService() {};
         svc.deletion(subject, mockSession).forEach(dataset::add);
         assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent());
         assertTrue(dataset.contains(null, null, type, PROV.Activity));
@@ -97,7 +97,7 @@ public class DefaultAuditServiceTest {
     @Test
     public void testAuditUpdate() {
         final Dataset dataset = rdf.createDataset();
-        final AuditService svc = new DefaultAuditService();
+        final AuditService svc = new DefaultAuditService() {};
         svc.update(subject, mockSession).forEach(dataset::add);
         assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent());
         assertTrue(dataset.contains(null, null, type, PROV.Activity));

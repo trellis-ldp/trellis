@@ -76,6 +76,7 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 
@@ -159,6 +160,20 @@ public class PutHandlerTest {
 
         final Response res = putHandler.setResource(mockResource).build();
         assertEquals(CONFLICT, res.getStatusInfo());
+    }
+
+    @Test
+    public void testBadAudit() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
+        // will never store audit
+        final AuditService badAuditService = new DefaultAuditService() {};
+        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, badAuditService,
+                        mockIoService, mockBinaryService, null);
+        final Response res = putHandler.setResource(mockResource).build();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test

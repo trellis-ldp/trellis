@@ -48,7 +48,7 @@ import org.trellisldp.vocabulary.XSD;
  * 
  * @author acoburn
  */
-public class DefaultAuditService implements AuditService {
+public abstract class DefaultAuditService implements AuditService {
 
     private static final RDF rdf = getInstance();
 
