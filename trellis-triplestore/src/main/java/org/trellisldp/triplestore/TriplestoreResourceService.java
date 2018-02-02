@@ -30,17 +30,14 @@ import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
-import static org.trellisldp.triplestore.TriplestoreUtils.findFirst;
 import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
 import static org.trellisldp.triplestore.TriplestoreUtils.getSubject;
-import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
 import static org.trellisldp.vocabulary.Trellis.DeletedResource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferAudit;
@@ -84,7 +81,6 @@ import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
@@ -112,7 +108,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
-    private AuditService auditService;
 
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
@@ -125,39 +120,16 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param identifierService an ID supplier service
      * @param mementoService a service for memento resources
      * @param eventService an event service
-     * @param useSelfForAudit whether to use this service itself to record audit info
-     */
-    public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
-                    final MementoService mementoService, final EventService eventService,
-                    final boolean useSelfForAudit) {
-        requireNonNull(rdfConnection, "RDFConnection may not be null!");
-        requireNonNull(identifierService, "IdentifierService may not be null!");
-        this.rdfConnection = rdfConnection;
-        this.supplier = identifierService.getSupplier();
-        this.eventService = ofNullable(eventService);
-        this.mementoService = ofNullable(mementoService);
-        this.auditService = useSelfForAudit ? this : findFirst(AuditService.class).orElse(none());
-        init();
-    }
-
-    /**
-     * Create a triplestore-backed resource service.
-     * @param rdfConnection the connection to an RDF datastore
-     * @param identifierService an ID supplier service
-     * @param mementoService a service for memento resources
-     * @param eventService an event service
      * @param auditService an audit service
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
-            final MementoService mementoService, final EventService eventService, final AuditService auditService) {
+            final MementoService mementoService, final EventService eventService) {
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
-        requireNonNull(auditService, "AuditService may not be null!");
         this.rdfConnection = rdfConnection;
         this.supplier = identifierService.getSupplier();
         this.eventService = ofNullable(eventService);
         this.mementoService = ofNullable(mementoService);
-        this.auditService = auditService;
         init();
     }
 
@@ -572,10 +544,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                             rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.BasicContainer))));
             sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
                             rdf.asJenaNode(DC.modified), rdf.asJenaNode(time))));
-
-            auditService.creation(root, new SimpleSession(AdministratorAgent)).stream()
-                            .map(quad -> new Quad(getAuditIRI(root), rdf.asJenaTriple(quad.asTriple())))
-                            .forEach(sink::addQuad);
 
             sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Read))));

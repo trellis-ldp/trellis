@@ -98,7 +98,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final MementoService mementoService = new FileMementoService(mementoLocation);
 
         final TriplestoreResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
-                        mementoService, notificationService, null);
+                        mementoService, notificationService);
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
 
