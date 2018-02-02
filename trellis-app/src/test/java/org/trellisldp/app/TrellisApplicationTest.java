@@ -15,6 +15,7 @@ package org.trellisldp.app;
 
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static java.lang.Thread.sleep;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.client.Entity.entity;
@@ -42,7 +43,6 @@ import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.DropwizardTestSupport;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.function.Predicate;
@@ -141,7 +141,7 @@ public class TrellisApplicationTest {
     }
 
     @Test
-    public void testPostBinary() throws IOException {
+    public void testPostBinary() throws Exception {
         final String location;
         final EntityTag etag1, etag2;
         final String content = "This is a file.";
@@ -170,6 +170,7 @@ public class TrellisApplicationTest {
             assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
             etag1 = res.getEntityTag();
             assertFalse(etag1.isWeak());
+            sleep(5);
         }
 
         // Fetch the description
@@ -196,6 +197,7 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
             assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            sleep(5);
         }
 
         // Fetch the new description
@@ -261,7 +263,7 @@ public class TrellisApplicationTest {
     }
 
     @Test
-    public void testPostRDF() throws IOException {
+    public void testPostRDF() throws Exception {
         final String location;
         final EntityTag etag1;
         final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
@@ -307,6 +309,7 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
             assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            sleep(5);
         }
 
         // Fetch the updated resource
@@ -337,7 +340,7 @@ public class TrellisApplicationTest {
     }
 
     @Test
-    public void testPostBasicContainer() throws IOException {
+    public void testPostBasicContainer() throws Exception {
         final String location, child1, child2, child3;
         final EntityTag etag1, etag2, etag3;
         final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
@@ -389,6 +392,7 @@ public class TrellisApplicationTest {
             child1 = res.getLocation().toString();
             assertTrue(child1.startsWith(location));
             assertTrue(child1.length() > location.length());
+            sleep(5);
         }
 
         // POST an LDP-RS
@@ -401,6 +405,7 @@ public class TrellisApplicationTest {
             child2 = res.getLocation().toString();
             assertTrue(child2.startsWith(location));
             assertTrue(child2.length() > location.length());
+            sleep(5);
         }
 
         // POST an LDP-RS
@@ -413,6 +418,7 @@ public class TrellisApplicationTest {
             child3 = res.getLocation().toString();
             assertTrue(child3.startsWith(location));
             assertTrue(child3.length() > location.length());
+            sleep(5);
         }
 
         // Fetch the container
@@ -446,6 +452,7 @@ public class TrellisApplicationTest {
         // Try fetching the deleted resource
         try (final Response res = target(child3).request().get()) {
             assertEquals(410, res.getStatus());
+            sleep(5);
         }
 
         // Fetch the container

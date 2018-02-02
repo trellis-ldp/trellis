@@ -13,6 +13,7 @@
  */
 package org.trellisldp.triplestore;
 
+import static java.lang.Thread.sleep;
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
 import static java.util.Arrays.asList;
@@ -269,6 +270,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -314,6 +316,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.NonRDFSource, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -348,6 +351,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(resource2, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
@@ -394,6 +398,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.Container, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -429,6 +434,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -468,6 +474,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -542,6 +549,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.Container, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -580,6 +588,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -620,6 +629,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferServerManaged, child, RDF.type, LDP.Resource);
 
         final Instant preDelete = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.Resource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -661,6 +671,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.BasicContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -699,6 +710,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -738,6 +750,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("a label"));
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -788,6 +801,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -822,6 +836,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(members, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
@@ -862,6 +877,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -926,6 +942,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -962,6 +979,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, DC.subject);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(resource2, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
@@ -996,6 +1014,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(members, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
@@ -1044,6 +1063,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -1097,6 +1117,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = now();
+        sleep(5);
         assertTrue(svc.put(child2, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
@@ -1161,6 +1182,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -1198,6 +1220,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(resource2, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
@@ -1232,6 +1255,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(members, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
@@ -1280,6 +1304,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -1331,6 +1356,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = now();
+        sleep(5);
         assertTrue(svc.put(child2, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
@@ -1394,6 +1420,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -1427,6 +1454,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(members, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
@@ -1469,6 +1497,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -1534,6 +1563,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -1567,6 +1597,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(members, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
@@ -1609,6 +1640,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -1674,6 +1706,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -1708,6 +1741,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(members, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
@@ -1752,6 +1786,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -1820,6 +1855,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = now();
+        sleep(5);
         assertTrue(svc.put(resource, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -1857,6 +1893,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = now();
+        sleep(5);
         assertTrue(svc.put(resource2, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
@@ -1891,6 +1928,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = now();
+        sleep(5);
         assertTrue(svc.put(members, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
@@ -1940,6 +1978,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = now();
+        sleep(5);
         assertTrue(svc.put(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
@@ -1994,6 +2033,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = now();
+        sleep(5);
         assertTrue(svc.put(child2, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
