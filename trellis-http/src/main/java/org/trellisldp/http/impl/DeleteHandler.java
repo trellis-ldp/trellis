@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
@@ -29,6 +30,7 @@ import java.util.stream.Stream;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
@@ -99,7 +101,13 @@ public class DeleteHandler extends BaseLdpHandler {
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     audit.deletion(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    audit.add(res.getIdentifier(), auditDataset.asDataset());
+                    if (!audit.add(res.getIdentifier(), auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                    }
                 }
                 return status(NO_CONTENT);
             }

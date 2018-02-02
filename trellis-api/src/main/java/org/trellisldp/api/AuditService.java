@@ -65,7 +65,7 @@ public interface AuditService extends AppendService<IRI, Dataset> {
     }
 
     @Override
-    default Future<Boolean> add(IRI identifier, Dataset resource) {
+    default Future<Boolean> add(IRI identifier, Dataset dataset) {
         return CompletableFuture.completedFuture(false);
     }
 

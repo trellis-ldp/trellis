@@ -18,6 +18,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -43,6 +44,7 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 
 import org.slf4j.Logger;
@@ -154,7 +156,13 @@ public class PostHandler extends ContentBearingHandler {
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     audit.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    audit.add(rdf.createIRI(identifier), auditDataset.asDataset());
+                    if (!audit.add(internalId, auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to act against resource at {}", internalId);
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                        }
                 }
 
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
