@@ -41,6 +41,7 @@ configurations {
 
 dependencies {
     testCompile project(':trellis-agent')
+    testCompile project(':trellis-amqp')
     testCompile project(':trellis-api')
     testCompile project(':trellis-audit')
     testCompile project(':trellis-constraint-rules')

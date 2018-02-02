@@ -154,16 +154,26 @@ public class OSGiTest {
 
     @Test
     public void testEventSerializationInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization")));
-        featuresService.installFeature("trellis-event-serialization");
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization"))) {
+            featuresService.installFeature("trellis-event-serialization");
+        }
         assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization")));
     }
 
     @Test
     public void testKafkaInstallation() throws Exception {
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
+        featuresService.installFeature("trellis-event-serialization");
         featuresService.installFeature("trellis-kafka");
         assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
+    }
+
+    @Test
+    public void testAmqpInstallation() throws Exception {
+        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
+        featuresService.installFeature("trellis-event-serialization");
+        featuresService.installFeature("trellis-amqp");
+        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
     }
 
     @Test

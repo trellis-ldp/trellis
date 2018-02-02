@@ -1,13 +1,13 @@
 apply plugin: 'osgi'
 
-description = 'Trellis Notifications (Kafka)'
+description = 'Trellis Notifications (AMQP)'
 
 ext {
-    moduleName = 'org.trellisldp.kafka'
+    moduleName = 'org.trellisldp.amqp'
 }
 
 dependencies {
-    api group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.kafka-clients', version: kafkaVersion
+    api group: 'com.rabbitmq', name: 'amqp-client', version: rabbitMqVersion
     api project(':trellis-api')
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
