@@ -17,6 +17,7 @@ import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Stream.of;
+import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -43,6 +44,7 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.time.Instant;
@@ -77,6 +79,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -150,6 +153,19 @@ public class PatchHandlerTest {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null,
                 mockAuditService, mockResourceService, mockIoService, null);
         assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource).build());
+    }
+
+    @Test
+    public void testBadAudit() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        // will never store audit
+        final AuditService badAuditService = new DefaultAuditService() {};
+        final PatchHandler handler = new PatchHandler(mockLdpRequest, "", badAuditService, mockResourceService,
+                        mockIoService, null);
+        final Response res = handler.updateResource(mockResource).build();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test

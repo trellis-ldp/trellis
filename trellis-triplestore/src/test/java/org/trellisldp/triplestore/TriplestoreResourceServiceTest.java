@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
@@ -148,7 +149,7 @@ public class TriplestoreResourceServiceTest {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService, true);
+                mockMementoService, mockEventService, AuditService.none());
         assertThrows(UnsupportedOperationException.class, () ->
                 svc.purge(rdf.createIRI(TRELLIS_DATA_PREFIX + "identifier")));
     }
