@@ -24,7 +24,10 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.trellisldp.http.domain.HttpConstants.DIGEST;
+import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -145,7 +148,7 @@ public class TrellisApplicationTest {
             assertTrue(location.length() > baseURL.length());
         }
 
-        try (final Response res = target(location.substring(baseURL.length())).request().get()) {
+        try (final Response res = target(location).request().get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
             assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
@@ -155,7 +158,7 @@ public class TrellisApplicationTest {
             assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
         }
 
-        try (final Response res = target(location.substring(baseURL.length())).request().accept("text/turtle").get()) {
+        try (final Response res = target(location).request().accept("text/turtle").get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
             assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
@@ -167,8 +170,8 @@ public class TrellisApplicationTest {
             assertEquals(0L, g.size());
         }
 
-        try (final Response res = target(location.substring(baseURL.length())).request()
-                .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
+        try (final Response res = target(location).request().method("PATCH",
+                    entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
             assertEquals(204, res.getStatus());
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -176,7 +179,7 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         }
 
-        try (final Response res = target(location.substring(baseURL.length())).request().accept("text/turtle").get()) {
+        try (final Response res = target(location).request().accept("text/turtle").get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
             assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
@@ -189,7 +192,7 @@ public class TrellisApplicationTest {
             assertTrue(g.contains(rdf.createIRI(location), DC.title, rdf.createLiteral("Title")));
         }
 
-        try (final Response res = target(location.substring(baseURL.length())).request().get()) {
+        try (final Response res = target(location).request().get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
             assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
@@ -207,6 +210,27 @@ public class TrellisApplicationTest {
             ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
             assertTrue(g.contains(rdf.createIRI(baseURL), LDP.contains, rdf.createIRI(location)));
         }
+
+        try (final Response res = target(location).request().header(WANT_DIGEST, "MD5").get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+            assertEquals("md5=bUMuG430lSc5B2PWyoNIgA==", res.getHeaderString(DIGEST));
+        }
+
+        try (final Response res = target(location).request().header(WANT_DIGEST, "SHA-256").get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+            assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST));
+        }
+
+        try (final Response res = target(location).request().header(WANT_DIGEST, "FOO").get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+            assertNull(res.getHeaderString(DIGEST));
+        }
     }
 
     @Test
@@ -216,11 +240,11 @@ public class TrellisApplicationTest {
     }
 
     private static WebTarget target() {
-        return target("");
+        return target(baseURL);
     }
 
-    private static WebTarget target(final String path) {
-        return client.target(String.format("http://localhost:%d/%s", APP.getLocalPort(), path));
+    private static WebTarget target(final String url) {
+        return client.target(url);
     }
 
     private static List<Link> getLinks(final Response res) {

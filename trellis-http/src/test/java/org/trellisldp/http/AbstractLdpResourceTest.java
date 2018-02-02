@@ -657,7 +657,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
-        assertEquals("md5-digest", res.getHeaderString(DIGEST));
+        assertEquals("md5=md5-digest", res.getHeaderString(DIGEST));
 
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertTrue(varies.contains(RANGE));
@@ -689,7 +689,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
-        assertEquals("sha1-digest", res.getHeaderString(DIGEST));
+        assertEquals("sha=sha1-digest", res.getHeaderString(DIGEST));
 
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertTrue(varies.contains(RANGE));
