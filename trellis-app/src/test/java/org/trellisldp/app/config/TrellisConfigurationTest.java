@@ -44,7 +44,7 @@ public class TrellisConfigurationTest {
         assertEquals((Integer) 86400, config.getCacheMaxAge());
         assertEquals((Long) 10L, config.getJsonLdCacheSize());
         assertEquals((Long) 48L, config.getJsonLdCacheExpireHours());
-        assertTrue(config.getJsonLdDomainWhitelist().contains("https://www.trellisldp.org/"));
+        assertTrue(config.getJsonLdDomainWhitelist().isEmpty());
         assertTrue(config.getJsonLdWhitelist().contains("http://example.org/context.json"));
         assertNull(config.getRdfstore());
     }

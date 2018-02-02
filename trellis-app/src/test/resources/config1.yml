@@ -51,8 +51,7 @@ assets:
 
 jsonLdCacheSize: 10
 jsonLdCacheExpireHours: 48
-jsonLdDomainWhitelist:
-    - "https://www.trellisldp.org/"
+jsonLdDomainWhitelist: []
 jsonLdWhitelist:
     - "http://example.org/context.json"
 
