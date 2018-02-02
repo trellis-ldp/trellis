@@ -36,7 +36,7 @@ public class LdpUserResourceTest extends AbstractLdpResourceTest {
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, BASE_URL));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService, BASE_URL));
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new WebAcFilter(emptyList(), mockAccessControlService));
         config.register(new AgentAuthorizationFilter(mockAgentService, emptyList()));

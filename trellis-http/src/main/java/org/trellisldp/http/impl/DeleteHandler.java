@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
@@ -54,10 +55,12 @@ public class DeleteHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param resourceService the resource service
+     * @param auditService an audit service
      * @param baseUrl the base URL
      */
-    public DeleteHandler(final LdpRequest req, final ResourceService resourceService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+    public DeleteHandler(final LdpRequest req, final ResourceService resourceService, final AuditService auditService,
+                    final String baseUrl) {
+        super(req, resourceService, auditService, baseUrl);
     }
 
     /**

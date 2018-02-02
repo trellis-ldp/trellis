@@ -59,6 +59,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -124,6 +125,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -147,6 +149,8 @@ import org.trellisldp.vocabulary.XSD;
 abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static final IOService ioService = new JenaIOService(null);
+
+    protected static final AuditService mockAuditService = none();
 
     private static final int timestamp = 1496262729;
 
@@ -337,14 +341,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         when(mockResourceService.unskolemize(any(IRI.class)))
             .thenAnswer(inv -> {
-                final String uri = ((IRI) inv.getArgument(0)).getIRIString();
+                final IRI iri = inv.getArgument(0);
+                final String uri = iri.getIRIString();
                 if (uri.startsWith(TRELLIS_BNODE_PREFIX)) {
                     return bnode;
                 }
-                return (IRI) inv.getArgument(0);
+                return iri;
             });
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            final RDFTerm term = inv.getArgument(0);
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(BASE_URL)) {
@@ -354,7 +359,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             return term;
         });
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            final RDFTerm term = inv.getArgument(0);
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(TRELLIS_DATA_PREFIX)) {

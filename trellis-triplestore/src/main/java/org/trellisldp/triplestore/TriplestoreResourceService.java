@@ -28,6 +28,7 @@ import static java.util.stream.Stream.builder;
 import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
+import static org.apache.jena.system.Txn.executeWrite;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
@@ -60,11 +61,14 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
+import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.modify.request.QuadAcc;
@@ -588,5 +592,30 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     @Override
     public Stream<IRI> purge(final IRI identifier) {
         throw new UnsupportedOperationException("purge is not supported");
+    }
+
+    @Override
+    public Future<Boolean> add(final IRI id, final Dataset quads) {
+        return supplyAsync(() -> {
+            executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(quads)));
+            return true;
+        });
+    }
+
+    /**
+     * TODO Replace when COMMONSRDF-74 is addressed.
+     * 
+     * @param dataset a Commons RDF {@link Dataset}
+     * @return a Jena {@link org.apache.jena.query.Dataset}
+     */
+    private org.apache.jena.query.Dataset asJenaDataset(final Dataset dataset) {
+        final DatasetGraph dsg;
+        if (dataset instanceof JenaDataset) {
+            dsg = ((JenaDataset) dataset).asJenaDatasetGraph();
+        } else {
+            dsg = DatasetGraphFactory.createGeneral();
+            dataset.stream().map(rdf::asJenaQuad).forEach(dsg::add);
+        }
+        return org.apache.jena.query.DatasetFactory.wrap(dsg);
     }
 }

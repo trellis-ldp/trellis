@@ -1,1 +1,1 @@
-org.trellisldp.audit.test.TestAuditService
+org.trellisldp.audit.DefaultAuditService

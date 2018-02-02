@@ -64,16 +64,23 @@ public interface AuditService extends AppendService<IRI, Dataset> {
         return emptyList();
     }
 
-    @Override
-    default Future<Boolean> add(IRI identifier, Dataset dataset) {
-        return CompletableFuture.completedFuture(false);
-    }
-
     /**
      * Singleton.
      * TODO make private in Java 9
      */
-    AuditService nullInstance = new AuditService() {};
+    AuditService nullInstance = new AuditService() {
+
+        /*
+         * No audit info will ever be generated, so return true because all audit info
+         * indeed has been persisted.
+         * 
+         * @see org.trellisldp.api.AppendService#add(java.lang.Object, java.lang.Object)
+         */
+        @Override
+        public Future<Boolean> add(final IRI identifier, final Dataset resource) {
+            return CompletableFuture.completedFuture(true);
+        }
+    };
 
     /**
      * @return an {@code AuditService} that does nothing and throws away all inputs

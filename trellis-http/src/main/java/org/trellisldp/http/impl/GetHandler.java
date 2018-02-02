@@ -122,7 +122,7 @@ public class GetHandler extends BaseLdpHandler {
      */
     public GetHandler(final LdpRequest req, final ResourceService resourceService, final IOService ioService,
             final BinaryService binaryService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+        super(req, resourceService, null, baseUrl);
         this.ioService = ioService;
         this.binaryService = binaryService;
     }

@@ -38,7 +38,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
-
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
@@ -66,12 +66,14 @@ class ContentBearingHandler extends BaseLdpHandler {
      * @param req the LDP request
      * @param entity the entity
      * @param resourceService the resource service
+     * @param auditService an audit service
      * @param ioService the serialization service
      * @param binaryService the binary service
      */
     protected ContentBearingHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
-            final IOService ioService, final BinaryService binaryService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+                    final AuditService auditService, final IOService ioService, final BinaryService binaryService,
+                    final String baseUrl) {
+        super(req, resourceService, auditService, baseUrl);
         this.binaryService = binaryService;
         this.ioService = ioService;
         this.entity = entity;
