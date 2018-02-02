@@ -21,6 +21,7 @@ import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,7 +33,9 @@ import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;
@@ -66,6 +69,7 @@ import org.trellisldp.io.JenaIOService;
 import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.SKOS;
 
 /**
  * @author acoburn
@@ -92,8 +96,8 @@ public class TrellisApplicationTest {
     public static void setUp() {
         APP.before();
         client = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
-        client.property("jersey.config.client.connectTimeout", 1000);
-        client.property("jersey.config.client.readTimeout", 1000);
+        client.property("jersey.config.client.connectTimeout", 2000);
+        client.property("jersey.config.client.readTimeout", 2000);
         baseURL = "http://localhost:" + APP.getLocalPort() + "/";
     }
 
@@ -140,6 +144,8 @@ public class TrellisApplicationTest {
         final String location;
         final EntityTag etag1, etag2;
         final String content = "This is a file.";
+
+        // POST an LDP-NR
         try (final Response res = target().request().post(entity(content, TEXT_PLAIN))) {
             assertEquals(201, res.getStatus());
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -151,6 +157,7 @@ public class TrellisApplicationTest {
             assertTrue(location.length() > baseURL.length());
         }
 
+        // Fetch the new resource
         try (final Response res = target(location).request().get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
@@ -163,6 +170,7 @@ public class TrellisApplicationTest {
             assertFalse(etag1.isWeak());
         }
 
+        // Fetch the description
         try (final Response res = target(location).request().accept("text/turtle").get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
@@ -178,6 +186,7 @@ public class TrellisApplicationTest {
             assertNotEquals(etag1, etag2);
         }
 
+        // Patch the description
         try (final Response res = target(location).request().method("PATCH",
                     entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
@@ -187,6 +196,7 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         }
 
+        // Fetch the new description
         try (final Response res = target(location).request().accept("text/turtle").get()) {
             assertEquals(200, res.getStatus());
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
@@ -245,6 +255,82 @@ public class TrellisApplicationTest {
             assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
             assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
             assertNull(res.getHeaderString(DIGEST));
+        }
+    }
+
+    @Test
+    public void testPostRDF() throws IOException {
+        final String location;
+        final EntityTag etag1;
+        final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+            + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+            + "<> a skos:Concept; skos:prefLabel \"Resource Name\"@eng ; dc:subject <http://example.org/subject/1> .";
+
+        // POST an LDP-RS
+        try (final Response res = target().request().post(entity(content, TEXT_TURTLE))) {
+            assertEquals(201, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            location = res.getLocation().toString();
+            assertTrue(location.startsWith(baseURL));
+            assertTrue(location.length() > baseURL.length());
+        }
+
+        // Fetch the new resource
+        try (final Response res = target(location).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            assertEquals(3L, g.size());
+            final IRI identifier = rdf.createIRI(location);
+            assertTrue(g.contains(identifier, type, SKOS.Concept));
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")));
+            assertTrue(g.contains(identifier, DC.subject, rdf.createIRI("http://example.org/subject/1")));
+            etag1 = res.getEntityTag();
+            assertTrue(etag1.isWeak());
+        }
+
+        // Patch the resource
+        try (final Response res = target(location).request().method("PATCH",
+                    entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(204, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        }
+
+        // Fetch the updated resource
+        try (final Response res = target(location).request().accept("application/n-triples").get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
+            assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, NTRIPLES).forEach(g::add);
+            assertEquals(4L, g.size());
+            assertTrue(g.contains(rdf.createIRI(location), DC.title, rdf.createLiteral("Title")));
+            assertTrue(res.getEntityTag().isWeak());
+            assertNotEquals(etag1, res.getEntityTag());
+        }
+
+        // Test the root container, verifying that the containment triple exists
+        try (final Response res = target().request().get()) {
+            final Graph g = rdf.createGraph();
+            assertEquals(200, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            assertTrue(g.contains(rdf.createIRI(baseURL), LDP.contains, rdf.createIRI(location)));
         }
     }
 
