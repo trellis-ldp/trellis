@@ -258,7 +258,8 @@ public class GetHandler extends BaseLdpHandler {
         // Add instance digests, if Requested and supported
         ofNullable(req.getWantDigest()).map(WantDigest::getAlgorithms).ifPresent(algs ->
                 algs.stream().filter(binaryService.supportedAlgorithms()::contains).findFirst().ifPresent(alg ->
-                    getBinaryDigest(dsid, alg).ifPresent(digest -> builder.header(DIGEST, digest))));
+                    getBinaryDigest(dsid, alg).ifPresent(digest ->
+                        builder.header(DIGEST, alg.toLowerCase() + "=" + digest))));
 
         // Stream the binary content
         final StreamingOutput stream = new StreamingOutput() {
