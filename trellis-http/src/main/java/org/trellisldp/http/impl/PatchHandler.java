@@ -61,7 +61,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
@@ -92,13 +92,14 @@ public class PatchHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param sparqlUpdate the sparql update body
+     * @param auditService an audit service
      * @param resourceService the resource service
      * @param ioService the serialization service
      * @param baseUrl the base URL
      */
-    public PatchHandler(final LdpRequest req, final String sparqlUpdate,
+    public PatchHandler(final LdpRequest req, final String sparqlUpdate, final AuditService auditService,
             final ResourceService resourceService, final IOService ioService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+        super(req, resourceService, auditService, baseUrl);
         this.ioService = ioService;
         this.sparqlUpdate = sparqlUpdate;
     }

@@ -37,7 +37,6 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.ResourceService;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.app.health.RDFConnectionHealthCheck;
 import org.trellisldp.file.FileBinaryService;
@@ -93,7 +92,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final MementoService mementoService = new FileMementoService(mementoLocation);
 
-        final ResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
+        final TriplestoreResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
                 mementoService, notificationService);
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
@@ -114,7 +113,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
 
         // Resource matchers
-        environment.jersey().register(new LdpResource(resourceService, ioService, binaryService, baseUrl));
+        environment.jersey()
+                        .register(new LdpResource(resourceService, ioService, binaryService, resourceService, baseUrl));
 
         // Filters
         environment.jersey().register(new AgentAuthorizationFilter(new SimpleAgent(), emptyList()));

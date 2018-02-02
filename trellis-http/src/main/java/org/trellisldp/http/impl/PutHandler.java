@@ -56,6 +56,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -83,13 +84,15 @@ public class PutHandler extends ContentBearingHandler {
      * @param req the LDP request
      * @param entity the entity
      * @param resourceService the resource service
+     * @param auditService an audit service
      * @param ioService the serialization service
      * @param binaryService the binary service
      * @param baseUrl the base URL
      */
     public PutHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
-            final IOService ioService, final BinaryService binaryService, final String baseUrl) {
-        super(req, entity, resourceService, ioService, binaryService, baseUrl);
+                    final AuditService auditService, final IOService ioService, final BinaryService binaryService,
+                    final String baseUrl) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, baseUrl);
     }
 
     private void checkResourceCache(final String identifier, final Resource res) {
@@ -269,7 +272,7 @@ public class PutHandler extends ContentBearingHandler {
         return ldpResourceTypes(ldpType);
     }
 
-    private static List<Quad> auditQuads(final Resource res, final IRI internalId, final Session session) {
+    private List<Quad> auditQuads(final Resource res, final IRI internalId, final Session session) {
         return nonNull(res) ? audit.update(internalId, session) : audit.creation(internalId, session);
     }
 }

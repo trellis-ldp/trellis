@@ -48,6 +48,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 
 import org.slf4j.Logger;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
@@ -80,10 +81,12 @@ public class PostHandler extends ContentBearingHandler {
      * @param ioService the serialization service
      * @param binaryService the datastream service
      * @param baseUrl the base URL
+     * @param auditService and audit service
      */
     public PostHandler(final LdpRequest req, final String id, final File entity, final ResourceService resourceService,
-            final IOService ioService, final BinaryService binaryService, final String baseUrl) {
-        super(req, entity, resourceService, ioService, binaryService, baseUrl);
+                    final IOService ioService, final BinaryService binaryService, final String baseUrl,
+                    final AuditService auditService) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, baseUrl);
         this.id = id;
     }
 
@@ -157,6 +160,7 @@ public class PostHandler extends ContentBearingHandler {
                     audit.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
                     if (!audit.add(internalId, auditDataset.asDataset()).get()) {
+                        LOGGER.error("Using AuditService {}", audit);
                         LOGGER.error("Unable to act against resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));

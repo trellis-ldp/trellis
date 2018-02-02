@@ -17,6 +17,7 @@ import static java.time.Instant.MAX;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -28,6 +29,7 @@ import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
@@ -37,8 +39,10 @@ import com.codahale.metrics.annotation.Timed;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 
 import javax.annotation.Priority;
 import javax.inject.Singleton;
@@ -61,7 +65,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
-
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
@@ -104,6 +108,8 @@ public class LdpResource implements ContainerRequestFilter {
 
     protected final ResourceService resourceService;
 
+    protected final AuditService auditService;
+
     protected final IOService ioService;
 
     protected final BinaryService binaryService;
@@ -119,11 +125,26 @@ public class LdpResource implements ContainerRequestFilter {
      * @param baseUrl a baseUrl value
      */
     public LdpResource(final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final String baseUrl) {
+                    final BinaryService binaryService, final String baseUrl) {
+        this(resourceService, ioService, binaryService, loadFirst(AuditService.class).orElse(none()), baseUrl);
+    }
+
+    /**
+     * Create an LdpResource.
+     *
+     * @param resourceService the resource service
+     * @param ioService the i/o service
+     * @param binaryService the datastream service
+     * @param baseUrl a baseUrl value
+     * @param auditService an audit service
+     */
+    public LdpResource(final ResourceService resourceService, final IOService ioService,
+            final BinaryService binaryService, final AuditService auditService, final String baseUrl) {
         this.baseUrl = baseUrl;
         this.resourceService = resourceService;
         this.ioService = ioService;
         this.binaryService = binaryService;
+        this.auditService = auditService;
     }
 
     @Override
@@ -290,7 +311,8 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PatchHandler patchHandler = new PatchHandler(req, body, resourceService, ioService, urlBase);
+        final PatchHandler patchHandler = new PatchHandler(req, body, auditService, resourceService, ioService,
+                        urlBase);
 
         return resourceService.get(identifier, MAX).map(patchHandler::updateResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
@@ -308,7 +330,7 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final DeleteHandler deleteHandler = new DeleteHandler(req, resourceService, urlBase);
+        final DeleteHandler deleteHandler = new DeleteHandler(req, resourceService, auditService, urlBase);
 
         return resourceService.get(identifier, MAX).map(deleteHandler::deleteResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
@@ -330,8 +352,8 @@ public class LdpResource implements ContainerRequestFilter {
         final String identifier = ofNullable(req.getSlug())
             .orElseGet(resourceService.getIdentifierSupplier());
 
-        final PostHandler postHandler = new PostHandler(req, identifier, body, resourceService,
-                ioService, binaryService, urlBase);
+        final PostHandler postHandler = new PostHandler(req, identifier, body, resourceService, ioService,
+                        binaryService, urlBase, auditService);
         final String separator = path.isEmpty() ? "" : "/";
 
         // First check if this is a container
@@ -362,10 +384,15 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PutHandler putHandler = new PutHandler(req, body, resourceService, ioService,
-                binaryService, urlBase);
+        final PutHandler putHandler = new PutHandler(req, body, resourceService, auditService, ioService, binaryService,
+                        urlBase);
 
         return resourceService.get(identifier, MAX).filter(res -> !res.isDeleted())
             .map(putHandler::setResource).orElseGet(putHandler::createResource).build();
+    }
+
+    // TODO - JDK9 replace with ServiceLoader::loadFirst
+    private static <T> Optional<T> loadFirst(final Class<T> service) {
+        return of(ServiceLoader.load(service).iterator()).filter(Iterator::hasNext).map(Iterator::next);
     }
 }

@@ -65,7 +65,7 @@ public class OptionsHandler extends BaseLdpHandler {
      * @param baseUrl the base URL
      */
     public OptionsHandler(final LdpRequest req, final ResourceService resourceService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+        super(req, resourceService, null, baseUrl);
     }
 
     /**
