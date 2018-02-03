@@ -120,7 +120,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param identifierService an ID supplier service
      * @param mementoService a service for memento resources
      * @param eventService an event service
-     * @param auditService an audit service
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
             final MementoService mementoService, final EventService eventService) {
