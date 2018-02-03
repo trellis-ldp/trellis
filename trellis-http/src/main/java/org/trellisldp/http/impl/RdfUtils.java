@@ -19,6 +19,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.concat;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -28,6 +29,7 @@ import static org.trellisldp.http.domain.RdfMediaType.MEDIA_TYPES;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -91,6 +93,16 @@ public final class RdfUtils {
     public static Stream<IRI> ldpResourceTypes(final IRI interactionModel) {
         return Stream.of(interactionModel).filter(type -> superClassOf.containsKey(type) || LDP.Resource.equals(type))
             .flatMap(type -> concat(ldpResourceTypes(superClassOf.get(type)), Stream.of(type)));
+    }
+
+    /**
+     * Build a hash value suitable for generating an ETag.
+     * @param identifier the resource identifier
+     * @param modified the last modified value
+     * @return a corresponding hash value
+     */
+    public static String buildEtagHash(final String identifier, final Instant modified) {
+        return md5Hex(modified.toEpochMilli() + "." + modified.getNano() + identifier);
     }
 
     /**

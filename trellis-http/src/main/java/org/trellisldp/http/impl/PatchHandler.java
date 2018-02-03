@@ -25,12 +25,12 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
+import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.RdfUtils.getProfile;
 import static org.trellisldp.http.impl.RdfUtils.getSyntax;
@@ -138,7 +138,7 @@ public class PatchHandler extends BaseLdpHandler {
         checkDeleted(res, identifier);
 
         // Check the cache
-        final EntityTag etag = new EntityTag(md5Hex(res.getModified() + identifier));
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()));
         checkCache(req.getRequest(), res.getModified(), etag);
 
         LOGGER.debug("Updating {} via PATCH", identifier);

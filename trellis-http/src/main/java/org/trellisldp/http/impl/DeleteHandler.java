@@ -17,9 +17,9 @@ import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
+import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
@@ -74,7 +74,7 @@ public class DeleteHandler extends BaseLdpHandler {
         checkDeleted(res, identifier);
 
         // Check the cache
-        final EntityTag etag = new EntityTag(md5Hex(res.getModified() + identifier));
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()));
         checkCache(req.getRequest(), res.getModified(), etag);
 
         LOGGER.debug("Deleting {}", identifier);

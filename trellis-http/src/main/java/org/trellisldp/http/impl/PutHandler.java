@@ -26,11 +26,11 @@ import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
+import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
@@ -102,10 +102,10 @@ public class PutHandler extends ContentBearingHandler {
         if (binaryModification.isPresent() &&
                 !ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType).isPresent()) {
             modified = binaryModification.get();
-            etag = new EntityTag(md5Hex(modified + identifier));
+            etag = new EntityTag(buildEtagHash(identifier, modified));
         } else {
             modified = res.getModified();
-            etag = new EntityTag(md5Hex(modified + identifier), true);
+            etag = new EntityTag(buildEtagHash(identifier, modified), true);
         }
         // Check the cache
         checkCache(req.getRequest(), modified, etag);

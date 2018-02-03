@@ -15,8 +15,8 @@ package org.trellisldp.app;
 
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
-import static java.lang.Thread.sleep;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.Instant.now;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.LINK;
@@ -25,6 +25,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -44,6 +45,7 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.DropwizardTestSupport;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -170,8 +172,9 @@ public class TrellisApplicationTest {
             assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
             etag1 = res.getEntityTag();
             assertFalse(etag1.isWeak());
-            sleep(5);
         }
+
+        meanwhile();
 
         // Fetch the description
         try (final Response res = target(location).request().accept("text/turtle").get()) {
@@ -197,8 +200,9 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
             assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            sleep(5);
         }
+
+        meanwhile();
 
         // Fetch the new description
         try (final Response res = target(location).request().accept("text/turtle").get()) {
@@ -309,8 +313,9 @@ public class TrellisApplicationTest {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
             assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            sleep(5);
         }
+
+        meanwhile();
 
         // Fetch the updated resource
         try (final Response res = target(location).request().accept("application/n-triples").get()) {
@@ -392,8 +397,9 @@ public class TrellisApplicationTest {
             child1 = res.getLocation().toString();
             assertTrue(child1.startsWith(location));
             assertTrue(child1.length() > location.length());
-            sleep(5);
         }
+
+        meanwhile();
 
         // POST an LDP-RS
         try (final Response res = target(location).request().post(entity(content, TEXT_TURTLE))) {
@@ -405,8 +411,9 @@ public class TrellisApplicationTest {
             child2 = res.getLocation().toString();
             assertTrue(child2.startsWith(location));
             assertTrue(child2.length() > location.length());
-            sleep(5);
         }
+
+        meanwhile();
 
         // POST an LDP-RS
         try (final Response res = target(location).request().post(entity(content, TEXT_TURTLE))) {
@@ -418,8 +425,9 @@ public class TrellisApplicationTest {
             child3 = res.getLocation().toString();
             assertTrue(child3.startsWith(location));
             assertTrue(child3.length() > location.length());
-            sleep(5);
         }
+
+        meanwhile();
 
         // Fetch the container
         try (final Response res = target(location).request().get()) {
@@ -452,8 +460,9 @@ public class TrellisApplicationTest {
         // Try fetching the deleted resource
         try (final Response res = target(child3).request().get()) {
             assertEquals(410, res.getStatus());
-            sleep(5);
         }
+
+        meanwhile();
 
         // Fetch the container
         try (final Response res = target(location).request().get()) {
@@ -483,6 +492,19 @@ public class TrellisApplicationTest {
     public void testGetName() {
         final Application<TrellisConfiguration> app = new TrellisApplication();
         assertEquals("Trellis LDP", app.getName());
+    }
+
+    private static Instant meanwhile() {
+        final Instant t1 = now();
+        await().until(() -> isReallyLaterThan(t1));
+        final Instant t2 = now();
+        await().until(() -> isReallyLaterThan(t2));
+        return t2;
+    }
+
+    private static Boolean isReallyLaterThan(final Instant time) {
+        final Instant t = now();
+        return t.isAfter(time) && (t.toEpochMilli() > time.toEpochMilli() || t.getNano() > time.getNano());
     }
 
     private static WebTarget target() {

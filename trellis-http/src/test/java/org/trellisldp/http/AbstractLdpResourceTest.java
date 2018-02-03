@@ -2314,7 +2314,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutIfMatch() {
-        final Response res = target(BINARY_PATH).request().header("If-Match", "\"0ccfe1dcf1d081e016ceaada4c6f00ef\"")
+        final Response res = target(BINARY_PATH).request().header("If-Match", "\"4db2c60044c906361ac212ae8684e8ad\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -2322,7 +2322,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutBadIfMatch() {
-        final Response res = target(BINARY_PATH).request().header("If-Match", "0ccfe1dcf1d081e016ceaada4c6f00ef")
+        final Response res = target(BINARY_PATH).request().header("If-Match", "4db2c60044c906361ac212ae8684e8ad")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
         assertEquals(BAD_REQUEST, res.getStatusInfo());

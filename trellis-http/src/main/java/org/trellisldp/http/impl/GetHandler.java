@@ -34,7 +34,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.lang3.Range.between;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -56,6 +55,7 @@ import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.domain.Prefer.PREFER_RETURN;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.MEDIA_TYPES;
+import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.filterWithLDF;
 import static org.trellisldp.http.impl.RdfUtils.filterWithPrefer;
 import static org.trellisldp.http.impl.RdfUtils.getDefaultProfile;
@@ -184,7 +184,7 @@ public class GetHandler extends BaseLdpHandler {
             final RDFSyntax syntax, final IRI profile) {
 
         // Check for a cache hit
-        final EntityTag etag = new EntityTag(md5Hex(res.getModified() + identifier), true);
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()), true);
         checkCache(req.getRequest(), res.getModified(), etag);
 
         builder.tag(etag);
@@ -240,7 +240,7 @@ public class GetHandler extends BaseLdpHandler {
 
         final Instant mod = res.getBinary().map(Binary::getModified).orElseThrow(() ->
                 new WebApplicationException("Could not access binary metadata for " + res.getIdentifier()));
-        final EntityTag etag = new EntityTag(md5Hex(mod + identifier + "BINARY"));
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier + "BINARY", mod));
         checkCache(req.getRequest(), mod, etag);
 
         // Set last-modified to be the binary's last-modified value

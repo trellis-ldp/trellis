@@ -183,7 +183,7 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time + baseUrl), etag.getValue());
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -248,7 +248,7 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time + baseUrl), etag.getValue());
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -347,7 +347,7 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time + baseUrl), etag.getValue());
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -397,7 +397,7 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time + baseUrl), etag.getValue());
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));

@@ -88,6 +88,7 @@ subprojects {
 
         /* Testing */
         apiguardianVersion = '1.0.0'
+        awaitilityVersion = '3.0.0'
         commonsTextVersion = '1.2'
         jacksonVersion = '2.9.4'
         jerseyVersion = '2.26'
