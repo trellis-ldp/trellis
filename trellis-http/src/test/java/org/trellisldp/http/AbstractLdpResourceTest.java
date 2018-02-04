@@ -837,6 +837,79 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPrefer2() throws IOException {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
+                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                    rdf.createIRI("trellis:data/resource/child1")),
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                    rdf.createIRI("trellis:data/resource/child2")),
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                    rdf.createIRI("trellis:data/resource/child3")),
+                rdf.createQuad(LDP.PreferMembership, identifier, LDP.member,
+                    rdf.createIRI("trellis:data/resource/other")),
+                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
+            .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
+
+        assertEquals(OK, res.getStatusInfo());
+
+        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
+        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
+
+        assertTrue(obj.containsKey("@context"));
+        assertTrue(obj.containsKey("title"));
+        assertFalse(obj.containsKey("mode"));
+        assertFalse(obj.containsKey("created"));
+        assertFalse(obj.containsKey("contains"));
+        assertFalse(obj.containsKey("member"));
+
+        assertEquals("A title", (String) obj.get("title"));
+    }
+
+    @Test
+    public void testPrefer3() throws IOException {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
+                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                    rdf.createIRI("trellis:data/resource/child1")),
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                    rdf.createIRI("trellis:data/resource/child2")),
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                    rdf.createIRI("trellis:data/resource/child3")),
+                rdf.createQuad(LDP.PreferMembership, identifier, LDP.member,
+                    rdf.createIRI("trellis:data/resource/other")),
+                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Prefer", "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
+            .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
+
+        assertEquals(OK, res.getStatusInfo());
+
+        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
+        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
+
+        assertTrue(obj.containsKey("@context"));
+        assertFalse(obj.containsKey("title"));
+        assertFalse(obj.containsKey("mode"));
+        assertFalse(obj.containsKey("created"));
+        assertTrue(obj.containsKey("contains"));
+        assertTrue(obj.containsKey("member"));
+    }
+
+    @Test
     public void testGetJsonCompact() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();

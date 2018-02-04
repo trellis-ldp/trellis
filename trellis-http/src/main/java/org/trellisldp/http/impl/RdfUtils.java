@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * RDF Utility functions.
@@ -114,6 +115,13 @@ public final class RdfUtils {
     public static Predicate<Quad> filterWithPrefer(final Prefer prefer) {
         final Set<String> include = new HashSet<>(DEFAULT_REPRESENTATION);
         ofNullable(prefer).ifPresent(p -> {
+            if (p.getInclude().contains(LDP.PreferMinimalContainer.getIRIString())) {
+                include.remove(LDP.PreferContainment.getIRIString());
+                include.remove(LDP.PreferMembership.getIRIString());
+            }
+            if (p.getOmit().contains(LDP.PreferMinimalContainer.getIRIString())) {
+                include.remove(Trellis.PreferUserManaged.getIRIString());
+            }
             p.getOmit().forEach(include::remove);
             p.getInclude().forEach(include::add);
         });
