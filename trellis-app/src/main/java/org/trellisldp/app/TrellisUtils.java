@@ -70,8 +70,8 @@ import org.trellisldp.kafka.KafkaPublisher;
  */
 final class TrellisUtils {
 
-    private static final String USERNAME = "username";
-    private static final String PASSWORD = "password";
+    private static final String UN_KEY = "username";
+    private static final String PW_KEY = "password";
     private static final Logger LOGGER = getLogger(TrellisUtils.class);
 
     public static Map<String, String> getAssetConfiguration(final TrellisConfiguration config) {
@@ -163,9 +163,9 @@ final class TrellisUtils {
     public static ActiveMQConnectionFactory getJmsFactory(final NotificationsConfiguration config) {
         final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
                 config.getConnectionString());
-        if (config.any().containsKey(PASSWORD) && config.any().containsKey(USERNAME)) {
-            factory.setUserName(config.any().get(USERNAME));
-            factory.setPassword(config.any().get(PASSWORD));
+        if (config.any().containsKey(PW_KEY) && config.any().containsKey(UN_KEY)) {
+            factory.setUserName(config.any().get(UN_KEY));
+            factory.setPassword(config.any().get(PW_KEY));
         }
         return factory;
     }
@@ -174,9 +174,9 @@ final class TrellisUtils {
             throws URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
         final ConnectionFactory factory = new ConnectionFactory();
         factory.setUri(config.getConnectionString());
-        if (config.any().containsKey(PASSWORD) && config.any().containsKey(USERNAME)) {
-            factory.setUsername(config.any().get(USERNAME));
-            factory.setPassword(config.any().get(PASSWORD));
+        if (config.any().containsKey(PW_KEY) && config.any().containsKey(UN_KEY)) {
+            factory.setUsername(config.any().get(UN_KEY));
+            factory.setPassword(config.any().get(PW_KEY));
         }
         return factory;
     }
