@@ -13,13 +13,9 @@
  */
 package org.trellisldp.app.config;
 
-import static java.util.Collections.emptySet;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.Configuration;
-
-import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -43,10 +39,7 @@ public class TrellisConfiguration extends Configuration {
     private CORSConfiguration cors = new CORSConfiguration();
 
     @NotNull
-    private Set<String> whitelist = emptySet();
-
-    @NotNull
-    private Set<String> whitelistDomains = emptySet();
+    private JsonLdConfiguration jsonld = new JsonLdConfiguration();
 
     @NotNull
     private String mementos;
@@ -60,10 +53,6 @@ public class TrellisConfiguration extends Configuration {
     private String baseUrl;
 
     private String resourceLocation;
-
-    private Long profileCacheSize = 100L;
-
-    private Long profileCacheExpireHours = 24L;
 
     /**
      * Get the base URL for the partition.
@@ -246,74 +235,20 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Get the whitelist of custom JSON-LD profiles.
-     * @return the json-ld profile whitelist
+     * Set the json-ld configuration.
+     * @param jsonld the jsond-ld configuration
      */
     @JsonProperty
-    public Set<String> getJsonLdWhitelist() {
-        return whitelist;
+    public void setJsonld(final JsonLdConfiguration jsonld) {
+        this.jsonld = jsonld;
     }
 
     /**
-     * Set the whitelist of custom JSON-LD profiles.
-     * @param whitelist the json-ld profile witelist
+     * Get the namespace filename.
+     * @return the json-ld configuration
      */
     @JsonProperty
-    public void setJsonLdWhitelist(final Set<String> whitelist) {
-        this.whitelist = whitelist;
-    }
-
-    /**
-     * Get the domain whitelist of custom JSON-LD profiles.
-     * @return the json-ld profile domain whitelist
-     */
-    @JsonProperty
-    public Set<String> getJsonLdDomainWhitelist() {
-        return whitelistDomains;
-    }
-
-    /**
-     * Set the domain whitelist of custom JSON-LD profiles.
-     * @param whitelistDomains the json-ld domain profile witelist
-     */
-    @JsonProperty
-    public void setJsonLdDomainWhitelist(final Set<String> whitelistDomains) {
-        this.whitelistDomains = whitelistDomains;
-    }
-
-    /**
-     * Get the JSON-LD profile cache expire time in hours (default=24).
-     * @return the json-ld profile cache expire time in hours
-     */
-    @JsonProperty
-    public Long getJsonLdCacheExpireHours() {
-        return profileCacheExpireHours;
-    }
-
-    /**
-     * Set the JSON-LD profile cache exire time in hours.
-     * @param profileCacheExpireHours the json-ld profile cache expire time in hours.
-     */
-    @JsonProperty
-    public void setJsonLdCacheExpireHours(final Long profileCacheExpireHours) {
-        this.profileCacheExpireHours = profileCacheExpireHours;
-    }
-
-    /**
-     * Get the JSON-LD profile cache size (default=100).
-     * @return the json-ld profile cache size
-     */
-    @JsonProperty
-    public Long getJsonLdCacheSize() {
-        return profileCacheSize;
-    }
-
-    /**
-     * Set the JSON-LD profile cache size.
-     * @param profileCacheSize the size of the json-ld profile cache
-     */
-    @JsonProperty
-    public void setJsonLdCacheSize(final Long profileCacheSize) {
-        this.profileCacheSize = profileCacheSize;
+    public JsonLdConfiguration getJsonld() {
+        return jsonld;
     }
 }

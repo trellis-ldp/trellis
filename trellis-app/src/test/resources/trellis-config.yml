@@ -37,7 +37,10 @@ cors:
     maxAge: 180
 
 # JSON-LD configuration
-jsonLdCacheSize: 10
-jsonLdCacheExpireHours: 24
-jsonLdDomainWhitelist:
-    - https://www.trellisldp.org/
+jsonld:
+    cacheSize: 10
+    cacheExpireHours: 48
+    contextDomainWhitelist:
+        - https://www.trellisldp.org/
+    contextWhitelist: []
+

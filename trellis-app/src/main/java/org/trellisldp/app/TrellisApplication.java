@@ -104,10 +104,10 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         // IO Service
         final CacheService<String, String> profileCache = new TrellisCache<>(newBuilder()
-                .maximumSize(config.getJsonLdCacheSize())
-                .expireAfterAccess(config.getJsonLdCacheExpireHours(), HOURS).build());
+                .maximumSize(config.getJsonld().getCacheSize())
+                .expireAfterAccess(config.getJsonld().getCacheExpireHours(), HOURS).build());
         final IOService ioService = new JenaIOService(namespaceService, TrellisUtils.getAssetConfiguration(config),
-                config.getJsonLdWhitelist(), config.getJsonLdDomainWhitelist(), profileCache);
+                config.getJsonld().getContextWhitelist(), config.getJsonld().getContextDomainWhitelist(), profileCache);
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));

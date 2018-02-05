@@ -42,10 +42,10 @@ public class TrellisConfigurationTest {
 
         assertEquals("Trellis", config.getDefaultName());
         assertEquals((Integer) 86400, config.getCacheMaxAge());
-        assertEquals((Long) 10L, config.getJsonLdCacheSize());
-        assertEquals((Long) 48L, config.getJsonLdCacheExpireHours());
-        assertTrue(config.getJsonLdDomainWhitelist().isEmpty());
-        assertTrue(config.getJsonLdWhitelist().contains("http://example.org/context.json"));
+        assertEquals((Long) 10L, config.getJsonld().getCacheSize());
+        assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours());
+        assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
+        assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
         assertNull(config.getResources());
     }
 

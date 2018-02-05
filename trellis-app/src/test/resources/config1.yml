@@ -44,11 +44,12 @@ assets:
         - "http://example.org/styles1.css"
         - "http://example.org/styles2.css"
 
-jsonLdCacheSize: 10
-jsonLdCacheExpireHours: 48
-jsonLdDomainWhitelist: []
-jsonLdWhitelist:
-    - "http://example.org/context.json"
+jsonld:
+    cacheSize: 10
+    cacheExpireHours: 48
+    contextDomainWhitelist: []
+    contextWhitelist:
+        - "http://example.org/context.json"
 
 cors:
     enabled: true

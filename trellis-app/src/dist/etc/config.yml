@@ -31,9 +31,9 @@ binaries: /var/lib/trellis/binaries
 
 mementos: /var/lib/trellis/mementos
 
-baseUrl: http://localhost:8080/
-
 namespaces: /opt/trellis/etc/namespaces.json
+
+baseUrl: http://localhost:8080/
 
 auth:
     webac:
@@ -55,10 +55,9 @@ cors:
     maxAge: 180
 
 # JSON-LD configuration
-jsonLdCacheSize: 10
-jsonLdCacheExpireHours: 24
-# A whitelist of trusted JSON-LD context locations
-jsonLdWhitelist: []
-# A whitelist of trusted domains for JSON-LD context locations
-jsonLdDomainWhitelist: []
+jsonld:
+    cacheSize: 10
+    cacheExpireHours: 24
+    contextWhitelist: []
+    contextDomainWhitelist: []
 
