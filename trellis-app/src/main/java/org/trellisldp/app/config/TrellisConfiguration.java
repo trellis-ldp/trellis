@@ -59,7 +59,7 @@ public class TrellisConfiguration extends Configuration {
 
     private String baseUrl;
 
-    private RdfConnectionConfiguration rdfConnection;
+    private String resourceLocation;
 
     private Long profileCacheSize = 100L;
 
@@ -157,20 +157,20 @@ public class TrellisConfiguration extends Configuration {
 
     /**
      * Set the RDF Connection configuration.
-     * @param config the RDF Connection configuration
+     * @param config the RDF Connection location
      */
     @JsonProperty
-    public void setRdfstore(final RdfConnectionConfiguration config) {
-        this.rdfConnection = config;
+    public void setResources(final String config) {
+        this.resourceLocation = config;
     }
 
     /**
      * Get the RDF Connection configuration.
-     * @return the RDF Connection configuration
+     * @return the RDF Connection location
      */
     @JsonProperty
-    public RdfConnectionConfiguration getRdfstore() {
-        return rdfConnection;
+    public String getResources() {
+        return resourceLocation;
     }
 
     /**

@@ -31,7 +31,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-import org.trellisldp.app.config.RdfConnectionConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
@@ -92,19 +91,17 @@ public class TrellisUtilsTest {
         assertNotNull(TrellisUtils.getRDFConnection(config));
         assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
 
-        final RdfConnectionConfiguration c = new RdfConnectionConfiguration();
-        c.setLocation("http://localhost/sparql");
-        config.setRdfstore(c);
+        config.setResources("http://localhost/sparql");
 
         assertNotNull(TrellisUtils.getRDFConnection(config));
         assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
 
-        c.setLocation("https://localhost/sparql");
+        config.setResources("https://localhost/sparql");
         assertNotNull(TrellisUtils.getRDFConnection(config));
         assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
 
         final File dir = new File(new File(getClass().getResource("/data").toURI()), "resources");
-        c.setLocation(dir.getAbsolutePath());
+        config.setResources(dir.getAbsolutePath());
         assertNotNull(TrellisUtils.getRDFConnection(config));
         assertFalse(TrellisUtils.getRDFConnection(config).isClosed());
     }

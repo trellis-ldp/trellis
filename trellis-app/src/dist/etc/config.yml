@@ -31,8 +31,7 @@ mementos:
     path: /var/lib/trellis/mementos
 
 # This may refer to a remote Triplestore
-rdfStore:
-    location: /var/lib/trellis/rdf
+resources: /var/lib/trellis/rdf
 
 baseUrl: http://localhost:8080/
 

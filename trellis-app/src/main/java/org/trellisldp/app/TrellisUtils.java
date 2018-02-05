@@ -47,7 +47,6 @@ import org.trellisldp.app.auth.BasicAuthenticator;
 import org.trellisldp.app.auth.JwtAuthenticator;
 import org.trellisldp.app.config.AuthConfiguration;
 import org.trellisldp.app.config.CORSConfiguration;
-import org.trellisldp.app.config.RdfConnectionConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
@@ -106,7 +105,7 @@ final class TrellisUtils {
     }
 
     public static RDFConnection getRDFConnection(final TrellisConfiguration config) {
-        final Optional<String> location = ofNullable(config.getRdfstore()).map(RdfConnectionConfiguration::getLocation);
+        final Optional<String> location = ofNullable(config.getResources());
         if (location.isPresent()) {
             final String loc = location.get();
             if (loc.startsWith("http://") || loc.startsWith("https://")) {
