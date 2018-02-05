@@ -79,22 +79,28 @@ available. Any of the configuration options defined by Dropwizard can be part of
 Trellis defines its own configuration options, including:
 
 ```yaml
-binaries:
-  path: /path/to/binaries
+resources: /path/to/resources
 ```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| path | (none) | The path for storing binaries |
+| resources | (none) | The path for storing resources. If not defined, an in-memory dataset will be used. If this value begins with `http://` or `https://`, a remote triplestore will be used. |
 
 ```yaml
-mementos:
-  path: /path/to/mementos
+binaries: /path/to/binaries
 ```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| path | (none) | The path for storing mementos |
+| binaries | (none) | The path for storing binaries |
+
+```yaml
+mementos: /path/to/mementos
+```
+
+| Name | Default | Description |
+| ---- | ------- | ----------- |
+| mementos | (none) | The path for storing mementos |
 
 ```yaml
 baseUrl: http://localhost:8080/
@@ -105,13 +111,12 @@ baseUrl: http://localhost:8080/
 | baseUrl | (none) | A defined baseUrl for resources in this partition. If not defined, the `Host` request header will be used |
 
 ```yaml
-namespaces:
-    file: /path/to/namespaces.json
+namespaces: /path/to/namespaces.json
 ```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| file | (none) | The path to a JSON file defining namespace prefixes |
+| namespaces | (none) | The path to a JSON file defining namespace prefixes |
 
 ```yaml
 auth:
@@ -176,38 +181,21 @@ cacheMaxAge: 86400
 | cacheMaxAge | 86400 | The value of the `Cache-Control: max-age=` response header |
 
 ```yaml
-jsonLdWhitelist:
-    - "http://example.com/context.json"
+jsonld:
+    contextWhitelist:
+        - "http://example.com/context.json"
+    contextDomainWhitelist:
+        - "http://example.com/"
+    cacheExpireHours: 24
+    cacheSize: 100
 ```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| jsonLdWhitelist | an empty list | a user-supplied whitelist of valid JSON-LD profile values |
-
-```yaml
-jsonLdDomainWhitelist:
-    - "http://example.com/"
-```
-
-| Name | Default | Description |
-| ---- | ------- | ----------- |
-| jsonLdDomainWhitelist | an empty list | a user-supplied whitelist of domains for valid JSON-LD profile values |
-
-```yaml
-jsonLdCacheExpireHours: 24
-```
-
-| Name | Default | Description |
-| ---- | ------- | ----------- |
-| jsonLdCacheExpireHours | 24 | The number of hours that a JSON-LD profile value will be stored in a cache. |
-
-```yaml
-jsonLdCacheSize: 100
-```
-
-| Name | Default | Description |
-| ---- | ------- | ----------- |
-| jsonLdCacheSize | 100 | The number of entries stored in the JSON-LD profile cache. |
+| contextWhitelist | an empty list | a user-supplied whitelist of valid JSON-LD profile values |
+| contextDomainWhitelist | an empty list | a user-supplied whitelist of domains for valid JSON-LD profile values |
+| cacheExpireHours | 24 | The number of hours that a JSON-LD profile value will be stored in a cache. |
+| cacheSize | 100 | The number of entries stored in the JSON-LD profile cache. |
 
 ## HTTP/2
 
