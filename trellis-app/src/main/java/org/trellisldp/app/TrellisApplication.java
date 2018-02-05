@@ -19,6 +19,7 @@ import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
 import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
+import static org.trellisldp.app.TrellisUtils.getEventService;
 import static org.trellisldp.app.TrellisUtils.getRDFConnection;
 import static org.trellisldp.app.TrellisUtils.getWebacConfiguration;
 
@@ -33,6 +34,7 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.agent.SimpleAgent;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
@@ -90,12 +92,14 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final String baseUrl = config.getBaseUrl();
 
+        final EventService notificationService = getEventService(config);
+
         final IdentifierService idService = new UUIDGenerator();
 
         final MementoService mementoService = new FileMementoService(mementoLocation);
 
         final ResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
-                mementoService, null);
+                mementoService, notificationService);
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
 

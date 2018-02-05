@@ -44,6 +44,13 @@ assets:
         - "http://example.org/styles1.css"
         - "http://example.org/styles2.css"
 
+notifications:
+    enabled: false
+    type: NONE
+    topicName: "test"
+    connectionString: example.com:1234
+    some.other.value: foo
+
 jsonld:
     cacheSize: 10
     cacheExpireHours: 48

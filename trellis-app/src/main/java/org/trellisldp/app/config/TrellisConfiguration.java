@@ -42,6 +42,9 @@ public class TrellisConfiguration extends Configuration {
     private JsonLdConfiguration jsonld = new JsonLdConfiguration();
 
     @NotNull
+    private NotificationsConfiguration notifications = new NotificationsConfiguration();
+
+    @NotNull
     private String mementos;
 
     @NotNull
@@ -50,9 +53,9 @@ public class TrellisConfiguration extends Configuration {
     @NotNull
     private String namespaces;
 
-    private String baseUrl;
+    private String baseUrl = null;
 
-    private String resourceLocation;
+    private String resourceLocation = null;
 
     /**
      * Get the base URL for the partition.
@@ -250,5 +253,23 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public JsonLdConfiguration getJsonld() {
         return jsonld;
+    }
+
+    /**
+     * Set the notifications configuration.
+     * @param notifications the notifications configuration
+     */
+    @JsonProperty
+    public void setNotifications(final NotificationsConfiguration notifications) {
+        this.notifications = notifications;
+    }
+
+    /**
+     * Get the notifications configuration.
+     * @return the notifications configuration
+     */
+    @JsonProperty
+    public NotificationsConfiguration getNotifications() {
+        return notifications;
     }
 }

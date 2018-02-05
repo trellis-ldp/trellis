@@ -43,7 +43,7 @@ public class AmqpPublisher implements EventService {
 
     private final String exchangeName;
 
-    private final String queueName;
+    private final String routingKey;
 
     private final Boolean mandatory;
 
@@ -53,29 +53,29 @@ public class AmqpPublisher implements EventService {
      * Create a an AMQP publisher.
      * @param channel the channel
      * @param exchangeName the exchange name
-     * @param queueName the queue name
+     * @param routingKey the routing key
      */
-    public AmqpPublisher(final Channel channel, final String exchangeName, final String queueName) {
-        this(channel, exchangeName, queueName, null, null);
+    public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey) {
+        this(channel, exchangeName, routingKey, null, null);
     }
 
     /**
      * Create a an AMQP publisher.
      * @param channel the channel
      * @param exchangeName the exchange name
-     * @param queueName the queue name
+     * @param routingKey the routing key
      * @param mandatory the mandatory setting
      * @param immediate the immediate setting
      */
-    public AmqpPublisher(final Channel channel, final String exchangeName, final String queueName,
+    public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey,
             final Boolean mandatory, final Boolean immediate) {
         requireNonNull(channel);
         requireNonNull(exchangeName);
-        requireNonNull(queueName);
+        requireNonNull(routingKey);
 
         this.channel = channel;
         this.exchangeName = exchangeName;
-        this.queueName = queueName;
+        this.routingKey = routingKey;
         this.mandatory = ofNullable(mandatory).orElse(true);
         this.immediate = ofNullable(immediate).orElse(false);
     }
@@ -89,7 +89,7 @@ public class AmqpPublisher implements EventService {
 
         service.serialize(event).ifPresent(message -> {
             try {
-                channel.basicPublish(exchangeName, queueName, mandatory, immediate, props, message.getBytes());
+                channel.basicPublish(exchangeName, routingKey, mandatory, immediate, props, message.getBytes());
             } catch (final IOException ex) {
                 LOGGER.error("Error writing to broker: {}", ex.getMessage());
             }

@@ -16,6 +16,7 @@ dependencies {
     compile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     compile group: 'org.apache.jena', name: 'jena-tdb2', version: jenaVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    compile group: 'org.apache.activemq', name: 'activemq-client', version: activeMqVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
     compile project(":trellis-constraint-rules")
@@ -31,6 +32,9 @@ dependencies {
     compile project(":trellis-event-serialization")
     compile project(":trellis-webac")
     compile project(':trellis-triplestore')
+    compile project(':trellis-amqp')
+    compile project(':trellis-jms')
+    compile project(':trellis-kafka')
 
     runtime group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
 

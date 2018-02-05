@@ -62,6 +62,20 @@ public class TrellisConfigurationTest {
     }
 
     @Test
+    public void testConfigurationNotifications() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        assertFalse(config.getNotifications().getEnabled());
+        assertEquals(NotificationsConfiguration.Type.NONE, config.getNotifications().getType());
+        assertEquals("example.com:1234", config.getNotifications().getConnectionString());
+        assertEquals("foo", config.getNotifications().any().get("some.other.value"));
+        assertEquals("test", config.getNotifications().getTopicName());
+
+    }
+
+    @Test
     public void testConfigurationLocations() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")

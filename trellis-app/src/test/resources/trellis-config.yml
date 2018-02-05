@@ -36,6 +36,10 @@ cors:
         - "*"
     maxAge: 180
 
+notifications:
+    enabled: true
+    type: NONE
+
 # JSON-LD configuration
 jsonld:
     cacheSize: 10

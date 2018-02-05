@@ -13,10 +13,15 @@
  */
 package org.trellisldp.app;
 
+import static com.rabbitmq.client.ConnectionFactory.DEFAULT_PASS;
+import static com.rabbitmq.client.ConnectionFactory.DEFAULT_USER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.rabbitmq.client.ConnectionFactory;
 
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.configuration.YamlConfigurationFactory;
@@ -27,11 +32,17 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.trellisldp.api.EventService;
+import org.trellisldp.api.NoopEventService;
+import org.trellisldp.app.config.NotificationsConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
+import org.trellisldp.kafka.KafkaPublisher;
 
 /**
  * @author acoburn
@@ -125,4 +136,154 @@ public class TrellisUtilsTest {
         assertFalse(TrellisUtils.getAuthFilters(config).isPresent());
     }
 
+    @Test
+    public void testEventServiceNone() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.setConnectionString("localhost");
+        c.setEnabled(true);
+        c.setType(NotificationsConfiguration.Type.NONE);
+        config.setNotifications(c);
+        final EventService svc = TrellisUtils.getEventService(config);
+        assertNotNull(svc);
+        assertTrue(svc instanceof NoopEventService);
+    }
+
+    @Test
+    public void testEventServiceAMQP() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.setConnectionString("amqp://localhost:5672");
+        c.setEnabled(true);
+        c.setType(NotificationsConfiguration.Type.AMQP);
+        config.setNotifications(c);
+        final EventService svc = TrellisUtils.getEventService(config);
+        assertNotNull(svc);
+        // There is no AMQP server, so a no-op service is used
+        assertTrue(svc instanceof NoopEventService);
+    }
+
+    @Test
+    public void testEventServiceDisabled() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.set("batch.size", "1000");
+        c.set("retries", "10");
+        c.set("key.serializer", "some.bogus.key.serializer");
+        c.setConnectionString("localhost:9092");
+        c.setEnabled(false);
+        c.setType(NotificationsConfiguration.Type.KAFKA);
+        config.setNotifications(c);
+        final EventService svc = TrellisUtils.getEventService(config);
+        assertNotNull(svc);
+        assertTrue(svc instanceof NoopEventService);
+        assertFalse(svc instanceof KafkaPublisher);
+    }
+
+    @Test
+    public void testEventServiceKafka() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.set("batch.size", "1000");
+        c.set("retries", "10");
+        c.set("key.serializer", "some.bogus.key.serializer");
+        c.setConnectionString("localhost:9092");
+        c.setEnabled(true);
+        c.setType(NotificationsConfiguration.Type.KAFKA);
+        config.setNotifications(c);
+        final EventService svc = TrellisUtils.getEventService(config);
+        assertNotNull(svc);
+        assertTrue(svc instanceof KafkaPublisher);
+    }
+
+    @Test
+    public void testGetKafkaProps() {
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.set("batch.size", "1000");
+        c.set("retries", "10");
+        c.set("some.other", "value");
+        c.set("key.serializer", "some.bogus.key.serializer");
+        c.setConnectionString("localhost:9092");
+        final Properties p = TrellisUtils.getKafkaProperties(c);
+        assertEquals("all", p.getProperty("acks"));
+        assertEquals("value", p.getProperty("some.other"));
+        assertEquals("org.apache.kafka.common.serialization.StringSerializer", p.getProperty("key.serializer"));
+        assertEquals("localhost:9092", p.getProperty("bootstrap.servers"));
+    }
+
+    @Test
+    public void testEventServiceJms() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.setConnectionString("tcp://localhost:61616");
+        c.setEnabled(true);
+        c.setType(NotificationsConfiguration.Type.JMS);
+        config.setNotifications(c);
+        final EventService svc = TrellisUtils.getEventService(config);
+        assertNotNull(svc);
+        // There is no AMQP server, so a no-op service is used
+        assertTrue(svc instanceof NoopEventService);
+    }
+
+    @Test
+    public void testGetJmsFactory() {
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.setConnectionString("localhost:61616");
+
+        final ActiveMQConnectionFactory factory1 = TrellisUtils.getJmsFactory(c);
+        assertNull(factory1.getUserName());
+        assertNull(factory1.getPassword());
+        assertEquals("localhost:61616", factory1.getBrokerURL());
+
+        c.set("password", "pass");
+        final ActiveMQConnectionFactory factory2 = TrellisUtils.getJmsFactory(c);
+        assertNull(factory2.getUserName());
+        assertNull(factory2.getPassword());
+        assertEquals("localhost:61616", factory2.getBrokerURL());
+
+        c.set("username", "user");
+        final ActiveMQConnectionFactory factory3 = TrellisUtils.getJmsFactory(c);
+        assertEquals("user", factory3.getUserName());
+        assertEquals("pass", factory3.getPassword());
+        assertEquals("localhost:61616", factory3.getBrokerURL());
+    }
+
+    @Test
+    public void testGetAmqpFactory() throws Exception {
+        final NotificationsConfiguration c = new NotificationsConfiguration();
+        c.setConnectionString("amqp://localhost:5672");
+        c.setEnabled(true);
+        c.setType(NotificationsConfiguration.Type.AMQP);
+
+        final ConnectionFactory factory1 = TrellisUtils.getAmqpFactory(c);
+        assertEquals(DEFAULT_PASS, factory1.getPassword());
+        assertEquals(DEFAULT_USER, factory1.getUsername());
+
+        c.set("password", "pass");
+
+        final ConnectionFactory factory2 = TrellisUtils.getAmqpFactory(c);
+        assertEquals(DEFAULT_PASS, factory2.getPassword());
+        assertEquals(DEFAULT_USER, factory2.getUsername());
+
+        c.set("username", "user");
+
+        final ConnectionFactory factory3 = TrellisUtils.getAmqpFactory(c);
+        assertEquals("pass", factory3.getPassword());
+        assertEquals("user", factory3.getUsername());
+    }
 }

@@ -54,6 +54,12 @@ cors:
         - "*"
     maxAge: 180
 
+notifications:
+    enabled: false
+    type: JMS
+    topicName: "trellis"
+    connectionString: "tcp://localhost:61616"
+
 # JSON-LD configuration
 jsonld:
     cacheSize: 10
