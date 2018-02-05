@@ -93,9 +93,9 @@ describes the Trellis project in a machine-readable format.
 
 ### Implementations
 
-This repository contains only the core abstractions and interfaces for Trellis along with a number of default service
-implementations. It does not contain an implementation for a persistence layer; however, below is a list of known
-implementations.
+This repository contains the core abstractions and interfaces for Trellis along with a number of default service
+implementations. It contains a [reference implementation](trellis-app) that uses a [persistence layer](trellis-triplestore)
+based on a triplestore or local dataset. In addition, below is a list of other known implementations.
 
  * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A Kafka-based application that uses file-based persistence.
 
