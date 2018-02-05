@@ -49,7 +49,7 @@ public class TrellisConfiguration extends Configuration {
     private Set<String> whitelistDomains = emptySet();
 
     @NotNull
-    private MementoConfiguration mementos;
+    private String mementos;
 
     @NotNull
     private BinaryConfiguration binaries;
@@ -85,19 +85,19 @@ public class TrellisConfiguration extends Configuration {
 
     /**
      * Get the Memento configuration.
-     * @return the Memento configuration
+     * @return the Memento resource location
      */
     @JsonProperty
-    public MementoConfiguration getMementos() {
+    public String getMementos() {
         return mementos;
     }
 
     /**
      * Set the Memento resource configuration.
-     * @param config the Memento resource configuration
+     * @param config the Memento resource location
      */
     @JsonProperty
-    public void setMementos(final MementoConfiguration config) {
+    public void setMementos(final String config) {
         this.mementos = config;
     }
 

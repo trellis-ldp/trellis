@@ -27,8 +27,7 @@ logging:
 binaries:
     path: /var/lib/trellis/binaries
 
-mementos:
-    path: /var/lib/trellis/mementos
+mementos: /var/lib/trellis/mementos
 
 # This may refer to a remote Triplestore
 resources: /var/lib/trellis/rdf

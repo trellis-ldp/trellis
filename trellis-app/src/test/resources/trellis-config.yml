@@ -14,8 +14,7 @@ binaries:
   path: binaries
 
 # Path to mementos
-mementos:
-  path: mementos
+mementos: mementos
 
 # Path to namespace file
 namespaces: namespaces.json

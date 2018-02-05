@@ -14,8 +14,7 @@ binaries:
   levels: 4
   length: 2
 
-mementos:
-  path: /tmp/trellisData/mementos
+mementos: /tmp/trellisData/mementos
 
 baseUrl: http://localhost:8080/
 

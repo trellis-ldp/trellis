@@ -68,7 +68,7 @@ public class TrellisConfigurationTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertEquals("/tmp/trellisData/binaries", config.getBinaries().getPath());
-        assertEquals("/tmp/trellisData/mementos", config.getMementos().getPath());
+        assertEquals("/tmp/trellisData/mementos", config.getMementos());
         assertEquals("http://localhost:8080/", config.getBaseUrl());
         assertEquals((Integer) 4, config.getBinaries().getLevels());
         assertEquals((Integer) 2, config.getBinaries().getLength());

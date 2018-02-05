@@ -85,7 +85,7 @@ public class TrellisApplicationTest {
                 resourceFilePath("trellis-config.yml"),
                 config("server.applicationConnectors[0].port", "0"),
                 config("binaries.path", resourceFilePath("data") + "/binaries"),
-                config("mementos.path", resourceFilePath("data") + "/mementos"),
+                config("mementos", resourceFilePath("data") + "/mementos"),
                 config("namespaces", resourceFilePath("data/namespaces.json")));
 
     private static final NamespaceService nsSvc = new NamespacesJsonContext(resourceFilePath("data/namespaces.json"));

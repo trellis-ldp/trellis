@@ -83,7 +83,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final RDFConnection rdfConnection = getRDFConnection(config);
 
-        final String mementoLocation = config.getMementos().getPath();
+        final String mementoLocation = config.getMementos();
 
         final String baseUrl = config.getBaseUrl();
 
