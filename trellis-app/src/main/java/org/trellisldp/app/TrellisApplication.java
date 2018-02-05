@@ -94,7 +94,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final ResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
                 mementoService, null);
 
-        final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces().getFile());
+        final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
 
         final BinaryService binaryService = new FileBinaryService(config.getBinaries().getPath(),
                 idService.getSupplier("file:", config.getBinaries().getLevels(), config.getBinaries().getLength()));

@@ -19,8 +19,7 @@ mementos:
 
 baseUrl: http://localhost:8080/
 
-namespaces:
-    file: /tmp/trellisData/namespaces.json
+namespaces: /tmp/trellisData/namespaces.json
 
 auth:
     webac:

@@ -31,13 +31,22 @@ public class TrellisConfiguration extends Configuration {
     private Integer cacheMaxAge = 86400;
 
     @NotNull
-    private AuthConfiguration auth = new AuthConfiguration();
-
-    @NotNull
     private String defaultName = "Trellis";
 
     @NotNull
+    private AuthConfiguration auth = new AuthConfiguration();
+
+    @NotNull
     private AssetConfiguration assets = new AssetConfiguration();
+
+    @NotNull
+    private CORSConfiguration cors = new CORSConfiguration();
+
+    @NotNull
+    private Set<String> whitelist = emptySet();
+
+    @NotNull
+    private Set<String> whitelistDomains = emptySet();
 
     @NotNull
     private MementoConfiguration mementos;
@@ -46,16 +55,7 @@ public class TrellisConfiguration extends Configuration {
     private BinaryConfiguration binaries;
 
     @NotNull
-    private CORSConfiguration cors = new CORSConfiguration();
-
-    @NotNull
-    private NamespaceConfiguration namespaces = new NamespaceConfiguration();
-
-    @NotNull
-    private Set<String> whitelist = emptySet();
-
-    @NotNull
-    private Set<String> whitelistDomains = emptySet();
+    private String namespaces;
 
     private String baseUrl;
 
@@ -228,20 +228,20 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Set the namespaces configuration.
-     * @param namespaces the namespaces configuration
+     * Set the namespaces filename.
+     * @param namespaces the namespaces filename
      */
     @JsonProperty
-    public void setNamespaces(final NamespaceConfiguration namespaces) {
+    public void setNamespaces(final String namespaces) {
         this.namespaces = namespaces;
     }
 
     /**
-     * Get the namespace configuration.
-     * @return the namespace configuration
+     * Get the namespace filename.
+     * @return the namespace filename
      */
     @JsonProperty
-    public NamespaceConfiguration getNamespaces() {
+    public String getNamespaces() {
         return namespaces;
     }
 

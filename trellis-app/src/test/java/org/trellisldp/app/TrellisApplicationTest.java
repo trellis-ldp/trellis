@@ -86,7 +86,7 @@ public class TrellisApplicationTest {
                 config("server.applicationConnectors[0].port", "0"),
                 config("binaries.path", resourceFilePath("data") + "/binaries"),
                 config("mementos.path", resourceFilePath("data") + "/mementos"),
-                config("namespaces.file", resourceFilePath("data/namespaces.json")));
+                config("namespaces", resourceFilePath("data/namespaces.json")));
 
     private static final NamespaceService nsSvc = new NamespacesJsonContext(resourceFilePath("data/namespaces.json"));
     private static final IOService ioSvc = new JenaIOService(nsSvc);

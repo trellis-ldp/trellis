@@ -97,7 +97,7 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertEquals("/tmp/trellisData/namespaces.json", config.getNamespaces().getFile());
+        assertEquals("/tmp/trellisData/namespaces.json", config.getNamespaces());
     }
 
     @Test

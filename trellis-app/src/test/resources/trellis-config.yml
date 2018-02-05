@@ -18,8 +18,7 @@ mementos:
   path: mementos
 
 # Path to namespace file
-namespaces:
-    file: namespaces.json
+namespaces: namespaces.json
 
 auth:
     webac:

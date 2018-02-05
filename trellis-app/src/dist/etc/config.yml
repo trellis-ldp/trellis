@@ -35,8 +35,7 @@ resources: /var/lib/trellis/rdf
 
 baseUrl: http://localhost:8080/
 
-namespaces:
-    file: /opt/trellis/etc/namespaces.json
+namespaces: /opt/trellis/etc/namespaces.json
 
 auth:
     webac:
