@@ -10,8 +10,7 @@ logging:
     io.dropwizard: INFO
 
 # Path to binaries
-binaries:
-  path: binaries
+binaries: binaries
 
 # Path to mementos
 mementos: mementos

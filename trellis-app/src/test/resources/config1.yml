@@ -9,10 +9,7 @@ logging:
     org.trellisldp: INFO
     io.dropwizard: INFO
 
-binaries:
-  path: /tmp/trellisData/binaries
-  levels: 4
-  length: 2
+binaries: /tmp/trellisData/binaries
 
 mementos: /tmp/trellisData/mementos
 

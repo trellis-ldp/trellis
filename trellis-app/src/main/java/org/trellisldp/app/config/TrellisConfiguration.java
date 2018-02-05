@@ -52,7 +52,7 @@ public class TrellisConfiguration extends Configuration {
     private String mementos;
 
     @NotNull
-    private BinaryConfiguration binaries;
+    private String binaries;
 
     @NotNull
     private String namespaces;
@@ -106,7 +106,7 @@ public class TrellisConfiguration extends Configuration {
      * @return the binary configuration
      */
     @JsonProperty
-    public BinaryConfiguration getBinaries() {
+    public String getBinaries() {
         return binaries;
     }
 
@@ -115,7 +115,7 @@ public class TrellisConfiguration extends Configuration {
      * @param config the binary configuration
      */
     @JsonProperty
-    public void setBinaries(final BinaryConfiguration config) {
+    public void setBinaries(final String config) {
         this.binaries = config;
     }
 

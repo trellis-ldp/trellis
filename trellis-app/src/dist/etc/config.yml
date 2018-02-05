@@ -24,13 +24,12 @@ logging:
     org.trellisldp: INFO
     io.dropwizard: INFO
 
-binaries:
-    path: /var/lib/trellis/binaries
+# This may refer to a remote Triplestore, e.g. https://example.org/sparql
+resources: /var/lib/trellis/rdf
+
+binaries: /var/lib/trellis/binaries
 
 mementos: /var/lib/trellis/mementos
-
-# This may refer to a remote Triplestore
-resources: /var/lib/trellis/rdf
 
 baseUrl: http://localhost:8080/
 
