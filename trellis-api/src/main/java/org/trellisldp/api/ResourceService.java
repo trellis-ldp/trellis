@@ -41,11 +41,11 @@ import org.apache.commons.rdf.api.Triple;
  *
  * @author acoburn
  */
-public interface ResourceService extends ReplaceService<Resource> {
+public interface ResourceService extends MutableDataService<Resource> {
 
     @Override
-    default Future<Boolean> put(Resource res) {
-        return put(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
+    default Future<Boolean> create(Resource res) {
+        return create(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
     }
 
     /**
@@ -56,7 +56,37 @@ public interface ResourceService extends ReplaceService<Resource> {
      * @param dataset the dataset
      * @return whether the resource was added
      */
-    Future<Boolean> put(IRI identifier, IRI ixnModel, Dataset dataset);
+    Future<Boolean> create(IRI identifier, IRI ixnModel, Dataset dataset);
+
+    @Override
+    default Future<Boolean> replace(Resource res) {
+        return replace(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
+    }
+
+    /**
+     * Replace a resource in the server.
+     *
+     * @param identifier the identifier for the new resource
+     * @param ixnModel the LDP interaction model for this resource
+     * @param dataset the dataset
+     * @return whether the resource was replaced
+     */
+    Future<Boolean> replace(IRI identifier, IRI ixnModel, Dataset dataset);
+
+    @Override
+    default Future<Boolean> delete(Resource res) {
+        return delete(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
+    }
+
+    /**
+     * Delete a resource from the server.
+     *
+     * @param identifier the identifier for the new resource
+     * @param ixnModel the new LDP interaction model for this resource
+     * @param dataset the dataset
+     * @return whether the resource was deleted
+     */
+    Future<Boolean> delete(IRI identifier, IRI ixnModel, Dataset dataset);
 
     /**
      * Get the identifier for the structurally-logical container for the resource.

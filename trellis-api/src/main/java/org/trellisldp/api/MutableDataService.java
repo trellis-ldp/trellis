@@ -23,12 +23,24 @@ import java.util.concurrent.Future;
  *
  * @param <T> the type of resource that can be persisted by this service
  */
-public interface ReplaceService<T> extends RetrievalService<T> {
+public interface MutableDataService<T> extends RetrievalService<T> {
 
     /**
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> put(T resource);
+    Future<Boolean> create(T resource);
+
+    /**
+     * @param resource a resource to persist
+     * @return whether the resource was successfully persisted
+     */
+    Future<Boolean> replace(T resource);
+
+    /**
+     * @param resource a resource to delete
+     * @return whether the resource was successfully deleted
+     */
+    Future<Boolean> delete(T resource);
 
 }

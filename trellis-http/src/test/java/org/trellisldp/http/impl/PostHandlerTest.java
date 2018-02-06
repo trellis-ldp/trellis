@@ -117,7 +117,7 @@ public class PostHandlerTest {
     public void setUp() {
         initMocks(this);
         when(mockBinaryService.getIdentifierSupplier()).thenReturn(() -> "file:" + randomUUID());
-        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
@@ -280,7 +280,7 @@ public class PostHandlerTest {
 
         verify(mockIoService).read(any(InputStream.class), eq(baseUrl + path), eq(TURTLE));
 
-        verify(mockResourceService).put(eq(identifier), eq(LDP.RDFSource), any(Dataset.class));
+        verify(mockResourceService).create(eq(identifier), eq(LDP.RDFSource), any(Dataset.class));
     }
 
     @Test
@@ -307,7 +307,7 @@ public class PostHandlerTest {
         assertTrue(iriArgument.getValue().getIRIString().startsWith("file:"));
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
-        verify(mockResourceService).put(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class));
+        verify(mockResourceService).create(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class));
     }
 
     @Test
@@ -335,7 +335,7 @@ public class PostHandlerTest {
         assertTrue(iriArgument.getValue().getIRIString().startsWith("file:"));
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
-        verify(mockResourceService).put(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class));
+        verify(mockResourceService).create(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class));
     }
 
     @Test
@@ -388,7 +388,7 @@ public class PostHandlerTest {
 
     @Test
     public void testError() throws IOException {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(IRI.class),
+        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(IRI.class),
                     any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockRequest.getContentType()).thenReturn("text/turtle");
 

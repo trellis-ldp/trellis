@@ -192,7 +192,7 @@ public class PatchHandler extends BaseLdpHandler {
             }
 
             // Save new dataset
-            if (resourceService.put(res.getIdentifier(), res.getInteractionModel(), dataset.asDataset()).get()) {
+            if (resourceService.replace(res.getIdentifier(), res.getInteractionModel(), dataset.asDataset()).get()) {
 
                 // Add audit-related triples
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
