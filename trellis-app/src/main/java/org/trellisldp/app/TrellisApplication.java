@@ -19,7 +19,7 @@ import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
 import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
-import static org.trellisldp.app.TrellisUtils.getEventService;
+import static org.trellisldp.app.TrellisUtils.getNotificationService;
 import static org.trellisldp.app.TrellisUtils.getRDFConnection;
 import static org.trellisldp.app.TrellisUtils.getWebacConfiguration;
 
@@ -27,8 +27,6 @@ import io.dropwizard.Application;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-
-import java.io.IOException;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.agent.SimpleAgent;
@@ -84,15 +82,15 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     @Override
     public void run(final TrellisConfiguration config,
-                    final Environment environment) throws IOException {
+                    final Environment environment) throws Exception {
+
+        final EventService notificationService = getNotificationService(config.getNotifications(), environment);
 
         final RDFConnection rdfConnection = getRDFConnection(config);
 
         final String mementoLocation = config.getMementos();
 
         final String baseUrl = config.getBaseUrl();
-
-        final EventService notificationService = getEventService(config);
 
         final IdentifierService idService = new UUIDGenerator();
 

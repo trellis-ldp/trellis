@@ -8,6 +8,7 @@ mainClassName = 'org.trellisldp.app.TrellisApplication'
 dependencies {
     compile group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
     compile group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
+    compile group: 'javax.jms', name: 'javax.jms-api', version: jmsApiVersion
     compile group: 'io.dropwizard', name: 'dropwizard-auth', version: dropwizardVersion
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'io.dropwizard', name: 'dropwizard-metrics', version: dropwizardVersion

@@ -30,7 +30,7 @@ public class NotificationsConfiguration {
     }
 
     private String topic = "trellis";
-    private Boolean enabled = true;
+    private Boolean enabled = false;
     private Type type = Type.NONE;
     private String connectionString;
     private Map<String, String> other = new HashMap<>();
