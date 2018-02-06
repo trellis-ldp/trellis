@@ -47,6 +47,8 @@ public class TrellisConfigurationTest {
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
         assertNull(config.getResources());
+        assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
+        assertEquals((Integer) 1, config.getBinaryHierarchyLength());
     }
 
 

@@ -58,9 +58,6 @@ import org.trellisldp.webac.WebACService;
  */
 public class TrellisApplication extends Application<TrellisConfiguration> {
 
-    private static final Integer BINARY_HIERARCHY_LENGTH = 2;
-    private static final Integer BINARY_HIERARCHY_LEVELS = 3;
-
     /**
      * The main entry point.
      * @param args the argument list
@@ -102,7 +99,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
 
         final BinaryService binaryService = new FileBinaryService(config.getBinaries(),
-                idService.getSupplier("file:", BINARY_HIERARCHY_LEVELS, BINARY_HIERARCHY_LENGTH));
+                idService.getSupplier("file:", config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength()));
 
         // IO Service
         final CacheService<String, String> profileCache = new TrellisCache<>(newBuilder()
