@@ -27,6 +27,7 @@ import static org.trellisldp.vocabulary.AS.Create;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.PROV.Activity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
@@ -77,6 +78,17 @@ public class EventSerializerTest {
         final Optional<String> json = svc.serialize(mockEvent);
         assertTrue(json.isPresent());
         assertTrue(json.get().contains("\"inbox\":\"info:ldn/inbox\""));
+    }
+
+    @Test
+    public void testError() {
+        when(mockEvent.getIdentifier()).thenAnswer(inv -> {
+            sneakyJsonException();
+            return rdf.createIRI("info:event/12456");
+        });
+
+        final Optional<String> json = svc.serialize(mockEvent);
+        assertFalse(json.isPresent());
     }
 
     @Test
@@ -143,5 +155,14 @@ public class EventSerializerTest {
 
         assertTrue(map.get("id").equals("info:event/12345"));
         assertTrue(map.get("published").equals(time.toString()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> void sneakyThrow(final Throwable e) throws T {
+        throw (T) e;
+    }
+
+    private static void sneakyJsonException() {
+        sneakyThrow(new JsonProcessingException("expected"){});
     }
 }
