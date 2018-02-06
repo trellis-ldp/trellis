@@ -98,7 +98,7 @@ public class DeleteHandler extends BaseLdpHandler {
             }
 
             // delete the resource
-            if (resourceService.put(res.getIdentifier(), LDP.Resource, dataset.asDataset()).get()) {
+            if (resourceService.delete(res.getIdentifier(), LDP.Resource, dataset.asDataset()).get()) {
 
                 // Add the audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {

@@ -110,7 +110,7 @@ public class DeleteHandlerTest {
         when(mockResourceService.skolemize(eq(PROV.Activity))).thenReturn(PROV.Activity);
         when(mockResourceService.skolemize(eq(Trellis.AnonymousAgent))).thenReturn(Trellis.AnonymousAgent);
         when(mockResourceService.skolemize(eq(date))).thenReturn(date);
-        when(mockResourceService.put(eq(iri), any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.create(eq(iri), any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
 
         when(mockLdpRequest.getSession()).thenReturn(mockSession);
         when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);
@@ -155,7 +155,7 @@ public class DeleteHandlerTest {
 
     @Test
     public void testDeleteError() {
-        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
 

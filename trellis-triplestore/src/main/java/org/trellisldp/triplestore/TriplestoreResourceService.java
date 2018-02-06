@@ -27,7 +27,6 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Stream.builder;
 import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.graph.NodeFactory.createURI;
-import static org.apache.jena.graph.Triple.create;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
@@ -133,55 +132,68 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> put(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
-        return supplyAsync(() -> {
-            final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
-            final Instant eventTime = now();
+    public Future<Boolean> create(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
+        LOGGER.debug("Creating: {}", identifier);
+        return supplyAsync(() -> createOrReplace(identifier, ixnModel, dataset, OperationType.CREATE));
+    }
 
+    @Override
+    public Future<Boolean> delete(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
+        return supplyAsync(() -> {      
+            LOGGER.debug("Deleting: {}", identifier);
+            final Instant eventTime = now();
             // Set the LDP type
             dataset.remove(of(PreferServerManaged), identifier, RDF.type, null);
-            if (isDelete) {
-                LOGGER.debug("Deleting: {}", identifier);
-                dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
-                dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
-            } else {
-                LOGGER.debug("Updating: {}", identifier);
-                dataset.add(PreferServerManaged, identifier, RDF.type, ixnModel);
-                // Relocate some user-managed triples into the server-managed graph
-                if (LDP.DirectContainer.equals(ixnModel) || LDP.IndirectContainer.equals(ixnModel)) {
-                    dataset.getGraph(PreferUserManaged).ifPresent(g -> {
-                        g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t ->
-                                dataset.add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject()));
-                        g.stream(identifier, LDP.hasMemberRelation, null).findFirst().ifPresent(t ->
-                                dataset.add(PreferServerManaged, identifier, LDP.hasMemberRelation, t.getObject()));
-                        g.stream(identifier, LDP.isMemberOfRelation, null).findFirst().ifPresent(t ->
-                                dataset.add(PreferServerManaged, identifier, LDP.isMemberOfRelation, t.getObject()));
-                        dataset.add(PreferServerManaged, identifier, LDP.insertedContentRelation,
-                                g.stream(identifier, LDP.insertedContentRelation, null).map(Triple::getObject)
-                                    .findFirst().orElse(LDP.MemberSubject));
-                    });
-                }
-                // Set the parent relationship
-                getContainer(identifier).ifPresent(parent ->
-                        dataset.add(PreferServerManaged, identifier, DC.isPartOf, parent));
-
-            }
-            final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
-
-            try {
-                rdfConnection.update(buildUpdateRequest(identifier, time, dataset));
-                emitEvents(identifier, time, dataset);
-                if (!isDelete) {
-                    mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
-                                svc.put(identifier, eventTime, res.stream())));
-                }
-
-                return true;
-            } catch (final Exception ex) {
-                LOGGER.error("Could not update data: {}", ex.getMessage());
-            }
-            return false;
+            dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
+            dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
+            return storeAndNotify(identifier, dataset, eventTime, OperationType.DELETE);
         });
+    }
+
+    @Override
+    public Future<Boolean> replace(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
+        LOGGER.debug("Updating: {}", identifier);
+        return supplyAsync(() -> createOrReplace(identifier, ixnModel, dataset, OperationType.REPLACE));
+    }
+
+    private Boolean createOrReplace(final IRI identifier, final IRI ixnModel, final Dataset dataset, final OperationType type) {
+        final Instant eventTime = now();
+
+        // Set the LDP type
+        dataset.remove(of(PreferServerManaged), identifier, RDF.type, null);
+        dataset.add(PreferServerManaged, identifier, RDF.type, ixnModel);
+
+        // Relocate some user-managed triples into the server-managed graph
+        if (LDP.DirectContainer.equals(ixnModel) || LDP.IndirectContainer.equals(ixnModel)) {
+            dataset.getGraph(PreferUserManaged).ifPresent(g -> {
+                g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t -> dataset
+                                .add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject()));
+                g.stream(identifier, LDP.hasMemberRelation, null).findFirst().ifPresent(t -> dataset
+                                .add(PreferServerManaged, identifier, LDP.hasMemberRelation, t.getObject()));
+                g.stream(identifier, LDP.isMemberOfRelation, null).findFirst().ifPresent(t -> dataset
+                                .add(PreferServerManaged, identifier, LDP.isMemberOfRelation, t.getObject()));
+                dataset.add(PreferServerManaged, identifier, LDP.insertedContentRelation,
+                                g.stream(identifier, LDP.insertedContentRelation, null).map(Triple::getObject)
+                                                .findFirst().orElse(LDP.MemberSubject));
+            });
+        }
+        // Set the parent relationship
+        getContainer(identifier).ifPresent(parent -> dataset.add(PreferServerManaged, identifier, DC.isPartOf, parent));
+        mementoService.ifPresent(svc -> get(identifier).ifPresent(res -> svc.put(identifier, eventTime, res.stream())));
+        return storeAndNotify(identifier, dataset, eventTime, type);
+    }
+
+    private Boolean storeAndNotify(final IRI identifier, final Dataset dataset, final Instant eventTime,
+                    final OperationType type) {
+        final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
+        try {
+            rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
+            emitEvents(identifier, time, dataset);
+            return true;
+        } catch (final Exception ex) {
+            LOGGER.error("Could not update data: {}", ex.getMessage());
+        }
+        return false;
     }
 
     @Override
@@ -248,12 +260,12 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         q.addResultVar(OBJECT);
 
         final ElementPathBlock epb1 = new ElementPathBlock();
-        epb1.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(RDF.type), PREDICATE));
-        epb1.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(DC.modified), OBJECT));
+        epb1.addTriple(triple(rdf.asJenaNode(parent), rdf.asJenaNode(RDF.type), PREDICATE));
+        epb1.addTriple(triple(rdf.asJenaNode(parent), rdf.asJenaNode(DC.modified), OBJECT));
 
         final ElementPathBlock epb2 = new ElementPathBlock();
-        epb2.addTriple(create(rdf.asJenaNode(parent), rdf.asJenaNode(LDP.membershipResource), SUBJECT));
-        epb2.addTriple(create(SUBJECT, rdf.asJenaNode(DC.modified), memberDate));
+        epb2.addTriple(triple(rdf.asJenaNode(parent), rdf.asJenaNode(LDP.membershipResource), SUBJECT));
+        epb2.addTriple(triple(SUBJECT, rdf.asJenaNode(DC.modified), memberDate));
 
         final ElementGroup eg = new ElementGroup();
         eg.addElement(epb1);
@@ -297,18 +309,18 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private Update getParentUpdateModificationRequest(final IRI identifier, final Literal time) {
         final UpdateDeleteInsert modify = new UpdateDeleteInsert();
         modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-        modify.getDeleteAcc().addTriple(create(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
-        modify.getInsertAcc().addTriple(create(PARENT, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+        modify.getDeleteAcc().addTriple(triple(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
+        modify.getInsertAcc().addTriple(triple(PARENT, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
         final ElementGroup eg = new ElementGroup();
         final ElementPathBlock epb1 = new ElementPathBlock();
-        epb1.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
-        epb1.addTriple(create(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
+        epb1.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
+        epb1.addTriple(triple(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
         eg.addElement(epb1);
         final ElementPathBlock epb2 = new ElementPathBlock();
-        epb2.addTriple(create(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.RDFSource)));
+        epb2.addTriple(triple(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.RDFSource)));
         eg.addElement(new ElementMinus(epb2));
         final ElementPathBlock epb3 = new ElementPathBlock();
-        epb3.addTriple(create(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
+        epb3.addTriple(triple(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
         eg.addElement(new ElementMinus(epb3));
         modify.setElement(eg);
         return modify;
@@ -332,13 +344,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private Update getMemberUpdateModificationRequest(final IRI identifier, final Literal time) {
         final UpdateDeleteInsert modify = new UpdateDeleteInsert();
         modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-        modify.getDeleteAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
-        modify.getInsertAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+        modify.getDeleteAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+        modify.getInsertAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
         final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
-        epb.addTriple(create(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
-        epb.addTriple(create(PARENT, rdf.asJenaNode(LDP.hasMemberRelation), ANY));
-        epb.addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+        epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
+        epb.addTriple(triple(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
+        epb.addTriple(triple(PARENT, rdf.asJenaNode(LDP.hasMemberRelation), ANY));
+        epb.addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
         modify.setElement(epb);
         return modify;
     }
@@ -349,6 +361,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     private Node getAuditIRI(final IRI identifier) {
         return createURI(identifier.getIRIString() + "?ext=audit");
+    }
+    
+    private static enum OperationType{
+        DELETE, CREATE, REPLACE
     }
 
     /**
@@ -379,15 +395,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * }
      * </code></pre></p>
      */
-    private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset) {
-        final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
-        final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
+    private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset, OperationType type) {
 
         // Set the time
         dataset.add(PreferServerManaged, identifier, DC.modified, time);
 
         final UpdateRequest req = new UpdateRequest();
-        if (isDelete) {
+        if (type == OperationType.DELETE) {
             // Update the parent container's modified date
             req.add(getParentUpdateModificationRequest(identifier, time));
 
@@ -408,7 +422,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(rdf.asJenaNode(PreferServerManaged),
                                 rdf.asJenaNode(identifier), PREDICATE, OBJECT)))));
 
-        if (isDelete) {
+        if (type == OperationType.DELETE) {
             final QuadDataAcc sink = new QuadDataAcc();
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
@@ -428,24 +442,24 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             req.add(new UpdateDataInsert(sink));
         }
 
-        if (isCreate) {
+        if (type == OperationType.CREATE) {
             // Update the parent's modification date
             req.add(getParentUpdateModificationRequest(identifier, time));
 
             // Likewise update the member resource.
             req.add(getMemberUpdateModificationRequest(identifier, time));
 
-        } else if (!isDelete) {
+        } else if (!(type == OperationType.DELETE)) {
             // Indirect containers member resources are _always_ updated.
             final UpdateDeleteInsert modify = new UpdateDeleteInsert();
             modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-            modify.getDeleteAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
-            modify.getInsertAcc().addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+            modify.getDeleteAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+            modify.getInsertAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
             final ElementPathBlock epb = new ElementPathBlock();
-            epb.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), MODIFIED));
-            epb.addTriple(create(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
-            epb.addTriple(create(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
-            epb.addTriple(create(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+            epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), MODIFIED));
+            epb.addTriple(triple(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
+            epb.addTriple(triple(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
+            epb.addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
             modify.setElement(epb);
             req.add(modify);
         }
@@ -474,7 +488,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         q.addResultVar(OBJECT);
 
         final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(RDF.type), OBJECT));
+        epb.addTriple(triple(SUBJECT, rdf.asJenaNode(RDF.type), OBJECT));
 
         final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(PreferServerManaged), epb);
 
@@ -522,7 +536,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         q.addResultVar(OBJECT);
 
         final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(rdf.asJenaNode(root), rdf.asJenaNode(RDF.type), OBJECT));
+        epb.addTriple(triple(rdf.asJenaNode(root), rdf.asJenaNode(RDF.type), OBJECT));
 
         final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(PreferServerManaged), epb);
 
@@ -539,20 +553,20 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             final UpdateRequest update = new UpdateRequest();
 
             final QuadDataAcc sink = new QuadDataAcc();
-            sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
+            sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), triple(rdf.asJenaNode(root),
                             rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.BasicContainer))));
-            sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), create(rdf.asJenaNode(root),
+            sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), triple(rdf.asJenaNode(root),
                             rdf.asJenaNode(DC.modified), rdf.asJenaNode(time))));
 
-            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Read))));
-            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Write))));
-            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Control))));
-            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.agentClass),
+            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.agentClass),
                             rdf.asJenaNode(FOAF.Agent))));
-            sink.addQuad(new Quad(getAclIRI(root), create(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.accessTo),
+            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.accessTo),
                             rdf.asJenaNode(root))));
 
             update.add(new UpdateDataInsert(sink));
@@ -608,5 +622,18 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             dataset.stream().map(rdf::asJenaQuad).forEach(dsg::add);
         }
         return org.apache.jena.query.DatasetFactory.wrap(dsg);
+    }
+    
+    /**
+     * Alias{@link org.apache.jena.graph.Triple#create(Node, Node, Node)} to
+     * avoid collision with {@link ResourceService#create(IRI, IRI, Dataset)}.
+     * 
+     * @param subj the subject
+     * @param pred the predicate
+     * @param obj the object
+     * @return a {@link org.apache.jena.graph.Triple}
+     */
+    private static org.apache.jena.graph.Triple triple(Node subj, Node pred, Node obj) {
+        return org.apache.jena.graph.Triple.create(subj, pred, obj);
     }
 }

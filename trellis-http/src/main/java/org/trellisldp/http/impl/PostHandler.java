@@ -153,7 +153,7 @@ public class PostHandler extends ContentBearingHandler {
                 checkConstraint(dataset, PreferUserManaged, ldpType, TRELLIS_DATA_PREFIX, rdfSyntax.orElse(TURTLE));
             }
 
-            if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
+            if (resourceService.create(internalId, ldpType, dataset.asDataset()).get()) {
 
                 // Add Audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {

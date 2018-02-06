@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.EntityTag;
@@ -236,8 +237,11 @@ public class PutHandler extends ContentBearingHandler {
                         .forEachOrdered(dataset::add);
                 }
             });
-
-            if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
+            // TODO is this the best we can do? what concurrency errors are lurking?
+            Future<Boolean> success = resourceService.get(internalId).isPresent()
+                            ? resourceService.replace(internalId, ldpType, dataset.asDataset())
+                            : resourceService.create(internalId, ldpType, dataset.asDataset());
+            if (success.get()) {
                 // Add audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
