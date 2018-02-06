@@ -15,13 +15,18 @@ package org.trellisldp.namespaces;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.SecureRandom;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -36,6 +41,11 @@ public class NamespacesJsonContextTest {
     private static final String JSONLD = "http://www.w3.org/ns/json-ld#";
     private static final String LDP = "http://www.w3.org/ns/ldp#";
 
+    @AfterAll
+    public static void cleanUp() throws IOException {
+        final File readonly = new File(NamespacesJsonContext.class.getResource("/readonly.json").getFile());
+        readonly.setWritable(true);
+    }
 
     @Test
     public void testReadFromJson() {
@@ -44,6 +54,21 @@ public class NamespacesJsonContextTest {
         assertEquals(2, svc.getNamespaces().size());
         assertEquals(LDP, svc.getNamespace("ldp").get());
         assertEquals("ldp", svc.getPrefix(LDP).get());
+    }
+
+    @Test
+    public void testReadError() {
+        final URL res = NamespacesJsonContext.class.getResource("/thisIsNot.json");
+        assertThrows(UncheckedIOException.class, () -> new NamespacesJsonContext(res.getPath()));
+    }
+
+    @Test
+    public void testWriteError() throws Exception {
+        final URL res = NamespacesJsonContext.class.getResource("/readonly.json");
+        final NamespacesJsonContext svc = new NamespacesJsonContext(res.getPath());
+        final File file = new File(res.toURI());
+        assumeTrue(file.setWritable(false));
+        assertThrows(UncheckedIOException.class, () -> svc.setPrefix("ex", "http://example.com/"));
     }
 
     @Test
