@@ -194,18 +194,16 @@ final class TrellisUtils {
             final Environment environment) {
         LOGGER.info("Connecting to Kafka broker at {}", config.getConnectionString());
         final KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getKafkaProperties(config));
-        final EventService svc = new KafkaPublisher(kafkaProducer, config.getTopicName());
         environment.lifecycle().manage(new AutoCloseableManager(kafkaProducer));
-        return svc;
+        return new KafkaPublisher(kafkaProducer, config.getTopicName());
     }
 
     private static EventService buildJmsPublisher(final NotificationsConfiguration config,
             final Environment environment) throws JMSException {
         LOGGER.info("Connecting to JMS broker at {}", config.getConnectionString());
         final Connection jmsConnection = getJmsFactory(config).createConnection();
-        final EventService svc = new JmsPublisher(jmsConnection, config.getTopicName());
         environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
-        return svc;
+        return new JmsPublisher(jmsConnection, config.getTopicName());
     }
 
     private static EventService buildAmqpPublisher(final NotificationsConfiguration config,
