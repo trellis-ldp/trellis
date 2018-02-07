@@ -93,8 +93,8 @@ public class LdpConstraints implements ConstraintService {
 
     // Properties that need to be used with objects that are IRIs
     private static final Set<IRI> propertiesWithUriRange = unmodifiableSet(Stream.of(
-                LDP.membershipResource, LDP.hasMemberRelation, LDP.inbox, LDP.insertedContentRelation,
-                OA.annotationService).collect(toSet()));
+                LDP.membershipResource, LDP.hasMemberRelation, LDP.isMemberOfRelation, LDP.inbox,
+                LDP.insertedContentRelation, OA.annotationService).collect(toSet()));
 
     // Properties that cannot be used as dynamic Membership properties
     private static final Set<IRI> restrictedMemberProperties = unmodifiableSet(Stream.of(
