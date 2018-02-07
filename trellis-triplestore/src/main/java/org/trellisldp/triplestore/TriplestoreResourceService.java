@@ -611,9 +611,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> add(final IRI id, final Dataset quads) {
+    public Future<Boolean> add(final IRI id, final Dataset dataset) {
         return supplyAsync(() -> {
-            executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(quads)));
+            executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(dataset)));
             return true;
         });
     }

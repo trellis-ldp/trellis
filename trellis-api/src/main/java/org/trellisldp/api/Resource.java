@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
@@ -99,6 +100,15 @@ public interface Resource {
      * @return the RDF quads
      */
     Stream<? extends Quad> stream();
+
+    /**
+     * Retrieve the RDF Quads for a resource.
+     *
+     * @return the RDF quads
+     */
+    default Dataset dataset() {
+        return stream().collect(RDFUtils.toDataset().concurrent());
+    }
 
     /**
      * Retrieve the RDF Triples for a given named graph.
