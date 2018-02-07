@@ -489,6 +489,216 @@ public class TrellisApplicationTest {
     }
 
     @Test
+    public void testPostDirectContainer() throws Exception {
+        final String location, member, child1, child2, child3;
+        final EntityTag etag1, etag2, etag3;
+
+        final String memberContent = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+            + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+            + "<> skos:prefLabel \"Member Resource\"@eng ; "
+            + "   dc:description \"This is a simple member resource for testing.\"@eng .";
+
+        // POST a member resource
+        try (final Response res = target().request().post(entity(memberContent, TEXT_TURTLE))) {
+            assertEquals(201, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            member = res.getLocation().toString();
+            assertTrue(member.startsWith(baseURL));
+            assertTrue(member.length() > baseURL.length());
+        }
+
+        // Fetch the new resource
+        try (final Response res = target(member).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            assertEquals(2L, g.size());
+            final IRI identifier = rdf.createIRI(member);
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Member Resource", "eng")));
+            assertTrue(g.contains(identifier, DC.description, null));
+            etag1 = res.getEntityTag();
+            assertTrue(etag1.isWeak());
+        }
+
+        final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+            + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+            + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+            + "<> a skos:Concept; "
+            + "    skos:prefLabel \"Direct Container\"@eng ; "
+            + "    ldp:membershipResource <" + member + "> ; "
+            + "    ldp:hasMemberRelation ldp:member ; "
+            + "    dc:description \"This is a simple Basic Container for testing.\"@eng .";
+
+
+        // POST an LDP-DC
+        try (final Response res = target().request()
+                .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
+                .post(entity(content, TEXT_TURTLE))) {
+            assertEquals(201, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
+
+            location = res.getLocation().toString();
+            assertTrue(location.startsWith(baseURL));
+            assertTrue(location.length() > baseURL.length());
+        }
+
+        // Fetch the new resource
+        try (final Response res = target(location).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            assertEquals(5L, g.size());
+            final IRI identifier = rdf.createIRI(location);
+            assertTrue(g.contains(identifier, type, SKOS.Concept));
+            assertTrue(g.contains(identifier, LDP.hasMemberRelation, LDP.member));
+            assertTrue(g.contains(identifier, LDP.membershipResource, rdf.createIRI(member)));
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Direct Container", "eng")));
+            assertTrue(g.contains(identifier, DC.description, null));
+            assertTrue(etag1.isWeak());
+        }
+
+        meanwhile();
+
+        final String childContent = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+            + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+            + "<>  skos:prefLabel \"Child Resource\"@eng ; "
+            + "    dc:description \"This is a simple child resource for testing.\"@eng .";
+
+        // POST an LDP-RS child
+        try (final Response res = target(location).request().post(entity(childContent, TEXT_TURTLE))) {
+            assertEquals(201, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            child1 = res.getLocation().toString();
+            assertTrue(child1.startsWith(location));
+            assertTrue(child1.length() > location.length());
+        }
+
+        // POST an LDP-RS
+        try (final Response res = target(location).request().post(entity(childContent, TEXT_TURTLE))) {
+            assertEquals(201, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            child2 = res.getLocation().toString();
+            assertTrue(child2.startsWith(location));
+            assertTrue(child2.length() > location.length());
+        }
+
+        // POST an LDP-RS
+        try (final Response res = target(location).request().post(entity(childContent, TEXT_TURTLE))) {
+            assertEquals(201, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            child3 = res.getLocation().toString();
+            assertTrue(child3.startsWith(location));
+            assertTrue(child3.length() > location.length());
+        }
+
+        meanwhile();
+
+        // Fetch the container
+        try (final Response res = target(location).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            assertEquals(8L, g.size());
+            final IRI identifier = rdf.createIRI(location);
+            assertTrue(g.contains(identifier, type, SKOS.Concept));
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Direct Container", "eng")));
+            assertTrue(g.contains(identifier, DC.description, null));
+            assertTrue(g.contains(identifier, LDP.membershipResource, rdf.createIRI(member)));
+            assertTrue(g.contains(identifier, LDP.hasMemberRelation, LDP.member));
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
+        }
+
+        // Fetch the member resource
+        try (final Response res = target(member).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            assertEquals(5L, g.size());
+            etag2 = res.getEntityTag();
+            final IRI identifier = rdf.createIRI(member);
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Member Resource", "eng")));
+            assertTrue(g.contains(identifier, DC.description, null));
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child1)));
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2)));
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child3)));
+            assertTrue(etag2.isWeak());
+            assertNotEquals(etag1, etag2);
+        }
+
+
+        // Delete one of the child resources
+        try (final Response res = target(child3).request().delete()) {
+            assertEquals(204, res.getStatus());
+        }
+
+        // Try fetching the deleted resource
+        try (final Response res = target(child3).request().get()) {
+            assertEquals(410, res.getStatus());
+        }
+
+        meanwhile();
+
+        // Fetch the member resource
+        try (final Response res = target(member).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            assertEquals(4L, g.size());
+            final IRI identifier = rdf.createIRI(member);
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Member Resource", "eng")));
+            assertTrue(g.contains(identifier, DC.description, null));
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child1)));
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2)));
+            etag3 = res.getEntityTag();
+            assertTrue(etag3.isWeak());
+            assertNotEquals(etag1, etag3);
+            assertNotEquals(etag2, etag3);
+        }
+    }
+
+
+    @Test
     public void testGetName() {
         final Application<TrellisConfiguration> app = new TrellisApplication();
         assertEquals("Trellis LDP", app.getName());
