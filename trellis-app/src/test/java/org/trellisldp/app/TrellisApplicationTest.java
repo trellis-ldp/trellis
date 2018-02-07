@@ -695,6 +695,39 @@ public class TrellisApplicationTest {
             assertNotEquals(etag1, etag3);
             assertNotEquals(etag2, etag3);
         }
+
+        final String updateContent
+            = "PREFIX dc: <http://purl.org/dc/terms/>\n"
+            + "PREFIX ldp: <http://www.w3.org/ns/ldp#>\n\n"
+            + "DELETE WHERE { <> ldp:hasMemberRelation ?o };"
+            + "INSERT { <> ldp:hasMemberRelation dc:relation } WHERE {}";
+
+        // Patch the direct container
+        try (final Response res = target(location).request()
+                .method("PATCH", entity(updateContent, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(204, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
+        }
+
+        // Fetch the member resource
+        try (final Response res = target(member).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            final IRI identifier = rdf.createIRI(member);
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Member Resource", "eng")));
+            assertTrue(g.contains(identifier, DC.description, null));
+            assertTrue(g.contains(identifier, DC.relation, rdf.createIRI(child1)));
+            assertTrue(g.contains(identifier, DC.relation, rdf.createIRI(child2)));
+            assertEquals(4L, g.size());
+        }
     }
 
     @Test
@@ -904,6 +937,39 @@ public class TrellisApplicationTest {
             assertTrue(etag3.isWeak());
             assertNotEquals(etag1, etag3);
             assertNotEquals(etag2, etag3);
+        }
+
+        final String updateContent
+            = "PREFIX dc: <http://purl.org/dc/terms/>\n"
+            + "PREFIX ldp: <http://www.w3.org/ns/ldp#>\n\n"
+            + "DELETE WHERE { <> ldp:hasMemberRelation ?o };"
+            + "INSERT { <> ldp:hasMemberRelation dc:relation } WHERE {}";
+
+        // Patch the direct container
+        try (final Response res = target(container).request()
+                .method("PATCH", entity(updateContent, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(204, res.getStatus());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
+        }
+
+        // Fetch the member resource
+        try (final Response res = target(member).request().get()) {
+            assertEquals(200, res.getStatus());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            final Graph g = rdf.createGraph();
+            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+            final IRI identifier = rdf.createIRI(member);
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Member Resource", "eng")));
+            assertTrue(g.contains(identifier, DC.description, null));
+            assertTrue(g.contains(identifier, DC.relation, rdf.createIRI(child1)));
+            assertTrue(g.contains(identifier, DC.relation, rdf.createIRI(child2)));
+            assertEquals(4L, g.size());
         }
     }
 
