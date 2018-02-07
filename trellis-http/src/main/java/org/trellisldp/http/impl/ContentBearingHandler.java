@@ -93,9 +93,9 @@ class ContentBearingHandler extends BaseLdpHandler {
     }
 
     protected void checkConstraint(final TrellisDataset dataset, final IRI graphName, final IRI type,
-            final String baseUrl, final RDFSyntax syntax) {
+            final RDFSyntax syntax) {
         final List<ConstraintViolation> violations = constraintServices.stream().parallel().flatMap(svc ->
-                dataset.getGraph(graphName).map(g -> svc.constrainedBy(type, baseUrl, g)).orElseGet(Stream::empty))
+                dataset.getGraph(graphName).map(g -> svc.constrainedBy(type, g)).orElseGet(Stream::empty))
             .collect(toList());
 
         if (!violations.isEmpty()) {

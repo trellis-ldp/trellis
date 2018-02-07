@@ -230,7 +230,7 @@ public class PutHandler extends ContentBearingHandler {
                 });
 
                 // Check for any constraints
-                checkConstraint(dataset, PreferUserManaged, ldpType, TRELLIS_DATA_PREFIX, rdfSyntax.orElse(TURTLE));
+                checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
             }
 
             ofNullable(res).ifPresent(r -> {
