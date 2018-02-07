@@ -238,7 +238,7 @@ public class PutHandler extends ContentBearingHandler {
                 }
             });
             // TODO is this the best we can do? what concurrency errors are lurking?
-            Future<Boolean> success = resourceService.get(internalId).isPresent()
+            Future<Boolean> success = res != null
                             ? resourceService.replace(internalId, ldpType, dataset.asDataset())
                             : resourceService.create(internalId, ldpType, dataset.asDataset());
             if (success.get()) {
@@ -246,7 +246,7 @@ public class PutHandler extends ContentBearingHandler {
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    if (!audit.add(internalId, auditDataset.asDataset()).get()) {
+                    if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
                         LOGGER.error("Unable to place or replace resource at {}", res.getIdentifier());
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));

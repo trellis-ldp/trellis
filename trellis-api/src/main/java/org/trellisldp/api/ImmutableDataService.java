@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
  * @param <T> the type of identifier for resources that can be persisted by this service
  * @param <U> the type of resource that can be persisted by this service
  */
-public interface AppendService<T, U> {
+public interface ImmutableDataService<T, U> extends RetrievalService<T, U> {
 
     /**
      * @param identifier the identifier under which to persist a resource

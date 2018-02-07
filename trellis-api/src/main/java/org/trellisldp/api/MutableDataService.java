@@ -20,27 +20,30 @@ import java.util.concurrent.Future;
  * A service that persists resources by <i>replacing</i> their records.
  * 
  * @author ajs6f
- *
- * @param <T> the type of resource that can be persisted by this service
+ * @param <T> the type of identifier used by this service
+ * @param <U> the type of resource that can be persisted by this service
  */
-public interface MutableDataService<T> extends RetrievalService<T> {
+public interface MutableDataService<T, U> extends RetrievalService<T, U> {
 
     /**
+     * @param identifier the identifier for the resource to persist
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> create(T resource);
+    Future<Boolean> create(T identifier, U resource);
 
     /**
+     * @param identifier the identifier for the resource to persist
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> replace(T resource);
+    Future<Boolean> replace(T identifier, U resource);
 
     /**
+     * @param identifier the identifier for the resource to delete
      * @param resource a resource to delete
      * @return whether the resource was successfully deleted
      */
-    Future<Boolean> delete(T resource);
+    Future<Boolean> delete(T identifier, U resource);
 
 }

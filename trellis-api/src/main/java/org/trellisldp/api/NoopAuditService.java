@@ -14,12 +14,6 @@
 
 package org.trellisldp.api;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-
-import org.apache.commons.rdf.api.Dataset;
-import org.apache.commons.rdf.api.IRI;
-
 /**
  * For use when audit functionality is not desired.
  * 
@@ -27,14 +21,5 @@ import org.apache.commons.rdf.api.IRI;
  *
  */
 public final class NoopAuditService implements AuditService {
-    /*
-     * No audit info will ever be generated, so return true because all audit info
-     * indeed has been persisted.
-     * 
-     * @see org.trellisldp.api.AppendService#add(java.lang.Object, java.lang.Object)
-     */
-    @Override
-    public Future<Boolean> add(final IRI identifier, final Dataset resource) {
-        return CompletableFuture.completedFuture(true);
-    }
+
 }

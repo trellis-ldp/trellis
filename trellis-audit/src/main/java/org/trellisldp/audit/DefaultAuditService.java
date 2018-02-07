@@ -20,11 +20,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferAudit;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-
 import org.apache.commons.rdf.api.BlankNode;
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
@@ -41,10 +37,6 @@ import org.trellisldp.vocabulary.XSD;
  * <p>This class makes use of the {@link PROV} vocabulary and {@link BlankNode}
  * objects in a {@code http://www.trellisldp.org/ns/trellis#PreferAudit} named
  * graph.
- * 
- * @implSpec This implementation of AuditService does not persist audit
- *           information. Subclass and override {@link #add} to add
- *           persistence.
  * 
  * @author acoburn
  */
@@ -78,15 +70,5 @@ public abstract class DefaultAuditService implements AuditService {
         session.getDelegatedBy().ifPresent(delegate ->
                 data.add(rdf.createQuad(PreferAudit, bnode, PROV.actedOnBehalfOf, delegate)));
         return data;
-    }
-
-    /*
-     * Override to provide persistence for audit information.
-     * 
-     * @see org.trellisldp.api.AppendService#add
-     */
-    @Override
-    public Future<Boolean> add(final IRI id, final Dataset quads) {
-        return CompletableFuture.completedFuture(false);
     }
 }

@@ -17,8 +17,6 @@ import static java.util.Optional.of;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.api.RDFUtils.toDataset;
-
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -41,11 +39,23 @@ import org.apache.commons.rdf.api.Triple;
  *
  * @author acoburn
  */
-public interface ResourceService extends MutableDataService<Resource> {
+public interface ResourceService extends MutableDataService<IRI, Resource>, ImmutableDataService<IRI, Resource> {
 
     @Override
-    default Future<Boolean> create(Resource res) {
-        return create(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
+    default Future<Boolean> add(IRI identifier, Resource resource) {
+        return add(identifier, resource.dataset());
+    }
+
+    /**
+     * @param identifier the identifier under which to persist a dataset
+     * @param dataset a dataset to persist
+     * @return whether the resource was successfully persisted
+     */
+    Future<Boolean> add(IRI identifier, Dataset dataset);
+
+    @Override
+    default Future<Boolean> create(IRI id, Resource res) {
+        return create(id, res.getInteractionModel(), res.dataset());
     }
 
     /**
@@ -59,8 +69,8 @@ public interface ResourceService extends MutableDataService<Resource> {
     Future<Boolean> create(IRI identifier, IRI ixnModel, Dataset dataset);
 
     @Override
-    default Future<Boolean> replace(Resource res) {
-        return replace(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
+    default Future<Boolean> replace(IRI id, Resource res) {
+        return replace(id, res.getInteractionModel(), res.dataset());
     }
 
     /**
@@ -74,8 +84,8 @@ public interface ResourceService extends MutableDataService<Resource> {
     Future<Boolean> replace(IRI identifier, IRI ixnModel, Dataset dataset);
 
     @Override
-    default Future<Boolean> delete(Resource res) {
-        return delete(res.getIdentifier(), res.getInteractionModel(), res.stream().collect(toDataset().concurrent()));
+    default Future<Boolean> delete(IRI id, Resource res) {
+        return delete(id, res.getInteractionModel(), res.dataset());
     }
 
     /**
