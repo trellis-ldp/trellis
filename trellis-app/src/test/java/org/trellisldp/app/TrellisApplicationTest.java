@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.http.domain.HttpConstants.DIGEST;
 import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON_TYPE;
@@ -44,6 +45,7 @@ import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.DropwizardTestSupport;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
@@ -62,7 +64,10 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.trellisldp.api.IOService;
@@ -109,387 +114,632 @@ public class TrellisApplicationTest {
         APP.after();
     }
 
-    @Test
-    public void testGetDefault() {
-        try (final Response res = target().request().get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-        }
-    }
+    /**
+     * Tests of LDP-RS (RDF resources).
+     */
+    @Nested
+    @TestInstance(PER_CLASS)
+    @DisplayName("RDF resource tests")
+    public class RDFTests {
 
-    @Test
-    public void testGetJsonLd() {
-        try (final Response res = target().request().accept("application/ld+json").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-        }
-    }
-
-    @Test
-    public void testGetNTriples() {
-        try (final Response res = target().request().accept("application/n-triples").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
-            assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-        }
-    }
-
-    @Test
-    public void testPostBinary() throws Exception {
-        final String location;
-        final EntityTag etag1, etag2;
-        final String content = "This is a file.";
-
-        // POST an LDP-NR
-        try (final Response res = target().request().header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==")
-                .post(entity(content, TEXT_PLAIN))) {
-            assertEquals(201, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
-            location = res.getLocation().toString();
-            assertTrue(location.startsWith(baseURL));
-            assertTrue(location.length() > baseURL.length());
-        }
-
-        // Fetch the new resource
-        try (final Response res = target(location).request().get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
-            etag1 = res.getEntityTag();
-            assertFalse(etag1.isWeak());
-        }
-
-        meanwhile();
-
-        // Fetch the description
-        try (final Response res = target(location).request().accept("text/turtle").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            final Graph g = rdf.createGraph();
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertEquals(0L, g.size());
-            etag2 = res.getEntityTag();
-            assertTrue(etag2.isWeak());
-            assertNotEquals(etag1, etag2);
-        }
-
-        // Patch the description
-        try (final Response res = target(location).request().method("PATCH",
-                    entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
-                        APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(204, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        }
-
-        meanwhile();
-
-        // Fetch the new description
-        try (final Response res = target(location).request().accept("text/turtle").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            final Graph g = rdf.createGraph();
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertEquals(1L, g.size());
-            assertTrue(g.contains(rdf.createIRI(location), DC.title, rdf.createLiteral("Title")));
-            assertNotEquals(etag2, res.getEntityTag());
-        }
-
-        // Verify that the binary is still accessible
-        try (final Response res = target(location).request().get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
-            assertEquals(etag1, res.getEntityTag());
-        }
-
-        // Test the root container, verifying that the containment triple exists
-        try (final Response res = target().request().get()) {
-            final Graph g = rdf.createGraph();
-            assertEquals(200, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertTrue(g.contains(rdf.createIRI(baseURL), LDP.contains, rdf.createIRI(location)));
-        }
-
-        // Test the SHA-1 algorithm
-        try (final Response res = target(location).request().header(WANT_DIGEST, "SHA,MD5").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertEquals("sha=Z5pg2cWB1IqkKKMjh57cQKAeKp0=", res.getHeaderString(DIGEST));
-        }
-
-        // Test the SHA-256 algorithm
-        try (final Response res = target(location).request().header(WANT_DIGEST, "SHA-256").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST));
-        }
-
-        // Test an unknown digest algorithm
-        try (final Response res = target(location).request().header(WANT_DIGEST, "FOO").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertNull(res.getHeaderString(DIGEST));
-        }
-    }
-
-    @Test
-    public void testPostRDF() throws Exception {
-        final String location;
-        final EntityTag etag1;
-        final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+        private String container, resource;
+        private EntityTag etag1, etag2;
+        private static final String content
+            = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
             + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
-            + "<> a skos:Concept; skos:prefLabel \"Resource Name\"@eng ; dc:subject <http://example.org/subject/1> .";
+            + "<> a skos:Concept ;\n"
+            + "   skos:prefLabel \"Resource Name\"@eng ;\n"
+            + "   dc:subject <http://example.org/subject/1> .";
 
-        // POST an LDP-RS
-        try (final Response res = target().request().post(entity(content, TEXT_TURTLE))) {
-            assertEquals(201, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        @BeforeAll
+        public void init() {
+            final String containerContent
+                = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Basic Container\"@eng ; "
+                + "   dc:description \"This is a simple Basic Container for testing.\"@eng .";
 
-            location = res.getLocation().toString();
-            assertTrue(location.startsWith(baseURL));
-            assertTrue(location.length() > baseURL.length());
+            // POST an LDP-BC
+            try (final Response res = target().request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                container = res.getLocation().toString();
+            }
+
+            // POST an LDP-RS
+            try (final Response res = target(container).request().post(entity(content, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+                resource = res.getLocation().toString();
+            }
         }
 
-        // Fetch the new resource
-        try (final Response res = target(location).request().get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            final Graph g = rdf.createGraph();
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertEquals(3L, g.size());
-            final IRI identifier = rdf.createIRI(location);
-            assertTrue(g.contains(identifier, type, SKOS.Concept));
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")));
-            assertTrue(g.contains(identifier, DC.subject, rdf.createIRI("http://example.org/subject/1")));
-            etag1 = res.getEntityTag();
-            assertTrue(etag1.isWeak());
+        @Test
+        @DisplayName("Fetch the default RDF serialization")
+        public void testGetDefault() {
+            try (final Response res = target(resource).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            }
         }
 
-        // Patch the resource
-        try (final Response res = target(location).request().method("PATCH",
-                    entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
-                        APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(204, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        @Test
+        @DisplayName("Fetch the JSON-LD serialization")
+        public void testGetJsonLd() {
+            try (final Response res = target(resource).request().accept("application/ld+json").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
+                assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            }
         }
 
-        meanwhile();
-
-        // Fetch the updated resource
-        try (final Response res = target(location).request().accept("application/n-triples").get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
-            assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            final Graph g = rdf.createGraph();
-            ioSvc.read((InputStream) res.getEntity(), baseURL, NTRIPLES).forEach(g::add);
-            assertEquals(4L, g.size());
-            assertTrue(g.contains(rdf.createIRI(location), DC.title, rdf.createLiteral("Title")));
-            assertTrue(res.getEntityTag().isWeak());
-            assertNotEquals(etag1, res.getEntityTag());
+        @Test
+        @DisplayName("Fetch the N-Triples serialization")
+        public void testGetNTriples() {
+            try (final Response res = target(resource).request().accept("application/n-triples").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
+                assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            }
         }
 
-        // Test the root container, verifying that the containment triple exists
-        try (final Response res = target().request().get()) {
-            final Graph g = rdf.createGraph();
-            assertEquals(200, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertTrue(g.contains(rdf.createIRI(baseURL), LDP.contains, rdf.createIRI(location)));
+        @Test
+        @DisplayName("Test POSTing an RDF resource")
+        public void testPostRDF() {
+
+            // POST an LDP-RS
+            try (final Response res = target(container).request().post(entity(content, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+                final String location = res.getLocation().toString();
+                assertTrue(location.startsWith(container));
+                assertTrue(location.length() > container.length());
+            }
+        }
+
+        @Test
+        @DisplayName("Test fetching an RDF resource")
+        public void testGetRDF() {
+            // Fetch the new resource
+            try (final Response res = target(resource).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+                assertEquals(3L, g.size());
+                final IRI identifier = rdf.createIRI(resource);
+                assertTrue(g.contains(identifier, type, SKOS.Concept));
+                assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")));
+                assertTrue(g.contains(identifier, DC.subject, rdf.createIRI("http://example.org/subject/1")));
+                etag1 = res.getEntityTag();
+                assertTrue(etag1.isWeak());
+                assertNotEquals(etag1, etag2);
+            }
+        }
+
+        @Test
+        @DisplayName("Test modifying an RDF document via PATCH")
+        public void testPatchRDF() {
+            meanwhile();
+
+            // Patch the resource
+            try (final Response res = target(resource).request().method("PATCH",
+                        entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(204, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            }
+
+            meanwhile();
+
+            // Fetch the updated resource
+            try (final Response res = target(resource).request().accept("application/n-triples").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
+                assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), baseURL, NTRIPLES).forEach(g::add);
+                assertEquals(4L, g.size());
+                assertTrue(g.contains(rdf.createIRI(resource), DC.title, rdf.createLiteral("Title")));
+                etag2 = res.getEntityTag();
+                assertTrue(etag2.isWeak());
+                assertNotEquals(etag1, etag2);
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that the correct containment triples exist")
+        public void testRdfContainment() {
+            // Test the root container, verifying that the containment triple exists
+            try (final Response res = target(container).request().get()) {
+                final Graph g = rdf.createGraph();
+                assertEquals(200, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+                assertTrue(g.contains(rdf.createIRI(container), LDP.contains, rdf.createIRI(resource)));
+            }
+        }
+    }
+
+
+    /**
+     * Tests of LDP-NR (Binary resources).
+     */
+    @Nested
+    @TestInstance(PER_CLASS)
+    @DisplayName("Binary resource tests")
+    public class BinaryTests {
+
+        private String container, binary;
+        private final String content = "This is a file.";
+        private EntityTag etag1, etag2;
+
+        @BeforeAll
+        public void init() {
+            final String containerContent
+                = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Basic Container\"@eng ; "
+                + "   dc:description \"This is a simple Basic Container for testing.\"@eng .";
+
+            // POST an LDP-BC
+            try (final Response res = target().request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                container = res.getLocation().toString();
+            }
+
+            // POST an LDP-NR
+            try (final Response res = target(container).request().post(entity(content, TEXT_PLAIN))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+
+                binary = res.getLocation().toString();
+            }
+        }
+
+        @Test
+        @DisplayName("Test fetching a binary resource")
+        public void testGetBinary() throws IOException {
+            // Fetch the new resource
+            try (final Response res = target(binary).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+                assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
+                assertFalse(res.getEntityTag().isWeak());
+                etag1 = res.getEntityTag();
+                assertNotEquals(etag1, etag2);
+            }
+        }
+
+        @Test
+        @DisplayName("Test fetching a binary description")
+        public void testGetBinaryDescription() {
+            // Fetch the description
+            try (final Response res = target(binary).request().accept("text/turtle").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+                assertTrue(g.size() >= 0L);
+                assertTrue(res.getEntityTag().isWeak());
+                etag2 = res.getEntityTag();
+                assertNotEquals(etag1, etag2);
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating a new binary via POST")
+        public void testPostBinary() {
+            // POST an LDP-NR
+            try (final Response res = target(container).request().post(entity(content, TEXT_PLAIN))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+                final String location = res.getLocation().toString();
+                assertTrue(location.startsWith(container));
+                assertTrue(location.length() > container.length());
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating a new binary via POST with a digest header")
+        public void testPostBinaryWithDigest() {
+            // POST an LDP-NR
+            try (final Response res = target(container).request().header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==")
+                    .post(entity(content, TEXT_PLAIN))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+                final String resource = res.getLocation().toString();
+                assertTrue(resource.startsWith(container));
+                assertTrue(resource.length() > container.length());
+            }
+        }
+
+        @Test
+        @DisplayName("Test modifying a binary's description via PATCH")
+        public void testPatchBinaryDescription() throws IOException {
+            final EntityTag etag;
+
+            // Fetch the description
+            try (final Response res = target(binary).request().accept("text/turtle").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+                assertEquals(0L, g.size());
+                etag = res.getEntityTag();
+                assertTrue(etag.isWeak());
+                assertNotEquals(etag1, etag);
+            }
+
+            meanwhile();
+
+            // Patch the description
+            try (final Response res = target(binary).request().method("PATCH",
+                        entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(204, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            }
+
+            // Fetch the new description
+            try (final Response res = target(binary).request().accept("text/turtle").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+                assertEquals(1L, g.size());
+                assertTrue(g.contains(rdf.createIRI(binary), DC.title, rdf.createLiteral("Title")));
+                assertNotEquals(etag, res.getEntityTag());
+            }
+
+            // Verify that the binary is still accessible
+            try (final Response res = target(binary).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+                assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertEquals(content, IOUtils.toString((InputStream) res.getEntity(), UTF_8));
+                assertEquals(etag1, res.getEntityTag());
+            }
+        }
+
+        @Test
+        @DisplayName("Test that the binary appears in the parent container")
+        public void testBinaryIsInContainer() {
+            // Test the root container, verifying that the containment triple exists
+            try (final Response res = target(container).request().get()) {
+                final Graph g = rdf.createGraph();
+                assertEquals(200, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
+                assertTrue(g.contains(rdf.createIRI(container), LDP.contains, rdf.createIRI(binary)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test that the SHA digest is generated")
+        public void testBinaryWantDigestSha() {
+            // Test the SHA-1 algorithm
+            try (final Response res = target(binary).request().header(WANT_DIGEST, "SHA,MD5").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+                assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+                assertEquals("sha=Z5pg2cWB1IqkKKMjh57cQKAeKp0=", res.getHeaderString(DIGEST));
+            }
+        }
+
+        @Test
+        @DisplayName("Test that the SHA-256 digest is generated")
+        public void testBinaryWantDigestSha256() {
+            // Test the SHA-256 algorithm
+            try (final Response res = target(binary).request().header(WANT_DIGEST, "SHA-256").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+                assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+                assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST));
+            }
+        }
+
+        @Test
+        @DisplayName("Test that an unknown digest is ignored")
+        public void testBinaryWantDigestUnknown() {
+            // Test an unknown digest algorithm
+            try (final Response res = target(binary).request().header(WANT_DIGEST, "FOO").get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+                assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
+                assertNull(res.getHeaderString(DIGEST));
+            }
+        }
+    }
+
+
+    /**
+     * Tests of LDP-BS (Basic Containers).
+     */
+    @Nested
+    @TestInstance(PER_CLASS)
+    @DisplayName("Basic Container Tests")
+    public class BasicContainerTests {
+
+        private String container, child;
+        private EntityTag etag1, etag2, etag3, etag4, etag5;
+        private final String containerContent
+                = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Basic Container\"@eng ; "
+                + "   dc:description \"This is a simple Basic Container for testing.\"@eng .";
+
+        @BeforeAll
+        public void init() {
+            // POST an LDP-BC
+            try (final Response res = target().request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                container = res.getLocation().toString();
+            }
+
+            // POST an LDP-BC
+            try (final Response res = target(container).request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                child = res.getLocation().toString();
+            }
+        }
+
+        @Test
+        @DisplayName("Test fetching a basic container")
+        public void testGetContainer() {
+            try (final Response res = target(container).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
+                assertTrue(g.contains(identifier, DC.description, null));
+                assertTrue(g.size() >= 2);
+                etag1 = res.getEntityTag();
+                assertTrue(etag1.isWeak());
+                assertNotEquals(etag1, etag2);
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating a basic container via POST")
+        public void testCreateContainerViaPost() {
+            final String child1;
+            meanwhile();
+
+            // POST an LDP-BC
+            try (final Response res = target(container).request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                child1 = res.getLocation().toString();
+                assertTrue(child1.startsWith(container));
+                assertTrue(child1.length() > container.length());
+            }
+
+            // Now fetch the container
+            try (final Response res = target(container).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
+                assertTrue(g.contains(identifier, DC.description, null));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
+                assertTrue(g.size() >= 3);
+                etag2 = res.getEntityTag();
+                assertTrue(etag2.isWeak());
+                assertNotEquals(etag1, etag2);
+                assertNotEquals(etag3, etag2);
+                assertNotEquals(etag4, etag2);
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating a child resource via PUT")
+        public void testCreateContainerViaPut() {
+            final String child2 = container + "/child2";
+            meanwhile();
+
+            try (final Response res = target(child2).request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .put(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(204, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            }
+
+            // Now fetch the resource
+            try (final Response res = target(container).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
+                assertTrue(g.contains(identifier, DC.description, null));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
+                assertTrue(g.size() >= 3);
+                etag3 = res.getEntityTag();
+                assertTrue(etag3.isWeak());
+                assertNotEquals(etag1, etag3);
+                assertNotEquals(etag2, etag3);
+                assertNotEquals(etag4, etag3);
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating a child resource with a Slug header")
+        public void testCreateContainerWithSlug() {
+            final String child3 = container + "/child3";
+            // POST an LDP-BC
+            try (final Response res = target(container).request().header("Slug", "child3")
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(201, res.getStatus());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                assertEquals(child3, res.getLocation().toString());
+            }
+
+            // Now fetch the resource
+            try (final Response res = target(container).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
+                assertTrue(g.contains(identifier, DC.description, null));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
+                assertTrue(g.size() >= 3);
+                etag4 = res.getEntityTag();
+                assertTrue(etag4.isWeak());
+                assertNotEquals(etag1, etag4);
+                assertNotEquals(etag2, etag4);
+                assertNotEquals(etag3, etag4);
+            }
+        }
+
+        @Test
+        @DisplayName("Test deleting a basic container")
+        public void testDeleteContainer() {
+            final EntityTag etag;
+
+            try (final Response res = target(container).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
+                assertTrue(g.contains(identifier, DC.description, null));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child)));
+                assertTrue(g.size() >= 3);
+                etag = res.getEntityTag();
+                assertTrue(etag.isWeak());
+            }
+
+            meanwhile();
+
+            // Delete one of the child resources
+            try (final Response res = target(child).request().delete()) {
+                assertEquals(204, res.getStatus());
+            }
+
+            // Try fetching the deleted resource
+            try (final Response res = target(child).request().get()) {
+                assertEquals(410, res.getStatus());
+            }
+
+            try (final Response res = target(container).request().get()) {
+                assertEquals(200, res.getStatus());
+                assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+                assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                assertFalse(g.contains(rdf.createIRI(container), LDP.contains, rdf.createIRI(child)));
+                assertTrue(res.getEntityTag().isWeak());
+                assertNotEquals(etag, res.getEntityTag());
+            }
         }
     }
 
     @Test
-    public void testPostBasicContainer() throws Exception {
-        final String location, child1, child2, child3;
-        final EntityTag etag1, etag2, etag3;
-        final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
-            + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
-            + "<> a skos:Concept; "
-            + "    skos:prefLabel \"Basic Container\"@eng ; "
-            + "    dc:description \"This is a simple Basic Container for testing.\"@eng .";
-
-        // POST an LDP-BC
-        try (final Response res = target().request()
-                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
-                .post(entity(content, TEXT_TURTLE))) {
-            assertEquals(201, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-
-            location = res.getLocation().toString();
-            assertTrue(location.startsWith(baseURL));
-            assertTrue(location.length() > baseURL.length());
-        }
-
-        // Fetch the new resource
-        try (final Response res = target(location).request().get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-            final Graph g = rdf.createGraph();
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertEquals(3L, g.size());
-            final IRI identifier = rdf.createIRI(location);
-            assertTrue(g.contains(identifier, type, SKOS.Concept));
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
-            assertTrue(g.contains(identifier, DC.description, null));
-            etag1 = res.getEntityTag();
-            assertTrue(etag1.isWeak());
-        }
-
-        // POST an LDP-RS
-        try (final Response res = target(location).request().post(entity(content, TEXT_TURTLE))) {
-            assertEquals(201, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
-            child1 = res.getLocation().toString();
-            assertTrue(child1.startsWith(location));
-            assertTrue(child1.length() > location.length());
-        }
-
-        meanwhile();
-
-        // POST an LDP-RS
-        try (final Response res = target(location).request().post(entity(content, TEXT_TURTLE))) {
-            assertEquals(201, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
-            child2 = res.getLocation().toString();
-            assertTrue(child2.startsWith(location));
-            assertTrue(child2.length() > location.length());
-        }
-
-        meanwhile();
-
-        // POST an LDP-RS
-        try (final Response res = target(location).request().post(entity(content, TEXT_TURTLE))) {
-            assertEquals(201, res.getStatus());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
-            child3 = res.getLocation().toString();
-            assertTrue(child3.startsWith(location));
-            assertTrue(child3.length() > location.length());
-        }
-
-        meanwhile();
-
-        // Fetch the container
-        try (final Response res = target(location).request().get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-            final Graph g = rdf.createGraph();
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertEquals(6L, g.size());
-            final IRI identifier = rdf.createIRI(location);
-            assertTrue(g.contains(identifier, type, SKOS.Concept));
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
-            assertTrue(g.contains(identifier, DC.description, null));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
-            etag2 = res.getEntityTag();
-            assertTrue(etag2.isWeak());
-            assertNotEquals(etag1, etag2);
-        }
-
-        // Delete one of the child resources
-        try (final Response res = target(child3).request().delete()) {
-            assertEquals(204, res.getStatus());
-        }
-
-        // Try fetching the deleted resource
-        try (final Response res = target(child3).request().get()) {
-            assertEquals(410, res.getStatus());
-        }
-
-        meanwhile();
-
-        // Fetch the container
-        try (final Response res = target(location).request().get()) {
-            assertEquals(200, res.getStatus());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-            final Graph g = rdf.createGraph();
-            ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
-            assertEquals(5L, g.size());
-            final IRI identifier = rdf.createIRI(location);
-            assertTrue(g.contains(identifier, type, SKOS.Concept));
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
-            assertTrue(g.contains(identifier, DC.description, null));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
-            etag3 = res.getEntityTag();
-            assertTrue(etag3.isWeak());
-            assertNotEquals(etag1, etag3);
-            assertNotEquals(etag2, etag3);
-        }
-    }
-
-    @Test
-    public void testPostDirectContainer() throws Exception {
+    public void testPostDirectContainer() {
         final String location, member, child1, child2, child3;
         final EntityTag etag1, etag2, etag3;
 
@@ -731,7 +981,7 @@ public class TrellisApplicationTest {
     }
 
     @Test
-    public void testPutDirectContainer() throws Exception {
+    public void testPutDirectContainer() {
         final String location;
         final EntityTag etag1, etag2, etag3;
 
