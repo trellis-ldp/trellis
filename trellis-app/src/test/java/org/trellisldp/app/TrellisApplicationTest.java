@@ -611,6 +611,20 @@ public class TrellisApplicationTest {
         }
 
         @Test
+        @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
+        public void testGetInverseEmptyContainer() {
+            try (final Response res = target(container).request().header("Prefer",
+                        "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertFalse(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
+                assertTrue(g.contains(identifier, LDP.contains, null));
+            }
+        }
+
+        @Test
         @DisplayName("Test fetching a basic container")
         public void testGetContainer() {
             try (final Response res = target(container).request().get()) {
@@ -1171,9 +1185,6 @@ public class TrellisApplicationTest {
                 assertTrue(g.contains(identifier, LDP.member, null) || g.contains(identifier, DC.relation, null));
             }
         }
-
-
-
     }
 
     @Test
