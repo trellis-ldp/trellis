@@ -87,8 +87,8 @@ All source code is open source and licensed as Apache 2. Contributions are welco
 
 ### Trellis Vocabulary
 
-This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the Trellis-specific RDF terms, which
-are also [published online](https://www.trellisldp.org/ns/trellis.html). A [DOAP](doap.ttl) file
+This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the Trellis-specific
+[RDF terms](https://www.trellisldp.org/ns/trellis.html). A [DOAP](doap.ttl) file
 describes the Trellis project in a machine-readable format.
 
 ### Implementations
