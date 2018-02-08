@@ -554,7 +554,7 @@ public class TrellisApplicationTest {
     @DisplayName("Basic Container Tests")
     public class BasicContainerTests {
 
-        private String container, child;
+        private String container, child1, child2;
         private EntityTag etag1, etag2, etag3, etag4, etag5;
         private final String containerContent
                 = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
@@ -582,7 +582,31 @@ public class TrellisApplicationTest {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
-                child = res.getLocation().toString();
+                child1 = res.getLocation().toString();
+            }
+
+            // POST an LDP-BC
+            try (final Response res = target(container).request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                child2 = res.getLocation().toString();
+            }
+        }
+
+        @Test
+        @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
+        public void testGetEmptyContainer() {
+            try (final Response res = target(container).request().header("Prefer",
+                        "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
+                assertFalse(g.contains(identifier, LDP.contains, null));
             }
         }
 
@@ -611,7 +635,7 @@ public class TrellisApplicationTest {
         @Test
         @DisplayName("Test creating a basic container via POST")
         public void testCreateContainerViaPost() {
-            final String child1;
+            final String child3;
             meanwhile();
 
             // POST an LDP-BC
@@ -623,9 +647,9 @@ public class TrellisApplicationTest {
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
-                child1 = res.getLocation().toString();
-                assertTrue(child1.startsWith(container));
-                assertTrue(child1.length() > container.length());
+                child3 = res.getLocation().toString();
+                assertTrue(child3.startsWith(container));
+                assertTrue(child3.length() > container.length());
             }
 
             // Now fetch the container
@@ -641,7 +665,7 @@ public class TrellisApplicationTest {
                 final IRI identifier = rdf.createIRI(container);
                 assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
                 assertTrue(g.contains(identifier, DC.description, null));
-                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
                 assertTrue(g.size() >= 3);
                 etag2 = res.getEntityTag();
                 assertTrue(etag2.isWeak());
@@ -654,10 +678,10 @@ public class TrellisApplicationTest {
         @Test
         @DisplayName("Test creating a child resource via PUT")
         public void testCreateContainerViaPut() {
-            final String child2 = container + "/child2";
+            final String child4 = container + "/child4";
             meanwhile();
 
-            try (final Response res = target(child2).request()
+            try (final Response res = target(child4).request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .put(entity(containerContent, TEXT_TURTLE))) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
@@ -679,7 +703,7 @@ public class TrellisApplicationTest {
                 final IRI identifier = rdf.createIRI(container);
                 assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
                 assertTrue(g.contains(identifier, DC.description, null));
-                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child4)));
                 assertTrue(g.size() >= 3);
                 etag3 = res.getEntityTag();
                 assertTrue(etag3.isWeak());
@@ -692,9 +716,9 @@ public class TrellisApplicationTest {
         @Test
         @DisplayName("Test creating a child resource with a Slug header")
         public void testCreateContainerWithSlug() {
-            final String child3 = container + "/child3";
+            final String child5 = container + "/child5";
             // POST an LDP-BC
-            try (final Response res = target(container).request().header("Slug", "child3")
+            try (final Response res = target(container).request().header("Slug", "child5")
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
@@ -702,7 +726,7 @@ public class TrellisApplicationTest {
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
-                assertEquals(child3, res.getLocation().toString());
+                assertEquals(child5, res.getLocation().toString());
             }
 
             // Now fetch the resource
@@ -718,7 +742,7 @@ public class TrellisApplicationTest {
                 final IRI identifier = rdf.createIRI(container);
                 assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
                 assertTrue(g.contains(identifier, DC.description, null));
-                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child5)));
                 assertTrue(g.size() >= 3);
                 etag4 = res.getEntityTag();
                 assertTrue(etag4.isWeak());
@@ -744,7 +768,7 @@ public class TrellisApplicationTest {
                 final IRI identifier = rdf.createIRI(container);
                 assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Basic Container", "eng")));
                 assertTrue(g.contains(identifier, DC.description, null));
-                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child)));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
                 assertTrue(g.size() >= 3);
                 etag = res.getEntityTag();
                 assertTrue(etag.isWeak());
@@ -753,12 +777,12 @@ public class TrellisApplicationTest {
             meanwhile();
 
             // Delete one of the child resources
-            try (final Response res = target(child).request().delete()) {
+            try (final Response res = target(child1).request().delete()) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             }
 
             // Try fetching the deleted resource
-            try (final Response res = target(child).request().get()) {
+            try (final Response res = target(child1).request().get()) {
                 assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
             }
 
@@ -770,7 +794,7 @@ public class TrellisApplicationTest {
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
-                assertFalse(g.contains(rdf.createIRI(container), LDP.contains, rdf.createIRI(child)));
+                assertFalse(g.contains(rdf.createIRI(container), LDP.contains, rdf.createIRI(child1)));
                 assertTrue(res.getEntityTag().isWeak());
                 assertNotEquals(etag, res.getEntityTag());
             }
@@ -1118,6 +1142,38 @@ public class TrellisApplicationTest {
                 assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
             }
         }
+
+        @Test
+        @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
+        public void testGetEmptyMember() {
+            try (final Response res = target(member).request().header("Prefer",
+                        "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(member);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, null));
+                assertFalse(g.contains(identifier, LDP.member, null));
+                assertFalse(g.contains(identifier, DC.relation, null));
+            }
+        }
+
+        @Test
+        @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
+        public void testGetInverseEmptyMember() {
+            try (final Response res = target(member).request().header("Prefer",
+                        "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(member);
+                assertFalse(g.contains(identifier, SKOS.prefLabel, null));
+                assertTrue(g.contains(identifier, LDP.member, null) || g.contains(identifier, DC.relation, null));
+            }
+        }
+
+
+
     }
 
     @Test
