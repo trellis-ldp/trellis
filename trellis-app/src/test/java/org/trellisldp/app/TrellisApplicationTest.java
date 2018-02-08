@@ -1187,6 +1187,417 @@ public class TrellisApplicationTest {
         }
     }
 
+
+    /**
+     * Tests of LDP-IC (Indirect Containers).
+     */
+    @Nested
+    @TestInstance(PER_CLASS)
+    @DisplayName("Indirect Container Tests")
+    public class IndirectContainerTests {
+
+        private String base, container, member, other;
+
+        @BeforeAll
+        @DisplayName("Initialize Indirect Container tests")
+        public void init() {
+            final String containerContent
+                = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Basic Container\"@eng ; "
+                + "   dc:description \"This is a simple Basic Container for testing.\"@eng .";
+
+            // POST an LDP-BC
+            try (final Response res = target().request()
+                    .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                    .post(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+
+                base = res.getLocation().toString();
+            }
+
+            member = base + "/member";
+
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Indirect Container\"@eng ; "
+                + "   ldp:membershipResource <" + member + "> ; "
+                + "   ldp:hasMemberRelation ldp:member ; "
+                + "   ldp:insertedContentRelation foaf:primaryTopic ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // POST an LDP-IC
+            try (final Response res = target(base).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .post(entity(content, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+
+                container = res.getLocation().toString();
+            }
+
+            final String memberContent = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Member Resource\"@eng ; "
+                + "   foaf:primaryTopic <#it> ; "
+                + "   dc:description \"This is a simple member resource for testing.\"@eng .";
+
+            // PUT an LDP-RS
+            try (final Response res = target(member).request().put(entity(containerContent, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            }
+
+            other = base + "/other";
+
+            // PUT an LDP-IC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test adding resources to the indirect container")
+        public void testAddingMemberResources() {
+            // TODO -- this can be nested further to break it up into smaller testable sections.
+            final String child1, child2;
+            final EntityTag etag1, etag2, etag3, etag4, etag5, etag6;
+            final String childContent = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<>  skos:prefLabel \"Child Resource\"@eng ; "
+                + "    foaf:primaryTopic <#it> ; "
+                + "    dc:description \"This is a simple child resource for testing.\"@eng .";
+
+            // Fetch the member resource
+            try (final Response res = target(member).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
+                assertFalse(g.contains(rdf.createIRI(member), LDP.member, null));
+                etag1 = res.getEntityTag();
+                assertTrue(etag1.isWeak());
+            }
+
+            // Fetch the container resource
+            try (final Response res = target(container).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
+                assertFalse(g.contains(rdf.createIRI(container), LDP.contains, null));
+                etag4 = res.getEntityTag();
+                assertTrue(etag4.isWeak());
+            }
+
+            meanwhile();
+
+            // POST an LDP-RS child
+            try (final Response res = target(container).request().post(entity(childContent, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+                child1 = res.getLocation().toString();
+                assertTrue(child1.startsWith(container));
+                assertTrue(child1.length() > container.length());
+            }
+
+            // POST an LDP-RS child
+            try (final Response res = target(container).request().post(entity(childContent, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+                child2 = res.getLocation().toString();
+                assertTrue(child2.startsWith(container));
+                assertTrue(child2.length() > container.length());
+            }
+
+            // Fetch the member resource
+            try (final Response res = target(member).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(member);
+                assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child1 + "#it")));
+                assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + "#it")));
+                etag2 = res.getEntityTag();
+                assertTrue(etag2.isWeak());
+                assertNotEquals(etag1, etag2);
+            }
+
+            // Fetch the container resource
+            try (final Response res = target(container).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
+                etag5 = res.getEntityTag();
+                assertTrue(etag5.isWeak());
+                assertNotEquals(etag4, etag5);
+            }
+
+            meanwhile();
+
+            // Delete one of the child resources
+            try (final Response res = target(child1).request().delete()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+
+            // Try fetching the deleted resource
+            try (final Response res = target(child1).request().get()) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+            }
+
+            // Fetch the member resource
+            try (final Response res = target(member).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(member);
+                assertFalse(g.contains(identifier, LDP.member, rdf.createIRI(child1 + "#it")));
+                assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + "#it")));
+                etag3 = res.getEntityTag();
+                assertTrue(etag3.isWeak());
+                assertNotEquals(etag1, etag3);
+                assertNotEquals(etag2, etag3);
+            }
+
+            // Fetch the container resource
+            try (final Response res = target(container).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(container);
+                assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
+                etag6 = res.getEntityTag();
+                assertTrue(etag6.isWeak());
+                assertNotEquals(etag5, etag6);
+                assertNotEquals(etag4, etag6);
+            }
+
+            // Now change the membership property
+            final String updateContent
+                = "PREFIX dc: <http://purl.org/dc/terms/>\n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#>\n\n"
+                + "DELETE WHERE { <> ldp:hasMemberRelation ?o };"
+                + "INSERT { <> ldp:hasMemberRelation dc:relation } WHERE {}";
+
+            // Patch the indirect container
+            try (final Response res = target(container).request()
+                    .method("PATCH", entity(updateContent, APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            }
+
+            // Fetch the member resource
+            try (final Response res = target(member).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(member);
+                assertTrue(g.contains(identifier, DC.relation, rdf.createIRI(child2 + "#it")));
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating an indirect container via PUT")
+        public void testCreateIndirectContainerViaPut() {
+            final String other2 = base + "/other2";
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Indirect Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> ; "
+                + "   ldp:hasMemberRelation dc:relation ; "
+                + "   ldp:insertedContentRelation foaf:primaryTopic ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other2).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating an indirect container via PUT")
+        public void testUpdateIndirectContainerViaPut() throws Exception {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Indirect Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> ; "
+                + "   ldp:isMemberOfRelation dc:isPartOf ; "
+                + "   ldp:insertedContentRelation foaf:primaryTopic ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating an indirect container with too many member-related properties")
+        public void testUpdateIndirectContainerTooManyMemberProps() throws Exception {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Direct Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> ; "
+                + "   ldp:isMemberOfRelation dc:isPartOf ; "
+                + "   ldp:hasMemberRelation dc:hasPart ; "
+                + "   ldp:insertedContentRelation foaf:primaryTopic ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating an indirect container with no ldp:insertedContentRelation property")
+        public void testUpdateIndirectContainerNoICRProp() throws Exception {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Direct Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> ; "
+                + "   ldp:hasMemberRelation dc:hasPart ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating an indirect container with too many membership resources")
+        public void testUpdateIndirectContainerMultipleMemberResources() {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Indirect Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> , <" + base + "/member3> ; "
+                + "   ldp:isMemberOfRelation dc:isPartOf ; "
+                + "   ldp:insertedContentRelation foaf:primaryTopic ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating an indirect container with no member relation property")
+        public void testUpdateIndirectContainerMissingMemberRelation() {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Indirect Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> ; "
+                + "   ldp:insertedContentRelation foaf:primaryTopic ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating an indirect container with no member resource")
+        public void testUpdateIndirectContainerMissingMemberResource() {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Indirect Container\"@eng ; "
+                + "   ldp:isMemberOfRelation dc:isPartOf ; "
+                + "   ldp:insertedContentRelation foaf:primaryTopic ; "
+                + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
+        public void testGetEmptyMember() {
+            try (final Response res = target(member).request().header("Prefer",
+                        "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(member);
+                assertTrue(g.contains(identifier, SKOS.prefLabel, null));
+                assertFalse(g.contains(identifier, LDP.member, null));
+                assertFalse(g.contains(identifier, DC.relation, null));
+            }
+        }
+
+        @Test
+        @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
+        public void testGetInverseEmptyMember() {
+            try (final Response res = target(member).request().header("Prefer",
+                        "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                final Graph g = rdf.createGraph();
+                ioSvc.read((InputStream) res.getEntity(), container, TURTLE).forEach(g::add);
+                final IRI identifier = rdf.createIRI(member);
+                assertFalse(g.contains(identifier, SKOS.prefLabel, null));
+                assertTrue(g.contains(identifier, LDP.member, null) || g.contains(identifier, DC.relation, null));
+            }
+        }
+    }
+
     @Test
     public void testGetName() {
         final Application<TrellisConfiguration> app = new TrellisApplication();
