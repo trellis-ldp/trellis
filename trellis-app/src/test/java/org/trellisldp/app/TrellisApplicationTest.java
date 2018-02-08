@@ -23,6 +23,8 @@ import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
@@ -78,6 +80,7 @@ import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -144,7 +147,7 @@ public class TrellisApplicationTest {
             try (final Response res = target().request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
                 container = res.getLocation().toString();
@@ -152,7 +155,7 @@ public class TrellisApplicationTest {
 
             // POST an LDP-RS
             try (final Response res = target(container).request().post(entity(content, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
 
                 resource = res.getLocation().toString();
@@ -163,7 +166,7 @@ public class TrellisApplicationTest {
         @DisplayName("Fetch the default RDF serialization")
         public void testGetDefault() {
             try (final Response res = target(resource).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -175,7 +178,7 @@ public class TrellisApplicationTest {
         @DisplayName("Fetch the JSON-LD serialization")
         public void testGetJsonLd() {
             try (final Response res = target(resource).request().accept("application/ld+json").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
                 assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -187,7 +190,7 @@ public class TrellisApplicationTest {
         @DisplayName("Fetch the N-Triples serialization")
         public void testGetNTriples() {
             try (final Response res = target(resource).request().accept("application/n-triples").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
                 assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -201,7 +204,7 @@ public class TrellisApplicationTest {
 
             // POST an LDP-RS
             try (final Response res = target(container).request().post(entity(content, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -217,7 +220,7 @@ public class TrellisApplicationTest {
         public void testGetRDF() {
             // Fetch the new resource
             try (final Response res = target(resource).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -245,7 +248,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(resource).request().method("PATCH",
                         entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                             APPLICATION_SPARQL_UPDATE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -255,7 +258,7 @@ public class TrellisApplicationTest {
 
             // Fetch the updated resource
             try (final Response res = target(resource).request().accept("application/n-triples").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
                 assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -277,7 +280,7 @@ public class TrellisApplicationTest {
             // Test the root container, verifying that the containment triple exists
             try (final Response res = target(container).request().get()) {
                 final Graph g = rdf.createGraph();
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
                 ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
@@ -312,7 +315,7 @@ public class TrellisApplicationTest {
             try (final Response res = target().request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
                 container = res.getLocation().toString();
@@ -320,7 +323,7 @@ public class TrellisApplicationTest {
 
             // POST an LDP-NR
             try (final Response res = target(container).request().post(entity(content, TEXT_PLAIN))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
 
                 binary = res.getLocation().toString();
@@ -332,7 +335,7 @@ public class TrellisApplicationTest {
         public void testGetBinary() throws IOException {
             // Fetch the new resource
             try (final Response res = target(binary).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
                 assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -350,7 +353,7 @@ public class TrellisApplicationTest {
         public void testGetBinaryDescription() {
             // Fetch the description
             try (final Response res = target(binary).request().accept("text/turtle").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -370,7 +373,7 @@ public class TrellisApplicationTest {
         public void testPostBinary() {
             // POST an LDP-NR
             try (final Response res = target(container).request().post(entity(content, TEXT_PLAIN))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -387,7 +390,7 @@ public class TrellisApplicationTest {
             // POST an LDP-NR
             try (final Response res = target(container).request().header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==")
                     .post(entity(content, TEXT_PLAIN))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -405,7 +408,7 @@ public class TrellisApplicationTest {
 
             // Fetch the description
             try (final Response res = target(binary).request().accept("text/turtle").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -425,7 +428,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(binary).request().method("PATCH",
                         entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                             APPLICATION_SPARQL_UPDATE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -433,7 +436,7 @@ public class TrellisApplicationTest {
 
             // Fetch the new description
             try (final Response res = target(binary).request().accept("text/turtle").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -448,7 +451,7 @@ public class TrellisApplicationTest {
 
             // Verify that the binary is still accessible
             try (final Response res = target(binary).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
                 assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -464,7 +467,7 @@ public class TrellisApplicationTest {
             // Test the root container, verifying that the containment triple exists
             try (final Response res = target(container).request().get()) {
                 final Graph g = rdf.createGraph();
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
                 ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
@@ -477,7 +480,7 @@ public class TrellisApplicationTest {
         public void testBinaryWantDigestSha() {
             // Test the SHA-1 algorithm
             try (final Response res = target(binary).request().header(WANT_DIGEST, "SHA,MD5").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
                 assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
                 assertEquals("sha=Z5pg2cWB1IqkKKMjh57cQKAeKp0=", res.getHeaderString(DIGEST));
@@ -489,7 +492,7 @@ public class TrellisApplicationTest {
         public void testBinaryWantDigestSha256() {
             // Test the SHA-256 algorithm
             try (final Response res = target(binary).request().header(WANT_DIGEST, "SHA-256").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
                 assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
                 assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST));
@@ -501,7 +504,7 @@ public class TrellisApplicationTest {
         public void testBinaryWantDigestUnknown() {
             // Test an unknown digest algorithm
             try (final Response res = target(binary).request().header(WANT_DIGEST, "FOO").get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
                 assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
                 assertNull(res.getHeaderString(DIGEST));
@@ -533,7 +536,7 @@ public class TrellisApplicationTest {
             try (final Response res = target().request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
                 container = res.getLocation().toString();
@@ -543,7 +546,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(container).request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
                 child = res.getLocation().toString();
@@ -554,7 +557,7 @@ public class TrellisApplicationTest {
         @DisplayName("Test fetching a basic container")
         public void testGetContainer() {
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -582,7 +585,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(container).request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
@@ -594,7 +597,7 @@ public class TrellisApplicationTest {
 
             // Now fetch the container
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -624,7 +627,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(child2).request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .put(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
@@ -632,7 +635,7 @@ public class TrellisApplicationTest {
 
             // Now fetch the resource
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -661,7 +664,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(container).request().header("Slug", "child3")
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
                 assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
@@ -671,7 +674,7 @@ public class TrellisApplicationTest {
 
             // Now fetch the resource
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -698,7 +701,7 @@ public class TrellisApplicationTest {
             final EntityTag etag;
 
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -718,16 +721,16 @@ public class TrellisApplicationTest {
 
             // Delete one of the child resources
             try (final Response res = target(child).request().delete()) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             }
 
             // Try fetching the deleted resource
             try (final Response res = target(child).request().get()) {
-                assertEquals(410, res.getStatus());
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
             }
 
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
                 assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -765,7 +768,7 @@ public class TrellisApplicationTest {
             try (final Response res = target().request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                     .post(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
 
                 base = res.getLocation().toString();
@@ -785,7 +788,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(base).request()
                     .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
                     .post(entity(content, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
 
                 container = res.getLocation().toString();
@@ -798,7 +801,7 @@ public class TrellisApplicationTest {
 
             // PUT an LDP-RS
             try (final Response res = target(member).request().put(entity(containerContent, TEXT_TURTLE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
             }
 
@@ -808,7 +811,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(other).request()
                     .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
                     .put(entity(content, TEXT_TURTLE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
             }
         }
@@ -826,7 +829,7 @@ public class TrellisApplicationTest {
 
             // Fetch the member resource
             try (final Response res = target(member).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
@@ -837,7 +840,7 @@ public class TrellisApplicationTest {
 
             // Fetch the container resource
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
@@ -850,7 +853,7 @@ public class TrellisApplicationTest {
 
             // POST an LDP-RS child
             try (final Response res = target(container).request().post(entity(childContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
 
                 child1 = res.getLocation().toString();
@@ -860,7 +863,7 @@ public class TrellisApplicationTest {
 
             // POST an LDP-RS child
             try (final Response res = target(container).request().post(entity(childContent, TEXT_TURTLE))) {
-                assertEquals(201, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
 
                 child2 = res.getLocation().toString();
@@ -870,7 +873,7 @@ public class TrellisApplicationTest {
 
             // Fetch the member resource
             try (final Response res = target(member).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
@@ -884,7 +887,7 @@ public class TrellisApplicationTest {
 
             // Fetch the container resource
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
@@ -900,17 +903,17 @@ public class TrellisApplicationTest {
 
             // Delete one of the child resources
             try (final Response res = target(child1).request().delete()) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             }
 
             // Try fetching the deleted resource
             try (final Response res = target(child1).request().get()) {
-                assertEquals(410, res.getStatus());
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
             }
 
             // Fetch the member resource
             try (final Response res = target(member).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
@@ -925,7 +928,7 @@ public class TrellisApplicationTest {
 
             // Fetch the container resource
             try (final Response res = target(container).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
@@ -948,13 +951,13 @@ public class TrellisApplicationTest {
             // Patch the direct container
             try (final Response res = target(container).request()
                     .method("PATCH", entity(updateContent, APPLICATION_SPARQL_UPDATE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
             }
 
             // Fetch the member resource
             try (final Response res = target(member).request().get()) {
-                assertEquals(200, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
@@ -979,7 +982,7 @@ public class TrellisApplicationTest {
             try (final Response res = target(other2).request()
                     .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
                     .put(entity(content, TEXT_TURTLE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
             }
         }
@@ -999,8 +1002,87 @@ public class TrellisApplicationTest {
             try (final Response res = target(other).request()
                     .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
                     .put(entity(content, TEXT_TURTLE))) {
-                assertEquals(204, res.getStatus());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating a direct container with too many member-related properties")
+        public void testUpdateDirectContainerTooManyMemberProps() throws Exception {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Direct Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> ; "
+                + "   ldp:isMemberOfRelation dc:isPartOf ; "
+                + "   ldp:hasMemberRelation dc:hasPart ; "
+                + "   dc:description \"This is a Direct Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating a direct container with too many membership resources")
+        public void testUpdateDirectContainerMultipleMemberResources() {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Direct Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> , <" + base + "/member3> ; "
+                + "   ldp:isMemberOfRelation dc:isPartOf ; "
+                + "   dc:description \"This is a Direct Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating a direct container with no member relation property")
+        public void testUpdateDirectContainerMissingMemberRelation() {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Direct Container\"@eng ; "
+                + "   ldp:membershipResource <" + base + "/member2> ; "
+                + "   dc:description \"This is a Direct Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test updating a direct container with no member resource")
+        public void testUpdateDirectContainerMissingMemberResource() {
+            final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> skos:prefLabel \"Direct Container\"@eng ; "
+                + "   ldp:isMemberOfRelation dc:isPartOf ; "
+                + "   dc:description \"This is a Direct Container for testing.\"@eng .";
+
+            // PUT an LDP-DC
+            try (final Response res = target(other).request()
+                    .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel("type").build())
+                    .put(entity(content, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
             }
         }
     }
@@ -1035,6 +1117,11 @@ public class TrellisApplicationTest {
     private static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+    }
+
+    private static Predicate<Link> hasConstrainedBy(final IRI iri) {
+        return link -> LDP.constrainedBy.getIRIString().equals(link.getRel())
+            && iri.getIRIString().equals(link.getUri().toString());
     }
 
     private static Predicate<Link> hasType(final IRI iri) {
