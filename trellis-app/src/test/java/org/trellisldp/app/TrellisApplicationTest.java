@@ -107,8 +107,8 @@ public class TrellisApplicationTest {
     public static void setUp() {
         APP.before();
         client = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
-        client.property("jersey.config.client.connectTimeout", 2000);
-        client.property("jersey.config.client.readTimeout", 2000);
+        client.property("jersey.config.client.connectTimeout", 5000);
+        client.property("jersey.config.client.readTimeout", 5000);
         baseURL = "http://localhost:" + APP.getLocalPort() + "/";
     }
 
@@ -285,6 +285,39 @@ public class TrellisApplicationTest {
                 assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
                 ioSvc.read((InputStream) res.getEntity(), baseURL, TURTLE).forEach(g::add);
                 assertTrue(g.contains(rdf.createIRI(container), LDP.contains, rdf.createIRI(resource)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating resource with invalid RDF")
+        public void testWeirdRDF() {
+            final String rdf
+                = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> a \"skos concept\" ;\n"
+                + "   skos:prefLabel \"Resource Name\"@eng ;\n"
+                + "   dc:subject <http://example.org/subject/1> .";
+
+            // POST an LDP-RS
+            try (final Response res = target(container).request().post(entity(rdf, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+                assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidRange)));
+            }
+        }
+
+        @Test
+        @DisplayName("Test creating resource with syntactically invalid RDF")
+        public void testInvalidRDF() {
+            final String rdf
+                = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
+                + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
+                + "<> a skos:Concept \n"
+                + "   skos:prefLabel \"Resource Name\"@eng \n"
+                + "   dc:subject <http://example.org/subject/1> .";
+
+            // POST an LDP-RS
+            try (final Response res = target(container).request().post(entity(rdf, TEXT_TURTLE))) {
+                assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
             }
         }
     }
