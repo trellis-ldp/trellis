@@ -812,12 +812,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(10L, res.stream().count());
+            assertEquals(11L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -953,12 +953,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(10L, res.stream().count());
+            assertEquals(11L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -990,12 +990,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(10L, res.stream().count());
+            assertEquals(11L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -1194,12 +1194,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getBinary().isPresent());
             assertEquals(of(DC.relation), res.getMemberOfRelation());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(10L, res.stream().count());
+            assertEquals(11L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -1231,12 +1231,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(10L, res.stream().count());
+            assertEquals(11L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -1431,12 +1431,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
+            assertEquals(12L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -1574,12 +1574,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
+            assertEquals(12L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -1717,12 +1717,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
+            assertEquals(12L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -1866,12 +1866,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(later));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
+            assertEquals(12L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -1904,12 +1904,12 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isBefore(evenLater));
             assertFalse(res.getBinary().isPresent());
             assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(0L, res.stream(LDP.PreferContainment).count());
             assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
+            assertEquals(12L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());

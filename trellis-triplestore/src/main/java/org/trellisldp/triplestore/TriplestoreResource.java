@@ -395,27 +395,31 @@ public class TriplestoreResource implements Resource {
      * This code is equivalent to the SPARQL query below.
      *
      * <p><pre><code>
-     * SELECT ?predicate ?object
+     * SELECT ?subject ?predicate ?object
      * WHERE {
      *   GRAPH trellis:PreferServerManaged {
-     *      ?subject ldp:membershipResource IDENTIFIER
-     *      AND ?subject rdf:type ldp:DirectContainer
-     *      AND ?subject ldp:hasMemberRelation ?predicate
-     *      AND ?object dc:isPartOf ?subject }
+     *      ?s ldp:member IDENTIFIER
+     *      ?s ldp:membershipResource ?subject
+     *      AND ?s rdf:type ldp:DirectContainer
+     *      AND ?s ldp:hasMemberRelation ?predicate
+     *      AND ?object dc:isPartOf ?s }
      * }
      * </code></pre>
      */
     private Stream<Quad> fetchDirectMemberQuads() {
         final Query q = new Query();
         q.setQuerySelectType();
+        q.addResultVar(SUBJECT);
         q.addResultVar(PREDICATE);
         q.addResultVar(OBJECT);
+        final Var s = Var.alloc("s");
 
         final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.membershipResource), rdf.asJenaNode(identifier)));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.DirectContainer)));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
-        epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), SUBJECT));
+        epb.addTriple(create(s, rdf.asJenaNode(LDP.member), rdf.asJenaNode(identifier)));
+        epb.addTriple(create(s, rdf.asJenaNode(LDP.membershipResource), SUBJECT));
+        epb.addTriple(create(s, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.DirectContainer)));
+        epb.addTriple(create(s, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
+        epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), s));
 
         final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
 
@@ -425,7 +429,7 @@ public class TriplestoreResource implements Resource {
         q.setQueryPattern(elg);
 
         final Stream.Builder<Quad> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferMembership, identifier,
+        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferMembership, getSubject(qs),
                         getPredicate(qs), getObject(qs))));
         return builder.build();
     }

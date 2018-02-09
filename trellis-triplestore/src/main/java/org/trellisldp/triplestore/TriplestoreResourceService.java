@@ -132,6 +132,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         init();
     }
 
+    private static RDFTerm getBaseIRI(final RDFTerm object) {
+        if (object instanceof IRI) {
+            final String iri = ((IRI) object).getIRIString().split("#")[0];
+            return rdf.createIRI(iri);
+        }
+        return object;
+    }
+
     @Override
     public Future<Boolean> put(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
         return supplyAsync(() -> {
@@ -150,8 +158,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                 // Relocate some user-managed triples into the server-managed graph
                 if (LDP.DirectContainer.equals(ixnModel) || LDP.IndirectContainer.equals(ixnModel)) {
                     dataset.getGraph(PreferUserManaged).ifPresent(g -> {
-                        g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t ->
-                                dataset.add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject()));
+                        g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t -> {
+                            // This allows for HTTP resource URL-based queries
+                            dataset.add(PreferServerManaged, identifier, LDP.member, getBaseIRI(t.getObject()));
+                            dataset.add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject());
+                        });
                         g.stream(identifier, LDP.hasMemberRelation, null).findFirst().ifPresent(t ->
                                 dataset.add(PreferServerManaged, identifier, LDP.hasMemberRelation, t.getObject()));
                         g.stream(identifier, LDP.isMemberOfRelation, null).findFirst().ifPresent(t ->
