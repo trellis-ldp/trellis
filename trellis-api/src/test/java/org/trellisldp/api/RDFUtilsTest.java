@@ -13,16 +13,22 @@
  */
 package org.trellisldp.api;
 
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toDataset;
 import static org.trellisldp.api.RDFUtils.toGraph;
 
+import java.util.Set;
+import java.util.stream.Collector;
+
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
@@ -67,6 +73,26 @@ public class RDFUtilsTest {
             .parallel().limit(size).collect(toDataset());
 
         assertTrue(size >= dataset.size());
+    }
+
+    @Test
+    public void testDatasetCollectorFinisher() {
+        final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
+            .parallel().limit(size).collect(toDataset());
+
+        final RDFUtils.DatasetCollector collector = toDataset();
+        assertEquals(dataset, collector.finisher().apply(dataset));
+    }
+
+    @Test
+    public void testDatasetCombiner() {
+        final Set<Quad> quads1 = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
+            .parallel().limit(size).collect(toSet());
+        final Set<Quad> quads2 = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
+            .parallel().limit(size).collect(toSet());
+
+        final Collector<Quad, Set<Quad>, Dataset> collector = toDataset().concurrent();
+        assertEquals(quads1.size() + quads2.size(), collector.combiner().apply(quads1, quads2).size());
     }
 
     private IRI getIRI() {
