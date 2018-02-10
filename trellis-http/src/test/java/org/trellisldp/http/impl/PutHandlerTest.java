@@ -256,7 +256,6 @@ public class PutHandlerTest {
 
     @Test
     public void testPutLdpNRDescription() {
-        System.out.println("LDP-NR description");
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -275,12 +274,10 @@ public class PutHandlerTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
-        System.out.println("End LDP-NR description");
     }
 
     @Test
     public void testPutLdpNRDescription2() {
-        System.out.println("LDP-NR description2");
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -298,7 +295,6 @@ public class PutHandlerTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
-        System.out.println("end LDP-NR description2");
     }
 
     @Test
