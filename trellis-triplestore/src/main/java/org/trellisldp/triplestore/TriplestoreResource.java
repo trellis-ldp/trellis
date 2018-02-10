@@ -296,8 +296,7 @@ public class TriplestoreResource implements Resource {
     }
 
     private Stream<Quad> fetchMembershipQuads() {
-        return concat(
-                concat(fetchIndirectMemberQuads(), fetchIndirectMemberDefaultContent()),
+        return concat(fetchIndirectMemberQuads(),
                 concat(fetchDirectMemberQuads(), fetchDirectMemberQuadsInverse()));
     }
 
@@ -305,89 +304,51 @@ public class TriplestoreResource implements Resource {
      * This code is equivalent to the SPARQL query below.
      *
      * <p><pre><code>
-     * SELECT ?predicate ?object
+     * SELECT ?subject ?predicate ?object
      * WHERE {
      *   GRAPH trellis:PreferServerManaged {
-     *      ?subject ldp:membershipResource IDENTIFIER
-     *      AND ?subject rdf:type ldp:IndirectContainer
-     *      AND ?subject ldp:membershipRelation ?predicate
-     *      AND ?subject ldp:insertedContentRelation ?o
-     *      AND ?s dc:isPartOf ?subject
+     *      ?s ldp:member IDENTIFIER
+     *      ?s ldp:membershipResource ?subject
+     *      AND ?s rdf:type ldp:IndirectContainer
+     *      AND ?s ldp:membershipRelation ?predicate
+     *      AND ?s ldp:insertedContentRelation ?o
+     *      AND ?res dc:isPartOf ?s .
      *   }
-     *   GRAPH ?s { ?s ?o ?object }
+     *   GRAPH ?res { ?res ?o ?object }
      * }
      * </code></pre>
      */
     private Stream<Quad> fetchIndirectMemberQuads() {
         final Var s = Var.alloc("s");
         final Var o = Var.alloc("o");
+        final Var res = Var.alloc("res");
 
         final Query q = new Query();
         q.setQuerySelectType();
+        q.addResultVar(SUBJECT);
         q.addResultVar(PREDICATE);
         q.addResultVar(OBJECT);
 
         final ElementPathBlock epb1 = new ElementPathBlock();
-        epb1.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.membershipResource), rdf.asJenaNode(identifier)));
-        epb1.addTriple(create(SUBJECT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
-        epb1.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
-        epb1.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.insertedContentRelation), o));
-        epb1.addTriple(create(s, rdf.asJenaNode(DC.isPartOf), SUBJECT));
+        epb1.addTriple(create(s, rdf.asJenaNode(LDP.member), rdf.asJenaNode(identifier)));
+        epb1.addTriple(create(s, rdf.asJenaNode(LDP.membershipResource), SUBJECT));
+        epb1.addTriple(create(s, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
+        epb1.addTriple(create(s, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
+        epb1.addTriple(create(s, rdf.asJenaNode(LDP.insertedContentRelation), o));
+        epb1.addTriple(create(res, rdf.asJenaNode(DC.isPartOf), s));
 
         final ElementPathBlock epb2 = new ElementPathBlock();
-        epb2.addTriple(create(s, o, OBJECT));
+        epb2.addTriple(create(res, o, OBJECT));
 
         final ElementGroup elg = new ElementGroup();
         elg.addElement(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb1));
-        elg.addElement(new ElementNamedGraph(s, epb2));
+        elg.addElement(new ElementNamedGraph(res, epb2));
 
         q.setQueryPattern(elg);
 
         final Stream.Builder<Quad> builder = builder();
         rdfConnection.querySelect(q, qs ->
-            builder.accept(rdf.createQuad(LDP.PreferMembership, identifier, getPredicate(qs), getObject(qs))));
-        return builder.build();
-    }
-
-    /**
-     * This code is equivalent to the SPARQL query below.
-     *
-     * <p><pre><code>
-     * SELECT ?predicate ?object
-     * WHERE {
-     *   GRAPH trellis:PreferServerManaged {
-     *      ?subject ldp:membershipResource IDENTIFIER
-     *      AND ?subject rdf:type ldp:IndirectContainer
-     *      AND ?subject ldp:membershipRelation ?predicate
-     *      AND ?subject ldp:insertedContentRelation ldp:MemberSubject
-     *      AND ?object dc:isPartOf ?subject
-     *   }
-     * }
-     * </code></pre>
-     */
-    private Stream<Quad> fetchIndirectMemberDefaultContent() {
-        final Query q = new Query();
-        q.setQuerySelectType();
-        q.addResultVar(PREDICATE);
-        q.addResultVar(OBJECT);
-
-        final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.membershipResource), rdf.asJenaNode(identifier)));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.insertedContentRelation), rdf.asJenaNode(LDP.MemberSubject)));
-        epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), SUBJECT));
-
-        final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
-
-        final ElementGroup elg = new ElementGroup();
-        elg.addElement(ng);
-
-        q.setQueryPattern(elg);
-
-        final Stream.Builder<Quad> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferMembership, identifier,
-                        getPredicate(qs), getObject(qs))));
+            builder.accept(rdf.createQuad(LDP.PreferMembership, getSubject(qs), getPredicate(qs), getObject(qs))));
         return builder.build();
     }
 
@@ -400,8 +361,8 @@ public class TriplestoreResource implements Resource {
      *   GRAPH trellis:PreferServerManaged {
      *      ?s ldp:member IDENTIFIER
      *      ?s ldp:membershipResource ?subject
-     *      AND ?s rdf:type ldp:DirectContainer
      *      AND ?s ldp:hasMemberRelation ?predicate
+     *      AND ?s ldp:insertedContentRelation ldp:MemberSubject
      *      AND ?object dc:isPartOf ?s }
      * }
      * </code></pre>
@@ -417,8 +378,8 @@ public class TriplestoreResource implements Resource {
         final ElementPathBlock epb = new ElementPathBlock();
         epb.addTriple(create(s, rdf.asJenaNode(LDP.member), rdf.asJenaNode(identifier)));
         epb.addTriple(create(s, rdf.asJenaNode(LDP.membershipResource), SUBJECT));
-        epb.addTriple(create(s, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.DirectContainer)));
         epb.addTriple(create(s, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
+        epb.addTriple(create(s, rdf.asJenaNode(LDP.insertedContentRelation), rdf.asJenaNode(LDP.MemberSubject)));
         epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), s));
 
         final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
@@ -442,9 +403,9 @@ public class TriplestoreResource implements Resource {
      * WHERE {
      *   GRAPH trellis:PreferServerManaged {
      *      IDENTIFIER dc:isPartOf ?subject .
-     *      ?subject rdf:type ldp:DirectContainer .
      *      ?subject ldp:isMemberOfRelation ?predicate .
      *      ?subject ldp:membershipResource ?object .
+     *      ?subject ldp:insertedContentRelation ldp:MemberSubject .
      *   }
      * }
      * </code></pre>
@@ -457,9 +418,9 @@ public class TriplestoreResource implements Resource {
 
         final ElementPathBlock epb = new ElementPathBlock();
         epb.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), SUBJECT));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.DirectContainer)));
         epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.isMemberOfRelation), PREDICATE));
         epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.membershipResource), OBJECT));
+        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.insertedContentRelation), rdf.asJenaNode(LDP.MemberSubject)));
 
         final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
 

@@ -1341,8 +1341,7 @@ public class TrellisApplicationTest {
                 final Graph g = rdf.createGraph();
                 ioSvc.read((InputStream) res.getEntity(), member, TURTLE).forEach(g::add);
                 assertTrue(g.contains(rdf.createIRI(container2), LDP.contains, rdf.createIRI(child)));
-                // TODO -- fix this
-                //assertTrue(g.contains(rdf.createIRI(container2 + "#members"), LDP.member, rdf.createIRI(child)));
+                assertTrue(g.contains(rdf.createIRI(container2 + "#members"), LDP.member, rdf.createIRI(child)));
             }
         }
 

@@ -331,6 +331,7 @@ public class TriplestoreResourceTest {
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.member, other);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.membershipResource, other);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.hasMemberRelation, DC.subject);
+        dataset.add(Trellis.PreferServerManaged, identifier, LDP.insertedContentRelation, LDP.MemberSubject);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
         dataset.add(Trellis.PreferServerManaged, child1, DC.isPartOf, identifier);
         dataset.add(Trellis.PreferServerManaged, child2, DC.isPartOf, identifier);
@@ -347,14 +348,14 @@ public class TriplestoreResourceTest {
         assertTrue(res.getMembershipResource().isPresent());
         assertTrue(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().isPresent());
+        assertTrue(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
-        assertEquals(6L, res.stream(singleton(Trellis.PreferServerManaged)).count());
+        assertEquals(7L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(4L, res.stream(singleton(LDP.PreferContainment)).count());
-        assertEquals(12L, res.stream().count());
+        assertEquals(13L, res.stream().count());
 
         final TriplestoreResource res2 = new TriplestoreResource(rdfConnection, other);
         res2.fetchData();
@@ -390,6 +391,7 @@ public class TriplestoreResourceTest {
         dataset.add(Trellis.PreferServerManaged, other, DC.modified, rdf.createLiteral(time, XSD.dateTime));
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         dataset.add(Trellis.PreferServerManaged, identifier, RDF.type, LDP.IndirectContainer);
+        dataset.add(Trellis.PreferServerManaged, identifier, LDP.member, other);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.membershipResource, other);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.hasMemberRelation, DC.relation);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.insertedContentRelation, DC.subject);
@@ -417,10 +419,10 @@ public class TriplestoreResourceTest {
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isDeleted());
-        assertEquals(6L, res.stream(singleton(Trellis.PreferServerManaged)).count());
+        assertEquals(7L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(4L, res.stream(singleton(LDP.PreferContainment)).count());
-        assertEquals(12L, res.stream().count());
+        assertEquals(13L, res.stream().count());
 
         final TriplestoreResource res2 = new TriplestoreResource(rdfConnection, other);
         res2.fetchData();
