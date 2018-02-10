@@ -831,7 +831,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(obj.containsKey("@context"));
         assertTrue(obj.containsKey("title"));
         assertFalse(obj.containsKey("mode"));
-        assertTrue(obj.containsKey("created"));
+        assertFalse(obj.containsKey("created"));
 
         assertEquals("A title", (String) obj.get("title"));
     }
