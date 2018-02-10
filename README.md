@@ -52,18 +52,18 @@ The overall code base for Trellis is small, and it is divided up into even small
 independently. This simplifies maintenance and it also makes it easy to customize individual components as needed. Trellis
 has also been designed to fully support OSGi deployment (scheduled for the 0.2.0 release).
 
+### Web Standards
+
+There are a lot of standards in existence. Trellis has selected to conform to a collection of well-defined and broadly used
+specifications because doing so provides a solid and well-understood foundation for interacting with the software. This also
+makes the Trellis API stable and consistent.
+
 ### Flexibility
 
 Because Trellis is built on top of LDP, clients that interact with it tend to use a lot of RDF (e.g. JSON-LD). Trellis
 enforces only a very minimal set of restrictions on what RDF is allowable: basically, if LDP prohibits it, Trellis does not
 allow it, but otherwise, pretty much anything goes. You can use any RDF vocabulary; you can store binaries of any type. Any
 special handling of particular content types needs to be handled in another layer of your software stack.
-
-### Web Standards
-
-There are a lot of standards in existence. Trellis has selected to conform to a collection of well-defined and broadly used
-specifications because doing so provides a solid and well-understood foundation for interacting with the software. This also
-makes the Trellis API stable and consistent.
 
 ### External Integrations
 
