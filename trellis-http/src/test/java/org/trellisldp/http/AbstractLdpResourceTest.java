@@ -2074,6 +2074,19 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPostIgnoreContains() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
+                    eq(MAX))).thenReturn(empty());
+
+        final Response res = target(RESOURCE_PATH).request()
+            .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
+                    TEXT_TURTLE_TYPE));
+
+        assertEquals(CREATED, res.getStatusInfo());
+    }
+
+    @Test
     public void testPostNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2281,6 +2294,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(Trellis.InvalidRange, LDP.constrainedBy.getIRIString())));
+    }
+
+    @Test
+    public void testPutIgnoreContains() {
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
+                    TEXT_TURTLE_TYPE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
     }
 
     @Test

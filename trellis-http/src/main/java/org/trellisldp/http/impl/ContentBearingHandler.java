@@ -82,6 +82,7 @@ class ContentBearingHandler extends BaseLdpHandler {
         try (final InputStream input = new FileInputStream(entity)) {
             ioService.read(input, identifier, syntax)
                 .map(skolemizeTriples(resourceService, baseUrl))
+                .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
                 .map(triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(),
                             triple.getObject()))
                 .forEachOrdered(dataset::add);
