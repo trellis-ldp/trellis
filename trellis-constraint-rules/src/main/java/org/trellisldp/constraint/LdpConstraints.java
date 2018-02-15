@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.ConstraintService;
@@ -106,11 +105,6 @@ public class LdpConstraints implements ConstraintService {
         return of(model).filter(typeMap::containsKey).map(typeMap::get).orElse(basicConstraints);
     }
 
-    // Don't allow LDP types to be set explicitly
-    private static final Predicate<Triple> typeFilter = triple ->
-        of(triple).filter(t -> t.getPredicate().equals(RDF.type)).map(Triple::getObject)
-            .map(RDFTerm::ntriplesString).filter(str -> str.startsWith("<" + LDP.URI)).isPresent();
-
     // Verify that the object of a triple whose predicate is either ldp:hasMemberRelation or ldp:isMemberOfRelation
     // is not equal to ldp:contains or any of the other cardinality-restricted IRIs
     private static Predicate<Triple> invalidMembershipProperty = triple ->
@@ -159,9 +153,6 @@ public class LdpConstraints implements ConstraintService {
         return triple -> {
             final Stream.Builder<ConstraintViolation> builder = Stream.builder();
             of(triple).filter(propertyFilter(model)).map(t -> new ConstraintViolation(Trellis.InvalidProperty, t))
-                .ifPresent(builder::accept);
-
-            of(triple).filter(typeFilter).map(t -> new ConstraintViolation(Trellis.InvalidType, t))
                 .ifPresent(builder::accept);
 
             of(triple).filter(uriRangeFilter).map(t -> new ConstraintViolation(Trellis.InvalidRange, t))
