@@ -265,7 +265,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error persisting data: {}", ex.getMessage());
         }
-        LOGGER.error("Could not persist data");
+        LOGGER.error("Could not persist data: {}", upload.getPath());
         return serverError().entity("Could not persist data internally").build();
     }
 

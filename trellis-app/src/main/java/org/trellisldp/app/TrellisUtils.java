@@ -231,7 +231,8 @@ final class TrellisUtils {
                 return buildAmqpPublisher(config, environment);
             }
         }
-        LOGGER.info("Using no-op event service: notifications will be disabled.");
+        final String status = "notifications will be disabled";
+        LOGGER.info("Using no-op event service: {}", status);
         return new NoopEventService();
     }
 

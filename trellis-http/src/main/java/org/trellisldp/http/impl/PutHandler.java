@@ -172,8 +172,8 @@ public class PutHandler extends ContentBearingHandler {
 
         LOGGER.info("Using LDP Type: {}", ldpType);
         // It is not possible to change the LDP type to a type that is not a subclass
-        if (nonNull(res) && !isBinaryDescription && !ldpResourceTypes(ldpType)
-                .anyMatch(res.getInteractionModel()::equals)) {
+        if (nonNull(res) && !isBinaryDescription && ldpResourceTypes(ldpType)
+                .noneMatch(res.getInteractionModel()::equals)) {
             return status(CONFLICT).entity("Cannot change the LDP type to " + ldpType).type(TEXT_PLAIN);
         }
 

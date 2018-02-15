@@ -467,7 +467,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         if (baseUrl.isPresent()) {
             return toExternal(identifier, baseUrl.get()).getIRIString();
         }
-        LOGGER.warn("No baseURL defined. Emitting message with resource's internal IRI");
+        LOGGER.warn("No baseURL defined. Emitting message with resource's internal IRI: {}", identifier);
         return identifier.getIRIString();
     }
 

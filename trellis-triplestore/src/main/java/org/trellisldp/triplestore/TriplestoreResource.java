@@ -127,7 +127,7 @@ public class TriplestoreResource implements Resource {
      * </code></pre>
      */
     protected void fetchData() {
-        LOGGER.debug("Fetching data from RDF datastore");
+        LOGGER.debug("Fetching data from RDF datastore for: {}", identifier);
         final Var binarySubject = Var.alloc("binarySubject");
         final Var binaryPredicate = Var.alloc("binaryPredicate");
         final Var binaryObject = Var.alloc("binaryObject");
