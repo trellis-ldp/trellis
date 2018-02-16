@@ -238,7 +238,7 @@ public class PutHandler extends ContentBearingHandler {
                 }
             });
             // TODO is this the best we can do? what concurrency errors are lurking?
-            Future<Boolean> success = res != null
+            final Future<Boolean> success = res != null
                             ? resourceService.replace(internalId, ldpType, dataset.asDataset())
                             : resourceService.create(internalId, ldpType, dataset.asDataset());
             if (success.get()) {

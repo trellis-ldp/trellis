@@ -164,7 +164,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         return supplyAsync(() -> createOrReplace(identifier, ixnModel, dataset, OperationType.REPLACE));
     }
 
-    private Boolean createOrReplace(final IRI identifier, final IRI ixnModel, final Dataset dataset, final OperationType type) {
+    private Boolean createOrReplace(final IRI identifier, final IRI ixnModel, final Dataset dataset,
+            final OperationType type) {
         final Instant eventTime = now();
 
         // Set the LDP type
@@ -374,7 +375,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         return createURI(identifier.getIRIString() + "?ext=audit");
     }
 
-    private static enum OperationType {
+    private enum OperationType {
         DELETE, CREATE, REPLACE
     }
 
@@ -406,7 +407,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * }
      * </code></pre></p>
      */
-    private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset, OperationType type) {
+    private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset,
+            final OperationType type) {
 
         // Set the time
         dataset.add(PreferServerManaged, identifier, DC.modified, time);
