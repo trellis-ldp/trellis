@@ -474,7 +474,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.replace(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -529,7 +529,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
-        assertTrue(svc.create(resource, LDP.Container, dataset).get());
+        assertTrue(svc.replace(resource, LDP.Container, dataset).get());
         verify(svc).toExternal(resource, baseUrl);
     }
 
@@ -629,7 +629,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant preDelete = meanwhile();
 
-        assertTrue(svc.create(child, LDP.Resource, dataset).get());
+        assertTrue(svc.delete(child, LDP.Resource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertTrue(res.isDeleted());
@@ -750,7 +750,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.replace(child, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
