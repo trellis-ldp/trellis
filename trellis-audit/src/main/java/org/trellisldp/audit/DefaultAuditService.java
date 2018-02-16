@@ -37,7 +37,7 @@ import org.trellisldp.vocabulary.XSD;
  * <p>This class makes use of the {@link PROV} vocabulary and {@link BlankNode}
  * objects in a {@code http://www.trellisldp.org/ns/trellis#PreferAudit} named
  * graph.
- * 
+ *
  * @author acoburn
  */
 public abstract class DefaultAuditService implements AuditService {

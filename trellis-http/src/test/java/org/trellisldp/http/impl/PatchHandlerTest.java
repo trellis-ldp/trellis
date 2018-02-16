@@ -124,7 +124,8 @@ public class PatchHandlerTest {
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
@@ -161,6 +162,7 @@ public class PatchHandlerTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         // will never store audit
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", badAuditService, mockResourceService,
                         mockIoService, null);
@@ -192,7 +194,7 @@ public class PatchHandlerTest {
 
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(identifier.getIRIString()));
 
-        verify(mockResourceService).create(eq(identifier), eq(LDP.RDFSource), any(Dataset.class));
+        verify(mockResourceService).replace(eq(identifier), eq(LDP.RDFSource), any(Dataset.class));
     }
 
     @Test
@@ -264,7 +266,7 @@ public class PatchHandlerTest {
 
     @Test
     public void testError() {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
                     any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
