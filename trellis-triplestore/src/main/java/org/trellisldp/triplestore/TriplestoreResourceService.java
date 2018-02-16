@@ -150,8 +150,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         LOGGER.debug("Deleting: {}", identifier);
         return supplyAsync(() -> {
             final Instant eventTime = now();
-            // Set the LDP type
-            dataset.remove(of(PreferServerManaged), identifier, RDF.type, null);
+            dataset.clear();
             dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
             dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
             return storeAndNotify(identifier, dataset, eventTime, OperationType.DELETE);
@@ -589,7 +588,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public Optional<Resource> get(final IRI identifier, final Instant time) {
-        return mementoService.map(svc -> svc.get(identifier, time)).orElseGet(() -> get(identifier));
+        // TODO -- JDK9 replace with Optional::or
+        final Optional<Resource> res = mementoService.flatMap(svc -> svc.get(identifier, time));
+        return res.isPresent() ? res : get(identifier);
     }
 
     @Override
