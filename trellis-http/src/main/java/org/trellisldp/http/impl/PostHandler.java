@@ -150,7 +150,7 @@ public class PostHandler extends ContentBearingHandler {
                 readEntityIntoDataset(identifier, baseUrl, PreferUserManaged, rdfSyntax.orElse(TURTLE), dataset);
 
                 // Check for any constraints
-                checkConstraint(dataset, PreferUserManaged, ldpType, TRELLIS_DATA_PREFIX, rdfSyntax.orElse(TURTLE));
+                checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
             }
 
             if (resourceService.create(internalId, ldpType, dataset.asDataset()).get()) {

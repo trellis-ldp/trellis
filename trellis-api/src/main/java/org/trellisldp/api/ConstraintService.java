@@ -30,9 +30,20 @@ public interface ConstraintService {
      * Check a graph against an LDP interaction model.
      *
      * @param interactionModel the interaction model
+     * @param graph the graph
      * @param domain the domain of the resource
+     * @return any constraint violations on the graph
+     */
+    Stream<ConstraintViolation> constrainedBy(IRI interactionModel, Graph graph, String domain);
+
+    /**
+     * Check a graph against an LDP interaction model.
+     *
+     * @param interactionModel the interaction model
      * @param graph the graph
      * @return any constraint violations on the graph
      */
-    Stream<ConstraintViolation> constrainedBy(IRI interactionModel, String domain, Graph graph);
+    default Stream<ConstraintViolation> constrainedBy(IRI interactionModel, Graph graph) {
+        return constrainedBy(interactionModel, graph, RDFUtils.TRELLIS_DATA_PREFIX);
+    }
 }

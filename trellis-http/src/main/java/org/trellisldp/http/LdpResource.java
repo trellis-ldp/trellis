@@ -254,7 +254,7 @@ public class LdpResource implements ContainerRequestFilter {
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
-            LOGGER.info("Getting timemap resource");
+            LOGGER.info("Getting timemap resource: {}", req.getPath());
             return resourceService.get(identifier)
                 .map(res -> new MementoResource(resourceService).getTimeMapBuilder(req, ioService, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();

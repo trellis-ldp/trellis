@@ -176,7 +176,7 @@ public class PatchHandler extends BaseLdpHandler {
             // Check any constraints
             final List<ConstraintViolation> violations = constraintServices.stream()
                 .flatMap(svc -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
-                    .flatMap(g -> svc.constrainedBy(res.getInteractionModel(), baseUrl, g)))
+                    .flatMap(g -> svc.constrainedBy(res.getInteractionModel(), g)))
                 .collect(toList());
 
             if (!violations.isEmpty()) {

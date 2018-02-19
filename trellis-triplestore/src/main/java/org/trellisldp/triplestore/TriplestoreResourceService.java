@@ -131,6 +131,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         init();
     }
 
+    private static RDFTerm getBaseIRI(final RDFTerm object) {
+        if (object instanceof IRI) {
+            final String iri = ((IRI) object).getIRIString().split("#")[0];
+            return rdf.createIRI(iri);
+        }
+        return object;
+    }
+
     @Override
     public Future<Boolean> create(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
         LOGGER.debug("Creating: {}", identifier);
@@ -139,11 +147,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public Future<Boolean> delete(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
-        return supplyAsync(() -> {      
-            LOGGER.debug("Deleting: {}", identifier);
+        LOGGER.debug("Deleting: {}", identifier);
+        return supplyAsync(() -> {
             final Instant eventTime = now();
-            // Set the LDP type
-            dataset.remove(of(PreferServerManaged), identifier, RDF.type, null);
+            dataset.clear();
             dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
             dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
             return storeAndNotify(identifier, dataset, eventTime, OperationType.DELETE);
@@ -156,7 +163,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         return supplyAsync(() -> createOrReplace(identifier, ixnModel, dataset, OperationType.REPLACE));
     }
 
-    private Boolean createOrReplace(final IRI identifier, final IRI ixnModel, final Dataset dataset, final OperationType type) {
+    private Boolean createOrReplace(final IRI identifier, final IRI ixnModel, final Dataset dataset,
+            final OperationType type) {
         final Instant eventTime = now();
 
         // Set the LDP type
@@ -166,8 +174,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         // Relocate some user-managed triples into the server-managed graph
         if (LDP.DirectContainer.equals(ixnModel) || LDP.IndirectContainer.equals(ixnModel)) {
             dataset.getGraph(PreferUserManaged).ifPresent(g -> {
-                g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t -> dataset
-                                .add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject()));
+                g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t -> {
+                    // This allows for HTTP resource URL-based queries
+                    dataset.add(PreferServerManaged, identifier, LDP.member, getBaseIRI(t.getObject()));
+                    dataset.add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject());
+                });
                 g.stream(identifier, LDP.hasMemberRelation, null).findFirst().ifPresent(t -> dataset
                                 .add(PreferServerManaged, identifier, LDP.hasMemberRelation, t.getObject()));
                 g.stream(identifier, LDP.isMemberOfRelation, null).findFirst().ifPresent(t -> dataset
@@ -362,8 +373,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private Node getAuditIRI(final IRI identifier) {
         return createURI(identifier.getIRIString() + "?ext=audit");
     }
-    
-    private static enum OperationType{
+
+    private enum OperationType {
         DELETE, CREATE, REPLACE
     }
 
@@ -395,7 +406,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * }
      * </code></pre></p>
      */
-    private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset, OperationType type) {
+    private UpdateRequest buildUpdateRequest(final IRI identifier, final Literal time, final Dataset dataset,
+            final OperationType type) {
 
         // Set the time
         dataset.add(PreferServerManaged, identifier, DC.modified, time);
@@ -470,7 +482,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         if (baseUrl.isPresent()) {
             return toExternal(identifier, baseUrl.get()).getIRIString();
         }
-        LOGGER.warn("No baseURL defined. Emitting message with resource's internal IRI");
+        LOGGER.warn("No baseURL defined. Emitting message with resource's internal IRI: {}", identifier);
         return identifier.getIRIString();
     }
 
@@ -576,7 +588,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public Optional<Resource> get(final IRI identifier, final Instant time) {
-        return mementoService.map(svc -> svc.get(identifier, time)).orElseGet(() -> get(identifier));
+        // TODO -- JDK9 replace with Optional::or
+        final Optional<Resource> res = mementoService.flatMap(svc -> svc.get(identifier, time));
+        return res.isPresent() ? res : get(identifier);
     }
 
     @Override
@@ -608,8 +622,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     /**
-     * TODO Replace when COMMONSRDF-74 is addressed.
-     * 
+     * TODO Replace when COMMONSRDF-74 is released.
+     *
      * @param dataset a Commons RDF {@link Dataset}
      * @return a Jena {@link org.apache.jena.query.Dataset}
      */
@@ -623,17 +637,17 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         }
         return org.apache.jena.query.DatasetFactory.wrap(dsg);
     }
-    
+
     /**
      * Alias{@link org.apache.jena.graph.Triple#create(Node, Node, Node)} to
      * avoid collision with {@link ResourceService#create(IRI, IRI, Dataset)}.
-     * 
+     *
      * @param subj the subject
      * @param pred the predicate
      * @param obj the object
      * @return a {@link org.apache.jena.graph.Triple}
      */
-    private static org.apache.jena.graph.Triple triple(Node subj, Node pred, Node obj) {
+    private static org.apache.jena.graph.Triple triple(final Node subj, final Node pred, final Node obj) {
         return org.apache.jena.graph.Triple.create(subj, pred, obj);
     }
 }

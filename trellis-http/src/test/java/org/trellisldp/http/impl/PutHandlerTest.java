@@ -125,6 +125,10 @@ public class PutHandlerTest {
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
         when(mockBinaryService.getIdentifierSupplier()).thenReturn(() -> "file:" + randomUUID());
+
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
@@ -169,6 +173,7 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
         // will never store audit
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, badAuditService,
                         mockIoService, mockBinaryService, null);
@@ -273,7 +278,6 @@ public class PutHandlerTest {
 
     @Test
     public void testPutLdpNRDescription() {
-        System.out.println("LDP-NR description");
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -292,12 +296,10 @@ public class PutHandlerTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
-        System.out.println("End LDP-NR description");
     }
 
     @Test
     public void testPutLdpNRDescription2() {
-        System.out.println("LDP-NR description2");
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -315,7 +317,6 @@ public class PutHandlerTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
-        System.out.println("end LDP-NR description2");
     }
 
     @Test
@@ -369,7 +370,7 @@ public class PutHandlerTest {
     @Test
     public void testError() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
                     any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());

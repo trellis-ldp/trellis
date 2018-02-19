@@ -84,6 +84,7 @@ class ContentBearingHandler extends BaseLdpHandler {
         try (final InputStream input = new FileInputStream(entity)) {
             ioService.read(input, identifier, syntax)
                 .map(skolemizeTriples(resourceService, baseUrl))
+                .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
                 .map(triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(),
                             triple.getObject()))
                 .forEachOrdered(dataset::add);
@@ -95,9 +96,9 @@ class ContentBearingHandler extends BaseLdpHandler {
     }
 
     protected void checkConstraint(final TrellisDataset dataset, final IRI graphName, final IRI type,
-            final String baseUrl, final RDFSyntax syntax) {
+            final RDFSyntax syntax) {
         final List<ConstraintViolation> violations = constraintServices.stream().parallel().flatMap(svc ->
-                dataset.getGraph(graphName).map(g -> svc.constrainedBy(type, baseUrl, g)).orElseGet(Stream::empty))
+                dataset.getGraph(graphName).map(g -> svc.constrainedBy(type, g)).orElseGet(Stream::empty))
             .collect(toList());
 
         if (!violations.isEmpty()) {

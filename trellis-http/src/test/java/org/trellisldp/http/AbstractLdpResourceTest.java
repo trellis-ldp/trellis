@@ -369,9 +369,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             return term;
         });
 
-        when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
+        when(mockResourceService.delete(any(IRI.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
+        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
+        when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
@@ -836,7 +842,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(obj.containsKey("@context"));
         assertTrue(obj.containsKey("title"));
         assertFalse(obj.containsKey("mode"));
-        assertTrue(obj.containsKey("created"));
+        assertFalse(obj.containsKey("created"));
 
         assertEquals("A title", (String) obj.get("title"));
     }
@@ -2079,6 +2085,19 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPostIgnoreContains() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
+                    eq(MAX))).thenReturn(empty());
+
+        final Response res = target(RESOURCE_PATH).request()
+            .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
+                    TEXT_TURTLE_TYPE));
+
+        assertEquals(CREATED, res.getStatusInfo());
+    }
+
+    @Test
     public void testPostNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2232,7 +2251,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutInterrupted() throws Exception {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
 
@@ -2245,7 +2264,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutFutureException() throws Exception {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
 
@@ -2286,6 +2305,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(Trellis.InvalidRange, LDP.constrainedBy.getIRIString())));
+    }
+
+    @Test
+    public void testPutIgnoreContains() {
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
+                    TEXT_TURTLE_TYPE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
     }
 
     @Test
@@ -2521,7 +2549,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testDeleteInterrupted() throws Exception {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
+        when(mockResourceService.delete(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
 
@@ -2532,7 +2560,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testDeleteFutureException() throws Exception {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
+        when(mockResourceService.delete(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
 
@@ -2697,7 +2725,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPatchInterrupted() throws Exception {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
 
@@ -2710,7 +2738,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPatchFutureException() throws Exception {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
 

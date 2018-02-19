@@ -89,7 +89,7 @@ public class DeleteHandler extends BaseLdpHandler {
             // Add the baseURL
             dataset.add(rdf.createQuad(null, res.getIdentifier(), DC.isPartOf, rdf.createIRI(baseUrl)));
 
-            // When deleting just the ACL graph, keep the user managed triples in tact
+            // When deleting just the ACL graph, keep the user managed triples intact
             if (ACL.equals(req.getExt())) {
                 try (final Stream<? extends Triple> triples = res.stream(PreferUserManaged)) {
                     triples.map(t -> rdf.createQuad(PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))

@@ -123,7 +123,8 @@ public final class RdfUtils {
                 include.remove(Trellis.PreferUserManaged.getIRIString());
             }
             p.getOmit().forEach(include::remove);
-            p.getInclude().forEach(include::add);
+            p.getInclude().stream().filter(iri -> !iri.equals(Trellis.PreferUserManaged.getIRIString())
+                    && !iri.equals(Trellis.PreferServerManaged.getIRIString())).forEach(include::add);
         });
         return quad -> quad.getGraphName().filter(x -> x instanceof IRI).map(x -> (IRI) x)
             .map(IRI::getIRIString).filter(include::contains).isPresent();

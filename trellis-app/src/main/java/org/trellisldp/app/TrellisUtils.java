@@ -24,6 +24,8 @@ import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.app.config.NotificationsConfiguration.Type.AMQP;
+import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
 
 import com.google.common.cache.Cache;
@@ -32,7 +34,10 @@ import com.rabbitmq.client.ConnectionFactory;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
+import io.dropwizard.lifecycle.AutoCloseableManager;
+import io.dropwizard.setup.Environment;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -44,6 +49,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
+
+import javax.jms.Connection;
+import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.rdf.api.IRI;
@@ -181,27 +190,49 @@ final class TrellisUtils {
         return factory;
     }
 
-    public static EventService getEventService(final TrellisConfiguration config) {
-        final NotificationsConfiguration c = config.getNotifications();
-        try {
-            if (c.getEnabled()) {
-                switch (c.getType()) {
-                    case KAFKA:
-                        LOGGER.info("Connecting to Kafka broker at {}", c.getConnectionString());
-                        return new KafkaPublisher(new KafkaProducer<>(getKafkaProperties(c)), c.getTopicName());
-                    case JMS:
-                        LOGGER.info("Connecting to JMS broker at {}", c.getConnectionString());
-                        return new JmsPublisher(getJmsFactory(c).createConnection(), c.getTopicName());
-                    case AMQP:
-                        LOGGER.info("Connecting to AMQP broker at {}", c.getConnectionString());
-                        return new AmqpPublisher(getAmqpFactory(c).newConnection().createChannel(), c.getTopicName(),
-                                c.any().getOrDefault("routing.key", c.getTopicName()));
-                }
+    private static EventService buildKafkaPublisher(final NotificationsConfiguration config,
+            final Environment environment) {
+        LOGGER.info("Connecting to Kafka broker at {}", config.getConnectionString());
+        final KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getKafkaProperties(config));
+        environment.lifecycle().manage(new AutoCloseableManager(kafkaProducer));
+        return new KafkaPublisher(kafkaProducer, config.getTopicName());
+    }
+
+    private static EventService buildJmsPublisher(final NotificationsConfiguration config,
+            final Environment environment) throws JMSException {
+        LOGGER.info("Connecting to JMS broker at {}", config.getConnectionString());
+        final Connection jmsConnection = getJmsFactory(config).createConnection();
+        environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
+        return new JmsPublisher(jmsConnection, config.getTopicName());
+    }
+
+    private static EventService buildAmqpPublisher(final NotificationsConfiguration config,
+            final Environment environment) throws IOException, URISyntaxException, TimeoutException,
+            NoSuchAlgorithmException, KeyManagementException {
+        LOGGER.info("Connecting to AMQP broker at {}", config.getConnectionString());
+        final com.rabbitmq.client.Connection amqpConnection = getAmqpFactory(config).newConnection();
+        environment.lifecycle().manage(new AutoCloseableManager(amqpConnection));
+        return new AmqpPublisher(amqpConnection.createChannel(), config.getTopicName(),
+                    config.any().getOrDefault("routing.key", config.getTopicName()));
+    }
+
+    public static EventService getNotificationService(final NotificationsConfiguration config,
+            final Environment environment) throws JMSException, IOException, URISyntaxException, TimeoutException,
+            NoSuchAlgorithmException, KeyManagementException {
+
+        if (config.getEnabled()) {
+            if (KAFKA.equals(config.getType())) {
+                return buildKafkaPublisher(config, environment);
+
+            } else if (JMS.equals(config.getType())) {
+                return buildJmsPublisher(config, environment);
+
+            } else if (AMQP.equals(config.getType())) {
+                return buildAmqpPublisher(config, environment);
             }
-        } catch (final Exception ex) {
-            LOGGER.error("Error establishing broker connection: {}, defaulting to NO-OP event service.",
-                    ex.getMessage());
         }
+        final String status = "notifications will be disabled";
+        LOGGER.info("Using no-op event service: {}", status);
         return new NoopEventService();
     }
 

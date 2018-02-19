@@ -19,7 +19,7 @@ import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
 import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
-import static org.trellisldp.app.TrellisUtils.getEventService;
+import static org.trellisldp.app.TrellisUtils.getNotificationService;
 import static org.trellisldp.app.TrellisUtils.getRDFConnection;
 import static org.trellisldp.app.TrellisUtils.getWebacConfiguration;
 
@@ -27,8 +27,6 @@ import io.dropwizard.Application;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-
-import java.io.IOException;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.agent.SimpleAgent;
@@ -59,9 +57,6 @@ import org.trellisldp.webac.WebACService;
  */
 public class TrellisApplication extends Application<TrellisConfiguration> {
 
-    private static final Integer BINARY_HIERARCHY_LENGTH = 2;
-    private static final Integer BINARY_HIERARCHY_LEVELS = 3;
-
     /**
      * The main entry point.
      * @param args the argument list
@@ -83,15 +78,15 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     @Override
     public void run(final TrellisConfiguration config,
-                    final Environment environment) throws IOException {
+                    final Environment environment) throws Exception {
+
+        final EventService notificationService = getNotificationService(config.getNotifications(), environment);
 
         final RDFConnection rdfConnection = getRDFConnection(config);
 
         final String mementoLocation = config.getMementos();
 
         final String baseUrl = config.getBaseUrl();
-
-        final EventService notificationService = getEventService(config);
 
         final IdentifierService idService = new UUIDGenerator();
 
@@ -103,7 +98,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
 
         final BinaryService binaryService = new FileBinaryService(config.getBinaries(),
-                idService.getSupplier("file:", BINARY_HIERARCHY_LEVELS, BINARY_HIERARCHY_LENGTH));
+                idService.getSupplier("file:", config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength()));
 
         // IO Service
         final CacheService<String, String> profileCache = new TrellisCache<>(newBuilder()

@@ -19,7 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.rabbitmq.client.ConnectionFactory;
 
@@ -27,17 +30,24 @@ import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
+import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
+import io.dropwizard.setup.Environment;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.jms.JMSException;
+
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.app.config.NotificationsConfiguration;
@@ -49,6 +59,18 @@ import org.trellisldp.kafka.KafkaPublisher;
  */
 @RunWith(JUnitPlatform.class)
 public class TrellisUtilsTest {
+
+    @Mock
+    private Environment mockEnv;
+
+    @Mock
+    private LifecycleEnvironment mockLifecycle;
+
+    @BeforeEach
+    public void setUp() {
+        initMocks(this);
+        when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
+    }
 
     @Test
     public void testGetAssetConfigurations() throws Exception {
@@ -138,43 +160,26 @@ public class TrellisUtilsTest {
 
     @Test
     public void testEventServiceNone() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.setConnectionString("localhost");
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.NONE);
-        config.setNotifications(c);
-        final EventService svc = TrellisUtils.getEventService(config);
+        final EventService svc = TrellisUtils.getNotificationService(c, mockEnv);
         assertNotNull(svc);
         assertTrue(svc instanceof NoopEventService);
     }
 
     @Test
     public void testEventServiceAMQP() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.setConnectionString("amqp://localhost:5672");
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.AMQP);
-        config.setNotifications(c);
-        final EventService svc = TrellisUtils.getEventService(config);
-        assertNotNull(svc);
-        // There is no AMQP server, so a no-op service is used
-        assertTrue(svc instanceof NoopEventService);
+        assertThrows(IOException.class, () -> TrellisUtils.getNotificationService(c, mockEnv));
     }
 
     @Test
     public void testEventServiceDisabled() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.set("batch.size", "1000");
         c.set("retries", "10");
@@ -182,19 +187,13 @@ public class TrellisUtilsTest {
         c.setConnectionString("localhost:9092");
         c.setEnabled(false);
         c.setType(NotificationsConfiguration.Type.KAFKA);
-        config.setNotifications(c);
-        final EventService svc = TrellisUtils.getEventService(config);
+        final EventService svc = TrellisUtils.getNotificationService(c, mockEnv);
         assertNotNull(svc);
         assertTrue(svc instanceof NoopEventService);
-        assertFalse(svc instanceof KafkaPublisher);
     }
 
     @Test
     public void testEventServiceKafka() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.set("batch.size", "1000");
         c.set("retries", "10");
@@ -202,8 +201,7 @@ public class TrellisUtilsTest {
         c.setConnectionString("localhost:9092");
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.KAFKA);
-        config.setNotifications(c);
-        final EventService svc = TrellisUtils.getEventService(config);
+        final EventService svc = TrellisUtils.getNotificationService(c, mockEnv);
         assertNotNull(svc);
         assertTrue(svc instanceof KafkaPublisher);
     }
@@ -225,19 +223,11 @@ public class TrellisUtilsTest {
 
     @Test
     public void testEventServiceJms() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.setConnectionString("tcp://localhost:61616");
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.JMS);
-        config.setNotifications(c);
-        final EventService svc = TrellisUtils.getEventService(config);
-        assertNotNull(svc);
-        // There is no AMQP server, so a no-op service is used
-        assertTrue(svc instanceof NoopEventService);
+        assertThrows(JMSException.class, () -> TrellisUtils.getNotificationService(c, mockEnv));
     }
 
     @Test

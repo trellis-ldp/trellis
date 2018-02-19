@@ -75,3 +75,5 @@ cors:
     maxAge: 180
     allowCredentials: true
 
+binaryHierarchyLevels: 2
+binaryHierarchyLength: 1
