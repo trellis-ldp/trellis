@@ -44,7 +44,7 @@ public class BasicAuthenticatorTest {
         final Optional<Principal> res = authenticator.authenticate(credentials);
         assertTrue(res.isPresent());
         res.ifPresent(p -> {
-            assertEquals("https://acoburn.people.amherst.edu/", p.getName());
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
         });
     }
 

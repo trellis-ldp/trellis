@@ -13,8 +13,8 @@
         [ a doap:GitRepository ;
             doap:location <https://github.com/trellis-ldp/trellis.git> ;
             doap:browse <https://github.com/trellis-ldp/trellis> ] ;
-    doap:maintainer <https://acoburn.people.amherst.edu/#i> ;
-    doap:developer <https://acoburn.people.amherst.edu/#i> ;
+    doap:maintainer <https://people.apache.org/~acoburn/#i> ;
+    doap:developer <https://people.apache.org/~acoburn/#i> ;
     doap:implements
         [ a doap:Specification ;
             doap:name "Linked Data Platform"@en ;

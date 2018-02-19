@@ -10,7 +10,7 @@ For example, this implementation will serialize an update event into structures 
   "@context": "https://www.w3.org/ns/activitystreams",
   "id": "urn:uuid:031b0857-b1bd-4f19-989d-1ab0e22ca57c",
   "type": ["Update" , "http://www.w3.org/ns/prov#Activity"],
-  "actor": ["https://acoburn.people.amherst.edu/"],
+  "actor": ["https://people.apache.org/~acoburn/#i"],
   "object": {
     "id": "http://localhost:8080/resource",
     "type": ["http://www.w3.org/ns/ldp#Container"]

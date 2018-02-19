@@ -55,8 +55,8 @@ subprojects {
 
     ext {
         vendor = 'Trellis LDP'
-        homepage = 'http://www.trellisldp.org'
-        docURL = 'http://www.trellisldp.org/apidocs'
+        homepage = 'https://www.trellisldp.org'
+        docURL = 'https://trellis-ldp.github.io/trellis/apidocs/'
         license = 'Apache 2'
 
         /* Dependencies */
@@ -196,7 +196,7 @@ subprojects {
 
             pom.project {
                 packaging 'jar'
-                url 'http://www.trellisldp.org'
+                url 'https://www.trellisldp.org'
                 inceptionYear '2017'
                 name 'Trellis Linked Data Server'
                 description 'The core components for a Trellis linked data server'
@@ -210,9 +210,9 @@ subprojects {
                     developer {
                         id 'acoburn'
                         name 'Aaron Coburn'
-                        email 'acoburn @ (domain of organization url)'
-                        organization = 'Amherst College'
-                        organizationUrl 'https://www.amherst.edu'
+                        email 'acoburn (at) apache (dot) org'
+                        organization = 'Trellis LDP'
+                        organizationUrl 'https://www.trellisldp.org'
                         roles {
                             role 'developer'
                         }
@@ -279,7 +279,7 @@ sonarqube {
     properties {
         property "sonar.projectName", "Trellis Linked Data Server"
         property "sonar.projectKey", "org.trellisldp:trellis"
-        property "sonar.links.homepage", "https://github.com/trellis-ldp/trellis"
+        property "sonar.links.homepage", "https://www.trellisldp.org"
         property "sonar.links.issue", "https://github.com/trellis-ldp/trellis/issues"
         property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis.git"
     }

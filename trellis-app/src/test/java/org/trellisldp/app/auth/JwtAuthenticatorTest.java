@@ -38,7 +38,7 @@ public class JwtAuthenticatorTest {
     @Test
     public void testAuthenticate() throws AuthenticationException {
          final String key = "c2VjcmV0";
-         final String token = Jwts.builder().setSubject("https://acoburn.people.amherst.edu")
+         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
              .signWith(SignatureAlgorithm.HS512, key).compact();
 
         final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, true);
@@ -46,7 +46,7 @@ public class JwtAuthenticatorTest {
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent());
         result.ifPresent(p -> {
-            assertEquals("https://acoburn.people.amherst.edu", p.getName());
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
         });
     }
 
@@ -92,15 +92,15 @@ public class JwtAuthenticatorTest {
     @Test
     public void testAuthenticateToken() throws AuthenticationException {
         final String key = "secret";
-        final String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodHRwczovL2Fjb2J1cm4ucGVvcGxlLmFtaGVyc3QuZWR1In0." +
-            "ct-fzDrpgxqQVjqclpYgCoqZgysjGZFqM0nEjERwIgboC0SGq43cemyZILdeaJpp0tGPE2kHUzAWPDcZsQWPkw";
+        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJodHRwczovL" +
+            "3Blb3BsZS5hcGFjaGUub3JnL35hY29idXJuLyNpIn0.Njgb_f5deb5hjr6UP-Q0GAWAz3ykvBW0-A0Sr5thdMo";
 
         final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent());
         result.ifPresent(p -> {
-            assertEquals("https://acoburn.people.amherst.edu", p.getName());
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
         });
     }
 
@@ -122,16 +122,16 @@ public class JwtAuthenticatorTest {
     @Test
     public void testAuthenticationTokenWebid() throws AuthenticationException {
         final String key = "secret";
-        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vYWNvYnVybi5wZW9w" +
-            "bGUuYW1oZXJzdC5lZHUvIiwic3ViIjoiYWNvYnVybiIsIm5hbWUiOiJBYXJvbiBDb2J1cm4iLCJpc3MiOiJodHRwOi8vZX" +
-            "hhbXBsZS5vcmcvIn0.X-7_VfEuLGzH5ZEqzpkHWp1bo3tMzBiyDcNUwwdLeqw";
+        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vcGVvcGxlLmFwYWNo" +
+            "ZS5vcmcvfmFjb2J1cm4vI2kiLCJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVybiIsImlzcyI6Imh0dHA6Ly" +
+            "9leGFtcGxlLm9yZy8ifQ.LqrqNUXIMJD-Qrw7b38c0o6HYaaX_8G3GzCANhPclhk";
 
         final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent());
         result.ifPresent(p -> {
-            assertEquals("https://acoburn.people.amherst.edu/", p.getName());
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
         });
     }
 
