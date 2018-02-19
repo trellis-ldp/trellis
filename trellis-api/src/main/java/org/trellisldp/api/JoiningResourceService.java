@@ -15,7 +15,6 @@
 package org.trellisldp.api;
 
 import static java.util.stream.Stream.concat;
-import static java.util.stream.Stream.empty;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -157,7 +156,7 @@ public abstract class JoiningResourceService implements ResourceService {
 
         @Override
         public Stream<? extends Quad> stream() {
-            return concat(mutable.stream(), immutable != null ? immutable.stream() : empty());
+            return immutable == null ? mutable.stream() : concat(mutable.stream(), immutable.stream());
         }
 
         @Override
