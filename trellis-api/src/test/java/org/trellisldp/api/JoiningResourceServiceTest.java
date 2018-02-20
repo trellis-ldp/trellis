@@ -57,6 +57,7 @@ public class JoiningResourceServiceTest {
 
     private static final IRI testResourceId1 = createIRI("http://example.com/1");
     private static final IRI testResourceId2 = createIRI("http://example.com/2");
+    private static final IRI testResourceId3 = createIRI("http://example.com/3");
 
     private static IRI badId = createIRI("http://bad.com");
 
@@ -230,6 +231,35 @@ public class JoiningResourceServiceTest {
         assertTrue(quads.contains(testMutableQuad), "Resource was retrieved without its mutable data!");
         quads.remove(testImmutableQuad);
         quads.remove(testMutableQuad);
+        assertEquals(0, quads.size(), "Resource was retrieved with too much data!");
+    }
+
+    @Test
+    public void testBadPersist() throws InterruptedException, ExecutionException {
+        final Quad testQuad = createQuad(badId, testResourceId1, testResourceId1, badId);
+        final Resource testResource = new TestResource(badId, testQuad);
+        assertFalse(testable.create(badId, testResource).get(),
+                        "Could create a resource when underlying services should reject it!");
+    }
+
+    @Test
+    public void testAppendSemantics() throws InterruptedException, ExecutionException {
+        final Quad testFirstQuad = createQuad(testResourceId3, testResourceId2, testResourceId1, badId);
+        final Quad testSecondQuad = createQuad(testResourceId3, testResourceId2, testResourceId1, badId);
+
+        // store some data in mutable and immutable sides under the same resource ID
+        final Resource testFirstResource = new TestResource(testResourceId3, testFirstQuad);
+        assertTrue(testable.add(testResourceId3, testFirstResource).get(), "Couldn't create an immutable resource!");
+        final Resource testSecondResource = new TestResource(testResourceId3, testSecondQuad);
+        assertTrue(testable.add(testResourceId3, testSecondResource).get(), "Couldn't add to an immutable resource!");
+
+        final Resource retrieved = testable.get(testResourceId3).orElseThrow(AssertionError::new);
+        assertEquals(testResourceId3, retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
+        final Dataset quads = retrieved.dataset();
+        assertTrue(quads.contains(testFirstQuad), "Resource was retrieved without its immutable data!");
+        assertTrue(quads.contains(testSecondQuad), "Resource was retrieved without its mutable data!");
+        quads.remove(testFirstQuad);
+        quads.remove(testSecondQuad);
         assertEquals(0, quads.size(), "Resource was retrieved with too much data!");
     }
 }

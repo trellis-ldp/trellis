@@ -51,11 +51,13 @@ public abstract class JoiningResourceService implements ResourceService {
 
     @Override
     public Optional<? extends Resource> get(final IRI identifier) {
-        return mutableData.get(identifier).map(mutable -> {
+        final Optional<Resource> mutableFirst = mutableData.get(identifier).map(mutable -> {
             // perhaps only some resources possess immutable metadata
             final Optional<? extends Resource> immutable = immutableData.get(identifier);
             return immutable.isPresent() ? new RetrievableResource(mutable, immutable.get()) : mutable;
         });
+        // fall through to immutable-only data
+        return mutableFirst.isPresent() ? mutableFirst : immutableData.get(identifier);
     }
 
     @Override
