@@ -40,11 +40,11 @@ public abstract class JoiningResourceService implements ResourceService {
     private final MutableDataService<IRI, Resource> mutableData;
 
     /**
-     * @param immutableData service in which to persist immutable data
      * @param mutableData service in which to persist mutable data
+     * @param immutableData service in which to persist immutable data
      */
-    public JoiningResourceService(final ImmutableDataService<IRI, Resource> immutableData,
-                    final MutableDataService<IRI, Resource> mutableData) {
+    public JoiningResourceService(final MutableDataService<IRI, Resource> mutableData,
+                    final ImmutableDataService<IRI, Resource> immutableData) {
         this.immutableData = immutableData;
         this.mutableData = mutableData;
     }
@@ -87,7 +87,7 @@ public abstract class JoiningResourceService implements ResourceService {
      * @author ajs6f
      *
      */
-    private static final class PersistableResource implements Resource {
+    protected static final class PersistableResource implements Resource {
 
         private final Instant modified = Instant.now();
         private final IRI id;
@@ -134,7 +134,7 @@ public abstract class JoiningResourceService implements ResourceService {
      * @author ajs6f
      *
      */
-    private static final class RetrievableResource implements Resource {
+    protected static final class RetrievableResource implements Resource {
 
         private final Resource mutable;
         private final Resource immutable;

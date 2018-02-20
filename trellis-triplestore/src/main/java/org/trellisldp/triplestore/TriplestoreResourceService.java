@@ -150,7 +150,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         LOGGER.debug("Deleting: {}", identifier);
         return supplyAsync(() -> {
             final Instant eventTime = now();
-            dataset.clear();
             dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
             dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
             return storeAndNotify(identifier, dataset, eventTime, OperationType.DELETE);
