@@ -653,7 +653,8 @@ public class TriplestoreResourceServiceTest {
         });
 
         // TODO -- verify that this is correct (should it be 6?)
-        verify(mockEventService, times(5)).emit(any());
+        // yes it should --ajs6f
+        verify(mockEventService, times(6)).emit(any());
     }
 
     @Test
