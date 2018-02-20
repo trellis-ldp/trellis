@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFTerm;
@@ -46,15 +47,16 @@ import org.trellisldp.api.JoiningResourceService.RetrievableResource;
 @RunWith(JUnitPlatform.class)
 public class JoiningResourceServiceTest {
 
-    private static IRI createIRI(String value) {
+    private static IRI createIRI(final String value) {
         return RDFUtils.getInstance().createIRI(value);
     }
 
-    private static Quad createQuad(BlankNodeOrIRI g, BlankNodeOrIRI s, IRI p, RDFTerm o) {
+    private static Quad createQuad(final BlankNodeOrIRI g, final BlankNodeOrIRI s, final IRI p, final RDFTerm o) {
         return RDFUtils.getInstance().createQuad(g, s, p, o);
     }
 
-    private static final IRI testResourceId = createIRI("http://example.com");
+    private static final IRI testResourceId1 = createIRI("http://example.com/1");
+    private static final IRI testResourceId2 = createIRI("http://example.com/2");
 
     private static IRI badId = createIRI("http://bad.com");
 
@@ -63,11 +65,11 @@ public class JoiningResourceServiceTest {
         protected final Map<IRI, Resource> resources = synchronizedMap(new HashMap<>());
 
         @Override
-        public Optional<? extends Resource> get(IRI identifier) {
+        public Optional<? extends Resource> get(final IRI identifier) {
             return Optional.ofNullable(resources.get(identifier));
         }
 
-        protected CompletableFuture<Boolean> isntBadId(IRI identifier) {
+        protected CompletableFuture<Boolean> isntBadId(final IRI identifier) {
             return completedFuture(!identifier.equals(badId));
         }
 
@@ -77,57 +79,57 @@ public class JoiningResourceServiceTest {
                     implements ImmutableDataService<IRI, Resource> {
 
         @Override
-        public Future<Boolean> add(IRI identifier, Resource newRes) {
+        public Future<Boolean> add(final IRI identifier, final Resource newRes) {
             resources.compute(identifier, (id, old) -> old == null ? newRes : new RetrievableResource(old, newRes));
             return isntBadId(identifier);
         }
     }
 
-    private ImmutableDataService<IRI, Resource> testImmutableService = new TestableImmutableService();
+    private final ImmutableDataService<IRI, Resource> testImmutableService = new TestableImmutableService();
 
     private static class TestableMutableDataService extends TestableRetrievalService
                     implements MutableDataService<IRI, Resource> {
 
         @Override
-        public Future<Boolean> create(IRI identifier, Resource resource) {
+        public Future<Boolean> create(final IRI identifier, final Resource resource) {
             resources.put(identifier, resource);
             return isntBadId(identifier);
         }
 
         @Override
-        public Future<Boolean> replace(IRI identifier, Resource resource) {
+        public Future<Boolean> replace(final IRI identifier, final Resource resource) {
             resources.replace(identifier, resource);
             return isntBadId(identifier);
         }
 
         @Override
-        public Future<Boolean> delete(IRI identifier, Resource resource) {
+        public Future<Boolean> delete(final IRI identifier, final Resource resource) {
             resources.remove(identifier);
             return isntBadId(identifier);
         }
     };
 
-    private MutableDataService<IRI, Resource> testMutableService = new TestableMutableDataService();
+    private final MutableDataService<IRI, Resource> testMutableService = new TestableMutableDataService();
 
     private static class TestableJoiningResourceService extends JoiningResourceService {
 
-        public TestableJoiningResourceService(ImmutableDataService<IRI, Resource> immutableData,
-                        MutableDataService<IRI, Resource> mutableData) {
+        public TestableJoiningResourceService(final ImmutableDataService<IRI, Resource> immutableData,
+                        final MutableDataService<IRI, Resource> mutableData) {
             super(mutableData, immutableData);
         }
 
         @Override
-        public List<Range<Instant>> getMementos(IRI identifier) {
+        public List<Range<Instant>> getMementos(final IRI identifier) {
             return Collections.emptyList();
         }
 
         @Override
-        public Stream<IRI> compact(IRI identifier, Instant from, Instant until) {
+        public Stream<IRI> compact(final IRI identifier, final Instant from, final Instant until) {
             return Stream.empty();
         }
 
         @Override
-        public Stream<IRI> purge(IRI identifier) {
+        public Stream<IRI> purge(final IRI identifier) {
             return Stream.empty();
         }
 
@@ -143,17 +145,20 @@ public class JoiningResourceServiceTest {
 
     }
 
-    private ResourceService testable = new TestableJoiningResourceService(testImmutableService, testMutableService);
+    private final ResourceService testable = new TestableJoiningResourceService(testImmutableService,
+                    testMutableService);
 
     private static class TestResource implements Resource {
 
-        private Instant mod = Instant.now();
-        private Quad quad;
-        private IRI id;
+        private final Instant mod = Instant.now();
+        private final Dataset dataset = RDFUtils.getInstance().createDataset();
+        private final IRI id;
 
-        public TestResource(IRI id, Quad quad) {
+        public TestResource(final IRI id, final Quad... quads) {
             this.id = id;
-            this.quad = quad;
+            for (final Quad q : quads) {
+                dataset.add(q);
+            }
         }
 
         @Override
@@ -168,7 +173,7 @@ public class JoiningResourceServiceTest {
 
         @Override
         public Stream<? extends Quad> stream() {
-            return Stream.of(quad);
+            return dataset.stream();
         }
 
         @Override
@@ -185,24 +190,46 @@ public class JoiningResourceServiceTest {
 
     @Test
     public void testRoundtripping() throws InterruptedException, ExecutionException {
-        Quad testQuad = createQuad(testResourceId, testResourceId, testResourceId, badId);
-        Resource testResource = new TestResource(testResourceId, testQuad);
-        assertTrue(testable.create(testResourceId, testResource).get(), "Couldn't create a resource!");
-        Resource retrieved = testable.get(testResourceId).orElseThrow(AssertionError::new);
+        final Quad testQuad = createQuad(testResourceId1, testResourceId1, testResourceId1, badId);
+        final Resource testResource = new TestResource(testResourceId1, testQuad);
+        assertTrue(testable.create(testResourceId1, testResource).get(), "Couldn't create a resource!");
+        Resource retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
         assertEquals(testResource.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
-        Quad testQuad2 = createQuad(testResourceId, badId, testResourceId, badId);
-        Resource testResource2 = new TestResource(testResourceId, testQuad2);
-        assertTrue(testable.replace(testResourceId, testResource2).get(), "Couldn't replace resource!");
-        retrieved = testable.get(testResourceId).orElseThrow(AssertionError::new);
+        final Quad testQuad2 = createQuad(testResourceId1, badId, testResourceId1, badId);
+        final Resource testResource2 = new TestResource(testResourceId1, testQuad2);
+        assertTrue(testable.replace(testResourceId1, testResource2).get(), "Couldn't replace resource!");
+        retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
         assertEquals(testResource2.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource2.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
-        assertTrue(testable.delete(testResourceId, testResource2).get(), "Couldn't delete resource!");
-        assertFalse(testable.get(testResourceId).isPresent(), "Found resource after deleting it!");
+        assertTrue(testable.delete(testResourceId1, testResource2).get(), "Couldn't delete resource!");
+        assertFalse(testable.get(testResourceId1).isPresent(), "Found resource after deleting it!");
+    }
 
+    @Test
+    public void testMergingBehavior() throws InterruptedException, ExecutionException {
+        final Quad testMutableQuad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+        final Quad testImmutableQuad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+
+        // store some data in mutable and immutable sides under the same resource ID
+        final Resource testMutableResource = new TestResource(testResourceId2, testMutableQuad);
+        assertTrue(testable.create(testResourceId2, testMutableResource).get(), "Couldn't create a mutable resource!");
+        final Resource testImmutableResource = new TestResource(testResourceId2, testImmutableQuad);
+        assertTrue(testable.add(testResourceId2, testImmutableResource).get(),
+                        "Couldn't create an immutable resource!");
+
+        final Resource retrieved = testable.get(testResourceId2).orElseThrow(AssertionError::new);
+        assertEquals(testMutableResource.getIdentifier(), retrieved.getIdentifier(),
+                        "Resource was retrieved with wrong ID!");
+        final Dataset quads = retrieved.dataset();
+        assertTrue(quads.contains(testImmutableQuad), "Resource was retrieved without its immutable data!");
+        assertTrue(quads.contains(testMutableQuad), "Resource was retrieved without its mutable data!");
+        quads.remove(testImmutableQuad);
+        quads.remove(testMutableQuad);
+        assertEquals(0, quads.size(), "Resource was retrieved with too much data!");
     }
 }
