@@ -62,6 +62,7 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
 
             // Use a webid claim, if one exists
             if (claims.containsKey(WEBID)) {
+                LOGGER.debug("Using JWT claim with webid: {}", claims.get(WEBID, String.class));
                 return ofNullable(claims.get(WEBID, String.class)).map(PrincipalImpl::new);
             }
 
@@ -70,12 +71,14 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
             if (nonNull(sub)) {
                 // use the sub claim if it looks like a webid
                 if (isUrl(sub)) {
+                    LOGGER.debug("Using JWT claim with sub: {}", sub);
                     return of(new PrincipalImpl(sub));
                 }
                 final String iss = claims.getIssuer();
                 // combine the iss and sub fields if that appears possible
                 if (nonNull(iss) && isUrl(iss)) {
                     final String webid = iss.endsWith("/") ? iss + sub : iss + "/" + sub;
+                    LOGGER.debug("Using JWT claim with generated webid: {}", webid);
                     return of(new PrincipalImpl(webid));
                 }
             }
