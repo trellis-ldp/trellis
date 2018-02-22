@@ -1,6 +1,11 @@
 server:
   applicationConnectors:
     - type: http
+      # Pick a random port (for testing)
+      port: 0
+  adminConnectors:
+    - type: http
+      # Pick a random port (for testing)
       port: 0
 
 logging:

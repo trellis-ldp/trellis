@@ -91,7 +91,6 @@ public class TrellisApplicationTest {
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,
                 resourceFilePath("trellis-config.yml"),
-                config("server.applicationConnectors[0].port", "0"),
                 config("binaries", resourceFilePath("data") + "/binaries"),
                 config("mementos", resourceFilePath("data") + "/mementos"),
                 config("namespaces", resourceFilePath("data/namespaces.json")));
