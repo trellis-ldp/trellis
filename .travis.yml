@@ -22,12 +22,12 @@ matrix:
       env: JDK_RELEASE='JDK 9'
 
     # JDK 10
-    - env: JDK_RELEASE='JDK 10 Early-Access'
+    - env: JDK_RELEASE='JDK 10'
       install: . ./buildtools/src/install/install-jdk-10.sh
       script: ./gradlew clean install
 
   allow_failures:
-    - env: JDK_RELEASE='JDK 10 Early-Access'
+    - env: JDK_RELEASE='JDK 10'
 
 after_success:
     - sh ./buildtools/src/install/report.sh
