@@ -85,7 +85,7 @@ import org.trellisldp.vocabulary.Trellis;
  * Run LDP-related tests on a Trellis application.
  */
 @RunWith(JUnitPlatform.class)
-public final class TrellisLdpTest {
+public class TrellisLdpTest {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,
@@ -1678,7 +1678,7 @@ public final class TrellisLdpTest {
         }
     }
 
-    private static Instant meanwhile() {
+    private Instant meanwhile() {
         final Instant t1 = now();
         await().until(() -> isReallyLaterThan(t1));
         final Instant t2 = now();
@@ -1686,7 +1686,7 @@ public final class TrellisLdpTest {
         return t2;
     }
 
-    private static Boolean isReallyLaterThan(final Instant time) {
+    private Boolean isReallyLaterThan(final Instant time) {
         final Instant t = now();
         return t.isAfter(time) && (t.toEpochMilli() > time.toEpochMilli() || t.getNano() > time.getNano());
     }
@@ -1699,21 +1699,17 @@ public final class TrellisLdpTest {
         return client.target(url);
     }
 
-    private static List<Link> getLinks(final Response res) {
+    private List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
     }
 
-    private static Predicate<Link> hasConstrainedBy(final IRI iri) {
+    private Predicate<Link> hasConstrainedBy(final IRI iri) {
         return link -> LDP.constrainedBy.getIRIString().equals(link.getRel())
             && iri.getIRIString().equals(link.getUri().toString());
     }
 
-    private static Predicate<Link> hasType(final IRI iri) {
+    private Predicate<Link> hasType(final IRI iri) {
         return link -> "type".equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
-    }
-
-    private TrellisLdpTest() {
-        // prevent instantiation
     }
 }
