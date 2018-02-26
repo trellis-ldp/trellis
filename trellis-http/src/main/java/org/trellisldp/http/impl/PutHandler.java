@@ -145,8 +145,7 @@ public class PutHandler extends ContentBearingHandler {
      */
     public ResponseBuilder setResource(final Resource res) {
         final String baseUrl = getBaseUrl();
-        final String identifier = baseUrl + req.getPath() +
-            (ACL.equals(req.getExt()) ? "?ext=acl" : "");
+        final String identifier = buildIdentifier(baseUrl);
 
         // Check the cache
         ofNullable(res).ifPresent(r -> checkResourceCache(identifier, r));
@@ -162,8 +161,7 @@ public class PutHandler extends ContentBearingHandler {
 
         LOGGER.info("Setting resource as {}", identifier);
 
-        final IRI heuristicType = nonNull(req.getContentType()) && !rdfSyntax.isPresent()
-            ? LDP.NonRDFSource : LDP.RDFSource;
+        final IRI heuristicType = getHeuristicType(rdfSyntax);
 
         final IRI defaultType = ofNullable(res).map(Resource::getInteractionModel).orElse(heuristicType);
 
@@ -272,6 +270,14 @@ public class PutHandler extends ContentBearingHandler {
         LOGGER.error("Unable to persist data to location at {}", internalId.getIRIString());
         return serverError().type(TEXT_PLAIN)
             .entity("Unable to persist data. Please consult the logs for more information");
+    }
+
+    private String buildIdentifier(final String baseUrl) {
+        return baseUrl + req.getPath() + (ACL.equals(req.getExt()) 1? "?ext=acl" : "");
+    }
+
+    private IRI getHeuristicType(final Optional<RDFSyntax> rdfSyntax) {
+        return nonNull(req.getContentType()) && !rdfSyntax.isPresent() ? LDP.NonRDFSource : LDP.RDFSource;
     }
 
     private static Stream<IRI> getLdpLinkTypes(final IRI ldpType, final Boolean isBinaryDescription) {
