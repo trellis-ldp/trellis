@@ -33,7 +33,7 @@ auth:
         base64Encoded: false
         key: secret
     basic:
-        enabled: false
+        enabled: true
 
 cors:
     enabled: true

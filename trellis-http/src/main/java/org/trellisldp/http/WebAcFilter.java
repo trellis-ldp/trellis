@@ -129,6 +129,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             }
             throw new ForbiddenException();
         }
+        LOGGER.debug("User: {} can append to {}", session.getAgent(), path);
     }
 
     private void verifyCanControl(final Set<IRI> modes, final Session session, final String path) {
@@ -140,6 +141,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             }
             throw new ForbiddenException();
         }
+        LOGGER.debug("User: {} can control {}", session.getAgent(), path);
     }
 
     private void verifyCanWrite(final Set<IRI> modes, final Session session, final String path) {
@@ -151,6 +153,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             }
             throw new ForbiddenException();
         }
+        LOGGER.debug("User: {} can write to {}", session.getAgent(), path);
     }
 
     private void verifyCanRead(final Set<IRI> modes, final Session session, final String path) {
@@ -162,5 +165,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             }
             throw new ForbiddenException();
         }
+        LOGGER.debug("User: {} can read {}", session.getAgent(), path);
     }
 }
