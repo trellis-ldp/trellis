@@ -62,8 +62,7 @@ import org.trellisldp.vocabulary.Trellis;
 @RunWith(JUnitPlatform.class)
 public class TrellisAuthenticationTest {
 
-    //TODO -- add group tests
-    //     -- add tests for acl:default
+    //TODO -- add tests for acl:default
 
     private static final String JWT_SECRET = "secret";
 
@@ -81,6 +80,8 @@ public class TrellisAuthenticationTest {
     private static String publicContainer, publicContainerAcl, publicContainerChild;
     private static String protectedContainer, protectedContainerAcl, protectedContainerChild;
     private static String privateContainer, privateContainerAcl, privateContainerChild;
+    private static String groupContainer, groupContainerAcl, groupContainerChild;
+    private static String groupResource;
 
     @BeforeAll
     public static void setUp() {
@@ -193,6 +194,57 @@ public class TrellisAuthenticationTest {
         // Add an ACL for the private container
         try (final Response res = target(privateContainerAcl).request().header(AUTHORIZATION, jwt).method("PATCH",
                     entity(privateAcl, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+        }
+
+        final String groupContent
+            = "@prefix acl: <http://www.w3.org/ns/auth/acl#>.\n"
+            + "@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .\n"
+            + "<> a acl:GroupListing.\n"
+            + "<#Developers> a vcard:Group;\n"
+            + "  vcard:hasUID <urn:uuid:8831CBAD-1111-2222-8563-F0F4787E5398:ABGroup>;\n"
+            + "  vcard:hasMember <https://pat.example.com/profile/card#me>;\n"
+            + "  vcard:hasMember <https://people.apache.org/~acoburn/#i>.\n"
+            + "<#Management> a vcard:Group;\n"
+            + "  vcard:hasUID <urn:uuid:8831CBAD-3333-4444-8563-F0F4787E5398:ABGroup>;\n"
+            + "  vcard:hasMember <https://madison.example.com/profile/#me>.";
+
+        // POST a group listing
+        try (final Response res = target(container).request()
+                .header(AUTHORIZATION, jwt).post(entity(groupContent, TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            groupResource = res.getLocation().toString();
+        }
+
+        // POST a group-controlled container
+        try (final Response res = target(container).request()
+                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                .header(AUTHORIZATION, jwt).post(entity(containerContent, TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            groupContainer = res.getLocation().toString();
+        }
+
+        // Add a child to the group container
+        try (final Response res = target(groupContainer).request().header(AUTHORIZATION, jwt)
+                .post(entity("", TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            groupContainerChild = res.getLocation().toString();
+            groupContainerAcl = getLinks(res).stream().filter(link -> link.getRel().equals("acl"))
+                .map(link -> link.getUri().toString()).findFirst().orElse("");
+        }
+
+        final String groupAcl = "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n"
+            + "INSERT DATA { "
+            + "[acl:accessTo <" + groupContainer + ">; acl:mode acl:Read, acl:Write; "
+            + "   acl:agentGroup <" + groupResource + "#Developers> ] };\n"
+            + "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n"
+            + "INSERT DATA { "
+            + "[acl:accessTo <" + groupContainer + ">; acl:mode acl:Read; "
+            + "   acl:agentGroup <" + groupResource + "#Management> ] }";
+
+        // Add an ACL for the private container
+        try (final Response res = target(groupContainerAcl).request().header(AUTHORIZATION, jwt).method("PATCH",
+                    entity(groupAcl, APPLICATION_SPARQL_UPDATE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
         }
     }
@@ -399,6 +451,64 @@ public class TrellisAuthenticationTest {
                 assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
             }
         }
+
+        @Test
+        @DisplayName("Verify that an administrator can read a group-controlled resource")
+        public void testAdminCanReadGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can read the child of a group-controlled resource")
+        public void testAdminCanReadGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can write to a group-controlled resource")
+        public void testAdminCanWriteGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can write to the child of a group-controlled resource")
+        public void testAdminCanWriteGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can control a group-controlled resource")
+        public void testAdminCanControlGroupResource() {
+            try (final Response res = target(groupContainerAcl).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can control the child of a group-controlled resource")
+        public void testAdminCanControlGroupResourceChild() {
+            try (final Response res = target(groupContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            }
+        }
     }
 
     @Nested
@@ -576,6 +686,64 @@ public class TrellisAuthenticationTest {
         @DisplayName("Verify that a user cannot control the child of a private resource")
         public void testUserCanControlPrivateResourceChild() {
             try (final Response res = target(privateContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read a group-controlled resource")
+        public void testCanReadGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a group-controlled resource")
+        public void testCanReadGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a group-controlled resource")
+        public void testCanWriteGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a group-controlled resource")
+        public void testCanWriteGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a group-controlled resource")
+        public void testCanControlGroupResource() {
+            try (final Response res = target(groupContainerAcl).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        public void testCanControlGroupResourceChild() {
+            try (final Response res = target(groupContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
@@ -764,6 +932,64 @@ public class TrellisAuthenticationTest {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
+
+        @Test
+        @DisplayName("Verify that a user can read a group-controlled resource")
+        public void testCanReadGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a group-controlled resource")
+        public void testCanReadGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a group-controlled resource")
+        public void testCanWriteGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a group-controlled resource")
+        public void testCanWriteGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a group-controlled resource")
+        public void testCanControlGroupResource() {
+            try (final Response res = target(groupContainerAcl).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        public void testCanControlGroupResourceChild() {
+            try (final Response res = target(groupContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
     }
 
     @Nested
@@ -945,6 +1171,64 @@ public class TrellisAuthenticationTest {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
+
+        @Test
+        @DisplayName("Verify that a user can read a group-controlled resource")
+        public void testCanReadGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a group-controlled resource")
+        public void testCanReadGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a group-controlled resource")
+        public void testCanWriteGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a group-controlled resource")
+        public void testCanWriteGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a group-controlled resource")
+        public void testCanControlGroupResource() {
+            try (final Response res = target(groupContainerAcl).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        public void testCanControlGroupResourceChild() {
+            try (final Response res = target(groupContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
     }
 
     @Nested
@@ -952,7 +1236,7 @@ public class TrellisAuthenticationTest {
     public class JwtOtherUserTests {
 
         private final String jwt = "Bearer " + Jwts.builder()
-            .claim("webid", "http://example.org/user")
+            .claim("webid", "https://madison.example.com/profile/#me")
             .signWith(SignatureAlgorithm.HS512, JWT_SECRET.getBytes(UTF_8))
             .compact();
 
@@ -1129,6 +1413,64 @@ public class TrellisAuthenticationTest {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
+
+        @Test
+        @DisplayName("Verify that a user can read a group-controlled resource")
+        public void testCanReadGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a group-controlled resource")
+        public void testCanReadGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a group-controlled resource")
+        public void testCanWriteGroupResource() {
+            try (final Response res = target(groupContainer).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a group-controlled resource")
+        public void testCanWriteGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a group-controlled resource")
+        public void testCanControlGroupResource() {
+            try (final Response res = target(groupContainerAcl).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        public void testCanControlGroupResourceChild() {
+            try (final Response res = target(groupContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
     }
 
     @Nested
@@ -1287,6 +1629,58 @@ public class TrellisAuthenticationTest {
         @DisplayName("Verify that an anonymous user cannot control the child of a private resource")
         public void testCanControlPrivateResourceChild() {
             try (final Response res = target(privateContainerChild + "?ext=acl").request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can read a group-controlled resource")
+        public void testCanReadGroupResource() {
+            try (final Response res = target(groupContainer).request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can read the child of a group-controlled resource")
+        public void testCanReadGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can write to a group-controlled resource")
+        public void testCanWriteGroupResource() {
+            try (final Response res = target(groupContainer).request().method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can write to the child of a group-controlled resource")
+        public void testCanWriteGroupResourceChild() {
+            try (final Response res = target(groupContainerChild).request().method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can control a group-controlled resource")
+        public void testCanControlGroupResource() {
+            try (final Response res = target(groupContainerAcl).request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can control the child of a group-controlled resource")
+        public void testCanControlGroupResourceChild() {
+            try (final Response res = target(groupContainerChild + "?ext=acl").request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
             }
         }
