@@ -273,7 +273,7 @@ public class PutHandler extends ContentBearingHandler {
     }
 
     private String buildIdentifier(final String baseUrl) {
-        return baseUrl + req.getPath() + (ACL.equals(req.getExt()) 1? "?ext=acl" : "");
+        return baseUrl + req.getPath() + (ACL.equals(req.getExt()) ? "?ext=acl" : "");
     }
 
     private IRI getHeuristicType(final Optional<RDFSyntax> rdfSyntax) {
