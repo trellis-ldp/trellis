@@ -30,6 +30,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_LOCATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
@@ -2324,7 +2325,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH + "/test").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(BASE_URL + RESOURCE_PATH + "/test", res.getHeaderString(CONTENT_LOCATION));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2336,10 +2338,11 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(DELETED_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(CREATED, res.getStatusInfo());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertEquals(BASE_URL + DELETED_PATH, res.getHeaderString(CONTENT_LOCATION));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 

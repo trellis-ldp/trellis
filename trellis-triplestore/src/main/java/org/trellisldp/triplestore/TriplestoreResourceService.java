@@ -461,7 +461,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             // Likewise update the member resource.
             req.add(getMemberUpdateModificationRequest(identifier, time));
 
-        } else if (!(type == OperationType.DELETE)) {
+        } else if (type != OperationType.DELETE) {
             // Indirect containers member resources are _always_ updated.
             final UpdateDeleteInsert modify = new UpdateDeleteInsert();
             modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));

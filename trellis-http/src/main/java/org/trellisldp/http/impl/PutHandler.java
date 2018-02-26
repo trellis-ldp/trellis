@@ -13,8 +13,10 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.net.URI.create;
 import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -23,6 +25,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
@@ -237,8 +240,7 @@ public class PutHandler extends ContentBearingHandler {
                         .forEachOrdered(dataset::add);
                 }
             });
-            // TODO is this the best we can do? what concurrency errors are lurking?
-            final Future<Boolean> success = res != null
+            final Future<Boolean> success = nonNull(res)
                             ? resourceService.replace(internalId, ldpType, dataset.asDataset())
                             : resourceService.create(internalId, ldpType, dataset.asDataset());
             if (success.get()) {
@@ -247,17 +249,20 @@ public class PutHandler extends ContentBearingHandler {
                     auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
                     if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
-                        LOGGER.error("Unable to place or replace resource at {}", res.getIdentifier());
+                        LOGGER.error("Unable to place or replace resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
                         return serverError().entity("Unable to write audit information. "
                                         + "Please consult the logs for more information");
-                        }
+                    }
                 }
 
-                final ResponseBuilder builder = status(NO_CONTENT);
+                final ResponseBuilder builder = status(nonNull(res) ? NO_CONTENT : CREATED);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
                     .forEach(type -> builder.link(type, "type"));
+                if (isNull(res)) {
+                    builder.contentLocation(create(identifier));
+                }
                 return builder;
             }
         } catch (final InterruptedException | ExecutionException ex) {
