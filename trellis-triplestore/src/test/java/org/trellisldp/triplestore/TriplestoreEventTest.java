@@ -58,6 +58,8 @@ public class TriplestoreEventTest {
         final Session s2 = new SimpleSession(Trellis.AdministratorAgent);
         assertNotEquals(s1.getIdentifier(), s2.getIdentifier());
         assertEquals(s1.getAgent(), s2.getAgent());
+        assertFalse(s1.getCreated().isAfter(s2.getCreated()));
+        assertFalse(s1.getDelegatedBy().isPresent());
     }
 
     @Test
