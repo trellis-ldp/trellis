@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.time.Instant.MAX;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -314,7 +313,7 @@ public class LdpResource implements ContainerRequestFilter {
         final PatchHandler patchHandler = new PatchHandler(req, body, auditService, resourceService, ioService,
                         urlBase);
 
-        return resourceService.get(identifier, MAX).map(patchHandler::updateResource)
+        return resourceService.get(identifier).map(patchHandler::updateResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
     }
 
@@ -332,7 +331,7 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, resourceService, auditService, urlBase);
 
-        return resourceService.get(identifier, MAX).map(deleteHandler::deleteResource)
+        return resourceService.get(identifier).map(deleteHandler::deleteResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
     }
 
@@ -361,7 +360,7 @@ public class LdpResource implements ContainerRequestFilter {
         if (parent.isPresent()) {
             final Optional<IRI> ixModel = parent.map(Resource::getInteractionModel);
             if (ixModel.filter(type -> ldpResourceTypes(type).anyMatch(LDP.Container::equals)).isPresent()) {
-                return resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier), MAX)
+                return resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier))
                     .map(x -> status(CONFLICT)).orElseGet(postHandler::createResource).build();
             } else if (parent.filter(Resource::isDeleted).isPresent()) {
                 return status(GONE).build();
@@ -387,7 +386,7 @@ public class LdpResource implements ContainerRequestFilter {
         final PutHandler putHandler = new PutHandler(req, body, resourceService, auditService, ioService, binaryService,
                         urlBase);
 
-        return resourceService.get(identifier, MAX).filter(res -> !res.isDeleted())
+        return resourceService.get(identifier).filter(res -> !res.isDeleted())
             .map(putHandler::setResource).orElseGet(putHandler::createResource).build();
     }
 

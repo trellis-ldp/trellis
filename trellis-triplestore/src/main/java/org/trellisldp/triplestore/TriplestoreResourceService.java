@@ -587,9 +587,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public Optional<Resource> get(final IRI identifier, final Instant time) {
-        // TODO -- JDK9 replace with Optional::or
-        final Optional<Resource> res = mementoService.flatMap(svc -> svc.get(identifier, time));
-        return res.isPresent() ? res : get(identifier);
+        return mementoService.isPresent() ? mementoService.flatMap(svc -> svc.get(identifier, time)) : get(identifier);
     }
 
     @Override
