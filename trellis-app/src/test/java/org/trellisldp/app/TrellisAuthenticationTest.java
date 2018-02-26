@@ -62,8 +62,6 @@ import org.trellisldp.vocabulary.Trellis;
 @RunWith(JUnitPlatform.class)
 public class TrellisAuthenticationTest {
 
-    //TODO -- add tests for acl:default
-
     private static final String JWT_SECRET = "secret";
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
@@ -81,6 +79,7 @@ public class TrellisAuthenticationTest {
     private static String protectedContainer, protectedContainerAcl, protectedContainerChild;
     private static String privateContainer, privateContainerAcl, privateContainerChild;
     private static String groupContainer, groupContainerAcl, groupContainerChild;
+    private static String defaultContainer, defaultContainerAcl, defaultContainerChild;
     private static String groupResource;
 
     @BeforeAll
@@ -245,6 +244,38 @@ public class TrellisAuthenticationTest {
         // Add an ACL for the private container
         try (final Response res = target(groupContainerAcl).request().header(AUTHORIZATION, jwt).method("PATCH",
                     entity(groupAcl, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+        }
+
+        // POST a container with a default ACL
+        try (final Response res = target(container).request()
+                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                .header(AUTHORIZATION, jwt).post(entity(containerContent, TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            defaultContainer = res.getLocation().toString();
+        }
+
+        // Add a child to the public container
+        try (final Response res = target(defaultContainer).request().header(AUTHORIZATION, jwt)
+                .post(entity("", TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            defaultContainerChild = res.getLocation().toString();
+            defaultContainerAcl = getLinks(res).stream().filter(link -> link.getRel().equals("acl"))
+                .map(link -> link.getUri().toString()).findFirst().orElse("");
+        }
+
+        final String defaultAcl = "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n"
+            + "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n\n"
+            + "INSERT DATA { \n"
+            + "[acl:accessTo <" + defaultContainer + ">; acl:mode acl:Read; acl:agentClass foaf:Agent ] }; \n"
+            + "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n"
+            + "INSERT DATA { [acl:accessTo <" + defaultContainer + ">; acl:mode acl:Read, acl:Write; \n"
+            + "   acl:default <" + defaultContainer + ">; \n"
+            + "   acl:agent <https://people.apache.org/~acoburn/#i> ] }";
+
+        // Add an ACL for the public container
+        try (final Response res = target(defaultContainerAcl).request().header(AUTHORIZATION, jwt).method("PATCH",
+                    entity(defaultAcl, APPLICATION_SPARQL_UPDATE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
         }
     }
@@ -509,6 +540,64 @@ public class TrellisAuthenticationTest {
                 assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
             }
         }
+
+        @Test
+        @DisplayName("Verify that an administrator can read a default ACL resource")
+        public void testCanReadDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can read the child of a default ACL resource")
+        public void testCanReadDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can write to a default ACL resource")
+        public void testCanWriteDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can write to the child of a default ACL resource")
+        public void testCanWriteDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can control a default ACL resource")
+        public void testCanControlDefaultAclResource() {
+            try (final Response res = target(defaultContainerAcl).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an administrator can control the child of a default ACL resource")
+        public void testCanControlDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            }
+        }
     }
 
     @Nested
@@ -744,6 +833,64 @@ public class TrellisAuthenticationTest {
         @DisplayName("Verify that a user can control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read a default ACL resource")
+        public void testCanReadDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a default ACL resource")
+        public void testCanReadDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a default ACL resource")
+        public void testCanWriteDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a default ACL resource")
+        public void testCanWriteDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a default ACL resource")
+        public void testCanControlDefaultAclResource() {
+            try (final Response res = target(defaultContainerAcl).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        public void testCanControlDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
@@ -990,6 +1137,64 @@ public class TrellisAuthenticationTest {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
+
+        @Test
+        @DisplayName("Verify that a user can read a default ACL resource")
+        public void testCanReadDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a default ACL resource")
+        public void testCanReadDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a default ACL resource")
+        public void testCanWriteDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a default ACL resource")
+        public void testCanWriteDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a default ACL resource")
+        public void testCanControlDefaultAclResource() {
+            try (final Response res = target(defaultContainerAcl).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        public void testCanControlDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
     }
 
     @Nested
@@ -1225,6 +1430,64 @@ public class TrellisAuthenticationTest {
         @DisplayName("Verify that a user can control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read a default ACL resource")
+        public void testCanReadDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a default ACL resource")
+        public void testCanReadDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a default ACL resource")
+        public void testCanWriteDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a default ACL resource")
+        public void testCanWriteDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, auth).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a default ACL resource")
+        public void testCanControlDefaultAclResource() {
+            try (final Response res = target(defaultContainerAcl).request()
+                    .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        public void testCanControlDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
@@ -1471,6 +1734,64 @@ public class TrellisAuthenticationTest {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
+
+        @Test
+        @DisplayName("Verify that a user can read a default ACL resource")
+        public void testCanReadDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can read the child of a default ACL resource")
+        public void testCanReadDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to a default ACL resource")
+        public void testCanWriteDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can write to the child of a default ACL resource")
+        public void testCanWriteDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request()
+                    .header(AUTHORIZATION, jwt).method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a default ACL resource")
+        public void testCanControlDefaultAclResource() {
+            try (final Response res = target(defaultContainerAcl).request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        public void testCanControlDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild + "?ext=acl").request()
+                    .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
     }
 
     @Nested
@@ -1681,6 +2002,58 @@ public class TrellisAuthenticationTest {
         @DisplayName("Verify that an anonymous user can control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can read a default ACL resource")
+        public void testCanReadDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request().get()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can read the child of a default ACL resource")
+        public void testCanReadDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can write to a default ACL resource")
+        public void testCanWriteDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request().method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user can write to the child of a default ACL resource")
+        public void testCanWriteDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild).request().method("PATCH",
+                        entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
+                            APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control a default ACL resource")
+        public void testCanControlDefaultAclResource() {
+            try (final Response res = target(defaultContainerAcl).request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        public void testCanControlDefaultAclResourceChild() {
+            try (final Response res = target(defaultContainerChild + "?ext=acl").request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
             }
         }
