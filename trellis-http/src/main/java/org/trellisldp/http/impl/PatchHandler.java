@@ -16,6 +16,7 @@ package org.trellisldp.http.impl;
 import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -56,10 +57,11 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
@@ -90,13 +92,14 @@ public class PatchHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param sparqlUpdate the sparql update body
+     * @param auditService an audit service
      * @param resourceService the resource service
      * @param ioService the serialization service
      * @param baseUrl the base URL
      */
-    public PatchHandler(final LdpRequest req, final String sparqlUpdate,
+    public PatchHandler(final LdpRequest req, final String sparqlUpdate, final AuditService auditService,
             final ResourceService resourceService, final IOService ioService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+        super(req, resourceService, auditService, baseUrl);
         this.ioService = ioService;
         this.sparqlUpdate = sparqlUpdate;
     }
@@ -155,10 +158,6 @@ public class PatchHandler extends BaseLdpHandler {
                 .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
                 .forEachOrdered(dataset::add);
 
-            // Add audit-related triples
-            audit.ifPresent(svc -> svc.update(res.getIdentifier(), session).stream()
-                    .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
-
             // Add existing LDP type, other server-managed triples
             dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), RDF.type, res.getInteractionModel()));
             res.getBinary().ifPresent(b -> {
@@ -193,7 +192,20 @@ public class PatchHandler extends BaseLdpHandler {
             }
 
             // Save new dataset
-            if (resourceService.put(res.getIdentifier(), res.getInteractionModel(), dataset.asDataset()).get()) {
+            if (resourceService.replace(res.getIdentifier(), res.getInteractionModel(), dataset.asDataset()).get()) {
+
+                // Add audit-related triples
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    audit.update(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    if (!resourceService.add(res.getIdentifier(), auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to update resource at {}", res.getIdentifier());
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                        }
+                }
 
                 final ResponseBuilder builder = ok();
 

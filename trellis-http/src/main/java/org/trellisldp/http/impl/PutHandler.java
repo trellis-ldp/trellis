@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -44,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.EntityTag;
@@ -55,7 +56,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
-
 import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
@@ -85,13 +85,15 @@ public class PutHandler extends ContentBearingHandler {
      * @param req the LDP request
      * @param entity the entity
      * @param resourceService the resource service
+     * @param auditService an audit service
      * @param ioService the serialization service
      * @param binaryService the binary service
      * @param baseUrl the base URL
      */
     public PutHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
-            final IOService ioService, final BinaryService binaryService, final String baseUrl) {
-        super(req, entity, resourceService, ioService, binaryService, baseUrl);
+                    final AuditService auditService, final IOService ioService, final BinaryService binaryService,
+                    final String baseUrl) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, baseUrl);
     }
 
     private void checkResourceCache(final String identifier, final Resource res) {
@@ -183,10 +185,6 @@ public class PutHandler extends ContentBearingHandler {
             final IRI graphName = getActiveGraphName();
             final IRI otherGraph = getInactiveGraphName();
 
-            // Add audit quads
-            audit.map(addAuditQuads(res, internalId, session)).ifPresent(q ->
-                    q.stream().map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
-
             // Add LDP type
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
@@ -239,8 +237,24 @@ public class PutHandler extends ContentBearingHandler {
                         .forEachOrdered(dataset::add);
                 }
             });
+            // TODO is this the best we can do? what concurrency errors are lurking?
+            final Future<Boolean> success = res != null
+                            ? resourceService.replace(internalId, ldpType, dataset.asDataset())
+                            : resourceService.create(internalId, ldpType, dataset.asDataset());
+            if (success.get()) {
+                // Add audit quads
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to place or replace resource at {}", res.getIdentifier());
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                        }
+                }
 
-            if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
                 final ResponseBuilder builder = status(NO_CONTENT);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
                     .forEach(type -> builder.link(type, "type"));
@@ -262,8 +276,7 @@ public class PutHandler extends ContentBearingHandler {
         return ldpResourceTypes(ldpType);
     }
 
-    private static Function<AuditService, List<Quad>> addAuditQuads(final Resource res, final IRI internalId,
-            final Session session) {
-        return svc -> nonNull(res) ? svc.update(internalId, session) : svc.creation(internalId, session);
+    private List<Quad> auditQuads(final Resource res, final IRI internalId, final Session session) {
+        return nonNull(res) ? audit.update(internalId, session) : audit.creation(internalId, session);
     }
 }

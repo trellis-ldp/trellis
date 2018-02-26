@@ -18,17 +18,19 @@ import java.util.concurrent.Future;
 
 /**
  * A service that persists resources by appending to their records. Nothing that
- * is recorded by {@link #add(Object)} will be deleted by using {@code add} again.
+ * is recorded by {@link #add} will be deleted by using {@code add} again.
  * 
  * @author ajs6f
  *
- * @param <T> the type of resource that can be persisted by this service
+ * @param <T> the type of identifier for resources that can be persisted by this service
+ * @param <U> the type of resource that can be persisted by this service
  */
-public interface AppendService<T> {
+public interface ImmutableDataService<T, U> extends RetrievalService<T, U> {
 
     /**
+     * @param identifier the identifier under which to persist a resource
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> add(T resource);
+    Future<Boolean> add(T identifier, U resource);
 }

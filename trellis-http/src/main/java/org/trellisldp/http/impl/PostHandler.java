@@ -18,6 +18,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -43,9 +44,11 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 
 import org.slf4j.Logger;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
@@ -78,10 +81,12 @@ public class PostHandler extends ContentBearingHandler {
      * @param ioService the serialization service
      * @param binaryService the datastream service
      * @param baseUrl the base URL
+     * @param auditService and audit service
      */
     public PostHandler(final LdpRequest req, final String id, final File entity, final ResourceService resourceService,
-            final IOService ioService, final BinaryService binaryService, final String baseUrl) {
-        super(req, entity, resourceService, ioService, binaryService, baseUrl);
+                    final IOService ioService, final BinaryService binaryService, final String baseUrl,
+                    final AuditService auditService) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, baseUrl);
         this.id = id;
     }
 
@@ -117,11 +122,6 @@ public class PostHandler extends ContentBearingHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
-            // Add Audit quads
-            audit.ifPresent(svc ->
-                    svc.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                .forEachOrdered(dataset::add));
-
             dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
@@ -153,7 +153,22 @@ public class PostHandler extends ContentBearingHandler {
                 checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
             }
 
-            if (resourceService.put(internalId, ldpType, dataset.asDataset()).get()) {
+            if (resourceService.create(internalId, ldpType, dataset.asDataset()).get()) {
+
+                // Add Audit quads
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    audit.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
+                        LOGGER.error("Using AuditService {}", audit);
+                        LOGGER.error("Unable to act against resource at {}", internalId);
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                        }
+                }
+
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
 
                 // Add LDP types

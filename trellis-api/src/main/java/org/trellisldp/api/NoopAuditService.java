@@ -14,21 +14,12 @@
 
 package org.trellisldp.api;
 
-import java.util.concurrent.Future;
-
 /**
- * A service that persists resources by <i>replacing</i> their records.
+ * For use when audit functionality is not desired.
  * 
  * @author ajs6f
  *
- * @param <T> the type of resource that can be persisted by this service
  */
-public interface ReplaceService<T> extends RetrievalService<T> {
-
-    /**
-     * @param resource a resource to persist
-     * @return whether the resource was successfully persisted
-     */
-    Future<Boolean> put(T resource);
+public final class NoopAuditService implements AuditService {
 
 }

@@ -59,6 +59,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -124,6 +125,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -147,6 +149,8 @@ import org.trellisldp.vocabulary.XSD;
 abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static final IOService ioService = new JenaIOService(null);
+
+    protected static final AuditService mockAuditService = none();
 
     private static final int timestamp = 1496262729;
 
@@ -337,14 +341,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         when(mockResourceService.unskolemize(any(IRI.class)))
             .thenAnswer(inv -> {
-                final String uri = ((IRI) inv.getArgument(0)).getIRIString();
+                final IRI iri = inv.getArgument(0);
+                final String uri = iri.getIRIString();
                 if (uri.startsWith(TRELLIS_BNODE_PREFIX)) {
                     return bnode;
                 }
-                return (IRI) inv.getArgument(0);
+                return iri;
             });
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            final RDFTerm term = inv.getArgument(0);
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(BASE_URL)) {
@@ -354,7 +359,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             return term;
         });
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            final RDFTerm term = inv.getArgument(0);
             if (term instanceof IRI) {
                 final String iri = ((IRI) term).getIRIString();
                 if (iri.startsWith(TRELLIS_DATA_PREFIX)) {
@@ -364,9 +369,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             return term;
         });
 
-        when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.delete(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
+        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
+        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
+        when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
@@ -2019,7 +2030,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostInterrupted() throws Exception {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH)), eq(LDP.RDFSource),
+        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH)), eq(LDP.RDFSource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
 
@@ -2032,7 +2043,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostFutureException() throws Exception {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH)), eq(LDP.RDFSource),
+        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH)), eq(LDP.RDFSource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
 
@@ -2240,7 +2251,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutInterrupted() throws Exception {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
 
@@ -2253,7 +2264,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutFutureException() throws Exception {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Container),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
 
@@ -2538,7 +2549,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testDeleteInterrupted() throws Exception {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
+        when(mockResourceService.delete(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
 
@@ -2549,7 +2560,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testDeleteFutureException() throws Exception {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
+        when(mockResourceService.delete(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.Resource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
 
@@ -2714,7 +2725,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPatchInterrupted() throws Exception {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
 
@@ -2727,7 +2738,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPatchFutureException() throws Exception {
-        when(mockResourceService.put(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), eq(LDP.RDFSource),
                     any(Dataset.class))).thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
 
@@ -2896,7 +2907,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testMultipartPostError() {
-        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
         final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,
                 new HttpSession(), mockBinary);
@@ -2911,7 +2922,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testMultipartPostExecutionError() throws Exception {
-        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(mockFuture);
         doThrow(ExecutionException.class).when(mockFuture).get();
         final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,
@@ -2927,7 +2938,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testMultipartPostInterruptedExecutionError() throws Exception {
-        when(mockResourceService.put(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(mockFuture);
         doThrow(InterruptedException.class).when(mockFuture).get();
         final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,

@@ -13,6 +13,8 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.emptyList;
+
 import java.util.List;
 
 import org.apache.commons.rdf.api.IRI;
@@ -24,7 +26,7 @@ import org.apache.commons.rdf.api.Quad;
  *
  * @author acoburn
  */
-public interface AuditService extends AppendService<Resource> {
+public interface AuditService {
 
     /**
      * Generate the audit quads for a Create event.
@@ -33,7 +35,9 @@ public interface AuditService extends AppendService<Resource> {
      * @param session the session data
      * @return the list of quads
      */
-    List<Quad> creation(IRI identifier, Session session);
+    default List<Quad> creation(IRI identifier, Session session) {
+        return emptyList();
+    }
 
     /**
      * Generate the audit quads for a Delete event.
@@ -42,7 +46,9 @@ public interface AuditService extends AppendService<Resource> {
      * @param session the session data
      * @return the list of quads
      */
-    List<Quad> deletion(IRI identifier, Session session);
+    default List<Quad> deletion(IRI identifier, Session session) {
+        return emptyList();
+    }
 
     /**
      * Generate the audit quads for an Update event.
@@ -51,5 +57,20 @@ public interface AuditService extends AppendService<Resource> {
      * @param session the session data
      * @return the list of quads
      */
-    List<Quad> update(IRI identifier, Session session);
+    default List<Quad> update(IRI identifier, Session session) {
+        return emptyList();
+    }
+
+    /**
+     * Singleton.
+     * TODO make private in Java 9
+     */
+    AuditService nullInstance = new NoopAuditService();
+
+    /**
+     * @return an {@code AuditService} that does nothing and throws away all inputs
+     */
+    static AuditService none() {
+        return nullInstance;
+    }
 }

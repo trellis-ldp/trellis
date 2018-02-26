@@ -259,7 +259,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
                             upload.getBinary().getIdentifier(), DC.extent,
                             rdf.createLiteral(size.toString(), XSD.long_))));
 
-            if (resourceService.put(identifier, NonRDFSource, dataset.asDataset()).get()) {
+            if (resourceService.create(identifier, NonRDFSource, dataset.asDataset()).get()) {
                 return created(create(upload.getBaseUrl() + upload.getPath())).build();
             }
         } catch (final InterruptedException | ExecutionException ex) {

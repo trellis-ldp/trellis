@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
@@ -29,8 +30,10 @@ import java.util.stream.Stream;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
@@ -52,10 +55,12 @@ public class DeleteHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param resourceService the resource service
+     * @param auditService an audit service
      * @param baseUrl the base URL
      */
-    public DeleteHandler(final LdpRequest req, final ResourceService resourceService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+    public DeleteHandler(final LdpRequest req, final ResourceService resourceService, final AuditService auditService,
+                    final String baseUrl) {
+        super(req, resourceService, auditService, baseUrl);
     }
 
     /**
@@ -81,14 +86,10 @@ public class DeleteHandler extends BaseLdpHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
-            // Add the audit quads
-            audit.ifPresent(svc -> svc.deletion(res.getIdentifier(), session).stream()
-                    .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(dataset::add));
-
             // Add the baseURL
             dataset.add(rdf.createQuad(null, res.getIdentifier(), DC.isPartOf, rdf.createIRI(baseUrl)));
 
-            // When deleting just the ACL graph, keep the user managed triples in tact
+            // When deleting just the ACL graph, keep the user managed triples intact
             if (ACL.equals(req.getExt())) {
                 try (final Stream<? extends Triple> triples = res.stream(PreferUserManaged)) {
                     triples.map(t -> rdf.createQuad(PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
@@ -97,7 +98,20 @@ public class DeleteHandler extends BaseLdpHandler {
             }
 
             // delete the resource
-            if (resourceService.put(res.getIdentifier(), LDP.Resource, dataset.asDataset()).get()) {
+            if (resourceService.delete(res.getIdentifier(), LDP.Resource, dataset.asDataset()).get()) {
+
+                // Add the audit quads
+                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                    audit.deletion(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                                    .forEachOrdered(auditDataset::add);
+                    if (!resourceService.add(res.getIdentifier(), auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
+                        LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                        return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                    }
+                }
                 return status(NO_CONTENT);
             }
         } catch (final InterruptedException | ExecutionException ex) {

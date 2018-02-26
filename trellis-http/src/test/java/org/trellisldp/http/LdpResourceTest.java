@@ -35,7 +35,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, BASE_URL));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService, BASE_URL));
         config.register(new AgentAuthorizationFilter(mockAgentService, emptyList()));
         config.register(new MultipartUploader(mockResourceService, mockBinaryResolver, BASE_URL));
         config.register(new CacheControlFilter(86400));

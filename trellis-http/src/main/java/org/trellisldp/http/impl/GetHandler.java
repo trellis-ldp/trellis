@@ -86,7 +86,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -122,7 +121,7 @@ public class GetHandler extends BaseLdpHandler {
      */
     public GetHandler(final LdpRequest req, final ResourceService resourceService, final IOService ioService,
             final BinaryService binaryService, final String baseUrl) {
-        super(req, resourceService, baseUrl);
+        super(req, resourceService, null, baseUrl);
         this.ioService = ioService;
         this.binaryService = binaryService;
     }
