@@ -189,7 +189,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         }
         // Set the parent relationship
         getContainer(identifier).ifPresent(parent -> dataset.add(PreferServerManaged, identifier, DC.isPartOf, parent));
-        mementoService.ifPresent(svc -> get(identifier).ifPresent(res -> svc.put(identifier, eventTime, res.stream())));
         return storeAndNotify(identifier, dataset, eventTime, type);
     }
 
@@ -198,6 +197,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
         try {
             rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
+            mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
+                        svc.put(identifier, eventTime, res.stream())));
             emitEvents(identifier, time, dataset);
             return true;
         } catch (final Exception ex) {
