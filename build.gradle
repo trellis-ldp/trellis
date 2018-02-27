@@ -170,7 +170,7 @@ subprojects {
 
     processResources {
         outputs.upToDateWhen { false }
-        filesMatching('**/features.xml') {
+        filesMatching(['**/features.xml', '**/banner.txt']) {
             expand project.properties
         }
     }

@@ -1,9 +1,23 @@
-,---------. .-------.        .-''-.    .---.     .---.    .-./`)    .-'''-.
-\          \|  _ _   \     .'_ _   \   | ,_|     | ,_|    \ .-.')  / _     \
- `--.  ,---'| ( ' )  |    / ( ` )   ',-./  )   ,-./  )    / `-' \ (`' )/`--'
-    |   \   |(_ o _) /   . (_ o _)  |\  '_ '`) \  '_ '`)   `-'`"`(_ o _).
-    :_ _:   | (_,_).' __ |  (_,_)___| > (_)  )  > (_)  )   .---.  (_,_). '.
-    (_I_)   |  |\ \  |  |'  \   .---.(  .  .-' (  .  .-'   |   | .---.  \  :
-   (_(=)_)  |  | \ `'   / \  `-'    / `-'`-'|___`-'`-'|___ |   | \    `-'  |
-    (_I_)   |  |  \    /   \       /   |        \|        \|   |  \       /
-    '---'   ''-'   `'-'     `'-..-'    `--------``--------`'---'   `-...-'
+
+
+
+         tttt                                                lllllll lllllll   iiii
+      ttt:::t                                                l:::::l l:::::l  i::::i
+      t:::::t                                                l:::::l l:::::l   iiii
+      t:::::t                                                l:::::l l:::::l
+ttttttt:::::ttttttt   rrrrr   rrrrrrrrr       eeeeeeeeeeee    l::::l  l::::l iiiiiii     ssssssssss
+t:::::::::::::::::t   r::::rrr:::::::::r    ee::::::::::::ee  l::::l  l::::l i:::::i   ss::::::::::s
+t:::::::::::::::::t   r:::::::::::::::::r  e::::::eeeee:::::eel::::l  l::::l  i::::i ss:::::::::::::s
+tttttt:::::::tttttt   rr::::::rrrrr::::::re::::::e     e:::::el::::l  l::::l  i::::i s::::::ssss:::::s
+      t:::::t          r:::::r     r:::::re:::::::eeeee::::::el::::l  l::::l  i::::i  s:::::s  ssssss
+      t:::::t          r:::::r     rrrrrrre:::::::::::::::::e l::::l  l::::l  i::::i    s::::::s
+      t:::::t          r:::::r            e::::::eeeeeeeeeee  l::::l  l::::l  i::::i       s::::::s
+      t:::::t    ttttttr:::::r            e:::::::e           l::::l  l::::l  i::::i ssssss   s:::::s
+      t::::::tttt:::::tr:::::r            e::::::::e         l::::::ll::::::li::::::is:::::ssss::::::s
+      tt::::::::::::::tr:::::r             e::::::::eeeeeeee l::::::ll::::::li::::::is::::::::::::::s
+        tt:::::::::::ttr:::::r              ee:::::::::::::e l::::::ll::::::li::::::i s:::::::::::ss
+          ttttttttttt  rrrrrrr                eeeeeeeeeeeeee lllllllllllllllliiiiiiii  sssssssssss
+
+
+
+version: $version
