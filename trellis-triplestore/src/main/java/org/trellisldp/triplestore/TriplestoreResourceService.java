@@ -197,8 +197,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
         try {
             rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
-            mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
-                        svc.put(identifier, eventTime, res.stream())));
+            if (type != OperationType.DELETE) {
+                mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
+                            svc.put(identifier, eventTime, res.stream())));
+            }
             emitEvents(identifier, time, dataset);
             return true;
         } catch (final Exception ex) {
