@@ -160,7 +160,11 @@ public class TrellisAuthenticationTest {
         final String protectedAcl = "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n"
             + "INSERT DATA { \n"
             + "[acl:accessTo <" + protectedContainer + ">; acl:mode acl:Read, acl:Write; "
-            + "   acl:agent <https://people.apache.org/~acoburn/#i> ] }";
+            + "   acl:agent <https://people.apache.org/~acoburn/#i> ] };"
+            + "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n"
+            + "INSERT DATA { \n"
+            + "[acl:accessTo <" + protectedContainer + ">; acl:mode acl:Read, acl:Append; "
+            + "   acl:agent <https://madison.example.com/profile/#me> ] }";
 
         // Add an ACL for the protected container
         try (final Response res = target(protectedContainerAcl).request().header(AUTHORIZATION, jwt).method("PATCH",
@@ -625,6 +629,15 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that a user can append to a public resource")
+        public void testUserCanAppendPublicResource() {
+            try (final Response res = target(publicContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
         @DisplayName("Verify that a user can write to a public resource")
         public void testUserCanWritePublicResource() {
             try (final Response res = target(publicContainer).request()
@@ -683,6 +696,15 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that a user can append to a protected resource")
+        public void testUserCanAppendProtectedResource() {
+            try (final Response res = target(protectedContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
         @DisplayName("Verify that a user can write to a protected resource")
         public void testUserCanWriteProtectedResource() {
             try (final Response res = target(protectedContainer).request()
@@ -736,6 +758,15 @@ public class TrellisAuthenticationTest {
         public void testUserCanReadPrivateResourceChild() {
             try (final Response res = target(privateContainerChild).request()
                     .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user cannot append to a private resource")
+        public void testUserCanAppendPrivateResource() {
+            try (final Response res = target(privateContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
@@ -925,6 +956,15 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that a user can append to a public resource")
+        public void testUserCanAppendPublicResource() {
+            try (final Response res = target(publicContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
         @DisplayName("Verify that a user can write to a public resource")
         public void testUserCanWritePublicResource() {
             try (final Response res = target(publicContainer).request()
@@ -983,6 +1023,15 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that a user can append to a protected resource")
+        public void testUserCanAppendProtectedResource() {
+            try (final Response res = target(protectedContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
         @DisplayName("Verify that a user can write to a protected resource")
         public void testUserCanWriteProtectedResource() {
             try (final Response res = target(protectedContainer).request()
@@ -1036,6 +1085,15 @@ public class TrellisAuthenticationTest {
         public void testUserCanReadPrivateResourceChile() {
             try (final Response res = target(privateContainerChild).request()
                     .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user cannot append to a private resource")
+        public void testUserCanAppendPrivateResource() {
+            try (final Response res = target(privateContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
@@ -1222,6 +1280,15 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that a user can append to a public resource")
+        public void testUserCanAppendPublicResource() {
+            try (final Response res = target(publicContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
         @DisplayName("Verify that a user can write to a public resource")
         public void testUserCanWritePublicResource() {
             try (final Response res = target(publicContainer).request()
@@ -1262,11 +1329,11 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user cannot read a protected resource")
+        @DisplayName("Verify that a user can read a protected resource")
         public void testUserCanReadProtectedResource() {
             try (final Response res = target(protectedContainer).request()
                     .header(AUTHORIZATION, auth).get()) {
-                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             }
         }
 
@@ -1275,7 +1342,16 @@ public class TrellisAuthenticationTest {
         public void testUserCanReadProtectedResourceChild() {
             try (final Response res = target(protectedContainerChild).request()
                     .header(AUTHORIZATION, auth).get()) {
-                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can append to a public resource")
+        public void testUserCanAppendProtectedResource() {
+            try (final Response res = target(protectedContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             }
         }
 
@@ -1333,6 +1409,15 @@ public class TrellisAuthenticationTest {
         public void testUserCanReadPrivateResourceChild() {
             try (final Response res = target(privateContainerChild).request()
                     .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user cannot append to a private resource")
+        public void testUserCanAppendPrivateResource() {
+            try (final Response res = target(privateContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
@@ -1396,7 +1481,16 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to a group-controlled resource")
+        @DisplayName("Verify that a user cannot append to a group-controlled resource")
+        public void testUserCanAppendGroupResource() {
+            try (final Response res = target(groupContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user cannot write to a group-controlled resource")
         public void testCanWriteGroupResource() {
             try (final Response res = target(groupContainer).request()
                     .header(AUTHORIZATION, auth).method("PATCH",
@@ -1407,7 +1501,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to the child of a group-controlled resource")
+        @DisplayName("Verify that a user cannot write to the child of a group-controlled resource")
         public void testCanWriteGroupResourceChild() {
             try (final Response res = target(groupContainerChild).request()
                     .header(AUTHORIZATION, auth).method("PATCH",
@@ -1449,6 +1543,15 @@ public class TrellisAuthenticationTest {
         public void testCanReadDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request()
                     .header(AUTHORIZATION, auth).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user cannot append to a default ACL resource")
+        public void testUserCanAppendDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request().header(AUTHORIZATION, auth)
+                    .post(entity("", TEXT_TURTLE))) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
@@ -1522,6 +1625,15 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that a user can append to a public resource")
+        public void testUserCanAppendPublicResource() {
+            try (final Response res = target(publicContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
         @DisplayName("Verify that a user can write to a public resource")
         public void testUserCanWritePublicResource() {
             try (final Response res = target(publicContainer).request()
@@ -1562,20 +1674,29 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user cannot read a protected resource")
+        @DisplayName("Verify that a user can read a protected resource")
         public void testUserCanReadProtectedResource() {
             try (final Response res = target(protectedContainer).request()
                     .header(AUTHORIZATION, jwt).get()) {
-                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             }
         }
 
         @Test
-        @DisplayName("Verify that a user cannot read the child of a protected resource")
+        @DisplayName("Verify that a user can read the child of a protected resource")
         public void testUserCanReadProtectedResourceChild() {
             try (final Response res = target(protectedContainerChild).request()
                     .header(AUTHORIZATION, jwt).get()) {
-                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user can append to a protected resource")
+        public void testUserCanAppendProtectedResource() {
+            try (final Response res = target(protectedContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             }
         }
 
@@ -1633,6 +1754,15 @@ public class TrellisAuthenticationTest {
         public void testUserCanReadPrivateResourceChild() {
             try (final Response res = target(privateContainerChild).request()
                     .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user cannot append to a private resource")
+        public void testUserCanAppendPrivateResource() {
+            try (final Response res = target(privateContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
@@ -1696,6 +1826,15 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that a user cannot append to a group-controlled resource")
+        public void testUserCanAppendGroupResource() {
+            try (final Response res = target(groupContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
         @DisplayName("Verify that a user can write to a group-controlled resource")
         public void testCanWriteGroupResource() {
             try (final Response res = target(groupContainer).request()
@@ -1749,6 +1888,15 @@ public class TrellisAuthenticationTest {
         public void testCanReadDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request()
                     .header(AUTHORIZATION, jwt).get()) {
+                assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that a user cannot append to a group-controlled resource")
+        public void testUserCanAppendDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request().header(AUTHORIZATION, jwt)
+                    .post(entity("", TEXT_TURTLE))) {
                 assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
             }
         }
@@ -1815,6 +1963,14 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that an anonymous user cannot append to a public resource")
+        public void testUserCanAppendPublicResource() {
+            try (final Response res = target(publicContainer).request().post(entity("", TEXT_TURTLE))) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
         @DisplayName("Verify that an anonymous user cannot write to a public resource")
         public void testCanWritePublicResource() {
             try (final Response res = target(publicContainer).request().method("PATCH",
@@ -1862,6 +2018,14 @@ public class TrellisAuthenticationTest {
         @DisplayName("Verify that an anonymous user cannot read the child of a protected resource")
         public void testCanReadProtectedResourceChild() {
             try (final Response res = target(protectedContainerChild).request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user cannot append to a protected resource")
+        public void testUserCanAppendProtectedResource() {
+            try (final Response res = target(protectedContainer).request().post(entity("", TEXT_TURTLE))) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
             }
         }
@@ -1919,6 +2083,14 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that an anonymous user cannot append to a private resource")
+        public void testUserCanAppendPrivateResource() {
+            try (final Response res = target(privateContainer).request().post(entity("", TEXT_TURTLE))) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
         @DisplayName("Verify that an anonymous user cannot write to a private resource")
         public void testCanWritePrivateResource() {
             try (final Response res = target(privateContainer).request().method("PATCH",
@@ -1971,6 +2143,14 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
+        @DisplayName("Verify that an anonymous user cannot append to a group-controlled resource")
+        public void testUserCanAppendGroupResource() {
+            try (final Response res = target(groupContainer).request().post(entity("", TEXT_TURTLE))) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
         @DisplayName("Verify that an anonymous user can write to a group-controlled resource")
         public void testCanWriteGroupResource() {
             try (final Response res = target(groupContainer).request().method("PATCH",
@@ -2018,6 +2198,14 @@ public class TrellisAuthenticationTest {
         @DisplayName("Verify that an anonymous user can read the child of a default ACL resource")
         public void testCanReadDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request().get()) {
+                assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
+            }
+        }
+
+        @Test
+        @DisplayName("Verify that an anonymous user cannot append to a default ACL resource")
+        public void testUserCanAppendDefaultAclResource() {
+            try (final Response res = target(defaultContainer).request().post(entity("", TEXT_TURTLE))) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
             }
         }
