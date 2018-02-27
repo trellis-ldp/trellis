@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Range;
@@ -239,9 +238,9 @@ public interface BinaryService {
     Optional<String> digest(String algorithm, InputStream stream);
 
     /**
-     * Get a supplier of identifiers.
+     * Get a new identifier.
      *
-     * @return an identifier supplier for this service
+     * @return a new identifier
      */
-    Supplier<String> getIdentifierSupplier();
+    String generateIdentifier();
 }

@@ -124,7 +124,7 @@ public class PutHandlerTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
-        when(mockBinaryService.getIdentifierSupplier()).thenReturn(() -> "file:" + randomUUID());
+        when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
 
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class)))

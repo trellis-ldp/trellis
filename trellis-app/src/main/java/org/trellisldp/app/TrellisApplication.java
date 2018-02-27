@@ -97,8 +97,8 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
 
-        final BinaryService binaryService = new FileBinaryService(config.getBinaries(),
-                idService.getSupplier("file:", config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength()));
+        final BinaryService binaryService = new FileBinaryService(config.getBinaries(), idService,
+                config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength());
 
         // IO Service
         final CacheService<String, String> profileCache = new TrellisCache<>(newBuilder()

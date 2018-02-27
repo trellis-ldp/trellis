@@ -108,8 +108,8 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
                 mockMementoService, mockEventService);
-        assertNotEquals(svc.getIdentifierSupplier().get(), svc.getIdentifierSupplier().get());
-        assertNotEquals(svc.getIdentifierSupplier().get(), svc.getIdentifierSupplier().get());
+        assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier());
+        assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier());
     }
 
     @Test

@@ -349,7 +349,7 @@ public class LdpResource implements ContainerRequestFilter {
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
         final String identifier = ofNullable(req.getSlug())
-            .orElseGet(resourceService.getIdentifierSupplier());
+            .orElseGet(resourceService::generateIdentifier);
 
         final PostHandler postHandler = new PostHandler(req, identifier, body, resourceService, ioService,
                         binaryService, urlBase, auditService);

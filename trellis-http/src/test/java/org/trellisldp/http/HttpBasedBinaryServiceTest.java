@@ -64,7 +64,7 @@ public class HttpBasedBinaryServiceTest {
     private static final RDF rdf = new SimpleRDF();
 
     private static final IRI resource = rdf.createIRI("https://www.trellisldp.org/ns/trellis.ttl");
-    private static final IdentifierService idService = new UUIDGenerator();
+    private static final IdentifierService idService = new UUIDGenerator("http://example.org/");
 
     @Mock
     private Client mockClient;
@@ -101,7 +101,7 @@ public class HttpBasedBinaryServiceTest {
     @Test
     public void testExists() {
 
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
+        final BinaryService resolver = new HttpBasedBinaryService(idService);
 
         assertTrue(resolver.exists(resource));
         assertFalse(resolver.exists(rdf.createIRI("http://www.trellisldp.org/ns/non-existent.ttl")));
@@ -109,8 +109,8 @@ public class HttpBasedBinaryServiceTest {
 
     @Test
     public void testGetIdSupplier() {
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
-        assertTrue(resolver.getIdentifierSupplier().get().startsWith("http://example.org/"));
+        final BinaryService resolver = new HttpBasedBinaryService(idService);
+        assertTrue(resolver.generateIdentifier().startsWith("http://example.org/"));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class HttpBasedBinaryServiceTest {
         final byte[] data = "Some data".getBytes(UTF_8);
         when(mockInputStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException("Expected Error"));
 
-        final BinaryService service = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
+        final BinaryService service = new HttpBasedBinaryService(idService);
         assertEquals(of("W4L4v03yv7DmbMqnMG/QJA=="), service.digest("MD5", new ByteArrayInputStream(data)));
         assertEquals(of("jXJFPxAHmvPfx/z8QQmx7VXhg58="), service.digest("SHA", new ByteArrayInputStream(data)));
         assertEquals(of("jXJFPxAHmvPfx/z8QQmx7VXhg58="), service.digest("SHA-1", new ByteArrayInputStream(data)));
@@ -127,7 +127,7 @@ public class HttpBasedBinaryServiceTest {
 
     @Test
     public void testGetContent() {
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
+        final BinaryService resolver = new HttpBasedBinaryService(idService);
 
         assertTrue(resolver.getContent(resource).isPresent());
         assertTrue(resolver.getContent(resource).map(this::uncheckedToString).get()
@@ -136,7 +136,7 @@ public class HttpBasedBinaryServiceTest {
 
     @Test
     public void testGetContentSegment() {
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
+        final BinaryService resolver = new HttpBasedBinaryService(idService);
 
         final Optional<InputStream> res = resolver.getContent(resource, singletonList(between(5, 20)));
         assertTrue(res.isPresent());
@@ -148,7 +148,7 @@ public class HttpBasedBinaryServiceTest {
 
     @Test
     public void testGetSslContent() {
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
+        final BinaryService resolver = new HttpBasedBinaryService(idService);
 
         assertTrue(resolver.getContent(resource).isPresent());
         assertTrue(resolver.getContent(resource).map(this::uncheckedToString).get()
@@ -158,7 +158,7 @@ public class HttpBasedBinaryServiceTest {
     @Test
     public void testSetContent() {
         final String contents = "A new resource";
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"));
+        final BinaryService resolver = new HttpBasedBinaryService(idService);
 
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
         assertThrows(RuntimeTrellisException.class, () -> resolver.setContent(resource, inputStream));
@@ -166,8 +166,7 @@ public class HttpBasedBinaryServiceTest {
 
     @Test
     public void testMockedClient() throws IOException {
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
-                mockClient);
+        final BinaryService resolver = new HttpBasedBinaryService(idService, mockClient);
         final String contents = "A new resource";
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
         resolver.setContent(resource, inputStream);
@@ -177,8 +176,7 @@ public class HttpBasedBinaryServiceTest {
 
     @Test
     public void testMockedDelete() throws IOException {
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
-                mockClient);
+        final BinaryService resolver = new HttpBasedBinaryService(idService, mockClient);
         resolver.purgeContent(resource);
 
         verify(mockInvocationBuilder).delete();
@@ -188,8 +186,7 @@ public class HttpBasedBinaryServiceTest {
     public void testMockedDeleteException() {
         when(mockStatusType.getFamily()).thenReturn(CLIENT_ERROR);
         when(mockStatusType.toString()).thenReturn("BAD REQUEST");
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
-                mockClient);
+        final BinaryService resolver = new HttpBasedBinaryService(idService, mockClient);
         assertThrows(RuntimeTrellisException.class, () -> resolver.purgeContent(resource));
     }
 
@@ -198,8 +195,7 @@ public class HttpBasedBinaryServiceTest {
         when(mockStatusType.getFamily()).thenReturn(CLIENT_ERROR);
         when(mockStatusType.toString()).thenReturn("BAD REQUEST");
         final String contents = "A new resource";
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
-                mockClient);
+        final BinaryService resolver = new HttpBasedBinaryService(idService, mockClient);
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
 
         assertThrows(RuntimeTrellisException.class, () ->
@@ -210,8 +206,7 @@ public class HttpBasedBinaryServiceTest {
     public void testExceptedDelete() throws IOException {
         when(mockStatusType.getFamily()).thenReturn(CLIENT_ERROR);
         when(mockStatusType.toString()).thenReturn("BAD REQUEST");
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
-                mockClient);
+        final BinaryService resolver = new HttpBasedBinaryService(idService, mockClient);
 
         assertThrows(RuntimeTrellisException.class, () ->
             resolver.purgeContent(resource));
@@ -219,8 +214,7 @@ public class HttpBasedBinaryServiceTest {
 
     @Test
     public void testGetNoEntity() throws IOException {
-        final BinaryService resolver = new HttpBasedBinaryService(idService.getSupplier("http://example.org/"),
-                mockClient);
+        final BinaryService resolver = new HttpBasedBinaryService(idService, mockClient);
         assertFalse(resolver.getContent(resource).isPresent());
     }
 

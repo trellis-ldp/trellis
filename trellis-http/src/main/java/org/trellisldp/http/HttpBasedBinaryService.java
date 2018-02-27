@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
@@ -52,6 +51,7 @@ import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
@@ -83,26 +83,26 @@ public class HttpBasedBinaryService implements BinaryService {
 
     // TODO - JDK9 use the new HttpClient library
     private final Client httpClient;
-    private final Supplier<String> idSupplier;
+    private final IdentifierService idService;
 
     /**
      * Create an Http-based binary service using the default HTTP client.
      *
-     * @param idSupplier an identifier supplier
+     * @param idService an identifier service
      */
-    public HttpBasedBinaryService(final Supplier<String> idSupplier) {
-        this(idSupplier, newClient());
+    public HttpBasedBinaryService(final IdentifierService idService) {
+        this(idService, newClient());
     }
 
     /**
      * Create an Http-based binary service with a provided client.
      *
-     * @param idSupplier an identifier supplier
+     * @param idService an identifier service
      * @param client the client
      */
-    public HttpBasedBinaryService(final Supplier<String> idSupplier, final Client client) {
+    public HttpBasedBinaryService(final IdentifierService idService, final Client client) {
         requireNonNull(client, "HTTP client may not be null!");
-        this.idSupplier = idSupplier;
+        this.idService = idService;
         httpClient = client;
     }
 
@@ -166,8 +166,8 @@ public class HttpBasedBinaryService implements BinaryService {
     }
 
     @Override
-    public Supplier<String> getIdentifierSupplier() {
-        return idSupplier;
+    public String generateIdentifier() {
+        return idService.getSupplier().get();
     }
 
     @Override

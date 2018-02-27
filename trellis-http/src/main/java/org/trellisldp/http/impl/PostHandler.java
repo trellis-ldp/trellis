@@ -134,7 +134,7 @@ public class PostHandler extends ContentBearingHandler {
 
                 final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(contentType)
                         .orElse(APPLICATION_OCTET_STREAM));
-                final IRI binaryLocation = rdf.createIRI(binaryService.getIdentifierSupplier().get());
+                final IRI binaryLocation = rdf.createIRI(binaryService.generateIdentifier());
                 dataset.add(rdf.createQuad(PreferServerManaged, internalId, DC.hasPart, binaryLocation));
                 dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.modified,
                             rdf.createLiteral(now().toString(), XSD.dateTime)));

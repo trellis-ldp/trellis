@@ -115,7 +115,7 @@ public class PostHandlerTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockBinaryService.getIdentifierSupplier()).thenReturn(() -> "file:" + randomUUID());
+        when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));

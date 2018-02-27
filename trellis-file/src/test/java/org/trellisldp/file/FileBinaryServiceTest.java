@@ -77,14 +77,14 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testFileExists() {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         assertTrue(resolver.exists(file));
         assertFalse(resolver.exists(rdf.createIRI("file:fake.txt")));
     }
 
     @Test
     public void testFilePurge() {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         final IRI fileIRI = rdf.createIRI("file:" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream("Some data".getBytes(UTF_8));
         resolver.setContent(fileIRI, inputStream);
@@ -95,22 +95,21 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testIdSupplier() {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
-        assertTrue(resolver.getIdentifierSupplier().get().startsWith("file:"));
-        assertNotEquals(resolver.getIdentifierSupplier().get(),
-                resolver.getIdentifierSupplier().get());
+        final BinaryService resolver = new FileBinaryService(directory, idService);
+        assertTrue(resolver.generateIdentifier().startsWith("file:"));
+        assertNotEquals(resolver.generateIdentifier(), resolver.generateIdentifier());
     }
 
     @Test
     public void testFileContent() {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         assertTrue(resolver.getContent(file).isPresent());
         assertEquals("A test document.\n", resolver.getContent(file).map(this::uncheckedToString).get());
     }
 
     @Test
     public void testFileContentSegment() {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         final List<Range<Integer>> range = singletonList(between(1, 5));
         assertTrue(resolver.getContent(file, range).isPresent());
         assertEquals(" tes", resolver.getContent(file, range).map(this::uncheckedToString).get());
@@ -118,7 +117,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testFileContentSegments() {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         final List<Range<Integer>> ranges = new ArrayList<>();
         ranges.add(between(1, 5));
         ranges.add(between(8, 10));
@@ -129,7 +128,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testFileContentSegmentBeyond() {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         final List<Range<Integer>> range = singletonList(between(1000, 1005));
         assertTrue(resolver.getContent(file, range).isPresent());
         assertEquals("", resolver.getContent(file, range).map(this::uncheckedToString).get());
@@ -138,7 +137,7 @@ public class FileBinaryServiceTest {
     @Test
     public void testSetFileContent() {
         final String contents = "A new file";
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         final IRI fileIRI = rdf.createIRI("file:" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
         resolver.setContent(fileIRI, inputStream);
@@ -148,7 +147,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testGetFileContentError() throws IOException {
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         final IRI fileIRI = rdf.createIRI("file:" + randomFilename());
         assertThrows(UncheckedIOException.class, () -> resolver.getContent(fileIRI));
     }
@@ -156,7 +155,7 @@ public class FileBinaryServiceTest {
     @Test
     public void testSetFileContentError() throws IOException {
         when(mockInputStream.read(any(byte[].class))).thenThrow(new IOException("Expected error"));
-        final BinaryService resolver = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService resolver = new FileBinaryService(directory, idService);
         final IRI fileIRI = rdf.createIRI("file:" + randomFilename());
         assertThrows(UncheckedIOException.class, () -> resolver.setContent(fileIRI, mockInputStream));
     }
@@ -166,7 +165,7 @@ public class FileBinaryServiceTest {
         final byte[] data = "Some data".getBytes(UTF_8);
         when(mockInputStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException("Expected Error"));
 
-        final BinaryService service = new FileBinaryService(directory, idService.getSupplier("file:"));
+        final BinaryService service = new FileBinaryService(directory, idService);
         assertEquals(of("W4L4v03yv7DmbMqnMG/QJA=="), service.digest("MD5", new ByteArrayInputStream(data)));
         assertEquals(of("jXJFPxAHmvPfx/z8QQmx7VXhg58="), service.digest("SHA", new ByteArrayInputStream(data)));
         assertEquals(of("jXJFPxAHmvPfx/z8QQmx7VXhg58="), service.digest("SHA-1", new ByteArrayInputStream(data)));

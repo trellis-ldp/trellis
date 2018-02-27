@@ -153,7 +153,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
                 final String contentType = ofNullable(ctx.getMediaType()).map(MediaType::toString)
                     .orElse(APPLICATION_OCTET_STREAM);
                 final String identifier = ofNullable(ctx.getHeaderString("Slug"))
-                    .orElseGet(resourceService.getIdentifierSupplier());
+                    .orElseGet(resourceService::generateIdentifier);
                 final String uploadId = binaryService.initiateUpload(rdf.createIRI(TRELLIS_DATA_PREFIX + path
                             + identifier), contentType);
                 if (isNull(uploadId)) {

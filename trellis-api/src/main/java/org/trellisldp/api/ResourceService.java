@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Range;
@@ -231,9 +230,9 @@ public interface ResourceService extends MutableDataService<IRI, Resource>, Immu
     }
 
     /**
-     * An identifier supplier.
+     * An identifier generator.
      *
-     * @return a supplier of identifiers for new resources
+     * @return a new identifier
      */
-    Supplier<String> getIdentifierSupplier();
+    String generateIdentifier();
 }

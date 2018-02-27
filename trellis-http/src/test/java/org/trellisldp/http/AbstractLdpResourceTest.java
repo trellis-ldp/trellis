@@ -263,7 +263,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         whenResource(mockResourceService.get(eq(deletedIdentifier))).thenReturn(of(mockDeletedResource));
         whenResource(mockResourceService.get(eq(deletedIdentifier), any(Instant.class)))
             .thenReturn(of(mockDeletedResource));
-        when(mockResourceService.getIdentifierSupplier()).thenReturn(() -> RANDOM_VALUE);
+        when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
         whenResource(mockResourceService.get(eq(userDeletedIdentifier))).thenReturn(of(mockUserDeletedResource));
         whenResource(mockResourceService.get(eq(userDeletedIdentifier), any(Instant.class)))
@@ -313,7 +313,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .thenAnswer(x -> of(new ByteArrayInputStream("e input".getBytes(UTF_8))));
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier)))
             .thenAnswer(x -> of(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
-        when(mockBinaryService.getIdentifierSupplier()).thenReturn(() -> RANDOM_VALUE);
+        when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);

@@ -29,6 +29,23 @@ import org.trellisldp.api.IdentifierService;
  */
 public class UUIDGenerator implements IdentifierService {
 
+    private final String defaultPrefix;
+
+    /**
+     * Create a UUID Generator.
+     */
+    public UUIDGenerator() {
+        this("");
+    }
+
+    /**
+     * Create a UUID Generator with a default prefix value.
+     * @param prefix the prefix
+     */
+    public UUIDGenerator(final String prefix) {
+        this.defaultPrefix = prefix;
+    }
+
     @Override
     public Supplier<String> getSupplier(final String prefix, final Integer hierarchy, final Integer length) {
 
@@ -45,7 +62,7 @@ public class UUIDGenerator implements IdentifierService {
 
     @Override
     public Supplier<String> getSupplier() {
-        return getSupplier("");
+        return getSupplier(defaultPrefix);
     }
 
     private static String getId(final String prefix, final Integer hierarchy, final Integer length) {

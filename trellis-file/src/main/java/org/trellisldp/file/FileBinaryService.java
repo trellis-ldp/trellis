@@ -53,6 +53,7 @@ import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.IdentifierService;
 
 /**
  * A {@link BinaryService} implementation that stores LDP-NR resources as files on a local filesystem.
@@ -72,6 +73,8 @@ public class FileBinaryService implements BinaryService {
 
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
     private static final String SHA = "SHA";
+    private static final Integer DEFAULT_HIERARCHY = 3;
+    private static final Integer DEFAULT_LENGTH = 2;
 
     // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
     private static final Set<String> algorithms = asList(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512).stream()
@@ -84,11 +87,24 @@ public class FileBinaryService implements BinaryService {
      * Create a File-based Binary service.
      *
      * @param basePath the base file path
-     * @param idSupplier an identifier supplier
+     * @param idService an identifier service
      */
-    public FileBinaryService(final String basePath, final Supplier<String> idSupplier) {
+    public FileBinaryService(final String basePath, final IdentifierService idService) {
+        this(basePath, idService, DEFAULT_HIERARCHY, DEFAULT_LENGTH);
+    }
+
+    /**
+     * Create a File-based Binary service.
+     *
+     * @param basePath the base file path
+     * @param idService an identifier service
+     * @param hierarchy the levels of hierarchy
+     * @param length the length of each level of hierarchy
+     */
+    public FileBinaryService(final String basePath, final IdentifierService idService,
+            final Integer hierarchy, final Integer length) {
         this.basePath = basePath;
-        this.idSupplier = idSupplier;
+        this.idSupplier = idService.getSupplier("file:", hierarchy, length);
     }
 
     @Override
@@ -157,8 +173,8 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public Supplier<String> getIdentifierSupplier() {
-        return idSupplier;
+    public String generateIdentifier() {
+        return idSupplier.get();
     }
 
     private Optional<File> getFileFromIdentifier(final IRI identifier) {

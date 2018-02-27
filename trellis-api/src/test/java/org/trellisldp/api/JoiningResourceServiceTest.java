@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Range;
@@ -145,8 +144,8 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
-        public Supplier<String> getIdentifierSupplier() {
-            return String::new;
+        public String generateIdentifier() {
+            return "new-identifier";
         }
 
     }

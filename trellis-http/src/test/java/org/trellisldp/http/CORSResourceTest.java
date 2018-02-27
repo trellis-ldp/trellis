@@ -199,7 +199,7 @@ public class CORSResourceTest extends JerseyTest {
             .thenReturn(of(mockBinaryVersionedResource));
         when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
         when(mockResourceService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());
-        when(mockResourceService.getIdentifierSupplier()).thenReturn(() -> RANDOM_VALUE);
+        when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
 

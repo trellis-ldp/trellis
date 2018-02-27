@@ -200,7 +200,7 @@ public class PutHandler extends ContentBearingHandler {
 
                 final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(req.getContentType())
                         .orElse(APPLICATION_OCTET_STREAM));
-                final IRI binaryLocation = rdf.createIRI(binaryService.getIdentifierSupplier().get());
+                final IRI binaryLocation = rdf.createIRI(binaryService.generateIdentifier());
 
                 // Persist the content
                 persistContent(binaryLocation, metadata);

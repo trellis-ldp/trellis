@@ -599,8 +599,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Supplier<String> getIdentifierSupplier() {
-        return supplier;
+    public String generateIdentifier() {
+        return supplier.get();
     }
 
     @Override
