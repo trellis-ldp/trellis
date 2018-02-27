@@ -14,11 +14,15 @@
 
 package org.trellisldp.api;
 
+import static java.time.Instant.now;
 import static java.util.Collections.synchronizedMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -43,6 +47,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.trellisldp.api.JoiningResourceService.RetrievableResource;
+import org.trellisldp.vocabulary.LDP;
 
 @RunWith(JUnitPlatform.class)
 public class JoiningResourceServiceTest {
@@ -261,5 +266,39 @@ public class JoiningResourceServiceTest {
         quads.remove(testFirstQuad);
         quads.remove(testSecondQuad);
         assertEquals(0, quads.size(), "Resource was retrieved with too much data!");
+    }
+
+    @Test
+    public void testRetrievableResource() {
+        final Instant time = now();
+        final Quad quad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+        final Resource mockMutable = mock(Resource.class);
+
+        when(mockMutable.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockMutable.getModified()).thenReturn(time);
+        when(mockMutable.hasAcl()).thenReturn(true);
+        when(mockMutable.stream()).thenAnswer(inv -> Stream.of(quad));
+
+        final Resource res = new RetrievableResource(mockMutable, null);
+        assertEquals(LDP.RDFSource, res.getInteractionModel());
+        assertEquals(time, res.getModified());
+        assertTrue(res.hasAcl());
+        assertTrue(res.stream().filter(quad::equals).findFirst().isPresent());
+    }
+
+    @Test
+    public void testPersistableResource() {
+        final Instant time = now();
+        final IRI identifier = createIRI("trellis:identifier");
+        final Quad quad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+        final Dataset dataset = RDFUtils.getInstance().createDataset();
+        dataset.add(quad);
+
+        final Resource res = new JoiningResourceService.PersistableResource(identifier, LDP.Container, dataset);
+        assertEquals(LDP.Container, res.getInteractionModel());
+        assertFalse(res.getModified().isBefore(time));
+        assertFalse(res.getModified().isAfter(now()));
+        assertTrue(res.stream().filter(quad::equals).findFirst().isPresent());
+        assertThrows(UnsupportedOperationException.class, () -> res.hasAcl());
     }
 }
