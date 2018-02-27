@@ -16,7 +16,6 @@ package org.trellisldp.http.impl;
 import static java.net.URI.create;
 import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -193,7 +192,7 @@ public class PutHandler extends ContentBearingHandler {
             dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
 
             // Add user-supplied data
-            if (LDP.NonRDFSource.equals(ldpType) && !rdfSyntax.isPresent()) {
+            if (isBinaryRequest(ldpType, rdfSyntax)) {
                 // Check the expected digest value
                 if (isBadDigest(req.getDigest())) {
                     return status(BAD_REQUEST);
@@ -238,9 +237,7 @@ public class PutHandler extends ContentBearingHandler {
                         .forEachOrdered(dataset::add);
                 }
             });
-            final Future<Boolean> success = nonNull(res)
-                            ? resourceService.replace(internalId, ldpType, dataset.asDataset())
-                            : resourceService.create(internalId, ldpType, dataset.asDataset());
+            final Future<Boolean> success = createOrReplace(res, internalId, ldpType, dataset);
             if (success.get()) {
                 // Add audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
@@ -255,12 +252,9 @@ public class PutHandler extends ContentBearingHandler {
                     }
                 }
 
-                final ResponseBuilder builder = status(nonNull(res) ? NO_CONTENT : CREATED);
+                final ResponseBuilder builder = buildResponse(res, identifier);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
                     .forEach(type -> builder.link(type, "type"));
-                if (isNull(res)) {
-                    builder.contentLocation(create(identifier));
-                }
                 return builder;
             }
         } catch (final InterruptedException | ExecutionException ex) {
@@ -270,6 +264,24 @@ public class PutHandler extends ContentBearingHandler {
         LOGGER.error("Unable to persist data to location at {}", internalId.getIRIString());
         return serverError().type(TEXT_PLAIN)
             .entity("Unable to persist data. Please consult the logs for more information");
+    }
+
+    private Future<Boolean> createOrReplace(final Resource res, final IRI internalId, final IRI ldpType,
+            final TrellisDataset dataset) {
+        return nonNull(res)
+            ? resourceService.replace(internalId, ldpType, dataset.asDataset())
+            : resourceService.create(internalId, ldpType, dataset.asDataset());
+    }
+
+    private ResponseBuilder buildResponse(final Resource res, final String identifier) {
+        if (nonNull(res)) {
+            return status(NO_CONTENT);
+        }
+        return status(CREATED).contentLocation(create(identifier));
+    }
+
+    private Boolean isBinaryRequest(final IRI ldpType, final Optional<RDFSyntax> rdfSyntax) {
+        return LDP.NonRDFSource.equals(ldpType) && !rdfSyntax.isPresent();
     }
 
     private String buildIdentifier(final String baseUrl) {
