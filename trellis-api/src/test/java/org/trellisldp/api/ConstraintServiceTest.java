@@ -19,12 +19,20 @@ import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -36,6 +44,8 @@ import org.trellisldp.vocabulary.RDFS;
  */
 @RunWith(JUnitPlatform.class)
 public class ConstraintServiceTest {
+
+    private static final RDF rdf = RDFUtils.getInstance();
 
     /**
      * A mapping of LDP types to their supertype
@@ -130,5 +140,16 @@ public class ConstraintServiceTest {
         assertTrue(types.contains(LDP.RDFSource));
         assertTrue(types.contains(LDP.Container));
         assertTrue(types.contains(LDP.IndirectContainer));
+    }
+
+    @Test
+    public void testConstrainedBy() {
+        final ConstraintService svc = mock(ConstraintService.class);
+
+        doCallRealMethod().when(svc).constrainedBy(eq(LDP.RDFSource), any(Graph.class));
+        when(svc.constrainedBy(any(IRI.class), any(Graph.class), eq(RDFUtils.TRELLIS_DATA_PREFIX)))
+            .thenAnswer(inv -> Stream.empty());
+
+        assertEquals(0L, svc.constrainedBy(LDP.RDFSource, rdf.createGraph()).count());
     }
 }
