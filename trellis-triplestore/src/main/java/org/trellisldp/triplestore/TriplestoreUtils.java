@@ -13,12 +13,6 @@
  */
 package org.trellisldp.triplestore;
 
-import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
-
-import java.util.Iterator;
-import java.util.Optional;
-
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFTerm;
@@ -39,11 +33,6 @@ final class TriplestoreUtils {
 
     public static JenaRDF getInstance() {
         return rdf;
-    }
-
-    public static <T> Optional<T> findFirst(final Class<T> service) {
-        // NOTE -- this can be replaced with a JDK 9+ built-in method
-        return of(load(service).iterator()).filter(Iterator::hasNext).map(Iterator::next);
     }
 
     public static BlankNodeOrIRI getSubject(final QuerySolution qs) {
