@@ -72,8 +72,8 @@ public class AgentAuthorizationFilterTest {
     @Test
     public void testFilterMissingAgent() throws Exception {
         when(mockPrincipal.getName()).thenReturn("");
-        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter(mockAgentService, emptyList());
-
+        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter(mockAgentService);
+        filter.setAdminUsers(emptyList());
         filter.filter(mockContext);
         verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
         assertEquals(Trellis.AnonymousAgent, sessionArgument.getValue().getAgent());

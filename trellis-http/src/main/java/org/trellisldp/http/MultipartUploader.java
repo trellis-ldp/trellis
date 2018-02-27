@@ -39,6 +39,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.UPLOADS;
 import static org.trellisldp.http.domain.HttpConstants.UPLOAD_PREFIX;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
@@ -60,6 +61,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -87,6 +89,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -129,11 +132,22 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
      *
      * @param resourceService the resource service
      * @param binaryService the binary service
+     */
+    @Inject
+    public MultipartUploader(final ResourceService resourceService,
+            final BinaryService.MultipartCapable binaryService) {
+        this(resourceService, binaryService, ConfigurationProvider.getConfiguration().get(CONFIGURATION_BASE_URL));
+    }
+
+    /**
+     * Create a multipart uploader object.
+     *
+     * @param resourceService the resource service
+     * @param binaryService the binary service
      * @param baseUrl the base URL
      */
     public MultipartUploader(final ResourceService resourceService, final BinaryService.MultipartCapable binaryService,
             final String baseUrl) {
-
         this.baseUrl = baseUrl;
         this.resourceService = resourceService;
         this.binaryService = binaryService;

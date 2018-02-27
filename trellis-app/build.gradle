@@ -14,10 +14,10 @@ dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-metrics', version: dropwizardVersion
     compile group: 'io.dropwizard', name: 'dropwizard-http2', version: dropwizardVersion
     compile group: 'io.jsonwebtoken', name: 'jjwt', version: jwtVersion
+    compile group: 'org.apache.activemq', name: 'activemq-client', version: activeMqVersion
+    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     compile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     compile group: 'org.apache.jena', name: 'jena-tdb2', version: jenaVersion
-    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
-    compile group: 'org.apache.activemq', name: 'activemq-client', version: activeMqVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
     compile project(":trellis-constraint-rules")
@@ -42,6 +42,7 @@ dependencies {
     testCompile group: 'io.dropwizard', name: 'dropwizard-client', version: dropwizardVersion
     testCompile group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion
     testCompile group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
+    testImplementation group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
     testImplementation group: 'org.awaitility', name: 'awaitility', version: awaitilityVersion
     testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion

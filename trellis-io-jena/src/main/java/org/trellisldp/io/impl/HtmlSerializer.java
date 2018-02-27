@@ -50,18 +50,14 @@ public class HtmlSerializer {
      * Create a ResourceView object.
      *
      * @param namespaceService a namespace service
-     * @param template the template name
      * @param properties additional HTML-related properties, e.g. URLs for icon, css, js
      */
-    public HtmlSerializer(final NamespaceService namespaceService, final String template,
-            final Map<String, String> properties) {
+    public HtmlSerializer(final NamespaceService namespaceService, final Map<String, String> properties) {
         this.namespaceService = namespaceService;
-        final File tpl = new File(template);
-        if (tpl.exists()) {
-            this.template = mf.compile(template);
-        } else {
-            this.template = mf.compile(getReader(template), template);
-        }
+        final String templatePath = properties.getOrDefault("trellis.io.html.template",
+                "org/trellisldp/io/resource.mustache");
+        final File tpl = new File(templatePath);
+        this.template = tpl.exists() ? mf.compile(templatePath) : mf.compile(getReader(templatePath), templatePath);
         this.properties = properties;
     }
 

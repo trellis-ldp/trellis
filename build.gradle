@@ -81,6 +81,7 @@ subprojects {
         mustacheVersion = '0.9.5_1'
         rabbitMqVersion = '5.1.2'
         slf4jVersion = '1.7.25'
+        tamayaVersion = '0.3-incubating'
         jwtVersion = '0.9.0'
         jaxbVersion = '2.3.0'
 

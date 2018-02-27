@@ -23,6 +23,10 @@ import com.rabbitmq.client.Channel;
 import java.io.IOException;
 import java.util.ServiceLoader;
 
+import javax.inject.Inject;
+
+import org.apache.tamaya.Configuration;
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -33,6 +37,14 @@ import org.trellisldp.api.EventService;
  * RabbitMQ or Qpid.
  */
 public class AmqpPublisher implements EventService {
+
+    public static final String AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
+
+    public static final String AMQP_ROUTING_KEY = "trellis.amqp.routingkey";
+
+    public static final String AMQP_MANDATORY = "trellis.amqp.mandatory";
+
+    public static final String AMQP_IMMEDIATE = "trellis.amqp.immediate";
 
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
 
@@ -50,7 +62,22 @@ public class AmqpPublisher implements EventService {
     private final Boolean immediate;
 
     /**
-     * Create a an AMQP publisher.
+     * Create an AMQP publisher.
+     * @param channel the channel
+     */
+    @Inject
+    public AmqpPublisher(final Channel channel) {
+        this(channel, ConfigurationProvider.getConfiguration());
+    }
+
+    private AmqpPublisher(final Channel channel, final Configuration config) {
+        this(channel, config.get(AMQP_EXCHANGE_NAME), config.get(AMQP_ROUTING_KEY),
+            config.getOrDefault(AMQP_MANDATORY, Boolean.class, true),
+            config.getOrDefault(AMQP_IMMEDIATE, Boolean.class, false));
+    }
+
+    /**
+     * Create an AMQP publisher.
      * @param channel the channel
      * @param exchangeName the exchange name
      * @param routingKey the routing key
@@ -60,7 +87,7 @@ public class AmqpPublisher implements EventService {
     }
 
     /**
-     * Create a an AMQP publisher.
+     * Create an AMQP publisher.
      * @param channel the channel
      * @param exchangeName the exchange name
      * @param routingKey the routing key
@@ -69,9 +96,9 @@ public class AmqpPublisher implements EventService {
      */
     public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey,
             final Boolean mandatory, final Boolean immediate) {
-        requireNonNull(channel);
-        requireNonNull(exchangeName);
-        requireNonNull(routingKey);
+        requireNonNull(channel, "AMQP Channel may not be null!");
+        requireNonNull(exchangeName, "AMQP exchange name may not be null!");
+        requireNonNull(routingKey, "AMQP routing key may not be null!");
 
         this.channel = channel;
         this.exchangeName = exchangeName;

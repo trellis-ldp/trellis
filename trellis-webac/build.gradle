@@ -9,6 +9,7 @@ ext {
 dependencies {
 
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.javax-inject', version: javaxInjectVersion
     api project(':trellis-api')
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion

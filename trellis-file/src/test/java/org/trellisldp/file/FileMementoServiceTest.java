@@ -70,7 +70,10 @@ public class FileMementoServiceTest {
         final File dir = new File(getClass().getResource("/versions").getFile());
         assertTrue(dir.exists());
         assertTrue(dir.isDirectory());
-        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+
+        System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+
+        final MementoService svc = new FileMementoService();
 
         assertEquals(2L, svc.list(identifier).size());
         assertTrue(svc.get(identifier, now()).isPresent());
@@ -90,7 +93,10 @@ public class FileMementoServiceTest {
         final File dir = new File(getClass().getResource("/versions").getFile());
         assertTrue(dir.exists());
         assertTrue(dir.isDirectory());
-        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+
+        System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+
+        final MementoService svc = new FileMementoService();
 
         assertTrue(svc.list(identifier).isEmpty());
         assertFalse(svc.get(identifier, now()).isPresent());
@@ -104,7 +110,10 @@ public class FileMementoServiceTest {
         assertTrue(dir.isDirectory());
         final File versionDir = new File(dir, "versions2");
         assertFalse(versionDir.exists());
-        final MementoService svc = new FileMementoService(versionDir.getAbsolutePath());
+
+        System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, versionDir.getAbsolutePath());
+
+        final MementoService svc = new FileMementoService();
 
         assertTrue(svc.list(identifier).isEmpty());
         final File file = new File(getClass().getResource("/resource.nq").getFile());
@@ -131,7 +140,9 @@ public class FileMementoServiceTest {
                     "/readonly/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
         assumeTrue(readonly.setReadOnly());
 
-        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+        System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+
+        final MementoService svc = new FileMementoService();
         assertEquals(2L, svc.list(identifier).size());
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         assertTrue(file.exists());
@@ -155,9 +166,11 @@ public class FileMementoServiceTest {
                     "/unreadable/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
         assumeTrue(unreadable.setReadable(false));
 
-        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+
+        System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+
+        final MementoService svc = new FileMementoService();
 
         assertTrue(svc.list(identifier).isEmpty());
     }
-
 }

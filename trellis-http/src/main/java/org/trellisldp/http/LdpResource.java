@@ -31,6 +31,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 
@@ -44,6 +45,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
@@ -63,6 +65,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -121,11 +124,10 @@ public class LdpResource implements ContainerRequestFilter {
      * @param resourceService the resource service
      * @param ioService the i/o service
      * @param binaryService the datastream service
-     * @param baseUrl a baseUrl value
      */
     public LdpResource(final ResourceService resourceService, final IOService ioService,
-                    final BinaryService binaryService, final String baseUrl) {
-        this(resourceService, ioService, binaryService, loadFirst(AuditService.class).orElse(none()), baseUrl);
+            final BinaryService binaryService) {
+        this(resourceService, ioService, binaryService, loadFirst(AuditService.class).orElse(none()));
     }
 
     /**
@@ -134,17 +136,34 @@ public class LdpResource implements ContainerRequestFilter {
      * @param resourceService the resource service
      * @param ioService the i/o service
      * @param binaryService the datastream service
-     * @param baseUrl a baseUrl value
      * @param auditService an audit service
      */
+    @Inject
     public LdpResource(final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final AuditService auditService, final String baseUrl) {
+            final BinaryService binaryService, final AuditService auditService) {
+        this(resourceService, ioService, binaryService, auditService,
+                ConfigurationProvider.getConfiguration().get(CONFIGURATION_BASE_URL));
+    }
+
+    /**
+     * Create an LdpResource.
+     *
+     * @param resourceService the resource service
+     * @param ioService the i/o service
+     * @param binaryService the datastream service
+     * @param auditService an audit service
+     * @param baseUrl a base URL
+     */
+    public LdpResource(final ResourceService resourceService, final IOService ioService,
+            final BinaryService binaryService, final AuditService auditService,
+            final String baseUrl) {
         this.baseUrl = baseUrl;
         this.resourceService = resourceService;
         this.ioService = ioService;
         this.binaryService = binaryService;
         this.auditService = auditService;
     }
+
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {

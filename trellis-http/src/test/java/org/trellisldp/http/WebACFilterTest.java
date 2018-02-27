@@ -89,7 +89,7 @@ public class WebACFilterTest {
     public void testFilterUnknownMethod() throws Exception {
         when(mockContext.getMethod()).thenReturn("FOO");
 
-        final WebAcFilter filter = new WebAcFilter(emptyList(), mockAccessControlService);
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
 
         assertThrows(NotAllowedException.class, () -> filter.filter(mockContext));
     }
@@ -100,7 +100,7 @@ public class WebACFilterTest {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(emptyList(), mockAccessControlService);
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
         modes.add(ACL.Append);
         filter.filter(mockContext);
 

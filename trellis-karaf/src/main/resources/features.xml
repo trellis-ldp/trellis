@@ -42,6 +42,7 @@
 
     <bundle dependency="true">mvn:org.apache.commons/commons-collections4/${commonsCollectionsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-file/${project.version}</bundle>
@@ -87,6 +88,7 @@
     <bundle dependency="true">mvn:javax.json/javax.json-api/${javaxJsonVersion}</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/${javaxInjectVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
 
@@ -108,8 +110,9 @@
     <feature>trellis-api</feature>
     <feature>trellis-vocabulary</feature>
 
-    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.mustache-compiler/${mustacheVersion}</bundle>
     <bundle dependency="true">mvn:com.google.guava/guava/${guavaVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.mustache-compiler/${mustacheVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-io-jena/${project.version}</bundle>
   </feature>
@@ -122,6 +125,7 @@
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-namespaces/${project.version}</bundle>
   </feature>
@@ -179,6 +183,7 @@
     <feature>trellis-api</feature>
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.kafka-clients/${kafkaVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-kafka/${project.version}</bundle>
@@ -190,6 +195,7 @@
     <feature>trellis-api</feature>
 
     <bundle dependency="true">mvn:com.rabbitmq/amqp-client/${rabbitMqVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-amqp/${project.version}</bundle>
@@ -203,6 +209,7 @@
 
     <bundle dependency="true">mvn:javax.jms/javax.jms-api/${jmsApiVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
   </feature>

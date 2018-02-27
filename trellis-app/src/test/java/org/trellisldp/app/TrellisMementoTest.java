@@ -107,6 +107,7 @@ public class TrellisMementoTest {
                 config("namespaces", resourceFilePath("data/namespaces.json")));
 
     private static final NamespaceService nsSvc = new NamespacesJsonContext(resourceFilePath("data/namespaces.json"));
+
     private static final IOService ioSvc = new JenaIOService(nsSvc);
     private static final RDF rdf = new JenaRDF();
 
@@ -170,6 +171,7 @@ public class TrellisMementoTest {
     @AfterAll
     public static void tearDown() {
         APP.after();
+        System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
     }
 
     @Nested

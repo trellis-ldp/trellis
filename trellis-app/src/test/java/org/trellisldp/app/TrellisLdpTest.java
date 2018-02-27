@@ -95,6 +95,7 @@ public class TrellisLdpTest {
                 config("namespaces", resourceFilePath("data/namespaces.json")));
 
     private static final NamespaceService nsSvc = new NamespacesJsonContext(resourceFilePath("data/namespaces.json"));
+
     private static final IOService ioSvc = new JenaIOService(nsSvc);
     private static final RDF rdf = new JenaRDF();
 

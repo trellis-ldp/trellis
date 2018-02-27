@@ -14,7 +14,6 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -35,9 +34,10 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService, BASE_URL));
-        config.register(new AgentAuthorizationFilter(mockAgentService, emptyList()));
-        config.register(new MultipartUploader(mockResourceService, mockBinaryResolver, BASE_URL));
+
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService));
+        config.register(new AgentAuthorizationFilter(mockAgentService));
+        config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400));
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime"),

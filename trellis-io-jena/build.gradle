@@ -8,15 +8,18 @@ ext {
 
 dependencies {
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.javax-inject', version: javaxInjectVersion
     api project(':trellis-api')
 
     implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     implementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     implementation group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.mustache-compiler', version: mustacheVersion
+    implementation group: 'org.apache.tamaya', name: 'tamaya-api', version: tamayaVersion
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
     implementation project(':trellis-vocabulary')
 
     testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testImplementation group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
     testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion

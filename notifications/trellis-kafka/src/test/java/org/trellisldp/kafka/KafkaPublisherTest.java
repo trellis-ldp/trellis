@@ -72,7 +72,7 @@ public class KafkaPublisherTest {
 
     @Test
     public void testKafka() {
-        final EventService svc = new KafkaPublisher(producer, queueName);
+        final EventService svc = new KafkaPublisher(producer);
         svc.emit(mockEvent);
 
         final List<ProducerRecord<String, String>> records = producer.history();

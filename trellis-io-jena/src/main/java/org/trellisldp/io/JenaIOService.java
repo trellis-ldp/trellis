@@ -14,15 +14,11 @@
 package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableMap;
-import static java.util.Collections.unmodifiableSet;
+import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
@@ -38,10 +34,11 @@ import static org.trellisldp.vocabulary.JSONLD.URI;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Graph;
@@ -67,10 +64,11 @@ import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
-import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.ProfileCacheService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.io.impl.HtmlSerializer;
 
@@ -81,21 +79,22 @@ import org.trellisldp.io.impl.HtmlSerializer;
  */
 public class JenaIOService implements IOService {
 
+    public static final String IO_HTML_CSS = "trellis.io.html.css";
+    public static final String IO_HTML_JS = "trellis.io.html.js";
+    public static final String IO_HTML_TEMPLATE = "trellis.io.html.template";
+    public static final String IO_HTML_ICON = "trellis.io.html.icon";
+    public static final String IO_JSONLD_PROFILES = "trellis.io.jsonld.profiles";
+    public static final String IO_JSONLD_DOMAINS = "trellis.io.jsonld.domains";
+
     private static final Logger LOGGER = getLogger(JenaIOService.class);
 
     private static final JenaRDF rdf = new JenaRDF();
 
-    private static final Map<String, String> defaultProperties = unmodifiableMap(of(
-        new SimpleEntry<>("icon", "//www.trellisldp.org/assets/img/trellis.png"),
-        new SimpleEntry<>("css", "//www.trellisldp.org/assets/css/trellis.css"))
-            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
-
+    private final NamespaceService nsService;
+    private final ProfileCacheService cache;
+    private final HtmlSerializer htmlSerializer;
     private final Set<String> whitelist;
     private final Set<String> whitelistDomains;
-    private final CacheService<String, String> cache;
-
-    private final NamespaceService nsService;
-    private final HtmlSerializer htmlSerializer;
 
     /**
      * Create a serialization service.
@@ -103,36 +102,38 @@ public class JenaIOService implements IOService {
      * @param namespaceService the namespace service
      */
     public JenaIOService(final NamespaceService namespaceService) {
-        this(namespaceService, defaultProperties);
+        this(namespaceService, null, ConfigurationProvider.getConfiguration().getProperties());
     }
 
     /**
      * Create a serialization service.
      *
      * @param namespaceService the namespace service
-     * @param properties additional properties for the HTML view
-     */
-    public JenaIOService(final NamespaceService namespaceService, final Map<String, String> properties) {
-        this(namespaceService, properties, emptySet(), emptySet(), null);
-    }
-
-    /**
-     * Create a serialization service.
-     *
-     * @param namespaceService the namespace service
-     * @param properties additional properties for the HTML view
-     * @param whitelist a whitelist of JSON-LD profiles
-     * @param whitelistDomains a whitelist of domains for use with JSON-LD profiles
      * @param cache a cache for custom JSON-LD profile resolution
      */
-    public JenaIOService(final NamespaceService namespaceService, final Map<String, String> properties,
-            final Set<String> whitelist, final Set<String> whitelistDomains, final CacheService<String, String> cache) {
+    @Inject
+    public JenaIOService(final NamespaceService namespaceService, final ProfileCacheService cache) {
+        this(namespaceService, cache, ConfigurationProvider.getConfiguration().getProperties());
+    }
+
+    /**
+     * Create a serialization service.
+     *
+     * @param namespaceService the namespace service
+     * @param cache a cache for custom JSON-LD profile resolution
+     * @param properties additional properties for the serialization service
+     */
+    public JenaIOService(final NamespaceService namespaceService, final ProfileCacheService cache,
+            final Map<String, String> properties) {
         this.nsService = namespaceService;
-        this.htmlSerializer = new HtmlSerializer(namespaceService,
-                properties.getOrDefault("template", "org/trellisldp/io/resource.mustache"), properties);
-        this.whitelist = unmodifiableSet(whitelist);
-        this.whitelistDomains = unmodifiableSet(whitelistDomains);
         this.cache = cache;
+
+        this.htmlSerializer = new HtmlSerializer(namespaceService, properties);
+
+        this.whitelist = stream(properties.getOrDefault(IO_JSONLD_PROFILES, "").split(",")).map(String::trim)
+            .filter(x -> !x.isEmpty()).collect(toSet());
+        this.whitelistDomains = stream(properties.getOrDefault(IO_JSONLD_DOMAINS, "").split(",")).map(String::trim)
+            .filter(x -> !x.isEmpty()).collect(toSet());
     }
 
     @Override

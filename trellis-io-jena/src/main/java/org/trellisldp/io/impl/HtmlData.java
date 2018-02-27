@@ -80,8 +80,8 @@ public class HtmlData {
      * @return a list of any CSS documents
      */
     public List<String> getCss() {
-        return stream(properties.getOrDefault("css", "").split(","))
-            .map(String::trim).filter(x -> x.length() > 0).collect(toList());
+        return stream(properties.getOrDefault("trellis.io.html.css", "//www.trellisldp.org/assets/css/trellis.css")
+                .split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
     }
 
     /**
@@ -90,7 +90,7 @@ public class HtmlData {
      * @return the location of an icon, if one exists
      */
     public String getIcon() {
-        return properties.get("icon");
+        return properties.getOrDefault("trellis.io.html.icon", "//www.trellisldp.org/assets/img/trellis.png");
     }
 
     /**
@@ -99,8 +99,8 @@ public class HtmlData {
      * @return a list of JS documents
      */
     public List<String> getJs() {
-        return stream(properties.getOrDefault("js", "").split(","))
-            .map(String::trim).filter(x -> x.length() > 0).collect(toList());
+        return stream(properties.getOrDefault("trellis.io.html.js", "").split(","))
+            .map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
     }
 
     /**

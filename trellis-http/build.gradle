@@ -17,6 +17,7 @@ dependencies {
     implementation group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
     implementation group: 'commons-io', name: 'commons-io', version: commonsIoVersion
     implementation group: 'javax.json', name: 'javax.json-api', version: javaxJsonVersion
+    implementation group: 'org.apache.tamaya', name: 'tamaya-api', version: tamayaVersion
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
     implementation project(':trellis-vocabulary')
 
@@ -24,6 +25,7 @@ dependencies {
     testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     testImplementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
     testImplementation group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
+    testImplementation group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
     testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
     testImplementation group: 'org.glassfish', name: 'javax.json', version: jsonVersion
     testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-server', version: jerseyVersion

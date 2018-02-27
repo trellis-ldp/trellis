@@ -51,6 +51,8 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -120,6 +122,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param mementoService a service for memento resources
      * @param eventService an event service
      */
+    @Inject
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
             final MementoService mementoService, final EventService eventService) {
         requireNonNull(rdfConnection, "RDFConnection may not be null!");

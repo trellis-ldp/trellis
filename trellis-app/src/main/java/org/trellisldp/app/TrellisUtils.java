@@ -19,6 +19,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
+import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
@@ -27,6 +28,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.AMQP;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
+import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
+import static org.trellisldp.io.JenaIOService.IO_HTML_ICON;
+import static org.trellisldp.io.JenaIOService.IO_HTML_JS;
+import static org.trellisldp.io.JenaIOService.IO_JSONLD_DOMAINS;
+import static org.trellisldp.io.JenaIOService.IO_JSONLD_PROFILES;
 
 import com.google.common.cache.Cache;
 import com.rabbitmq.client.ConnectionFactory;
@@ -60,7 +66,7 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.trellisldp.amqp.AmqpPublisher;
-import org.trellisldp.api.CacheService;
+import org.trellisldp.api.AuthorizationCacheService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.app.auth.AnonymousAuthFilter;
@@ -85,9 +91,17 @@ final class TrellisUtils {
 
     public static Map<String, String> getAssetConfiguration(final TrellisConfiguration config) {
         final Map<String, String> assetMap = new HashMap<>();
-        assetMap.put("icon", config.getAssets().getIcon());
-        assetMap.put("css", config.getAssets().getCss().stream().map(String::trim).collect(joining(",")));
-        assetMap.put("js", config.getAssets().getJs().stream().map(String::trim).collect(joining(",")));
+        assetMap.put(IO_HTML_ICON, config.getAssets().getIcon());
+        assetMap.put(IO_HTML_CSS, config.getAssets().getCss().stream().map(String::trim).collect(joining(",")));
+        assetMap.put(IO_HTML_JS, config.getAssets().getJs().stream().map(String::trim).collect(joining(",")));
+        if (!config.getJsonld().getContextWhitelist().isEmpty()) {
+            assetMap.put(IO_JSONLD_PROFILES, config.getJsonld().getContextWhitelist().stream()
+                    .map(String::trim).collect(joining(",")));
+        }
+        if (!config.getJsonld().getContextDomainWhitelist().isEmpty()) {
+            assetMap.put(IO_JSONLD_DOMAINS, config.getJsonld().getContextDomainWhitelist().stream()
+                    .map(String::trim).collect(joining(",")));
+        }
 
         return assetMap;
     }
@@ -123,12 +137,12 @@ final class TrellisUtils {
         return of(filters);
     }
 
-    public static Optional<CacheService<String, Set<IRI>>> getWebacConfiguration(final TrellisConfiguration config) {
+    public static Optional<AuthorizationCacheService> getWebacConfiguration(final TrellisConfiguration config) {
         if (config.getAuth().getWebac().getEnabled()) {
             final Cache<String, Set<IRI>> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
                     .getCacheSize()).expireAfterWrite(config.getAuth().getWebac()
                     .getCacheExpireSeconds(), SECONDS).build();
-            return of(new TrellisCache<>(authCache));
+            return of(new TrellisAuthorizationCache(authCache));
         }
         return empty();
     }
@@ -203,7 +217,7 @@ final class TrellisUtils {
         LOGGER.info("Connecting to JMS broker at {}", config.getConnectionString());
         final Connection jmsConnection = getJmsFactory(config).createConnection();
         environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
-        return new JmsPublisher(jmsConnection, config.getTopicName());
+        return new JmsPublisher(jmsConnection.createSession(false, AUTO_ACKNOWLEDGE), config.getTopicName());
     }
 
     private static EventService buildAmqpPublisher(final NotificationsConfiguration config,
