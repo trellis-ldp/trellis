@@ -537,7 +537,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an administrator can control the child of a group-controlled resource")
+        @DisplayName("Verify that an administrator can't find the ACL of a child resource")
         public void testAdminCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -595,7 +595,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an administrator can control the child of a default ACL resource")
+        @DisplayName("Verify that an administrator can't find the ACL resource")
         public void testCanControlDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -727,7 +727,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a protected resource")
+        @DisplayName("Verify that a user cannot control a protected resource")
         public void testUserCanControlProtectedResource() {
             try (final Response res = target(protectedContainerAcl).request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -736,7 +736,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a protected resource")
+        @DisplayName("Verify that a user cannot control the child of a protected resource")
         public void testUserCanControlProtectedResourceChild() {
             try (final Response res = target(protectedContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -852,7 +852,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a group-controlled resource")
+        @DisplayName("Verify that a user cannot control a group-controlled resource")
         public void testCanControlGroupResource() {
             try (final Response res = target(groupContainerAcl).request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -861,7 +861,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        @DisplayName("Verify that a user cannot control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -910,7 +910,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a default ACL resource")
+        @DisplayName("Verify that a user cannot control a default ACL resource")
         public void testCanControlDefaultAclResource() {
             try (final Response res = target(defaultContainerAcl).request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -919,7 +919,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot control the child of a default ACL resource")
         public void testCanControlDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -1054,7 +1054,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a protected resource")
+        @DisplayName("Verify that a user cannot control a protected resource")
         public void testUserCanControlProtectedResource() {
             try (final Response res = target(protectedContainerAcl).request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1063,7 +1063,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a protected resource")
+        @DisplayName("Verify that a user cannot control the child of a protected resource")
         public void testUserCanControlProtectedResourceChild() {
             try (final Response res = target(protectedContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1179,7 +1179,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a group-controlled resource")
+        @DisplayName("Verify that a user cannot control a group-controlled resource")
         public void testCanControlGroupResource() {
             try (final Response res = target(groupContainerAcl).request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1188,7 +1188,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        @DisplayName("Verify that a user cannot control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1237,7 +1237,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a default ACL resource")
+        @DisplayName("Verify that a user cannot control a default ACL resource")
         public void testCanControlDefaultAclResource() {
             try (final Response res = target(defaultContainerAcl).request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1246,7 +1246,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot control the child of a default ACL resource")
         public void testCanControlDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1338,7 +1338,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user cannot read the child of a protected resource")
+        @DisplayName("Verify that a user can read the child of a protected resource")
         public void testUserCanReadProtectedResourceChild() {
             try (final Response res = target(protectedContainerChild).request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -1512,7 +1512,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a group-controlled resource")
+        @DisplayName("Verify that a user cannot control a group-controlled resource")
         public void testCanControlGroupResource() {
             try (final Response res = target(groupContainerAcl).request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -1521,7 +1521,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        @DisplayName("Verify that a user cannot control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -1539,7 +1539,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can read the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot read the child of a default ACL resource")
         public void testCanReadDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -1557,7 +1557,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to a default ACL resource")
+        @DisplayName("Verify that a user cannot write to a default ACL resource")
         public void testCanWriteDefaultAclResource() {
             try (final Response res = target(defaultContainer).request()
                     .header(AUTHORIZATION, auth).method("PATCH",
@@ -1568,7 +1568,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot write to the child of a default ACL resource")
         public void testCanWriteDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request()
                     .header(AUTHORIZATION, auth).method("PATCH",
@@ -1579,7 +1579,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a default ACL resource")
+        @DisplayName("Verify that a user cannot control a default ACL resource")
         public void testCanControlDefaultAclResource() {
             try (final Response res = target(defaultContainerAcl).request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -1588,7 +1588,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot control the child of a default ACL resource")
         public void testCanControlDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, auth).get()) {
@@ -1835,7 +1835,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to a group-controlled resource")
+        @DisplayName("Verify that a user cannot write to a group-controlled resource")
         public void testCanWriteGroupResource() {
             try (final Response res = target(groupContainer).request()
                     .header(AUTHORIZATION, jwt).method("PATCH",
@@ -1846,7 +1846,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to the child of a group-controlled resource")
+        @DisplayName("Verify that a user cannot write to the child of a group-controlled resource")
         public void testCanWriteGroupResourceChild() {
             try (final Response res = target(groupContainerChild).request()
                     .header(AUTHORIZATION, jwt).method("PATCH",
@@ -1857,7 +1857,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a group-controlled resource")
+        @DisplayName("Verify that a user cannot control a group-controlled resource")
         public void testCanControlGroupResource() {
             try (final Response res = target(groupContainerAcl).request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1866,7 +1866,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a group-controlled resource")
+        @DisplayName("Verify that a user cannot control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1884,7 +1884,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can read the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot read the child of a default ACL resource")
         public void testCanReadDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1902,7 +1902,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to a default ACL resource")
+        @DisplayName("Verify that a user cannot write to a default ACL resource")
         public void testCanWriteDefaultAclResource() {
             try (final Response res = target(defaultContainer).request()
                     .header(AUTHORIZATION, jwt).method("PATCH",
@@ -1913,7 +1913,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can write to the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot write to the child of a default ACL resource")
         public void testCanWriteDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request()
                     .header(AUTHORIZATION, jwt).method("PATCH",
@@ -1924,7 +1924,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a default ACL resource")
+        @DisplayName("Verify that a user cannot control a default ACL resource")
         public void testCanControlDefaultAclResource() {
             try (final Response res = target(defaultContainerAcl).request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -1933,7 +1933,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot control the child of a default ACL resource")
         public void testCanControlDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild + "?ext=acl").request()
                     .header(AUTHORIZATION, jwt).get()) {
@@ -2127,7 +2127,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can read a group-controlled resource")
+        @DisplayName("Verify that an anonymous user cannot read a group-controlled resource")
         public void testCanReadGroupResource() {
             try (final Response res = target(groupContainer).request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
@@ -2135,7 +2135,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can read the child of a group-controlled resource")
+        @DisplayName("Verify that an anonymous user cannot read the child of a group-controlled resource")
         public void testCanReadGroupResourceChild() {
             try (final Response res = target(groupContainerChild).request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
@@ -2151,7 +2151,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can write to a group-controlled resource")
+        @DisplayName("Verify that an anonymous user cannot write to a group-controlled resource")
         public void testCanWriteGroupResource() {
             try (final Response res = target(groupContainer).request().method("PATCH",
                         entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
@@ -2161,7 +2161,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can write to the child of a group-controlled resource")
+        @DisplayName("Verify that an anonymous user cannot write to the child of a group-controlled resource")
         public void testCanWriteGroupResourceChild() {
             try (final Response res = target(groupContainerChild).request().method("PATCH",
                         entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
@@ -2171,7 +2171,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can control a group-controlled resource")
+        @DisplayName("Verify that an anonymous user cannot control a group-controlled resource")
         public void testCanControlGroupResource() {
             try (final Response res = target(groupContainerAcl).request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
@@ -2179,7 +2179,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can control the child of a group-controlled resource")
+        @DisplayName("Verify that an anonymous user cannot control the child of a group-controlled resource")
         public void testCanControlGroupResourceChild() {
             try (final Response res = target(groupContainerChild + "?ext=acl").request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
@@ -2195,7 +2195,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can read the child of a default ACL resource")
+        @DisplayName("Verify that an anonymous user cannot read the child of a default ACL resource")
         public void testCanReadDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
@@ -2211,7 +2211,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can write to a default ACL resource")
+        @DisplayName("Verify that an anonymous user cannot write to a default ACL resource")
         public void testCanWriteDefaultAclResource() {
             try (final Response res = target(defaultContainer).request().method("PATCH",
                         entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
@@ -2221,7 +2221,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that an anonymous user can write to the child of a default ACL resource")
+        @DisplayName("Verify that an anonymous user cannot write to the child of a default ACL resource")
         public void testCanWriteDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild).request().method("PATCH",
                         entity("INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}",
@@ -2231,7 +2231,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control a default ACL resource")
+        @DisplayName("Verify that a user cannot control a default ACL resource")
         public void testCanControlDefaultAclResource() {
             try (final Response res = target(defaultContainerAcl).request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
@@ -2239,7 +2239,7 @@ public class TrellisAuthenticationTest {
         }
 
         @Test
-        @DisplayName("Verify that a user can control the child of a default ACL resource")
+        @DisplayName("Verify that a user cannot control the child of a default ACL resource")
         public void testCanControlDefaultAclResourceChild() {
             try (final Response res = target(defaultContainerChild + "?ext=acl").request().get()) {
                 assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));
