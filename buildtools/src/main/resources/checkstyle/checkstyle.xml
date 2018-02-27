@@ -44,6 +44,8 @@
       <property name="option" value="top"/>
       <property name="sortStaticImportsAlphabetically" value="true"/>
       <property name="tokens" value="STATIC_IMPORT, IMPORT"/>
+      <property name="separated" value="true"/>
+      <property name="groups" value="com,io,java,javax,org"/>
     </module>
 
     <module name="ModifierOrder">

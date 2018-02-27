@@ -51,7 +51,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
-
 import org.slf4j.Logger;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.Prefer;

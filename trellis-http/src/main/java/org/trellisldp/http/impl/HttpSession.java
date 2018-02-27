@@ -24,7 +24,6 @@ import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
-
 import org.trellisldp.api.Session;
 
 /**

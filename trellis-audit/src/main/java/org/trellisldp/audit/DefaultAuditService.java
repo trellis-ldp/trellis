@@ -20,6 +20,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferAudit;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;

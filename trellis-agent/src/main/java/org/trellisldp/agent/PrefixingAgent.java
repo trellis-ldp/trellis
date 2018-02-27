@@ -17,7 +17,6 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-
 import org.trellisldp.api.AgentService;
 
 /**

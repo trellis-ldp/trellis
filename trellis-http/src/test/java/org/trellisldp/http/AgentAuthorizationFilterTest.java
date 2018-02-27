@@ -35,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.Trellis;

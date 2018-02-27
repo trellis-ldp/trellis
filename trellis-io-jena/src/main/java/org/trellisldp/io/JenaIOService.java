@@ -68,7 +68,6 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
 import org.slf4j.Logger;
-
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;

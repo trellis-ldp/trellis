@@ -31,7 +31,6 @@ import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-
 import org.trellisldp.api.Event;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.AS;

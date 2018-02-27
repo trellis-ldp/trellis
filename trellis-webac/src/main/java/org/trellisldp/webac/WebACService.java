@@ -36,7 +36,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;

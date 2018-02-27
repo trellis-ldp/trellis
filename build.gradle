@@ -13,6 +13,7 @@ allprojects {
 
     ext {
         jacocoVersion = '0.8.0'
+        checkstyleVersion = '8.8'
     }
 
     jacoco {
@@ -120,7 +121,7 @@ subprojects {
     checkstyle {
         configFile = rootProject.file('buildtools/src/main/resources/checkstyle/checkstyle.xml')
         configProperties.checkstyleConfigDir = rootProject.file('buildtools/src/main/resources/checkstyle/')
-        toolVersion = '8.1'
+        toolVersion = checkstyleVersion
     }
 
     task javadocJar(type: Jar) {

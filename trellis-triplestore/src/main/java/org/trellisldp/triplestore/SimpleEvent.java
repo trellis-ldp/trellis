@@ -32,7 +32,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-
 import org.trellisldp.api.Event;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;

@@ -21,11 +21,9 @@ import static org.trellisldp.vocabulary.Trellis.InvalidProperty;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.simple.SimpleRDF;
-
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-
 import org.trellisldp.vocabulary.LDP;
 
 /**
