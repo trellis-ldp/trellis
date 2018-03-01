@@ -55,6 +55,7 @@ import io.dropwizard.testing.DropwizardTestSupport;
 
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -446,7 +447,8 @@ public class TrellisMementoTest {
             mementos.forEach((memento, date) -> {
                 try (final Response res = target(memento).request().get()) {
                     assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-                    assertEquals(date, res.getHeaderString(MEMENTO_DATETIME));
+                    final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
+                    assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME));
                 }
             });
         }
@@ -457,7 +459,8 @@ public class TrellisMementoTest {
             mementos.forEach((memento, date) -> {
                 try (final Response res = target(resource).request().header(ACCEPT_DATETIME, date).get()) {
                     assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-                    assertEquals(date, res.getHeaderString(MEMENTO_DATETIME));
+                    final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
+                    assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME));
                 }
             });
         }
