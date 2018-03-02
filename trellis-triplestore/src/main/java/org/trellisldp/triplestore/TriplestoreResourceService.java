@@ -534,7 +534,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      *     IDENTIFIER prov:wasGeneratedBy [
      *       rdf:type prov:Activity , as:Create ;
      *       prov:wasAssociatedWith trellis:AdministorAgent ;
-     *       prov:startedAtTime "TIME"^^xsd:dateTime ] }
+     *       prov:atTime "TIME"^^xsd:dateTime ] }
      *   GRAPH IDENTIFIER?ext=acl {
      *     IDENTIFIER acl:mode acl.Read , acl:Write , acl:Control ;
      *       acl:agentClass foaf:Agent ;
@@ -616,8 +616,16 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     @Override
     public Future<Boolean> add(final IRI id, final Dataset dataset) {
         return supplyAsync(() -> {
-            executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(dataset)));
-            return true;
+            final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
+            try (final Dataset data = rdf.createDataset()) {
+                dataset.getGraph(Trellis.PreferAudit).ifPresent(g ->
+                        g.stream().forEach(t -> data.add(graphName, t.getSubject(), t.getPredicate(), t.getObject())));
+                executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(data)));
+                return true;
+            } catch (final Exception ex) {
+                LOGGER.error("Error storing audit dataset: {}", ex.getMessage());
+            }
+            return false;
         });
     }
 

@@ -66,7 +66,7 @@ public class DefaultAuditService implements AuditService {
         data.add(rdf.createQuad(PreferAudit, subject, PROV.wasGeneratedBy, bnode));
         types.forEach(t -> data.add(rdf.createQuad(PreferAudit, bnode, type, t)));
         data.add(rdf.createQuad(PreferAudit, bnode, PROV.wasAssociatedWith, session.getAgent()));
-        data.add(rdf.createQuad(PreferAudit, bnode, PROV.startedAtTime,
+        data.add(rdf.createQuad(PreferAudit, bnode, PROV.atTime,
                     rdf.createLiteral(session.getCreated().toString(), XSD.dateTime)));
         session.getDelegatedBy().ifPresent(delegate ->
                 data.add(rdf.createQuad(PreferAudit, bnode, PROV.actedOnBehalfOf, delegate)));
