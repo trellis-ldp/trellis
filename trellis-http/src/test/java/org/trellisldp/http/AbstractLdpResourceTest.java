@@ -423,7 +423,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final List<String> templates = res.getStringHeaders().get(LINK_TEMPLATE);
         assertEquals(2L, templates.size());
         assertTrue(templates.contains("<" + BASE_URL + RESOURCE_PATH + "{?subject,predicate,object}>; rel=\""
-                + LDP.Resource.getIRIString() + "\""));
+                + LDP.RDFSource.getIRIString() + "\""));
         assertTrue(templates.contains("<" + BASE_URL + RESOURCE_PATH + "{?version}>; rel=\""
                 + Memento.Memento.getIRIString() + "\""));
 

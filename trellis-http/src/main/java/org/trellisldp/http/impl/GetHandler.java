@@ -199,7 +199,7 @@ public class GetHandler extends BaseLdpHandler {
 
         // URI Templates
         builder.header(LINK_TEMPLATE, "<" + identifier + "{?subject,predicate,object}>; rel=\""
-                + LDP.Resource.getIRIString() + "\"");
+                + LDP.RDFSource.getIRIString() + "\"");
 
         final Prefer prefer = ACL.equals(req.getExt()) ?
             new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
