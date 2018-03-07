@@ -62,6 +62,7 @@ public class JoiningResourceServiceTest {
     private static final IRI testResourceId1 = createIRI("http://example.com/1");
     private static final IRI testResourceId2 = createIRI("http://example.com/2");
     private static final IRI testResourceId3 = createIRI("http://example.com/3");
+    private static final Session mockSession = mock(Session.class);
 
     private static IRI badId = createIRI("http://bad.com");
 
@@ -93,33 +94,33 @@ public class JoiningResourceServiceTest {
     private final ImmutableDataService<IRI, Resource> testImmutableService = new TestableImmutableService();
 
     private static class TestableMutableDataService extends TestableRetrievalService
-                    implements MutableDataService<IRI, Resource> {
+                    implements MutableDataService<IRI, Session, Resource> {
 
         @Override
-        public Future<Boolean> create(final IRI identifier, final Resource resource) {
+        public Future<Boolean> create(final IRI identifier, final Session session, final Resource resource) {
             resources.put(identifier, resource);
             return isntBadId(identifier);
         }
 
         @Override
-        public Future<Boolean> replace(final IRI identifier, final Resource resource) {
+        public Future<Boolean> replace(final IRI identifier, final Session session, final Resource resource) {
             resources.replace(identifier, resource);
             return isntBadId(identifier);
         }
 
         @Override
-        public Future<Boolean> delete(final IRI identifier, final Resource resource) {
+        public Future<Boolean> delete(final IRI identifier, final Session session, final Resource resource) {
             resources.remove(identifier);
             return isntBadId(identifier);
         }
     };
 
-    private final MutableDataService<IRI, Resource> testMutableService = new TestableMutableDataService();
+    private final MutableDataService<IRI, Session, Resource> testMutableService = new TestableMutableDataService();
 
     private static class TestableJoiningResourceService extends JoiningResourceService {
 
         public TestableJoiningResourceService(final ImmutableDataService<IRI, Resource> immutableData,
-                        final MutableDataService<IRI, Resource> mutableData) {
+                        final MutableDataService<IRI, Session, Resource> mutableData) {
             super(mutableData, immutableData);
         }
 
@@ -197,7 +198,7 @@ public class JoiningResourceServiceTest {
     public void testRoundtripping() throws InterruptedException, ExecutionException {
         final Quad testQuad = createQuad(testResourceId1, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(testResourceId1, testQuad);
-        assertTrue(testable.create(testResourceId1, testResource).get(), "Couldn't create a resource!");
+        assertTrue(testable.create(testResourceId1, mockSession, testResource).get(), "Couldn't create a resource!");
         Resource retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
         assertEquals(testResource.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource.stream().findFirst().get(), retrieved.stream().findFirst().get(),
@@ -205,13 +206,13 @@ public class JoiningResourceServiceTest {
 
         final Quad testQuad2 = createQuad(testResourceId1, badId, testResourceId1, badId);
         final Resource testResource2 = new TestResource(testResourceId1, testQuad2);
-        assertTrue(testable.replace(testResourceId1, testResource2).get(), "Couldn't replace resource!");
+        assertTrue(testable.replace(testResourceId1, mockSession, testResource2).get(), "Couldn't replace resource!");
         retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
         assertEquals(testResource2.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource2.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
-        assertTrue(testable.delete(testResourceId1, testResource2).get(), "Couldn't delete resource!");
+        assertTrue(testable.delete(testResourceId1, mockSession, testResource2).get(), "Couldn't delete resource!");
         assertFalse(testable.get(testResourceId1).isPresent(), "Found resource after deleting it!");
     }
 
@@ -222,7 +223,8 @@ public class JoiningResourceServiceTest {
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testMutableResource = new TestResource(testResourceId2, testMutableQuad);
-        assertTrue(testable.create(testResourceId2, testMutableResource).get(), "Couldn't create a mutable resource!");
+        assertTrue(testable.create(testResourceId2, mockSession, testMutableResource).get(),
+                "Couldn't create a mutable resource!");
         final Resource testImmutableResource = new TestResource(testResourceId2, testImmutableQuad);
         assertTrue(testable.add(testResourceId2, testImmutableResource).get(),
                         "Couldn't create an immutable resource!");
@@ -242,7 +244,7 @@ public class JoiningResourceServiceTest {
     public void testBadPersist() throws InterruptedException, ExecutionException {
         final Quad testQuad = createQuad(badId, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(badId, testQuad);
-        assertFalse(testable.create(badId, testResource).get(),
+        assertFalse(testable.create(badId, mockSession, testResource).get(),
                         "Could create a resource when underlying services should reject it!");
     }
 

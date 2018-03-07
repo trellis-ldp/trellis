@@ -21,6 +21,8 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -35,6 +37,7 @@ public class HttpSession implements Session {
     private final IRI agent;
     private final IRI delegatedBy;
     private final Instant created;
+    private final Map<String, String> properties = new HashMap<>();
 
     /**
      * Create an HTTP-based session.
@@ -82,5 +85,15 @@ public class HttpSession implements Session {
     @Override
     public Instant getCreated() {
         return created;
+    }
+
+    @Override
+    public void setProperty(final String key, final String value) {
+        properties.put(key, value);
+    }
+
+    @Override
+    public Optional<String> getProperty(final String key) {
+        return ofNullable(properties.get(key));
     }
 }

@@ -14,17 +14,17 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
 import java.util.Collection;
 
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
@@ -64,17 +64,10 @@ public class TriplestoreEventTest {
     @Test
     public void testSimpleEvent() {
         final IRI resource = rdf.createIRI(identifier);
-        final Dataset dataset = rdf.createDataset();
-        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, resource, LDP.inbox, inbox));
-        dataset.add(rdf.createQuad(Trellis.PreferAudit, rdf.createBlankNode(), PROV.wasAssociatedWith, agent));
-        dataset.add(rdf.createQuad(Trellis.PreferServerManaged, resource, type, LDP.RDFSource));
-        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, resource, type, SKOS.Concept));
-        dataset.add(rdf.createQuad(Trellis.PreferAudit, rdf.createBlankNode(), type, PROV.Activity));
-        dataset.add(rdf.createQuad(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create));
-
         final Instant time = now();
 
-        final Event event = new SimpleEvent(identifier, dataset);
+        final Event event = new SimpleEvent(identifier, asList(agent),
+                asList(PROV.Activity, AS.Create), asList(LDP.RDFSource, SKOS.Concept), inbox);
         assertFalse(time.isAfter(event.getCreated()));
         assertTrue(event.getIdentifier().getIRIString().startsWith("urn:uuid:"));
         assertEquals(of(resource), event.getTarget());
@@ -94,9 +87,8 @@ public class TriplestoreEventTest {
     @Test
     public void testEmptyEvent() {
         final IRI resource = rdf.createIRI(identifier);
-        final Dataset dataset = rdf.createDataset();
 
-        final Event event = new SimpleEvent(identifier, dataset);
+        final Event event = new SimpleEvent(identifier, emptyList(), emptyList(), emptyList(), null);
         assertEquals(of(resource), event.getTarget());
         assertFalse(event.getInbox().isPresent());
         assertTrue(event.getAgents().isEmpty());

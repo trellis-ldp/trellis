@@ -28,6 +28,7 @@ import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
@@ -136,6 +137,7 @@ public class PatchHandler extends BaseLdpHandler {
             throw new WebApplicationException("Missing Sparql-Update body", BAD_REQUEST);
         }
         final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted
         checkDeleted(res, identifier);
@@ -170,9 +172,6 @@ public class PatchHandler extends BaseLdpHandler {
                                 DC.extent, rdf.createLiteral(Long.toString(size), XSD.long_))));
             });
 
-            // Add baseUrl
-            dataset.add(rdf.createQuad(null, res.getIdentifier(), DC.isPartOf, rdf.createIRI(baseUrl)));
-
             // Check any constraints
             final List<ConstraintViolation> violations = constraintServices.stream()
                 .flatMap(svc -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
@@ -192,7 +191,8 @@ public class PatchHandler extends BaseLdpHandler {
             }
 
             // Save new dataset
-            if (resourceService.replace(res.getIdentifier(), res.getInteractionModel(), dataset.asDataset()).get()) {
+            if (resourceService.replace(res.getIdentifier(), session, res.getInteractionModel(),
+                        dataset.asDataset()).get()) {
 
                 // Add audit-related triples
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {

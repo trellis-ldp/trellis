@@ -19,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
@@ -38,7 +39,6 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
-import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -74,6 +74,7 @@ public class DeleteHandler extends BaseLdpHandler {
         final String identifier = baseUrl + req.getPath();
 
         final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted
         checkDeleted(res, identifier);
@@ -86,9 +87,6 @@ public class DeleteHandler extends BaseLdpHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
-            // Add the baseURL
-            dataset.add(rdf.createQuad(null, res.getIdentifier(), DC.isPartOf, rdf.createIRI(baseUrl)));
-
             // When deleting just the ACL graph, keep the user managed triples intact
             if (ACL.equals(req.getExt())) {
                 try (final Stream<? extends Triple> triples = res.stream(PreferUserManaged)) {
@@ -98,7 +96,7 @@ public class DeleteHandler extends BaseLdpHandler {
             }
 
             // delete the resource
-            if (resourceService.delete(res.getIdentifier(), LDP.Resource, dataset.asDataset()).get()) {
+            if (resourceService.delete(res.getIdentifier(), session, LDP.Resource, dataset.asDataset()).get()) {
 
                 // Add the audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {

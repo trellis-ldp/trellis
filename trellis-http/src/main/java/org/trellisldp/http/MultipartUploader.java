@@ -38,8 +38,10 @@ import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
+import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.http.domain.HttpConstants.UPLOADS;
 import static org.trellisldp.http.domain.HttpConstants.UPLOAD_PREFIX;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
@@ -82,6 +84,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -94,6 +97,8 @@ import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.Session;
+import org.trellisldp.http.impl.HttpSession;
 import org.trellisldp.http.impl.TrellisDataset;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.XSD;
@@ -237,13 +242,15 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
      * }</pre>
      *
      * @param id the identifier
+     * @param context the request context
      * @param input the input value
      * @return a response
      */
     @POST
     @Timed
     @Consumes("application/json")
-    public Response createBinary(@PathParam("id") final String id, final InputStream input) {
+    public Response createBinary(@PathParam("id") final String id, @Context final ContainerRequestContext context,
+            final InputStream input) {
 
         final JsonReader reader = Json.createReader(input);
         final JsonObject obj = reader.readObject();
@@ -256,6 +263,9 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
         }
 
         final BinaryService.MultipartUpload upload = binaryService.completeUpload(id, partDigests);
+
+        final Session session = ofNullable((Session) context.getProperty(SESSION_PROPERTY)).orElseGet(HttpSession::new);
+        session.setProperty(TRELLIS_SESSION_BASE_URL, upload.getBaseUrl());
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
             final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + upload.getPath());
@@ -273,7 +283,7 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
                             upload.getBinary().getIdentifier(), DC.extent,
                             rdf.createLiteral(size.toString(), XSD.long_))));
 
-            if (resourceService.create(identifier, NonRDFSource, dataset.asDataset()).get()) {
+            if (resourceService.create(identifier, session, NonRDFSource, dataset.asDataset()).get()) {
                 return created(create(upload.getBaseUrl() + upload.getPath())).build();
             }
         } catch (final InterruptedException | ExecutionException ex) {

@@ -39,7 +39,8 @@ import org.apache.commons.rdf.api.Triple;
  *
  * @author acoburn
  */
-public interface ResourceService extends MutableDataService<IRI, Resource>, ImmutableDataService<IRI, Resource> {
+public interface ResourceService extends MutableDataService<IRI, Session, Resource>,
+       ImmutableDataService<IRI, Resource> {
 
     @Override
     default Future<Boolean> add(IRI identifier, Resource resource) {
@@ -54,49 +55,52 @@ public interface ResourceService extends MutableDataService<IRI, Resource>, Immu
     Future<Boolean> add(IRI identifier, Dataset dataset);
 
     @Override
-    default Future<Boolean> create(IRI id, Resource res) {
-        return create(id, res.getInteractionModel(), res.dataset());
+    default Future<Boolean> create(IRI id, Session session, Resource res) {
+        return create(id, session, res.getInteractionModel(), res.dataset());
     }
 
     /**
      * Put a resource into the server.
      *
      * @param identifier the identifier for the new resource
+     * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
      * @param dataset the dataset
      * @return whether the resource was added
      */
-    Future<Boolean> create(IRI identifier, IRI ixnModel, Dataset dataset);
+    Future<Boolean> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
 
     @Override
-    default Future<Boolean> replace(IRI id, Resource res) {
-        return replace(id, res.getInteractionModel(), res.dataset());
+    default Future<Boolean> replace(IRI id, Session session, Resource res) {
+        return replace(id, session, res.getInteractionModel(), res.dataset());
     }
 
     /**
      * Replace a resource in the server.
      *
      * @param identifier the identifier for the new resource
+     * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
      * @param dataset the dataset
      * @return whether the resource was replaced
      */
-    Future<Boolean> replace(IRI identifier, IRI ixnModel, Dataset dataset);
+    Future<Boolean> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
 
     @Override
-    default Future<Boolean> delete(IRI id, Resource res) {
-        return delete(id, res.getInteractionModel(), res.dataset());
+    default Future<Boolean> delete(IRI id, Session session, Resource res) {
+        return delete(id, session, res.getInteractionModel(), res.dataset());
     }
 
     /**
      * Delete a resource from the server.
      *
      * @param identifier the identifier for the new resource
+     * @param session the session context for this operation
      * @param ixnModel the new LDP interaction model for this resource
      * @param dataset the dataset
      * @return whether the resource was deleted
      */
-    Future<Boolean> delete(IRI identifier, IRI ixnModel, Dataset dataset);
+    Future<Boolean> delete(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
 
     /**
      * Get the identifier for the structurally-logical container for the resource.

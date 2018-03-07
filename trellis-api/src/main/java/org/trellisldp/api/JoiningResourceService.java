@@ -37,13 +37,13 @@ public abstract class JoiningResourceService implements ResourceService {
 
     private final ImmutableDataService<IRI, Resource> immutableData;
 
-    private final MutableDataService<IRI, Resource> mutableData;
+    private final MutableDataService<IRI, Session, Resource> mutableData;
 
     /**
      * @param mutableData service in which to persist mutable data
      * @param immutableData service in which to persist immutable data
      */
-    public JoiningResourceService(final MutableDataService<IRI, Resource> mutableData,
+    public JoiningResourceService(final MutableDataService<IRI, Session, Resource> mutableData,
                     final ImmutableDataService<IRI, Resource> immutableData) {
         this.immutableData = immutableData;
         this.mutableData = mutableData;
@@ -66,19 +66,21 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public Future<Boolean> create(final IRI id, final IRI ixnModel, final Dataset dataset) {
-        return mutableData.create(id, new PersistableResource(id, ixnModel, dataset));
+    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel,
+            final Dataset dataset) {
+        return mutableData.create(id, session, new PersistableResource(id, ixnModel, dataset));
     }
 
     @Override
-    public Future<Boolean> replace(final IRI id, final IRI ixnModel, final Dataset dataset) {
-        return mutableData.replace(id, new PersistableResource(id, ixnModel, dataset));
-
+    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel,
+            final Dataset dataset) {
+        return mutableData.replace(id, session, new PersistableResource(id, ixnModel, dataset));
     }
 
     @Override
-    public Future<Boolean> delete(final IRI id, final IRI ixnModel, final Dataset dataset) {
-        return mutableData.delete(id, new PersistableResource(id, ixnModel, dataset));
+    public Future<Boolean> delete(final IRI id, final Session session, final IRI ixnModel,
+            final Dataset dataset) {
+        return mutableData.delete(id, session, new PersistableResource(id, ixnModel, dataset));
     }
 
     /**
