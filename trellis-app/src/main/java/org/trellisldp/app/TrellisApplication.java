@@ -15,7 +15,6 @@ package org.trellisldp.app;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
 import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
@@ -84,28 +83,24 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
         final RDFConnection rdfConnection = getRDFConnection(config);
 
-        final String mementoLocation = config.getMementos();
-
-        final String baseUrl = config.getBaseUrl();
-
         final IdentifierService idService = new UUIDGenerator();
 
-        final MementoService mementoService = new FileMementoService(mementoLocation);
+        final MementoService mementoService = new FileMementoService(config.getMementos());
 
         final TriplestoreResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
                         mementoService, notificationService);
 
         final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
 
-        final BinaryService binaryService = new FileBinaryService(config.getBinaries(), idService,
+        final BinaryService binaryService = new FileBinaryService(idService, config.getBinaries(),
                 config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength());
 
         // IO Service
         final CacheService<String, String> profileCache = new TrellisCache<>(newBuilder()
                 .maximumSize(config.getJsonld().getCacheSize())
                 .expireAfterAccess(config.getJsonld().getCacheExpireHours(), HOURS).build());
-        final IOService ioService = new JenaIOService(namespaceService, TrellisUtils.getAssetConfiguration(config),
-                config.getJsonld().getContextWhitelist(), config.getJsonld().getContextDomainWhitelist(), profileCache);
+        final IOService ioService = new JenaIOService(namespaceService, profileCache,
+                TrellisUtils.getAssetConfiguration(config));
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
@@ -113,17 +108,19 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
 
         // Resource matchers
-        environment.jersey()
-                        .register(new LdpResource(resourceService, ioService, binaryService, resourceService, baseUrl));
+        environment.jersey().register(new LdpResource(resourceService, ioService, binaryService, resourceService,
+                                    config.getBaseUrl()));
 
         // Filters
-        environment.jersey().register(new AgentAuthorizationFilter(new SimpleAgent(), emptyList()));
+        environment.jersey().register(new AgentAuthorizationFilter(new SimpleAgent()));
         environment.jersey().register(new CacheControlFilter(config.getCacheMaxAge()));
 
         // Authorization
-        getWebacConfiguration(config).ifPresent(webacCache ->
-            environment.jersey().register(new WebAcFilter(
-                        asList("Authorization"), new WebACService(resourceService, webacCache))));
+        getWebacConfiguration(config).ifPresent(webacCache -> {
+                final WebAcFilter filter = new WebAcFilter(new WebACService(resourceService, webacCache));
+                filter.setChallenges(asList("Authorization"));
+                environment.jersey().register(filter);
+        });
 
         // CORS
         getCorsConfiguration(config).ifPresent(cors -> environment.jersey().register(

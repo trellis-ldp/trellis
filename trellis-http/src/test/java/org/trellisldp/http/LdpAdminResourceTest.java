@@ -14,7 +14,6 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -34,12 +33,15 @@ public class LdpAdminResourceTest extends AbstractLdpResourceTest {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(mockAgentService);
+        agentFilter.setAdminUsers(asList("testUser"));
+
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService, BASE_URL));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService));
         config.register(new TestAuthenticationFilter("testUser", ""));
-        config.register(new WebAcFilter(emptyList(), mockAccessControlService));
-        config.register(new AgentAuthorizationFilter(mockAgentService, asList("testUser")));
-        config.register(new MultipartUploader(mockResourceService, mockBinaryResolver, BASE_URL));
+        config.register(new WebAcFilter(mockAccessControlService));
+        config.register(agentFilter);
+        config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400));
         config.register(new CrossOriginResourceSharingFilter(asList(origin),
                     asList("PATCH", "POST", "PUT"),

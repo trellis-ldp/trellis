@@ -50,32 +50,44 @@ public class NamespacesJsonContextTest {
     @Test
     public void testReadFromJson() {
         final URL res = NamespacesJsonContext.class.getResource(nsDoc);
-        final NamespacesJsonContext svc = new NamespacesJsonContext(res.getPath());
+        System.getProperties().setProperty(NamespacesJsonContext.NAMESPACES_PATH, res.getPath());
+        final NamespacesJsonContext svc = new NamespacesJsonContext();
         assertEquals(2, svc.getNamespaces().size());
         assertEquals(LDP, svc.getNamespace("ldp").get());
         assertEquals("ldp", svc.getPrefix(LDP).get());
+        System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
     }
 
     @Test
     public void testReadError() {
         final URL res = NamespacesJsonContext.class.getResource("/thisIsNot.json");
-        assertThrows(UncheckedIOException.class, () -> new NamespacesJsonContext(res.getPath()));
+        System.getProperties().setProperty(NamespacesJsonContext.NAMESPACES_PATH, res.getPath());
+
+        assertThrows(UncheckedIOException.class, () -> new NamespacesJsonContext());
+        System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
     }
 
     @Test
     public void testWriteError() throws Exception {
         final URL res = NamespacesJsonContext.class.getResource("/readonly.json");
-        final NamespacesJsonContext svc = new NamespacesJsonContext(res.getPath());
+
+        System.getProperties().setProperty(NamespacesJsonContext.NAMESPACES_PATH, res.getPath());
+
+        final NamespacesJsonContext svc = new NamespacesJsonContext();
         final File file = new File(res.toURI());
         assumeTrue(file.setWritable(false));
         assertThrows(UncheckedIOException.class, () -> svc.setPrefix("ex", "http://example.com/"));
+        System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
     }
 
     @Test
     public void testWriteToJson() {
         final File file = new File(NamespacesJsonContext.class.getResource(nsDoc).getPath());
         final String filename = file.getParent() + "/" + randomFilename();
-        final NamespacesJsonContext svc1 = new NamespacesJsonContext(filename);
+
+        System.getProperties().setProperty(NamespacesJsonContext.NAMESPACES_PATH, filename);
+
+        final NamespacesJsonContext svc1 = new NamespacesJsonContext();
         assertEquals(15, svc1.getNamespaces().size());
         assertFalse(svc1.getNamespace("jsonld").isPresent());
         assertFalse(svc1.getPrefix(JSONLD).isPresent());
@@ -84,10 +96,11 @@ public class NamespacesJsonContextTest {
         assertEquals(JSONLD, svc1.getNamespace("jsonld").get());
         assertEquals("jsonld", svc1.getPrefix(JSONLD).get());
 
-        final NamespacesJsonContext svc2 = new NamespacesJsonContext(filename);
+        final NamespacesJsonContext svc2 = new NamespacesJsonContext();
         assertEquals(16, svc2.getNamespaces().size());
         assertEquals(JSONLD, svc2.getNamespace("jsonld").get());
         assertFalse(svc2.setPrefix("jsonld", JSONLD));
+        System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
     }
 
     private static String randomFilename() {

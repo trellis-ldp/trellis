@@ -19,12 +19,14 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.ServiceLoader;
 
+import javax.inject.Inject;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -36,6 +38,8 @@ import org.trellisldp.api.EventService;
  * @author acoburn
  */
 public class JmsPublisher implements EventService {
+
+    public static final String JMS_QUEUE_NAME = "trellis.jms.queue";
 
     private static final Logger LOGGER = getLogger(JmsPublisher.class);
 
@@ -49,11 +53,12 @@ public class JmsPublisher implements EventService {
     /**
      * Create a new JMS Publisher.
      * @param conn the connection
-     * @param queueName the name of the queue
      * @throws JMSException when there is a JMS error
      */
-    public JmsPublisher(final Connection conn, final String queueName) throws JMSException {
-        this(conn.createSession(false, AUTO_ACKNOWLEDGE), queueName);
+    @Inject
+    public JmsPublisher(final Connection conn) throws JMSException {
+        this(conn.createSession(false, AUTO_ACKNOWLEDGE),
+                ConfigurationProvider.getConfiguration().get(JMS_QUEUE_NAME));
     }
 
     /**
@@ -63,8 +68,8 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a JMS error
      */
     public JmsPublisher(final Session session, final String queueName) throws JMSException {
-        requireNonNull(session);
-        requireNonNull(queueName);
+        requireNonNull(session, "JMS Session may not be null!");
+        requireNonNull(queueName, "JMS Queue name may not be null!");
 
         this.session = session;
         this.producer = session.createProducer(session.createQueue(queueName));

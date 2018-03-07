@@ -20,9 +20,12 @@ import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
@@ -50,17 +53,25 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     private static final Logger LOGGER = getLogger(AgentAuthorizationFilter.class);
 
     private final AgentService agentService;
-    private final List<String> adminUsers;
+    private final Set<String> adminUsers = new HashSet<>();
 
     /**
      * Create an authorization filter.
      *
      * @param agentService the agent service
+     */
+    @Inject
+    public AgentAuthorizationFilter(final AgentService agentService) {
+        this.agentService = agentService;
+    }
+
+    /**
+     * Set any admin users for the auth filter.
+     *
      * @param adminUsers users that should be treated as server administrators
      */
-    public AgentAuthorizationFilter(final AgentService agentService, final List<String> adminUsers) {
-        this.agentService = agentService;
-        this.adminUsers = adminUsers;
+    public void setAdminUsers(final List<String> adminUsers) {
+        adminUsers.forEach(this.adminUsers::add);
     }
 
     @Override

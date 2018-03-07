@@ -42,6 +42,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -100,6 +101,7 @@ public class HttpBasedBinaryService implements BinaryService {
      * @param idService an identifier service
      * @param client the client
      */
+    @Inject
     public HttpBasedBinaryService(final IdentifierService idService, final Client client) {
         requireNonNull(client, "HTTP client may not be null!");
         this.idService = idService;

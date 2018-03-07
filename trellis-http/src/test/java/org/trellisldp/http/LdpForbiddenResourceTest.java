@@ -33,6 +33,7 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
 
@@ -119,12 +120,15 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         initMocks(this);
 
         BASE_URL = getBaseUri().toString();
+        System.getProperties().setProperty(CONFIGURATION_BASE_URL, BASE_URL);
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TestAuthenticationFilter("testUser", "group"));
-        config.register(new AgentAuthorizationFilter(mockAgentService, emptyList()));
-        config.register(new WebAcFilter(emptyList(), mockAccessControlService));
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, null));
+        config.register(new AgentAuthorizationFilter(mockAgentService));
+        config.register(new WebAcFilter(mockAccessControlService));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService));
+        System.getProperties().remove(CONFIGURATION_BASE_URL);
+
         return config;
     }
 

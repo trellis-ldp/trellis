@@ -18,9 +18,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.ServiceLoader;
 
+import javax.inject.Inject;
+
 import org.apache.commons.rdf.api.IRI;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -30,6 +33,8 @@ import org.trellisldp.api.EventService;
  * A Kafka message producer capable of publishing messages to a Kafka cluster.
  */
 public class KafkaPublisher implements EventService {
+
+    public static final String KAFKA_TOPIC = "trellis.kafka.topic";
 
     private static final Logger LOGGER = getLogger(KafkaPublisher.class);
 
@@ -42,11 +47,20 @@ public class KafkaPublisher implements EventService {
     /**
      * Create a new Kafka Publisher.
      * @param producer the producer
-     * @param topicName the name of the topic
+     */
+    @Inject
+    public KafkaPublisher(final Producer<String, String> producer) {
+        this(producer, ConfigurationProvider.getConfiguration().get(KAFKA_TOPIC));
+    }
+
+    /**
+     * Create a new Kafka Publisher.
+     * @param producer the producer
+     * @param topicName the name of the kafka topic
      */
     public KafkaPublisher(final Producer<String, String> producer, final String topicName) {
-        requireNonNull(producer);
-        requireNonNull(topicName);
+        requireNonNull(producer, "Kafka producer may not be null!");
+        requireNonNull(topicName, "Kafka topic name may not be null!");
 
         this.producer = producer;
         this.topicName = topicName;

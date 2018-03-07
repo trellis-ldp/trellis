@@ -30,6 +30,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -87,7 +90,9 @@ public class WebACService implements AccessControlService {
      * @param resourceService the resource service
      * @param cache a cache (may be null if caching is not desired)
      */
-    public WebACService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache) {
+    @Inject
+    public WebACService(final ResourceService resourceService,
+            @Named("TrellisAuthorizationCache") final CacheService<String, Set<IRI>> cache) {
         requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.resourceService = resourceService;
         this.cache = cache;

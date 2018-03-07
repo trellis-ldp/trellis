@@ -15,7 +15,6 @@ package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
@@ -29,11 +28,13 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotAuthorizedException;
@@ -67,7 +68,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
 
     private final AccessControlService accessService;
-    private final List<String> challenges;
+    private final List<String> challenges = new ArrayList<>();
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
@@ -75,12 +76,24 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     /**
      * Create a new WebAc-based auth filter.
      *
-     * @param challenges the challenges
      * @param accessService the access service
      */
-    public WebAcFilter(final List<String> challenges, final AccessControlService accessService) {
+    @Inject
+    public WebAcFilter(final AccessControlService accessService) {
         this.accessService = accessService;
-        this.challenges = challenges.isEmpty() ? singletonList(BASIC_AUTH) : challenges;
+        challenges.add(BASIC_AUTH);
+    }
+
+    /**
+     * Set the auth challenges.
+     *
+     * @param challenges the auth challenges
+     */
+    public void setChallenges(final List<String> challenges) {
+        if (!challenges.isEmpty()) {
+            this.challenges.clear();
+            challenges.forEach(this.challenges::add);
+        }
     }
 
     @Override

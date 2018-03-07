@@ -23,6 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
+import static org.trellisldp.io.JenaIOService.IO_HTML_ICON;
+import static org.trellisldp.io.JenaIOService.IO_HTML_JS;
 
 import com.rabbitmq.client.ConnectionFactory;
 
@@ -79,12 +82,10 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         final Map<String, String> assets = TrellisUtils.getAssetConfiguration(config);
-        assertEquals(3L, assets.size());
-        assertEquals("http://example.org/image.icon", assets.get("icon"));
-        assertEquals("http://example.org/styles1.css,http://example.org/styles2.css",
-                assets.get("css"));
-        assertEquals("http://example.org/scripts1.js,http://example.org/scripts2.js",
-                assets.get("js"));
+        assertEquals(4L, assets.size());
+        assertEquals("http://example.org/image.icon", assets.get(IO_HTML_ICON));
+        assertEquals("http://example.org/styles1.css,http://example.org/styles2.css", assets.get(IO_HTML_CSS));
+        assertEquals("http://example.org/scripts1.js,http://example.org/scripts2.js", assets.get(IO_HTML_JS));
     }
 
     @Test

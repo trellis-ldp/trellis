@@ -117,10 +117,13 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
 
+        final WebAcFilter webacFilter = new WebAcFilter(mockAccessControlService);
+        webacFilter.setChallenges(asList(BASIC_AUTH, DIGEST_AUTH));
+
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, "http://example.org/"));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService));
         config.register(new TestAuthenticationFilter("testUser", "group"));
-        config.register(new WebAcFilter(asList(BASIC_AUTH, DIGEST_AUTH), mockAccessControlService));
+        config.register(webacFilter);
         config.register(new CrossOriginResourceSharingFilter(asList(origin),
                     asList("PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Datetime"),

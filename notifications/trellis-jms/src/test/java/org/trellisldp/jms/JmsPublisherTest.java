@@ -101,7 +101,7 @@ public class JmsPublisherTest {
 
     @Test
     public void testJms() throws JMSException {
-        final EventService svc = new JmsPublisher(mockConnection, queueName);
+        final EventService svc = new JmsPublisher(mockConnection);
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));

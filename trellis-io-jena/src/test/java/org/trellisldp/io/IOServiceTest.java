@@ -14,8 +14,6 @@
 package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
@@ -44,6 +42,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
+import static org.trellisldp.io.JenaIOService.IO_HTML_ICON;
+import static org.trellisldp.io.JenaIOService.IO_HTML_TEMPLATE;
+import static org.trellisldp.io.JenaIOService.IO_JSONLD_DOMAINS;
+import static org.trellisldp.io.JenaIOService.IO_JSONLD_PROFILES;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.JSONLD.flattened;
@@ -113,16 +116,21 @@ public class IOServiceTest {
         namespaces.put("rdf", RDF.uri);
 
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
+        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
+        properties.put(IO_JSONLD_PROFILES, "http://www.w3.org/ns/anno.jsonld");
+        properties.put(IO_JSONLD_DOMAINS, "http://www.trellisldp.org/ns/");
 
-        service = new JenaIOService(mockNamespaceService, properties,
-                singleton("http://www.w3.org/ns/anno.jsonld"), singleton("http://www.trellisldp.org/ns/"), mockCache);
+        service = new JenaIOService(mockNamespaceService, mockCache, properties);
 
-        service2 = new JenaIOService(mockNamespaceService, properties, emptySet(),
-                singleton("http://www.w3.org/ns/"), mockCache);
+        final Map<String, String> properties2 = new HashMap<>();
+        properties.forEach(properties2::put);
+        properties2.remove(IO_JSONLD_PROFILES);
+        properties2.put(IO_JSONLD_DOMAINS, "http://www.w3.org/ns/");
+        service2 = new JenaIOService(mockNamespaceService, mockCache, properties2);
 
-        service3 = new JenaIOService(mockNamespaceService);
+        final Map<String, String> properties3 = new HashMap<>();
+        service3 = new JenaIOService(mockNamespaceService, mockCache, properties3);
 
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
@@ -215,12 +223,12 @@ public class IOServiceTest {
     @Test
     public void testJsonLdNullCache() throws UnsupportedEncodingException {
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
+        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
+        properties.put(IO_JSONLD_DOMAINS, "http://www.w3.org/ns/");
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final IOService myservice = new JenaIOService(null, properties, emptySet(),
-                singleton("http://www.w3.org/ns/"), null);
+        final IOService myservice = new JenaIOService(null, null, properties);
         myservice.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
         final String output = out.toString("UTF-8");
         assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
@@ -363,11 +371,11 @@ public class IOServiceTest {
     @Test
     public void testHtmlSerializer3() {
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
-        properties.put("template", "/resource-test.mustache");
+        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
+        properties.put(IO_HTML_TEMPLATE, "/resource-test.mustache");
 
-        final IOService service4 = new JenaIOService(mockNamespaceService, properties);
+        final IOService service4 = new JenaIOService(mockNamespaceService, mockCache, properties);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
@@ -384,11 +392,11 @@ public class IOServiceTest {
     @Test
     public void testHtmlSerializer4() throws Exception {
         final Map<String, String> properties = new HashMap<>();
-        properties.put("icon", "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put("css", "//www.trellisldp.org/assets/css/trellis.css");
-        properties.put("template", getClass().getResource("/resource-test.mustache").toURI().getPath());
+        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
+        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
+        properties.put(IO_HTML_TEMPLATE, getClass().getResource("/resource-test.mustache").toURI().getPath());
 
-        final IOService service4 = new JenaIOService(mockNamespaceService, properties);
+        final IOService service4 = new JenaIOService(mockNamespaceService, mockCache, properties);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));

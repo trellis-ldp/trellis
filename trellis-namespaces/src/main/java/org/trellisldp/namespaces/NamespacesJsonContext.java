@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Inject;
+
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.NamespaceService;
 
@@ -39,6 +42,8 @@ import org.trellisldp.api.NamespaceService;
  */
 public class NamespacesJsonContext implements NamespaceService {
 
+    public static final String NAMESPACES_PATH = "trellis.namespaces.path";
+
     private static final Logger LOGGER = getLogger(NamespacesJsonContext.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -48,13 +53,21 @@ public class NamespacesJsonContext implements NamespaceService {
 
     /**
      * Create a JSON-based Namespace service.
-     * @param filePath the file path
      */
-    public NamespacesJsonContext(final String filePath) {
-        requireNonNull(filePath, "The filePath may not be null!");
+    @Inject
+    public NamespacesJsonContext() {
+        this(ConfigurationProvider.getConfiguration().get(NAMESPACES_PATH));
+    }
 
-        this.filePath = filePath;
-        this.data = read(filePath);
+    /**
+     * Create a JSON-based Namespace service.
+     * @param path the path to the JSON file
+     */
+    public NamespacesJsonContext(final String path) {
+        requireNonNull(path, "Namespace path may not be empty!");
+
+        this.filePath = path;
+        this.data = read(path);
         init();
     }
 

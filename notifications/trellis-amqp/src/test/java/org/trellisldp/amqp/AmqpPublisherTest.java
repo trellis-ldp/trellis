@@ -89,6 +89,15 @@ public class AmqpPublisherTest {
     }
 
     @Test
+    public void testAmqpConfiguration() throws IOException {
+        final EventService svc = new AmqpPublisher(mockChannel);
+        svc.emit(mockEvent);
+
+        verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
+                any(BasicProperties.class), any(byte[].class));
+    }
+
+    @Test
     public void testError() throws IOException {
         doThrow(IOException.class).when(mockChannel).basicPublish(eq(exchangeName), eq(queueName),
                 anyBoolean(), anyBoolean(), any(BasicProperties.class), any(byte[].class));

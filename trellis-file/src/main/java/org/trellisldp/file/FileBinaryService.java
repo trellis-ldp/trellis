@@ -47,10 +47,14 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.inject.Inject;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.tamaya.Configuration;
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
@@ -71,6 +75,10 @@ import org.trellisldp.api.IdentifierService;
  */
 public class FileBinaryService implements BinaryService {
 
+    public static final String BINARY_BASE_PATH = "trellis.file.binary.basepath";
+    public static final String BINARY_HIERARCHY = "trellis.file.binary.hierarchy";
+    public static final String BINARY_LENGTH = "trellis.file.binary.length";
+
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
     private static final String SHA = "SHA";
     private static final Integer DEFAULT_HIERARCHY = 3;
@@ -86,25 +94,32 @@ public class FileBinaryService implements BinaryService {
     /**
      * Create a File-based Binary service.
      *
-     * @param basePath the base file path
      * @param idService an identifier service
      */
-    public FileBinaryService(final String basePath, final IdentifierService idService) {
-        this(basePath, idService, DEFAULT_HIERARCHY, DEFAULT_LENGTH);
+    @Inject
+    public FileBinaryService(final IdentifierService idService) {
+        this(idService, ConfigurationProvider.getConfiguration());
     }
 
     /**
      * Create a File-based Binary service.
      *
-     * @param basePath the base file path
      * @param idService an identifier service
+     * @param basePath the base file path
      * @param hierarchy the levels of hierarchy
      * @param length the length of each level of hierarchy
      */
-    public FileBinaryService(final String basePath, final IdentifierService idService,
+    public FileBinaryService(final IdentifierService idService, final String basePath,
             final Integer hierarchy, final Integer length) {
+        requireNonNull(basePath, BINARY_BASE_PATH + " configuration may not be null!");
         this.basePath = basePath;
         this.idSupplier = idService.getSupplier("file:", hierarchy, length);
+    }
+
+    private FileBinaryService(final IdentifierService idService, final Configuration config) {
+        this(idService, config.get(BINARY_BASE_PATH),
+                config.getOrDefault(BINARY_HIERARCHY, Integer.class, DEFAULT_HIERARCHY),
+                config.getOrDefault(BINARY_LENGTH, Integer.class, DEFAULT_LENGTH));
     }
 
     @Override

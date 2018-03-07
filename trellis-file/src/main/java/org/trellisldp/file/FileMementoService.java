@@ -21,6 +21,7 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -36,9 +37,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
@@ -48,17 +52,27 @@ import org.trellisldp.api.Resource;
  */
 public class FileMementoService implements MementoService {
 
+    public static final String MEMENTO_BASE_PATH = "trellis.file.memento.basepath";
+
     private static final Logger LOGGER = getLogger(FileMementoService.class);
 
     private final File directory;
 
     /**
      * Create a file-based memento service.
-     *
-     * @param directory the base directory where versions are stored
      */
-    public FileMementoService(final String directory) {
-        this.directory = new File(directory);
+    @Inject
+    public FileMementoService() {
+        this(ConfigurationProvider.getConfiguration().get(MEMENTO_BASE_PATH));
+    }
+
+    /**
+     * Create a file-based memento service.
+     * @param path the file path
+     */
+    public FileMementoService(final String path) {
+        requireNonNull(path, "Memento base path is undefined!");
+        this.directory = new File(path);
         init();
     }
 
