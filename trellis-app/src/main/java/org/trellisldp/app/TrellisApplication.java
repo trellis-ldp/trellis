@@ -30,12 +30,12 @@ import io.dropwizard.setup.Environment;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.agent.SimpleAgent;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.ProfileCacheService;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.app.health.RDFConnectionHealthCheck;
 import org.trellisldp.file.FileBinaryService;
@@ -96,7 +96,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                 config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength());
 
         // IO Service
-        final ProfileCacheService profileCache = new TrellisProfileCache(newBuilder()
+        final CacheService<String, String> profileCache = new TrellisCache<>(newBuilder()
                 .maximumSize(config.getJsonld().getCacheSize())
                 .expireAfterAccess(config.getJsonld().getCacheExpireHours(), HOURS).build());
         final IOService ioService = new JenaIOService(namespaceService, profileCache,

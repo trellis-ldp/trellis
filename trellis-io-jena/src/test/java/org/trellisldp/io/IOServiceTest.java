@@ -78,9 +78,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.ProfileCacheService;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
@@ -102,7 +102,7 @@ public class IOServiceTest {
     private OutputStream mockOutputStream;
 
     @Mock
-    private ProfileCacheService mockCache;
+    private CacheService<String, String> mockCache;
 
     @Mock
     private RDFSyntax mockSyntax;

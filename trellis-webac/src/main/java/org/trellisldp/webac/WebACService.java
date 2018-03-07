@@ -31,6 +31,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -39,7 +40,7 @@ import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
-import org.trellisldp.api.AuthorizationCacheService;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -72,7 +73,7 @@ public class WebACService implements AccessControlService {
     }
 
     private final ResourceService resourceService;
-    private final AuthorizationCacheService cache;
+    private final CacheService<String, Set<IRI>> cache;
 
     /**
      * Create a WebAC-based authorization service.
@@ -90,7 +91,8 @@ public class WebACService implements AccessControlService {
      * @param cache a cache (may be null if caching is not desired)
      */
     @Inject
-    public WebACService(final ResourceService resourceService, final AuthorizationCacheService cache) {
+    public WebACService(final ResourceService resourceService,
+            @Named("TrellisAuthorizationCache") final CacheService<String, Set<IRI>> cache) {
         requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.resourceService = resourceService;
         this.cache = cache;

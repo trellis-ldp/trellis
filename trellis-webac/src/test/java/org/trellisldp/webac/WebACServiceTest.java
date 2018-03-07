@@ -25,6 +25,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
-import org.trellisldp.api.AuthorizationCacheService;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
@@ -64,7 +65,7 @@ public class WebACServiceTest {
     private Session mockSession;
 
     @Mock
-    private AuthorizationCacheService mockCache;
+    private CacheService<String, Set<IRI>> mockCache;
 
     @Mock
     private Resource mockResource, mockChildResource, mockParentResource, mockRootResource,

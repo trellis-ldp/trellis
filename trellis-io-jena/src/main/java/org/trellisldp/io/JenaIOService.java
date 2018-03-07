@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Graph;
@@ -66,9 +67,9 @@ import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.ProfileCacheService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.io.impl.HtmlSerializer;
 
@@ -91,7 +92,7 @@ public class JenaIOService implements IOService {
     private static final JenaRDF rdf = new JenaRDF();
 
     private final NamespaceService nsService;
-    private final ProfileCacheService cache;
+    private final CacheService<String, String> cache;
     private final HtmlSerializer htmlSerializer;
     private final Set<String> whitelist;
     private final Set<String> whitelistDomains;
@@ -112,7 +113,8 @@ public class JenaIOService implements IOService {
      * @param cache a cache for custom JSON-LD profile resolution
      */
     @Inject
-    public JenaIOService(final NamespaceService namespaceService, final ProfileCacheService cache) {
+    public JenaIOService(final NamespaceService namespaceService,
+            @Named("TrellisProfileCache") final CacheService<String, String> cache) {
         this(namespaceService, cache, ConfigurationProvider.getConfiguration().getProperties());
     }
 
@@ -123,7 +125,7 @@ public class JenaIOService implements IOService {
      * @param cache a cache for custom JSON-LD profile resolution
      * @param properties additional properties for the serialization service
      */
-    public JenaIOService(final NamespaceService namespaceService, final ProfileCacheService cache,
+    public JenaIOService(final NamespaceService namespaceService, final CacheService<String, String> cache,
             final Map<String, String> properties) {
         this.nsService = namespaceService;
         this.cache = cache;

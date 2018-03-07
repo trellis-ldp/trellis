@@ -66,7 +66,7 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.trellisldp.amqp.AmqpPublisher;
-import org.trellisldp.api.AuthorizationCacheService;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.app.auth.AnonymousAuthFilter;
@@ -137,12 +137,12 @@ final class TrellisUtils {
         return of(filters);
     }
 
-    public static Optional<AuthorizationCacheService> getWebacConfiguration(final TrellisConfiguration config) {
+    public static Optional<CacheService<String, Set<IRI>>> getWebacConfiguration(final TrellisConfiguration config) {
         if (config.getAuth().getWebac().getEnabled()) {
             final Cache<String, Set<IRI>> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
                     .getCacheSize()).expireAfterWrite(config.getAuth().getWebac()
                     .getCacheExpireSeconds(), SECONDS).build();
-            return of(new TrellisAuthorizationCache(authCache));
+            return of(new TrellisCache<>(authCache));
         }
         return empty();
     }
