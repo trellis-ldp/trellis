@@ -131,9 +131,9 @@ public class OSGiTest {
 
     @Test
     public void testHttpInstallation() throws Exception {
-        assertFalse("trellis-http already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-http")));
-        featuresService.installFeature("trellis-http");
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-http"))) {
+            featuresService.installFeature("trellis-http");
+        }
         assertTrue("trellis-http not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-http")));
     }
@@ -263,6 +263,16 @@ public class OSGiTest {
         assertTrue("trellis-namespace not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
     }
+
+    @Test
+    public void testWebdavInstallation() throws Exception {
+        assertFalse("trellis-webdav already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-webdav")));
+        featuresService.installFeature("trellis-webdav");
+        assertTrue("trellis-webdav not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-webdav")));
+    }
+
 
     private void checkTrellisBundlesAreActive() {
         stream(bundleContext.getBundles()).filter(b -> b.getSymbolicName().startsWith("org.trellisldp")).forEach(b ->

@@ -157,6 +157,25 @@
     <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
   </feature>
 
+  <feature name="trellis-webdav" version="${project.version}">
+    <details>Installs the Trellis WebDAV bundle</details>
+
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+    <feature dependency="true">trellis-http</feature>
+    <feature version="${jenaVersionRange}">jena</feature>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.metrics/microprofile-metrics-api/${microprofileMetricsVersion}</bundle>
+    <!-- microprofile metrics depends on cdi/1.2 -->
+    <bundle dependency="true">mvn:javax.enterprise/cdi-api/1.2</bundle>
+    <bundle dependency="true">mvn:javax.xml.bind/jaxb-api/${jaxbVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-webdav/${project.version}</bundle>
+  </feature>
+
   <feature name="commons-rdf-jena" version="${project.version}">
     <feature version="${jenaVersionRange}">jena</feature>
 
