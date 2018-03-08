@@ -112,7 +112,8 @@ public class DeleteHandlerTest {
         when(mockResourceService.skolemize(eq(date))).thenReturn(date);
         when(mockResourceService.delete(eq(iri), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
-        when(mockResourceService.add(eq(iri), any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.add(eq(iri), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
 
         when(mockLdpRequest.getSession()).thenReturn(mockSession);
         when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);
@@ -149,7 +150,8 @@ public class DeleteHandlerTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, badAuditService, null);
         final Response res = handler.deleteResource(mockResource).build();

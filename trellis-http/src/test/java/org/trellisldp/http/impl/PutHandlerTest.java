@@ -127,7 +127,8 @@ public class PutHandlerTest {
         when(mockResource.getModified()).thenReturn(time);
         when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
 
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
@@ -174,7 +175,8 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, badAuditService,
                         mockIoService, mockBinaryService, null);

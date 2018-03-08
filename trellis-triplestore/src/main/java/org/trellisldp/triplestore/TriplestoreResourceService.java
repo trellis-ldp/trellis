@@ -660,7 +660,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> add(final IRI id, final Dataset dataset) {
+    public Future<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
         return supplyAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
             try (final Dataset data = rdf.createDataset()) {

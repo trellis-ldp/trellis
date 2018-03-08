@@ -61,8 +61,8 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public Future<Boolean> add(final IRI id, final Dataset dataset) {
-        return immutableData.add(id, new PersistableResource(id, null, dataset));
+    public Future<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
+        return immutableData.add(id, session, new PersistableResource(id, null, dataset));
     }
 
     @Override

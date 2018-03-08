@@ -117,7 +117,8 @@ public class PostHandlerTest {
     public void setUp() {
         initMocks(this);
         when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
@@ -164,7 +165,8 @@ public class PostHandlerTest {
         when(mockRequest.getContentType()).thenReturn(TEXT_TURTLE);
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final PostHandler handler = new PostHandler(mockRequest, null, entity, mockResourceService,
                         mockIoService, mockBinaryService, null, badAuditService);

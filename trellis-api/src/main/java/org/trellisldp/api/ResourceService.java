@@ -43,16 +43,17 @@ public interface ResourceService extends MutableDataService<IRI, Resource>,
        ImmutableDataService<IRI, Resource> {
 
     @Override
-    default Future<Boolean> add(IRI identifier, Resource resource) {
-        return add(identifier, resource.dataset());
+    default Future<Boolean> add(IRI identifier, Session session, Resource resource) {
+        return add(identifier, session, resource.dataset());
     }
 
     /**
      * @param identifier the identifier under which to persist a dataset
+     * @param session the session context for this operation
      * @param dataset a dataset to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> add(IRI identifier, Dataset dataset);
+    Future<Boolean> add(IRI identifier, Session session, Dataset dataset);
 
     @Override
     default Future<Boolean> create(IRI id, Session session, Resource res) {

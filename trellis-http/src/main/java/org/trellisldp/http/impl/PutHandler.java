@@ -243,7 +243,7 @@ public class PutHandler extends ContentBearingHandler {
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
+                    if (!resourceService.add(internalId, session, auditDataset.asDataset()).get()) {
                         LOGGER.error("Unable to place or replace resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));

@@ -370,7 +370,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             return term;
         });
 
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));

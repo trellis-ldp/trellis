@@ -159,7 +159,7 @@ public class PostHandler extends ContentBearingHandler {
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     audit.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
+                    if (!resourceService.add(internalId, session, auditDataset.asDataset()).get()) {
                         LOGGER.error("Using AuditService {}", audit);
                         LOGGER.error("Unable to act against resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",

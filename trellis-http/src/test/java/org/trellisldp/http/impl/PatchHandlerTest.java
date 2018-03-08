@@ -124,7 +124,8 @@ public class PatchHandlerTest {
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
@@ -162,7 +163,8 @@ public class PatchHandlerTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", badAuditService, mockResourceService,
                         mockIoService, null);

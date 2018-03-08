@@ -85,7 +85,7 @@ public class JoiningResourceServiceTest {
                     implements ImmutableDataService<IRI, Resource> {
 
         @Override
-        public Future<Boolean> add(final IRI identifier, final Resource newRes) {
+        public Future<Boolean> add(final IRI identifier, final Session session, final Resource newRes) {
             resources.compute(identifier, (id, old) -> old == null ? newRes : new RetrievableResource(old, newRes));
             return isntBadId(identifier);
         }
@@ -226,7 +226,7 @@ public class JoiningResourceServiceTest {
         assertTrue(testable.create(testResourceId2, mockSession, testMutableResource).get(),
                 "Couldn't create a mutable resource!");
         final Resource testImmutableResource = new TestResource(testResourceId2, testImmutableQuad);
-        assertTrue(testable.add(testResourceId2, testImmutableResource).get(),
+        assertTrue(testable.add(testResourceId2, mockSession, testImmutableResource).get(),
                         "Couldn't create an immutable resource!");
 
         final Resource retrieved = testable.get(testResourceId2).orElseThrow(AssertionError::new);
@@ -255,9 +255,11 @@ public class JoiningResourceServiceTest {
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testFirstResource = new TestResource(testResourceId3, testFirstQuad);
-        assertTrue(testable.add(testResourceId3, testFirstResource).get(), "Couldn't create an immutable resource!");
+        assertTrue(testable.add(testResourceId3, mockSession, testFirstResource).get(),
+                "Couldn't create an immutable resource!");
         final Resource testSecondResource = new TestResource(testResourceId3, testSecondQuad);
-        assertTrue(testable.add(testResourceId3, testSecondResource).get(), "Couldn't add to an immutable resource!");
+        assertTrue(testable.add(testResourceId3, mockSession, testSecondResource).get(),
+                "Couldn't add to an immutable resource!");
 
         final Resource retrieved = testable.get(testResourceId3).orElseThrow(AssertionError::new);
         assertEquals(testResourceId3, retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
