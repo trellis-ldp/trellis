@@ -14,11 +14,14 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -32,6 +35,7 @@ class SimpleSession implements Session {
     private final Instant created = now();
     private final IRI identifier = getInstance().createIRI(TRELLIS_SESSION_PREFIX + randomUUID());
     private final IRI agent;
+    private final Map<String, String> properties = new HashMap<>();
 
     public SimpleSession(final IRI agent) {
         this.agent = agent;
@@ -55,5 +59,15 @@ class SimpleSession implements Session {
     @Override
     public Instant getCreated() {
         return created;
+    }
+
+    @Override
+    public Optional<String> getProperty(final String key) {
+        return ofNullable(properties.get(key));
+    }
+
+    @Override
+    public void setProperty(final String key, final String value) {
+        properties.put(key, value);
     }
 }

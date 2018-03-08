@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 
 /**
  * A service that persists resources by <i>replacing</i> their records.
- * 
+ *
  * @author ajs6f
  * @param <T> the type of identifier used by this service
  * @param <U> the type of resource that can be persisted by this service
@@ -27,23 +27,26 @@ public interface MutableDataService<T, U> extends RetrievalService<T, U> {
 
     /**
      * @param identifier the identifier for the resource to persist
+     * @param session the session context for this operation
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> create(T identifier, U resource);
+    Future<Boolean> create(T identifier, Session session, U resource);
 
     /**
      * @param identifier the identifier for the resource to persist
+     * @param session the session context for this operation
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> replace(T identifier, U resource);
+    Future<Boolean> replace(T identifier, Session session, U resource);
 
     /**
      * @param identifier the identifier for the resource to delete
+     * @param session the session context for this operation
      * @param resource a resource to delete
      * @return whether the resource was successfully deleted
      */
-    Future<Boolean> delete(T identifier, U resource);
+    Future<Boolean> delete(T identifier, Session session, U resource);
 
 }

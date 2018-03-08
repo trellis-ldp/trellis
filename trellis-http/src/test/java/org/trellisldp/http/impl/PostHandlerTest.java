@@ -72,6 +72,7 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
@@ -116,8 +117,9 @@ public class PostHandlerTest {
     public void setUp() {
         initMocks(this);
         when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
-        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
+        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
@@ -163,7 +165,8 @@ public class PostHandlerTest {
         when(mockRequest.getContentType()).thenReturn(TEXT_TURTLE);
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final PostHandler handler = new PostHandler(mockRequest, null, entity, mockResourceService,
                         mockIoService, mockBinaryService, null, badAuditService);
@@ -281,7 +284,7 @@ public class PostHandlerTest {
 
         verify(mockIoService).read(any(InputStream.class), eq(baseUrl + path), eq(TURTLE));
 
-        verify(mockResourceService).create(eq(identifier), eq(LDP.RDFSource), any(Dataset.class));
+        verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class));
     }
 
     @Test
@@ -308,7 +311,8 @@ public class PostHandlerTest {
         assertTrue(iriArgument.getValue().getIRIString().startsWith("file:"));
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
-        verify(mockResourceService).create(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class));
+        verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource),
+                any(Dataset.class));
     }
 
     @Test
@@ -336,7 +340,8 @@ public class PostHandlerTest {
         assertTrue(iriArgument.getValue().getIRIString().startsWith("file:"));
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
-        verify(mockResourceService).create(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class));
+        verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource),
+                any(Dataset.class));
     }
 
     @Test
@@ -389,8 +394,8 @@ public class PostHandlerTest {
 
     @Test
     public void testError() throws IOException {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(IRI.class),
-                    any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(Session.class),
+                    any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockRequest.getContentType()).thenReturn("text/turtle");
 
         final File entity = new File(getClass().getResource("/emptyData.txt").getFile());

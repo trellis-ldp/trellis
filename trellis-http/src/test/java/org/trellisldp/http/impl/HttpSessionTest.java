@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.time.Instant.now;
+import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -44,5 +45,13 @@ public class HttpSessionTest {
         assertNotEquals(session.getIdentifier(), session2.getIdentifier());
         assertFalse(session.getCreated().isBefore(time));
         assertFalse(session.getCreated().isAfter(session2.getCreated()));
+    }
+
+    @Test
+    public void testSessionProperties() {
+        final Session session = new HttpSession();
+        session.setProperty("foo", "bar");
+        assertFalse(session.getProperty("bar").isPresent());
+        assertEquals(of("bar"), session.getProperty("foo"));
     }
 }

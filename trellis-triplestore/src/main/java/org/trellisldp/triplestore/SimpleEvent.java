@@ -15,27 +15,18 @@ package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.Triple;
 import org.trellisldp.api.Event;
-import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.PROV;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * A simple Event implementation.
@@ -46,22 +37,29 @@ public class SimpleEvent implements Event {
 
     private final IRI identifier;
     private final IRI target;
-    private final Dataset data;
     private final Instant created;
-    private final Set<IRI> graphsForTypes = new HashSet<>();
+    private final List<IRI> agents;
+    private final List<IRI> activityTypes;
+    private final IRI inbox;
+    private final List<IRI> targetTypes;
 
     /**
      * Create a new notification.
      * @param target the target resource
-     * @param data the corresponding data
+     * @param agents the agents associated with this event
+     * @param activityTypes the activity types associated with this event
+     * @param targetTypes the rdf types of the resource
+     * @param inbox the inbox of the inbox, may be null
      */
-    public SimpleEvent(final String target, final Dataset data) {
+    public SimpleEvent(final String target, final List<IRI> agents, final List<IRI> activityTypes,
+            final List<IRI> targetTypes, final IRI inbox) {
         this.target = rdf.createIRI(target);
-        this.data = data;
         this.identifier = rdf.createIRI("urn:uuid:" + randomUUID());
+        this.agents = agents;
+        this.activityTypes = activityTypes;
         this.created = now();
-        this.graphsForTypes.add(Trellis.PreferServerManaged);
-        this.graphsForTypes.add(Trellis.PreferUserManaged);
+        this.targetTypes = targetTypes;
+        this.inbox = inbox;
     }
 
     @Override
@@ -71,10 +69,7 @@ public class SimpleEvent implements Event {
 
     @Override
     public Collection<IRI> getAgents() {
-        return data.getGraph(Trellis.PreferAudit)
-            .map(graph -> graph.stream(null, PROV.wasAssociatedWith, null).map(Triple::getObject)
-                    .filter(term -> term instanceof IRI).map(term -> (IRI) term).collect(toList()))
-            .orElseGet(Collections::emptyList);
+        return agents;
     }
 
     @Override
@@ -84,17 +79,12 @@ public class SimpleEvent implements Event {
 
     @Override
     public Collection<IRI> getTypes() {
-        return data.getGraph(Trellis.PreferAudit)
-            .map(graph -> graph.stream(null, type, null).map(Triple::getObject)
-                    .filter(term -> term instanceof IRI).map(term -> (IRI) term).collect(toList()))
-            .orElseGet(Collections::emptyList);
+        return activityTypes;
     }
 
     @Override
     public Collection<IRI> getTargetTypes() {
-        return data.stream().filter(quad -> quad.getGraphName().filter(graphsForTypes::contains).isPresent())
-            .filter(quad -> quad.getPredicate().equals(type)).map(Quad::getObject)
-            .filter(term -> term instanceof IRI).map(term -> (IRI) term).distinct().collect(toList());
+        return targetTypes;
     }
 
     @Override
@@ -104,8 +94,6 @@ public class SimpleEvent implements Event {
 
     @Override
     public Optional<IRI> getInbox() {
-        return data.getGraph(Trellis.PreferUserManaged)
-            .flatMap(graph -> graph.stream(null, LDP.inbox, null).map(Triple::getObject)
-                    .filter(term -> term instanceof IRI).map(term -> (IRI) term).findFirst());
+        return ofNullable(inbox);
     }
 }

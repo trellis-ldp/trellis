@@ -76,6 +76,7 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
@@ -126,10 +127,11 @@ public class PutHandlerTest {
         when(mockResource.getModified()).thenReturn(time);
         when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
 
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(true));
-        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
-        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
+        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
@@ -173,7 +175,8 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+            .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, badAuditService,
                         mockIoService, mockBinaryService, null);
@@ -370,8 +373,8 @@ public class PutHandlerTest {
     @Test
     public void testError() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
-                    any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
+                    any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 

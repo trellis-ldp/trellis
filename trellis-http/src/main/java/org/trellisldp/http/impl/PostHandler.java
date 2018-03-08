@@ -29,6 +29,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
@@ -100,6 +101,7 @@ public class PostHandler extends ContentBearingHandler {
         final String identifier = baseUrl + req.getPath() + separator + id;
         final String contentType = req.getContentType();
         final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         LOGGER.info("Creating resource as {}", identifier);
 
@@ -121,7 +123,6 @@ public class PostHandler extends ContentBearingHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
-            dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
             // Add user-supplied data
@@ -152,13 +153,13 @@ public class PostHandler extends ContentBearingHandler {
                 checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
             }
 
-            if (resourceService.create(internalId, ldpType, dataset.asDataset()).get()) {
+            if (resourceService.create(internalId, session, ldpType, dataset.asDataset()).get()) {
 
                 // Add Audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     audit.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
+                    if (!resourceService.add(internalId, session, auditDataset.asDataset()).get()) {
                         LOGGER.error("Using AuditService {}", audit);
                         LOGGER.error("Unable to act against resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",

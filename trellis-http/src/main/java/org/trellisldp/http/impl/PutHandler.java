@@ -32,6 +32,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
@@ -150,6 +151,8 @@ public class PutHandler extends ContentBearingHandler {
         ofNullable(res).ifPresent(r -> checkResourceCache(identifier, r));
 
         final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
+
         final Optional<RDFSyntax> rdfSyntax = ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType)
             .filter(SUPPORTED_RDF_TYPES::contains);
 
@@ -187,9 +190,6 @@ public class PutHandler extends ContentBearingHandler {
 
             // Add LDP type
             dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
-
-            // Add the base URL
-            dataset.add(rdf.createQuad(null, internalId, DC.isPartOf, rdf.createIRI(baseUrl)));
 
             // Add user-supplied data
             if (isBinaryRequest(ldpType, rdfSyntax)) {
@@ -237,13 +237,13 @@ public class PutHandler extends ContentBearingHandler {
                         .forEachOrdered(dataset::add);
                 }
             });
-            final Future<Boolean> success = createOrReplace(res, internalId, ldpType, dataset);
+            final Future<Boolean> success = createOrReplace(res, internalId, session, ldpType, dataset);
             if (success.get()) {
                 // Add audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
                     auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(internalId, auditDataset.asDataset()).get()) {
+                    if (!resourceService.add(internalId, session, auditDataset.asDataset()).get()) {
                         LOGGER.error("Unable to place or replace resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
@@ -266,11 +266,11 @@ public class PutHandler extends ContentBearingHandler {
             .entity("Unable to persist data. Please consult the logs for more information");
     }
 
-    private Future<Boolean> createOrReplace(final Resource res, final IRI internalId, final IRI ldpType,
-            final TrellisDataset dataset) {
+    private Future<Boolean> createOrReplace(final Resource res, final IRI internalId, final Session session,
+            final IRI ldpType, final TrellisDataset dataset) {
         return nonNull(res)
-            ? resourceService.replace(internalId, ldpType, dataset.asDataset())
-            : resourceService.create(internalId, ldpType, dataset.asDataset());
+            ? resourceService.replace(internalId, session, ldpType, dataset.asDataset())
+            : resourceService.create(internalId, session, ldpType, dataset.asDataset());
     }
 
     private ResponseBuilder buildResponse(final Resource res, final String identifier) {

@@ -29,8 +29,9 @@ public interface ImmutableDataService<T, U> extends RetrievalService<T, U> {
 
     /**
      * @param identifier the identifier under which to persist a resource
+     * @param session the session context for this operation
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> add(T identifier, U resource);
+    Future<Boolean> add(T identifier, Session session, U resource);
 }

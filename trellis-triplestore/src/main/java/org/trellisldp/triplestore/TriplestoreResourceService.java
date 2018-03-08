@@ -24,12 +24,15 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.builder;
+import static java.util.stream.Stream.empty;
 import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
@@ -48,12 +51,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.Range;
+import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
@@ -87,12 +92,14 @@ import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.XSD;
@@ -143,30 +150,33 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> create(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
+    public Future<Boolean> create(final IRI identifier, final Session session, final IRI ixnModel,
+            final Dataset dataset) {
         LOGGER.debug("Creating: {}", identifier);
-        return supplyAsync(() -> createOrReplace(identifier, ixnModel, dataset, OperationType.CREATE));
+        return supplyAsync(() -> createOrReplace(identifier, session, ixnModel, dataset, OperationType.CREATE));
     }
 
     @Override
-    public Future<Boolean> delete(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
+    public Future<Boolean> delete(final IRI identifier, final Session session, final IRI ixnModel,
+            final Dataset dataset) {
         LOGGER.debug("Deleting: {}", identifier);
         return supplyAsync(() -> {
             final Instant eventTime = now();
             dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
             dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
-            return storeAndNotify(identifier, dataset, eventTime, OperationType.DELETE);
+            return storeAndNotify(identifier, session, dataset, eventTime, OperationType.DELETE);
         });
     }
 
     @Override
-    public Future<Boolean> replace(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
+    public Future<Boolean> replace(final IRI identifier, final Session session, final IRI ixnModel,
+            final Dataset dataset) {
         LOGGER.debug("Updating: {}", identifier);
-        return supplyAsync(() -> createOrReplace(identifier, ixnModel, dataset, OperationType.REPLACE));
+        return supplyAsync(() -> createOrReplace(identifier, session, ixnModel, dataset, OperationType.REPLACE));
     }
 
-    private Boolean createOrReplace(final IRI identifier, final IRI ixnModel, final Dataset dataset,
-            final OperationType type) {
+    private Boolean createOrReplace(final IRI identifier, final Session session, final IRI ixnModel,
+            final Dataset dataset, final OperationType type) {
         final Instant eventTime = now();
 
         // Set the LDP type
@@ -192,11 +202,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         }
         // Set the parent relationship
         getContainer(identifier).ifPresent(parent -> dataset.add(PreferServerManaged, identifier, DC.isPartOf, parent));
-        return storeAndNotify(identifier, dataset, eventTime, type);
+        return storeAndNotify(identifier, session, dataset, eventTime, type);
     }
 
-    private Boolean storeAndNotify(final IRI identifier, final Dataset dataset, final Instant eventTime,
-                    final OperationType type) {
+    private Boolean storeAndNotify(final IRI identifier, final Session session, final Dataset dataset,
+            final Instant eventTime, final OperationType type) {
         final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
         try {
             rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
@@ -204,7 +214,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                 mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
                             svc.put(identifier, eventTime, res.stream())));
             }
-            emitEvents(identifier, time, dataset);
+            emitEvents(identifier, session, type, time, dataset);
             return true;
         } catch (final Exception ex) {
             LOGGER.error("Could not update data: {}", ex.getMessage());
@@ -231,17 +241,30 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         return unmodifiableList(versions);
     }
 
+    private static final Predicate<BlankNodeOrIRI> isUserGraph = Trellis.PreferUserManaged::equals;
+    private static final Predicate<BlankNodeOrIRI> isServerGraph = Trellis.PreferServerManaged::equals;
 
-    private void emitEvents(final IRI identifier, final Literal time, final Dataset dataset) {
+    private void emitEvents(final IRI identifier, final Session session, final OperationType opType,
+            final Literal time, final Dataset dataset) {
 
         // Get the base URL
-        final Optional<String> baseUrl = dataset.getGraph().stream(identifier, DC.isPartOf, null)
-            .map(Triple::getObject).map(term -> ((IRI) term).getIRIString()).findAny();
+        final Optional<String> baseUrl = session.getProperty(TRELLIS_SESSION_BASE_URL);
+        final IRI inbox = dataset.getGraph(Trellis.PreferUserManaged)
+            .flatMap(graph -> graph.stream(null, LDP.inbox, null).map(Triple::getObject)
+                    .filter(term -> term instanceof IRI).map(term -> (IRI) term).findFirst())
+            .orElse(null);
+        final List<IRI> targetTypes = dataset.stream()
+            .filter(quad -> quad.getGraphName().filter(isUserGraph.or(isServerGraph)).isPresent())
+            .filter(quad -> quad.getPredicate().equals(RDF.type))
+            .flatMap(quad -> quad.getObject() instanceof IRI ? Stream.of((IRI) quad.getObject()) : empty())
+            .distinct().collect(toList());
 
         eventService.ifPresent(svc -> {
-            svc.emit(new SimpleEvent(getUrl(identifier, baseUrl), dataset));
+            svc.emit(new SimpleEvent(getUrl(identifier, baseUrl),
+                        asList(session.getAgent()), asList(PROV.Activity, OperationType.asIRI(opType)),
+                        targetTypes, inbox));
             getContainer(identifier).ifPresent(parent ->
-                    emitEventsForAdjacentResources(svc, parent, time, baseUrl, dataset));
+                    emitEventsForAdjacentResources(svc, parent, session, opType, time));
         });
     }
 
@@ -261,11 +284,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      *   }
      * }
      * </code></pre></p>
+     *
+     * <p>Note: this query does not retrieve the user-managed rdf:type values
+     * nor does it retrieve any ldp:inbox value.
      */
-    private void emitEventsForAdjacentResources(final EventService svc, final IRI parent,
-            final Literal time, final Optional<String> baseUrl, final Dataset dataset) {
-        final Boolean isDelete = dataset.contains(of(PreferAudit), null, RDF.type, AS.Delete);
-        final Boolean isCreate = dataset.contains(of(PreferAudit), null, RDF.type, AS.Create);
+    private void emitEventsForAdjacentResources(final EventService svc, final IRI parent, final Session session,
+            final OperationType opType, final Literal time) {
+        final Boolean isDelete = opType == OperationType.DELETE;
+        final Boolean isCreate = opType == OperationType.CREATE;
         final Var memberDate = Var.alloc("memberDate");
 
         final Query q = new Query();
@@ -295,14 +321,19 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                 .map(RDFNode::asNode).map(rdf::asRDFTerm).filter(time::equals).isPresent();
             if (isCreate || isDelete) {
                 if (type.getIRIString().endsWith("Container")) {
-                    svc.emit(new SimpleEvent(getUrl(parent, baseUrl), dataset));
+                    svc.emit(new SimpleEvent(getUrl(parent, session.getProperty(TRELLIS_SESSION_BASE_URL)),
+                                    asList(session.getAgent()), asList(PROV.Activity, AS.Update), asList(type), null));
                 }
                 if (LDP.DirectContainer.equals(type) && memberIsModified) {
-                    member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, baseUrl), dataset)));
+                    member.ifPresent(m ->
+                            svc.emit(new SimpleEvent(getUrl(m, session.getProperty(TRELLIS_SESSION_BASE_URL)),
+                                        asList(session.getAgent()), asList(PROV.Activity, AS.Update),
+                                        asList(type), null)));
                 }
             }
             if (LDP.IndirectContainer.equals(type)) {
-                member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, baseUrl), dataset)));
+                member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, session.getProperty(TRELLIS_SESSION_BASE_URL)),
+                                asList(session.getAgent()), asList(PROV.Activity, AS.Update), asList(type), null)));
             }
         });
     }
@@ -380,7 +411,19 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     private enum OperationType {
-        DELETE, CREATE, REPLACE
+        DELETE, CREATE, REPLACE;
+
+        static IRI asIRI(final OperationType opType) {
+            switch (opType) {
+                case DELETE:
+                  return AS.Delete;
+                case CREATE:
+                  return AS.Create;
+                case REPLACE:
+                default:
+                  return AS.Update;
+            }
+        }
     }
 
     /**
@@ -617,7 +660,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> add(final IRI id, final Dataset dataset) {
+    public Future<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
         return supplyAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
             try (final Dataset data = rdf.createDataset()) {

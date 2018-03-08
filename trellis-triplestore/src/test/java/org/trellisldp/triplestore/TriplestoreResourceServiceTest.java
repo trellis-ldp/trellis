@@ -30,13 +30,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 
 import java.time.Instant;
 
@@ -100,6 +99,7 @@ public class TriplestoreResourceServiceTest {
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getCreated()).thenReturn(created);
         when(mockSession.getDelegatedBy()).thenReturn(empty());
+        when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(of(baseUrl));
     }
 
     @Test
@@ -236,7 +236,7 @@ public class TriplestoreResourceServiceTest {
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection).update(any(UpdateRequest.class));
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        assertFalse(svc.create(resource, LDP.RDFSource, rdf.createDataset()).get());
+        assertFalse(svc.create(resource, mockSession, LDP.RDFSource, rdf.createDataset()).get());
     }
 
     @Test
@@ -264,13 +264,12 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -312,11 +311,10 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferServerManaged, binary, DC.format, rdf.createLiteral("text/plain"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.NonRDFSource, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.NonRDFSource, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.NonRDFSource, res.getInteractionModel());
@@ -345,13 +343,12 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
         dataset.clear();
-        dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -392,13 +389,12 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.Container, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.Container, res.getInteractionModel());
@@ -428,13 +424,12 @@ public class TriplestoreResourceServiceTest {
         // Now add a child resource
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -467,14 +462,13 @@ public class TriplestoreResourceServiceTest {
 
         // Now update that child resource
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("other title"));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.seeAlso, rdf.createIRI("http://example.com"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -508,32 +502,6 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testGetBaseUrl() throws Exception {
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = spy(new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService));
-
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource5");
-        // build a dataset without the baseURL data
-        final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
-
-        assertTrue(svc.create(resource, LDP.Container, dataset).get());
-        verify(svc, never()).toExternal(resource, baseUrl);
-
-        // now do the same thing but with the baseURL data
-        dataset.clear();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
-
-        assertTrue(svc.replace(resource, LDP.Container, dataset).get());
-        verify(svc).toExternal(resource, baseUrl);
-    }
-
-    @Test
     public void testPutDeleteLdpC() throws Exception {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
@@ -543,13 +511,12 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.Container, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.Container, res.getInteractionModel());
@@ -582,13 +549,12 @@ public class TriplestoreResourceServiceTest {
         // Now add a child resource
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -622,14 +588,13 @@ public class TriplestoreResourceServiceTest {
         // Now delete the child resource
         final BlankNode bnode = rdf.createBlankNode();
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Delete);
         dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
         dataset.add(Trellis.PreferServerManaged, child, RDF.type, LDP.Resource);
 
         final Instant preDelete = meanwhile();
 
-        assertTrue(svc.delete(child, LDP.Resource, dataset).get());
+        assertTrue(svc.delete(child, mockSession, LDP.Resource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertTrue(res.isDeleted());
@@ -667,13 +632,12 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.BasicContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.BasicContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
@@ -706,13 +670,12 @@ public class TriplestoreResourceServiceTest {
         // Now add a child resource
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -745,14 +708,13 @@ public class TriplestoreResourceServiceTest {
 
         // Now update the child resource
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
         dataset.add(Trellis.PreferUserManaged, child, RDFS.seeAlso, rdf.createIRI("http://www.example.com/"));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("a label"));
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -795,7 +757,6 @@ public class TriplestoreResourceServiceTest {
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
@@ -803,7 +764,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.DirectContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -832,13 +793,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(null, members, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -873,13 +833,12 @@ public class TriplestoreResourceServiceTest {
         // Now add the child resources to the ldp-dc
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -936,7 +895,6 @@ public class TriplestoreResourceServiceTest {
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
@@ -944,7 +902,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.DirectContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -973,7 +931,6 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
-        dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
@@ -981,7 +938,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, LDP.DirectContainer, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -1010,13 +967,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(null, members, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1059,13 +1015,12 @@ public class TriplestoreResourceServiceTest {
         // Now add the child resources to the ldp-dc
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1113,13 +1068,12 @@ public class TriplestoreResourceServiceTest {
         // Now add a child resources to the other ldp-dc
         final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         dataset.clear();
-        dataset.add(null, child2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1176,7 +1130,6 @@ public class TriplestoreResourceServiceTest {
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.isMemberOfRelation, DC.relation);
@@ -1184,7 +1137,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.DirectContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -1214,7 +1167,6 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
-        dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.isMemberOfRelation, DC.subject);
@@ -1222,7 +1174,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, LDP.DirectContainer, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -1251,13 +1203,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(null, members, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1300,13 +1251,12 @@ public class TriplestoreResourceServiceTest {
         // Now add the child resources to the ldp-dc
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1352,13 +1302,12 @@ public class TriplestoreResourceServiceTest {
         // Now add a child resources to the other ldp-dc
         final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         dataset.clear();
-        dataset.add(null, child2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1413,7 +1362,6 @@ public class TriplestoreResourceServiceTest {
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
@@ -1422,7 +1370,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.IndirectContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1450,13 +1398,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(null, members, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1493,13 +1440,12 @@ public class TriplestoreResourceServiceTest {
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1556,7 +1502,6 @@ public class TriplestoreResourceServiceTest {
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
@@ -1565,7 +1510,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.IndirectContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1593,13 +1538,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(null, members, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1636,13 +1580,12 @@ public class TriplestoreResourceServiceTest {
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1699,7 +1642,6 @@ public class TriplestoreResourceServiceTest {
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
@@ -1708,7 +1650,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.IndirectContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1737,13 +1679,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(null, members, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1781,14 +1722,13 @@ public class TriplestoreResourceServiceTest {
         final Literal label1 = rdf.createLiteral("Label", "en");
         final Literal label2 = rdf.createLiteral("Zeichnung", "de");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label1);
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label2);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1848,7 +1788,6 @@ public class TriplestoreResourceServiceTest {
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
-        dataset.add(null, resource, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
@@ -1857,7 +1796,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, LDP.IndirectContainer, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1886,7 +1825,6 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
-        dataset.add(null, resource2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, RDFS.label);
@@ -1895,7 +1833,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, LDP.IndirectContainer, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.IndirectContainer, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1924,13 +1862,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(null, members, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1974,13 +1911,12 @@ public class TriplestoreResourceServiceTest {
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
-        dataset.add(null, child, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -2029,13 +1965,12 @@ public class TriplestoreResourceServiceTest {
         final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         final Literal label2 = rdf.createLiteral("label2");
         dataset.clear();
-        dataset.add(null, child2, DC.isPartOf, rdf.createIRI(baseUrl));
         dataset.add(Trellis.PreferUserManaged, child2, SKOS.prefLabel, label2);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, LDP.RDFSource, dataset).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
