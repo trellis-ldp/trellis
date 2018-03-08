@@ -234,9 +234,12 @@ public class TriplestoreResourceServiceTest {
         final ResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService,
                 mockMementoService, mockEventService);
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection).update(any(UpdateRequest.class));
+        doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection)
+            .loadDataset(any(org.apache.jena.query.Dataset.class));
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         assertFalse(svc.create(resource, mockSession, LDP.RDFSource, rdf.createDataset()).get());
+        assertFalse(svc.add(resource, mockSession, rdf.createDataset()).get());
     }
 
     @Test
@@ -256,6 +259,44 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpRs() throws Exception {
+        final Instant early = now();
+        final JenaDataset d = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
+                mockMementoService, mockEventService);
+
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+
+        final Instant later = meanwhile();
+
+        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset).get());
+        assertTrue(svc.get(resource).isPresent());
+        svc.get(resource).ifPresent(res -> {
+            assertEquals(LDP.RDFSource, res.getInteractionModel());
+            assertEquals(resource, res.getIdentifier());
+            assertFalse(res.getModified().isBefore(early));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+            assertFalse(res.getBinary().isPresent());
+            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+            assertEquals(5L, res.stream().count());
+        });
+
+        assertTrue(svc.get(root).isPresent());
+        svc.get(root).ifPresent(res -> {
+            assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            assertFalse(res.getModified().isBefore(later));
+        });
+    }
+
+    @Test
+    public void testPutLdpRsWithoutBaseUrl() throws Exception {
+        when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(empty());
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
@@ -499,6 +540,51 @@ public class TriplestoreResourceServiceTest {
         });
 
         verify(mockEventService, times(5)).emit(any());
+    }
+
+    @Test
+    public void testAddAuditTriples() throws Exception {
+        final Instant early = now();
+        final JenaDataset d = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
+                mockMementoService, mockEventService);
+
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final Dataset dataset1 = rdf.createDataset();
+        final Dataset dataset2 = rdf.createDataset();
+        dataset1.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset2.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+
+        final Instant later = meanwhile();
+
+        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset1).get());
+        assertTrue(svc.add(resource, mockSession, dataset2).get());
+        assertTrue(svc.get(resource).isPresent());
+        svc.get(resource).ifPresent(res -> {
+            assertEquals(LDP.Container, res.getInteractionModel());
+            assertEquals(resource, res.getIdentifier());
+            assertFalse(res.getModified().isBefore(early));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+            assertFalse(res.getBinary().isPresent());
+            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+            assertEquals(0L, res.stream(LDP.PreferContainment).count());
+            assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            assertEquals(5L, res.stream().count());
+            assertFalse(res.getModified().isBefore(later));
+        });
+
+        assertTrue(svc.get(root).isPresent());
+        svc.get(root).ifPresent(res -> {
+            assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            assertFalse(res.getModified().isBefore(later));
+        });
+
+        verify(mockEventService, times(2)).emit(any());
     }
 
     @Test
