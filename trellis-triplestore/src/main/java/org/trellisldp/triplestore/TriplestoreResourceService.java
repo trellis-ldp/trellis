@@ -261,23 +261,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
         eventService.ifPresent(svc -> {
             svc.emit(new SimpleEvent(getUrl(identifier, baseUrl),
-                        asList(session.getAgent()), asList(PROV.Activity, getIriFromOperationType(opType)),
+                        asList(session.getAgent()), asList(PROV.Activity, OperationType.asIRI(opType)),
                         targetTypes, inbox));
             getContainer(identifier).ifPresent(parent ->
                     emitEventsForAdjacentResources(svc, parent, session, opType, time));
         });
-    }
-
-    private IRI getIriFromOperationType(final OperationType opType) {
-        switch (opType) {
-            case DELETE:
-              return AS.Delete;
-            case CREATE:
-              return AS.Create;
-            case REPLACE:
-            default:
-              return AS.Update;
-        }
     }
 
     /**
@@ -423,7 +411,19 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     private enum OperationType {
-        DELETE, CREATE, REPLACE
+        DELETE, CREATE, REPLACE;
+
+        static IRI asIRI(final OperationType opType) {
+            switch (opType) {
+                case DELETE:
+                  return AS.Delete;
+                case CREATE:
+                  return AS.Create;
+                case REPLACE:
+                default:
+                  return AS.Update;
+            }
+        }
     }
 
     /**
