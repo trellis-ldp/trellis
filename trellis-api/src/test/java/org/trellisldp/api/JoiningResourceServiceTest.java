@@ -94,7 +94,7 @@ public class JoiningResourceServiceTest {
     private final ImmutableDataService<IRI, Resource> testImmutableService = new TestableImmutableService();
 
     private static class TestableMutableDataService extends TestableRetrievalService
-                    implements MutableDataService<IRI, Session, Resource> {
+                    implements MutableDataService<IRI, Resource> {
 
         @Override
         public Future<Boolean> create(final IRI identifier, final Session session, final Resource resource) {
@@ -115,12 +115,12 @@ public class JoiningResourceServiceTest {
         }
     };
 
-    private final MutableDataService<IRI, Session, Resource> testMutableService = new TestableMutableDataService();
+    private final MutableDataService<IRI, Resource> testMutableService = new TestableMutableDataService();
 
     private static class TestableJoiningResourceService extends JoiningResourceService {
 
         public TestableJoiningResourceService(final ImmutableDataService<IRI, Resource> immutableData,
-                        final MutableDataService<IRI, Session, Resource> mutableData) {
+                        final MutableDataService<IRI, Resource> mutableData) {
             super(mutableData, immutableData);
         }
 

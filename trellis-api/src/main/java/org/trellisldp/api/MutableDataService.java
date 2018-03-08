@@ -21,10 +21,9 @@ import java.util.concurrent.Future;
  *
  * @author ajs6f
  * @param <T> the type of identifier used by this service
- * @param <U> the type of session context used by this service
- * @param <V> the type of resource that can be persisted by this service
+ * @param <U> the type of resource that can be persisted by this service
  */
-public interface MutableDataService<T, U, V> extends RetrievalService<T, V> {
+public interface MutableDataService<T, U> extends RetrievalService<T, U> {
 
     /**
      * @param identifier the identifier for the resource to persist
@@ -32,7 +31,7 @@ public interface MutableDataService<T, U, V> extends RetrievalService<T, V> {
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> create(T identifier, U session, V resource);
+    Future<Boolean> create(T identifier, Session session, U resource);
 
     /**
      * @param identifier the identifier for the resource to persist
@@ -40,7 +39,7 @@ public interface MutableDataService<T, U, V> extends RetrievalService<T, V> {
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> replace(T identifier, U session, V resource);
+    Future<Boolean> replace(T identifier, Session session, U resource);
 
     /**
      * @param identifier the identifier for the resource to delete
@@ -48,6 +47,6 @@ public interface MutableDataService<T, U, V> extends RetrievalService<T, V> {
      * @param resource a resource to delete
      * @return whether the resource was successfully deleted
      */
-    Future<Boolean> delete(T identifier, U session, V resource);
+    Future<Boolean> delete(T identifier, Session session, U resource);
 
 }

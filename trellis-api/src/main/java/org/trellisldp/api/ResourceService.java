@@ -39,7 +39,7 @@ import org.apache.commons.rdf.api.Triple;
  *
  * @author acoburn
  */
-public interface ResourceService extends MutableDataService<IRI, Session, Resource>,
+public interface ResourceService extends MutableDataService<IRI, Resource>,
        ImmutableDataService<IRI, Resource> {
 
     @Override
