@@ -93,24 +93,47 @@ public class DeleteHandler extends BaseLdpHandler {
                     triples.map(t -> rdf.createQuad(PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
                         .forEachOrdered(dataset::add);
                 }
-            }
 
-            // delete the resource
-            if (resourceService.delete(res.getIdentifier(), session, LDP.Resource, dataset.asDataset()).get()) {
+                // Note: when deleting ACL resources, the resource itself is not removed and so this is really
+                // more of an update operation. As such, the `replace` method is used and an `update` Audit event
+                // is generated.
 
-                // Add the audit quads
-                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    audit.deletion(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                                    .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(res.getIdentifier(), session, auditDataset.asDataset()).get()) {
-                        LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
-                        LOGGER.error("because unable to write audit quads: \n{}",
+                // update the resource
+                if (resourceService.replace(res.getIdentifier(), session, LDP.Resource, dataset.asDataset()).get()) {
+
+                    // Add the audit quads
+                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                        audit.update(res.getIdentifier(), session).stream()
+                            .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
+                        if (!resourceService.add(res.getIdentifier(), session, auditDataset.asDataset()).get()) {
+                            LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
+                            LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        return serverError().entity("Unable to write audit information. "
+                            return serverError().entity("Unable to write audit information. "
                                         + "Please consult the logs for more information");
+                        }
                     }
+                    return status(NO_CONTENT);
                 }
-                return status(NO_CONTENT);
+
+            } else {
+                // delete the resource
+                if (resourceService.delete(res.getIdentifier(), session, LDP.Resource, dataset.asDataset()).get()) {
+
+                    // Add the audit quads
+                    try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
+                        audit.deletion(res.getIdentifier(), session).stream()
+                            .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
+                        if (!resourceService.add(res.getIdentifier(), session, auditDataset.asDataset()).get()) {
+                            LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
+                            LOGGER.error("because unable to write audit quads: \n{}",
+                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
+                            return serverError().entity("Unable to write audit information. "
+                                        + "Please consult the logs for more information");
+                        }
+                    }
+                    return status(NO_CONTENT);
+                }
             }
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error deleting resource: {}", ex.getMessage());
