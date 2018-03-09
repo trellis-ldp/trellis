@@ -66,9 +66,9 @@ public class ResourceServiceTest {
     private static Resource mockResource;
 
     @Mock
-    private RetrievalService<IRI, Resource> mockRetrievalService;
+    private RetrievalService<Resource> mockRetrievalService;
 
-    private static class MyRetrievalService implements RetrievalService<IRI, Resource> {
+    private static class MyRetrievalService implements RetrievalService<Resource> {
         @Override
         public Optional<Resource> get(final IRI id) {
             return of(mockResource);
@@ -94,7 +94,7 @@ public class ResourceServiceTest {
 
     @Test
     public void testRetrievalService2() {
-        final RetrievalService<IRI, Resource> svc = new MyRetrievalService();
+        final RetrievalService<Resource> svc = new MyRetrievalService();
         final Optional<? extends Resource> res = svc.get(existing);
         final Optional<? extends Resource> res2 = svc.get(existing, now());
         assertTrue(res.isPresent());

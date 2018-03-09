@@ -16,14 +16,15 @@ package org.trellisldp.api;
 
 import java.util.concurrent.Future;
 
+import org.apache.commons.rdf.api.IRI;
+
 /**
  * A service that persists resources by <i>replacing</i> their records.
  *
  * @author ajs6f
- * @param <T> the type of identifier used by this service
  * @param <U> the type of resource that can be persisted by this service
  */
-public interface MutableDataService<T, U> extends RetrievalService<T, U> {
+public interface MutableDataService<U> extends RetrievalService<U> {
 
     /**
      * @param identifier the identifier for the resource to persist
@@ -31,7 +32,7 @@ public interface MutableDataService<T, U> extends RetrievalService<T, U> {
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> create(T identifier, Session session, U resource);
+    Future<Boolean> create(IRI identifier, Session session, U resource);
 
     /**
      * @param identifier the identifier for the resource to persist
@@ -39,7 +40,7 @@ public interface MutableDataService<T, U> extends RetrievalService<T, U> {
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> replace(T identifier, Session session, U resource);
+    Future<Boolean> replace(IRI identifier, Session session, U resource);
 
     /**
      * @param identifier the identifier for the resource to delete
@@ -47,6 +48,6 @@ public interface MutableDataService<T, U> extends RetrievalService<T, U> {
      * @param resource a resource to delete
      * @return whether the resource was successfully deleted
      */
-    Future<Boolean> delete(T identifier, Session session, U resource);
+    Future<Boolean> delete(IRI identifier, Session session, U resource);
 
 }
