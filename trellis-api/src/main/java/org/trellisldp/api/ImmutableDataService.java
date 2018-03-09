@@ -16,16 +16,17 @@ package org.trellisldp.api;
 
 import java.util.concurrent.Future;
 
+import org.apache.commons.rdf.api.IRI;
+
 /**
  * A service that persists resources by appending to their records. Nothing that
  * is recorded by {@link #add} will be deleted by using {@code add} again.
  * 
  * @author ajs6f
  *
- * @param <T> the type of identifier for resources that can be persisted by this service
- * @param <U> the type of resource that can be persisted by this service
+ * @param <T> the type of resource that can be persisted by this service
  */
-public interface ImmutableDataService<T, U> extends RetrievalService<T, U> {
+public interface ImmutableDataService<T> extends RetrievalService<T> {
 
     /**
      * @param identifier the identifier under which to persist a resource
@@ -33,5 +34,5 @@ public interface ImmutableDataService<T, U> extends RetrievalService<T, U> {
      * @param resource a resource to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> add(T identifier, Session session, U resource);
+    Future<Boolean> add(IRI identifier, Session session, T resource);
 }

@@ -66,7 +66,7 @@ public class JoiningResourceServiceTest {
 
     private static IRI badId = createIRI("http://bad.com");
 
-    private static class TestableRetrievalService implements RetrievalService<IRI, Resource> {
+    private static class TestableRetrievalService implements RetrievalService<Resource> {
 
         protected final Map<IRI, Resource> resources = synchronizedMap(new HashMap<>());
 
@@ -82,7 +82,7 @@ public class JoiningResourceServiceTest {
     }
 
     private static class TestableImmutableService extends TestableRetrievalService
-                    implements ImmutableDataService<IRI, Resource> {
+                    implements ImmutableDataService<Resource> {
 
         @Override
         public Future<Boolean> add(final IRI identifier, final Session session, final Resource newRes) {
@@ -91,10 +91,10 @@ public class JoiningResourceServiceTest {
         }
     }
 
-    private final ImmutableDataService<IRI, Resource> testImmutableService = new TestableImmutableService();
+    private final ImmutableDataService<Resource> testImmutableService = new TestableImmutableService();
 
     private static class TestableMutableDataService extends TestableRetrievalService
-                    implements MutableDataService<IRI, Resource> {
+                    implements MutableDataService<Resource> {
 
         @Override
         public Future<Boolean> create(final IRI identifier, final Session session, final Resource resource) {
@@ -115,12 +115,12 @@ public class JoiningResourceServiceTest {
         }
     };
 
-    private final MutableDataService<IRI, Resource> testMutableService = new TestableMutableDataService();
+    private final MutableDataService<Resource> testMutableService = new TestableMutableDataService();
 
     private static class TestableJoiningResourceService extends JoiningResourceService {
 
-        public TestableJoiningResourceService(final ImmutableDataService<IRI, Resource> immutableData,
-                        final MutableDataService<IRI, Resource> mutableData) {
+        public TestableJoiningResourceService(final ImmutableDataService<Resource> immutableData,
+                        final MutableDataService<Resource> mutableData) {
             super(mutableData, immutableData);
         }
 
