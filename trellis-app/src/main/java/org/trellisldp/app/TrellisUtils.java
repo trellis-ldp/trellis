@@ -41,7 +41,6 @@ import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.lifecycle.AutoCloseableManager;
 import io.dropwizard.setup.Environment;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -203,7 +202,7 @@ final class TrellisUtils {
     }
 
     public static EventService getNotificationService(final NotificationsConfiguration config,
-            final Environment environment) throws JMSException, IOException {
+            final Environment environment) throws JMSException {
 
         if (config.getEnabled()) {
             if (KAFKA.equals(config.getType())) {
