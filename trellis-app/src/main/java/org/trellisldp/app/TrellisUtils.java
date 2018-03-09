@@ -25,7 +25,6 @@ import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.app.config.NotificationsConfiguration.Type.AMQP;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
 import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
@@ -35,7 +34,6 @@ import static org.trellisldp.io.JenaIOService.IO_JSONLD_DOMAINS;
 import static org.trellisldp.io.JenaIOService.IO_JSONLD_PROFILES;
 
 import com.google.common.cache.Cache;
-import com.rabbitmq.client.ConnectionFactory;
 
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
@@ -44,9 +42,6 @@ import io.dropwizard.lifecycle.AutoCloseableManager;
 import io.dropwizard.setup.Environment;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +50,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -65,7 +59,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
-import org.trellisldp.amqp.AmqpPublisher;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
@@ -193,17 +186,6 @@ final class TrellisUtils {
         return factory;
     }
 
-    public static ConnectionFactory getAmqpFactory(final NotificationsConfiguration config)
-            throws URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-        final ConnectionFactory factory = new ConnectionFactory();
-        factory.setUri(config.getConnectionString());
-        if (config.any().containsKey(PW_KEY) && config.any().containsKey(UN_KEY)) {
-            factory.setUsername(config.any().get(UN_KEY));
-            factory.setPassword(config.any().get(PW_KEY));
-        }
-        return factory;
-    }
-
     private static EventService buildKafkaPublisher(final NotificationsConfiguration config,
             final Environment environment) {
         LOGGER.info("Connecting to Kafka broker at {}", config.getConnectionString());
@@ -220,19 +202,8 @@ final class TrellisUtils {
         return new JmsPublisher(jmsConnection.createSession(false, AUTO_ACKNOWLEDGE), config.getTopicName());
     }
 
-    private static EventService buildAmqpPublisher(final NotificationsConfiguration config,
-            final Environment environment) throws IOException, URISyntaxException, TimeoutException,
-            NoSuchAlgorithmException, KeyManagementException {
-        LOGGER.info("Connecting to AMQP broker at {}", config.getConnectionString());
-        final com.rabbitmq.client.Connection amqpConnection = getAmqpFactory(config).newConnection();
-        environment.lifecycle().manage(new AutoCloseableManager(amqpConnection));
-        return new AmqpPublisher(amqpConnection.createChannel(), config.getTopicName(),
-                    config.any().getOrDefault("routing.key", config.getTopicName()));
-    }
-
     public static EventService getNotificationService(final NotificationsConfiguration config,
-            final Environment environment) throws JMSException, IOException, URISyntaxException, TimeoutException,
-            NoSuchAlgorithmException, KeyManagementException {
+            final Environment environment) throws JMSException, IOException {
 
         if (config.getEnabled()) {
             if (KAFKA.equals(config.getType())) {
@@ -240,9 +211,6 @@ final class TrellisUtils {
 
             } else if (JMS.equals(config.getType())) {
                 return buildJmsPublisher(config, environment);
-
-            } else if (AMQP.equals(config.getType())) {
-                return buildAmqpPublisher(config, environment);
             }
         }
         final String status = "notifications will be disabled";

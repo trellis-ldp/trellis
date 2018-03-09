@@ -26,7 +26,7 @@ import java.util.Map;
 public class NotificationsConfiguration {
 
     public enum Type {
-        NONE, JMS, AMQP, KAFKA
+        NONE, JMS, KAFKA
     }
 
     private String topic = "trellis";

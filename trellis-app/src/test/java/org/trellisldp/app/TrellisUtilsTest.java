@@ -13,8 +13,6 @@
  */
 package org.trellisldp.app;
 
-import static com.rabbitmq.client.ConnectionFactory.DEFAULT_PASS;
-import static com.rabbitmq.client.ConnectionFactory.DEFAULT_USER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,8 +25,6 @@ import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
 import static org.trellisldp.io.JenaIOService.IO_HTML_ICON;
 import static org.trellisldp.io.JenaIOService.IO_HTML_JS;
 
-import com.rabbitmq.client.ConnectionFactory;
-
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.Jackson;
@@ -37,7 +33,6 @@ import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -171,15 +166,6 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testEventServiceAMQP() throws Exception {
-        final NotificationsConfiguration c = new NotificationsConfiguration();
-        c.setConnectionString("amqp://localhost:5672");
-        c.setEnabled(true);
-        c.setType(NotificationsConfiguration.Type.AMQP);
-        assertThrows(IOException.class, () -> TrellisUtils.getNotificationService(c, mockEnv));
-    }
-
-    @Test
     public void testEventServiceDisabled() throws Exception {
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.set("batch.size", "1000");
@@ -252,29 +238,5 @@ public class TrellisUtilsTest {
         assertEquals("user", factory3.getUserName());
         assertEquals("pass", factory3.getPassword());
         assertEquals("localhost:61616", factory3.getBrokerURL());
-    }
-
-    @Test
-    public void testGetAmqpFactory() throws Exception {
-        final NotificationsConfiguration c = new NotificationsConfiguration();
-        c.setConnectionString("amqp://localhost:5672");
-        c.setEnabled(true);
-        c.setType(NotificationsConfiguration.Type.AMQP);
-
-        final ConnectionFactory factory1 = TrellisUtils.getAmqpFactory(c);
-        assertEquals(DEFAULT_PASS, factory1.getPassword());
-        assertEquals(DEFAULT_USER, factory1.getUsername());
-
-        c.set("password", "pass");
-
-        final ConnectionFactory factory2 = TrellisUtils.getAmqpFactory(c);
-        assertEquals(DEFAULT_PASS, factory2.getPassword());
-        assertEquals(DEFAULT_USER, factory2.getUsername());
-
-        c.set("username", "user");
-
-        final ConnectionFactory factory3 = TrellisUtils.getAmqpFactory(c);
-        assertEquals("pass", factory3.getPassword());
-        assertEquals("user", factory3.getUsername());
     }
 }

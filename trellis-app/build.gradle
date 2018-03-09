@@ -33,7 +33,6 @@ dependencies {
     compile project(":trellis-event-serialization")
     compile project(":trellis-webac")
     compile project(':trellis-triplestore')
-    compile project(':trellis-amqp')
     compile project(':trellis-jms')
     compile project(':trellis-kafka')
 
