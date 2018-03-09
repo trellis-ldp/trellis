@@ -33,6 +33,7 @@ import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
 import java.time.Instant;
@@ -162,6 +163,17 @@ public class DeleteHandlerTest {
     public void testDeleteError() {
         when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
+
+        final Response res = handler.deleteResource(mockResource).build();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+    }
+
+    @Test
+    public void testDeleteACLError() {
+        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(false));
+        when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
 
         final Response res = handler.deleteResource(mockResource).build();

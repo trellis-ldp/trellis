@@ -106,7 +106,7 @@ public class DeleteHandler extends BaseLdpHandler {
                         audit.update(res.getIdentifier(), session).stream()
                             .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
                         if (!resourceService.add(res.getIdentifier(), session, auditDataset.asDataset()).get()) {
-                            LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
+                            LOGGER.error("Unable to delete ACL resource at {}", res.getIdentifier());
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
                             return serverError().entity("Unable to write audit information. "
