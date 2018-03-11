@@ -50,11 +50,6 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
 }
 
-artifacts {
-    archives javadocJar
-    archives sourceJar
-}
-
 task copyDistTask(type: Copy) {
     from 'LICENSE'
     into 'src/dist'
