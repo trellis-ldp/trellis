@@ -22,16 +22,17 @@ import io.dropwizard.testing.DropwizardTestSupport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.trellisldp.app.config.TrellisConfiguration;
-import org.trellisldp.test.AuditTests;
+import org.trellisldp.test.AuthorizationTests;
 
 /**
- * Audit tests.
+ * Authorization tests.
  */
-public class TrellisAuditTest extends AuditTests {
+public class TrellisAuthorizationTest extends AuthorizationTests {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,
                 resourceFilePath("trellis-config.yml"),
+                config("auth.basic.usersFile", resourceFilePath("users.auth")),
                 config("binaries", resourceFilePath("data") + "/binaries"),
                 config("mementos", resourceFilePath("data") + "/mementos"),
                 config("namespaces", resourceFilePath("data/namespaces.json")));
@@ -49,7 +50,6 @@ public class TrellisAuditTest extends AuditTests {
     @AfterAll
     public static void cleanup() throws Exception {
         APP.after();
-
         tearDown();
     }
 }

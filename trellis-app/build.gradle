@@ -20,18 +20,18 @@ dependencies {
     compile group: 'org.apache.jena', name: 'jena-tdb2', version: jenaVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
-    compile project(":trellis-constraint-rules")
-    compile project(":trellis-io-jena")
-    compile project(":trellis-id")
-    compile project(":trellis-api")
-    compile project(":trellis-http")
-    compile project(":trellis-vocabulary")
-    compile project(":trellis-file")
-    compile project(":trellis-namespaces")
-    compile project(":trellis-agent")
-    compile project(":trellis-audit")
-    compile project(":trellis-event-serialization")
-    compile project(":trellis-webac")
+    compile project(':trellis-constraint-rules')
+    compile project(':trellis-io-jena')
+    compile project(':trellis-id')
+    compile project(':trellis-api')
+    compile project(':trellis-http')
+    compile project(':trellis-vocabulary')
+    compile project(':trellis-file')
+    compile project(':trellis-namespaces')
+    compile project(':trellis-agent')
+    compile project(':trellis-audit')
+    compile project(':trellis-event-serialization')
+    compile project(':trellis-webac')
     compile project(':trellis-triplestore')
     compile project(':trellis-jms')
     compile project(':trellis-kafka')
@@ -48,6 +48,7 @@ dependencies {
     testCompile group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
     testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testCompile project(':trellis-test')
 }
 
 task copyDistTask(type: Copy) {

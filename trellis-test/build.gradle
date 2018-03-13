@@ -4,7 +4,7 @@ buildscript {
     }
 }
 
-description = """OSGi Integration tests for Trellis components"""
+description = """Integration tests for Trellis components"""
 
 def randomPort() {
     try {
@@ -40,22 +40,38 @@ configurations {
     }
 }
 
+sonarqube {
+    skipProject = true
+}
+
 dependencies {
+    api group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
+    api group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
+
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: jwtVersion
+    implementation group: 'javax.jms', name: 'javax.jms-api', version: jmsApiVersion
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: jaxrsVersion
+    implementation group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    implementation group: 'org.awaitility', name: 'awaitility', version: awaitilityVersion
+    implementation group: 'org.apache.activemq', name: 'activemq-client', version: activeMqVersion
+
+    implementation project(':trellis-api')
+    implementation project(':trellis-http')
+    implementation project(':trellis-io-jena')
+    implementation project(':trellis-namespaces')
+    implementation project(':trellis-vocabulary')
+
     testCompile project(':trellis-agent')
     testCompile project(':trellis-amqp')
-    testCompile project(':trellis-api')
     testCompile project(':trellis-audit')
     testCompile project(':trellis-constraint-rules')
     testCompile project(':trellis-event-serialization')
     testCompile project(':trellis-file')
-    testCompile project(':trellis-http')
     testCompile project(':trellis-id')
-    testCompile project(':trellis-io-jena')
     testCompile project(':trellis-jms')
     testCompile project(':trellis-kafka')
-    testCompile project(':trellis-namespaces')
     testCompile project(':trellis-triplestore')
-    testCompile project(':trellis-vocabulary')
     testCompile project(':trellis-webac')
     testCompile project(':trellis-karaf')
 
@@ -118,6 +134,9 @@ test {
     systemProperty 'karaf.rmiServer.port', randomPort()
     systemProperty 'karaf.rmiRegistry.port', randomPort()
 
+    jacoco {
+        enabled = false
+    }
 }
 
 tasks.test.dependsOn tasks.generateDependsFile
