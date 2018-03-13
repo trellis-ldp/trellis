@@ -1,0 +1,9 @@
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX ldp: <http://www.w3.org/ns/ldp#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc: <http://purl.org/dc/terms/>
+
+<> skos:prefLabel "Indirect Container"@eng ;
+   ldp:hasMemberRelation ldp:member ;
+   ldp:insertedContentRelation foaf:primaryTopic ;
+   dc:description "This is an Indirect Container for testing."@eng .

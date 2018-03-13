@@ -1,0 +1,6 @@
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX dc: <http://purl.org/dc/terms/>
+
+<> a skos:Concept ;
+   skos:prefLabel "Resource Name"@eng ;
+   dc:subject <http://example.org/subject/1> .
