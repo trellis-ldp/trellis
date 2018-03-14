@@ -19,7 +19,6 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Link.fromUri;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -45,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -106,6 +106,9 @@ public class PostHandlerTest {
 
     @Mock
     private LdpRequest mockRequest;
+
+    @Mock
+    private Future<Boolean> mockFuture;
 
     @Captor
     private ArgumentCaptor<IRI> iriArgument;
@@ -170,8 +173,8 @@ public class PostHandlerTest {
         final AuditService badAuditService = new DefaultAuditService() {};
         final PostHandler handler = new PostHandler(mockRequest, null, entity, mockResourceService,
                         mockIoService, mockBinaryService, null, badAuditService);
-        final Response res = handler.createResource().build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+
+        assertThrows(BadRequestException.class, handler::createResource);
     }
 
     @Test
@@ -353,7 +356,7 @@ public class PostHandlerTest {
         final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockResourceService,
                         mockIoService, mockBinaryService, null, mockAuditService);
 
-        assertEquals(BAD_REQUEST, postHandler.createResource().build().getStatusInfo());
+        assertThrows(BadRequestException.class, postHandler::createResource);
     }
 
     @Test
@@ -396,6 +399,20 @@ public class PostHandlerTest {
     public void testError() throws IOException {
         when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(Session.class),
                     any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockRequest.getContentType()).thenReturn("text/turtle");
+
+        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
+        final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockResourceService,
+                        mockIoService, mockBinaryService, baseUrl, mockAuditService);
+
+        assertThrows(BadRequestException.class, postHandler::createResource);
+    }
+
+    @Test
+    public void testException() throws Exception {
+        when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
+        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(Session.class),
+                    any(IRI.class), any(Dataset.class))).thenReturn(mockFuture);
         when(mockRequest.getContentType()).thenReturn("text/turtle");
 
         final File entity = new File(getClass().getResource("/emptyData.txt").getFile());

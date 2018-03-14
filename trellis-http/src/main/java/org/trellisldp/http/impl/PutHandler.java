@@ -21,8 +21,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
@@ -51,6 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -179,7 +179,7 @@ public class PutHandler extends ContentBearingHandler {
         // It is not possible to change the LDP type to a type that is not a subclass
         if (nonNull(res) && !isBinaryDescription && ldpResourceTypes(ldpType)
                 .noneMatch(res.getInteractionModel()::equals)) {
-            return status(CONFLICT).entity("Cannot change the LDP type to " + ldpType).type(TEXT_PLAIN);
+            return status(CONFLICT).entity("Cannot change the LDP type to " + ldpType).type(TEXT_PLAIN_TYPE);
         }
 
         final IRI internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
@@ -195,7 +195,7 @@ public class PutHandler extends ContentBearingHandler {
             if (isBinaryRequest(ldpType, rdfSyntax)) {
                 // Check the expected digest value
                 if (isBadDigest(req.getDigest())) {
-                    return status(BAD_REQUEST);
+                    throw new BadRequestException("Supplied digest value does not match server-computed digest.");
                 }
 
                 final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(req.getContentType())
@@ -247,8 +247,8 @@ public class PutHandler extends ContentBearingHandler {
                         LOGGER.error("Unable to place or replace resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        return serverError().entity("Unable to write audit information. "
-                                        + "Please consult the logs for more information");
+                        throw new BadRequestException("Unable to write audit information. Please consult the logs for "
+                                + "more information");
                     }
                 }
 
@@ -257,12 +257,16 @@ public class PutHandler extends ContentBearingHandler {
                     .forEach(type -> builder.link(type, "type"));
                 return builder;
             }
+
+            throw new BadRequestException("Unable to save resource to persistence layer. Please consult the logs for "
+                    + "more information.");
+
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error persisting data: {}", ex.getMessage());
         }
 
         LOGGER.error("Unable to persist data to location at {}", internalId.getIRIString());
-        return serverError().type(TEXT_PLAIN)
+        return serverError().type(TEXT_PLAIN_TYPE)
             .entity("Unable to persist data. Please consult the logs for more information");
     }
 

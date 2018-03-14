@@ -28,6 +28,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -109,8 +110,8 @@ public class DeleteHandler extends BaseLdpHandler {
                             LOGGER.error("Unable to delete ACL resource at {}", res.getIdentifier());
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                            return serverError().entity("Unable to write audit information. "
-                                        + "Please consult the logs for more information");
+                            throw new BadRequestException("Unable to write audit information. "
+                                    + "Please consult the logs for more information.");
                         }
                     }
                     return status(NO_CONTENT);
@@ -128,13 +129,17 @@ public class DeleteHandler extends BaseLdpHandler {
                             LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                            return serverError().entity("Unable to write audit information. "
-                                        + "Please consult the logs for more information");
+                            throw new BadRequestException("Unable to write audit information. Please consult the logs "
+                                    + "for more information.");
                         }
                     }
                     return status(NO_CONTENT);
                 }
             }
+
+            throw new BadRequestException("Unable to save resource to persistence layer. Please consult the logs for "
+                    + "more information.");
+
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error deleting resource: {}", ex.getMessage());
         }

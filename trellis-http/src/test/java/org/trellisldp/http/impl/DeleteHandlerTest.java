@@ -37,8 +37,10 @@ import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
 import java.time.Instant;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Request;
@@ -94,6 +96,9 @@ public class DeleteHandlerTest {
 
     @Mock
     private LdpRequest mockLdpRequest;
+
+    @Mock
+    private Future<Boolean> mockFuture;
 
     @BeforeEach
     public void setUp() {
@@ -155,8 +160,8 @@ public class DeleteHandlerTest {
             .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, badAuditService, null);
-        final Response res = handler.deleteResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+
+        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
     }
 
     @Test
@@ -165,9 +170,20 @@ public class DeleteHandlerTest {
             .thenReturn(completedFuture(false));
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
 
+        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
+    }
+
+    @Test
+    public void testDeleteException() throws Exception {
+        when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
+        when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(mockFuture);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
+
         final Response res = handler.deleteResource(mockResource).build();
         assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
+
 
     @Test
     public void testDeleteACLError() {
@@ -176,8 +192,7 @@ public class DeleteHandlerTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
 
-        final Response res = handler.deleteResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
     }
 
     @Test
@@ -189,8 +204,7 @@ public class DeleteHandlerTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
 
-        final Response res = handler.deleteResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
     }
 
 
