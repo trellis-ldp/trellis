@@ -8,7 +8,7 @@ ext {
 
 dependencies {
     api project(':trellis-api')
-    api group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.javax-inject', version: javaxInjectVersion
+    api group: 'javax.inject', name: 'javax.inject', version: javaxInjectVersion
 
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion

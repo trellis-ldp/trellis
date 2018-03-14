@@ -9,9 +9,9 @@ ext {
 dependencies {
     api group: 'io.dropwizard.metrics', name: 'metrics-annotation', version: metricsVersion
     api group: 'javax.annotation', name: 'javax.annotation-api', version: javaxAnnotationsVersion
+    api group: 'javax.inject', name: 'javax.inject', version: javaxInjectVersion
     api group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: jaxrsVersion
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    api group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.javax-inject', version: javaxInjectVersion
     api project(':trellis-api')
 
     implementation group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
