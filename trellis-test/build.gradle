@@ -19,13 +19,6 @@ def randomPort() {
     }
 }
 
-ext {
-    karafVersion = '4.1.5'
-    osgiVersion = '6.0.0'
-    osgiCompendiumVersion = '5.0.0'
-	paxExamVersion = '4.11.0'
-}
-
 repositories {
   jcenter()
   mavenLocal()

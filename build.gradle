@@ -101,6 +101,10 @@ subprojects {
         xercesVersion = '2.11.0'
 
         /* OSGi */
+        karafVersion = '4.1.5'
+        osgiVersion = '6.0.0'
+        osgiCompendiumVersion = '5.0.0'
+        paxExamVersion = '4.11.0'
         spiflyVersion = '1.0.8'
         projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
         jenaVersionRange = '[3.5,4)'
@@ -265,6 +269,7 @@ task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
     destinationDir = new File(projectDir, "docs/apidocs")
     title = "Trellis Linked Data Server Documentation"
     exclude '**/impl/*'
+    exclude '**/*Tests.java'
     options {
         memberLevel = JavadocMemberLevel.PUBLIC
         links "https://docs.oracle.com/javase/8/docs/api/"
