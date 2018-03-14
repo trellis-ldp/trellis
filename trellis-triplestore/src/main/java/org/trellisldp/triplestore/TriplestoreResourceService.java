@@ -92,6 +92,7 @@ import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.ACL;
@@ -215,11 +216,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                             svc.put(identifier, eventTime, res.stream())));
             }
             emitEvents(identifier, session, type, time, dataset);
-            return true;
         } catch (final Exception ex) {
             LOGGER.error("Could not update data: {}", ex.getMessage());
+            throw new RuntimeTrellisException(ex);
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -670,8 +671,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                 return true;
             } catch (final Exception ex) {
                 LOGGER.error("Error storing audit dataset: {}", ex.getMessage());
+                throw new RuntimeTrellisException(ex);
             }
-            return false;
         });
     }
 

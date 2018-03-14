@@ -38,6 +38,7 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 
 import java.time.Instant;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
@@ -238,8 +239,9 @@ public class TriplestoreResourceServiceTest {
             .loadDataset(any(org.apache.jena.query.Dataset.class));
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        assertFalse(svc.create(resource, mockSession, LDP.RDFSource, rdf.createDataset()).get());
-        assertFalse(svc.add(resource, mockSession, rdf.createDataset()).get());
+        assertThrows(ExecutionException.class, () ->
+                svc.create(resource, mockSession, LDP.RDFSource, rdf.createDataset()).get());
+        assertThrows(ExecutionException.class, () -> svc.add(resource, mockSession, rdf.createDataset()).get());
     }
 
     @Test
