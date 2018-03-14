@@ -49,6 +49,7 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.concurrent.Future;
 import java.util.function.Predicate;
 
 import javax.ws.rs.BadRequestException;
@@ -118,6 +119,9 @@ public class PatchHandlerTest {
     @Mock
     private HttpHeaders mockHttpHeaders;
 
+    @Mock
+    private Future<Boolean> mockFuture;
+
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -154,7 +158,7 @@ public class PatchHandlerTest {
     public void testPatchNoSparql() {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null,
                 mockAuditService, mockResourceService, mockIoService, null);
-        assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource).build());
+        assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource));
     }
 
     @Test
@@ -168,8 +172,7 @@ public class PatchHandlerTest {
         final AuditService badAuditService = new DefaultAuditService() {};
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", badAuditService, mockResourceService,
                         mockIoService, null);
-        final Response res = handler.updateResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(BadRequestException.class, () -> handler.updateResource(mockResource));
     }
 
     @Test
@@ -270,6 +273,19 @@ public class PatchHandlerTest {
     public void testError() {
         when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
                     any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockLdpRequest.getPath()).thenReturn("resource");
+
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockAuditService,
+                        mockResourceService, mockIoService, null);
+
+        assertThrows(BadRequestException.class, () -> patchHandler.updateResource(mockResource));
+    }
+
+    @Test
+    public void testException() throws Exception {
+        when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
+                    any(IRI.class), any(Dataset.class))).thenReturn(mockFuture);
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockAuditService,

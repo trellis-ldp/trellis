@@ -21,8 +21,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
@@ -41,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -118,7 +118,7 @@ public class PostHandler extends ContentBearingHandler {
             .filter(l -> !LDP.Resource.equals(l)).orElse(defaultType);
 
         if (ldpType.equals(LDP.NonRDFSource) && rdfSyntax.isPresent()) {
-            return status(BAD_REQUEST).type(TEXT_PLAIN).entity("Cannot save a NonRDFSource with RDF syntax");
+            throw new BadRequestException("Cannot save a NonRDFSource with RDF syntax");
         }
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
@@ -130,7 +130,7 @@ public class PostHandler extends ContentBearingHandler {
                 // Check the expected digest value
                 final Digest digest = req.getDigest();
                 if (nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest())) {
-                    return status(BAD_REQUEST);
+                    throw new BadRequestException("Supplied digest value does not match server-computed digest");
                 }
 
                 final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(contentType)
@@ -164,8 +164,8 @@ public class PostHandler extends ContentBearingHandler {
                         LOGGER.error("Unable to act against resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        return serverError().entity("Unable to write audit information. "
-                                        + "Please consult the logs for more information");
+                        throw new BadRequestException("Unable to write audit information. Please consult "
+                                + "the logs for more information.");
                         }
                 }
 
@@ -176,12 +176,15 @@ public class PostHandler extends ContentBearingHandler {
 
                 return builder;
             }
+            throw new BadRequestException("Unable to save resource to persistence layer. Please consult the logs "
+                    + "for more information.");
+
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error persisting data: {}", ex.getMessage());
         }
 
         LOGGER.error("Unable to persist data to location at {}", internalId.getIRIString());
-        return serverError().type(TEXT_PLAIN)
+        return serverError().type(TEXT_PLAIN_TYPE)
             .entity("Unable to persist data. Please consult the logs for more information");
     }
 }

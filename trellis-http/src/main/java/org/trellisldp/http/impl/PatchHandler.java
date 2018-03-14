@@ -19,8 +19,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
@@ -134,7 +133,7 @@ public class PatchHandler extends BaseLdpHandler {
         final String identifier = baseUrl + req.getPath() + (ACL.equals(req.getExt()) ? "?ext=acl" : "");
 
         if (isNull(sparqlUpdate)) {
-            throw new WebApplicationException("Missing Sparql-Update body", BAD_REQUEST);
+            throw new BadRequestException("Missing Sparql-Update body");
         }
         final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
@@ -202,8 +201,8 @@ public class PatchHandler extends BaseLdpHandler {
                         LOGGER.error("Unable to update resource at {}", res.getIdentifier());
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        return serverError().entity("Unable to write audit information. "
-                                        + "Please consult the logs for more information");
+                        throw new BadRequestException("Unable to write audit information. "
+                                + "Please consult the logs for more information");
                         }
                 }
 
@@ -230,12 +229,15 @@ public class PatchHandler extends BaseLdpHandler {
                                .entity(stream);
                     }).orElseGet(() -> builder.status(NO_CONTENT));
             }
+            throw new BadRequestException("Unable to save resource to persistence layer. "
+                    + "Please consult the logs for more information.");
+
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error persisting data: {}", ex.getMessage());
         }
 
         LOGGER.error("Unable to persist data to location at {}", res.getIdentifier());
-        return serverError().type(TEXT_PLAIN)
+        return serverError().type(TEXT_PLAIN_TYPE)
             .entity("Unable to persist data. Please consult the logs for more information");
     }
 

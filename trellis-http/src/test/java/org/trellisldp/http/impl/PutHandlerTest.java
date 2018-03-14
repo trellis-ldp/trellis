@@ -48,8 +48,10 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.concurrent.Future;
 import java.util.function.Predicate;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
@@ -114,6 +116,9 @@ public class PutHandlerTest {
 
     @Mock
     private LdpRequest mockLdpRequest;
+
+    @Mock
+    private Future<Boolean> mockFuture;
 
     @Captor
     private ArgumentCaptor<Dataset> dataset;
@@ -180,8 +185,8 @@ public class PutHandlerTest {
         final AuditService badAuditService = new DefaultAuditService() {};
         final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, badAuditService,
                         mockIoService, mockBinaryService, null);
-        final Response res = putHandler.setResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+
+        assertThrows(BadRequestException.class, () -> putHandler.setResource(mockResource));
     }
 
     @Test
@@ -375,6 +380,22 @@ public class PutHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
                     any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
+        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
+
+        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
+        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, mockAuditService,
+                        mockIoService, mockBinaryService, null);
+
+        assertThrows(BadRequestException.class, () -> putHandler.setResource(mockResource));
+    }
+
+    @Test
+    public void testException() throws Exception {
+        when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
+        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
+                    any(IRI.class), any(Dataset.class))).thenReturn(mockFuture);
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 
