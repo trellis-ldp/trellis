@@ -8,7 +8,7 @@ ext {
 
 dependencies {
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    api group: 'javax.inject', name: 'javax.inject', version: javaxInjectVersion
+    api group: 'org.glassfish.hk2.external', name: 'javax.inject', version: javaxInjectVersion
     api project(':trellis-api')
 
     implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion

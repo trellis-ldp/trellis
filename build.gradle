@@ -71,7 +71,7 @@ subprojects {
         dropwizardVersion = '1.2.4'
         jacksonVersion = '2.9.4'
         javaxAnnotationsVersion = '1.3.2'
-        javaxInjectVersion = '1'
+        javaxInjectVersion = '2.4.0'
         javaxJsonVersion = '1.1.2'
         jaxrsVersion = '2.1'
         jenaVersion = '3.6.0'
