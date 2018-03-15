@@ -18,15 +18,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
-import static org.apache.jena.riot.Lang.NQUADS;
-import static org.apache.jena.riot.RDFParser.fromString;
-import static org.apache.jena.sparql.core.DatasetGraphFactory.create;
+import static org.apache.jena.riot.tokens.TokenizerFactory.makeTokenizerString;
+import static org.apache.jena.sparql.core.Quad.create;
+import static org.apache.jena.sparql.core.Quad.defaultGraphIRI;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.zip.CRC32;
@@ -34,8 +37,8 @@ import java.util.zip.CRC32;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.jena.JenaRDF;
-import org.apache.jena.riot.RiotException;
-import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.riot.tokens.Token;
 import org.slf4j.Logger;
 
 /**
@@ -79,14 +82,20 @@ public final class FileUtils {
      * @return the Quad
      */
     public static Optional<Quad> parseQuad(final String line) {
-        final DatasetGraph dataset = create();
-        try {
-            fromString(line).lang(NQUADS).parse(dataset);
-        } catch (final RiotException ex) {
+        final List<Token> tokens = new ArrayList<>();
+        makeTokenizerString(line).forEachRemaining(tokens::add);
+
+        final List<Node> nodes = tokens.stream().filter(Token::isNode).map(Token::asNode).filter(Objects::nonNull)
+            .collect(toList());
+
+        if (nodes.size() == 3) {
+            return of(rdf.asQuad(create(defaultGraphIRI, nodes.get(0), nodes.get(1), nodes.get(2))));
+        } else if (nodes.size() == 4) {
+            return of(rdf.asQuad(create(nodes.get(3), nodes.get(0), nodes.get(1), nodes.get(2))));
+        } else {
             LOGGER.warn("Skipping invalid data value: {}", line);
             return empty();
         }
-        return of(dataset.find()).filter(Iterator::hasNext).map(Iterator::next).map(rdf::asQuad);
     }
 
     /**
