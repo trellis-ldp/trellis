@@ -87,7 +87,7 @@ public class Range {
                     final Integer[] ints = new Integer[2];
                     ints[0] = parseInt(parts[0]);
                     ints[1] = parseInt(parts[1]);
-                    if (ints[0] >= 0 && ints[1] > ints[0]) {
+                    if (ints[1] > ints[0]) {
                         return of(ints);
                     }
                     LOGGER.warn("Ignoring range request: {}", range);
