@@ -126,6 +126,9 @@ test {
     systemProperty 'karaf.rmiServer.port', randomPort()
     systemProperty 'karaf.rmiRegistry.port', randomPort()
 
+    // TODO - re-enable testing for JDK 10 once karaf support catches up
+    enabled = ! JavaVersion.current().isJava10Compatible()
+
     jacoco {
         enabled = false
     }

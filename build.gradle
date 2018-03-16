@@ -40,7 +40,6 @@ allprojects {
             signTag = true
         }
     }
-
 }
 
 subprojects {
@@ -120,6 +119,11 @@ subprojects {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
         if (org.gradle.internal.jvm.Jvm.current().getJavaVersion().isJava9Compatible()) {
             jvmArgs '--add-modules', 'java.xml.bind'
+        }
+
+        jacoco {
+            // TODO - re-enable Jacoco for JDK 10 once support catches up
+            enabled = ! JavaVersion.current().isJava10Compatible()
         }
     }
 
@@ -244,7 +248,6 @@ subprojects {
         }
     }
 
-
     task docs(type: Javadoc) {
         outputs.upToDateWhen { false }
         source sourceSets.main.allJava
@@ -291,7 +294,6 @@ sonarqube {
         property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis.git"
     }
 }
-
 
 task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     dependsOn = subprojects.test
