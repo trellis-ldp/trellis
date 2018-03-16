@@ -257,7 +257,14 @@ subprojects {
             links "https://docs.oracle.com/javase/8/docs/api/"
             links 'https://docs.oracle.com/javaee/7/api/'
             links 'https://trellis-ldp.github.io/trellis/apidocs/'
+            links 'https://commons.apache.org/proper/commons-lang/javadocs/api-3.7/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
+            links 'https://activemq.apache.org/maven/5.15.3/apidocs/'
+            links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
+            links 'https://kafka.apache.org/0100/javadoc/'
+            links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
+            links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
+            links 'https://www.dropwizard.io/1.2.0/dropwizard-core/apidocs/'
         }
     }
 
@@ -278,7 +285,14 @@ task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
         links "https://docs.oracle.com/javase/8/docs/api/"
         links 'https://docs.oracle.com/javaee/7/api/'
         links 'https://trellis-ldp.github.io/trellis/apidocs/'
+        links 'https://commons.apache.org/proper/commons-lang/javadocs/api-3.7/'
         links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
+        links 'https://activemq.apache.org/maven/5.15.3/apidocs/'
+        links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
+        links 'https://kafka.apache.org/0100/javadoc/'
+        links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
+        links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
+        links 'https://www.dropwizard.io/1.2.0/dropwizard-core/apidocs/'
     }
 
     source subprojects.collect {project -> project.sourceSets.main.allJava }
