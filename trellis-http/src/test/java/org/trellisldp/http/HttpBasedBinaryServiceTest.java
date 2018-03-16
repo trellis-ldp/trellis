@@ -47,6 +47,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -99,6 +100,7 @@ public class HttpBasedBinaryServiceTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "SKIP_SSL_TESTS", matches = "true")
     public void testExists() {
 
         final BinaryService resolver = new HttpBasedBinaryService(idService);
@@ -126,6 +128,7 @@ public class HttpBasedBinaryServiceTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "SKIP_SSL_TESTS", matches = "true")
     public void testGetContent() {
         final BinaryService resolver = new HttpBasedBinaryService(idService);
 
@@ -135,6 +138,7 @@ public class HttpBasedBinaryServiceTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "SKIP_SSL_TESTS", matches = "true")
     public void testGetContentSegment() {
         final BinaryService resolver = new HttpBasedBinaryService(idService);
 
@@ -147,6 +151,7 @@ public class HttpBasedBinaryServiceTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "SKIP_SSL_TESTS", matches = "true")
     public void testGetSslContent() {
         final BinaryService resolver = new HttpBasedBinaryService(idService);
 
@@ -156,6 +161,7 @@ public class HttpBasedBinaryServiceTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "SKIP_SSL_TESTS", matches = "true")
     public void testSetContent() {
         final String contents = "A new resource";
         final BinaryService resolver = new HttpBasedBinaryService(idService);
