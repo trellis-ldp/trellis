@@ -13,13 +13,10 @@
  */
 package org.trellisldp.vocabulary;
 
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
-
 /**
  * Test the Trellis Vocabulary Class
  * @author acoburn
  */
-@DisabledIfEnvironmentVariable(named = "SKIP_SSL_TESTS", matches = "true")
 public class TrellisTest extends AbstractVocabularyTest {
 
     @Override
