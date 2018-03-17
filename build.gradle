@@ -117,9 +117,6 @@ subprojects {
 
     test {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
-        if (org.gradle.internal.jvm.Jvm.current().getJavaVersion().isJava9Compatible()) {
-            jvmArgs '--add-modules', 'java.xml.bind'
-        }
 
         jacoco {
             // TODO - re-enable Jacoco for JDK 10 once support catches up
