@@ -67,7 +67,7 @@ subprojects {
         commonsIoVersion = '2.6'
         commonsLangVersion = '3.7'
         commonsRdfVersion = '0.5.0'
-        dropwizardVersion = '1.2.4'
+        dropwizardVersion = '1.3.0'
         jacksonVersion = '2.9.4'
         javaxAnnotationsVersion = '1.3.2'
         javaxInjectVersion = '2.4.0'
@@ -261,7 +261,7 @@ subprojects {
             links 'https://kafka.apache.org/0100/javadoc/'
             links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
             links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
-            links 'https://www.dropwizard.io/1.2.0/dropwizard-core/apidocs/'
+            links 'https://www.dropwizard.io/1.3.0/dropwizard-core/apidocs/'
         }
     }
 
@@ -289,7 +289,7 @@ task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
         links 'https://kafka.apache.org/0100/javadoc/'
         links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
         links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
-        links 'https://www.dropwizard.io/1.2.0/dropwizard-core/apidocs/'
+        links 'https://www.dropwizard.io/1.3.0/dropwizard-core/apidocs/'
     }
 
     source subprojects.collect {project -> project.sourceSets.main.allJava }
