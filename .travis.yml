@@ -25,8 +25,5 @@ matrix:
     - env: JDK_RELEASE='JDK 10'
       install: . ./buildtools/src/install/install-jdk-10.sh
 
-  allow_failures:
-    - env: JDK_RELEASE='JDK 10'
-
 after_success:
     - sh ./buildtools/src/install/report.sh
