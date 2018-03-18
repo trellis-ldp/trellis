@@ -141,7 +141,7 @@ public class DeleteHandler extends BaseLdpHandler {
                     + "more information.");
 
         } catch (final InterruptedException | ExecutionException ex) {
-            LOGGER.error("Error deleting resource: {}", ex.getMessage());
+            LOGGER.error("Error deleting resource", ex);
         }
 
         LOGGER.error("Unable to delete resource at {}", res.getIdentifier());

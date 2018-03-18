@@ -262,7 +262,7 @@ public class PutHandler extends ContentBearingHandler {
                     + "more information.");
 
         } catch (final InterruptedException | ExecutionException ex) {
-            LOGGER.error("Error persisting data: {}", ex.getMessage());
+            LOGGER.error("Error persisting data", ex);
         }
 
         LOGGER.error("Unable to persist data to location at {}", internalId.getIRIString());

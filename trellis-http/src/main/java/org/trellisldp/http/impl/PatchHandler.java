@@ -115,7 +115,7 @@ public class PatchHandler extends BaseLdpHandler {
                     (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().collect(toList());
         } catch (final RuntimeTrellisException ex) {
-            LOGGER.warn(ex.getMessage());
+            LOGGER.warn("Invalid RDF: {}", ex.getMessage());
             throw new BadRequestException("Invalid RDF: " + ex.getMessage());
         }
 
@@ -233,7 +233,7 @@ public class PatchHandler extends BaseLdpHandler {
                     + "Please consult the logs for more information.");
 
         } catch (final InterruptedException | ExecutionException ex) {
-            LOGGER.error("Error persisting data: {}", ex.getMessage());
+            LOGGER.error("Error persisting data", ex);
         }
 
         LOGGER.error("Unable to persist data to location at {}", res.getIdentifier());

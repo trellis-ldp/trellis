@@ -270,6 +270,7 @@ public class GetHandler extends BaseLdpHandler {
                 try (final InputStream binary = getBinaryStream(dsid, req.getRange())) {
                     IOUtils.copy(binary, out);
                 } catch (final IOException ex) {
+                    LOGGER.error("Error writing binary content", ex);
                     throw new WebApplicationException("Error processing binary content: " +
                             ex.getMessage());
                 }
@@ -291,7 +292,7 @@ public class GetHandler extends BaseLdpHandler {
         try (final InputStream is = b.orElseThrow(() -> new WebApplicationException("Couldn't fetch binary content"))) {
             return binaryService.digest(algorithm, is);
         } catch (final IOException ex) {
-            LOGGER.error("Error computing digest on content: {}", ex.getMessage());
+            LOGGER.error("Error computing digest on content", ex);
             throw new WebApplicationException("Error handling binary content: " + ex.getMessage());
         }
     }

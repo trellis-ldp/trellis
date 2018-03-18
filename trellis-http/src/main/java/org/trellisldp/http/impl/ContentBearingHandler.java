@@ -20,6 +20,7 @@ import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
 
 import java.io.File;
@@ -38,6 +39,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintViolation;
@@ -54,6 +56,8 @@ import org.trellisldp.vocabulary.LDP;
  * @author acoburn
  */
 class ContentBearingHandler extends BaseLdpHandler {
+
+    private static final Logger LOGGER = getLogger(ContentBearingHandler.class);
 
     protected final BinaryService binaryService;
     protected final IOService ioService;
@@ -89,9 +93,11 @@ class ContentBearingHandler extends BaseLdpHandler {
                             triple.getObject()))
                 .forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
+            LOGGER.error("Invalid RDF content", ex);
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
         } catch (final IOException ex) {
-            throw new WebApplicationException("Error processing input", ex);
+            LOGGER.error("Error processing input", ex);
+            throw new WebApplicationException("Error processing input: " + ex.getMessage());
         }
     }
 
@@ -122,10 +128,12 @@ class ContentBearingHandler extends BaseLdpHandler {
         try (final InputStream input = new FileInputStream(entity)) {
             return getEncoder().encodeToString(updateDigest(getDigest(digest.getAlgorithm()), input).digest());
         } catch (final IllegalArgumentException ex) {
+            LOGGER.error("Invalid algorithm provided for digest", ex);
             throw new BadRequestException("Invalid algorithm provided for digest. " + digest.getAlgorithm() +
                     " is not supported: " + ex.getMessage());
         } catch (final IOException ex) {
-            throw new WebApplicationException("Error computing checksum on input", ex);
+            LOGGER.error("Error computing checksum", ex);
+            throw new WebApplicationException("Error computing checksum on input: " + ex.getMessage());
         }
     }
 
@@ -133,7 +141,8 @@ class ContentBearingHandler extends BaseLdpHandler {
         try (final InputStream input = new FileInputStream(entity)) {
             binaryService.setContent(contentLocation, input, metadata);
         } catch (final IOException ex) {
-            throw new WebApplicationException(ex);
+            LOGGER.error("Error saving binary content", ex);
+            throw new WebApplicationException("Error saving binary content: " + ex.getMessage());
         }
     }
 }
