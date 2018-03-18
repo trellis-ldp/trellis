@@ -113,7 +113,7 @@ public class HttpBasedBinaryService implements BinaryService {
         requireNonNull(identifier, NON_NULL_IDENTIFIER);
         final Response res = httpClient.target(identifier.getIRIString()).request().head();
         final Boolean status = res.getStatusInfo().getFamily().equals(SUCCESSFUL);
-        LOGGER.info("HTTP HEAD request to {} returned status {}", identifier, res.getStatus());
+        LOGGER.debug("HTTP HEAD request to {} returned status {}", identifier, res.getStatus());
         res.close();
         return status;
     }
@@ -130,7 +130,7 @@ public class HttpBasedBinaryService implements BinaryService {
             ranges.forEach(r -> builder.append(r.getMinimum() + "-" + r.getMaximum()));
             res = httpClient.target(identifier.getIRIString()).request().header("Range", "bytes=" + builder).get();
         }
-        LOGGER.info("HTTP GET request to {} returned status {}", identifier, res.getStatus());
+        LOGGER.debug("HTTP GET request to {} returned status {}", identifier, res.getStatus());
         if (res.hasEntity()) {
             return of(res.getEntity()).map(x -> (InputStream) x);
         }
@@ -144,7 +144,7 @@ public class HttpBasedBinaryService implements BinaryService {
         final Response res = httpClient.target(identifier.getIRIString()).request().put(entity(stream,
                     ofNullable(metadata.get(CONTENT_TYPE)).map(MediaType::valueOf)
                         .orElse(APPLICATION_OCTET_STREAM_TYPE)));
-        LOGGER.info("HTTP PUT request to {} returned {}", identifier, res.getStatusInfo());
+        LOGGER.debug("HTTP PUT request to {} returned {}", identifier, res.getStatusInfo());
         final Boolean ok = res.getStatusInfo().getFamily().equals(SUCCESSFUL);
         res.close();
         if (!ok) {
@@ -157,7 +157,7 @@ public class HttpBasedBinaryService implements BinaryService {
     public void purgeContent(final IRI identifier) {
         requireNonNull(identifier, NON_NULL_IDENTIFIER);
         final Response res = httpClient.target(identifier.getIRIString()).request().delete();
-        LOGGER.info("HTTP DELETE request to {} returned {}", identifier, res.getStatusInfo());
+        LOGGER.debug("HTTP DELETE request to {} returned {}", identifier, res.getStatusInfo());
         final Boolean ok = res.getStatusInfo().getFamily().equals(SUCCESSFUL);
         res.close();
         if (!ok) {

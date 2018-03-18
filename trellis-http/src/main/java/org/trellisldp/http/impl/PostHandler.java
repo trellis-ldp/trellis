@@ -103,7 +103,7 @@ public class PostHandler extends ContentBearingHandler {
         final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
-        LOGGER.info("Creating resource as {}", identifier);
+        LOGGER.debug("Creating resource as {}", identifier);
 
         final Optional<RDFSyntax> rdfSyntax = ofNullable(contentType).flatMap(RDFSyntax::byMediaType)
             .filter(SUPPORTED_RDF_TYPES::contains);

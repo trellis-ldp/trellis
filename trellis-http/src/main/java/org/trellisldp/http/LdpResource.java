@@ -266,27 +266,27 @@ public class LdpResource implements ContainerRequestFilter {
 
         // Fetch a versioned resource
         if (nonNull(req.getVersion())) {
-            LOGGER.info("Getting versioned resource: {}", req.getVersion());
+            LOGGER.debug("Getting versioned resource: {}", req.getVersion());
             return resourceService.get(identifier, req.getVersion().getInstant())
                 .map(getHandler::getRepresentation).orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
-            LOGGER.info("Getting timemap resource: {}", req.getPath());
+            LOGGER.debug("Getting timemap resource: {}", req.getPath());
             return resourceService.get(identifier)
                 .map(res -> new MementoResource(resourceService).getTimeMapBuilder(req, ioService, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
-            LOGGER.info("Getting timegate resource: {}", req.getDatetime().getInstant());
+            LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
             return resourceService.get(identifier, req.getDatetime().getInstant())
                 .map(res -> new MementoResource(resourceService).getTimeGateBuilder(req, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 
         // Fetch the current state of the resource
-        LOGGER.info("Getting resource at: {}", identifier);
+        LOGGER.debug("Getting resource at: {}", identifier);
         return resourceService.get(identifier).map(getHandler::getRepresentation)
             .orElseGet(() -> status(NOT_FOUND)).build();
     }

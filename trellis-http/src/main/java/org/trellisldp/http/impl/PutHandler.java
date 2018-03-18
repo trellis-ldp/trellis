@@ -161,7 +161,7 @@ public class PutHandler extends ContentBearingHandler {
             return status(NOT_ACCEPTABLE);
         }
 
-        LOGGER.info("Setting resource as {}", identifier);
+        LOGGER.debug("Setting resource as {}", identifier);
 
         final IRI heuristicType = getHeuristicType(rdfSyntax);
 
@@ -175,7 +175,7 @@ public class PutHandler extends ContentBearingHandler {
             .filter(l -> l.startsWith(LDP.URI)).map(rdf::createIRI).filter(l -> !LDP.Resource.equals(l))
             .orElse(defaultType);
 
-        LOGGER.info("Using LDP Type: {}", ldpType);
+        LOGGER.debug("Using LDP Type: {}", ldpType);
         // It is not possible to change the LDP type to a type that is not a subclass
         if (nonNull(res) && !isBinaryDescription && ldpResourceTypes(ldpType)
                 .noneMatch(res.getInteractionModel()::equals)) {
