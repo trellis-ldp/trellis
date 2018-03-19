@@ -90,7 +90,7 @@ public class FileMementoService implements MementoService {
                 writer.write(lineIter.next() + lineSeparator());
             }
         } catch (final IOException ex) {
-            LOGGER.error("Error writing resource version for {}: {}", identifier.getIRIString(), ex.getMessage());
+            LOGGER.error("Error writing resource version for " + identifier.getIRIString(), ex);
         }
     }
 
@@ -117,7 +117,7 @@ public class FileMementoService implements MementoService {
             files.map(Path::toString).filter(path -> path.endsWith(".nq")).map(FilenameUtils::getBaseName)
                 .map(Long::parseLong).map(Instant::ofEpochSecond).forEach(instants::add);
         } catch (final IOException ex) {
-            LOGGER.error("Error fetching memento list for {}: {}", identifier, ex.getMessage());
+            LOGGER.error("Error fetching memento list for " + identifier, ex);
         }
         return instants;
     }
@@ -127,7 +127,7 @@ public class FileMementoService implements MementoService {
         try {
             return deleteIfExists(getNquadsFile(FileUtils.getResourceDirectory(directory, identifier), time).toPath());
         } catch (final IOException ex) {
-            LOGGER.error("Could not delete Memento for {} at {}: {}", identifier, time, ex.getMessage());
+            LOGGER.error("Could not delete Memento for " + identifier + " at " + time, ex);
         }
         return false;
     }

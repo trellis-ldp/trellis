@@ -93,7 +93,7 @@ class ContentBearingHandler extends BaseLdpHandler {
                             triple.getObject()))
                 .forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
-            LOGGER.error("Invalid RDF content", ex);
+            LOGGER.error("Invalid RDF content: {}", ex.getMessage());
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
         } catch (final IOException ex) {
             LOGGER.error("Error processing input", ex);
@@ -128,7 +128,7 @@ class ContentBearingHandler extends BaseLdpHandler {
         try (final InputStream input = new FileInputStream(entity)) {
             return getEncoder().encodeToString(updateDigest(getDigest(digest.getAlgorithm()), input).digest());
         } catch (final IllegalArgumentException ex) {
-            LOGGER.error("Invalid algorithm provided for digest", ex);
+            LOGGER.error("Invalid algorithm provided for digest: {}", ex.getMessage());
             throw new BadRequestException("Invalid algorithm provided for digest. " + digest.getAlgorithm() +
                     " is not supported: " + ex.getMessage());
         } catch (final IOException ex) {

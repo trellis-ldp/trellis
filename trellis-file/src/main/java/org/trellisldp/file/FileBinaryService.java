@@ -204,7 +204,7 @@ public class FileBinaryService implements BinaryService {
                 stream.close();
                 return of(digest);
             } catch (final IOException ex) {
-                LOGGER.error("Error computing digest: {}", ex.getMessage());
+                LOGGER.error("Error computing digest", ex);
             }
             return empty();
         };

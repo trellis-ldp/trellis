@@ -124,7 +124,7 @@ public class Prefer {
                 return new Prefer(data.get(PREFER_RETURN), parseParameter(data.get(PREFER_INCLUDE)),
                         parseParameter(data.get(PREFER_OMIT)), params, data.get(PREFER_HANDLING), wait);
             } catch (final NumberFormatException ex) {
-                LOGGER.error("Cannot parse wait parameter value {}: {}", waitValue, ex.getMessage());
+                LOGGER.warn("Cannot parse wait parameter value {}: {}", waitValue, ex.getMessage());
             }
         }
         return null;

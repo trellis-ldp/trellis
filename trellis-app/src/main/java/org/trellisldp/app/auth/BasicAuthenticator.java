@@ -64,7 +64,7 @@ public class BasicAuthenticator implements Authenticator<BasicCredentials, Princ
                 .filter(d -> d[0].trim().equals(creds.getUsername()) && d[1].trim().equals(creds.getPassword()))
                 .map(d -> d[2].trim()).findFirst();
         } catch (final IOException ex) {
-            LOGGER.error("Error processing credentials file: {}", ex.getMessage());
+            LOGGER.error("Error processing credentials file", ex);
         }
         return empty();
     }
