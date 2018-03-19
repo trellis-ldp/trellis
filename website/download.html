@@ -33,17 +33,26 @@
 
       <h3>Trellis Implementations</h3>
 
-      <p>Known implementations of the Trellis persistence layer are included below.</p>
+      <p>
+        There are several Trellis-based applications. Each has different performance characteristics: for example,
+        the Triplestore-based server (Trellis Application) is very easy to deploy and is ideal for single-node installations. The
+        Kafka-based server (Rosid), on the other hand, is much easier to scale horizontally.
+      </p>
+
+      <section id="triplestore" typeof="doap:Project schema:SoftwareApplication">
+        <h4 property="doap:name schema:name">Trellis Application</h4>
+
+        <p property="doap:description">A Trellis implementation using an internal triplestore.</p>
+        <p><a property="doap:download-page" href="https://github.com/trellis-ldp/trellis/releases">Latest Release</a></p>
+        <p><a property="doap:repository" href="https://github.com/trellis-ldp/trellis">Source Code</a></p>
+      </section>
 
       <section id="rosid" typeof="doap:Project schema:SoftwareApplication">
         <h4 property="doap:name schema:name">Rosid</h4>
 
         <p property="doap:description">A Trellis implementation using a file-based persistence layer and an internal Kafka event bus.</p>
-
         <p><a property="doap:download-page" href="https://github.com/trellis-ldp/trellis-rosid/releases">Latest Release</a></p>
-
         <p><a property="doap:repository" href="https://github.com/trellis-ldp/trellis-rosid">Source Code</a></p>
-
         <p>Note: be sure to download both the <code>trellis-rosid-app</code> and the <code>trellis-processing</code> artifacts.</p>
       </section>
 

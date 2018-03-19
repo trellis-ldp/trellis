@@ -61,10 +61,9 @@
         <h3>Durability</h3>
         <p>
           Data integrity is vitally important for content that is stored for years and decades. Trellis makes it possible to retrieve
-          the state of any resource at any, arbitrary point in time. This also means that nothing is ever truly deleted (though if you
-          need to purge a resource from the persistence layer, there is a mechanism for that). For every operation that changes a
-          resource, there is a full audit log available through standard LDP mechanisms. This audit log lists who made what change and
-          when that change was made.
+          the state of any resource at any, arbitrary point in time. This also means that nothing is ever truly deleted. For every
+          operation that changes a resource, there is a full audit log available through standard LDP mechanisms.
+          This audit log lists who made what change and when that change was made.
         </p>
       </section>
 
@@ -83,7 +82,7 @@
           Because Trellis is built on top of <a href="https://www.w3.org/TR/ldp-primer/">LDP</a>, clients that interact with it
           tend to use a lot of RDF (e.g. <a href="https://json-ld.org/">JSON-LD</a>). Trellis
           enforces only a very minimal set of restrictions on what RDF is allowable: basically, if LDP prohibits it, Trellis does not
-          allow it, but otherwise, pretty much anything goes. You can use any RDF vocabulary; you can store binaries of any type. Any
+          allow it; otherwise, pretty much anything goes. You can use any RDF vocabulary; you can store binaries of any type. Any
           special handling of particular content types needs to be handled in another layer of your software stack.
         </p>
       </section>
