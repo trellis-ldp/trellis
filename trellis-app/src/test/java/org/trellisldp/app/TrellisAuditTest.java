@@ -15,19 +15,25 @@ package org.trellisldp.app;
 
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
+import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.DropwizardTestSupport;
 
+import javax.ws.rs.client.Client;
+
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
 import org.trellisldp.app.config.TrellisConfiguration;
-import org.trellisldp.test.AuditTests;
+import org.trellisldp.test.AbstractApplicationAuditTests;
 
 /**
  * Audit tests.
  */
-public class TrellisAuditTest extends AuditTests {
+@RunWith(JUnitPlatform.class)
+public class TrellisAuditTest extends AbstractApplicationAuditTests {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,
@@ -36,20 +42,32 @@ public class TrellisAuditTest extends AuditTests {
                 config("mementos", resourceFilePath("data") + "/mementos"),
                 config("namespaces", resourceFilePath("data/namespaces.json")));
 
-    @BeforeAll
-    public static void initialize() throws Exception {
+    private static final Client CLIENT;
+
+    static {
         APP.before();
+        CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
+        CLIENT.property(CONNECT_TIMEOUT, 5000);
+        CLIENT.property(READ_TIMEOUT, 5000);
+    }
 
-        setClient(new JerseyClientBuilder(APP.getEnvironment()).build("test client"));
-        setBaseUrl("http://localhost:" + APP.getLocalPort() + "/");
+    @Override
+    public String getJwtSecret() {
+        return "secret";
+    }
 
-        setUp();
+    @Override
+    public Client getClient() {
+        return CLIENT;
+    }
+
+    @Override
+    public String getBaseURL() {
+        return "http://localhost:" + APP.getLocalPort() + "/";
     }
 
     @AfterAll
     public static void cleanup() throws Exception {
         APP.after();
-
-        tearDown();
     }
 }
