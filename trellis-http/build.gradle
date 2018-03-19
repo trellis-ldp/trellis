@@ -40,6 +40,7 @@ dependencies {
     testImplementation project(':trellis-io-jena')
 
     testRuntimeClasspath group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
+    testRuntimeClasspath group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
     testRuntimeClasspath group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
 }
 
