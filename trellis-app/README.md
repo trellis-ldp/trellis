@@ -4,7 +4,7 @@ A deployable Trellis application using a triplestore and files.
 
 ## Requirements
 
-  * Java 8 or 9
+  * Java 8 or later
 
 ## Running Trellis
 

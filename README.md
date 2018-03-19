@@ -16,10 +16,8 @@ A [mailing list](https://groups.google.com/group/trellis-ldp) is available to an
 
 ## Downloads
 
-Core artifacts are available from Maven Central. Deployable applications, based on particular implementations will be availabe
-from the respective repositories.
-
-One such implementation, based on a distributed Kafka-based event bus can be downloaded at: https://github.com/trellis-ldp/trellis-rosid/releases
+The fastest way to get started with Trellis is to download the [latest release](https://github.com/trellis-ldp/trellis/releases)
+and follow these [installation instructions](trellis-app).
 
 ## Features
 
@@ -32,44 +30,42 @@ Trellis has been designed with four primary goals:
 
 ### Scalability
 
-Trellis has been built on components that already support horizontal scalability: Kafka, Zookeeper and Spark. While it is
+Trellis has been built from the ground up to support horizontal scalability. While it is
 possible to run Trellis on a single machine, scaling out across a cluster is well-defined and supported. Trellis is
 "eventually consistent", meaning that many operations run asynchronously. While this makes the system very responsive, it
 also means that clients cannot expect operations to be atomic. In general, per-resource operations are atomic; operations
-that cause other resources to change are handled asynchronously.
+that cause other resources to change tend to be handled asynchronously.
 
 ### Durability
 
 Data integrity is vitally important for content that is stored for years and decades. Trellis makes it possible to retrieve
-the state of any resource at any, arbitrary point in time. This also means that nothing is ever truly deleted (though if you
-need to purge a resource from the persistence layer, there is a mechanism for that). For every operation that changes a
-resource, there is a full audit log available through standard LDP mechanisms. This audit log lists who made what change and
-when that change was made.
+the state of any resource at any, arbitrary point in time. This also means that nothing is ever truly deleted. For every
+operation that changes a resource, there is a full audit log available through standard LDP mechanisms. This audit log
+lists who made what change and when that change was made.
 
 ### Modularity
 
-The overall code base for Trellis is small, and it is divided up into even smaller modules each of which can be maintained
-independently. This simplifies maintenance and it also makes it easy to customize individual components as needed. Trellis
-has also been designed to fully support OSGi deployment (scheduled for the 0.2.0 release).
+The overall code base for Trellis is small, and it is divided up into even smaller modules.
+This simplifies maintenance and it also makes it easy to customize individual components as needed. Trellis
+has also been designed to fully support OSGi deployment.
 
 ### Web Standards
 
-There are a lot of standards in existence. Trellis has selected to conform to a collection of well-defined and broadly used
-specifications because doing so provides a solid and well-understood foundation for interacting with the software. This also
-makes the Trellis API stable and consistent.
+The Trellis project has selected to conform to a collection of well-defined and broadly used specifications because
+doing so provides a solid and well-understood foundation for interacting with the software. This also makes the
+Trellis API stable and consistent.
 
 ### Flexibility
 
 Because Trellis is built on top of LDP, clients that interact with it tend to use a lot of RDF (e.g. JSON-LD). Trellis
-enforces only a very minimal set of restrictions on what RDF is allowable: basically, if LDP prohibits it, Trellis does not
-allow it, but otherwise, pretty much anything goes. You can use any RDF vocabulary; you can store binaries of any type. Any
-special handling of particular content types needs to be handled in another layer of your software stack.
+enforces only a very minimal set of restrictions on what RDF is allowable: if LDP prohibits it, Trellis does not
+allow it, but otherwise, pretty much anything goes. You can use any RDF vocabulary; you can store binaries of any type.
 
 ### External Integrations
 
 Any time a resource is created, modified or deleted, a notification is made available, making it easy to use an integration
 framework to connect Trellis to external applications. The notifications provide enough information to make informed routing
-decisions without being too heavy.
+decisions.
 
 ## Underlying specifications
 
@@ -83,7 +79,7 @@ Trellis is an [HTTP/1.1](https://tools.ietf.org/html/rfc7231) server, which comp
 
 ## Source Code
 
-All source code is open source and licensed as Apache 2. Contributions are welcome
+All source code is open source and licensed as Apache 2. Contributions are welcome.
 
 ### Trellis Vocabulary
 

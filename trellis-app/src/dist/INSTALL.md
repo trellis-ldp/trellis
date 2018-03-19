@@ -2,9 +2,7 @@
 
 ## Requirements
 
-  * Java 8 or 9
-
-The location of Kafka and Zookeeper will be defined in the `./etc/config.yml` file.
+  * Java 8 or later
 
 ## Installation
 
