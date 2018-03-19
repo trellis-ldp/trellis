@@ -32,8 +32,8 @@ Trellis has been designed with four primary goals:
 
 Trellis has been built from the ground up to support horizontal scalability. While it is
 possible to run Trellis on a single machine, scaling out across a cluster is well-defined and supported. Trellis is
-"eventually consistent", meaning that many operations run asynchronously. While this makes the system very responsive, it
-also means that clients cannot expect operations to be atomic. In general, per-resource operations are atomic; operations
+eventually consistent, which is to say that many operations run asynchronously. While this makes the system very responsive, it
+also means that clients cannot always expect operations to be atomic. In general, per-resource operations are atomic; operations
 that cause other resources to change tend to be handled asynchronously.
 
 ### Durability
@@ -108,7 +108,7 @@ based on a triplestore or local dataset. In addition, below is a list of other k
 
 ## Building
 
- * Trellis is written in Java and requires at least Java 8. It can be built with Gradle.
+ * Trellis is written in Java and requires at least Java 8. It can be built with [Gradle](https://gradle.org).
 
 ```
 $ ./gradlew install
