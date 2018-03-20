@@ -22,6 +22,8 @@ import static org.trellisldp.app.TrellisUtils.getNotificationService;
 import static org.trellisldp.app.TrellisUtils.getRDFConnection;
 import static org.trellisldp.app.TrellisUtils.getWebacConfiguration;
 
+import com.google.common.cache.Cache;
+
 import io.dropwizard.Application;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Bootstrap;
@@ -31,6 +33,7 @@ import javax.jms.JMSException;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.EventService;
@@ -39,8 +42,10 @@ import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.app.health.RDFConnectionHealthCheck;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.http.AgentAuthorizationFilter;
@@ -61,6 +66,26 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     private Environment environment;
 
+    private TrellisConfiguration config;
+
+    private EventService notificationService;
+
+    private IdentifierService idService;
+
+    private MementoService mementoService;
+
+    private TriplestoreResourceService resourceService;
+
+    private NamespaceService namespaceService;
+
+    private BinaryService binaryService;
+
+    private CacheService<String, String> profileCache;
+
+    private IOService ioService;
+
+    private AuditService auditService;
+
     /**
      * The main entry point.
      * @param args the argument list
@@ -80,33 +105,29 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         // Not currently used
     }
 
+    protected void init(final TrellisConfiguration config, final Environment environment) {
+        this.environment = environment;
+        this.config = config;
+        this.notificationService = buildNotificationService(environment);
+        this.idService = buildIdService();
+        this.mementoService = buildMementoService();
+        this.resourceService = buildResourceService(idService, mementoService, notificationService);
+        this.namespaceService = buildNamespaceService();
+        this.binaryService = buildBinaryService(idService);
+        this.profileCache = buildCacheService();
+        this.ioService = buildIoService(namespaceService, profileCache);
+        this.auditService = buildAuditService();
+    }
+
     @Override
     public void run(final TrellisConfiguration config,
                     final Environment environment) throws Exception {
-
-        this.environment = environment;
-
-        final EventService notificationService = buildNotificationService(config, environment);
-
-        final IdentifierService idService = buildIdService();
-
-        final MementoService mementoService = buildMementoService(config);
-
-        final TriplestoreResourceService resourceService = buildResourceService(config, idService, mementoService,
-                        notificationService);
-
-        final NamespaceService namespaceService = buildNamespaceService(config);
-
-        final BinaryService binaryService = buildBinaryService(config, idService);
-
-        // IO Service
-        final CacheService<String, String> profileCache = buildCacheService(config);
-        final IOService ioService = buildIoService(config, namespaceService, profileCache);
+        init(config, environment);
 
         getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
 
         // Resource matchers
-        environment.jersey().register(new LdpResource(resourceService, ioService, binaryService, resourceService,
+        environment.jersey().register(new LdpResource(resourceService, ioService, binaryService, auditService,
                                     config.getBaseUrl()));
 
         // Filters
@@ -126,36 +147,42 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
                     cors.getAllowHeaders(), cors.getExposeHeaders(), cors.getAllowCredentials(), cors.getMaxAge())));
     }
 
-    protected <T extends ResourceService> T buildResourceService(final TrellisConfiguration config,
-                    final IdentifierService idService, final MementoService mementoService,
-                    final EventService notificationService) {
+    protected <T extends ResourceService> T buildResourceService(final IdentifierService idService,
+                    final MementoService mementoService, final EventService notificationService) {
         final RDFConnection rdfConnection = getRDFConnection(config);
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
         return (T) new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
     }
 
-    protected TrellisCache<String, String> buildCacheService(final TrellisConfiguration config) {
-        return new TrellisCache<>(newBuilder().maximumSize(config.getJsonld().getCacheSize())
-                        .expireAfterAccess(config.getJsonld().getCacheExpireHours(), HOURS).build());
+    protected AuditService buildAuditService() {
+        return resourceService != null && resourceService instanceof AuditService
+                        ? resourceService
+                        : new DefaultAuditService();
     }
 
-    protected JenaIOService buildIoService(final TrellisConfiguration config, final NamespaceService namespaceService,
+    protected TrellisCache<String, String> buildCacheService() {
+        final Long cacheSize = config.getJsonld().getCacheSize();
+        final Long hours = config.getJsonld().getCacheExpireHours();
+        final Cache<String, String> cache = newBuilder().maximumSize(cacheSize).expireAfterAccess(hours, HOURS).build();
+        return new TrellisCache<>(cache);
+    }
+
+    protected JenaIOService buildIoService(final NamespaceService namespaceService,
                     final CacheService<String, String> profileCache) {
         return new JenaIOService(namespaceService, profileCache, TrellisUtils.getAssetConfiguration(config));
     }
 
-    protected FileBinaryService buildBinaryService(final TrellisConfiguration config,
-                    final IdentifierService idService) {
+    protected FileBinaryService buildBinaryService(final IdentifierService idService) {
         return new FileBinaryService(idService, config.getBinaries(), config.getBinaryHierarchyLevels(),
                         config.getBinaryHierarchyLength());
     }
 
-    protected NamespacesJsonContext buildNamespaceService(final TrellisConfiguration config) {
+    protected NamespacesJsonContext buildNamespaceService() {
         return new NamespacesJsonContext(config.getNamespaces());
     }
 
-    protected FileMementoService buildMementoService(final TrellisConfiguration config) {
+    protected FileMementoService buildMementoService() {
         return new FileMementoService(config.getMementos());
     }
 
@@ -163,8 +190,11 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         return new UUIDGenerator();
     }
 
-    protected EventService buildNotificationService(final TrellisConfiguration config, final Environment environment)
-                    throws JMSException {
-        return getNotificationService(config.getNotifications(), environment);
+    protected EventService buildNotificationService(final Environment environment) {
+        try {
+            return getNotificationService(config.getNotifications(), environment);
+        } catch (JMSException e) {
+            throw new RuntimeTrellisException(e);
+        }
     }
 }
