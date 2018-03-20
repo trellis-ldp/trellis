@@ -22,12 +22,12 @@ import static org.trellisldp.app.TrellisUtils.getNotificationService;
 import static org.trellisldp.app.TrellisUtils.getRDFConnection;
 import static org.trellisldp.app.TrellisUtils.getWebacConfiguration;
 
-import javax.jms.JMSException;
-
 import io.dropwizard.Application;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+
+import javax.jms.JMSException;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.agent.SimpleAgent;
