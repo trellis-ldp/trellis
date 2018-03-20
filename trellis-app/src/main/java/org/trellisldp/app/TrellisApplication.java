@@ -168,25 +168,25 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         return new TrellisCache<>(cache);
     }
 
-    protected JenaIOService buildIoService(final NamespaceService namespaceService,
+    protected IOService buildIoService(final NamespaceService namespaceService,
                     final CacheService<String, String> profileCache) {
         return new JenaIOService(namespaceService, profileCache, TrellisUtils.getAssetConfiguration(config));
     }
 
-    protected FileBinaryService buildBinaryService(final IdentifierService idService) {
+    protected BinaryService buildBinaryService(final IdentifierService idService) {
         return new FileBinaryService(idService, config.getBinaries(), config.getBinaryHierarchyLevels(),
                         config.getBinaryHierarchyLength());
     }
 
-    protected NamespacesJsonContext buildNamespaceService() {
+    protected NamespaceService buildNamespaceService() {
         return new NamespacesJsonContext(config.getNamespaces());
     }
 
-    protected FileMementoService buildMementoService() {
+    protected MementoService buildMementoService() {
         return new FileMementoService(config.getMementos());
     }
 
-    protected UUIDGenerator buildIdService() {
+    protected IdentifierService buildIdService() {
         return new UUIDGenerator();
     }
 
