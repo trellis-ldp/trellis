@@ -74,7 +74,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     private MementoService mementoService;
 
-    private TriplestoreResourceService resourceService;
+    private ResourceService resourceService;
 
     private NamespaceService namespaceService;
 
@@ -157,7 +157,7 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
 
     protected AuditService buildAuditService() {
         return resourceService != null && resourceService instanceof AuditService
-                        ? resourceService
+                        ? (AuditService) resourceService
                         : new DefaultAuditService();
     }
 
