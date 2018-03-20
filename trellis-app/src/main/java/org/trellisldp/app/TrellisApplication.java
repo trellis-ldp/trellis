@@ -22,6 +22,8 @@ import static org.trellisldp.app.TrellisUtils.getNotificationService;
 import static org.trellisldp.app.TrellisUtils.getRDFConnection;
 import static org.trellisldp.app.TrellisUtils.getWebacConfiguration;
 
+import javax.jms.JMSException;
+
 import io.dropwizard.Application;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Bootstrap;
@@ -36,6 +38,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.app.health.RDFConnectionHealthCheck;
 import org.trellisldp.file.FileBinaryService;
@@ -55,6 +58,8 @@ import org.trellisldp.webac.WebACService;
  * @author acoburn
  */
 public class TrellisApplication extends Application<TrellisConfiguration> {
+
+    private Environment environment;
 
     /**
      * The main entry point.
@@ -79,31 +84,24 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
     public void run(final TrellisConfiguration config,
                     final Environment environment) throws Exception {
 
-        final EventService notificationService = getNotificationService(config.getNotifications(), environment);
+        this.environment = environment;
 
-        final RDFConnection rdfConnection = getRDFConnection(config);
+        final EventService notificationService = buildNotificationService(config, environment);
 
-        final IdentifierService idService = new UUIDGenerator();
+        final IdentifierService idService = buildIdService();
 
-        final MementoService mementoService = new FileMementoService(config.getMementos());
+        final MementoService mementoService = buildMementoService(config);
 
-        final TriplestoreResourceService resourceService = new TriplestoreResourceService(rdfConnection, idService,
-                        mementoService, notificationService);
+        final TriplestoreResourceService resourceService = buildResourceService(config, idService, mementoService,
+                        notificationService);
 
-        final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
+        final NamespaceService namespaceService = buildNamespaceService(config);
 
-        final BinaryService binaryService = new FileBinaryService(idService, config.getBinaries(),
-                config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength());
+        final BinaryService binaryService = buildBinaryService(config, idService);
 
         // IO Service
-        final CacheService<String, String> profileCache = new TrellisCache<>(newBuilder()
-                .maximumSize(config.getJsonld().getCacheSize())
-                .expireAfterAccess(config.getJsonld().getCacheExpireHours(), HOURS).build());
-        final IOService ioService = new JenaIOService(namespaceService, profileCache,
-                TrellisUtils.getAssetConfiguration(config));
-
-        // Health checks
-        environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
+        final CacheService<String, String> profileCache = buildCacheService(config);
+        final IOService ioService = buildIoService(config, namespaceService, profileCache);
 
         getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
 
@@ -126,5 +124,47 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         getCorsConfiguration(config).ifPresent(cors -> environment.jersey().register(
                 new CrossOriginResourceSharingFilter(cors.getAllowOrigin(), cors.getAllowMethods(),
                     cors.getAllowHeaders(), cors.getExposeHeaders(), cors.getAllowCredentials(), cors.getMaxAge())));
+    }
+
+    protected <T extends ResourceService> T buildResourceService(final TrellisConfiguration config,
+                    final IdentifierService idService, final MementoService mementoService,
+                    final EventService notificationService) {
+        final RDFConnection rdfConnection = getRDFConnection(config);
+        // Health checks
+        environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
+        return (T) new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
+    }
+
+    protected TrellisCache<String, String> buildCacheService(final TrellisConfiguration config) {
+        return new TrellisCache<>(newBuilder().maximumSize(config.getJsonld().getCacheSize())
+                        .expireAfterAccess(config.getJsonld().getCacheExpireHours(), HOURS).build());
+    }
+
+    protected JenaIOService buildIoService(final TrellisConfiguration config, final NamespaceService namespaceService,
+                    final CacheService<String, String> profileCache) {
+        return new JenaIOService(namespaceService, profileCache, TrellisUtils.getAssetConfiguration(config));
+    }
+
+    protected FileBinaryService buildBinaryService(final TrellisConfiguration config,
+                    final IdentifierService idService) {
+        return new FileBinaryService(idService, config.getBinaries(), config.getBinaryHierarchyLevels(),
+                        config.getBinaryHierarchyLength());
+    }
+
+    protected NamespacesJsonContext buildNamespaceService(final TrellisConfiguration config) {
+        return new NamespacesJsonContext(config.getNamespaces());
+    }
+
+    protected FileMementoService buildMementoService(final TrellisConfiguration config) {
+        return new FileMementoService(config.getMementos());
+    }
+
+    protected UUIDGenerator buildIdService() {
+        return new UUIDGenerator();
+    }
+
+    protected EventService buildNotificationService(final TrellisConfiguration config, final Environment environment)
+                    throws JMSException {
+        return getNotificationService(config.getNotifications(), environment);
     }
 }
