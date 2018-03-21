@@ -121,7 +121,9 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
      * Retrieve a list of Mementos for this resource.
      *
      * @param identifier the resource identifier
-     * @return a stream of known Mementos
+     * @return a {@link List} of {@link Range}s of {@link Instant}s.
+     * Each element of the list can be used to build a link header for a single Memento
+     * (i.e. for the {@code from} and {@code until} parameters)
      */
     List<Range<Instant>> getMementos(IRI identifier);
 
