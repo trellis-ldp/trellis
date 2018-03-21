@@ -80,3 +80,10 @@ binaryHierarchyLength: 1
 
 cassandraAddress: my.cluster.node
 cassandraPort: 245993
+
+extraConfigValues:
+    one: true
+    two:
+      - "value1"
+      - "value2"
+

@@ -13,9 +13,17 @@
  */
 package org.trellisldp.app.config;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.Configuration;
+
+import static java.util.Collections.synchronizedMap;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -62,10 +70,8 @@ public class TrellisConfiguration extends Configuration {
     private String baseUrl = null;
 
     private String resourceLocation = null;
-
-    private String cassandraAddress = "localhost";
-
-    private Integer cassandraPort = 9042;
+    
+    private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
     /**
      * Get the base URL for the partition.
@@ -176,39 +182,24 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Set the Cassandra cluster address.
-     * @param addy the Cassandra cluster address
+     * Set an extra configuration value.
+     * @param name the name of this config value
+     * @param value the value to set
+     * @return this config for chaining
      */
-    @JsonProperty
-    public void setCassandraAddress(final String addy) {
-        this.cassandraAddress = addy;
+    @JsonAnySetter
+    public TrellisConfiguration setAdditionalConfig(final String name, final Object value) {
+        extras.put(name, value);
+        return this;
     }
 
     /**
-     * Get the Cassandra cluster address.
-     * @return the Cassandra cluster address
+     * Get any extra metadata.
+     * @return a {@link Map} of any extra metadata
      */
-    @JsonProperty
-    public String getCassandraAddress() {
-        return cassandraAddress;
-    }
-
-    /**
-     * Set the Cassandra cluster port.
-     * @param port the Cassandra cluster port
-     */
-    @JsonProperty
-    public void setCassandraPort(final int port) {
-        this.cassandraPort = port;
-    }
-
-    /**
-     * Get the Cassandra cluster port.
-     * @return the Cassandra cluster port
-     */
-    @JsonProperty
-    public Integer getCassandraPort() {
-        return cassandraPort;
+    @JsonAnyGetter
+    public Map<String, Object> any() {
+        return extras;
     }
 
     /**

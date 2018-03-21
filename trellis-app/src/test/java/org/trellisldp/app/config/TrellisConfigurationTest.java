@@ -13,6 +13,7 @@
  */
 package org.trellisldp.app.config;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -23,6 +24,8 @@ import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -49,8 +52,14 @@ public class TrellisConfigurationTest {
         assertNull(config.getResources());
         assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
         assertEquals((Integer) 1, config.getBinaryHierarchyLength());
-        assertEquals("my.cluster.node", config.getCassandraAddress());
-        assertEquals((Integer)245993, config.getCassandraPort());
+        assertEquals("my.cluster.node", config.any().get("cassandraAddress"));
+        assertEquals((Integer)245993, config.any().get("cassandraPort"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> extraConfig = (Map<String, Object>) config.any().get("extraConfigValues");
+        assertTrue((Boolean) extraConfig.get("one"));
+        @SuppressWarnings("unchecked")
+        List<String> list = (List<String>) extraConfig.get("two");
+        assertEquals(newArrayList("value1", "value2"), list);
     }
 
 
