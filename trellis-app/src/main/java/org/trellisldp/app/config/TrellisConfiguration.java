@@ -63,6 +63,10 @@ public class TrellisConfiguration extends Configuration {
 
     private String resourceLocation = null;
 
+    private String cassandraAddress = "localhost";
+
+    private Integer cassandraPort = 9042;
+
     /**
      * Get the base URL for the partition.
      * @return the partition baseURL
@@ -169,6 +173,42 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getResources() {
         return resourceLocation;
+    }
+
+    /**
+     * Set the Cassandra cluster address.
+     * @param addy the Cassandra cluster address
+     */
+    @JsonProperty
+    public void setCassandraAddress(final String addy) {
+        this.cassandraAddress = addy;
+    }
+
+    /**
+     * Get the Cassandra cluster address.
+     * @return the Cassandra cluster address
+     */
+    @JsonProperty
+    public String getCassandraAddress() {
+        return cassandraAddress;
+    }
+
+    /**
+     * Set the Cassandra cluster port.
+     * @param port the Cassandra cluster port
+     */
+    @JsonProperty
+    public void setCassandraPort(final int port) {
+        this.cassandraPort = port;
+    }
+
+    /**
+     * Get the Cassandra cluster port.
+     * @return the Cassandra cluster port
+     */
+    @JsonProperty
+    public Integer getCassandraPort() {
+        return cassandraPort;
     }
 
     /**

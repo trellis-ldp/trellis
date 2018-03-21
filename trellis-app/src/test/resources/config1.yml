@@ -77,3 +77,6 @@ cors:
 
 binaryHierarchyLevels: 2
 binaryHierarchyLength: 1
+
+cassandraAddress: my.cluster.node
+cassandraPort: 245993

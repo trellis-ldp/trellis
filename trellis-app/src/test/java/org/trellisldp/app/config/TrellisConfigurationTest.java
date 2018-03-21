@@ -49,6 +49,8 @@ public class TrellisConfigurationTest {
         assertNull(config.getResources());
         assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
         assertEquals((Integer) 1, config.getBinaryHierarchyLength());
+        assertEquals("my.cluster.node", config.getCassandraAddress());
+        assertEquals((Integer)245993, config.getCassandraPort());
     }
 
 
