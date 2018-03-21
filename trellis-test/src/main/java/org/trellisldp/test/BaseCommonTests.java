@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -53,7 +54,7 @@ class BaseCommonTests {
     private static Client CLIENT = null;
 
     private final IOService IO_SVC = new JenaIOService(
-            new NamespacesJsonContext(getResourcePath("/data/namespaces.json")));
+                    new NamespacesJsonContext(getResourcePath("/data/namespaces.json")), null, Collections.emptyMap());
     protected static final RDF rdf = new JenaRDF();
 
     protected static void setUp() throws Exception {
