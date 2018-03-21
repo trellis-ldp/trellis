@@ -52,7 +52,7 @@ class BaseCommonTests {
     private static String BASE_URL = null;
     private static Client CLIENT = null;
 
-    private static final IOService IO_SVC = new JenaIOService(
+    private final IOService IO_SVC = new JenaIOService(
             new NamespacesJsonContext(getResourcePath("/data/namespaces.json")));
     protected static final RDF rdf = new JenaRDF();
 
@@ -99,7 +99,7 @@ class BaseCommonTests {
         return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
     }
 
-    protected static String getResourcePath(final String path) {
+    protected String getResourcePath(final String path) {
         try {
             return new File(BaseCommonTests.class.getResource(path).toURI()).getAbsolutePath();
         } catch (final URISyntaxException ex) {
@@ -124,7 +124,7 @@ class BaseCommonTests {
         return link -> "type".equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
     }
 
-    protected static Graph readEntityAsGraph(final Object entity, final RDFSyntax syntax) {
+    protected Graph readEntityAsGraph(final Object entity, final RDFSyntax syntax) {
         final Graph g = rdf.createGraph();
         IO_SVC.read((InputStream) entity, getBaseUrl(), syntax).forEach(g::add);
         return g;
