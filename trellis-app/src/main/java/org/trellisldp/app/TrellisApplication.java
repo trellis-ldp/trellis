@@ -64,9 +64,9 @@ import org.trellisldp.webac.WebACService;
  */
 public class TrellisApplication extends Application<TrellisConfiguration> {
 
-    private Environment environment;
+    protected Environment environment;
 
-    private TrellisConfiguration config;
+    protected TrellisConfiguration config;
 
     private EventService notificationService;
 
