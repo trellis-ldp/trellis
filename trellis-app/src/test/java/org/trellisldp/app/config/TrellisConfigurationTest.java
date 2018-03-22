@@ -55,10 +55,10 @@ public class TrellisConfigurationTest {
         assertEquals("my.cluster.node", config.any().get("cassandraAddress"));
         assertEquals((Integer)245993, config.any().get("cassandraPort"));
         @SuppressWarnings("unchecked")
-        Map<String, Object> extraConfig = (Map<String, Object>) config.any().get("extraConfigValues");
+        final Map<String, Object> extraConfig = (Map<String, Object>) config.any().get("extraConfigValues");
         assertTrue((Boolean) extraConfig.get("one"));
         @SuppressWarnings("unchecked")
-        List<String> list = (List<String>) extraConfig.get("two");
+        final List<String> list = (List<String>) extraConfig.get("two");
         assertEquals(newArrayList("value1", "value2"), list);
     }
 

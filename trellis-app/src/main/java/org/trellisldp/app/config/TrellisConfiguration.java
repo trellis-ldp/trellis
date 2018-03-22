@@ -13,15 +13,14 @@
  */
 package org.trellisldp.app.config;
 
+import static java.util.Collections.synchronizedMap;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.Configuration;
 
-import static java.util.Collections.synchronizedMap;
-
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,7 +69,7 @@ public class TrellisConfiguration extends Configuration {
     private String baseUrl = null;
 
     private String resourceLocation = null;
-    
+
     private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
     /**
