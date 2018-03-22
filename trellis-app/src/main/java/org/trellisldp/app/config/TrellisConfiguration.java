@@ -13,9 +13,16 @@
  */
 package org.trellisldp.app.config;
 
+import static java.util.Collections.synchronizedMap;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.Configuration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -62,6 +69,8 @@ public class TrellisConfiguration extends Configuration {
     private String baseUrl = null;
 
     private String resourceLocation = null;
+
+    private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
     /**
      * Get the base URL for the partition.
@@ -169,6 +178,27 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public String getResources() {
         return resourceLocation;
+    }
+
+    /**
+     * Set an extra configuration value.
+     * @param name the name of this config value
+     * @param value the value to set
+     * @return this config for chaining
+     */
+    @JsonAnySetter
+    public TrellisConfiguration setAdditionalConfig(final String name, final Object value) {
+        extras.put(name, value);
+        return this;
+    }
+
+    /**
+     * Get any extra metadata.
+     * @return a {@link Map} of any extra metadata
+     */
+    @JsonAnyGetter
+    public Map<String, Object> any() {
+        return extras;
     }
 
     /**
