@@ -26,4 +26,4 @@ matrix:
       install: . ./buildtools/src/install/install-jdk-10.sh
 
 after_success:
-    - sh ./buildtools/src/install/report.sh
+    - ./gradlew jacocoRootReport coveralls sonarqube
