@@ -23,7 +23,7 @@ public class NoopNamespaceServiceTest {
 
     @Test
     public void noAction() {
-        NamespaceService testService = new NoopNamespaceService();
+        final NamespaceService testService = new NoopNamespaceService();
         testService.setPrefix("foo", "http://bar/");
         assertFalse(testService.getNamespace("foo").isPresent());
         assertTrue(testService.getNamespaces().isEmpty());
