@@ -12,7 +12,7 @@ allprojects {
     apply plugin: 'jacoco'
 
     ext {
-        jacocoVersion = '0.8.0'
+        jacocoVersion = '0.8.1'
         checkstyleVersion = '8.8'
     }
 
@@ -117,11 +117,6 @@ subprojects {
 
     test {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
-
-        jacoco {
-            // TODO - re-enable Jacoco for JDK 10 once support catches up
-            enabled = ! JavaVersion.current().isJava10Compatible()
-        }
     }
 
     checkstyle {
