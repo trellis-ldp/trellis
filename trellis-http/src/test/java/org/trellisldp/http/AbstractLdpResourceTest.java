@@ -2366,6 +2366,52 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPutAclOnDc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+    }
+
+    @Test
+    public void testPutAclOnIc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+    }
+
+    @Test
+    public void testPutOnDc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(CONFLICT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream()
+                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+    }
+
+    @Test
+    public void testPutOnIc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(CONFLICT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream()
+                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+    }
+
+    @Test
     public void testPutUploads() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", UPLOADS).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2706,6 +2752,56 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
+    @Test
+    public void testPatchOnDc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        final Response res = target(RESOURCE_PATH).request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(CONFLICT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream()
+                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+    }
+
+    @Test
+    public void testPatchOnIc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        final Response res = target(RESOURCE_PATH).request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(CONFLICT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream()
+                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+    }
+
+    @Test
+    public void testPatchAclOnDc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+    }
+
+    @Test
+    public void testPatchAclOnIc() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
     }
 
     @Test
