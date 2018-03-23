@@ -152,7 +152,9 @@ public class TrellisApplication extends Application<TrellisConfiguration> {
         final RDFConnection rdfConnection = getRDFConnection(config);
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
-        return (T) new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
+        @SuppressWarnings("unchecked")
+        final T svc = (T) new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
+        return svc;
     }
 
     protected AuditService buildAuditService() {
