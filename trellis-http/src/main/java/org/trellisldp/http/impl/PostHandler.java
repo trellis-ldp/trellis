@@ -53,7 +53,6 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -128,10 +127,7 @@ public class PostHandler extends ContentBearingHandler {
             // Add user-supplied data
             if (ldpType.equals(LDP.NonRDFSource)) {
                 // Check the expected digest value
-                final Digest digest = req.getDigest();
-                if (nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest())) {
-                    throw new BadRequestException("Supplied digest value does not match server-computed digest");
-                }
+                checkForBadDigest(req.getDigest());
 
                 final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(contentType)
                         .orElse(APPLICATION_OCTET_STREAM));
