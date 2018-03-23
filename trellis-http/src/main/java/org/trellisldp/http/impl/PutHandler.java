@@ -51,6 +51,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -177,10 +178,7 @@ public class PutHandler extends ContentBearingHandler {
 
         LOGGER.debug("Using LDP Type: {}", ldpType);
         // It is not possible to change the LDP type to a type that is not a subclass
-        if (nonNull(res) && !isBinaryDescription && ldpResourceTypes(ldpType)
-                .noneMatch(res.getInteractionModel()::equals)) {
-            return status(CONFLICT).entity("Cannot change the LDP type to " + ldpType).type(TEXT_PLAIN_TYPE);
-        }
+        checkInteractionModelChange(res, ldpType, isBinaryDescription);
 
         final IRI internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
 
@@ -194,9 +192,7 @@ public class PutHandler extends ContentBearingHandler {
             // Add user-supplied data
             if (isBinaryRequest(ldpType, rdfSyntax)) {
                 // Check the expected digest value
-                if (isBadDigest(req.getDigest())) {
-                    throw new BadRequestException("Supplied digest value does not match server-computed digest.");
-                }
+                checkForBadDigest(req.getDigest());
 
                 final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(req.getContentType())
                         .orElse(APPLICATION_OCTET_STREAM));
@@ -279,6 +275,13 @@ public class PutHandler extends ContentBearingHandler {
         return nonNull(res)
             ? resourceService.replace(internalId, session, ldpType, dataset.asDataset())
             : resourceService.create(internalId, session, ldpType, dataset.asDataset());
+    }
+
+    private void checkInteractionModelChange(final Resource res, final IRI ldpType, final Boolean isBinaryDescription) {
+        if (nonNull(res) && !isBinaryDescription && ldpResourceTypes(ldpType)
+                .noneMatch(res.getInteractionModel()::equals)) {
+            throw new WebApplicationException("Cannot change the LDP type to " + ldpType, CONFLICT);
+        }
     }
 
     private ResponseBuilder buildResponse(final Resource res, final String identifier) {

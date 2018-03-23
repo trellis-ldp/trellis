@@ -120,8 +120,10 @@ class ContentBearingHandler extends BaseLdpHandler {
         }
     }
 
-    protected Boolean isBadDigest(final Digest digest) {
-        return nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest());
+    protected void checkForBadDigest(final Digest digest) {
+        if (nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest())) {
+            throw new BadRequestException("Supplied digest value does not match the server-computed digest.");
+        }
     }
 
     protected String getDigestForEntity(final Digest digest) {

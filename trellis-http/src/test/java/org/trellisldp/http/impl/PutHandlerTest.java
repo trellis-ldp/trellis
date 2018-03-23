@@ -21,7 +21,6 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -169,8 +168,7 @@ public class PutHandlerTest {
         final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, mockAuditService,
                         mockIoService, mockBinaryService, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertThrows(WebApplicationException.class, () -> putHandler.setResource(mockResource));
     }
 
     @Test
