@@ -260,6 +260,10 @@ subprojects {
         }
     }
 
+    sonarqube {
+        skipProject = JavaVersion.current().isJava10Compatible()
+    }
+
     afterReleaseBuild.dependsOn docs
     afterReleaseBuild.dependsOn uploadArchives
 }
