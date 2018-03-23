@@ -174,7 +174,12 @@ public class PatchHandler extends BaseLdpHandler {
             // Check any constraints
             final List<ConstraintViolation> violations = constraintServices.stream()
                 .flatMap(svc -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
-                    .flatMap(g -> svc.constrainedBy(res.getInteractionModel(), g)))
+                    .flatMap(g -> {
+                        if (PreferAccessControl.equals(graphName)) {
+                            return svc.constrainedBy(LDP.RDFSource, g);
+                        }
+                        return svc.constrainedBy(res.getInteractionModel(), g);
+                    }))
                 .collect(toList());
 
             if (!violations.isEmpty()) {

@@ -228,7 +228,11 @@ public class PutHandler extends ContentBearingHandler {
                 });
 
                 // Check for any constraints
-                checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
+                if (ACL.equals(req.getExt())) {
+                    checkConstraint(dataset, PreferAccessControl, LDP.RDFSource, rdfSyntax.orElse(TURTLE));
+                } else {
+                    checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
+                }
             }
 
             ofNullable(res).ifPresent(r -> {
