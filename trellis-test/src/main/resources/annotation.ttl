@@ -1,0 +1,5 @@
+PREFIX oa: <http://www.w3.org/ns/oa#>
+
+<> a oa:Annotation ;
+    oa:hasBody <http://example.org/post1> ;
+    oa:hasTarget <http://example.org/page1> .

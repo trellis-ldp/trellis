@@ -20,6 +20,9 @@ import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.awaitility.Awaitility.await;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -49,7 +52,8 @@ import org.trellisldp.vocabulary.LDP;
  */
 public final class TestUtils {
 
-    private static IOService ioService = new JenaIOService(new NoopNamespaceService());
+    private static final IOService ioService = new JenaIOService(new NoopNamespaceService());
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * Build a JWT Token.
@@ -93,6 +97,21 @@ public final class TestUtils {
     public static String readEntityAsString(final Object entity) {
         try {
             return IOUtils.toString((InputStream) entity, UTF_8);
+        } catch (final IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
+     * Parse a JSON entity into the desired type.
+     * @param entity the entity
+     * @param valueType the type reference
+     * @param <T> the intended return type
+     * @return the entity as the desired type
+     */
+    public static <T> T readEntityAsJson(final Object entity, final TypeReference<T> valueType) {
+        try {
+            return MAPPER.readValue(readEntityAsString(entity), valueType);
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }

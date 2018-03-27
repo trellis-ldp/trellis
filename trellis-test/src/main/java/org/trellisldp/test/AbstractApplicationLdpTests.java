@@ -36,13 +36,31 @@ public abstract class AbstractApplicationLdpTests {
      */
     public abstract String getBaseURL();
 
+    /**
+     * Define whether the Web Annotation JSON-LD profile is supported.
+     *
+     * <p>Override this method, having it return {@code false}, if the custom
+     * JSON-LD profile test should be skipped.
+     *
+     * @return true if Web Annotation tests should be run; false otherwise
+     */
+    public Boolean supportWebAnnotationProfile() {
+        return true;
+    }
+
     @Nested
     @DisplayName("RDF Serialization tests")
     public class RDFSerializationTests extends LdpCommonTests implements LdpRdfTests {
         private String resource;
+        private String annotation;
         private String container;
         private EntityTag etag1;
         private EntityTag etag2;
+
+        @Override
+        public Boolean supportWebAnnotationProfile() {
+            return AbstractApplicationLdpTests.this.supportWebAnnotationProfile();
+        }
 
         @Override
         public void setResourceLocation(final String location) {
@@ -52,6 +70,16 @@ public abstract class AbstractApplicationLdpTests {
         @Override
         public String getResourceLocation() {
             return resource;
+        }
+
+        @Override
+        public void setAnnotationLocation(final String location) {
+            annotation = location;
+        }
+
+        @Override
+        public String getAnnotationLocation() {
+            return annotation;
         }
 
         @Override

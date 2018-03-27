@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON_TYPE;
@@ -38,7 +39,13 @@ import static org.trellisldp.test.TestUtils.hasConstrainedBy;
 import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
+import static org.trellisldp.test.TestUtils.readEntityAsJson;
 import static org.trellisldp.vocabulary.RDF.type;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
@@ -63,6 +70,7 @@ public interface LdpRdfTests extends CommonTests {
 
     String SIMPLE_RESOURCE = "/simpleResource.ttl";
     String BASIC_CONTAINER = "/basicContainer.ttl";
+    String ANNOTATION_RESOURCE = "/annotation.ttl";
 
     /**
      * Set the location of the test resource.
@@ -75,6 +83,18 @@ public interface LdpRdfTests extends CommonTests {
      * @return the test resource location
      */
     String getResourceLocation();
+
+    /**
+     * Set the location of the annotation resource.
+     * @param location the location
+     */
+    void setAnnotationLocation(String location);
+
+    /**
+     * Get the location of the annotation resource.
+     * @return the test annotation location
+     */
+    String getAnnotationLocation();
 
     /**
      * Set the location of the test container.
@@ -113,6 +133,14 @@ public interface LdpRdfTests extends CommonTests {
     void setSecondETag(EntityTag etag);
 
     /**
+     * Test whether a custom web annotation JSON-LD profile is supported.
+     * @return true if the OA profile is supported; false otherwise
+     */
+    default Boolean supportWebAnnotationProfile() {
+        return true;
+    }
+
+    /**
      * Initialize the RDF tests.
      */
     @BeforeAll
@@ -120,6 +148,7 @@ public interface LdpRdfTests extends CommonTests {
     default void beforeAllTests() {
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String content = getResourceAsString(SIMPLE_RESOURCE);
+        final String annotation = getResourceAsString(ANNOTATION_RESOURCE);
 
         // POST an LDP-BC
         try (final Response res = target().request()
@@ -137,6 +166,14 @@ public interface LdpRdfTests extends CommonTests {
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
 
             setResourceLocation(res.getLocation().toString());
+        }
+
+        // POST an LDP-RS
+        try (final Response res = target(getContainerLocation()).request().post(entity(annotation, TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            setAnnotationLocation(res.getLocation().toString());
         }
     }
 
@@ -156,17 +193,98 @@ public interface LdpRdfTests extends CommonTests {
     }
 
     /**
-     * Fetch the JSON-LD serialization.
+     * Fetch the default JSON-LD serialization.
      */
     @Test
-    @DisplayName("Fetch the JSON-LD serialization")
-    default void testGetJsonLd() {
-        try (final Response res = target(getResourceLocation()).request().accept("application/ld+json").get()) {
+    @DisplayName("Fetch the default JSON-LD serialization")
+    default void testGetJsonLdDefault() {
+        try (final Response res = target(getAnnotationLocation()).request().accept("application/ld+json").get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
             assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            final List<Map<String, Object>> obj = readEntityAsJson(res.getEntity(),
+                    new TypeReference<List<Map<String, Object>>>(){});
+            assertEquals(1L, obj.size());
+            assertTrue(obj.get(0).containsKey("@id"));
+            assertTrue(obj.get(0).containsKey("@type"));
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasBody"));
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasTarget"));
+        }
+    }
+
+    /**
+     * Fetch the expanded JSON-LD serialization.
+     */
+    @Test
+    @DisplayName("Fetch the expanded JSON-LD serialization")
+    default void testGetJsonLdExpanded() {
+        try (final Response res = target(getAnnotationLocation()).request()
+                .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get()) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
+            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            final List<Map<String, Object>> obj = readEntityAsJson(res.getEntity(),
+                    new TypeReference<List<Map<String, Object>>>(){});
+            assertEquals(1L, obj.size());
+            assertTrue(obj.get(0).containsKey("@id"));
+            assertTrue(obj.get(0).containsKey("@type"));
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasBody"));
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasTarget"));
+        }
+    }
+
+    /**
+     * Fetch the compacted JSON-LD serialization.
+     */
+    @Test
+    @DisplayName("Fetch the compacted JSON-LD serialization")
+    default void testGetJsonLdCompacted() {
+        try (final Response res = target(getAnnotationLocation()).request()
+                .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get()) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
+            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            final Map<String, Object> obj = readEntityAsJson(res.getEntity(),
+                    new TypeReference<Map<String, Object>>(){});
+            assertTrue(obj.containsKey("@id"));
+            assertTrue(obj.containsKey("@type"));
+            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasBody")));
+            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasTarget")));
+        }
+    }
+
+    /**
+     * Fetch a JSON-LD serialization with a custom profile.
+     */
+    @Test
+    @DisplayName("Fetch the JSON-LD serialization with a custom profile")
+    default void testGetJsonLdAnnotationProfile() {
+        assumeTrue(supportWebAnnotationProfile(), "Support for the Web Annotation profile is not enabled.");
+        try (final Response res = target(getAnnotationLocation()).request()
+                .accept("application/ld+json; profile=\"http://www.w3.org/ns/anno.jsonld\"").get()) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
+            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+
+            final Map<String, Object> obj = readEntityAsJson(res.getEntity(),
+                    new TypeReference<Map<String, Object>>(){});
+            assertTrue(obj.containsKey("@context"));
+            assertEquals("http://www.w3.org/ns/anno.jsonld", obj.get("@context"));
+            assertEquals(getAnnotationLocation(), obj.get("id"));
+            assertEquals("Annotation", obj.get("type"));
+            assertEquals("http://example.org/post1", obj.get("body"));
+            assertEquals("http://example.org/page1", obj.get("target"));
         }
     }
 
