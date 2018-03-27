@@ -67,6 +67,7 @@ dependencies {
     testCompile project(':trellis-webac')
     testCompile project(':trellis-karaf')
 
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
     testCompile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion
     testCompile group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: karafVersion
@@ -75,6 +76,7 @@ dependencies {
     testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-container-karaf', version: paxExamVersion
     testCompile group: 'org.osgi', name: 'org.osgi.core', version: osgiVersion
     testCompile group: 'org.osgi', name: 'org.osgi.compendium', version: osgiCompendiumVersion
+    testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
     testCompile group: 'org.glassfish.hk2.external', name: 'javax.inject', version: javaxInjectVersion
 
     testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
@@ -130,7 +132,7 @@ test {
     enabled = ! JavaVersion.current().isJava10Compatible()
 
     jacoco {
-        enabled = false
+        enabled = true
     }
 }
 

@@ -15,6 +15,8 @@ package org.trellisldp.test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
+import static java.util.Collections.emptyMap;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.awaitility.Awaitility.await;
@@ -26,11 +28,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Predicate;
@@ -52,7 +52,7 @@ import org.trellisldp.vocabulary.LDP;
  */
 public final class TestUtils {
 
-    private static final IOService ioService = new JenaIOService(new NoopNamespaceService());
+    private static final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, emptyMap());
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
@@ -137,29 +137,20 @@ public final class TestUtils {
     }
 
     /**
-     * Get a resource path.
-     * @param path the path
-     * @return the absolute path for a resource
-     */
-    public static String getResourcePath(final String path) {
-        try {
-            return new File(CommonTests.class.getResource(path).toURI()).getAbsolutePath();
-        } catch (final URISyntaxException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
      * Get a resource as a string.
      * @param path the resource path
      * @return the resource as a string
      */
     public static String getResourceAsString(final String path) {
-        try {
-            return IOUtils.toString(CommonTests.class.getResourceAsStream(path), UTF_8);
-        } catch (final IOException ex) {
-            throw new UncheckedIOException(ex);
+        final InputStream is = CommonTests.class.getResourceAsStream(path);
+        if (nonNull(is)) {
+            try {
+                return IOUtils.toString(is, UTF_8);
+            } catch (final IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
         }
+        return null;
     }
 
     /**
