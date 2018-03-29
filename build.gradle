@@ -37,6 +37,7 @@ allprojects {
     release {
         tagTemplate = '$name-$version'
         git {
+            requireBranch = 'trellis-0.6.x'
             signTag = true
         }
     }
