@@ -94,6 +94,7 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.http.domain.Range;
+import org.trellisldp.http.domain.Version;
 import org.trellisldp.http.domain.WantDigest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
@@ -150,10 +151,13 @@ public class GetHandler extends BaseLdpHandler {
 
         // Add NonRDFSource-related "describe*" link headers
         res.getBinary().ifPresent(ds -> {
+            // Add any version parameter, if relevant
+            final String id = identifier + ofNullable(req.getVersion()).map(Version::getInstant)
+                .map(Instant::toEpochMilli).map(x -> "?version=" + x).orElse("");
             if (syntax.isPresent()) {
-                builder.link(identifier + "#description", "canonical").link(identifier, "describes");
+                builder.link(id + "#description", "canonical").link(id, "describes");
             } else {
-                builder.link(identifier, "canonical").link(identifier + "#description", "describedby")
+                builder.link(id, "canonical").link(id + "#description", "describedby")
                     .type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
             }
         });
