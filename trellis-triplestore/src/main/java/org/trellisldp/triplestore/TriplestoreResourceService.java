@@ -110,10 +110,9 @@ import org.trellisldp.vocabulary.XSD;
  */
 public class TriplestoreResourceService extends DefaultAuditService implements ResourceService {
 
-    private static final Var PARENT = Var.alloc("parent");
-    private static final Var MODIFIED = Var.alloc("modified");
-    private static final Var MEMBER = Var.alloc("member");
-    private static final Var ANY = Var.alloc("any");
+    private static final String PARENT = "parent";
+    private static final String MODIFIED = "modified";
+    private static final String MEMBER = "member";
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
@@ -355,20 +354,22 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * </code></pre></p>
      */
     private Update getParentUpdateModificationRequest(final IRI identifier, final Literal time) {
+        final Var parent = Var.alloc(PARENT);
+        final Var modified = Var.alloc(MODIFIED);
         final UpdateDeleteInsert modify = new UpdateDeleteInsert();
         modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-        modify.getDeleteAcc().addTriple(triple(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
-        modify.getInsertAcc().addTriple(triple(PARENT, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+        modify.getDeleteAcc().addTriple(triple(parent, rdf.asJenaNode(DC.modified), modified));
+        modify.getInsertAcc().addTriple(triple(parent, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
         final ElementGroup eg = new ElementGroup();
         final ElementPathBlock epb1 = new ElementPathBlock();
-        epb1.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
-        epb1.addTriple(triple(PARENT, rdf.asJenaNode(DC.modified), MODIFIED));
+        epb1.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), parent));
+        epb1.addTriple(triple(parent, rdf.asJenaNode(DC.modified), modified));
         eg.addElement(epb1);
         final ElementPathBlock epb2 = new ElementPathBlock();
-        epb2.addTriple(triple(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.RDFSource)));
+        epb2.addTriple(triple(parent, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.RDFSource)));
         eg.addElement(new ElementMinus(epb2));
         final ElementPathBlock epb3 = new ElementPathBlock();
-        epb3.addTriple(triple(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
+        epb3.addTriple(triple(parent, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
         eg.addElement(new ElementMinus(epb3));
         modify.setElement(eg);
         return modify;
@@ -390,15 +391,19 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * </code></pre></p>
      */
     private Update getMemberUpdateModificationRequest(final IRI identifier, final Literal time) {
+        final Var parent = Var.alloc(PARENT);
+        final Var modified = Var.alloc(MODIFIED);
+        final Var member = Var.alloc(MEMBER);
+        final Var any = Var.alloc("any");
         final UpdateDeleteInsert modify = new UpdateDeleteInsert();
         modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-        modify.getDeleteAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
-        modify.getInsertAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+        modify.getDeleteAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
+        modify.getInsertAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
         final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), PARENT));
-        epb.addTriple(triple(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
-        epb.addTriple(triple(PARENT, rdf.asJenaNode(LDP.hasMemberRelation), ANY));
-        epb.addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+        epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), parent));
+        epb.addTriple(triple(parent, rdf.asJenaNode(LDP.membershipResource), member));
+        epb.addTriple(triple(parent, rdf.asJenaNode(LDP.hasMemberRelation), any));
+        epb.addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
         modify.setElement(epb);
         return modify;
     }
@@ -512,15 +517,18 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
         } else if (type != OperationType.DELETE) {
             // Indirect containers member resources are _always_ updated.
+            final Var parent = Var.alloc(PARENT);
+            final Var modified = Var.alloc(MODIFIED);
+            final Var member = Var.alloc(MEMBER);
             final UpdateDeleteInsert modify = new UpdateDeleteInsert();
             modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-            modify.getDeleteAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
-            modify.getInsertAcc().addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+            modify.getDeleteAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
+            modify.getInsertAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
             final ElementPathBlock epb = new ElementPathBlock();
-            epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), MODIFIED));
-            epb.addTriple(triple(PARENT, rdf.asJenaNode(LDP.membershipResource), MEMBER));
-            epb.addTriple(triple(PARENT, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
-            epb.addTriple(triple(MEMBER, rdf.asJenaNode(DC.modified), MODIFIED));
+            epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), modified));
+            epb.addTriple(triple(parent, rdf.asJenaNode(LDP.membershipResource), member));
+            epb.addTriple(triple(parent, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
+            epb.addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
             modify.setElement(epb);
             req.add(modify);
         }
