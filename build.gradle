@@ -23,8 +23,8 @@ allprojects {
     group = 'org.trellisldp'
 
     repositories {
-        jcenter()
         mavenCentral()
+        jcenter()
         mavenLocal()
     }
 
