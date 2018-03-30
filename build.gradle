@@ -160,6 +160,11 @@ subprojects {
             xml.enabled = true
             html.enabled = true
         }
+        afterEvaluate {
+            classDirectories = files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: 'org/trellisldp/test/**')
+            })
+        }
     }
 
     publishing {
@@ -311,6 +316,11 @@ task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
     classDirectories =  files(subprojects.sourceSets.main.output)
     executionData = files(subprojects.findAll { it.name != 'trellis-karaf' && it.name != 'trellis-test' }.jacocoTestReport.executionData)
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: 'org/trellisldp/test/**')
+        })
+    }
     reports {
         html.enabled = true
         xml.enabled = true
