@@ -36,64 +36,29 @@ public abstract class AbstractApplicationMementoTests {
     public abstract String getBaseURL();
 
     @Nested
+    @DisplayName("Memento Binary resource tests")
+    public class BinaryResourceTests extends BaseMementoTests implements MementoBinaryTests {
+    }
+
+    @Nested
     @DisplayName("Memento TimeGate tests")
-    public class TimeGateTests implements MementoTimeGateTests {
-
-        private String resource;
-
-        @Override
-        public Client getClient() {
-            return AbstractApplicationMementoTests.this.getClient();
-        }
-
-        @Override
-        public String getBaseURL() {
-            return AbstractApplicationMementoTests.this.getBaseURL();
-        }
-
-        @Override
-        public void setResourceLocation(final String location) {
-            resource = location;
-        }
-
-        @Override
-        public String getResourceLocation() {
-            return resource;
-        }
+    public class TimeGateTests extends BaseMementoTests implements MementoTimeGateTests {
     }
 
     @Nested
     @DisplayName("Memento Resource tests")
-    public class ResourceTests implements MementoResourceTests {
-
-        private String resource;
-
-        @Override
-        public Client getClient() {
-            return AbstractApplicationMementoTests.this.getClient();
-        }
-
-        @Override
-        public String getBaseURL() {
-            return AbstractApplicationMementoTests.this.getBaseURL();
-        }
-
-        @Override
-        public void setResourceLocation(final String location) {
-            resource = location;
-        }
-
-        @Override
-        public String getResourceLocation() {
-            return resource;
-        }
+    public class ResourceTests extends BaseMementoTests implements MementoResourceTests {
     }
 
     @Nested
     @DisplayName("Memento TimeMap tests")
-    public class TimeMapTests implements MementoTimeMapTests {
+    public class TimeMapTests extends BaseMementoTests implements MementoTimeMapTests {
+    }
+
+    private class BaseMementoTests implements MementoCommonTests {
 
         private String resource;
+        private String binary;
 
         @Override
         public Client getClient() {
@@ -106,6 +71,16 @@ public abstract class AbstractApplicationMementoTests {
         }
 
         @Override
+        public void setBinaryLocation(final String location) {
+            binary = location;
+        }
+
+        @Override
+        public String getBinaryLocation() {
+            return binary;
+        }
+
+        @Override
         public void setResourceLocation(final String location) {
             resource = location;
         }
@@ -115,4 +90,5 @@ public abstract class AbstractApplicationMementoTests {
             return resource;
         }
     }
+
 }

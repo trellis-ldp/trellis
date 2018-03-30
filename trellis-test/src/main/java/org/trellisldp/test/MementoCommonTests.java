@@ -15,7 +15,9 @@ package org.trellisldp.test;
 
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.LINK;
+import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -45,10 +47,24 @@ public interface MementoCommonTests extends CommonTests {
     void setResourceLocation(String location);
 
     /**
+     * Get the location of the test binary resource.
+     * @return the binary resource URL
+     */
+    String getBinaryLocation();
+
+    /**
+     * Set the test binary resource locaiton.
+     * @param location the URL of the test binary resource
+     */
+    void setBinaryLocation(String location);
+
+    /**
      * Set up the memento resources.
      */
     @BeforeAll
     default void beforeAllTests() {
+        final String binary = "This is a text file.";
+
         final String content
             = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
             + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
@@ -65,10 +81,18 @@ public interface MementoCommonTests extends CommonTests {
         // POST an LDP-BC
         final String container;
         try (final Response res = target().request()
-                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             container = res.getLocation().toString();
+        }
+
+        // POST a LDP-NR
+        try (final Response res = target(container).request()
+                .header(LINK, fromUri(LDP.NonRDFSource.getIRIString()).rel(TYPE).build())
+                .post(entity(binary, TEXT_PLAIN))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            setBinaryLocation(res.getLocation().toString());
         }
 
         // POST an LDP-RS
@@ -79,6 +103,13 @@ public interface MementoCommonTests extends CommonTests {
 
         meanwhile();
 
+        // PUT a new LDP-NR
+        try (final Response res = target(getBinaryLocation()).request()
+                .header(LINK, fromUri(LDP.NonRDFSource.getIRIString()).rel(TYPE).build())
+                .put(entity(binary + ".2", TEXT_PLAIN))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+        }
+
         // Patch the resource
         try (final Response res = target(getResourceLocation()).request().method("PATCH",
                     entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
@@ -87,6 +118,13 @@ public interface MementoCommonTests extends CommonTests {
         }
 
         meanwhile();
+
+        // PUT a new LDP-NR
+        try (final Response res = target(getBinaryLocation()).request()
+                .header(LINK, fromUri(LDP.NonRDFSource.getIRIString()).rel(TYPE).build())
+                .put(entity(binary + ".3", TEXT_PLAIN))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+        }
 
         // Patch the resource
         try (final Response res = target(getResourceLocation()).request().method("PATCH",
