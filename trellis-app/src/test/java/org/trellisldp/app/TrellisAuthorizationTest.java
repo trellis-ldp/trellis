@@ -59,7 +59,6 @@ public class TrellisAuthorizationTest extends AbstractApplicationAuthTests {
 
     @Override
     public String getBaseURL() {
-        System.out.println("BaseURL: " + "http://localhost:" + APP.getLocalPort() + "/");
         return "http://localhost:" + APP.getLocalPort() + "/";
     }
 
