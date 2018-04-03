@@ -143,9 +143,15 @@ public interface Resource {
     }
 
     /**
-     * Test whether this resource is a Memento resource.
+     * Test whether this resource is a Memento resource. {@code Resource}s retrieved
+     * from {@link ResourceService#get(IRI)} should return {@code false} here, and
+     * {@code Resource}s retrieved from {@link ResourceService#get(IRI, Instant)}
+     * should return {@code true}.
      *
-     * @return true if this is a Memento resource; false otherwise
+     * @return {@code true} if this is a Memento resource; {@code false} otherwise
+     * 
+     * @see ResourceService#get(IRI)
+     * @see ResourceService#get(IRI, Instant)
      */
     default Boolean isMemento() {
         return false;
