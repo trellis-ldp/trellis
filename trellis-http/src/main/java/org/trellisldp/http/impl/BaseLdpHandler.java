@@ -142,7 +142,7 @@ public class BaseLdpHandler {
      */
     protected void checkInteractionModel(final IRI interactionModel) {
         if (!resourceService.supportedInteractionModels().contains(interactionModel)) {
-            LOGGER.error("Interaction model not supported: ", interactionModel);
+            LOGGER.error("Interaction model not supported: {}", interactionModel);
             throw new BadRequestException("Unsupported interaction model provided: " + interactionModel,
                     status(BAD_REQUEST)
                         .link(Trellis.UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
