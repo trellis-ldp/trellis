@@ -103,7 +103,7 @@ public interface EventTests extends CommonTests {
     default void testReceiveCreateMessage() {
         final RDF rdf = getInstance();
         final IRI obj = rdf.createIRI(getContainerLocation());
-        await().atMost(5, SECONDS).until(() -> getMessages().stream()
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
                 .filter(g -> g.contains(obj, type, null))
                 .anyMatch(g -> g.contains(null, AS.object, obj)
                         && g.contains(null, AS.actor, Trellis.AdministratorAgent)
@@ -133,14 +133,14 @@ public interface EventTests extends CommonTests {
         final IRI obj = rdf.createIRI(resource);
         final IRI parent = rdf.createIRI(getContainerLocation());
 
-        await().atMost(5, SECONDS).until(() -> getMessages().stream()
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
                 .filter(g -> g.contains(obj, type, null))
                 .anyMatch(g -> g.contains(null, AS.object, obj)
                         && g.contains(null, AS.actor, rdf.createIRI(agent))
                         && g.contains(null, type, PROV.Activity)
                         && g.contains(null, type, AS.Create)
                         && g.contains(obj, type, LDP.RDFSource)));
-        await().atMost(5, SECONDS).until(() -> getMessages().stream()
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
                 .filter(g -> g.contains(parent, type, null))
                 .anyMatch(g -> g.contains(null, AS.object, parent)
                         && g.contains(null, AS.actor, rdf.createIRI(agent))
@@ -170,14 +170,14 @@ public interface EventTests extends CommonTests {
         final IRI obj = rdf.createIRI(resource);
         final IRI parent = rdf.createIRI(getContainerLocation());
 
-        await().atMost(5, SECONDS).until(() -> getMessages().stream()
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
                 .filter(g -> g.contains(obj, type, null))
                 .anyMatch(g -> g.contains(null, AS.object, obj)
                         && g.contains(null, AS.actor, rdf.createIRI(agent1))
                         && g.contains(null, type, PROV.Activity)
                         && g.contains(null, type, AS.Create)
                         && g.contains(obj, type, LDP.RDFSource)));
-        await().atMost(5, SECONDS).until(() -> getMessages().stream()
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
                 .filter(g -> g.contains(parent, type, null))
                 .anyMatch(g -> g.contains(null, AS.object, parent)
                         && g.contains(null, AS.actor, rdf.createIRI(agent1))
@@ -193,14 +193,14 @@ public interface EventTests extends CommonTests {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
         }
 
-        await().atMost(5, SECONDS).until(() -> getMessages().stream()
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
                 .filter(g -> g.contains(obj, type, null))
                 .anyMatch(g -> g.contains(null, AS.object, obj)
                         && g.contains(null, AS.actor, rdf.createIRI(agent2))
                         && g.contains(null, type, PROV.Activity)
                         && g.contains(null, type, AS.Delete)
                         && g.contains(obj, type, LDP.Resource)));
-        await().atMost(5, SECONDS).until(() -> getMessages().stream()
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
                 .filter(g -> g.contains(parent, type, null))
                 .anyMatch(g -> g.contains(null, AS.object, parent)
                         && g.contains(null, AS.actor, rdf.createIRI(agent2))
