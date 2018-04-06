@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http.impl;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.net.URI.create;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
@@ -44,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -92,17 +92,8 @@ public class PostHandlerTest {
     private static final Instant time = ofEpochSecond(1496262729);
     private static final String baseUrl = "http://example.org/repo/";
     private static final RDF rdf = getInstance();
-    private static final Set<IRI> allInteractionModels = new HashSet<>();
-
-    static {
-        allInteractionModels.add(LDP.Resource);
-        allInteractionModels.add(LDP.RDFSource);
-        allInteractionModels.add(LDP.NonRDFSource);
-        allInteractionModels.add(LDP.Container);
-        allInteractionModels.add(LDP.BasicContainer);
-        allInteractionModels.add(LDP.DirectContainer);
-        allInteractionModels.add(LDP.IndirectContainer);
-    }
+    private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource,
+            LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
 
     private File entity;
 

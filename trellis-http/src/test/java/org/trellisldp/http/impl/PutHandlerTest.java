@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http.impl;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
 import static java.util.Date.from;
@@ -48,7 +49,6 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
@@ -98,17 +98,8 @@ public class PutHandlerTest {
     private static final String baseUrl = "http://localhost:8080/repo/";
     private static final RDF rdf = getInstance();
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
-    private static final Set<IRI> allInteractionModels = new HashSet<>();
-
-    static {
-        allInteractionModels.add(LDP.Resource);
-        allInteractionModels.add(LDP.RDFSource);
-        allInteractionModels.add(LDP.NonRDFSource);
-        allInteractionModels.add(LDP.Container);
-        allInteractionModels.add(LDP.BasicContainer);
-        allInteractionModels.add(LDP.DirectContainer);
-        allInteractionModels.add(LDP.IndirectContainer);
-    }
+    private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
+            LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
 
     private final Binary testBinary = new Binary(rdf.createIRI("file:binary.txt"), binaryTime, "text/plain", null);
 
