@@ -295,7 +295,7 @@ public class PatchHandlerTest {
         final BadRequestException ex = assertThrows(BadRequestException.class, () ->
                 patchHandler.updateResource(mockResource));
         assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(Trellis.InvalidInteractionModel.getIRIString()) &&
+                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
         assertEquals(TEXT_PLAIN_TYPE, ex.getResponse().getMediaType());
     }

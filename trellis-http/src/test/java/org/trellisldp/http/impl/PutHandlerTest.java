@@ -394,7 +394,7 @@ public class PutHandlerTest {
         final BadRequestException ex = assertThrows(BadRequestException.class, () ->
                 putHandler.setResource(mockResource));
         assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(Trellis.InvalidInteractionModel.getIRIString()) &&
+                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
     }
 

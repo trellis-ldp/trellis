@@ -280,7 +280,7 @@ public class PostHandlerTest {
 
         final BadRequestException ex = assertThrows(BadRequestException.class, postHandler::createResource);
         assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(Trellis.InvalidInteractionModel.getIRIString()) &&
+                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
     }
 

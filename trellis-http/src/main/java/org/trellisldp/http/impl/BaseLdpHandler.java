@@ -143,10 +143,10 @@ public class BaseLdpHandler {
     protected void checkInteractionModel(final IRI interactionModel) {
         if (!resourceService.supportedInteractionModels().contains(interactionModel)) {
             LOGGER.error("Interaction model not supported: ", interactionModel);
-            throw new BadRequestException("Invalid interaction model provided: " + interactionModel,
+            throw new BadRequestException("Unsupported interaction model provided: " + interactionModel,
                     status(BAD_REQUEST)
-                        .link(Trellis.InvalidInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
-                        .entity("Invalid interaction model provided").type(TEXT_PLAIN_TYPE).build());
+                        .link(Trellis.UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
+                        .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
         }
     }
 

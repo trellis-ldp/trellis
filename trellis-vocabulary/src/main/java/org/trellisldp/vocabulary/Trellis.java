@@ -40,7 +40,6 @@ public final class Trellis {
     /* Named Individuals */
     public static final IRI AdministratorAgent = createIRI(URI + "AdministratorAgent");
     public static final IRI AnonymousAgent = createIRI(URI + "AnonymousAgent");
-    public static final IRI InvalidInteractionModel = createIRI(URI + "InvalidInteractionModel");
     public static final IRI InvalidType = createIRI(URI + "InvalidType");
     public static final IRI InvalidRange = createIRI(URI + "InvalidRange");
     public static final IRI InvalidCardinality = createIRI(URI + "InvalidCardinality");
@@ -49,6 +48,7 @@ public final class Trellis {
     public static final IRI PreferAudit = createIRI(URI + "PreferAudit");
     public static final IRI PreferServerManaged = createIRI(URI + "PreferServerManaged");
     public static final IRI PreferUserManaged = createIRI(URI + "PreferUserManaged");
+    public static final IRI UnsupportedInteractionModel = createIRI(URI + "UnsupportedInteractionModel");
 
     private Trellis() {
         // prevent instantiation
