@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
@@ -234,6 +235,13 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
             .flatMap(resource -> resource.stream(graphNames).map(q ->
                 getInstance().createQuad(resource.getIdentifier(), q.getSubject(), q.getPredicate(), q.getObject())));
     }
+
+    /**
+     * Return a collection of interaction models supported by this Resource Service.
+     *
+     * @return a set of supported interaction models
+     */
+    Set<IRI> supportedInteractionModels();
 
     /**
      * An identifier generator.

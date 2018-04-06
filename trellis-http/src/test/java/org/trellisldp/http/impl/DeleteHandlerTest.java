@@ -15,16 +15,20 @@ package org.trellisldp.http.impl;
 
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -106,6 +110,7 @@ public class DeleteHandlerTest {
         final IRI iri = rdf.createIRI("trellis:repo");
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getIdentifier()).thenReturn(iri);
+        when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Resource));
         when(mockResourceService.getMementos(any())).thenReturn(emptyList());
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
@@ -184,6 +189,18 @@ public class DeleteHandlerTest {
         assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
+    @Test
+    public void testDeletePersistenceSupport() {
+        when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService, baseUrl);
+
+        final BadRequestException ex = assertThrows(BadRequestException.class, () ->
+                handler.deleteResource(mockResource));
+        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+                link.getUri().toString().equals(Trellis.InvalidInteractionModel.getIRIString()) &&
+                link.getRel().equals(LDP.constrainedBy.getIRIString())));
+        assertEquals(TEXT_PLAIN_TYPE, ex.getResponse().getMediaType());
+    }
 
     @Test
     public void testDeleteACLError() {

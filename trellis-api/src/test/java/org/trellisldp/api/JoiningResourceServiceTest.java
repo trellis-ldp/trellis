@@ -15,6 +15,7 @@
 package org.trellisldp.api;
 
 import static java.time.Instant.now;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.synchronizedMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -149,6 +151,10 @@ public class JoiningResourceServiceTest {
             return "new-identifier";
         }
 
+        @Override
+        public Set<IRI> supportedInteractionModels() {
+            return emptySet();
+        }
     }
 
     private final ResourceService testable = new TestableJoiningResourceService(testImmutableService,

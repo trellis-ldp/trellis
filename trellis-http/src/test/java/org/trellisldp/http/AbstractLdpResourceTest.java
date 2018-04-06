@@ -190,6 +190,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
     private static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
     private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
+    private static final Set<IRI> allInteractionModels = new HashSet<>();
 
     protected static final String BASE_URL = "http://example.org/";
 
@@ -200,6 +201,14 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         allModes.add(ACL.Control);
         allModes.add(ACL.Read);
         allModes.add(ACL.Write);
+
+        allInteractionModels.add(LDP.Resource);
+        allInteractionModels.add(LDP.RDFSource);
+        allInteractionModels.add(LDP.NonRDFSource);
+        allInteractionModels.add(LDP.Container);
+        allInteractionModels.add(LDP.BasicContainer);
+        allInteractionModels.add(LDP.DirectContainer);
+        allInteractionModels.add(LDP.IndirectContainer);
     }
 
     @Mock
@@ -255,6 +264,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
         when(mockResourceService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
+        when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
         whenResource(mockResourceService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(of(mockBinaryVersionedResource));
