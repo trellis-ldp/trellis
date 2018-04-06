@@ -116,6 +116,9 @@ public class PostHandler extends ContentBearingHandler {
             .filter(l -> l.startsWith(LDP.URI)).map(rdf::createIRI)
             .filter(l -> !LDP.Resource.equals(l)).orElse(defaultType);
 
+        // Verify that the persistence layer supports the specified IXN model
+        checkInteractionModel(ldpType);
+
         if (ldpType.equals(LDP.NonRDFSource) && rdfSyntax.isPresent()) {
             throw new BadRequestException("Cannot save a NonRDFSource with RDF syntax");
         }

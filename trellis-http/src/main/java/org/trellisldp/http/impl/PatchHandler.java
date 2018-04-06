@@ -145,6 +145,9 @@ public class PatchHandler extends BaseLdpHandler {
         final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()));
         checkCache(req.getRequest(), res.getModified(), etag);
 
+        // Check that the persistence layer supports LDP-RS
+        checkInteractionModel(LDP.RDFSource);
+
         LOGGER.debug("Updating {} via PATCH", identifier);
 
         final IRI graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;

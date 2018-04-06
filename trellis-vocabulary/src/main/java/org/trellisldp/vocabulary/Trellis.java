@@ -48,6 +48,7 @@ public final class Trellis {
     public static final IRI PreferAudit = createIRI(URI + "PreferAudit");
     public static final IRI PreferServerManaged = createIRI(URI + "PreferServerManaged");
     public static final IRI PreferUserManaged = createIRI(URI + "PreferUserManaged");
+    public static final IRI UnsupportedInteractionModel = createIRI(URI + "UnsupportedInteractionModel");
 
     private Trellis() {
         // prevent instantiation

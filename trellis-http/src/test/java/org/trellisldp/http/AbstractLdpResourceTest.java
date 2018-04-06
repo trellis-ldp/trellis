@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
@@ -190,17 +191,12 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
     private static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
     private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
+    private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
+            LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
 
     protected static final String BASE_URL = "http://example.org/";
 
-    protected static final Set<IRI> allModes = new HashSet<>();
-
-    static {
-        allModes.add(ACL.Append);
-        allModes.add(ACL.Control);
-        allModes.add(ACL.Read);
-        allModes.add(ACL.Write);
-    }
+    protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
 
     @Mock
     protected ResourceService mockResourceService;
@@ -255,6 +251,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
         when(mockResourceService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
+        when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
         whenResource(mockResourceService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(of(mockBinaryVersionedResource));

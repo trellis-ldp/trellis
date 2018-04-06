@@ -176,6 +176,9 @@ public class PutHandler extends ContentBearingHandler {
             .filter(l -> l.startsWith(LDP.URI)).map(rdf::createIRI).filter(l -> !LDP.Resource.equals(l))
             .orElse(defaultType);
 
+        // Verify that the persistence layer supports the given interaction model
+        checkInteractionModel(ldpType);
+
         LOGGER.debug("Using LDP Type: {}", ldpType);
         // It is not possible to change the LDP type to a type that is not a subclass
         checkInteractionModelChange(res, ldpType, isBinaryDescription);

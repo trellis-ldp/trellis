@@ -17,11 +17,14 @@ import static java.util.Arrays.asList;
 import static java.util.Date.from;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
@@ -29,24 +32,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
  */
 public class BaseLdpHandler {
+
+    private static final Logger LOGGER = getLogger(BaseLdpHandler.class);
 
     protected static final RDF rdf = getInstance();
 
@@ -122,4 +132,22 @@ public class BaseLdpHandler {
             throw new WebApplicationException(builder.build());
         }
     }
+
+    /**
+     * Check that the given interaction model is supported by the
+     * underlying persistence layer.
+     *
+     * @param interactionModel the interaction model
+     * @throws BadRequestException if the interaction model is not supported
+     */
+    protected void checkInteractionModel(final IRI interactionModel) {
+        if (!resourceService.supportedInteractionModels().contains(interactionModel)) {
+            LOGGER.error("Interaction model not supported: ", interactionModel);
+            throw new BadRequestException("Unsupported interaction model provided: " + interactionModel,
+                    status(BAD_REQUEST)
+                        .link(Trellis.UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
+                        .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
+        }
+    }
+
 }

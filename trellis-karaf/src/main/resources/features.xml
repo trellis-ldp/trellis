@@ -109,7 +109,7 @@
     <feature>trellis-api</feature>
     <feature>trellis-vocabulary</feature>
 
-    <bundle dependency="true">mvn:com.google.guava/guava/${guavaVersion}</bundle>
+    <bundle dependency="true">mvn:com.google.guava/guava/${transitiveGuavaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.mustache-compiler/${mustacheVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 

@@ -85,12 +85,13 @@ subprojects {
         jaxbVersion = '2.3.0'
 
         /* Transitive dependencies (for Karaf provisioning) */
-        guavaVersion = '20.0' // via mustache 0.9.5
+        transitiveGuavaVersion = '20.0' // via mustache 0.9.5
 
         /* Testing */
         apiguardianVersion = '1.0.0'
         awaitilityVersion = '3.1.0'
         commonsTextVersion = '1.3'
+        guavaVersion = '24.1-jre'
         jerseyVersion = '2.25.1'
         jsonVersion = '1.1.2'
         junitVersion = '5.1.0'

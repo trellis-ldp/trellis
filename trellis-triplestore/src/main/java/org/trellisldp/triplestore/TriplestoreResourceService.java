@@ -19,12 +19,14 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.lang3.Range.between;
@@ -50,6 +52,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -121,6 +124,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private final RDFConnection rdfConnection;
     private final Optional<EventService> eventService;
     private final Optional<MementoService> mementoService;
+    private final Set<IRI> supportedIxnModels;
 
     /**
      * Create a triplestore-backed resource service.
@@ -138,6 +142,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         this.supplier = identifierService.getSupplier();
         this.eventService = ofNullable(eventService);
         this.mementoService = ofNullable(mementoService);
+        this.supportedIxnModels = unmodifiableSet(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
+                LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer).stream().collect(toSet()));
         init();
     }
 
@@ -682,6 +688,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                 throw new RuntimeTrellisException(ex);
             }
         });
+    }
+
+    @Override
+    public Set<IRI> supportedInteractionModels() {
+        return supportedIxnModels;
     }
 
     /**

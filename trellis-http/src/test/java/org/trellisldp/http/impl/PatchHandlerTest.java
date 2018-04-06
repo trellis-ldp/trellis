@@ -14,11 +14,14 @@
 package org.trellisldp.http.impl;
 
 import static java.time.Instant.ofEpochSecond;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -128,6 +131,7 @@ public class PatchHandlerTest {
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getIdentifier()).thenReturn(identifier);
+        when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.RDFSource));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
@@ -279,6 +283,21 @@ public class PatchHandlerTest {
                         mockResourceService, mockIoService, null);
 
         assertThrows(BadRequestException.class, () -> patchHandler.updateResource(mockResource));
+    }
+
+    @Test
+    public void testNoLdpRsSupport() {
+        when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
+
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockAuditService,
+                        mockResourceService, mockIoService, null);
+
+        final BadRequestException ex = assertThrows(BadRequestException.class, () ->
+                patchHandler.updateResource(mockResource));
+        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
+                link.getRel().equals(LDP.constrainedBy.getIRIString())));
+        assertEquals(TEXT_PLAIN_TYPE, ex.getResponse().getMediaType());
     }
 
     @Test

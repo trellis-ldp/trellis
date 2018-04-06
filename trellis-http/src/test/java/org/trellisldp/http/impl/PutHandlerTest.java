@@ -13,7 +13,9 @@
  */
 package org.trellisldp.http.impl;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.time.Instant.ofEpochSecond;
+import static java.util.Collections.emptySet;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -47,6 +49,7 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
 
@@ -81,6 +84,7 @@ import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -94,6 +98,9 @@ public class PutHandlerTest {
     private static final String baseUrl = "http://localhost:8080/repo/";
     private static final RDF rdf = getInstance();
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
+    private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
+            LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
+
     private final Binary testBinary = new Binary(rdf.createIRI("file:binary.txt"), binaryTime, "text/plain", null);
 
     @Mock
@@ -131,6 +138,7 @@ public class PutHandlerTest {
         when(mockResource.getModified()).thenReturn(time);
         when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
 
+        when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
@@ -371,6 +379,23 @@ public class PutHandlerTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
+    }
+
+    @Test
+    public void testUnsupportedType() {
+        when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
+        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
+        when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+
+        final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
+        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockResourceService, mockAuditService,
+                        mockIoService, mockBinaryService, null);
+
+        final BadRequestException ex = assertThrows(BadRequestException.class, () ->
+                putHandler.setResource(mockResource));
+        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
+                link.getRel().equals(LDP.constrainedBy.getIRIString())));
     }
 
     @Test

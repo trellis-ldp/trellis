@@ -84,6 +84,9 @@ public class DeleteHandler extends BaseLdpHandler {
         final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()));
         checkCache(req.getRequest(), res.getModified(), etag);
 
+        // Check that the persistence layer supports LDP-R
+        checkInteractionModel(LDP.Resource);
+
         LOGGER.debug("Deleting {}", identifier);
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {

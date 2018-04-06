@@ -13,8 +13,10 @@
  */
 package org.trellisldp.http.impl;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.net.URI.create;
 import static java.time.Instant.ofEpochSecond;
+import static java.util.Collections.emptySet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -44,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -78,6 +81,7 @@ import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -88,6 +92,9 @@ public class PostHandlerTest {
     private static final Instant time = ofEpochSecond(1496262729);
     private static final String baseUrl = "http://example.org/repo/";
     private static final RDF rdf = getInstance();
+    private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource,
+            LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
+
     private File entity;
 
     @Mock
@@ -120,6 +127,7 @@ public class PostHandlerTest {
     public void setUp() {
         initMocks(this);
         when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
+        when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
@@ -259,6 +267,21 @@ public class PostHandlerTest {
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+    }
+
+    @Test
+    public void testUnsupportedType() {
+        when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
+        when(mockRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+
+        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
+        final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockResourceService,
+                        mockIoService, mockBinaryService, null, mockAuditService);
+
+        final BadRequestException ex = assertThrows(BadRequestException.class, postHandler::createResource);
+        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
+                link.getRel().equals(LDP.constrainedBy.getIRIString())));
     }
 
     @Test
