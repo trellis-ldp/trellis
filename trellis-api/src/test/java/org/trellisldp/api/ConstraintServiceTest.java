@@ -34,15 +34,12 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDFS;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class ConstraintServiceTest {
 
     private static final RDF rdf = RDFUtils.getInstance();

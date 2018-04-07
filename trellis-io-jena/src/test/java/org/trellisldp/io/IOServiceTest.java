@@ -75,8 +75,6 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
@@ -86,7 +84,6 @@ import org.trellisldp.api.RuntimeTrellisException;
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class IOServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();

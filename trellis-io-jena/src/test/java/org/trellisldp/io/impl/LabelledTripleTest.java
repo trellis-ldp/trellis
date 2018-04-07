@@ -20,14 +20,11 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.vocabulary.DC;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class LabelledTripleTest {
 
     private static final RDF rdf = new JenaRDF();

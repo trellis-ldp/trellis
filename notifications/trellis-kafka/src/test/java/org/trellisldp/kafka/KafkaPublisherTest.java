@@ -31,8 +31,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
@@ -43,7 +41,6 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test the Kafka publisher
  */
-@RunWith(JUnitPlatform.class)
 public class KafkaPublisherTest {
 
     private static final RDF rdf = new SimpleRDF();

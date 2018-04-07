@@ -47,8 +47,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
@@ -58,7 +56,6 @@ import org.trellisldp.id.UUIDGenerator;
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class HttpBasedBinaryServiceTest {
 
     private static final RDF rdf = new SimpleRDF();

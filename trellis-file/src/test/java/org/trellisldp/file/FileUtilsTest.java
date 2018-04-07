@@ -25,15 +25,12 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
  * Test the file utilities.
  */
-@RunWith(JUnitPlatform.class)
 public class FileUtilsTest {
 
     private static final RDF rdf = new JenaRDF();

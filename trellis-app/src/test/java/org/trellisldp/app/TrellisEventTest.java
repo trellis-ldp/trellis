@@ -47,8 +47,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.test.AbstractApplicationEventTests;
@@ -56,7 +54,6 @@ import org.trellisldp.test.AbstractApplicationEventTests;
 /**
  * Event tests.
  */
-@RunWith(JUnitPlatform.class)
 public class TrellisEventTest extends AbstractApplicationEventTests implements MessageListener {
 
     private static final Logger LOGGER = getLogger(TrellisEventTest.class);

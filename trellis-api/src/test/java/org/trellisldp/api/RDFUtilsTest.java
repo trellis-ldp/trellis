@@ -32,13 +32,10 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class RDFUtilsTest {
 
     private static final RDF rdf = getInstance();

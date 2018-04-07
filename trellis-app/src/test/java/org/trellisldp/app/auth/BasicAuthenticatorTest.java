@@ -27,13 +27,10 @@ import java.security.Principal;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class BasicAuthenticatorTest {
 
     @Test

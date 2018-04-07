@@ -39,8 +39,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -49,7 +47,6 @@ import org.trellisldp.vocabulary.AS;
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class EventSerializerTest {
 
     private static final RDF rdf = new SimpleRDF();

@@ -34,8 +34,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.OngoingStubbing;
@@ -53,7 +51,6 @@ import org.trellisldp.vocabulary.VCARD;
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class WebACServiceTest {
 
     private static final RDF rdf = new JenaRDF();

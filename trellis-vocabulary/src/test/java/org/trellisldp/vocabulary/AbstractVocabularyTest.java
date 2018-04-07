@@ -32,14 +32,11 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.RDFParser;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public abstract class AbstractVocabularyTest {
 
     private static final Logger LOGGER = getLogger(AbstractVocabularyTest.class);

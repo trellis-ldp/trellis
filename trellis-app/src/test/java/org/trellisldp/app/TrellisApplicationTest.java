@@ -18,14 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.dropwizard.Application;
 
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
  * LDP-related tests for Trellis.
  */
-@RunWith(JUnitPlatform.class)
 public class TrellisApplicationTest {
 
     @Test
