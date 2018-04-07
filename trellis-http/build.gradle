@@ -27,11 +27,9 @@ dependencies {
     testImplementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
     testImplementation group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
     testImplementation group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
-    testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: apiguardianVersion
     testImplementation group: 'org.glassfish', name: 'javax.json', version: jsonVersion
     testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-server', version: jerseyVersion
     testImplementation group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-inmemory', version: jerseyVersion
-        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
     testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')

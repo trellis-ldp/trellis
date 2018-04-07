@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.1.1'
+    }
+}
+
 plugins {
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'com.github.ben-manes.versions' version '0.17.0'
@@ -6,12 +15,95 @@ plugins {
     id 'org.sonarqube' version '2.6.2'
 }
 
-allprojects {
+ext {
+
+    /* Dependencies */
+    activationApiVersion = '1.2.0'
+    activeMqVersion = '5.15.3'
+    commonsCodecVersion = '1.11'
+    commonsCollectionsVersion = '4.1'
+    commonsIoVersion = '2.6'
+    commonsLangVersion = '3.7'
+    commonsRdfVersion = '0.5.0'
+    dropwizardVersion = '1.3.0'
+    jacksonVersion = '2.9.5'
+    javaxAnnotationsVersion = '1.3.2'
+    javaxInjectVersion = '2.4.0'
+    javaxJsonVersion = '1.1.2'
+    jaxrsVersion = '2.1'
+    jenaVersion = '3.6.0'
+    jmsApiVersion = '2.0.1'
+    kafkaVersion = '1.0.0_1'
+    metricsVersion = '4.0.2'
+    mustacheVersion = '0.9.5_1'
+    rabbitMqVersion = '5.2.0'
+    slf4jVersion = '1.7.25'
+    tamayaVersion = '0.3-incubating'
+    jwtVersion = '0.9.0'
+    jaxbVersion = '2.3.0'
+
+    /* Transitive dependencies (for Karaf provisioning) */
+    transitiveGuavaVersion = '20.0' // via mustache 0.9.5
+
+    /* Testing */
+    apiguardianVersion = '1.0.0'
+    awaitilityVersion = '3.1.0'
+    commonsTextVersion = '1.3'
+    guavaVersion = '24.1-jre'
+    jerseyVersion = '2.25.1'
+    jsonVersion = '1.1.2'
+    junitVersion = '5.1.0'
+    junitPlatformVersion = '1.1.0'
+    logbackVersion = '1.2.3'
+    mockitoVersion = '2.17.0'
+    xercesVersion = '2.11.0'
+
+    /* OSGi */
+    karafVersion = '4.1.5'
+    osgiVersion = '6.0.0'
+    osgiCompendiumVersion = '5.0.0'
+    paxExamVersion = '4.11.0'
+    spiflyVersion = '1.0.8'
+    projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
+    jenaVersionRange = '[3.5,4)'
+
+    jacocoTestProjects = [
+            'trellis-api',
+            'trellis-http',
+            'trellis-vocabulary',
+            'trellis-triplestore',
+            'trellis-id',
+            'trellis-io',
+            'trellis-namespaces',
+            'trellis-file',
+            'trellis-amqp',
+            'trellis-jms',
+            'trellis-kafka',
+            'trellis-webac',
+            'trellis-agent',
+            'trellis-audit',
+            'trellis-app'
+    ]
+}
+
+allprojects { subproj ->
 
     apply plugin: 'maven'
     apply plugin: 'jacoco'
+    apply plugin: 'org.junit.platform.gradle.plugin'
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: 'checkstyle'
+    apply plugin: 'com.github.hierynomus.license'
 
     ext {
+        vendor = 'Trellis LDP'
+        homepage = 'https://www.trellisldp.org'
+        docURL = 'https://trellis-ldp.github.io/trellis/apidocs/'
+        license = 'Apache 2'
+
         jacocoVersion = '0.8.1'
         checkstyleVersion = '8.8'
     }
@@ -28,6 +120,12 @@ allprojects {
         mavenLocal()
     }
 
+    dependencies {
+        testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+        testImplementation("org.apiguardian:apiguardian-api:${apiguardianVersion}")
+        testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    }
+
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {
             options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
@@ -42,82 +140,15 @@ allprojects {
     }
 }
 
-subprojects {
-
-    apply plugin: 'java-library'
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
-    apply plugin: 'checkstyle'
-    apply plugin: 'com.github.hierynomus.license'
+subprojects { subproj ->
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
-    ext {
-        vendor = 'Trellis LDP'
-        homepage = 'https://www.trellisldp.org'
-        docURL = 'https://trellis-ldp.github.io/trellis/apidocs/'
-        license = 'Apache 2'
-
-        /* Dependencies */
-        activationApiVersion = '1.2.0'
-        activeMqVersion = '5.15.3'
-        commonsCodecVersion = '1.11'
-        commonsCollectionsVersion = '4.1'
-        commonsIoVersion = '2.6'
-        commonsLangVersion = '3.7'
-        commonsRdfVersion = '0.5.0'
-        dropwizardVersion = '1.3.0'
-        jacksonVersion = '2.9.5'
-        javaxAnnotationsVersion = '1.3.2'
-        javaxInjectVersion = '2.4.0'
-        javaxJsonVersion = '1.1.2'
-        jaxrsVersion = '2.1'
-        jenaVersion = '3.6.0'
-        jmsApiVersion = '2.0.1'
-        kafkaVersion = '1.0.0_1'
-        metricsVersion = '4.0.2'
-        mustacheVersion = '0.9.5_1'
-        rabbitMqVersion = '5.2.0'
-        slf4jVersion = '1.7.25'
-        tamayaVersion = '0.3-incubating'
-        jwtVersion = '0.9.0'
-        jaxbVersion = '2.3.0'
-
-        /* Transitive dependencies (for Karaf provisioning) */
-        transitiveGuavaVersion = '20.0' // via mustache 0.9.5
-
-        /* Testing */
-        apiguardianVersion = '1.0.0'
-        awaitilityVersion = '3.1.0'
-        commonsTextVersion = '1.3'
-        guavaVersion = '24.1-jre'
-        jerseyVersion = '2.25.1'
-        jsonVersion = '1.1.2'
-        junitVersion = '5.1.0'
-        junitPlatformVersion = '1.1.0'
-        logbackVersion = '1.2.3'
-        mockitoVersion = '2.17.0'
-        xercesVersion = '2.11.0'
-
-        /* OSGi */
-        karafVersion = '4.1.5'
-        osgiVersion = '6.0.0'
-        osgiCompendiumVersion = '5.0.0'
-        paxExamVersion = '4.11.0'
-        spiflyVersion = '1.0.8'
-        projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
-        jenaVersionRange = '[3.5,4)'
-    }
-
     jar {
-        from ("$rootDir/LICENSE") {
+        from("$rootDir/LICENSE") {
             into "META-INF"
         }
-    }
-
-    test {
-        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     }
 
     checkstyle {
@@ -128,7 +159,7 @@ subprojects {
 
     task javadocJar(type: Jar) {
         classifier 'javadoc'
-        from ("$rootDir/LICENSE") {
+        from("$rootDir/LICENSE") {
             into "META-INF"
         }
         from javadoc
@@ -136,7 +167,7 @@ subprojects {
 
     task sourceJar(type: Jar) {
         classifier 'sources'
-        from ("$rootDir/LICENSE") {
+        from("$rootDir/LICENSE") {
             into "META-INF"
         }
         from sourceSets.main.allSource
@@ -153,18 +184,6 @@ subprojects {
         strictCheck true
         mapping {
             java = 'SLASHSTAR_STYLE'
-        }
-    }
-
-    jacocoTestReport {
-        reports {
-            xml.enabled = true
-            html.enabled = true
-        }
-        afterEvaluate {
-            classDirectories = files(classDirectories.files.collect {
-                fileTree(dir: it, exclude: 'org/trellisldp/test/**')
-            })
         }
     }
 
@@ -272,69 +291,82 @@ subprojects {
 
     afterReleaseBuild.dependsOn docs
     afterReleaseBuild.dependsOn uploadArchives
-}
 
-apply plugin: 'java'
-
-task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
-    outputs.upToDateWhen { false }
-    destinationDir = new File(projectDir, "docs/apidocs")
-    title = "Trellis Linked Data Server Documentation"
-    exclude '**/impl/*'
-    exclude '**/*Tests.java'
-    options {
-        memberLevel = JavadocMemberLevel.PUBLIC
-        links "https://docs.oracle.com/javase/8/docs/api/"
-        links 'https://docs.oracle.com/javaee/7/api/'
-        links 'https://trellis-ldp.github.io/trellis/apidocs/'
-        links 'https://commons.apache.org/proper/commons-lang/javadocs/api-3.7/'
-        links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
-        links 'https://activemq.apache.org/maven/5.15.3/apidocs/'
-        links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
-        links 'https://kafka.apache.org/0100/javadoc/'
-        links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
-        links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
-        links 'https://www.dropwizard.io/1.3.0/dropwizard-core/apidocs/'
-    }
-
-    source subprojects.collect {project -> project.sourceSets.main.allJava }
-    classpath = files(subprojects.collect {project -> project.sourceSets.main.compileClasspath})
-}
-
-sonarqube {
-    properties {
-        property "sonar.projectName", "Trellis Linked Data Server"
-        property "sonar.projectKey", "org.trellisldp:trellis"
-        property "sonar.links.homepage", "https://www.trellisldp.org"
-        property "sonar.links.issue", "https://github.com/trellis-ldp/trellis/issues"
-        property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis.git"
-    }
-}
-
-task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
-    dependsOn = subprojects.test
-    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
-    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories =  files(subprojects.sourceSets.main.output)
-    executionData = files(subprojects.findAll { it.name != 'trellis-karaf' && it.name != 'trellis-test' }.jacocoTestReport.executionData)
     afterEvaluate {
-        classDirectories = files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: 'org/trellisldp/test/**')
-        })
-    }
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        csv.enabled = false
+        if (subproj.name in jacocoTestProjects) {
+            jacoco {
+                applyTo subproj.tasks.matching { it.name == 'junitPlatformTest' }
+            }
+        }
     }
 }
 
-coveralls {
-    sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
-}
+configure(rootProject) {
 
-tasks.coveralls {
-    dependsOn 'jacocoRootReport'
-}
+    task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
+        outputs.upToDateWhen { false }
+        destinationDir = new File(projectDir, "docs/apidocs")
+        title = "Trellis Linked Data Server Documentation"
+        exclude '**/impl/*'
+        exclude '**/*Tests.java'
+        options {
+            memberLevel = JavadocMemberLevel.PUBLIC
+            links "https://docs.oracle.com/javase/8/docs/api/"
+            links 'https://docs.oracle.com/javaee/7/api/'
+            links 'https://trellis-ldp.github.io/trellis/apidocs/'
+            links 'https://commons.apache.org/proper/commons-lang/javadocs/api-3.7/'
+            links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
+            links 'https://activemq.apache.org/maven/5.15.3/apidocs/'
+            links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
+            links 'https://kafka.apache.org/0100/javadoc/'
+            links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
+            links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
+            links 'https://www.dropwizard.io/1.3.0/dropwizard-core/apidocs/'
+        }
 
+        source subprojects.collect { project -> project.sourceSets.main.allJava }
+        classpath = files(subprojects.collect { project -> project.sourceSets.main.compileClasspath })
+    }
+
+    sonarqube {
+        properties {
+            property "sonar.projectName", "Trellis Linked Data Server"
+            property "sonar.projectKey", "org.trellisldp:trellis"
+            property "sonar.links.homepage", "https://www.trellisldp.org"
+            property "sonar.links.issue", "https://github.com/trellis-ldp/trellis/issues"
+            property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis.git"
+        }
+    }
+
+    task jacocoMerge(type: JacocoMerge) {
+        subprojects.findAll { it.name in jacocoTestProjects }
+                .each { subproj ->
+            executionData fileTree(dir: "${subproj.buildDir}/jacoco", include: '*.exec')
+            dependsOn subproj.tasks.withType(Test)
+        }
+    }
+
+    task jacocoRootReport(type: JacocoReport, dependsOn: jacocoMerge) {
+        sourceDirectories = files(subprojects
+                .findAll { it.name in jacocoTestProjects }
+                .sourceSets.main.allSource.srcDirs)
+        classDirectories = files(subprojects
+                .findAll { it.name in jacocoTestProjects }
+                .sourceSets.main.output)
+        executionData jacocoMerge.destinationFile
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+        }
+    }
+
+    coveralls {
+        sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
+        jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
+    }
+
+    tasks.coveralls {
+        dependsOn 'jacocoRootReport'
+    }
+}

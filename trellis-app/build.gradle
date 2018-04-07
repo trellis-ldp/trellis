@@ -45,8 +45,6 @@ dependencies {
     testCompile group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
     testCompile group: 'org.awaitility', name: 'awaitility', version: awaitilityVersion
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testCompile group: 'org.junit.platform', name: 'junit-platform-runner', version: junitPlatformVersion
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
     testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
     testCompile project(':trellis-test')
 }
