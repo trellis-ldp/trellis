@@ -73,7 +73,8 @@ ext {
             'trellis-webac',
             'trellis-agent',
             'trellis-audit',
-            'trellis-app'
+            'trellis-app',
+            'trellis-osgi'
     ]
 }
 
