@@ -23,14 +23,11 @@ import java.security.Principal;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class AnonymousAuthenticatorTest {
 
     @Test

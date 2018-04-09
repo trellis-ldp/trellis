@@ -24,14 +24,11 @@ import javax.ws.rs.WebApplicationException;
 import org.apache.commons.rdf.api.Graph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class TrellisGraphTest {
 
     @Mock

@@ -33,8 +33,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
@@ -44,7 +42,6 @@ import org.trellisldp.vocabulary.ACL;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@RunWith(JUnitPlatform.class)
 public class WebACFilterTest {
 
     private static final String REPO1 = "repo1";

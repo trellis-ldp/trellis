@@ -26,12 +26,9 @@ import java.time.Instant;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
 
-@RunWith(JUnitPlatform.class)
 public class NoopMementoServiceTest {
 
     @Test

@@ -22,15 +22,12 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.PROV;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class AuthorizationTest {
 
     private static final RDF rdf = new SimpleRDF();

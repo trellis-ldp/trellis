@@ -19,8 +19,6 @@ import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
@@ -32,7 +30,6 @@ import org.trellisldp.test.AbstractResourceServiceTests;
 /**
  * ResourceService tests.
  */
-@RunWith(JUnitPlatform.class)
 public class ResourceServiceTest extends AbstractResourceServiceTests {
 
     private static final JenaRDF rdf = new JenaRDF();

@@ -58,8 +58,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Resource;
@@ -76,7 +74,6 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class DeleteHandlerTest {
 
     private static final RDF rdf = getInstance();

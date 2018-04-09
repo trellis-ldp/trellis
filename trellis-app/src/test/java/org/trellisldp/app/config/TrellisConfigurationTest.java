@@ -28,13 +28,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class TrellisConfigurationTest {
 
     @Test

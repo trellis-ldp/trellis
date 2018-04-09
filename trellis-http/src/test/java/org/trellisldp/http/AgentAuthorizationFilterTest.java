@@ -30,8 +30,6 @@ import javax.ws.rs.core.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -43,7 +41,6 @@ import org.trellisldp.vocabulary.Trellis;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@RunWith(JUnitPlatform.class)
 public class AgentAuthorizationFilterTest {
 
     @Mock

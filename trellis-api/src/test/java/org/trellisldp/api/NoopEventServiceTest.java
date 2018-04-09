@@ -18,14 +18,11 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 /**
  * Test the no-op event service.
  */
-@RunWith(JUnitPlatform.class)
 public class NoopEventServiceTest {
 
     @Mock

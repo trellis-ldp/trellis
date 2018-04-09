@@ -52,8 +52,6 @@ import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.Prefer;
@@ -63,7 +61,6 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class RdfUtilsTest {
 
     private static final RDF rdf = getInstance();

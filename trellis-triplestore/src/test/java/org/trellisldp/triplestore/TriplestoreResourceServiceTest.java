@@ -50,8 +50,6 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
@@ -72,7 +70,6 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Test the TriplestoreResourceService class.
  */
-@RunWith(JUnitPlatform.class)
 public class TriplestoreResourceServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();

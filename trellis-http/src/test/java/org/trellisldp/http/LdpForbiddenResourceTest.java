@@ -57,8 +57,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.trellisldp.api.AccessControlService;
@@ -78,7 +76,6 @@ import org.trellisldp.vocabulary.Trellis;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@RunWith(JUnitPlatform.class)
 public class LdpForbiddenResourceTest extends JerseyTest {
 
     private static final IOService ioService = new JenaIOService(null);

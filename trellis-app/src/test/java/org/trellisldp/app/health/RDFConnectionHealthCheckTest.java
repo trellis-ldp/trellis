@@ -24,13 +24,10 @@ import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class RDFConnectionHealthCheckTest {
 
     private static final JenaRDF rdf = new JenaRDF();

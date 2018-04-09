@@ -24,15 +24,12 @@ import io.dropwizard.testing.DropwizardTestSupport;
 import javax.ws.rs.client.Client;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.test.AbstractApplicationAuthTests;
 
 /**
  * Authorization tests.
  */
-@RunWith(JUnitPlatform.class)
 public class TrellisAuthorizationTest extends AbstractApplicationAuthTests {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP

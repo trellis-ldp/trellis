@@ -32,15 +32,12 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 
 /**
  * Test a file-based memento service.
  */
-@RunWith(JUnitPlatform.class)
 public class FileMementoServiceTest {
 
     private static final RDF rdf = new JenaRDF();

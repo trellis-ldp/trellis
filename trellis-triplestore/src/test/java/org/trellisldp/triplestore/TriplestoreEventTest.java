@@ -29,8 +29,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.AS;
@@ -42,7 +40,6 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-@RunWith(JUnitPlatform.class)
 public class TriplestoreEventTest {
 
     private static final RDF rdf = new JenaRDF();

@@ -45,8 +45,6 @@ import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
@@ -55,7 +53,6 @@ import org.trellisldp.id.UUIDGenerator;
 /**
  * Test the file-based binary service.
  */
-@RunWith(JUnitPlatform.class)
 public class FileBinaryServiceTest {
 
     private static final String testDoc = "test.txt";
