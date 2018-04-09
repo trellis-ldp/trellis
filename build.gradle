@@ -1,12 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.1.1'
-    }
-}
-
 plugins {
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'com.github.ben-manes.versions' version '0.17.0'
@@ -90,7 +81,6 @@ allprojects { subproj ->
 
     apply plugin: 'maven'
     apply plugin: 'jacoco'
-    apply plugin: 'org.junit.platform.gradle.plugin'
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
@@ -287,6 +277,10 @@ subprojects { subproj ->
 
     sonarqube {
         skipProject = JavaVersion.current().isJava10Compatible()
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     afterReleaseBuild.dependsOn docs
