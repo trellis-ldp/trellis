@@ -334,6 +334,20 @@ configure(rootProject) {
         }
     }
 
+    // Ignore alpha, beta, milestone and release candidates
+    dependencyUpdates.resolutionStrategy = {
+        componentSelection { rules ->
+            rules.all { ComponentSelection selection ->
+                boolean rejected = ['alpha', 'beta', 'rc', 'm'].any { qualifier ->
+                    selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+                }
+                if (rejected) {
+                    selection.reject("Release Candidate")
+                }
+            }
+        }
+    }
+
     task jacocoMerge(type: JacocoMerge) {
         subprojects.findAll { it.name in jacocoTestProjects }
                 .each { subproj ->
