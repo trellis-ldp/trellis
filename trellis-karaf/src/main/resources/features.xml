@@ -162,15 +162,11 @@
   </feature>
 
   <feature name="commons-rdf-jena" version="${project.version}">
-    <feature prerequisite="true">wrap</feature>
     <feature version="${jenaVersionRange}">jena</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <!-- commons-rdf-jena depends on commons-rdf-simple -->
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-simple/${commonsRdfVersion}</bundle>
-
-    <!-- transitively required by jena -->
-    <bundle dependency="true">wrap:mvn:com.google.errorprone/error_prone_annotations/2.1.1</bundle>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle>mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
