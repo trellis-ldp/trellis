@@ -8,6 +8,9 @@
     <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
 
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-api/${project.version}</bundle>
   </feature>
@@ -31,6 +34,9 @@
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
 
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-audit/${project.version}</bundle>
   </feature>
@@ -55,6 +61,9 @@
     <feature>trellis-vocabulary</feature>
 
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-constraint-rules/${project.version}</bundle>
   </feature>
@@ -72,6 +81,9 @@
     <bundle dependency="true">mvn:com.fasterxml.jackson.datatype/jackson-datatype-jsr310/${jacksonVersion}</bundle>
 
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-event-serialization/${project.version}</bundle>
   </feature>
@@ -90,6 +102,9 @@
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
   </feature>
@@ -146,6 +161,9 @@
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
 
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-vocabulary/${project.version}</bundle>
   </feature>
@@ -180,6 +198,9 @@
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.kafka-clients/${kafkaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-kafka/${project.version}</bundle>
   </feature>
@@ -192,6 +213,9 @@
     <bundle dependency="true">mvn:com.rabbitmq/amqp-client/${rabbitMqVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-amqp/${project.version}</bundle>
   </feature>
@@ -203,8 +227,11 @@
     <feature>transaction</feature>
 
     <bundle dependency="true">mvn:javax.jms/javax.jms-api/${jmsApiVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
+    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
   </feature>

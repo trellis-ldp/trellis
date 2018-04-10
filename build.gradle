@@ -50,11 +50,12 @@ ext {
     xercesVersion = '2.11.0'
 
     /* OSGi */
-    karafVersion = '4.1.5'
+    asmVersion = '6.1.1'
+    karafVersion = '4.2.0'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
     paxExamVersion = '4.11.0'
-    spiflyVersion = '1.0.8'
+    spiflyVersion = '1.0.10'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
     jenaVersionRange = '[3.7,4)'
 
