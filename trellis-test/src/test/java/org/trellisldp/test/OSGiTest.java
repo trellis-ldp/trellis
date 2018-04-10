@@ -77,7 +77,7 @@ public class OSGiTest {
             features(maven().groupId("org.apache.karaf.features").artifactId("standard")
                         .versionAsInProject().classifier("features").type("xml"), "scr"),
             features(maven().groupId("org.apache.jena").artifactId("jena-osgi-features")
-                        .version(jenaVersion).classifier("features").type("xml")),
+                        .version(jenaVersion).classifier("features").type("xml"), "xerces"),
             features(maven().groupId("org.trellisldp").artifactId("trellis-karaf")
                         .type("xml").classifier("features").versionAsInProject(),
                         "trellis-io-jena"),
