@@ -22,7 +22,7 @@ ext {
     javaxInjectVersion = '2.4.0'
     javaxJsonVersion = '1.1.2'
     jaxrsVersion = '2.1'
-    jenaVersion = '3.6.0'
+    jenaVersion = '3.7.0'
     jmsApiVersion = '2.0.1'
     kafkaVersion = '1.0.0_1'
     metricsVersion = '4.0.2'
@@ -56,7 +56,7 @@ ext {
     paxExamVersion = '4.11.0'
     spiflyVersion = '1.0.8'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
-    jenaVersionRange = '[3.5,4)'
+    jenaVersionRange = '[3.7,4)'
 
     jacocoTestProjects = [
             'trellis-api',
