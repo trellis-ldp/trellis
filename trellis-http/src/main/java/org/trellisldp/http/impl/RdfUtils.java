@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -68,6 +69,8 @@ public final class RdfUtils {
 
     private static final RDF rdf = getInstance();
 
+    private static final Set<String> ignoredPreferences;
+
     /**
      * A mapping of LDP types to their supertype.
      */
@@ -82,6 +85,11 @@ public final class RdfUtils {
         data.put(LDP.DirectContainer, LDP.Container);
         data.put(LDP.IndirectContainer, LDP.Container);
         superClassOf = unmodifiableMap(data);
+
+        final Set<String> ignore = new HashSet<>();
+        ignore.add(Trellis.PreferUserManaged.getIRIString());
+        ignore.add(Trellis.PreferServerManaged.getIRIString());
+        ignoredPreferences = unmodifiableSet(ignore);
     }
 
     /**
@@ -122,8 +130,7 @@ public final class RdfUtils {
                 include.remove(Trellis.PreferUserManaged.getIRIString());
             }
             p.getOmit().forEach(include::remove);
-            p.getInclude().stream().filter(iri -> !iri.equals(Trellis.PreferUserManaged.getIRIString())
-                    && !iri.equals(Trellis.PreferServerManaged.getIRIString())).forEach(include::add);
+            p.getInclude().stream().filter(iri -> !ignoredPreferences.contains(iri)).forEach(include::add);
         });
         return quad -> quad.getGraphName().filter(x -> x instanceof IRI).map(x -> (IRI) x)
             .map(IRI::getIRIString).filter(include::contains).isPresent();
