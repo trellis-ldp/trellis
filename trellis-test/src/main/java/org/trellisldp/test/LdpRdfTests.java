@@ -362,11 +362,13 @@ public interface LdpRdfTests extends CommonTests {
 
         // Patch the resource
         try (final Response res = target(getResourceLocation()).request().method("PATCH",
-                    entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
+                    entity("INSERT { <> a <http://www.w3.org/ns/ldp#Container> ; "
+                        + "<http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
             assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
             assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         }
 

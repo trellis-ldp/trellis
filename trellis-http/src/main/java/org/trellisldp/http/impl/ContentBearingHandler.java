@@ -49,6 +49,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.RDF;
 
 /**
  * A common base class for PUT/POST requests.
@@ -88,6 +89,8 @@ class ContentBearingHandler extends BaseLdpHandler {
         try (final InputStream input = new FileInputStream(entity)) {
             ioService.read(input, identifier, syntax)
                 .map(skolemizeTriples(resourceService, baseUrl))
+                .filter(triple -> !RDF.type.equals(triple.getPredicate())
+                        || !triple.getObject().ntriplesString().startsWith("<" + LDP.URI))
                 .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
                 .map(triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(),
                             triple.getObject()))

@@ -113,7 +113,8 @@ public class PatchHandler extends BaseLdpHandler {
             }
             ioService.update(graph.asGraph(), sparqlUpdate, TRELLIS_DATA_PREFIX + req.getPath() +
                     (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
-            triples = graph.stream().collect(toList());
+            triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
+                    || !triple.getObject().ntriplesString().startsWith("<" + LDP.URI)).collect(toList());
         } catch (final RuntimeTrellisException ex) {
             LOGGER.warn("Invalid RDF: {}", ex.getMessage());
             throw new BadRequestException("Invalid RDF: " + ex.getMessage());

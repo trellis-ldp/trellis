@@ -1,5 +1,7 @@
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX dc: <http://purl.org/dc/terms/>
+PREFIX ldp: <http://www.w3.org/ns/ldp#>
 
-<> skos:prefLabel "Basic Container"@eng ;
+<> a ldp:BasicContainer ;
+   skos:prefLabel "Basic Container"@eng ;
    dc:description "This is a simple Basic Container for testing."@eng .
