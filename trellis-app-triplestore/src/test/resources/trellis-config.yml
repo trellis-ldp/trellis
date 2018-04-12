@@ -1,0 +1,56 @@
+server:
+  applicationConnectors:
+    - type: http
+      # Pick a random port (for testing)
+      port: 0
+  adminConnectors:
+    - type: http
+      # Pick a random port (for testing)
+      port: 0
+
+logging:
+  level: WARN
+  loggers:
+    org.trellisldp: INFO
+    io.dropwizard: INFO
+
+# Path to binaries
+binaries: binaries
+
+# Path to mementos
+mementos: mementos
+
+# Path to namespace file
+namespaces: namespaces.json
+
+auth:
+    webac:
+        enabled: true
+    anon:
+        enabled: true
+    jwt:
+        enabled: true
+        base64Encoded: false
+        key: secret
+    basic:
+        enabled: true
+
+cors:
+    enabled: true
+    allowOrigin:
+        - "*"
+    maxAge: 180
+
+notifications:
+    enabled: true
+    type: NONE
+
+# JSON-LD configuration
+jsonld:
+    cacheSize: 10
+    cacheExpireHours: 48
+    contextDomainWhitelist:
+        - https://www.trellisldp.org/
+    contextWhitelist:
+        - http://www.w3.org/ns/anno.jsonld
+

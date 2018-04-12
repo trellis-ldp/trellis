@@ -13,21 +13,77 @@
  */
 package org.trellisldp.app;
 
+import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static javax.ws.rs.client.Entity.entity;
+import static javax.ws.rs.core.HttpHeaders.LINK;
+import static javax.ws.rs.core.Link.TYPE;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
+import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import io.dropwizard.Application;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.testing.DropwizardTestSupport;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
 import org.trellisldp.app.config.TrellisConfiguration;
+import org.trellisldp.vocabulary.LDP;
 
 /**
  * LDP-related tests for Trellis.
  */
 public class TrellisApplicationTest {
 
+    private static final DropwizardTestSupport<TrellisConfiguration> APP
+        = new DropwizardTestSupport<TrellisConfiguration>(SimpleTrellisApp.class,
+                resourceFilePath("trellis-config.yml"));
+
+    private static final Client CLIENT;
+
+    static {
+        APP.before();
+        CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
+        CLIENT.property(CONNECT_TIMEOUT, 5000);
+        CLIENT.property(READ_TIMEOUT, 5000);
+    }
+
+
     @Test
     public void testGetName() {
-        final Application<TrellisConfiguration> app = new TrellisApplication();
+        final Application<TrellisConfiguration> app = new SimpleTrellisApp();
         assertEquals("Trellis LDP", app.getName());
+    }
+
+    @Test
+    public void testGET() {
+        final String baseUrl = "http://localhost:" + APP.getLocalPort();
+        try (final Response res = CLIENT.target(baseUrl).request().get()) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
+                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())));
+        }
+    }
+
+    @Test
+    public void testPOST() {
+        final String baseUrl = "http://localhost:" + APP.getLocalPort();
+        try (final Response res = CLIENT.target(baseUrl).request().post(entity("", TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertNotNull(res.getLocation());
+            assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
+                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())));
+            assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
+                        TYPE.equals(link.getRel()) && LDP.RDFSource.getIRIString().equals(link.getUri().toString())));
+        }
     }
 }

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.triplestore;
 
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
@@ -25,9 +25,12 @@ import javax.ws.rs.client.Client;
 
 import org.junit.jupiter.api.AfterAll;
 import org.trellisldp.app.config.TrellisConfiguration;
-import org.trellisldp.test.AbstractApplicationMementoTests;
+import org.trellisldp.test.AbstractApplicationLdpTests;
 
-public class TrellisMementoTest extends AbstractApplicationMementoTests {
+/**
+ * Run LDP-Related Tests.
+ */
+public class TrellisLdpTest extends AbstractApplicationLdpTests {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,

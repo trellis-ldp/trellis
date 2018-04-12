@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.app.triplestore;
 
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
@@ -25,17 +25,13 @@ import javax.ws.rs.client.Client;
 
 import org.junit.jupiter.api.AfterAll;
 import org.trellisldp.app.config.TrellisConfiguration;
-import org.trellisldp.test.AbstractApplicationAuthTests;
+import org.trellisldp.test.AbstractApplicationMementoTests;
 
-/**
- * Authorization tests.
- */
-public class TrellisAuthorizationTest extends AbstractApplicationAuthTests {
+public class TrellisMementoTest extends AbstractApplicationMementoTests {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,
                 resourceFilePath("trellis-config.yml"),
-                config("auth.basic.usersFile", resourceFilePath("users.auth")),
                 config("binaries", resourceFilePath("data") + "/binaries"),
                 config("mementos", resourceFilePath("data") + "/mementos"),
                 config("namespaces", resourceFilePath("data/namespaces.json")));
@@ -44,7 +40,7 @@ public class TrellisAuthorizationTest extends AbstractApplicationAuthTests {
 
     static {
         APP.before();
-        CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client2");
+        CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
         CLIENT.property(CONNECT_TIMEOUT, 5000);
         CLIENT.property(READ_TIMEOUT, 5000);
     }
@@ -57,21 +53,6 @@ public class TrellisAuthorizationTest extends AbstractApplicationAuthTests {
     @Override
     public String getBaseURL() {
         return "http://localhost:" + APP.getLocalPort() + "/";
-    }
-
-    @Override
-    public String getUser1Credentials() {
-        return "acoburn:secret";
-    }
-
-    @Override
-    public String getUser2Credentials() {
-        return "user:password";
-    }
-
-    @Override
-    public String getJwtSecret() {
-        return "secret";
     }
 
     @AfterAll

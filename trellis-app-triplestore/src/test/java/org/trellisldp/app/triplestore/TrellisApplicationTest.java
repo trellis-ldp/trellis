@@ -11,9 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.trellisldp.app.triplestore;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.dropwizard.Application;
+
+import org.junit.jupiter.api.Test;
+import org.trellisldp.app.config.TrellisConfiguration;
+
 /**
- * Trellis Application health checks
- *
- * <p>This package implements health checks for the Trellis application.
+ * LDP-related tests for Trellis.
  */
-package org.trellisldp.app.health;
+public class TrellisApplicationTest {
+
+    @Test
+    public void testGetName() {
+        final Application<TrellisConfiguration> app = new TrellisApplication();
+        assertEquals("Trellis LDP", app.getName());
+    }
+}

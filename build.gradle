@@ -75,6 +75,7 @@ ext {
             'trellis-agent',
             'trellis-audit',
             'trellis-app',
+            'trellis-app-triplestore',
             'trellis-osgi'
     ]
 }

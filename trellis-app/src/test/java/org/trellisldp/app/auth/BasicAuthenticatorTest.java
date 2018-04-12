@@ -86,8 +86,6 @@ public class BasicAuthenticatorTest {
         userFile.setReadable(true);
     }
 
-
-
     private String getAuthFile() {
         final String prefix = "file:";
         return getClass().getResource("/users.auth").toString().substring(prefix.length());
