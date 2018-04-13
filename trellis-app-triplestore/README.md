@@ -21,12 +21,12 @@ To install Trellis as a systemd service on linux, follow these steps:
 
 5. Create data directories
 
-        $ sudo mkdir /var/lib/trellis
-        $ sudo chown trellis.trellis /var/lib/trellis
+        $ sudo mkdir /opt/trellis/data
+        $ sudo chown trellis.trellis /opt/trellis/data
 
 6. Install the systemd file:
 
-        $ sudo ln -s /opt/trellis/etc/trellis.service /etc/systemd/system/trellis.service
+        $ sudo systemctl link /opt/trellis/etc/trellis.service
 
 7. Reload systemd to see the changes
 
