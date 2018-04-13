@@ -80,6 +80,10 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
     /**
      * Setup the trellis application.
+     *
+     * <p>This method is called at the very beginning of the {@link Application#run} method. It can be used
+     * to configure or register any of the Trellis-related services that an implementation instantiates.
+     *
      * @param config the configuration
      * @param environment the environment
      */
@@ -93,8 +97,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     }
 
     @Override
-    public void run(final T config,
-                    final Environment environment) throws Exception {
+    public void run(final T config, final Environment environment) throws Exception {
         initialize(config, environment);
 
         getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
