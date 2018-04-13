@@ -24,18 +24,31 @@ import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 
 /**
- * @author acoburn
+ * A simple Guava-based cache service.
+ *
+ * @param <K> the key type
+ * @param <V> the value type
  */
-class TrellisCache<K, V> implements CacheService<K, V> {
+public class TrellisCache<K, V> implements CacheService<K, V> {
 
     private static final Logger LOGGER = getLogger(TrellisCache.class);
 
     private final Cache<K, V> cache;
 
+    /**
+     * Create a Trellis cache.
+     * @param cache the guava cache
+     */
     public TrellisCache(final Cache<K, V> cache) {
         this.cache = cache;
     }
 
+    /**
+     * Lazily get a value from the cache.
+     * @param key the cache key
+     * @param mapper the function for deriving the value
+     * @return the value
+     */
     public V get(final K key, final Function<? super K, ? extends V> mapper) {
         try {
             return cache.get(key, () -> mapper.apply(key));

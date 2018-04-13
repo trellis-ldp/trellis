@@ -10,11 +10,11 @@ dependencies {
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
     api group: 'org.glassfish.hk2.external', name: 'javax.inject', version: javaxInjectVersion
     api project(':trellis-api')
+    api project(':trellis-audit');
 
     implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     implementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     implementation project(':trellis-vocabulary')
-    implementation project(':trellis-audit');
 
     testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
     testImplementation group: 'org.awaitility', name: 'awaitility', version: awaitilityVersion
