@@ -64,6 +64,8 @@ Trellis is a linked data server that can be used for storing large volumes of co
 particularly in cases where that content is stored for years and decades.'''
 
     user = 'trellis'
+    // Note: the linux installers do not depend on Java because it is too complicated to
+    // reliably navigate this dependency across linux distributions and supported JRE versions.
     requires('systemd')
     into '/opt/trellis'
 
