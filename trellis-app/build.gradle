@@ -19,13 +19,14 @@ dependencies {
     testRuntime group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
     testRuntime group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
 
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
     testImplementation group: 'io.dropwizard', name: 'dropwizard-client', version: dropwizardVersion
     testImplementation group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion
     testImplementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     testImplementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     testImplementation group: 'org.apache.jena', name: 'jena-tdb2', version: jenaVersion
     testImplementation group: 'org.awaitility', name: 'awaitility', version: awaitilityVersion
-    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testImplementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: bouncycastleVersion
     testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
     testImplementation project(':trellis-triplestore')
     testImplementation project(':trellis-io-jena')

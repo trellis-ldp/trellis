@@ -21,7 +21,12 @@ import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.crypto.EllipticCurveProvider;
+import io.jsonwebtoken.impl.crypto.RsaProvider;
 
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyStore;
 import java.security.Principal;
 import java.util.Optional;
 
@@ -48,10 +53,97 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
+    public void testAuthenticateEC() throws AuthenticationException {
+        final KeyPair keypair = EllipticCurveProvider.generateKeyPair(SignatureAlgorithm.ES256);
+        final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
+             .signWith(SignatureAlgorithm.ES256, keypair.getPrivate()).compact();
+
+        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(keypair.getPublic());
+
+        final Optional<Principal> result = authenticator.authenticate(token);
+        assertTrue(result.isPresent());
+        result.ifPresent(p -> {
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
+        });
+    }
+
+    @Test
+    public void testAuthenticateRSA() throws AuthenticationException {
+        final KeyPair keypair = RsaProvider.generateKeyPair();
+        final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
+             .signWith(SignatureAlgorithm.RS256, keypair.getPrivate()).compact();
+
+        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(keypair.getPublic());
+
+        final Optional<Principal> result = authenticator.authenticate(token);
+        assertTrue(result.isPresent());
+        result.ifPresent(p -> {
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
+        });
+    }
+
+    @Test
+    public void testAuthenticateKeystore() throws Exception {
+        final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
+
+        final Key privateKey = ks.getKey("trellis", "password".toCharArray());
+        final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
+             .signWith(SignatureAlgorithm.RS256, privateKey).compact();
+
+        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+                ks.getCertificate("trellis").getPublicKey());
+
+        final Optional<Principal> result = authenticator.authenticate(token);
+        assertTrue(result.isPresent());
+        result.ifPresent(p -> {
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
+        });
+    }
+
+    @Test
+    public void testAuthenticateKeystoreRSA() throws Exception {
+        final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
+
+        final Key privateKey = ks.getKey("trellis", "password".toCharArray());
+        final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
+             .signWith(SignatureAlgorithm.RS256, privateKey).compact();
+
+        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+                ks.getCertificate("trellis-public").getPublicKey());
+
+        final Optional<Principal> result = authenticator.authenticate(token);
+        assertTrue(result.isPresent());
+        result.ifPresent(p -> {
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
+        });
+    }
+
+    @Test
+    public void testAuthenticateKeystoreEC() throws Exception {
+        final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
+
+        final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
+        final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
+             .signWith(SignatureAlgorithm.ES256, privateKey).compact();
+
+        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+                ks.getCertificate("trellis-ec").getPublicKey());
+
+        final Optional<Principal> result = authenticator.authenticate(token);
+        assertTrue(result.isPresent());
+        result.ifPresent(p -> {
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
+        });
+    }
+
+    @Test
     public void testAuthenticateNoSub() throws AuthenticationException {
          final String key = "c2VjcmV0";
          final String token = Jwts.builder().setIssuer("http://localhost")
-             .signWith(SignatureAlgorithm.HS512, key).compact();
+             .signWith(SignatureAlgorithm.HS256, key).compact();
 
         final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, true);
 

@@ -13,6 +13,8 @@
  */
 package org.trellisldp.app;
 
+import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -85,6 +87,7 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setKeyStore(null);
 
         final Optional<List<AuthFilter>> filters = TrellisUtils.getAuthFilters(config);
         assertTrue(filters.isPresent());
@@ -95,5 +98,63 @@ public class TrellisUtilsTest {
         config.getAuth().getJwt().setEnabled(false);
 
         assertFalse(TrellisUtils.getAuthFilters(config).isPresent());
+    }
+
+    @Test
+    public void testGetJwtAuthenticator() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+    }
+
+    @Test
+    public void testGetJwtAuthenticatorNoKeyIds() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
+        config.getAuth().getJwt().setKeyIds(asList("foo", "bar"));
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+    }
+
+    @Test
+    public void testGetJwtAuthenticatorFederated() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
+        config.getAuth().getJwt().setKeyIds(asList("trellis", "trellis-ec", "trellis-public"));
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+    }
+
+    @Test
+    public void testGetJwtAuthenticatorBadKeystore() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setKeyStore(resourceFilePath("config1.yml"));
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+    }
+
+    @Test
+    public void testGetJwtAuthenticatorNoKeystore() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        final String nonexistent = resourceFilePath("config1.yml").replaceAll("config1.yml", "nonexistent.yml");
+        config.getAuth().getJwt().setKeyStore(nonexistent);
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+    }
+
+    @Test
+    public void testGetNoJwtAuthenticator() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setKeyStore(null);
+        config.getAuth().getJwt().setKey("");
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
     }
 }

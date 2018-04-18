@@ -109,6 +109,10 @@ signing {
     sign distZip
 }
 
+install {
+    enabled = false
+}
+
 uploadArchives {
     // There is no need to store these artifacts on maven central
     enabled = false

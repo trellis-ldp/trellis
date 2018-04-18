@@ -40,6 +40,7 @@ ext {
     /* Testing */
     apiguardianVersion = '1.0.0'
     awaitilityVersion = '3.1.0'
+    bouncycastleVersion = '1.59'
     commonsTextVersion = '1.3'
     guavaVersion = '24.1-jre'
     jerseyVersion = '2.25.1'

@@ -94,6 +94,10 @@ public class TrellisConfigurationTest {
         assertEquals("/tmp/trellisData/binaries", config.getBinaries());
         assertEquals("/tmp/trellisData/mementos", config.getMementos());
         assertEquals("http://localhost:8080/", config.getBaseUrl());
+
+        final String resources = "http://triplestore.example.com/";
+        config.setResources(resources);
+        assertEquals(resources, config.getResources());
     }
 
     @Test
@@ -111,6 +115,12 @@ public class TrellisConfigurationTest {
         assertTrue(config.getAuth().getJwt().getEnabled());
         assertEquals("secret", config.getAuth().getJwt().getKey());
         assertFalse(config.getAuth().getJwt().getBase64Encoded());
+        assertEquals("password", config.getAuth().getJwt().getKeyStorePassword());
+        assertEquals("/tmp/trellisData/keystore.jks", config.getAuth().getJwt().getKeyStore());
+        assertTrue(config.getAuth().getJwt().getKeyIds().contains("foo"));
+        assertTrue(config.getAuth().getJwt().getKeyIds().contains("bar"));
+        assertTrue(config.getAuth().getJwt().getKeyIds().contains("trellis"));
+        assertEquals(3, config.getAuth().getJwt().getKeyIds().size());
     }
 
     @Test
@@ -136,4 +146,5 @@ public class TrellisConfigurationTest {
         assertEquals((Integer) 180, config.getCors().getMaxAge());
         assertTrue(config.getCors().getAllowCredentials());
     }
+
 }

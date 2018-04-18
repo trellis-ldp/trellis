@@ -14,7 +14,7 @@
 package org.trellisldp.app.auth;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Base64.getEncoder;
+import static java.util.Base64.getDecoder;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -27,10 +27,14 @@ import io.dropwizard.auth.PrincipalImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 
+import java.security.Key;
 import java.security.Principal;
 import java.util.Optional;
+
+import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 
@@ -43,7 +47,7 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
 
     public static final String WEBID = "webid";
 
-    private final String key;
+    private final Key key;
 
     /**
      * Create a JWT-based authenticator.
@@ -51,7 +55,25 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
      * @param encoded whether the key is encoded as base64
      */
     public JwtAuthenticator(final String key, final Boolean encoded) {
-        this.key = encoded ? key : getEncoder().encodeToString(key.getBytes(UTF_8));
+        this(key, encoded, SignatureAlgorithm.HS512);
+    }
+
+    /**
+     * Create a JWT-based authenticator.
+     * @param key a secret key
+     * @param encoded whether the key is encoded as base64
+     * @param algorithm the signature algorithm
+     */
+    public JwtAuthenticator(final String key, final Boolean encoded, final SignatureAlgorithm algorithm) {
+        this(new SecretKeySpec(encoded ? getDecoder().decode(key) : key.getBytes(UTF_8), algorithm.getJcaName()));
+    }
+
+    /**
+     * Create a JWT-based authenticator.
+     * @param key a key
+     */
+    public JwtAuthenticator(final Key key) {
+        this.key = key;
     }
 
     @Override

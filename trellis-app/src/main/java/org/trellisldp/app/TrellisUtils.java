@@ -14,23 +14,35 @@
 package org.trellisldp.app;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import com.google.common.cache.Cache;
 
 import io.dropwizard.auth.AuthFilter;
+import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.rdf.api.IRI;
+import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.app.auth.AnonymousAuthFilter;
 import org.trellisldp.app.auth.AnonymousAuthenticator;
@@ -38,12 +50,46 @@ import org.trellisldp.app.auth.BasicAuthenticator;
 import org.trellisldp.app.auth.JwtAuthenticator;
 import org.trellisldp.app.config.AuthConfiguration;
 import org.trellisldp.app.config.CORSConfiguration;
+import org.trellisldp.app.config.JwtAuthConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
- * @author acoburn
+ * Convenience utilities for the trellis-app.
  */
 final class TrellisUtils {
+
+    private static final Logger LOGGER = getLogger(TrellisUtils.class);
+
+    public static Optional<Authenticator<String, Principal>> getJwtAuthenticator(final JwtAuthConfiguration config) {
+        if (nonNull(config.getKeyStore())) {
+            final File keystoreFile = new File(config.getKeyStore());
+            if (keystoreFile.exists()) {
+                try (final FileInputStream fis = new FileInputStream(keystoreFile)) {
+                    final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                    ks.load(fis, config.getKeyStorePassword().toCharArray());
+                    final List<String> keyIds = filterKeyIds(ks, config.getKeyIds());
+                    switch (keyIds.size()) {
+                        case 0:
+                            return empty();
+                        case 1:
+                            return of(new JwtAuthenticator(ks.getCertificate(keyIds.get(0)).getPublicKey()));
+                        default:
+                            // TODO -- return a FederatedJwtAuthenticator, and resolve the key in that class
+                            // with a custom SigningKeyResolver or overridden SigningKeyResolverAdaptor
+                            return of(new JwtAuthenticator(ks.getCertificate(keyIds.get(0)).getPublicKey()));
+                    }
+                } catch (final IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException ex) {
+                    LOGGER.error("Error reading keystore: {}", ex.getMessage());
+                    LOGGER.warn("Ignoring JWT authenticator with keystore: {}", config.getKeyStore());
+                }
+            } else {
+                LOGGER.error("Keystore file does not exist: {}", config.getKeyStore());
+            }
+            return empty();
+        }
+        return ofNullable(config.getKey()).filter(key -> !key.isEmpty())
+            .map(key -> new JwtAuthenticator(key, config.getBase64Encoded()));
+    }
 
     public static Optional<List<AuthFilter>> getAuthFilters(final TrellisConfiguration config) {
         // Authentication
@@ -51,10 +97,11 @@ final class TrellisUtils {
         final AuthConfiguration auth = config.getAuth();
 
         if (auth.getJwt().getEnabled()) {
-            filters.add(new OAuthCredentialAuthFilter.Builder<Principal>()
-                    .setAuthenticator(new JwtAuthenticator(auth.getJwt().getKey(), auth.getJwt().getBase64Encoded()))
-                    .setPrefix("Bearer")
-                    .buildAuthFilter());
+            getJwtAuthenticator(auth.getJwt()).ifPresent(authenticator ->
+                filters.add(new OAuthCredentialAuthFilter.Builder<Principal>()
+                        .setAuthenticator(authenticator)
+                        .setPrefix("Bearer")
+                        .buildAuthFilter()));
         }
 
         if (auth.getBasic().getEnabled()) {
@@ -91,6 +138,16 @@ final class TrellisUtils {
             return of(config.getCors());
         }
         return empty();
+    }
+
+    private static List<String> filterKeyIds(final KeyStore ks, final List<String> keyIds) throws KeyStoreException {
+        final List<String> ids = new ArrayList<>();
+        for (final String keyId : keyIds) {
+            if (ks.containsAlias(keyId)) {
+                ids.add(keyId);
+            }
+        }
+        return ids;
     }
 
     private TrellisUtils() {

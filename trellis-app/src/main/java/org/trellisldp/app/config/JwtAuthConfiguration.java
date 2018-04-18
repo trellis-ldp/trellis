@@ -15,6 +15,8 @@ package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 /**
  * Configuration for the JWT service.
  */
@@ -25,6 +27,12 @@ public class JwtAuthConfiguration {
     private Boolean isEncoded = false;
 
     private String key;
+
+    private String keyStore;
+
+    private String keyStorePassword;
+
+    private List<String> keyIds;
 
     /**
      * Get whether basic authentication has been enabled.
@@ -78,5 +86,59 @@ public class JwtAuthConfiguration {
     @JsonProperty
     public void setBase64Encoded(final Boolean isEncoded) {
         this.isEncoded = isEncoded;
+    }
+
+    /**
+     * Set the keystore location.
+     * @param keyStore the keystore location
+     */
+    @JsonProperty
+    public void setKeyStore(final String keyStore) {
+        this.keyStore = keyStore;
+    }
+
+    /**
+     * Get the keystore location.
+     * @return the keystore location
+     */
+    @JsonProperty
+    public String getKeyStore() {
+        return keyStore;
+    }
+
+    /**
+     * Set the keystore password.
+     * @param keyStorePassword the password
+     */
+    @JsonProperty
+    public void setKeyStorePassword(final String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
+    }
+
+    /**
+     * Get the keystore password.
+     * @return the keystore password
+     */
+    @JsonProperty
+    public String getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    /**
+     * Set the key ids.
+     * @param ids the key ids
+     */
+    @JsonProperty
+    public void setKeyIds(final List<String> ids) {
+        this.keyIds = ids;
+    }
+
+    /**
+     * Get the key ids.
+     * @return the key ids
+     */
+    @JsonProperty
+    public List<String> getKeyIds() {
+        return keyIds;
     }
 }

@@ -31,6 +31,12 @@ auth:
         enabled: true
         base64Encoded: false
         key: secret
+        keyStore: /tmp/trellisData/keystore.jks
+        keyStorePassword: password
+        keyIds:
+            - trellis
+            - foo
+            - bar
 
 defaultName: Trellis
 cacheMaxAge: 86400
