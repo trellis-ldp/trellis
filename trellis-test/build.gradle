@@ -11,23 +11,23 @@ sonarqube {
 }
 
 dependencies {
-    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: jwtVersion
-    implementation group: 'javax.jms', name: 'javax.jms-api', version: jmsApiVersion
-    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: jaxrsVersion
-    implementation group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
-    implementation group: 'org.awaitility', name: 'awaitility', version: awaitilityVersion
-    implementation group: 'org.apache.activemq', name: 'activemq-client', version: activeMqVersion
-    implementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    runtime("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    implementation("io.jsonwebtoken:jjwt:$jwtVersion")
+    implementation("javax.jms:javax.jms-api:$jmsApiVersion")
+    implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    implementation("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
+    implementation("org.awaitility:awaitility:$awaitilityVersion")
+    implementation("org.apache.activemq:activemq-client:$activeMqVersion")
+    implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    runtime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     implementation project(':trellis-api')
     implementation project(':trellis-http')
     implementation project(':trellis-io-jena')
     implementation project(':trellis-vocabulary')
 
-    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
+    testCompile("org.mockito:mockito-core:$mockitoVersion")
 }
 
 

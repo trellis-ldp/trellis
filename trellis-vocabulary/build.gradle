@@ -7,11 +7,13 @@ ext {
 }
 
 dependencies {
-    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
 
-    testImplementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
-    testImplementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
+    //TODO
+    testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    //TODO this can be replaced with org.apache.servicemix.bundles:org.apache.servicemix.bundles.xerces
     testImplementation group: 'xerces', name: 'xercesImpl', version: xercesVersion
 
     testRuntimeClasspath group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion

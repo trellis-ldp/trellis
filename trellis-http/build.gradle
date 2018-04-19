@@ -7,39 +7,39 @@ ext {
 }
 
 dependencies {
-    api group: 'io.dropwizard.metrics', name: 'metrics-annotation', version: metricsVersion
-    api group: 'javax.annotation', name: 'javax.annotation-api', version: javaxAnnotationsVersion
-    api group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: jaxrsVersion
-    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    api group: 'org.glassfish.hk2.external', name: 'javax.inject', version: javaxInjectVersion
+    api("io.dropwizard.metrics:metrics-annotation:$metricsVersion")
+    api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
 
-    implementation group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
-    implementation group: 'commons-io', name: 'commons-io', version: commonsIoVersion
-    implementation group: 'javax.json', name: 'javax.json-api', version: javaxJsonVersion
-    implementation group: 'org.apache.tamaya', name: 'tamaya-api', version: tamayaVersion
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    implementation ("commons-codec:commons-codec:$commonsCodecVersion")
+    implementation ("commons-io:commons-io:$commonsIoVersion")
+    implementation("javax.json:javax.json-api:$javaxJsonVersion")
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
-    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
-    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
-    testImplementation group: 'com.google.guava', name: 'guava', version: guavaVersion
-    testImplementation group: 'org.apache.commons', name: 'commons-text', version: commonsTextVersion
-    testImplementation group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
-    testImplementation group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
-    testImplementation group: 'org.glassfish', name: 'javax.json', version: jsonVersion
-    testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-server', version: jerseyVersion
-    testImplementation group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-inmemory', version: jerseyVersion
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    testImplementation("com.google.guava:guava:$guavaVersion")
+    testImplementation("org.apache.commons:commons-text:$commonsTextVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("org.glassfish:javax.json:$jsonVersion")
+    testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:$jerseyVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-event-serialization')
     testImplementation project(':trellis-id')
     testImplementation project(':trellis-io-jena')
 
-    testRuntimeClasspath group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
-    testRuntimeClasspath group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
-    testRuntimeClasspath group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testRuntimeClasspath("javax.xml.bind:jaxb-api:$jaxbVersion")
+    testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
+    testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
 jar {

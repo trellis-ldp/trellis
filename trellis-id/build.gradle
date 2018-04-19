@@ -9,7 +9,7 @@ ext {
 dependencies {
     api project(':trellis-api')
 
-    testImplementation group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
 }
 
 jar {

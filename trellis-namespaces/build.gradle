@@ -8,14 +8,15 @@ ext {
 
 dependencies {
     api project(':trellis-api')
-    api group: 'org.glassfish.hk2.external', name: 'javax.inject', version: javaxInjectVersion
+    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
 
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-    implementation group: 'org.apache.tamaya', name: 'tamaya-api', version: tamayaVersion
+    implementation ("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
 
-    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testImplementation group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
         }
 
 jar {

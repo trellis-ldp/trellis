@@ -22,17 +22,18 @@ ext {
     javaxAnnotationsVersion = '1.3.2'
     javaxInjectVersion = '2.4.0'
     javaxJsonVersion = '1.1.2'
+    jaxbVersion = '2.3.0'
     jaxrsVersion = '2.1'
     jenaVersion = '3.7.0'
     jmsApiVersion = '2.0.1'
+    jsonldVersion = '0.12.0'
+    jwtVersion = '0.9.0'
     kafkaVersion = '1.0.0_1'
     metricsVersion = '4.0.2'
     mustacheVersion = '0.9.5_1'
     rabbitMqVersion = '5.2.0'
     slf4jVersion = '1.7.25'
     tamayaVersion = '0.3-incubating'
-    jwtVersion = '0.9.0'
-    jaxbVersion = '2.3.0'
 
     /* Transitive dependencies (for Karaf provisioning) */
     transitiveGuavaVersion = '20.0' // via mustache 0.9.5
@@ -53,45 +54,44 @@ ext {
 
     /* OSGi */
     asmVersion = '6.1.1'
+    jenaVersionRange = '[3.7,4)'
     karafVersion = '4.2.0'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
     paxExamVersion = '4.11.0'
-    spiflyVersion = '1.0.10'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
-    jenaVersionRange = '[3.7,4)'
+    spiflyVersion = '1.0.10'
 
     jacocoTestProjects = [
-            'trellis-api',
-            'trellis-http',
-            'trellis-vocabulary',
-            'trellis-triplestore',
-            'trellis-id',
-            'trellis-io',
-            'trellis-namespaces',
-            'trellis-file',
-            'trellis-amqp',
-            'trellis-jms',
-            'trellis-kafka',
-            'trellis-webac',
             'trellis-agent',
-            'trellis-audit',
+            'trellis-amqp',
+            'trellis-api',
             'trellis-app',
             'trellis-app-triplestore',
-            'trellis-osgi'
+            'trellis-audit',
+            'trellis-file',
+            'trellis-http',
+            'trellis-id',
+            'trellis-io',
+            'trellis-jms',
+            'trellis-kafka',
+            'trellis-namespaces',
+            'trellis-osgi',
+            'trellis-triplestore',
+            'trellis-vocabulary',
+            'trellis-webac',
     ]
 }
 
 allprojects { subproj ->
 
-    apply plugin: 'maven'
-    apply plugin: 'jacoco'
-    apply plugin: 'java'
-    apply plugin: 'java-library'
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
     apply plugin: 'checkstyle'
     apply plugin: 'com.github.hierynomus.license'
+    apply plugin: 'jacoco'
+    apply plugin: 'java-library'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     ext {
         vendor = 'Trellis LDP'
@@ -103,9 +103,7 @@ allprojects { subproj ->
         checkstyleVersion = '8.8'
     }
 
-    jacoco {
-        toolVersion = jacocoVersion
-    }
+    jacoco.toolVersion = jacocoVersion
 
     group = 'org.trellisldp'
 
