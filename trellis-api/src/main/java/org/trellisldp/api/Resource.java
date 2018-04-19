@@ -174,6 +174,11 @@ public interface Resource {
     /**
      * Get any extra implementation-defined link relations for this resource.
      *
+     * <p>Each entry will be used to create a link header, such that the key refers
+     * to the URI and the value is the "rel" portion. For example, an item with
+     * {@code key="http://example.com/author001"} and {@code value="author"} will result in
+     * the header {@code Link: <http://example.com/author001>; rel="author"}.
+     *
      * @return a stream of relation types
      */
     default Stream<Entry<String, String>> getExtraLinkRelations() {
