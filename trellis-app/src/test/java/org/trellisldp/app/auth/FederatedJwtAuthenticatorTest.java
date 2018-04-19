@@ -17,6 +17,7 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import io.dropwizard.auth.Authenticator;
 import io.jsonwebtoken.JwsHeader;
@@ -25,6 +26,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.security.Key;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.Principal;
 import java.util.Optional;
 
@@ -193,6 +195,27 @@ public class FederatedJwtAuthenticatorTest {
 
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("foo"));
+
+        final Optional<Principal> result = authenticator.authenticate(token);
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void testKeyStoreException() throws Exception {
+        final KeyStore mockKeyStore = mock(KeyStore.class, inv -> {
+                throw new KeyStoreException("Expected");
+        });
+
+        final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
+
+        final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
+        final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
+            .setSubject("https://people.apache.org/~acoburn/#i")
+            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
+
+        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(mockKeyStore,
+                asList("trellis-ec"));
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertFalse(result.isPresent());
