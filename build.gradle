@@ -286,6 +286,9 @@ subprojects { subproj ->
 
     test {
         useJUnitPlatform()
+        jacoco {
+            enabled = ! JavaVersion.current().isJava11Compatible()
+        }
     }
 
     afterReleaseBuild.dependsOn docs
