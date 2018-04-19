@@ -47,6 +47,7 @@ import org.trellisldp.api.CacheService;
 import org.trellisldp.app.auth.AnonymousAuthFilter;
 import org.trellisldp.app.auth.AnonymousAuthenticator;
 import org.trellisldp.app.auth.BasicAuthenticator;
+import org.trellisldp.app.auth.FederatedJwtAuthenticator;
 import org.trellisldp.app.auth.JwtAuthenticator;
 import org.trellisldp.app.config.AuthConfiguration;
 import org.trellisldp.app.config.CORSConfiguration;
@@ -74,9 +75,7 @@ final class TrellisUtils {
                         case 1:
                             return of(new JwtAuthenticator(ks.getCertificate(keyIds.get(0)).getPublicKey()));
                         default:
-                            // TODO -- return a FederatedJwtAuthenticator, and resolve the key in that class
-                            // with a custom SigningKeyResolver or overridden SigningKeyResolverAdaptor
-                            return of(new JwtAuthenticator(ks.getCertificate(keyIds.get(0)).getPublicKey()));
+                            return of(new FederatedJwtAuthenticator(ks, keyIds));
                     }
                 } catch (final IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException ex) {
                     LOGGER.error("Error reading keystore: {}", ex.getMessage());

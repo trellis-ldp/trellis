@@ -15,37 +15,19 @@ package org.trellisldp.app.auth;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Base64.getDecoder;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static org.slf4j.LoggerFactory.getLogger;
 
-import io.dropwizard.auth.AuthenticationException;
-import io.dropwizard.auth.Authenticator;
-import io.dropwizard.auth.PrincipalImpl;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
 
 import java.security.Key;
-import java.security.Principal;
-import java.util.Optional;
 
 import javax.crypto.spec.SecretKeySpec;
-
-import org.slf4j.Logger;
 
 /**
  * A JWT-based authenticator.
  */
-public class JwtAuthenticator implements Authenticator<String, Principal> {
-
-    private static final Logger LOGGER = getLogger(JwtAuthenticator.class);
-
-    public static final String WEBID = "webid";
+public class JwtAuthenticator extends AbstractJwtAuthenticator {
 
     private final Key key;
 
@@ -77,42 +59,8 @@ public class JwtAuthenticator implements Authenticator<String, Principal> {
     }
 
     @Override
-    public Optional<Principal> authenticate(final String credentials) throws AuthenticationException {
-        try {
-            // Parse the JWT claims
-            final Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJws(credentials).getBody();
-
-            // Use a webid claim, if one exists
-            if (claims.containsKey(WEBID)) {
-                LOGGER.debug("Using JWT claim with webid: {}", claims.get(WEBID, String.class));
-                return ofNullable(claims.get(WEBID, String.class)).map(PrincipalImpl::new);
-            }
-
-            // Try generating a webid from other elements
-            final String sub = claims.getSubject();
-            if (nonNull(sub)) {
-                // use the sub claim if it looks like a webid
-                if (isUrl(sub)) {
-                    LOGGER.debug("Using JWT claim with sub: {}", sub);
-                    return of(new PrincipalImpl(sub));
-                }
-                final String iss = claims.getIssuer();
-                // combine the iss and sub fields if that appears possible
-                if (nonNull(iss) && isUrl(iss)) {
-                    final String webid = iss.endsWith("/") ? iss + sub : iss + "/" + sub;
-                    LOGGER.debug("Using JWT claim with generated webid: {}", webid);
-                    return of(new PrincipalImpl(webid));
-                }
-            }
-        } catch (final SignatureException ex) {
-            LOGGER.debug("Invalid signature, ignoring JWT token: {}", ex.getMessage());
-        } catch (final JwtException ex) {
-            LOGGER.warn("Problem reading JWT value: {}", ex.getMessage());
-        }
-        return empty();
-    }
-
-    private Boolean isUrl(final String value) {
-        return value.startsWith("http://") || value.startsWith("https://");
+    protected Claims parse(final String credentials) {
+        // Parse the JWT claims
+        return Jwts.parser().setSigningKey(key).parseClaimsJws(credentials).getBody();
     }
 }
