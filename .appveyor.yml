@@ -1,9 +1,8 @@
 version: '{build}'
 skip_tags: true
 
-# JDK 10 builds are disabled for now
-#install:
-    #- cinst jdk10 -params 'installdir=C:\\jdk10'
+install:
+    - cinst jdk10 -params 'installdir=C:\\jdk10'
 
 build_script:
     - gradlew.bat assemble
@@ -14,7 +13,7 @@ test_script:
 environment:
     matrix:
         - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
-        #- JAVA_HOME: C:\jdk10
+        - JAVA_HOME: C:\jdk10
 
 matrix:
     fast_finish: true
