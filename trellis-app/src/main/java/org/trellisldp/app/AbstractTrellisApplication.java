@@ -13,7 +13,7 @@
  */
 package org.trellisldp.app;
 
-import static java.util.Arrays.asList;
+import static java.util.Optional.of;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
 import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
@@ -23,6 +23,8 @@ import io.dropwizard.Application;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Environment;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -32,6 +34,8 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.app.config.BasicAuthConfiguration;
+import org.trellisldp.app.config.JwtAuthConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
@@ -115,7 +119,12 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         // Authorization
         getWebacConfiguration(config).ifPresent(webacCache -> {
                 final WebAcFilter filter = new WebAcFilter(new WebACService(getResourceService(), webacCache));
-                filter.setChallenges(asList("Authorization"));
+                final List<String> challenges = new ArrayList<>();
+                of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(c -> "Bearer")
+                    .ifPresent(challenges::add);
+                of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled)
+                    .map(c -> "Basic realm=\"" + c.getRealm() + "\"").ifPresent(challenges::add);
+                filter.setChallenges(challenges);
                 environment.jersey().register(filter);
         });
 

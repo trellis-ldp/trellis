@@ -15,10 +15,15 @@ package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Configuration for Basic AuthN.
  */
 public class BasicAuthConfiguration {
+
+    @NotNull
+    private String realm = "trellis";
 
     private Boolean enabled = true;
 
@@ -58,5 +63,23 @@ public class BasicAuthConfiguration {
     @JsonProperty
     public void setUsersFile(final String usersFile) {
         this.usersFile = usersFile;
+    }
+
+    /**
+     * Get the security realm.
+     * @return the realm; by default, this is 'trellis'
+     */
+    @JsonProperty
+    public String getRealm() {
+        return realm;
+    }
+
+    /**
+     * Set the security realm.
+     * @param realm the security realm
+     */
+    @JsonProperty
+    public void setRealm(final String realm) {
+        this.realm = realm;
     }
 }
