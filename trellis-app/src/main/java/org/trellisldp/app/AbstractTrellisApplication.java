@@ -120,8 +120,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getWebacConfiguration(config).ifPresent(webacCache -> {
                 final WebAcFilter filter = new WebAcFilter(new WebACService(getResourceService(), webacCache));
                 final List<String> challenges = new ArrayList<>();
-                of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(c -> "Bearer")
-                    .ifPresent(challenges::add);
+                of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled)
+                    .map(c -> "Bearer realm=\"" + c.getRealm() + "\"").ifPresent(challenges::add);
                 of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled)
                     .map(c -> "Basic realm=\"" + c.getRealm() + "\"").ifPresent(challenges::add);
                 filter.setChallenges(challenges);

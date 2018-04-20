@@ -119,6 +119,10 @@ public class TrellisConfigurationTest {
         assertTrue(config.getAuth().getJwt().getEnabled());
         assertEquals("secret", config.getAuth().getJwt().getKey());
         assertFalse(config.getAuth().getJwt().getBase64Encoded());
+        assertEquals("trellis", config.getAuth().getJwt().getRealm());
+        config.getAuth().getJwt().setRealm("bar");
+        assertEquals("bar", config.getAuth().getJwt().getRealm());
+
         assertEquals("password", config.getAuth().getJwt().getKeyStorePassword());
         assertEquals("/tmp/trellisData/keystore.jks", config.getAuth().getJwt().getKeyStore());
         assertTrue(config.getAuth().getJwt().getKeyIds().contains("foo"));

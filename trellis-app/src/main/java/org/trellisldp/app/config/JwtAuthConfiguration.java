@@ -17,10 +17,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Configuration for the JWT service.
  */
 public class JwtAuthConfiguration {
+
+    @NotNull
+    private String realm = "trellis";
 
     private Boolean enabled = true;
 
@@ -140,5 +145,23 @@ public class JwtAuthConfiguration {
     @JsonProperty
     public List<String> getKeyIds() {
         return keyIds;
+    }
+
+    /**
+     * Get the security realm.
+     * @return the realm; by default, this is 'trellis'
+     */
+    @JsonProperty
+    public String getRealm() {
+        return realm;
+    }
+
+    /**
+     * Set the security realm.
+     * @param realm the security realm
+     */
+    @JsonProperty
+    public void setRealm(final String realm) {
+        this.realm = realm;
     }
 }
