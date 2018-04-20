@@ -13,6 +13,10 @@
  */
 package org.trellisldp.test;
 
+import static java.util.Collections.emptySet;
+
+import java.util.Set;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.EntityTag;
 
@@ -44,8 +48,8 @@ public abstract class AbstractApplicationLdpTests {
      *
      * @return true if Web Annotation tests should be run; false otherwise
      */
-    public Boolean supportWebAnnotationProfile() {
-        return true;
+    public Set<String> supportedJsonLdProfiles() {
+        return emptySet();
     }
 
     @Nested
@@ -58,8 +62,8 @@ public abstract class AbstractApplicationLdpTests {
         private EntityTag etag2;
 
         @Override
-        public Boolean supportWebAnnotationProfile() {
-            return AbstractApplicationLdpTests.this.supportWebAnnotationProfile();
+        public Set<String> supportedJsonLdProfiles() {
+            return AbstractApplicationLdpTests.this.supportedJsonLdProfiles();
         }
 
         @Override
@@ -307,6 +311,7 @@ public abstract class AbstractApplicationLdpTests {
     @Nested
     @DisplayName("LDP Indirect Containment tests")
     public class IndirectContainmentTests extends LdpCommonTests implements LdpIndirectContainerTests {
+
         private String child;
         private String container;
         private String member;

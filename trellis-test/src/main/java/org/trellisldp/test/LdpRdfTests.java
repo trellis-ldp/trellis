@@ -46,6 +46,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
@@ -133,12 +134,10 @@ public interface LdpRdfTests extends CommonTests {
     void setSecondETag(EntityTag etag);
 
     /**
-     * Test whether a custom web annotation JSON-LD profile is supported.
-     * @return true if the OA profile is supported; false otherwise
+     * Return a set of valid JSON-LD profiles that the server supports.
+     * @return the JSON-LD profiles
      */
-    default Boolean supportWebAnnotationProfile() {
-        return true;
-    }
+    Set<String> supportedJsonLdProfiles();
 
     /**
      * Initialize the RDF tests.
@@ -268,7 +267,10 @@ public interface LdpRdfTests extends CommonTests {
     @Test
     @DisplayName("Fetch the JSON-LD serialization with a custom profile")
     default void testGetJsonLdAnnotationProfile() {
-        assumeTrue(supportWebAnnotationProfile(), "Support for the Web Annotation profile is not enabled.");
+
+        assumeTrue(supportedJsonLdProfiles().contains("http://www.w3.org/ns/anno.jsonld"),
+                "Support for the Web Annotation profile is not enabled.");
+
         try (final Response res = target(getAnnotationLocation()).request()
                 .accept("application/ld+json; profile=\"http://www.w3.org/ns/anno.jsonld\"").get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());

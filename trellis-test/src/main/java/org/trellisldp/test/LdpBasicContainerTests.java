@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.PREFER;
@@ -144,8 +145,10 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of BasicContainer appears not to be supported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)),
+                    "New resource was not of the expected BasicContainer type");
 
             setContainerLocation(res.getLocation().toString());
         }
@@ -154,8 +157,10 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of BasicContainer appears not to be supported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)),
+                    "New resource was not of the expected BasicContainer type");
 
             setChildLocation(res.getLocation().toString());
         }
@@ -164,8 +169,10 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of BasicContainer appears not to be supported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)),
+                    "New resource was not of the expected BasicContainer type");
         }
     }
 

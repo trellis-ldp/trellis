@@ -20,6 +20,7 @@ import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
@@ -426,6 +427,9 @@ public interface ResourceServiceTests {
     @Test
     @DisplayName("Test LDP-DC")
     default void testLdpDC() throws Exception {
+        // Only test DC if the backend supports it
+        assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.DirectContainer));
+
         final Instant time = now();
         final RDF rdf = getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();
@@ -491,6 +495,9 @@ public interface ResourceServiceTests {
     @Test
     @DisplayName("Test LDP-IC")
     default void testLdpIC() throws Exception {
+        // Only execute this test if the backend supports it
+        assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.IndirectContainer));
+
         final Instant time = now();
         final RDF rdf = getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();

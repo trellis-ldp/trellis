@@ -15,11 +15,14 @@ package org.trellisldp.app.triplestore;
 
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static java.util.Collections.singleton;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.DropwizardTestSupport;
+
+import java.util.Set;
 
 import javax.ws.rs.client.Client;
 
@@ -56,6 +59,11 @@ public class TrellisLdpTest extends AbstractApplicationLdpTests {
     @Override
     public String getBaseURL() {
         return "http://localhost:" + APP.getLocalPort() + "/";
+    }
+
+    @Override
+    public Set<String> supportedJsonLdProfiles() {
+        return singleton("http://www.w3.org/ns/anno.jsonld");
     }
 
     @AfterAll

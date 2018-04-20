@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.PREFER;
@@ -150,8 +151,10 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of BasicContainer appears to be unsupported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)),
+                    "Expected LDP:BasicContainer type not present in response");
 
             setContainerLocation(res.getLocation().toString());
         }
@@ -165,8 +168,10 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(content, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of IndirectContainer appears to be unsupported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)),
+                    "Expected LDP:IndirectContainer type not present in response");
 
             setFirstIndirectContainerLocation(res.getLocation().toString());
         }
@@ -178,8 +183,10 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(content2, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of IndirectContainer appears to be unsupported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)),
+                    "Expected LDP:IndirectContainer type not present in response");
 
             setSecondIndirectContainerLocation(res.getLocation().toString());
         }
@@ -190,15 +197,19 @@ public interface LdpIndirectContainerTests extends CommonTests {
         // PUT an LDP-RS
         try (final Response res = target(getSecondIndirectContainerLocation()).request().post(entity(containerContent,
                         TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of RDFSource appears to be unsupported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)),
+                    "Expected LDP:RDFSource type not present in response");
             setChildLocation(res.getLocation().toString());
         }
 
         // PUT an LDP-RS
         try (final Response res = target(getMemberLocation()).request().put(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of RDFSource appears to be unsupported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)),
+                    "Expected LDP:RDFSource type not present in response");
         }
 
         setThirdIndirectContainerLocation(getContainerLocation() + "/other");
@@ -207,8 +218,10 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getThirdIndirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of RDFSource appears to be unsupported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)),
+                    "Expected LDP:IndirectContainer type not present in response");
         }
     }
 
