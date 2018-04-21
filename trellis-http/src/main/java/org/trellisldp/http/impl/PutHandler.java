@@ -155,8 +155,7 @@ public class PutHandler extends ContentBearingHandler {
         ofNullable(res).ifPresent(r -> checkResourceCache(identifier, r));
 
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
-            .orElseGet(HttpSession::new);
+            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         final Optional<RDFSyntax> rdfSyntax = ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType)

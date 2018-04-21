@@ -143,8 +143,7 @@ public class PatchHandler extends BaseLdpHandler {
             throw new BadRequestException("Missing Sparql-Update body");
         }
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
-            .orElseGet(HttpSession::new);
+            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted

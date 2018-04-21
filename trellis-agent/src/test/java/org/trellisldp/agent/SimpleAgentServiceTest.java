@@ -13,34 +13,24 @@
  */
 package org.trellisldp.agent;
 
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDF;
+import org.junit.jupiter.api.Test;
 import org.trellisldp.api.AgentService;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
- * An {@link AgentService} implementation which applies a fixed prefix to each user.
- *
  * @author acoburn
  */
-public class PrefixingAgent implements AgentService {
+public class SimpleAgentServiceTest {
 
-    private static final RDF rdf = getInstance();
+    @Test
+    public void testAgent() {
+        final AgentService service = new SimpleAgentService();
 
-    private final String prefix;
-
-    /**
-     * Create a prefixing agent service.
-     *
-     * @param prefix the prefix to apply to usernames
-     */
-    public PrefixingAgent(final String prefix) {
-        this.prefix = prefix;
-    }
-
-    @Override
-    public IRI asAgent(final String user) {
-        return rdf.createIRI(prefix + user);
+        assertEquals("user:acoburn", service.asAgent("user:acoburn").getIRIString());
+        assertEquals("user:foo/bar", service.asAgent("user:foo/bar").getIRIString());
+        assertEquals(Trellis.AnonymousAgent, service.asAgent(null));
+        assertEquals(Trellis.AnonymousAgent, service.asAgent(""));
     }
 }

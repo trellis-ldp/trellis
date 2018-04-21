@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
-import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -53,7 +53,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
     private static final Logger LOGGER = getLogger(AbstractTrellisApplication.class);
 
-    private final AgentService agentService = new SimpleAgent();
+    private final AgentService agentService = new SimpleAgentService();
 
     /**
      * Get the resource service.

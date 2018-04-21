@@ -81,8 +81,7 @@ public class DeleteHandler extends BaseLdpHandler {
         final String identifier = baseUrl + req.getPath();
 
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
-            .orElseGet(HttpSession::new);
+            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted

@@ -29,6 +29,9 @@ public interface AgentService {
     /**
      * Convert an agent {@link String} into an {@link IRI}.
      *
+     * <p>Implementations of this interface should gracefully handle {@code null} and
+     * empty values, possibly mapping them to an agent such as {@code trellis:AnonymousAgent}.
+     *
      * @param agent the agent as a string
      * @return the agent as an IRI
      */

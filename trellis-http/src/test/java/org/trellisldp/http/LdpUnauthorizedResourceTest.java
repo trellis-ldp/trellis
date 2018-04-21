@@ -60,7 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -119,7 +119,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         webacFilter.setChallenges(asList(BASIC_AUTH, DIGEST_AUTH));
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, new SimpleAgent()));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, new SimpleAgentService()));
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(webacFilter);
         config.register(new CrossOriginResourceSharingFilter(asList(origin),

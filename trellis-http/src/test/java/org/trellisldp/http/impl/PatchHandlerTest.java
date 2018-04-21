@@ -76,7 +76,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.IOService;
@@ -107,7 +107,7 @@ public class PatchHandlerTest {
 
     private AuditService mockAuditService = none();
 
-    private final AgentService agentService = new SimpleAgent();
+    private final AgentService agentService = new SimpleAgentService();
 
     @Mock
     private IOService mockIoService;

@@ -69,7 +69,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -102,7 +102,7 @@ public class PostHandlerTest {
 
     private AuditService mockAuditService = none();
 
-    private final AgentService agentService = new SimpleAgent();
+    private final AgentService agentService = new SimpleAgentService();
 
     @Mock
     private IOService mockIoService;

@@ -103,8 +103,7 @@ public class PostHandler extends ContentBearingHandler {
         final String identifier = baseUrl + req.getPath() + separator + id;
         final String contentType = req.getContentType();
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
-            .orElseGet(HttpSession::new);
+            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         LOGGER.debug("Creating resource as {}", identifier);

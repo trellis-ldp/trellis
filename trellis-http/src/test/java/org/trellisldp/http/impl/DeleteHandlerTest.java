@@ -60,7 +60,7 @@ import org.apache.commons.rdf.api.RDFTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Resource;
@@ -84,7 +84,7 @@ public class DeleteHandlerTest {
 
     private final AuditService mockAuditService = none();
 
-    private final AgentService agentService = new SimpleAgent();
+    private final AgentService agentService = new SimpleAgentService();
 
     @Mock
     private ResourceService mockResourceService;

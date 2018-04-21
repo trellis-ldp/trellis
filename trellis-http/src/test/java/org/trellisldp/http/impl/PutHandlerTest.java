@@ -73,7 +73,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
@@ -103,7 +103,7 @@ public class PutHandlerTest {
 
     private final Binary testBinary = new Binary(rdf.createIRI("file:binary.txt"), binaryTime, "text/plain", null);
 
-    private final AgentService agentService = new SimpleAgent();
+    private final AgentService agentService = new SimpleAgentService();
 
     private final AuditService mockAuditService = none();
 

@@ -82,10 +82,8 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
         LOGGER.debug("Checking security context: {}", name);
         if (adminUsers.contains(name)) {
             ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent));
-        } else if (nonNull(name)) {
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession(agentService.asAgent(name)));
         } else {
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession());
+            ctx.setProperty(SESSION_PROPERTY, new HttpSession(agentService.asAgent(name)));
         }
     }
 
