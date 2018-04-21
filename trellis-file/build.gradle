@@ -7,22 +7,26 @@ ext {
 }
 
 dependencies {
-    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    api group: 'org.glassfish.hk2.external', name: 'javax.inject', version: javaxInjectVersion
+    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
 
-    implementation group: 'commons-codec', name: 'commons-codec', version: commonsCodecVersion
-    implementation group: 'commons-io', name: 'commons-io', version: commonsIoVersion
-    implementation group: 'org.apache.commons', name: 'commons-collections4', version: commonsCollectionsVersion
-    implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
-    implementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
-    implementation group: 'org.apache.tamaya', name: 'tamaya-api', version: tamayaVersion
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+    implementation ("commons-io:commons-io:$commonsIoVersion")
+    implementation("org.apache.commons:commons-collections4:$commonsCollectionsVersion")
+    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
+    //TODO resolve jena-osgi and tamaya for JPMS
+    implementation("org.apache.jena:jena-osgi:$jenaVersion")
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
-    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testImplementation group: 'org.apache.tamaya', name: 'tamaya-core', version: tamayaVersion
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    //Note JSON-LD is transitive dependency, but the version can be managed here
+    testImplementation("com.github.jsonld-java:jsonld-java:$jsonldVersion")
+    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-id')
 }
 

@@ -5,29 +5,30 @@ ext {
 }
 
 dependencies {
-    api group: 'io.dropwizard', name: 'dropwizard-auth', version: dropwizardVersion
-    api group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
+    api("io.dropwizard:dropwizard-auth:$dropwizardVersion")
+    api("io.dropwizard:dropwizard-core:$dropwizardVersion")
     api project(':trellis-api')
 
-    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: jwtVersion
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    implementation("io.jsonwebtoken:jjwt:$jwtVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-agent')
     implementation project(':trellis-webac')
 
-    testRuntime group: 'javax.xml.bind', name: 'jaxb-api', version: jaxbVersion
-    testRuntime group: 'javax.activation', name: 'javax.activation-api', version: activationApiVersion
+    testRuntime("javax.xml.bind:jaxb-api:$jaxbVersion")
+    testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
-    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testImplementation group: 'io.dropwizard', name: 'dropwizard-client', version: dropwizardVersion
-    testImplementation group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion
-    testImplementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
-    testImplementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
-    testImplementation group: 'org.apache.jena', name: 'jena-tdb2', version: jenaVersion
-    testImplementation group: 'org.awaitility', name: 'awaitility', version: awaitilityVersion
-    testImplementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: bouncycastleVersion
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("io.dropwizard:dropwizard-client:$dropwizardVersion")
+    testImplementation("io.dropwizard:dropwizard-testing:$dropwizardVersion")
+    testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
+    //TODO resolve jena-osgi for JPMS
+    testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
+    testImplementation("org.apache.jena:jena-tdb2:$jenaVersion")
+    testImplementation("org.awaitility:awaitility:$awaitilityVersion")
+    testImplementation("org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-triplestore')
     testImplementation project(':trellis-io-jena')
     testImplementation project(':trellis-file')

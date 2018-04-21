@@ -7,13 +7,13 @@ ext {
 }
 
 dependencies {
-    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api project(':trellis-api')
 
     implementation project(':trellis-vocabulary')
 
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
-    testImplementation group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
 }
 
 jar {

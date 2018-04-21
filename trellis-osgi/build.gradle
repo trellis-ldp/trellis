@@ -1,3 +1,5 @@
+apply plugin: 'java'
+
 buildscript {
     repositories {
       jcenter()
@@ -61,17 +63,17 @@ dependencies {
     testCompile project(':trellis-webac')
     testCompile project(':trellis-karaf')
 
-    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testCompile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
-    testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion
-    testCompile group: 'org.apache.karaf.features', name: 'org.apache.karaf.features.core', version: karafVersion
-	testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam', version: paxExamVersion
-    testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-junit4', version: paxExamVersion
-    testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-container-karaf', version: paxExamVersion
-    testCompile group: 'org.osgi', name: 'org.osgi.core', version: osgiVersion
-    testCompile group: 'org.osgi', name: 'org.osgi.compendium', version: osgiCompendiumVersion
-    testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
-    testCompile group: 'org.glassfish.hk2.external', name: 'javax.inject', version: javaxInjectVersion
+    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
+    testCompile("org.apache.jena:jena-osgi:$jenaVersion")
+    testCompile("org.apache.karaf.features:standard:$karafVersion")
+    testCompile("org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion")
+    testCompile("org.ops4j.pax.exam:pax-exam:$paxExamVersion")
+    testCompile("org.ops4j.pax.exam:pax-exam-junit4:$paxExamVersion")
+    testCompile("org.ops4j.pax.exam:pax-exam-container-karaf:$paxExamVersion")
+    testCompile("org.osgi:org.osgi.core:$osgiVersion")
+    testCompile("org.osgi:org.osgi.compendium:$osgiCompendiumVersion")
+    testCompile("org.mockito:mockito-core:$mockitoVersion")
+    testCompile("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
     testRuntime("org.junit.vintage:junit-vintage-engine:${junitVersion}")
     karafDistro group: 'org.apache.karaf', name: 'apache-karaf', version: karafVersion, ext: 'zip'
