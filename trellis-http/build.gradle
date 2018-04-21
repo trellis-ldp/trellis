@@ -31,6 +31,7 @@ dependencies {
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation project(':trellis-agent')
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-event-serialization')

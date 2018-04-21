@@ -13,13 +13,14 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,15 +78,21 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
         final SecurityContext sec = ctx.getSecurityContext();
-        LOGGER.debug("Checking security context: {}", sec.getUserPrincipal());
-        if (isNull(sec.getUserPrincipal())) {
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession());
-        } else if (adminUsers.contains(sec.getUserPrincipal().getName())) {
+        final String name = getPrincipalName(sec.getUserPrincipal());
+        LOGGER.debug("Checking security context: {}", name);
+        if (adminUsers.contains(name)) {
             ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent));
-        } else if (sec.getUserPrincipal().getName().isEmpty()) {
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession());
+        } else if (nonNull(name)) {
+            ctx.setProperty(SESSION_PROPERTY, new HttpSession(agentService.asAgent(name)));
         } else {
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession(agentService.asAgent(sec.getUserPrincipal().getName())));
+            ctx.setProperty(SESSION_PROPERTY, new HttpSession());
         }
+    }
+
+    private String getPrincipalName(final Principal principal) {
+        if (nonNull(principal) && !principal.getName().isEmpty()) {
+            return principal.getName();
+        }
+        return null;
     }
 }

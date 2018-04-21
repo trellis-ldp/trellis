@@ -40,6 +40,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintViolation;
@@ -62,6 +63,7 @@ class ContentBearingHandler extends BaseLdpHandler {
 
     protected final BinaryService binaryService;
     protected final IOService ioService;
+    protected final AgentService agentService;
     protected final File entity;
 
     /**
@@ -77,10 +79,11 @@ class ContentBearingHandler extends BaseLdpHandler {
      */
     protected ContentBearingHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
                     final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final String baseUrl) {
+                    final AgentService agentService, final String baseUrl) {
         super(req, resourceService, auditService, baseUrl);
         this.binaryService = binaryService;
         this.ioService = ioService;
+        this.agentService = agentService;
         this.entity = entity;
     }
 

@@ -42,6 +42,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.File;
 import java.net.URI;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
@@ -92,12 +94,13 @@ public class PutHandler extends ContentBearingHandler {
      * @param auditService an audit service
      * @param ioService the serialization service
      * @param binaryService the binary service
+     * @param agentService the agent service
      * @param baseUrl the base URL
      */
     public PutHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
                     final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final String baseUrl) {
-        super(req, entity, resourceService, auditService, ioService, binaryService, baseUrl);
+                    final AgentService agentService, final String baseUrl) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, baseUrl);
     }
 
     private void checkResourceCache(final String identifier, final Resource res) {
@@ -151,7 +154,9 @@ public class PutHandler extends ContentBearingHandler {
         // Check the cache
         ofNullable(res).ifPresent(r -> checkResourceCache(identifier, r));
 
-        final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
+            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
+            .orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         final Optional<RDFSyntax> rdfSyntax = ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType)

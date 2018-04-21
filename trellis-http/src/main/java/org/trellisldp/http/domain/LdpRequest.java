@@ -13,19 +13,15 @@
  */
 package org.trellisldp.http.domain;
 
-import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
-
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Request;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-
-import org.trellisldp.api.Session;
 
 /**
  * A class representing an HTTP request with various LDP-related headers and query parameters.
@@ -33,9 +29,6 @@ import org.trellisldp.api.Session;
  * @author acoburn
  */
 public class LdpRequest {
-
-    @Context
-    private ContainerRequestContext ctx;
 
     @PathParam("path")
     private String path;
@@ -63,6 +56,9 @@ public class LdpRequest {
 
     @Context
     private Request request;
+
+    @Context
+    private SecurityContext secCtx;
 
     @HeaderParam("Accept-Datetime")
     private AcceptDatetime datetime;
@@ -206,15 +202,6 @@ public class LdpRequest {
     }
 
     /**
-     * Get a user session.
-     *
-     * @return a session
-     */
-    public Session getSession() {
-        return (Session) ctx.getProperty(SESSION_PROPERTY);
-    }
-
-    /**
      * Get the subject filter.
      *
      * @return the subject filter
@@ -239,6 +226,15 @@ public class LdpRequest {
      */
     public String getObject() {
         return object;
+    }
+
+    /**
+     * Get the security context.
+     *
+     * @return the security context
+     */
+    public SecurityContext getSecurityContext() {
+        return secCtx;
     }
 
     /**

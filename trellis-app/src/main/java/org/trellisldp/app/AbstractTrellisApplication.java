@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.trellisldp.agent.SimpleAgent;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -51,6 +52,8 @@ import org.trellisldp.webac.WebACService;
 public abstract class AbstractTrellisApplication<T extends TrellisConfiguration> extends Application<T> {
 
     private static final Logger LOGGER = getLogger(AbstractTrellisApplication.class);
+
+    private final AgentService agentService = new SimpleAgent();
 
     /**
      * Get the resource service.
@@ -108,12 +111,12 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Resource matchers
         environment.jersey().register(new LdpResource(getResourceService(), getIOService(), getBinaryService(),
-                    getAuditService().orElseGet(NoopAuditService::new), config.getBaseUrl()));
+                    agentService, getAuditService().orElseGet(NoopAuditService::new), config.getBaseUrl()));
         getMultipartUploadService().ifPresent(uploader -> environment.jersey()
                 .register(new MultipartUploader(getResourceService(), uploader, config.getBaseUrl())));
 
         // Filters
-        environment.jersey().register(new AgentAuthorizationFilter(new SimpleAgent()));
+        environment.jersey().register(new AgentAuthorizationFilter(agentService));
         environment.jersey().register(new CacheControlFilter(config.getCacheMaxAge()));
 
         // Authorization

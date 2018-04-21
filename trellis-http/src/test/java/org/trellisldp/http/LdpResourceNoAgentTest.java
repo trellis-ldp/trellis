@@ -19,6 +19,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.server.ResourceConfig;
+import org.trellisldp.agent.SimpleAgent;
 
 /**
  * @author acoburn
@@ -35,7 +36,8 @@ public class LdpResourceNoAgentTest extends AbstractLdpResourceTest {
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService,
+                    new SimpleAgent(), mockAuditService));
         config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400));
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),

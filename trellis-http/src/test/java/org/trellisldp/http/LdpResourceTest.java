@@ -35,7 +35,8 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
         final ResourceConfig config = new ResourceConfig();
 
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAuditService));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService,
+                    mockAuditService));
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400));

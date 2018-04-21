@@ -36,6 +36,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.File;
 import java.net.URI;
+import java.security.Principal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -48,6 +49,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -79,13 +81,14 @@ public class PostHandler extends ContentBearingHandler {
      * @param resourceService the resource service
      * @param ioService the serialization service
      * @param binaryService the datastream service
-     * @param baseUrl the base URL
      * @param auditService and audit service
+     * @param agentService the agent service
+     * @param baseUrl the base URL
      */
     public PostHandler(final LdpRequest req, final String id, final File entity, final ResourceService resourceService,
-                    final IOService ioService, final BinaryService binaryService, final String baseUrl,
-                    final AuditService auditService) {
-        super(req, entity, resourceService, auditService, ioService, binaryService, baseUrl);
+                    final AuditService auditService, final IOService ioService, final BinaryService binaryService,
+                    final AgentService agentService, final String baseUrl) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, baseUrl);
         this.id = id;
     }
 
@@ -99,7 +102,9 @@ public class PostHandler extends ContentBearingHandler {
         final String separator = req.getPath().isEmpty() ? "" : "/";
         final String identifier = baseUrl + req.getPath() + separator + id;
         final String contentType = req.getContentType();
-        final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
+            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
+            .orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         LOGGER.debug("Creating resource as {}", identifier);

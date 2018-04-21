@@ -103,10 +103,10 @@ public class LdpForbiddenResourceTest extends JerseyTest {
     private Resource mockVersionedResource;
 
     @Mock
-    private AccessControlService mockAccessControlService;
+    private AgentService mockAgentService;
 
     @Mock
-    private AgentService mockAgentService;
+    private AccessControlService mockAccessControlService;
 
     private String BASE_URL = "";
 
@@ -123,7 +123,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new WebAcFilter(mockAccessControlService));
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService));
         System.getProperties().remove(CONFIGURATION_BASE_URL);
 
         return config;
@@ -149,14 +149,14 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
-        when(mockAgentService.asAgent("testUser")).thenReturn(agent);
-
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockVersionedResource.getModified()).thenReturn(time);
         when(mockVersionedResource.getBinary()).thenReturn(empty());
         when(mockVersionedResource.isMemento()).thenReturn(true);
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+
+        when(mockAgentService.asAgent("testUser")).thenReturn(agent);
 
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);

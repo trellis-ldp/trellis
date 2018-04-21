@@ -25,6 +25,7 @@ import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
+import java.security.Principal;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -35,6 +36,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -51,17 +53,21 @@ public class DeleteHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(DeleteHandler.class);
 
+    private final AgentService agentService;
+
     /**
      * Create a builder for an LDP DELETE response.
      *
      * @param req the LDP request
      * @param resourceService the resource service
      * @param auditService an audit service
+     * @param agentService the agent service
      * @param baseUrl the base URL
      */
     public DeleteHandler(final LdpRequest req, final ResourceService resourceService, final AuditService auditService,
-                    final String baseUrl) {
+                    final AgentService agentService, final String baseUrl) {
         super(req, resourceService, auditService, baseUrl);
+        this.agentService = agentService;
     }
 
     /**
@@ -74,7 +80,9 @@ public class DeleteHandler extends BaseLdpHandler {
         final String baseUrl = getBaseUrl();
         final String identifier = baseUrl + req.getPath();
 
-        final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
+            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
+            .orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted

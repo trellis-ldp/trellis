@@ -45,6 +45,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -61,6 +62,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
@@ -85,6 +87,7 @@ public class PatchHandler extends BaseLdpHandler {
     private static final Logger LOGGER = getLogger(PatchHandler.class);
 
     private final IOService ioService;
+    private final AgentService agentService;
     private final String sparqlUpdate;
 
     /**
@@ -95,12 +98,15 @@ public class PatchHandler extends BaseLdpHandler {
      * @param auditService an audit service
      * @param resourceService the resource service
      * @param ioService the serialization service
+     * @param agentService the agent service
      * @param baseUrl the base URL
      */
-    public PatchHandler(final LdpRequest req, final String sparqlUpdate, final AuditService auditService,
-            final ResourceService resourceService, final IOService ioService, final String baseUrl) {
+    public PatchHandler(final LdpRequest req, final String sparqlUpdate, final ResourceService resourceService,
+            final AuditService auditService, final IOService ioService, final AgentService agentService,
+            final String baseUrl) {
         super(req, resourceService, auditService, baseUrl);
         this.ioService = ioService;
+        this.agentService = agentService;
         this.sparqlUpdate = sparqlUpdate;
     }
 
@@ -136,7 +142,9 @@ public class PatchHandler extends BaseLdpHandler {
         if (isNull(sparqlUpdate)) {
             throw new BadRequestException("Missing Sparql-Update body");
         }
-        final Session session = ofNullable(req.getSession()).orElseGet(HttpSession::new);
+        final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
+            .filter(name -> !name.isEmpty()).map(agentService::asAgent).map(HttpSession::new)
+            .orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted
