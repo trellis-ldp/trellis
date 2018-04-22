@@ -21,8 +21,7 @@
       </cm:default-properties>
     </cm:property-placeholder>
 
-    <reference id="idService"
-      interface="org.trellisldp.api.IdentifierService"/>
+    <reference id="idService" interface="org.trellisldp.api.IdentifierService"/>
 
     <bean id="binaryService" class="org.trellisldp.file.FileBinaryService">
       <argument ref="idService"/>
@@ -35,15 +34,15 @@
       <argument value="${memento.location}"/>
     </bean>
 
-    <service ref="binaryService" interface="org.trellisldp.api.BinaryService">
+    <service ref="binaryService" interface="org.trellisldp.api.BinaryService" ranking="10">
       <service-properties>
-        <entry key="osgi.jndi.service.name" value="trellis/FileBinaryService"/>
+        <entry key="osgi.jndi.service.name" value="trellis/File"/>
       </service-properties>
     </service>
 
-    <service ref="mementoService" interface="org.trellisldp.api.MementoService">
+    <service ref="mementoService" interface="org.trellisldp.api.MementoService" ranking="10">
       <service-properties>
-        <entry key="osgi.jndi.service.name" value="trellis/FileMementoService"/>
+        <entry key="osgi.jndi.service.name" value="trellis/File"/>
       </service-properties>
     </service>
 

@@ -4,6 +4,8 @@
   <feature name="trellis-api" version="${project.version}">
     <details>Installs the Trellis API bundle</details>
 
+    <feature>aries-blueprint</feature>
+
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
 
@@ -187,22 +189,26 @@
     <details>Installs the Trellis Kafka service bundle</details>
 
     <feature>trellis-api</feature>
+    <feature>aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.kafka-clients/${kafkaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-kafka/${project.version}</bundle>
+    <configfile finalname="/etc/org.trellisldp.kafka.cfg">mvn:org.trellisldp/trellis-kafka/${project.version}/cfg/configuration</configfile>
   </feature>
 
   <feature name="trellis-amqp" version="${project.version}">
     <details>Installs the Trellis AMQP service bundle</details>
 
     <feature>trellis-api</feature>
+    <feature>aries-blueprint</feature>
 
     <bundle dependency="true">mvn:com.rabbitmq/amqp-client/${rabbitMqVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-amqp/${project.version}</bundle>
+    <configfile finalname="/etc/org.trellisldp.amqp.cfg">mvn:org.trellisldp/trellis-amqp/${project.version}/cfg/configuration</configfile>
   </feature>
 
   <feature name="trellis-jms" version="${project.version}">
@@ -210,10 +216,14 @@
 
     <feature>trellis-api</feature>
     <feature>transaction</feature>
+    <feature>aries-blueprint</feature>
+    <feature>activemq-client</feature>
 
     <bundle dependency="true">mvn:javax.jms/javax.jms-api/${jmsApiVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
+
+    <configfile finalname="/etc/org.trellisldp.jms.cfg">mvn:org.trellisldp/trellis-jms/${project.version}/cfg/configuration</configfile>
   </feature>
 </features>

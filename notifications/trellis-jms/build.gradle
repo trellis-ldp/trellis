@@ -32,7 +32,7 @@ jar {
         license project.license
 
         instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '*'
+        instruction 'Import-Package', 'org.apache.activemq,org.apache.activemq.pool,*'
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
         instruction 'Require-Capability', '''\
             osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",
@@ -40,6 +40,13 @@ jar {
                 filter:="(osgi.serviceloader=org.trellisldp.api.ActivityStreamService)";
                 resolution:=mandatory; cardinality:=mandatory
             '''
+    }
+}
+
+artifacts {
+    archives (file('build/cfg/main/org.trellisldp.jms.cfg')) {
+        classifier 'configuration'
+        type 'cfg'
     }
 }
 

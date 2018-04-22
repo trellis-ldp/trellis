@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+       xsi:schemaLocation="
+       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+    <!-- OSGI blueprint property placeholder -->
+    <cm:property-placeholder id="properties" persistent-id="org.trellisldp.jms" update-strategy="reload">
+      <cm:default-properties>
+        <cm:property name="jms.brokerUrl" value="tcp://localhost:61616"/>
+        <cm:property name="jms.username" value=""/>
+        <cm:property name="jms.password" value=""/>
+        <cm:property name="jms.connections" value="10"/>
+        <cm:property name="jms.queueName" value="trellis"/>
+      </cm:default-properties>
+    </cm:property-placeholder>
+
+
+		<!-- configuration of activemq component -->
+		<bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+			<property name="brokerURL" value="${jms.brokerUrl}"/>
+			<property name="userName" value="${jms.username}"/>
+			<property name="password" value="${jms.password}"/>
+		</bean>
+
+		<bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+					init-method="start" destroy-method="stop">
+			<property name="maxConnections" value="${jms.connections}"/>
+			<property name="connectionFactory" ref="connectionFactory"/>
+		</bean>
+
+    <bean id="jmsPublisher" class="org.trellisldp.jms.JmsPublisher">
+      <argument ref="pooledConnectionFactory"/>
+      <argument value="${jms.queueName}"/>
+    </bean>
+
+    <service ref="jmsPublisher" interface="org.trellisldp.api.EventService" ranking="10">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/Jms"/>
+      </service-properties>
+    </service>
+
+</blueprint>

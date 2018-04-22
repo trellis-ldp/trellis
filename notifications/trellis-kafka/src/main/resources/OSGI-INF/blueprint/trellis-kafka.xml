@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+       xsi:schemaLocation="
+       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+    <!-- OSGI blueprint property placeholder -->
+    <cm:property-placeholder id="properties" persistent-id="org.trellisldp.kafka" update-strategy="reload">
+      <cm:default-properties>
+        <cm:property name="bootstrap.servers" value="localhost:9092"/>
+        <cm:property name="acks" value="all"/>
+        <cm:property name="batch.size" value="16384"/>
+        <cm:property name="retries" value="0"/>
+        <cm:property name="linger.ms" value="1"/>
+        <cm:property name="buffer.memory" value="33554432"/>
+        <cm:property name="trellis.topic" value="trellis"/>
+      </cm:default-properties>
+    </cm:property-placeholder>
+
+    <bean id="kafkaPublisher" class="org.trellisldp.kafka.KafkaPublisher">
+		  <argument>
+        <map>
+          <entry key="acks" value="${acks}"/>
+          <entry key="batch.size" value="${batch.size}"/>
+          <entry key="retries" value="${retries}"/>
+          <entry key="linger.ms" value="${linger.ms}"/>
+          <entry key="buffer.memory" value="${buffer.memory}"/>
+          <entry key="bootstrap.servers" value="${bootstrap.servers}"/>
+        </map>
+      </argument>
+      <argument value="${trellis.topic}"/>
+    </bean>
+
+    <service ref="kafkaPublisher" interface="org.trellisldp.api.EventService" ranking="10">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/Kafka"/>
+      </service-properties>
+    </service>
+</blueprint>

@@ -5,17 +5,14 @@
        http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
 
     <!-- TODO make this more flexible with a reference -->
+    <!--<reference id="rdfConnectionRef" interface="org.apache.jena.rdfconnection.RDFConnection"/>-->
     <bean id="dataset" class="org.apache.jena.query.DatasetFactory" factory-method="create"/>
 
     <bean id="rdfConnection" class="org.apache.jena.rdfconnection.RDFConnectionFactory" factory-method="connect">
         <argument ref="dataset"/>
     </bean>
-    <!--<reference id="rdfConnection" interface="org.apache.jena.rdfconnection.RDFConnection"/>-->
 
-    <!-- TODO make this more flexible with a reference -->
-    <bean id="eventService" class="org.trellisldp.api.NoopEventService"/>
-    <!--<reference id="eventService" interface="org.trellisldp.api.EventService"/>-->
-
+    <reference id="eventService" interface="org.trellisldp.api.EventService"/>
     <reference id="idService" interface="org.trellisldp.api.IdentifierService"/>
     <reference id="mementoService" interface="org.trellisldp.api.MementoService"/>
 
@@ -26,9 +23,9 @@
       <argument ref="eventService"/>
     </bean>
 
-    <service ref="resourceService" interface="org.trellisldp.api.ResourceService">
+    <service ref="resourceService" auto-export="interfaces">
       <service-properties>
-        <entry key="osgi.jndi.service.name" value="trellis/TriplestoreResourceService"/>
+        <entry key="osgi.jndi.service.name" value="trellis/Triplestore"/>
       </service-properties>
     </service>
 

@@ -21,6 +21,7 @@ import java.util.ServiceLoader;
 
 import javax.inject.Inject;
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
@@ -53,7 +54,7 @@ public class JmsPublisher implements EventService {
     /**
      * Create a new JMS Publisher.
      * @param conn the connection
-     * @throws JMSException when there is a JMS error
+     * @throws JMSException when there is a connection error
      */
     @Inject
     public JmsPublisher(final Connection conn) throws JMSException {
@@ -63,9 +64,19 @@ public class JmsPublisher implements EventService {
 
     /**
      * Create a new JMS Publisher.
+     * @param factory a connetion factory
+     * @param queueName the name of the queue
+     * @throws JMSException when there is a connection error
+     */
+    public JmsPublisher(final ConnectionFactory factory, final String queueName) throws JMSException {
+        this(factory.createConnection().createSession(false, AUTO_ACKNOWLEDGE), queueName);
+    }
+
+    /**
+     * Create a new JMS Publisher.
      * @param session the JMS session
      * @param queueName the name of the queue
-     * @throws JMSException when there is a JMS error
+     * @throws JMSException when there is a connection error
      */
     public JmsPublisher(final Session session, final String queueName) throws JMSException {
         requireNonNull(session, "JMS Session may not be null!");

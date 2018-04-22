@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+    <bean id="auditService" class="org.trellisldp.api.NoopAuditService"/>
+    <bean id="eventService" class="org.trellisldp.api.NoopEventService"/>
+    <bean id="mementoService" class="org.trellisldp.api.NoopMementoService"/>
+    <bean id="namespaceService" class="org.trellisldp.api.NoopNamespaceService"/>
+
+    <service ref="auditService" interface="org.trellisldp.api.AuditService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/Default"/>
+      </service-properties>
+    </service>
+
+    <service ref="mementoService" interface="org.trellisldp.api.MementoService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/Default"/>
+      </service-properties>
+    </service>
+
+    <service ref="eventService" interface="org.trellisldp.api.EventService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/Default"/>
+      </service-properties>
+    </service>
+
+    <service ref="namespaceService" interface="org.trellisldp.api.NamespaceService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/Default"/>
+      </service-properties>
+    </service>
+</blueprint>

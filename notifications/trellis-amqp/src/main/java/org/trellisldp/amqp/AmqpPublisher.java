@@ -19,9 +19,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
@@ -74,6 +76,19 @@ public class AmqpPublisher implements EventService {
         this(channel, config.get(AMQP_EXCHANGE_NAME), config.get(AMQP_ROUTING_KEY),
             config.getOrDefault(AMQP_MANDATORY, Boolean.class, true),
             config.getOrDefault(AMQP_IMMEDIATE, Boolean.class, false));
+    }
+
+    /**
+     * Create an AMQP publisher.
+     * @param factory the connection factory
+     * @param exchangeName the exchange name
+     * @param routingKey the routing key
+     * @throws IOException if a problem is encountered connecting to the broker
+     * @throws TimeoutException if the connection times out
+     */
+    public AmqpPublisher(final ConnectionFactory factory, final String exchangeName, final String routingKey)
+            throws IOException, TimeoutException {
+        this(factory.newConnection().createChannel(), exchangeName, routingKey);
     }
 
     /**

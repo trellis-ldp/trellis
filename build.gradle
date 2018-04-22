@@ -61,6 +61,8 @@ ext {
     paxExamVersion = '4.11.0'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
     spiflyVersion = '1.0.10'
+    // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
+    springFeatureVersion = '4.1.0'
 
     jacocoTestProjects = [
             'trellis-agent',

@@ -22,9 +22,9 @@
       <argument value="${namespace.file.location}"/>
     </bean>
 
-    <service ref="namespaceService" interface="org.trellisldp.api.NamespaceService">
+    <service ref="namespaceService" interface="org.trellisldp.api.NamespaceService" ranking="3">
       <service-properties>
-        <entry key="osgi.jndi.service.name" value="trellis/FileNamespaceService"/>
+        <entry key="osgi.jndi.service.name" value="trellis/File"/>
       </service-properties>
     </service>
 

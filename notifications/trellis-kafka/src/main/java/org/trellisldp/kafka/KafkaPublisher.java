@@ -16,13 +16,16 @@ package org.trellisldp.kafka;
 import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
@@ -42,7 +45,7 @@ public class KafkaPublisher implements EventService {
     private static ActivityStreamService service = ServiceLoader.load(ActivityStreamService.class).iterator().next();
 
     private final Producer<String, String> producer;
-    private final String topicName;
+    private final String topic;
 
     /**
      * Create a new Kafka Publisher.
@@ -55,15 +58,24 @@ public class KafkaPublisher implements EventService {
 
     /**
      * Create a new Kafka Publisher.
-     * @param producer the producer
-     * @param topicName the name of the kafka topic
+     * @param configuration the producer configuration
+     * @param topic the name of the kafka topic
      */
-    public KafkaPublisher(final Producer<String, String> producer, final String topicName) {
+    public KafkaPublisher(final Map<String, Object> configuration, final String topic) {
+        this(new KafkaProducer<String, String>(configuration, new StringSerializer(), new StringSerializer()), topic);
+    }
+
+    /**
+     * Create a new Kafka Publisher.
+     * @param producer the producer
+     * @param topic the name of the kafka topic
+     */
+    public KafkaPublisher(final Producer<String, String> producer, final String topic) {
         requireNonNull(producer, "Kafka producer may not be null!");
-        requireNonNull(topicName, "Kafka topic name may not be null!");
+        requireNonNull(topic, "Kafka topic name may not be null!");
 
         this.producer = producer;
-        this.topicName = topicName;
+        this.topic = topic;
     }
 
     @Override
@@ -71,9 +83,9 @@ public class KafkaPublisher implements EventService {
         requireNonNull(event, "Cannot emit a null event!");
 
         service.serialize(event).ifPresent(message -> {
-            LOGGER.debug("Sending message to Kafka topic: {}", topicName);
+            LOGGER.debug("Sending message to Kafka topic: {}", topic);
             producer.send(
-                new ProducerRecord<>(topicName, event.getTarget().map(IRI::getIRIString).orElse(null),
+                new ProducerRecord<>(topic, event.getTarget().map(IRI::getIRIString).orElse(null),
                         message));
         });
     }

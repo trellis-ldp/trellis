@@ -10,9 +10,9 @@
       <argument ref="resourceService"/>
     </bean>
 
-    <service ref="webacService" interface="org.trellisldp.api.AccessControlService">
+    <service ref="webacService" interface="org.trellisldp.api.AccessControlService" ranking="3">
       <service-properties>
-        <entry key="osgi.jndi.service.name" value="trellis/WebACService"/>
+        <entry key="osgi.jndi.service.name" value="trellis/WebAC"/>
       </service-properties>
     </service>
 
