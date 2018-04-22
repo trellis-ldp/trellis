@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+    <!-- TODO make this more flexible with a reference -->
+    <bean id="dataset" class="org.apache.jena.query.DatasetFactory" factory-method="create"/>
+
+    <bean id="rdfConnection" class="org.apache.jena.rdfconnection.RDFConnectionFactory" factory-method="connect">
+        <argument ref="dataset"/>
+    </bean>
+    <!--<reference id="rdfConnection" interface="org.apache.jena.rdfconnection.RDFConnection"/>-->
+
+    <!-- TODO make this more flexible with a reference -->
+    <bean id="eventService" class="org.trellisldp.api.NoopEventService"/>
+    <!--<reference id="eventService" interface="org.trellisldp.api.EventService"/>-->
+
+    <reference id="idService" interface="org.trellisldp.api.IdentifierService"/>
+    <reference id="mementoService" interface="org.trellisldp.api.MementoService"/>
+
+    <bean id="resourceService" class="org.trellisldp.triplestore.TriplestoreResourceService">
+      <argument ref="rdfConnection"/>
+      <argument ref="idService"/>
+      <argument ref="mementoService"/>
+      <argument ref="eventService"/>
+    </bean>
+
+    <service ref="resourceService" interface="org.trellisldp.api.ResourceService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/TriplestoreResourceService"/>
+      </service-properties>
+    </service>
+
+</blueprint>
