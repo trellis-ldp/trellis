@@ -166,6 +166,17 @@ subprojects { subproj ->
         from sourceSets.main.allSource
     }
 
+    task processConfig(type: Copy) {
+        from('src/main/cfg') {
+            include '**/*.cfg'
+        }
+        into 'build/cfg/main'
+    }
+
+    classes {
+        classes.dependsOn processConfig
+    }
+
     artifacts {
         archives javadocJar
         archives sourceJar

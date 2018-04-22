@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+       xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.2.0"
+       xsi:schemaLocation="
+       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.2.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext-1.2.xsd">
+
+    <!-- Bean to allow the $[karaf.base] property to be correctly resolved -->
+    <ext:property-placeholder placeholder-prefix="$[" placeholder-suffix="]"/>
+
+    <!-- OSGI blueprint property placeholder -->
+    <cm:property-placeholder id="properties" persistent-id="org.trellisldp.io" update-strategy="reload">
+      <cm:default-properties>
+        <cm:property name="io.jsonld.profiles" value=""/>
+        <cm:property name="io.jsonld.domains" value=""/>
+      </cm:default-properties>
+    </cm:property-placeholder>
+
+    <reference id="namespaceService" interface="org.trellisldp.api.NamespaceService"/>
+    <!-- TODO make this more flexible -->
+    <bean id="cacheService" class="org.trellisldp.io.impl.NoopProfileCache"/>
+
+    <bean id="ioService" class="org.trellisldp.io.JenaIOService">
+      <argument ref="namespaceService"/>
+      <argument ref="cacheService"/>
+      <argument>
+        <map>
+          <entry key="trellis.io.jsonld.profiles" value="${io.jsonld.profiles}"/>
+          <entry key="trellis.io.jsonld.domains" value="${io.jsonld.domains}"/>
+        </map>
+      </argument>
+    </bean>
+
+    <service ref="ioService" interface="org.trellisldp.api.IOService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/JenaIOService"/>
+      </service-properties>
+    </service>
+
+</blueprint>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+       xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.2.0"
+       xsi:schemaLocation="
+       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.2.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext-1.2.xsd">
+
+    <!-- Bean to allow the $[karaf.base] property to be correctly resolved -->
+    <ext:property-placeholder placeholder-prefix="$[" placeholder-suffix="]"/>
+
+    <!-- OSGI blueprint property placeholder -->
+    <cm:property-placeholder id="properties" persistent-id="org.trellisldp.file" update-strategy="reload">
+      <cm:default-properties>
+        <cm:property name="memento.location" value="$[karaf.base]/data/trellis/mementos"/>
+        <cm:property name="binary.location" value="$[karaf.base]/data/trellis/binaries"/>
+        <cm:property name="binary.path.hierarchy" value="3"/>
+        <cm:property name="binary.path.length" value="2"/>
+      </cm:default-properties>
+    </cm:property-placeholder>
+
+    <reference id="idService"
+      interface="org.trellisldp.api.IdentifierService"/>
+
+    <bean id="binaryService" class="org.trellisldp.file.FileBinaryService">
+      <argument ref="idService"/>
+      <argument value="${binary.location}"/>
+      <argument value="${binary.path.hierarchy}"/>
+      <argument value="${binary.path.length}"/>
+    </bean>
+
+    <bean id="mementoService" class="org.trellisldp.file.FileMementoService">
+      <argument value="${memento.location}"/>
+    </bean>
+
+    <service ref="binaryService" interface="org.trellisldp.api.BinaryService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/FileBinaryService"/>
+      </service-properties>
+    </service>
+
+    <service ref="mementoService" interface="org.trellisldp.api.MementoService">
+      <service-properties>
+        <entry key="osgi.jndi.service.name" value="trellis/FileMementoService"/>
+      </service-properties>
+    </service>
+
+</blueprint>

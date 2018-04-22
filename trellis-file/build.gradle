@@ -43,3 +43,10 @@ jar {
     }
 }
 
+artifacts {
+    archives (file('build/cfg/main/org.trellisldp.file.cfg')) {
+        classifier 'configuration'
+        type 'cfg'
+    }
+}
+

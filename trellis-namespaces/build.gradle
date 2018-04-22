@@ -17,7 +17,7 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
-        }
+}
 
 jar {
     manifest {
@@ -29,6 +29,17 @@ jar {
         instruction 'Automatic-Module-Name', moduleName
         instruction 'Import-Package', '*'
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+    }
+}
+
+artifacts {
+    archives (file('build/cfg/main/org.trellisldp.namespaces.cfg')) {
+        classifier 'configuration'
+        type 'cfg'
+    }
+    archives (file('build/resources/main/defaultNamespaces.json')) {
+        classifier 'configuration'
+        type 'json'
     }
 }
 
