@@ -226,4 +226,26 @@
 
     <configfile finalname="/etc/org.trellisldp.jms.cfg">mvn:org.trellisldp/trellis-jms/${project.version}/cfg/configuration</configfile>
   </feature>
+
+  <feature name="trellis-app-triplestore" version="${project.version}">
+    <details>Installs a complete triplestore-based Trellis application</details>
+
+    <feature prerequisite="true">http</feature>
+    <feature prerequisite="true">cxf</feature>
+    <feature prerequisite="true">cxf-jaxrs</feature>
+    <feature prerequisite="true">xerces</feature>
+
+    <feature dependency="true">trellis-constraint-rules</feature>
+    <feature>trellis-id</feature>
+    <feature>trellis-agent</feature>
+    <feature>trellis-file</feature>
+    <feature>trellis-namespaces</feature>
+    <feature>trellis-io-jena</feature>
+    <feature>trellis-http</feature>
+    <feature>trellis-triplestore</feature>
+
+    <bundle>mvn:org.trellisldp/trellis-osgi/${project.version}</bundle>
+
+    <configfile finalname="/etc/org.trellisldp.osgi.cfg">mvn:org.trellisldp/trellis-osgi/${project.version}/cfg/configuration</configfile>
+  </feature>
 </features>

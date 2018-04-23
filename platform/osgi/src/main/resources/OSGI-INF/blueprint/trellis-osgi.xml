@@ -31,7 +31,7 @@
       <argument ref="ioService"/>
       <argument ref="binaryService"/>
       <argument ref="agentService"/>
-      <argument ref="resourceService"/>
+      <argument ref="triplestoreService"/>
       <argument value="${http.baseUrl}"/>
     </bean>
 

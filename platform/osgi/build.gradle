@@ -122,6 +122,14 @@ jar {
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
     }
 }
+
+artifacts {
+    archives (file('build/cfg/main/org.trellisldp.osgi.cfg')) {
+        classifier 'configuration'
+        type 'cfg'
+    }
+}
+
 test {
     systemProperty 'karaf.version', karafVersion
     systemProperty 'karaf.commonsIo.version', commonsIoVersion
