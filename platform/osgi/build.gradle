@@ -31,11 +31,6 @@ sonarqube {
     skipProject = true
 }
 
-uploadArchives {
-    // This should be enabled once this module is more than just a test case
-    enabled = false
-}
-
 dependencies {
     compile project(':trellis-api')
     compile project(':trellis-http')
