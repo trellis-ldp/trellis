@@ -33,6 +33,7 @@ import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.Range.between;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.impl.RdfUtils.getProfile;
@@ -51,7 +52,6 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -76,7 +76,7 @@ import org.trellisldp.vocabulary.Time;
  */
 public final class MementoResource {
 
-    private static final RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
+    private static final RDF rdf = getInstance();
 
     private static final String ORIGINAL = "original";
 

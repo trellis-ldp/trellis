@@ -174,9 +174,10 @@ public class LdpResource implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
+        final String slash = "/";
         // Check for a trailing slash. If so, redirect
         final String path = ctx.getUriInfo().getPath();
-        if (path.endsWith("/")) {
+        if (path.endsWith(slash) && !path.equals(slash)) {
             ctx.abortWith(seeOther(fromUri(path.substring(0, path.length() - 1)).build()).build());
         }
 
@@ -187,7 +188,7 @@ public class LdpResource implements ContainerRequestFilter {
             }
         });
 
-        ofNullable(ctx.getHeaderString("Slug")).filter(s -> s.contains("/")).ifPresent(x ->
+        ofNullable(ctx.getHeaderString("Slug")).filter(s -> s.contains(slash)).ifPresent(x ->
             ctx.abortWith(status(BAD_REQUEST).build()));
 
         ofNullable(ctx.getHeaderString("Prefer")).ifPresent(x -> {

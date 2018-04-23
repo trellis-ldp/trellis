@@ -12,7 +12,10 @@
         <argument ref="dataset"/>
     </bean>
 
-    <reference id="eventService" interface="org.trellisldp.api.EventService"/>
+    <!-- TODO generalize this -->
+    <bean id="eventService" class="org.trellisldp.api.NoopEventService"/>
+    <!--<reference id="eventService" interface="org.trellisldp.api.EventService"/>-->
+
     <reference id="idService" interface="org.trellisldp.api.IdentifierService"/>
     <reference id="mementoService" interface="org.trellisldp.api.MementoService"/>
 
@@ -23,7 +26,7 @@
       <argument ref="eventService"/>
     </bean>
 
-    <service ref="resourceService" auto-export="interfaces">
+    <service ref="resourceService" auto-export="all-classes" ranking="10">
       <service-properties>
         <entry key="osgi.jndi.service.name" value="trellis/Triplestore"/>
       </service-properties>

@@ -1,12 +1,11 @@
 apply plugin: 'java'
+apply plugin: 'osgi'
 
-buildscript {
-    repositories {
-      jcenter()
-    }
+description = """Trellis OSGi"""
+
+ext {
+    moduleName = 'org.trellisldp.osgi'
 }
-
-description = """Integration tests for Trellis components"""
 
 def randomPort() {
     try {
@@ -19,12 +18,6 @@ def randomPort() {
     } catch (IOException e) {
         throw new IOException('Failed to find random free port', e)
     }
-}
-
-repositories {
-  jcenter()
-  mavenLocal()
-  mavenCentral()
 }
 
 configurations {
@@ -44,11 +37,13 @@ uploadArchives {
 }
 
 dependencies {
-    implementation project(':trellis-api')
-    implementation project(':trellis-http')
-    implementation project(':trellis-io-jena')
-    implementation project(':trellis-namespaces')
-    implementation project(':trellis-vocabulary')
+    compile project(':trellis-api')
+    compile project(':trellis-http')
+    compile project(':trellis-io-jena')
+    compile project(':trellis-namespaces')
+    compile project(':trellis-vocabulary')
+    compile project(':trellis-triplestore')
+    compile("org.apache.jena:jena-osgi:$jenaVersion")
 
     testCompile project(':trellis-agent')
     testCompile project(':trellis-amqp')
@@ -114,6 +109,24 @@ task generateDependsFile {
     }
 }
 
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Automatic-Module-Name', moduleName
+        instruction 'Import-Package', '''\
+            org.trellisldp.triplestore,
+            org.trellisldp.api,
+            org.trellisldp.http,
+            org.apache.cxf.jaxrs,
+            *
+            '''
+        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+    }
+}
 test {
     systemProperty 'karaf.version', karafVersion
     systemProperty 'karaf.commonsIo.version', commonsIoVersion
