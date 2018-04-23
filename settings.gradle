@@ -24,27 +24,27 @@ include ':trellis-osgi'
 include ':trellis-test'
 include ':trellis-app-triplestore'
 
-project(':trellis-api').projectDir = "$rootDir/trellis-api" as File
-project(':trellis-http').projectDir = "$rootDir/trellis-http" as File
-project(':trellis-vocabulary').projectDir = "$rootDir/trellis-vocabulary" as File
+project(':trellis-api').projectDir = "$rootDir/core/api" as File
+project(':trellis-http').projectDir = "$rootDir/core/http" as File
+project(':trellis-vocabulary').projectDir = "$rootDir/core/vocabulary" as File
 
-project(':trellis-amqp').projectDir = "$rootDir/notifications/trellis-amqp" as File
-project(':trellis-jms').projectDir = "$rootDir/notifications/trellis-jms" as File
-project(':trellis-kafka').projectDir = "$rootDir/notifications/trellis-kafka" as File
+project(':trellis-amqp').projectDir = "$rootDir/notifications/amqp" as File
+project(':trellis-jms').projectDir = "$rootDir/notifications/jms" as File
+project(':trellis-kafka').projectDir = "$rootDir/notifications/kafka" as File
 
-project(':trellis-agent').projectDir = "$rootDir/trellis-agent" as File
-project(':trellis-audit').projectDir = "$rootDir/trellis-audit" as File
-project(':trellis-constraint-rules').projectDir = "$rootDir/trellis-constraint-rules" as File
-project(':trellis-event-serialization').projectDir = "$rootDir/trellis-event-serialization" as File
-project(':trellis-file').projectDir = "$rootDir/trellis-file" as File
-project(':trellis-id').projectDir = "$rootDir/trellis-id" as File
-project(':trellis-io-jena').projectDir = "$rootDir/trellis-io-jena" as File
-project(':trellis-namespaces').projectDir = "$rootDir/trellis-namespaces" as File
-project(':trellis-triplestore').projectDir = "$rootDir/trellis-triplestore" as File
-project(':trellis-webac').projectDir = "$rootDir/trellis-webac" as File
-project(':trellis-app').projectDir = "$rootDir/trellis-app" as File
+project(':trellis-agent').projectDir = "$rootDir/components/agent" as File
+project(':trellis-app').projectDir = "$rootDir/components/app" as File
+project(':trellis-app-triplestore').projectDir = "$rootDir/components/app-triplestore" as File
+project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
+project(':trellis-constraint-rules').projectDir = "$rootDir/components/constraint-rules" as File
+project(':trellis-event-serialization').projectDir = "$rootDir/components/event-serialization" as File
+project(':trellis-file').projectDir = "$rootDir/components/file" as File
+project(':trellis-id').projectDir = "$rootDir/components/id" as File
+project(':trellis-io-jena').projectDir = "$rootDir/components/io-jena" as File
+project(':trellis-namespaces').projectDir = "$rootDir/components/namespaces" as File
+project(':trellis-test').projectDir = "$rootDir/components/test" as File
+project(':trellis-triplestore').projectDir = "$rootDir/components/triplestore" as File
+project(':trellis-webac').projectDir = "$rootDir/components/webac" as File
 
-project(':trellis-karaf').projectDir = "$rootDir/trellis-karaf" as File
-project(':trellis-osgi').projectDir = "$rootDir/trellis-osgi" as File
-project(':trellis-test').projectDir = "$rootDir/trellis-test" as File
-project(':trellis-app-triplestore').projectDir = "$rootDir/trellis-app-triplestore" as File
+project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
+project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File
