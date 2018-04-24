@@ -1,0 +1,88 @@
+apply plugin: 'application'
+apply plugin: 'distribution'
+apply plugin: 'nebula.ospackage-application'
+
+description = 'Trellis Triplestore Application'
+mainClassName = 'org.trellisldp.app.triplestore.TrellisApplication'
+applicationName = 'trellis'
+
+dependencies {
+    compile project(':trellis-app-triplestore')
+
+    runtime ("javax.xml.bind:jaxb-api:$jaxbVersion")
+}
+
+ospackage {
+    packageName = 'trellis'
+    release = '1'
+    os = LINUX
+    license = 'ASL 2.0'
+    url = 'https://www.trellisldp.org'
+    summary = 'Trellis is a linked data server.'
+    packageDescription = '''\
+Trellis is a linked data server that can be used for storing large volumes of content,
+particularly in cases where that content is stored for years and decades.'''
+
+    user = 'trellis'
+    // Note: the linux installers do not depend on Java because it is too complicated to
+    // reliably navigate this dependency across linux distributions and supported JRE versions.
+    requires('systemd')
+    into '/opt/trellis'
+
+    from ('scripts') {
+        into 'bin'
+        fileMode = 0550
+    }
+
+    from ('jar.outputs.files') {
+        into 'lib'
+    }
+
+    from ('src/dist/etc') {
+        fileType CONFIG | NOREPLACE
+        into '/opt/trellis/etc'
+    }
+
+    from ('src/dist/data') {
+        fileType CONFIG | NOREPLACE
+        into '/opt/trellis/data'
+    }
+}
+
+buildRpm {
+    preInstall file('src/rpm/preInstall.sh')
+    postInstall file('src/rpm/postInstall.sh')
+    preUninstall file('src/rpm/preUninstall.sh')
+}
+
+buildDeb {
+    preInstall file('src/deb/preInstall.sh')
+    postInstall file('src/deb/postInstall.sh')
+    preUninstall file('src/deb/preUninstall.sh')
+}
+
+signing {
+    required { !version.endsWith("SNAPSHOT") }
+    sign buildRpm
+    sign buildDeb
+    sign distTar
+    sign distZip
+}
+
+install {
+    enabled = false
+}
+
+uploadArchives {
+    // There is no need to store these artifacts on maven central
+    enabled = false
+}
+
+task copyDistTask(type: Copy) {
+    from '../LICENSE'
+    from 'README.md'
+    into 'src/dist'
+}
+
+assembleDist.dependsOn copyDistTask
+
