@@ -23,6 +23,7 @@ include ':trellis-karaf'
 include ':trellis-osgi'
 include ':trellis-linux'
 include ':trellis-test'
+include ':trellis-webapp'
 include ':trellis-app-triplestore'
 
 project(':trellis-api').projectDir = "$rootDir/core/api" as File
@@ -50,3 +51,4 @@ project(':trellis-webac').projectDir = "$rootDir/components/webac" as File
 project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
 project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File
 project(':trellis-linux').projectDir = "$rootDir/platform/linux" as File
+project(':trellis-webapp').projectDir = "$rootDir/platform/webapp" as File
