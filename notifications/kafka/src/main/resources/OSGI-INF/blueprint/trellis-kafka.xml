@@ -19,7 +19,9 @@
       </cm:default-properties>
     </cm:property-placeholder>
 
-    <bean id="kafkaPublisher" class="org.trellisldp.kafka.KafkaPublisher">
+    <bean id="stringSerializer" class="org.apache.kafka.common.serialization.StringSerializer"/>
+
+    <bean id="kafkaProducer" class="org.apache.kafka.clients.producer.KafkaProducer">
 		  <argument>
         <map>
           <entry key="acks" value="${acks}"/>
@@ -30,6 +32,12 @@
           <entry key="bootstrap.servers" value="${bootstrap.servers}"/>
         </map>
       </argument>
+      <argument ref="stringSerializer"/>
+      <argument ref="stringSerializer"/>
+    </bean>
+
+    <bean id="kafkaPublisher" class="org.trellisldp.kafka.KafkaPublisher">
+      <argument ref="kafkaProducer"/>
       <argument value="${trellis.topic}"/>
     </bean>
 
