@@ -21,7 +21,6 @@ import java.util.ServiceLoader;
 
 import javax.inject.Inject;
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
@@ -60,16 +59,6 @@ public class JmsPublisher implements EventService {
     public JmsPublisher(final Connection conn) throws JMSException {
         this(conn.createSession(false, AUTO_ACKNOWLEDGE),
                 ConfigurationProvider.getConfiguration().get(JMS_QUEUE_NAME));
-    }
-
-    /**
-     * Create a new JMS Publisher.
-     * @param factory a connetion factory
-     * @param queueName the name of the queue
-     * @throws JMSException when there is a connection error
-     */
-    public JmsPublisher(final ConnectionFactory factory, final String queueName) throws JMSException {
-        this(factory.createConnection().createSession(false, AUTO_ACKNOWLEDGE), queueName);
     }
 
     /**

@@ -31,8 +31,10 @@
 			<property name="connectionFactory" ref="connectionFactory"/>
 		</bean>
 
+    <bean id="connection" factory-ref="pooledConnectionFactory" factory-method="createConnection"/>
+
     <bean id="jmsPublisher" class="org.trellisldp.jms.JmsPublisher">
-      <argument ref="pooledConnectionFactory"/>
+      <argument ref="connection"/>
       <argument value="${jms.queueName}"/>
     </bean>
 

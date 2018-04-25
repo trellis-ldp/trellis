@@ -24,8 +24,10 @@
 			<property name="password" value="${amqp.password}"/>
 		</bean>
 
+    <bean id="connection" factory-ref="connectionFactory" factory-method="newConnection"/>
+
     <bean id="amqpPublisher" class="org.trellisldp.amqp.AmqpPublisher">
-      <argument ref="connectionFactory"/>
+      <argument ref="connection"/>
       <argument value="${amqp.exchangename}"/>
       <argument value="${amqp.routingkey}"/>
     </bean>
