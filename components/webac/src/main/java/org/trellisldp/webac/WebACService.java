@@ -43,7 +43,6 @@ import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
@@ -172,10 +171,9 @@ public class WebACService implements AccessControlService {
 
     private List<Authorization> getAuthorizationFromGraph(final Graph graph) {
         return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
-                try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
-                    return Authorization.from(subject, subGraph);
-                } catch (final Exception ex) {
-                    throw new RuntimeTrellisException("Error Processing graph", ex);
+                try (final TrellisGraph subGraph = new TrellisGraph(graph.stream(subject, null, null)
+                            .collect(toGraph()))) {
+                    return Authorization.from(subject, subGraph.asGraph());
                 }
             }).collect(toList());
     }
@@ -184,15 +182,14 @@ public class WebACService implements AccessControlService {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
         final Optional<IRI> parent = resourceService.getContainer(resource.getIdentifier());
         if (resource.hasAcl()) {
-            try (final Graph graph = resource.stream(Trellis.PreferAccessControl).collect(toGraph())) {
-                final List<Authorization> authorizations = getAuthorizationFromGraph(graph);
+            try (final TrellisGraph graph = new TrellisGraph(resource.stream(Trellis.PreferAccessControl)
+                        .collect(toGraph()))) {
+                final List<Authorization> authorizations = getAuthorizationFromGraph(graph.asGraph());
 
                 if (!top && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
                     return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
                 }
                 return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
-            } catch (final Exception ex) {
-                throw new RuntimeTrellisException(ex);
             }
         }
         // Nothing here, check the parent
