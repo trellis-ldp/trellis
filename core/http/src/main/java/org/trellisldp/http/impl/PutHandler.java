@@ -73,7 +73,6 @@ import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.XSD;
 
 /**
@@ -192,9 +191,6 @@ public class PutHandler extends ContentBearingHandler {
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
             final IRI graphName = getActiveGraphName();
             final IRI otherGraph = getInactiveGraphName();
-
-            // Add LDP type
-            dataset.add(rdf.createQuad(PreferServerManaged, internalId, RDF.type, ldpType));
 
             // Add user-supplied data
             if (isBinaryRequest(ldpType, rdfSyntax)) {

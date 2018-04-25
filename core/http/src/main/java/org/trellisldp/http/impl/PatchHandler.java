@@ -170,8 +170,6 @@ public class PatchHandler extends BaseLdpHandler {
                 .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
                 .forEachOrdered(dataset::add);
 
-            // Add existing LDP type, other server-managed triples
-            dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), RDF.type, res.getInteractionModel()));
             res.getBinary().ifPresent(b -> {
                 dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), DC.hasPart, b.getIdentifier()));
                 dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.modified,

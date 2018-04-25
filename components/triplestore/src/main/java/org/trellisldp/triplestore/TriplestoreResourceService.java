@@ -22,7 +22,6 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toList;
@@ -186,7 +185,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         final Instant eventTime = now();
 
         // Set the LDP type
-        dataset.remove(of(PreferServerManaged), identifier, RDF.type, null);
         dataset.add(PreferServerManaged, identifier, RDF.type, ixnModel);
 
         // Relocate some user-managed triples into the server-managed graph
