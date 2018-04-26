@@ -1,8 +1,10 @@
 .gradle
 build
+out
 /bin/
 */*/docs/
 .classpath
 .project
 .settings/
 .DS_Store
+.idea
