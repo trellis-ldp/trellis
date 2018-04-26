@@ -90,7 +90,7 @@ allprojects { subproj ->
     apply plugin: 'checkstyle'
     apply plugin: 'com.github.hierynomus.license'
     apply plugin: 'jacoco'
-    apply plugin: 'java-library'
+    apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'

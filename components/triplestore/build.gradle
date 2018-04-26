@@ -1,3 +1,4 @@
+apply plugin: 'java-library'
 apply plugin: 'osgi'
 
 description = 'Trellis Triplestore'
@@ -13,7 +14,6 @@ dependencies {
     api project(':trellis-audit');
 
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
-    //TODO
     implementation("org.apache.jena:jena-osgi:$jenaVersion")
     implementation project(':trellis-vocabulary')
 

@@ -1,3 +1,4 @@
+apply plugin: 'java-library'
 apply plugin: 'osgi'
 
 description = 'Trellis WebAC Module'
@@ -7,7 +8,6 @@ ext {
 }
 
 dependencies {
-
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')

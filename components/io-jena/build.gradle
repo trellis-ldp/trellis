@@ -1,3 +1,4 @@
+apply plugin: 'java-library'
 apply plugin: 'osgi'
 
 description = 'Trellis IO Module (Jena)'
@@ -14,8 +15,7 @@ dependencies {
 
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
-    //TODO
-    testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
+    implementation("org.apache.jena:jena-osgi:$jenaVersion")
     implementation("org.apache.servicemix.bundles:org.apache.servicemix.bundles.mustache-compiler:$mustacheVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")

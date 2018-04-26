@@ -1,10 +1,6 @@
-description = """Common tests for Trellis components"""
+apply plugin: 'java-library'
 
-repositories {
-  jcenter()
-  mavenLocal()
-  mavenCentral()
-}
+description = """Common tests for Trellis components"""
 
 sonarqube {
     skipProject = true
@@ -14,20 +10,19 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt:$jwtVersion")
     implementation("javax.jms:javax.jms-api:$jmsApiVersion")
     implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    implementation("org.apache.activemq:activemq-client:$activeMqVersion")
     implementation("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     implementation("org.awaitility:awaitility:$awaitilityVersion")
-    implementation("org.apache.activemq:activemq-client:$activeMqVersion")
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    runtime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-
     implementation project(':trellis-api')
     implementation project(':trellis-http')
     implementation project(':trellis-io-jena')
     implementation project(':trellis-vocabulary')
 
+    runtime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
     testCompile("ch.qos.logback:logback-classic:$logbackVersion")
     testCompile("org.mockito:mockito-core:$mockitoVersion")
 }
-
 

@@ -1,3 +1,4 @@
+apply plugin: 'java-library'
 apply plugin: 'osgi'
 
 description = 'Trellis Triplestore Application'
@@ -16,9 +17,8 @@ dependencies {
     compile("io.jsonwebtoken:jjwt:$jwtVersion")
     compile("javax.activation:javax.activation-api:$activationApiVersion")
     compile("javax.jms:javax.jms-api:$jmsApiVersion")
-    compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
-    //TODO resolve activemq and jena-osgi for JPMS
     compile("org.apache.activemq:activemq-client:$activeMqVersion")
+    compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     compile("org.apache.jena:jena-osgi:$jenaVersion")
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
@@ -63,5 +63,4 @@ jar {
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
     }
 }
-
 

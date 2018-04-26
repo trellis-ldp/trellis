@@ -1,3 +1,4 @@
+apply plugin: 'java-library'
 apply plugin: 'osgi'
 
 description = 'Trellis HTTP API'
@@ -14,8 +15,8 @@ dependencies {
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
 
-    implementation ("commons-codec:commons-codec:$commonsCodecVersion")
-    implementation ("commons-io:commons-io:$commonsIoVersion")
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+    implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("javax.json:javax.json-api:$javaxJsonVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
