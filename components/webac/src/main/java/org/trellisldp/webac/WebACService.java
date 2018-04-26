@@ -22,6 +22,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toGraph;
+import static org.trellisldp.webac.WrappedGraph.wrap;
 
 import java.util.HashSet;
 import java.util.List;
@@ -171,9 +172,8 @@ public class WebACService implements AccessControlService {
 
     private List<Authorization> getAuthorizationFromGraph(final Graph graph) {
         return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
-                try (final TrellisGraph subGraph = new TrellisGraph(graph.stream(subject, null, null)
-                            .collect(toGraph()))) {
-                    return Authorization.from(subject, subGraph.asGraph());
+                try (final WrappedGraph subGraph = wrap(graph.stream(subject, null, null).collect(toGraph()))) {
+                    return Authorization.from(subject, subGraph.getGraph());
                 }
             }).collect(toList());
     }
@@ -182,9 +182,8 @@ public class WebACService implements AccessControlService {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
         final Optional<IRI> parent = resourceService.getContainer(resource.getIdentifier());
         if (resource.hasAcl()) {
-            try (final TrellisGraph graph = new TrellisGraph(resource.stream(Trellis.PreferAccessControl)
-                        .collect(toGraph()))) {
-                final List<Authorization> authorizations = getAuthorizationFromGraph(graph.asGraph());
+            try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).collect(toGraph()))) {
+                final List<Authorization> authorizations = getAuthorizationFromGraph(graph.getGraph());
 
                 if (!top && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
                     return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
