@@ -18,6 +18,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.sort;
+import static java.util.Collections.synchronizedList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -489,14 +490,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                                 rdf.asJenaNode(identifier), PREDICATE, OBJECT)))));
 
         if (type == OperationType.DELETE) {
-            final QuadDataAcc sink = new QuadDataAcc();
+            final QuadDataAcc sink = new QuadDataAcc(synchronizedList(new ArrayList<>()));
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
             dataset.getGraph(PreferAudit).ifPresent(g -> g.stream()
                     .map(t -> new Quad(getAuditIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
             req.add(new UpdateDataInsert(sink));
         } else {
-            final QuadDataAcc sink = new QuadDataAcc();
+            final QuadDataAcc sink = new QuadDataAcc(synchronizedList(new ArrayList<>()));
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
             dataset.getGraph(PreferUserManaged).ifPresent(g -> g.stream()
