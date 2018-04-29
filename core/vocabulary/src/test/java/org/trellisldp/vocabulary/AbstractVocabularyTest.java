@@ -19,6 +19,7 @@ import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.graph.Node.ANY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Field;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -39,7 +41,7 @@ import org.slf4j.Logger;
  */
 public abstract class AbstractVocabularyTest {
 
-    private static final Logger LOGGER = getLogger(AbstractVocabularyTest.class);
+    protected static final Logger LOGGER = getLogger(AbstractVocabularyTest.class);
 
     private static final String ACCEPT = "text/turtle, application/rdf+xml, application/ld+json";
 
@@ -53,7 +55,12 @@ public abstract class AbstractVocabularyTest {
 
     protected Graph getVocabulary(final String url) {
         final Graph graph = createDefaultGraph();
-        RDFParser.source(url).httpAccept(ACCEPT).parse(graph);
+        try {
+            RDFParser.source(url).httpAccept(ACCEPT).parse(graph);
+        } catch (final HttpException ex) {
+            LOGGER.warn("Could not fetch {}: {}", url, ex.getMessage());
+        }
+        assumeTrue(graph.size() > 0);
         return graph;
     }
 

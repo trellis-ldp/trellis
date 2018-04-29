@@ -15,7 +15,9 @@ package org.trellisldp.vocabulary;
 
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.riot.RDFParser;
 import org.junit.jupiter.api.Test;
@@ -38,7 +40,12 @@ public class ASTest extends AbstractVocabularyTest {
     @Override
     protected Graph getVocabulary(final String url) {
         final Graph graph = createDefaultGraph();
-        RDFParser.source(url).httpAccept("application/ld+json").parse(graph);
+        try {
+            RDFParser.source(url).httpAccept("application/ld+json").parse(graph);
+        } catch (final HttpException ex) {
+            LOGGER.warn("Could not fetch {}: {}", url, ex.getMessage());
+            assumeTrue(false); // error fetching the URL, skip the test
+        }
         return graph;
     }
 
