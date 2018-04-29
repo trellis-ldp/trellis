@@ -1,3 +1,4 @@
+apply plugin: 'java-library'
 apply plugin: 'osgi'
 
 description = 'Trellis Vocabularies'
@@ -10,10 +11,8 @@ dependencies {
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
 
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
-    //TODO
     testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    //TODO this can be replaced with org.apache.servicemix.bundles:org.apache.servicemix.bundles.xerces
     testImplementation group: 'xerces', name: 'xercesImpl', version: xercesVersion
 
     testRuntimeClasspath group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion

@@ -17,7 +17,7 @@ A [mailing list](https://groups.google.com/group/trellis-ldp) is available to an
 ## Downloads
 
 The fastest way to get started with Trellis is to download the [latest release](https://github.com/trellis-ldp/trellis/releases)
-and follow these [installation instructions](trellis-app).
+and follow these [installation instructions](components/app-triplestore).
 
 ## Features
 
@@ -84,13 +84,12 @@ All source code is open source and licensed as Apache 2. Contributions are welco
 ### Trellis Vocabulary
 
 This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the Trellis-specific
-[RDF terms](https://www.trellisldp.org/ns/trellis.html). A [DOAP](doap.ttl) file
-describes the Trellis project in a machine-readable format.
+[RDF terms](https://www.trellisldp.org/ns/trellis.html).
 
 ### Implementations
 
 This repository contains the core abstractions and interfaces for Trellis along with a number of default service
-implementations. It contains a [reference implementation](trellis-app) that uses a [persistence layer](trellis-triplestore)
+implementations. It contains a [reference implementation](components/app-triplestore) that uses a [persistence layer](components/triplestore)
 based on a triplestore or local dataset. In addition, below is a list of other known implementations.
 
  * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A Kafka-based application that uses file-based persistence.

@@ -3,6 +3,13 @@ apply plugin: 'war'
 description = 'Trellis Triplestore Application'
 
 dependencies {
+    compile("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    compile("org.apache.jena:jena-osgi:$jenaVersion")
+    compile("org.apache.jena:jena-tdb2:$jenaVersion")
+    compile("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    compile("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
+    compile("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
     compile project(':trellis-agent')
     compile project(':trellis-api')
     compile project(':trellis-constraint-rules')
@@ -13,25 +20,13 @@ dependencies {
     compile project(':trellis-namespaces')
     compile project(':trellis-triplestore')
 
-    compile("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
-    compile("org.apache.jena:jena-osgi:$jenaVersion")
-    compile("org.apache.jena:jena-tdb2:$jenaVersion")
-    compile("org.apache.tamaya:tamaya-api:$tamayaVersion")
-    compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
-    compile("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
-    compile("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
-
     runtime("javax.xml.bind:jaxb-api:$jaxbVersion")
     runtime("javax.activation:javax.activation-api:$activationApiVersion")
     runtime("ch.qos.logback:logback-classic:$logbackVersion")
-}
-
-war {
 }
 
 uploadArchives {
     // There is no need to store these artifacts on maven central
     enabled = false
 }
-
 

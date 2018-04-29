@@ -28,7 +28,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 /**
  * @author acoburn
  */
-public class TrellisGraphTest {
+public class WrappedGraphTest {
 
     @Mock
     private Graph mockGraph;
@@ -42,7 +42,7 @@ public class TrellisGraphTest {
     @Test
     public void testCloseGraphError() {
         assertThrows(RuntimeTrellisException.class, () -> {
-            try (final TrellisGraph graph = new TrellisGraph(mockGraph)) {
+            try (final WrappedGraph graph = WrappedGraph.wrap(mockGraph)) {
                 // nothing here
             }
         });

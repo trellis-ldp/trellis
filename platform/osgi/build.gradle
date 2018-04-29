@@ -1,4 +1,3 @@
-apply plugin: 'java'
 apply plugin: 'osgi'
 
 description = """Trellis OSGi"""
@@ -32,14 +31,25 @@ sonarqube {
 }
 
 dependencies {
+    compile("org.apache.jena:jena-osgi:$jenaVersion")
     compile project(':trellis-api')
     compile project(':trellis-http')
     compile project(':trellis-io-jena')
     compile project(':trellis-namespaces')
     compile project(':trellis-vocabulary')
     compile project(':trellis-triplestore')
-    compile("org.apache.jena:jena-osgi:$jenaVersion")
 
+    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
+    testCompile("org.apache.jena:jena-osgi:$jenaVersion")
+    testCompile("org.apache.karaf.features:standard:$karafVersion")
+    testCompile("org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion")
+    testCompile("org.ops4j.pax.exam:pax-exam:$paxExamVersion")
+    testCompile("org.ops4j.pax.exam:pax-exam-junit4:$paxExamVersion")
+    testCompile("org.ops4j.pax.exam:pax-exam-container-karaf:$paxExamVersion")
+    testCompile("org.osgi:org.osgi.core:$osgiVersion")
+    testCompile("org.osgi:org.osgi.compendium:$osgiCompendiumVersion")
+    testCompile("org.mockito:mockito-core:$mockitoVersion")
+    testCompile("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     testCompile project(':trellis-agent')
     testCompile project(':trellis-amqp')
     testCompile project(':trellis-audit')
@@ -53,19 +63,10 @@ dependencies {
     testCompile project(':trellis-webac')
     testCompile project(':trellis-karaf')
 
-    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
-    testCompile("org.apache.jena:jena-osgi:$jenaVersion")
-    testCompile("org.apache.karaf.features:standard:$karafVersion")
-    testCompile("org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion")
-    testCompile("org.ops4j.pax.exam:pax-exam:$paxExamVersion")
-    testCompile("org.ops4j.pax.exam:pax-exam-junit4:$paxExamVersion")
-    testCompile("org.ops4j.pax.exam:pax-exam-container-karaf:$paxExamVersion")
-    testCompile("org.osgi:org.osgi.core:$osgiVersion")
-    testCompile("org.osgi:org.osgi.compendium:$osgiCompendiumVersion")
-    testCompile("org.mockito:mockito-core:$mockitoVersion")
-    testCompile("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
+
     testRuntime("org.junit.vintage:junit-vintage-engine:${junitVersion}")
+
     karafDistro group: 'org.apache.karaf', name: 'apache-karaf', version: karafVersion, ext: 'zip'
 }
 

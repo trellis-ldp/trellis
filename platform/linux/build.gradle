@@ -9,7 +9,7 @@ applicationName = 'trellis'
 dependencies {
     compile project(':trellis-app-triplestore')
 
-    runtime ("javax.xml.bind:jaxb-api:$jaxbVersion")
+    runtime("javax.xml.bind:jaxb-api:$jaxbVersion")
 }
 
 ospackage {

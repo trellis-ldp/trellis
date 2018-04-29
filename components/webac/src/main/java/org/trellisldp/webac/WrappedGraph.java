@@ -20,27 +20,27 @@ import org.slf4j.Logger;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
- * @author acoburn
+ * A wrapped RDF graph.
  */
-class TrellisGraph implements AutoCloseable {
+class WrappedGraph implements AutoCloseable {
 
-    private static final Logger LOGGER = getLogger(TrellisGraph.class);
+    private static final Logger LOGGER = getLogger(WrappedGraph.class);
 
-    private final Graph graph;
+    private final Graph innerGraph;
 
     /**
      * Create a new graph.
      *
      * @param graph the graph
      */
-    public TrellisGraph(final Graph graph) {
-        this.graph = graph;
+    protected WrappedGraph(final Graph graph) {
+        this.innerGraph = graph;
     }
 
     @Override
     public void close() {
         try {
-            graph.close();
+            innerGraph.close();
         } catch (final Exception ex) {
             LOGGER.error("Error closing graph: {}", ex.getMessage());
             throw new RuntimeTrellisException("Error closing graph", ex);
@@ -52,7 +52,11 @@ class TrellisGraph implements AutoCloseable {
      *
      * @return the graph
      */
-    public Graph asGraph() {
-        return graph;
+    public Graph getGraph() {
+        return innerGraph;
+    }
+
+    public static WrappedGraph wrap(final Graph graph) {
+        return new WrappedGraph(graph);
     }
 }
