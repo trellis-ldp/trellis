@@ -25,8 +25,8 @@ final class VocabUtils {
 
     private static RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
-    public static IRI createIRI(final String uri) {
-        return rdf.createIRI(uri);
+    public static IRI createIRI(final String NS) {
+        return rdf.createIRI(NS);
     }
 
     private VocabUtils() {

@@ -59,6 +59,6 @@ public class ASTest extends AbstractVocabularyTest {
     @Test
     public void checkUri() {
         getVocabulary(namespace());
-        assertEquals(namespace(), AS.URI);
+        assertEquals(namespace(), AS.NS);
     }
 }
