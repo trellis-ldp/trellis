@@ -153,7 +153,7 @@ public class PostHandler extends ContentBearingHandler {
                 // Check for any constraints
                 checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
             }
-            final IRI container = resourceService.getContainer(internalId).orElse(null);
+            final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
             final Future<Boolean> success = resourceService.create(internalId, session, ldpType, container,
                             dataset.asDataset());
             if (success.get()) {
