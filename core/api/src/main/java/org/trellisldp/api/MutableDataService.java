@@ -33,8 +33,8 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param identifier the identifier for the new resource
      * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
-     * @param container an LDP container for this resource
-     * @param dataset the dataset
+     * @param container an LDP container for this resource, {@code null} for none
+     * @param dataset the dataset to be persisted
      * @return whether the resource was added
      */
     Future<Boolean> create(IRI identifier, Session session, IRI ixnModel, IRI container, Dataset dataset);
@@ -45,8 +45,8 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param identifier the identifier for the new resource
      * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
-     * @param container an LDP container for this resource
-     * @param dataset the dataset
+     * @param container an LDP container for this resource, {@code null} for none
+     * @param dataset the dataset to be persisted
      * @return whether the resource was replaced
      */
     Future<Boolean> replace(IRI identifier, Session session, IRI ixnModel, IRI container, Dataset dataset);

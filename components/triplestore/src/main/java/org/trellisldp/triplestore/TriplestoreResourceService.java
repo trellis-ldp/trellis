@@ -156,10 +156,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> create(final IRI identifier, final Session session, final IRI ixnModel, final IRI container,
+    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final IRI container,
                     final Dataset dataset) {
-        LOGGER.debug("Creating: {}", identifier);
-        return supplyAsync(() -> createOrReplace(identifier, session, ixnModel, dataset, OperationType.CREATE));
+        LOGGER.debug("Creating: {}", id);
+        return supplyAsync(() -> createOrReplace(id, session, ixnModel, container, dataset, OperationType.CREATE));
     }
 
     @Override
@@ -175,14 +175,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> replace(final IRI identifier, final Session session, final IRI ixnModel, final IRI container,
+    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final IRI container,
                     final Dataset dataset) {
-        LOGGER.debug("Updating: {}", identifier);
-        return supplyAsync(() -> createOrReplace(identifier, session, ixnModel, dataset, OperationType.REPLACE));
+        LOGGER.debug("Updating: {}", id);
+        return supplyAsync(() -> createOrReplace(id, session, ixnModel, container, dataset, OperationType.REPLACE));
     }
 
     private Boolean createOrReplace(final IRI identifier, final Session session, final IRI ixnModel,
-            final Dataset dataset, final OperationType type) {
+                    final IRI container, final Dataset dataset, final OperationType type) {
         final Instant eventTime = now();
 
         // Set the LDP type
@@ -206,7 +206,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             });
         }
         // Set the parent relationship
-        getContainer(identifier).ifPresent(parent -> dataset.add(PreferServerManaged, identifier, DC.isPartOf, parent));
+        if (container != null) {
+            dataset.add(PreferServerManaged, identifier, DC.isPartOf, container);
+        }
         return storeAndNotify(identifier, session, dataset, eventTime, type);
     }
 
