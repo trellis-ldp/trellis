@@ -156,8 +156,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> create(final IRI identifier, final Session session, final IRI ixnModel,
-            final Dataset dataset) {
+    public Future<Boolean> create(final IRI identifier, final Session session, final IRI ixnModel, final IRI container,
+                    final Dataset dataset) {
         LOGGER.debug("Creating: {}", identifier);
         return supplyAsync(() -> createOrReplace(identifier, session, ixnModel, dataset, OperationType.CREATE));
     }
@@ -175,8 +175,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> replace(final IRI identifier, final Session session, final IRI ixnModel,
-            final Dataset dataset) {
+    public Future<Boolean> replace(final IRI identifier, final Session session, final IRI ixnModel, final IRI container,
+                    final Dataset dataset) {
         LOGGER.debug("Updating: {}", identifier);
         return supplyAsync(() -> createOrReplace(identifier, session, ixnModel, dataset, OperationType.REPLACE));
     }
