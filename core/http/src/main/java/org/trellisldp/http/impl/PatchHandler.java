@@ -204,15 +204,17 @@ public class PatchHandler extends BaseLdpHandler {
             }
 
             // Save new dataset
-            if (resourceService.replace(res.getIdentifier(), session, res.getInteractionModel(),
-                        dataset.asDataset()).get()) {
+            final IRI resId = res.getIdentifier();
+            final IRI container = resourceService.getContainer(resId).orElse(null);
+            if (resourceService.replace(res.getIdentifier(), session, res.getInteractionModel(), container,
+                            dataset.asDataset()).get()) {
 
                 // Add audit-related triples
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    audit.update(res.getIdentifier(), session).stream().map(skolemizeQuads(resourceService, baseUrl))
+                    audit.update(resId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
                                     .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(res.getIdentifier(), session, auditDataset.asDataset()).get()) {
-                        LOGGER.error("Unable to update resource at {}", res.getIdentifier());
+                    if (!resourceService.add(resId, session, auditDataset.asDataset()).get()) {
+                        LOGGER.error("Unable to update resource at {}", resId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
                         throw new BadRequestException("Unable to write audit information. "

@@ -33,6 +33,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
@@ -96,6 +97,7 @@ public class DeleteHandler extends BaseLdpHandler {
 
         LOGGER.debug("Deleting {}", identifier);
 
+        final IRI resId = res.getIdentifier();
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
             // When deleting just the ACL graph, keep the user managed triples intact
@@ -110,14 +112,17 @@ public class DeleteHandler extends BaseLdpHandler {
                 // is generated.
 
                 // update the resource
-                if (resourceService.replace(res.getIdentifier(), session, LDP.Resource, dataset.asDataset()).get()) {
+                final IRI container = resourceService.getContainer(resId).orElse(null);
+                final Boolean success = resourceService
+                                .replace(resId, session, LDP.Resource, container, dataset.asDataset()).get();
+                if (success) {
 
                     // Add the audit quads
                     try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        audit.update(res.getIdentifier(), session).stream()
+                        audit.update(resId, session).stream()
                             .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
-                        if (!resourceService.add(res.getIdentifier(), session, auditDataset.asDataset()).get()) {
-                            LOGGER.error("Unable to delete ACL resource at {}", res.getIdentifier());
+                        if (!resourceService.add(resId, session, auditDataset.asDataset()).get()) {
+                            LOGGER.error("Unable to delete ACL resource at {}", resId);
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
                             throw new BadRequestException("Unable to write audit information. "
@@ -129,14 +134,14 @@ public class DeleteHandler extends BaseLdpHandler {
 
             } else {
                 // delete the resource
-                if (resourceService.delete(res.getIdentifier(), session, LDP.Resource, dataset.asDataset()).get()) {
+                if (resourceService.delete(resId, session, LDP.Resource, dataset.asDataset()).get()) {
 
                     // Add the audit quads
                     try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        audit.deletion(res.getIdentifier(), session).stream()
+                        audit.deletion(resId, session).stream()
                             .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
-                        if (!resourceService.add(res.getIdentifier(), session, auditDataset.asDataset()).get()) {
-                            LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
+                        if (!resourceService.add(resId, session, auditDataset.asDataset()).get()) {
+                            LOGGER.error("Unable to delete resource at {}", resId);
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
                             throw new BadRequestException("Unable to write audit information. Please consult the logs "
@@ -154,7 +159,7 @@ public class DeleteHandler extends BaseLdpHandler {
             LOGGER.error("Error deleting resource", ex);
         }
 
-        LOGGER.error("Unable to delete resource at {}", res.getIdentifier());
+        LOGGER.error("Unable to delete resource at {}", resId);
         return serverError().entity("Unable to delete resource. Please consult the logs for more information");
     }
 }
