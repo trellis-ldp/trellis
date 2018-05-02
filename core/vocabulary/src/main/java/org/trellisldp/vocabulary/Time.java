@@ -27,108 +27,117 @@ import org.apache.commons.rdf.api.IRI;
 public final class Time {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/2006/time#";
+    private static final String URI = "http://www.w3.org/2006/time#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI DateTimeDescription = createIRI(URI + "DateTimeDescription");
-    public static final IRI DateTimeInterval = createIRI(URI + "DateTimeInterval");
-    public static final IRI DayOfWeek = createIRI(URI + "DayOfWeek");
-    public static final IRI Duration = createIRI(URI + "Duration");
-    public static final IRI DurationDescription = createIRI(URI + "DurationDescription");
-    public static final IRI GeneralDateTimeDescription = createIRI(URI + "GeneralDateTimeDescription");
-    public static final IRI GeneralDurationDescription = createIRI(URI + "GeneralDurationDescription");
-    public static final IRI Instant = createIRI(URI + "Instant");
-    public static final IRI Interval = createIRI(URI + "Interval");
-    public static final IRI MonthOfYear = createIRI(URI + "MonthOfYear");
-    public static final IRI ProperInterval = createIRI(URI + "ProperInterval");
-    public static final IRI TRS = createIRI(URI + "TRS");
-    public static final IRI TemporalDuration = createIRI(URI + "TemporalDuration");
-    public static final IRI TemporalEntity = createIRI(URI + "TemporalEntity");
-    public static final IRI TemporalPosition = createIRI(URI + "TemporalPosition");
-    public static final IRI TemporalUnit = createIRI(URI + "TemporalUnit");
-    public static final IRI TimePosition = createIRI(URI + "TimePosition");
-    public static final IRI TimeZone = createIRI(URI + "TimeZone");
+    public static final IRI DateTimeDescription = createIRI(getNamespace() + "DateTimeDescription");
+    public static final IRI DateTimeInterval = createIRI(getNamespace() + "DateTimeInterval");
+    public static final IRI DayOfWeek = createIRI(getNamespace() + "DayOfWeek");
+    public static final IRI Duration = createIRI(getNamespace() + "Duration");
+    public static final IRI DurationDescription = createIRI(getNamespace() + "DurationDescription");
+    public static final IRI GeneralDateTimeDescription = createIRI(getNamespace() + "GeneralDateTimeDescription");
+    public static final IRI GeneralDurationDescription = createIRI(getNamespace() + "GeneralDurationDescription");
+    public static final IRI Instant = createIRI(getNamespace() + "Instant");
+    public static final IRI Interval = createIRI(getNamespace() + "Interval");
+    public static final IRI MonthOfYear = createIRI(getNamespace() + "MonthOfYear");
+    public static final IRI ProperInterval = createIRI(getNamespace() + "ProperInterval");
+    public static final IRI TRS = createIRI(getNamespace() + "TRS");
+    public static final IRI TemporalDuration = createIRI(getNamespace() + "TemporalDuration");
+    public static final IRI TemporalEntity = createIRI(getNamespace() + "TemporalEntity");
+    public static final IRI TemporalPosition = createIRI(getNamespace() + "TemporalPosition");
+    public static final IRI TemporalUnit = createIRI(getNamespace() + "TemporalUnit");
+    public static final IRI TimePosition = createIRI(getNamespace() + "TimePosition");
+    public static final IRI TimeZone = createIRI(getNamespace() + "TimeZone");
 
     /* Object Properties */
-    public static final IRI after = createIRI(URI + "after");
-    public static final IRI before = createIRI(URI + "before");
-    public static final IRI dayOfWeek = createIRI(URI + "dayOfWeek");
-    public static final IRI hasBeginning = createIRI(URI + "hasBeginning");
-    public static final IRI hasDateTimeDescription = createIRI(URI + "hasDateTimeDescription");
-    public static final IRI hasDuration = createIRI(URI + "hasDuration");
-    public static final IRI hasDurationDescription = createIRI(URI + "hasDurationDescription");
-    public static final IRI hasEnd = createIRI(URI + "hasEnd");
-    public static final IRI hasTRS = createIRI(URI + "hasTRS");
-    public static final IRI hasTemporalDuration = createIRI(URI + "hasTemporalDuration");
-    public static final IRI hasTime = createIRI(URI + "hasTime");
-    public static final IRI inDateTime = createIRI(URI + "inDateTime");
-    public static final IRI inTemporalPosition = createIRI(URI + "inTemporalPosition");
-    public static final IRI inTimePosition = createIRI(URI + "inTimePosition");
-    public static final IRI inside = createIRI(URI + "inside");
-    public static final IRI intervalAfter = createIRI(URI + "intervalAfter");
-    public static final IRI intervalBefore = createIRI(URI + "intervalBefore");
-    public static final IRI intervalContains = createIRI(URI + "intervalContains");
-    public static final IRI intervalDisjoint = createIRI(URI + "intervalDisjoint");
-    public static final IRI intervalDuring = createIRI(URI + "intervalDuring");
-    public static final IRI intervalEquals = createIRI(URI + "intervalEquals");
-    public static final IRI intervalFinishedBy = createIRI(URI + "intervalFinishedBy");
-    public static final IRI intervalFinishes = createIRI(URI + "intervalFinishes");
-    public static final IRI intervalIn = createIRI(URI + "intervalIn");
-    public static final IRI intervalMeets = createIRI(URI + "intervalMeets");
-    public static final IRI intervalMetBy = createIRI(URI + "intervalMetBy");
-    public static final IRI intervalOverlappedBy = createIRI(URI + "intervalOverlappedBy");
-    public static final IRI intervalOverlaps = createIRI(URI + "intervalOverlaps");
-    public static final IRI intervalStartedBy = createIRI(URI + "intervalStartedBy");
-    public static final IRI intervalStarts = createIRI(URI + "intervalStarts");
-    public static final IRI monthOfYear = createIRI(URI + "monthOfYear");
-    public static final IRI timeZone = createIRI(URI + "timeZone");
-    public static final IRI unitType = createIRI(URI + "unitType");
+    public static final IRI after = createIRI(getNamespace() + "after");
+    public static final IRI before = createIRI(getNamespace() + "before");
+    public static final IRI dayOfWeek = createIRI(getNamespace() + "dayOfWeek");
+    public static final IRI hasBeginning = createIRI(getNamespace() + "hasBeginning");
+    public static final IRI hasDateTimeDescription = createIRI(getNamespace() + "hasDateTimeDescription");
+    public static final IRI hasDuration = createIRI(getNamespace() + "hasDuration");
+    public static final IRI hasDurationDescription = createIRI(getNamespace() + "hasDurationDescription");
+    public static final IRI hasEnd = createIRI(getNamespace() + "hasEnd");
+    public static final IRI hasTRS = createIRI(getNamespace() + "hasTRS");
+    public static final IRI hasTemporalDuration = createIRI(getNamespace() + "hasTemporalDuration");
+    public static final IRI hasTime = createIRI(getNamespace() + "hasTime");
+    public static final IRI inDateTime = createIRI(getNamespace() + "inDateTime");
+    public static final IRI inTemporalPosition = createIRI(getNamespace() + "inTemporalPosition");
+    public static final IRI inTimePosition = createIRI(getNamespace() + "inTimePosition");
+    public static final IRI inside = createIRI(getNamespace() + "inside");
+    public static final IRI intervalAfter = createIRI(getNamespace() + "intervalAfter");
+    public static final IRI intervalBefore = createIRI(getNamespace() + "intervalBefore");
+    public static final IRI intervalContains = createIRI(getNamespace() + "intervalContains");
+    public static final IRI intervalDisjoint = createIRI(getNamespace() + "intervalDisjoint");
+    public static final IRI intervalDuring = createIRI(getNamespace() + "intervalDuring");
+    public static final IRI intervalEquals = createIRI(getNamespace() + "intervalEquals");
+    public static final IRI intervalFinishedBy = createIRI(getNamespace() + "intervalFinishedBy");
+    public static final IRI intervalFinishes = createIRI(getNamespace() + "intervalFinishes");
+    public static final IRI intervalIn = createIRI(getNamespace() + "intervalIn");
+    public static final IRI intervalMeets = createIRI(getNamespace() + "intervalMeets");
+    public static final IRI intervalMetBy = createIRI(getNamespace() + "intervalMetBy");
+    public static final IRI intervalOverlappedBy = createIRI(getNamespace() + "intervalOverlappedBy");
+    public static final IRI intervalOverlaps = createIRI(getNamespace() + "intervalOverlaps");
+    public static final IRI intervalStartedBy = createIRI(getNamespace() + "intervalStartedBy");
+    public static final IRI intervalStarts = createIRI(getNamespace() + "intervalStarts");
+    public static final IRI monthOfYear = createIRI(getNamespace() + "monthOfYear");
+    public static final IRI timeZone = createIRI(getNamespace() + "timeZone");
+    public static final IRI unitType = createIRI(getNamespace() + "unitType");
 
     /* Datatype Properties */
-    public static final IRI day = createIRI(URI + "day");
-    public static final IRI dayOfYear = createIRI(URI + "dayOfYear");
-    public static final IRI days = createIRI(URI + "days");
-    public static final IRI hasXSDDuration = createIRI(URI + "hasXSDDuration");
-    public static final IRI hour = createIRI(URI + "hour");
-    public static final IRI hours = createIRI(URI + "hours");
-    public static final IRI week = createIRI(URI + "week");
-    public static final IRI weeks = createIRI(URI + "weeks");
-    public static final IRI year = createIRI(URI + "year");
-    public static final IRI years = createIRI(URI + "years");
-    public static final IRI inXSDDate = createIRI(URI + "inXSDDate");
-    public static final IRI inXSDDateTimeStamp = createIRI(URI + "inXSDDateTimeStamp");
-    public static final IRI inXSDgYear = createIRI(URI + "inXSDgYear");
-    public static final IRI inXSDgYearMonth = createIRI(URI + "inXSDgYearMonth");
-    public static final IRI minute = createIRI(URI + "minute");
-    public static final IRI minutes = createIRI(URI + "minutes");
-    public static final IRI month = createIRI(URI + "month");
-    public static final IRI months = createIRI(URI + "months");
-    public static final IRI nominalPosition = createIRI(URI + "nominalPosition");
-    public static final IRI numericDuration = createIRI(URI + "numericDuration");
-    public static final IRI numericPosition = createIRI(URI + "numericPosition");
-    public static final IRI second = createIRI(URI + "second");
-    public static final IRI seconds = createIRI(URI + "seconds");
+    public static final IRI day = createIRI(getNamespace() + "day");
+    public static final IRI dayOfYear = createIRI(getNamespace() + "dayOfYear");
+    public static final IRI days = createIRI(getNamespace() + "days");
+    public static final IRI hasXSDDuration = createIRI(getNamespace() + "hasXSDDuration");
+    public static final IRI hour = createIRI(getNamespace() + "hour");
+    public static final IRI hours = createIRI(getNamespace() + "hours");
+    public static final IRI week = createIRI(getNamespace() + "week");
+    public static final IRI weeks = createIRI(getNamespace() + "weeks");
+    public static final IRI year = createIRI(getNamespace() + "year");
+    public static final IRI years = createIRI(getNamespace() + "years");
+    public static final IRI inXSDDate = createIRI(getNamespace() + "inXSDDate");
+    public static final IRI inXSDDateTimeStamp = createIRI(getNamespace() + "inXSDDateTimeStamp");
+    public static final IRI inXSDgYear = createIRI(getNamespace() + "inXSDgYear");
+    public static final IRI inXSDgYearMonth = createIRI(getNamespace() + "inXSDgYearMonth");
+    public static final IRI minute = createIRI(getNamespace() + "minute");
+    public static final IRI minutes = createIRI(getNamespace() + "minutes");
+    public static final IRI month = createIRI(getNamespace() + "month");
+    public static final IRI months = createIRI(getNamespace() + "months");
+    public static final IRI nominalPosition = createIRI(getNamespace() + "nominalPosition");
+    public static final IRI numericDuration = createIRI(getNamespace() + "numericDuration");
+    public static final IRI numericPosition = createIRI(getNamespace() + "numericPosition");
+    public static final IRI second = createIRI(getNamespace() + "second");
+    public static final IRI seconds = createIRI(getNamespace() + "seconds");
 
     /* Datatypes */
-    public static final IRI generalDay = createIRI(URI + "generalDay");
-    public static final IRI generalMonth = createIRI(URI + "generalMonth");
-    public static final IRI generalYear = createIRI(URI + "generalYear");
+    public static final IRI generalDay = createIRI(getNamespace() + "generalDay");
+    public static final IRI generalMonth = createIRI(getNamespace() + "generalMonth");
+    public static final IRI generalYear = createIRI(getNamespace() + "generalYear");
 
     /* Individuals */
-    public static final IRI unitDay = createIRI(URI + "unitDay");
-    public static final IRI unitHour = createIRI(URI + "unitHour");
-    public static final IRI unitMinute = createIRI(URI + "unitMinute");
-    public static final IRI unitMonth = createIRI(URI + "unitMonth");
-    public static final IRI unitSecond = createIRI(URI + "unitSecond");
-    public static final IRI unitWeek = createIRI(URI + "unitWeek");
-    public static final IRI unitYear = createIRI(URI + "unitYear");
-    public static final IRI Friday = createIRI(URI + "Friday");
-    public static final IRI Monday = createIRI(URI + "Monday");
-    public static final IRI Saturday = createIRI(URI + "Saturday");
-    public static final IRI Sunday = createIRI(URI + "Sunday");
-    public static final IRI Thursday = createIRI(URI + "Thursday");
-    public static final IRI Tuesday = createIRI(URI + "Tuesday");
-    public static final IRI Wednesday = createIRI(URI + "Wednesday");
+    public static final IRI unitDay = createIRI(getNamespace() + "unitDay");
+    public static final IRI unitHour = createIRI(getNamespace() + "unitHour");
+    public static final IRI unitMinute = createIRI(getNamespace() + "unitMinute");
+    public static final IRI unitMonth = createIRI(getNamespace() + "unitMonth");
+    public static final IRI unitSecond = createIRI(getNamespace() + "unitSecond");
+    public static final IRI unitWeek = createIRI(getNamespace() + "unitWeek");
+    public static final IRI unitYear = createIRI(getNamespace() + "unitYear");
+    public static final IRI Friday = createIRI(getNamespace() + "Friday");
+    public static final IRI Monday = createIRI(getNamespace() + "Monday");
+    public static final IRI Saturday = createIRI(getNamespace() + "Saturday");
+    public static final IRI Sunday = createIRI(getNamespace() + "Sunday");
+    public static final IRI Thursday = createIRI(getNamespace() + "Thursday");
+    public static final IRI Tuesday = createIRI(getNamespace() + "Tuesday");
+    public static final IRI Wednesday = createIRI(getNamespace() + "Wednesday");
 
     private Time() {
         // prevent instantiation

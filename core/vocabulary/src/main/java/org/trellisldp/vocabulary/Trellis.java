@@ -27,28 +27,37 @@ import org.apache.commons.rdf.api.IRI;
 public final class Trellis {
 
     /* Namespace */
-    public static final String URI = "http://www.trellisldp.org/ns/trellis#";
+    private static final String URI = "http://www.trellisldp.org/ns/trellis#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI ConstraintViolation = createIRI(URI + "ConstraintViolation");
-    public static final IRI DeletedResource = createIRI(URI + "DeletedResource");
-    public static final IRI BinaryUploadService = createIRI(URI + "BinaryUploadService");
+    public static final IRI ConstraintViolation = createIRI(getNamespace() + "ConstraintViolation");
+    public static final IRI DeletedResource = createIRI(getNamespace() + "DeletedResource");
+    public static final IRI BinaryUploadService = createIRI(getNamespace() + "BinaryUploadService");
 
     /* Properties */
-    public static final IRI multipartUploadService = createIRI(URI + "multipartUploadService");
+    public static final IRI multipartUploadService = createIRI(getNamespace() + "multipartUploadService");
 
     /* Named Individuals */
-    public static final IRI AdministratorAgent = createIRI(URI + "AdministratorAgent");
-    public static final IRI AnonymousAgent = createIRI(URI + "AnonymousAgent");
-    public static final IRI InvalidType = createIRI(URI + "InvalidType");
-    public static final IRI InvalidRange = createIRI(URI + "InvalidRange");
-    public static final IRI InvalidCardinality = createIRI(URI + "InvalidCardinality");
-    public static final IRI InvalidProperty = createIRI(URI + "InvalidProperty");
-    public static final IRI PreferAccessControl = createIRI(URI + "PreferAccessControl");
-    public static final IRI PreferAudit = createIRI(URI + "PreferAudit");
-    public static final IRI PreferServerManaged = createIRI(URI + "PreferServerManaged");
-    public static final IRI PreferUserManaged = createIRI(URI + "PreferUserManaged");
-    public static final IRI UnsupportedInteractionModel = createIRI(URI + "UnsupportedInteractionModel");
+    public static final IRI AdministratorAgent = createIRI(getNamespace() + "AdministratorAgent");
+    public static final IRI AnonymousAgent = createIRI(getNamespace() + "AnonymousAgent");
+    public static final IRI InvalidType = createIRI(getNamespace() + "InvalidType");
+    public static final IRI InvalidRange = createIRI(getNamespace() + "InvalidRange");
+    public static final IRI InvalidCardinality = createIRI(getNamespace() + "InvalidCardinality");
+    public static final IRI InvalidProperty = createIRI(getNamespace() + "InvalidProperty");
+    public static final IRI PreferAccessControl = createIRI(getNamespace() + "PreferAccessControl");
+    public static final IRI PreferAudit = createIRI(getNamespace() + "PreferAudit");
+    public static final IRI PreferServerManaged = createIRI(getNamespace() + "PreferServerManaged");
+    public static final IRI PreferUserManaged = createIRI(getNamespace() + "PreferUserManaged");
+    public static final IRI UnsupportedInteractionModel = createIRI(getNamespace() + "UnsupportedInteractionModel");
 
     private Trellis() {
         // prevent instantiation

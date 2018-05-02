@@ -176,7 +176,7 @@ public class PutHandler extends ContentBearingHandler {
 
         final IRI ldpType = isBinaryDescription ? LDP.NonRDFSource : ofNullable(req.getLink())
             .filter(l -> "type".equals(l.getRel())).map(Link::getUri).map(URI::toString)
-            .filter(l -> l.startsWith(LDP.URI)).map(rdf::createIRI).filter(l -> !LDP.Resource.equals(l))
+            .filter(l -> l.startsWith(LDP.getNamespace())).map(rdf::createIRI).filter(l -> !LDP.Resource.equals(l))
             .orElse(defaultType);
 
         // Verify that the persistence layer supports the given interaction model

@@ -27,88 +27,97 @@ import org.apache.commons.rdf.api.IRI;
 public final class DC {
 
     /* Namespace */
-    public static final String URI = "http://purl.org/dc/terms/";
+    private static final String URI = "http://purl.org/dc/terms/";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI Agent = createIRI(URI + "Agent");
-    public static final IRI AgentClass = createIRI(URI + "AgentClass");
-    public static final IRI BibliographicResource = createIRI(URI + "BibliographicResource");
-    public static final IRI FileFormat = createIRI(URI + "FileFormat");
-    public static final IRI Frequency = createIRI(URI + "Frequency");
-    public static final IRI Jurisdiction = createIRI(URI + "JURIsdiction");
-    public static final IRI LicenseDocument = createIRI(URI + "LicenseDocument");
-    public static final IRI LinguisticSystem = createIRI(URI + "LinguisticSystem");
-    public static final IRI Location = createIRI(URI + "Location");
-    public static final IRI LocationPeriodOrJurisdiction = createIRI(URI + "LocationPeriodOrJURIsdiction");
-    public static final IRI MediaType = createIRI(URI + "MediaType");
-    public static final IRI MediaTypeOrExtent = createIRI(URI + "MediaTypeOrExtent");
-    public static final IRI MethodOfAccrual = createIRI(URI + "MethodOfAccrual");
-    public static final IRI MethodOfInstruction = createIRI(URI + "MethodOfInstruction");
-    public static final IRI PeriodOfTime = createIRI(URI + "PeriodOfTime");
-    public static final IRI PhysicalMedium = createIRI(URI + "PhysicalMedium");
-    public static final IRI PhysicalResource = createIRI(URI + "PhysicalResource");
-    public static final IRI Policy = createIRI(URI + "Policy");
-    public static final IRI ProvenanceStatement = createIRI(URI + "ProvenanceStatement");
-    public static final IRI RightsStatement = createIRI(URI + "RightsStatement");
-    public static final IRI SizeOrDuration = createIRI(URI + "SizeOrDuration");
-    public static final IRI Standard = createIRI(URI + "Standard");
+    public static final IRI Agent = createIRI(getNamespace() + "Agent");
+    public static final IRI AgentClass = createIRI(getNamespace() + "AgentClass");
+    public static final IRI BibliographicResource = createIRI(getNamespace() + "BibliographicResource");
+    public static final IRI FileFormat = createIRI(getNamespace() + "FileFormat");
+    public static final IRI Frequency = createIRI(getNamespace() + "Frequency");
+    public static final IRI Jurisdiction = createIRI(getNamespace() + "JgetNamespace()sdiction");
+    public static final IRI LicenseDocument = createIRI(getNamespace() + "LicenseDocument");
+    public static final IRI LinguisticSystem = createIRI(getNamespace() + "LinguisticSystem");
+    public static final IRI Location = createIRI(getNamespace() + "Location");
+    public static final IRI LocationPeriodOrJurisdiction = createIRI(getNamespace() + "LocationPeriodOrJurisdiction");
+    public static final IRI MediaType = createIRI(getNamespace() + "MediaType");
+    public static final IRI MediaTypeOrExtent = createIRI(getNamespace() + "MediaTypeOrExtent");
+    public static final IRI MethodOfAccrual = createIRI(getNamespace() + "MethodOfAccrual");
+    public static final IRI MethodOfInstruction = createIRI(getNamespace() + "MethodOfInstruction");
+    public static final IRI PeriodOfTime = createIRI(getNamespace() + "PeriodOfTime");
+    public static final IRI PhysicalMedium = createIRI(getNamespace() + "PhysicalMedium");
+    public static final IRI PhysicalResource = createIRI(getNamespace() + "PhysicalResource");
+    public static final IRI Policy = createIRI(getNamespace() + "Policy");
+    public static final IRI ProvenanceStatement = createIRI(getNamespace() + "ProvenanceStatement");
+    public static final IRI RightsStatement = createIRI(getNamespace() + "RightsStatement");
+    public static final IRI SizeOrDuration = createIRI(getNamespace() + "SizeOrDuration");
+    public static final IRI Standard = createIRI(getNamespace() + "Standard");
 
     /* Properties */
-    public static final IRI abstract_ = createIRI(URI + "abstract");
-    public static final IRI accessRights = createIRI(URI + "accessRights");
-    public static final IRI accrualMethod = createIRI(URI + "accrualMethod");
-    public static final IRI accrualPeriodicity = createIRI(URI + "accrualPeriodicity");
-    public static final IRI accrualPolicy = createIRI(URI + "accrualPolicy");
-    public static final IRI alternative = createIRI(URI + "alternative");
-    public static final IRI audience = createIRI(URI + "audience");
-    public static final IRI available = createIRI(URI + "available");
-    public static final IRI bibliographicCitation = createIRI(URI + "bibliographicCitation");
-    public static final IRI conformsTo = createIRI(URI + "conformsTo");
-    public static final IRI contributor = createIRI(URI + "contributor");
-    public static final IRI coverage = createIRI(URI + "coverage");
-    public static final IRI created = createIRI(URI + "created");
-    public static final IRI creator = createIRI(URI + "creator");
-    public static final IRI date = createIRI(URI + "date");
-    public static final IRI dateAccepted = createIRI(URI + "dateAccepted");
-    public static final IRI dateCopyrighted = createIRI(URI + "dateCopyrighted");
-    public static final IRI dateSubmitted = createIRI(URI + "dateSubmitted");
-    public static final IRI description = createIRI(URI + "description");
-    public static final IRI educationLevel = createIRI(URI + "educationLevel");
-    public static final IRI extent = createIRI(URI + "extent");
-    public static final IRI format = createIRI(URI + "format");
-    public static final IRI hasFormat = createIRI(URI + "hasFormat");
-    public static final IRI hasPart = createIRI(URI + "hasPart");
-    public static final IRI hasVersion = createIRI(URI + "hasVersion");
-    public static final IRI identifier = createIRI(URI + "identifier");
-    public static final IRI instructionalMethod = createIRI(URI + "instructionalMethod");
-    public static final IRI isFormatOf = createIRI(URI + "isFormatOf");
-    public static final IRI isPartOf = createIRI(URI + "isPartOf");
-    public static final IRI isReferencedBy = createIRI(URI + "isReferencedBy");
-    public static final IRI isReplacedBy = createIRI(URI + "isReplacedBy");
-    public static final IRI isRequiredBy = createIRI(URI + "isRequiredBy");
-    public static final IRI issued = createIRI(URI + "issued");
-    public static final IRI isVersionOf = createIRI(URI + "isVersionOf");
-    public static final IRI language = createIRI(URI + "language");
-    public static final IRI license = createIRI(URI + "license");
-    public static final IRI mediator = createIRI(URI + "mediator");
-    public static final IRI medium = createIRI(URI + "medium");
-    public static final IRI modified = createIRI(URI + "modified");
-    public static final IRI provenance = createIRI(URI + "provenance");
-    public static final IRI publisher = createIRI(URI + "publisher");
-    public static final IRI references = createIRI(URI + "references");
-    public static final IRI relation = createIRI(URI + "relation");
-    public static final IRI replaces = createIRI(URI + "replaces");
-    public static final IRI requires = createIRI(URI + "requires");
-    public static final IRI rights = createIRI(URI + "rights");
-    public static final IRI rightsHolder = createIRI(URI + "rightsHolder");
-    public static final IRI source = createIRI(URI + "source");
-    public static final IRI spatial = createIRI(URI + "spatial");
-    public static final IRI subject = createIRI(URI + "subject");
-    public static final IRI tableOfContents = createIRI(URI + "tableOfContents");
-    public static final IRI temporal = createIRI(URI + "temporal");
-    public static final IRI title = createIRI(URI + "title");
-    public static final IRI type = createIRI(URI + "type");
-    public static final IRI valid = createIRI(URI + "valid");
+    public static final IRI abstract_ = createIRI(getNamespace() + "abstract");
+    public static final IRI accessRights = createIRI(getNamespace() + "accessRights");
+    public static final IRI accrualMethod = createIRI(getNamespace() + "accrualMethod");
+    public static final IRI accrualPeriodicity = createIRI(getNamespace() + "accrualPeriodicity");
+    public static final IRI accrualPolicy = createIRI(getNamespace() + "accrualPolicy");
+    public static final IRI alternative = createIRI(getNamespace() + "alternative");
+    public static final IRI audience = createIRI(getNamespace() + "audience");
+    public static final IRI available = createIRI(getNamespace() + "available");
+    public static final IRI bibliographicCitation = createIRI(getNamespace() + "bibliographicCitation");
+    public static final IRI conformsTo = createIRI(getNamespace() + "conformsTo");
+    public static final IRI contributor = createIRI(getNamespace() + "contributor");
+    public static final IRI coverage = createIRI(getNamespace() + "coverage");
+    public static final IRI created = createIRI(getNamespace() + "created");
+    public static final IRI creator = createIRI(getNamespace() + "creator");
+    public static final IRI date = createIRI(getNamespace() + "date");
+    public static final IRI dateAccepted = createIRI(getNamespace() + "dateAccepted");
+    public static final IRI dateCopyrighted = createIRI(getNamespace() + "dateCopyrighted");
+    public static final IRI dateSubmitted = createIRI(getNamespace() + "dateSubmitted");
+    public static final IRI description = createIRI(getNamespace() + "description");
+    public static final IRI educationLevel = createIRI(getNamespace() + "educationLevel");
+    public static final IRI extent = createIRI(getNamespace() + "extent");
+    public static final IRI format = createIRI(getNamespace() + "format");
+    public static final IRI hasFormat = createIRI(getNamespace() + "hasFormat");
+    public static final IRI hasPart = createIRI(getNamespace() + "hasPart");
+    public static final IRI hasVersion = createIRI(getNamespace() + "hasVersion");
+    public static final IRI identifier = createIRI(getNamespace() + "identifier");
+    public static final IRI instructionalMethod = createIRI(getNamespace() + "instructionalMethod");
+    public static final IRI isFormatOf = createIRI(getNamespace() + "isFormatOf");
+    public static final IRI isPartOf = createIRI(getNamespace() + "isPartOf");
+    public static final IRI isReferencedBy = createIRI(getNamespace() + "isReferencedBy");
+    public static final IRI isReplacedBy = createIRI(getNamespace() + "isReplacedBy");
+    public static final IRI isRequiredBy = createIRI(getNamespace() + "isRequiredBy");
+    public static final IRI issued = createIRI(getNamespace() + "issued");
+    public static final IRI isVersionOf = createIRI(getNamespace() + "isVersionOf");
+    public static final IRI language = createIRI(getNamespace() + "language");
+    public static final IRI license = createIRI(getNamespace() + "license");
+    public static final IRI mediator = createIRI(getNamespace() + "mediator");
+    public static final IRI medium = createIRI(getNamespace() + "medium");
+    public static final IRI modified = createIRI(getNamespace() + "modified");
+    public static final IRI provenance = createIRI(getNamespace() + "provenance");
+    public static final IRI publisher = createIRI(getNamespace() + "publisher");
+    public static final IRI references = createIRI(getNamespace() + "references");
+    public static final IRI relation = createIRI(getNamespace() + "relation");
+    public static final IRI replaces = createIRI(getNamespace() + "replaces");
+    public static final IRI requires = createIRI(getNamespace() + "requires");
+    public static final IRI rights = createIRI(getNamespace() + "rights");
+    public static final IRI rightsHolder = createIRI(getNamespace() + "rightsHolder");
+    public static final IRI source = createIRI(getNamespace() + "source");
+    public static final IRI spatial = createIRI(getNamespace() + "spatial");
+    public static final IRI subject = createIRI(getNamespace() + "subject");
+    public static final IRI tableOfContents = createIRI(getNamespace() + "tableOfContents");
+    public static final IRI temporal = createIRI(getNamespace() + "temporal");
+    public static final IRI title = createIRI(getNamespace() + "title");
+    public static final IRI type = createIRI(getNamespace() + "type");
+    public static final IRI valid = createIRI(getNamespace() + "valid");
 
     private DC() {
         // prevent instantiation

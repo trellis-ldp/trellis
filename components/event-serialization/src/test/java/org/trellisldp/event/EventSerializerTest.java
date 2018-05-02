@@ -110,7 +110,7 @@ public class EventSerializerTest {
         assertTrue(types.contains("Create"));
         assertTrue(types.contains(Activity.getIRIString()));
 
-        assertTrue(AS.URI.contains((String) map.get("@context")));
+        assertTrue(AS.getNamespace().contains((String) map.get("@context")));
 
         final List<?> actor = (List<?>) map.get("actor");
         assertTrue(actor.contains("info:user/test"));
@@ -148,7 +148,7 @@ public class EventSerializerTest {
         assertTrue(obj.containsKey("id"));
         assertFalse(obj.containsKey("type"));
 
-        assertTrue(AS.URI.contains((String) map.get("@context")));
+        assertTrue(AS.getNamespace().contains((String) map.get("@context")));
 
         assertTrue(map.get("id").equals("info:event/12345"));
         assertTrue(map.get("published").equals(time.toString()));

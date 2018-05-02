@@ -28,32 +28,41 @@ import org.apache.commons.rdf.api.IRI;
 public final class RDF {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    private static final String URI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI Property = createIRI(URI + "Property");
-    public static final IRI Statement = createIRI(URI + "Statement");
-    public static final IRI Bag = createIRI(URI + "Bag");
-    public static final IRI Seq = createIRI(URI + "Seq");
-    public static final IRI Alt = createIRI(URI + "Alt");
-    public static final IRI List = createIRI(URI + "List");
+    public static final IRI Property = createIRI(getNamespace() + "Property");
+    public static final IRI Statement = createIRI(getNamespace() + "Statement");
+    public static final IRI Bag = createIRI(getNamespace() + "Bag");
+    public static final IRI Seq = createIRI(getNamespace() + "Seq");
+    public static final IRI Alt = createIRI(getNamespace() + "Alt");
+    public static final IRI List = createIRI(getNamespace() + "List");
 
     /* Datatypes */
-    public static final IRI XMLLiteral = createIRI(URI + "XMLLiteral");
-    public static final IRI HTML = createIRI(URI + "HTML");
-    public static final IRI langString = createIRI(URI + "langString");
+    public static final IRI XMLLiteral = createIRI(getNamespace() + "XMLLiteral");
+    public static final IRI HTML = createIRI(getNamespace() + "HTML");
+    public static final IRI langString = createIRI(getNamespace() + "langString");
 
     /* List */
-    public static final IRI nil = createIRI(URI + "nil");
+    public static final IRI nil = createIRI(getNamespace() + "nil");
 
     /* Properties */
-    public static final IRI type = createIRI(URI + "type");
-    public static final IRI subject = createIRI(URI + "subject");
-    public static final IRI predicate = createIRI(URI + "predicate");
-    public static final IRI object = createIRI(URI + "object");
-    public static final IRI value = createIRI(URI + "value");
-    public static final IRI first = createIRI(URI + "first");
-    public static final IRI rest = createIRI(URI + "rest");
+    public static final IRI type = createIRI(getNamespace() + "type");
+    public static final IRI subject = createIRI(getNamespace() + "subject");
+    public static final IRI predicate = createIRI(getNamespace() + "predicate");
+    public static final IRI object = createIRI(getNamespace() + "object");
+    public static final IRI value = createIRI(getNamespace() + "value");
+    public static final IRI first = createIRI(getNamespace() + "first");
+    public static final IRI rest = createIRI(getNamespace() + "rest");
 
     private RDF() {
         // prevent instantiation

@@ -29,7 +29,7 @@ import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.io.impl.IOUtils.getJsonLdProfile;
-import static org.trellisldp.vocabulary.JSONLD.URI;
+import static org.trellisldp.vocabulary.JSONLD.getNamespace;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,6 +72,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.io.impl.HtmlSerializer;
+
 
 /**
  * An IOService implemented using Jena.
@@ -207,7 +208,7 @@ public class JenaIOService implements IOService {
     private String getCustomJsonLdProfile(final IRI... profiles) {
         for (final IRI p : profiles) {
             final String profile = p.getIRIString();
-            if (!profile.startsWith(URI)) {
+            if (!profile.startsWith(getNamespace())) {
                 if (whitelist.contains(profile)) {
                     return profile;
                 }
