@@ -147,7 +147,7 @@ class ActivityStreamMessage {
 
         msg.id = event.getIdentifier().getIRIString();
         msg.type = event.getTypes().stream().map(IRI::getIRIString)
-            .map(type -> type.startsWith(AS.URI) ? type.substring(AS.URI.length()) : type)
+            .map(type -> type.startsWith(AS.getNamespace()) ? type.substring(AS.getNamespace().length()) : type)
             .collect(toList());
 
         msg.published = event.getCreated().toString();

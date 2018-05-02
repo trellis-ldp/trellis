@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -99,16 +99,13 @@ public abstract class AbstractVocabularyTest {
 
     @Test
     public void testNamespace() throws Exception {
-        final Optional<Field> uri = stream(vocabulary().getFields()).filter(field -> field.getName().equals("URI"))
-                .findFirst();
-
-        assertTrue(uri.isPresent(), vocabulary().getName() + " does not contain a 'URI' field!");
-        assertEquals(namespace(), uri.get().get(null), "Namespaces do not match!");
+        final Method m = vocabulary().getMethod("getNamespace");
+        assertEquals(namespace(), m.invoke(null), "Namespaces do not match!");
     }
 
     private Stream<String> fields() {
         return stream(vocabulary().getFields()).map(Field::getName).map(name ->
                 name.endsWith("_") ? name.substring(0, name.length() - 1) : name)
-            .map(name -> name.replaceAll("_", "-")).filter(field -> !field.equals("URI"));
+            .map(name -> name.replaceAll("_", "-"));
     }
 }

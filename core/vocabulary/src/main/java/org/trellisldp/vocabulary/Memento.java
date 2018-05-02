@@ -27,20 +27,29 @@ import org.apache.commons.rdf.api.IRI;
 public final class Memento {
 
     /* Namespace */
-    public static final String URI = "http://mementoweb.org/ns#";
+    private static final String URI = "http://mementoweb.org/ns#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI Memento = createIRI(URI + "Memento");
-    public static final IRI OriginalResource = createIRI(URI + "OriginalResource");
-    public static final IRI TimeGate = createIRI(URI + "TimeGate");
-    public static final IRI TimeMap = createIRI(URI + "TimeMap");
+    public static final IRI Memento = createIRI(getNamespace() + "Memento");
+    public static final IRI OriginalResource = createIRI(getNamespace() + "OriginalResource");
+    public static final IRI TimeGate = createIRI(getNamespace() + "TimeGate");
+    public static final IRI TimeMap = createIRI(getNamespace() + "TimeMap");
 
     /* Properties */
-    public static final IRI memento = createIRI(URI + "memento");
-    public static final IRI mementoDatetime = createIRI(URI + "mementoDatetime");
-    public static final IRI timegate = createIRI(URI + "timegate");
-    public static final IRI timemap = createIRI(URI + "timemap");
-    public static final IRI original = createIRI(URI + "original");
+    public static final IRI memento = createIRI(getNamespace() + "memento");
+    public static final IRI mementoDatetime = createIRI(getNamespace() + "mementoDatetime");
+    public static final IRI timegate = createIRI(getNamespace() + "timegate");
+    public static final IRI timemap = createIRI(getNamespace() + "timemap");
+    public static final IRI original = createIRI(getNamespace() + "original");
 
     private Memento() {
         // prevent instantiation

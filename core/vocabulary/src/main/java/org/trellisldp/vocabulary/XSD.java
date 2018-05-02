@@ -27,45 +27,54 @@ import org.apache.commons.rdf.api.IRI;
 public final class XSD {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/2001/XMLSchema#";
+    private static final String URI = "http://www.w3.org/2001/XMLSchema#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* DataTypes */
-    public static final IRI anyURI = createIRI(URI + "anyURI");
-    public static final IRI base64Binary = createIRI(URI + "base64Binary");
-    public static final IRI boolean_ = createIRI(URI + "boolean");
-    public static final IRI byte_ = createIRI(URI + "byte");
-    public static final IRI date = createIRI(URI + "date");
-    public static final IRI dateTime = createIRI(URI + "dateTime");
-    public static final IRI dateTimeStamp = createIRI(URI + "dateTimeStamp");
-    public static final IRI dayTimeDuration = createIRI(URI + "dayTimeDuration");
-    public static final IRI decimal = createIRI(URI + "decimal");
-    public static final IRI double_ = createIRI(URI + "double");
-    public static final IRI duration = createIRI(URI + "duration");
-    public static final IRI float_ = createIRI(URI + "float");
-    public static final IRI gDay = createIRI(URI + "gDay");
-    public static final IRI gMonth = createIRI(URI + "gMonth");
-    public static final IRI gMonthDay = createIRI(URI + "gMonthDay");
-    public static final IRI gYear = createIRI(URI + "gYear");
-    public static final IRI gYearMonth = createIRI(URI + "gYearMonth");
-    public static final IRI hexBinary = createIRI(URI + "hexBinary");
-    public static final IRI integer = createIRI(URI + "integer");
-    public static final IRI int_ = createIRI(URI + "int");
-    public static final IRI language = createIRI(URI + "language");
-    public static final IRI long_ = createIRI(URI + "long");
-    public static final IRI negativeInteger = createIRI(URI + "negativeInteger");
-    public static final IRI nonNegativeInteger = createIRI(URI + "nonNegativeInteger");
-    public static final IRI nonPositiveInteger = createIRI(URI + "nonPositiveInteger");
-    public static final IRI normalizedString = createIRI(URI + "normalizedString");
-    public static final IRI positiveInteger = createIRI(URI + "positiveInteger");
-    public static final IRI short_ = createIRI(URI + "short");
-    public static final IRI string_ = createIRI(URI + "string");
-    public static final IRI time = createIRI(URI + "time");
-    public static final IRI token = createIRI(URI + "token");
-    public static final IRI unsignedByte = createIRI(URI + "unsignedByte");
-    public static final IRI unsignedInt = createIRI(URI + "unsignedInt");
-    public static final IRI unsignedLong = createIRI(URI + "unsignedLong");
-    public static final IRI unsignedShort = createIRI(URI + "unsignedShort");
-    public static final IRI yearMonthDuration = createIRI(URI + "yearMonthDuration");
+    public static final IRI anyURI = createIRI(getNamespace() + "anyURI");
+    public static final IRI base64Binary = createIRI(getNamespace() + "base64Binary");
+    public static final IRI boolean_ = createIRI(getNamespace() + "boolean");
+    public static final IRI byte_ = createIRI(getNamespace() + "byte");
+    public static final IRI date = createIRI(getNamespace() + "date");
+    public static final IRI dateTime = createIRI(getNamespace() + "dateTime");
+    public static final IRI dateTimeStamp = createIRI(getNamespace() + "dateTimeStamp");
+    public static final IRI dayTimeDuration = createIRI(getNamespace() + "dayTimeDuration");
+    public static final IRI decimal = createIRI(getNamespace() + "decimal");
+    public static final IRI double_ = createIRI(getNamespace() + "double");
+    public static final IRI duration = createIRI(getNamespace() + "duration");
+    public static final IRI float_ = createIRI(getNamespace() + "float");
+    public static final IRI gDay = createIRI(getNamespace() + "gDay");
+    public static final IRI gMonth = createIRI(getNamespace() + "gMonth");
+    public static final IRI gMonthDay = createIRI(getNamespace() + "gMonthDay");
+    public static final IRI gYear = createIRI(getNamespace() + "gYear");
+    public static final IRI gYearMonth = createIRI(getNamespace() + "gYearMonth");
+    public static final IRI hexBinary = createIRI(getNamespace() + "hexBinary");
+    public static final IRI integer = createIRI(getNamespace() + "integer");
+    public static final IRI int_ = createIRI(getNamespace() + "int");
+    public static final IRI language = createIRI(getNamespace() + "language");
+    public static final IRI long_ = createIRI(getNamespace() + "long");
+    public static final IRI negativeInteger = createIRI(getNamespace() + "negativeInteger");
+    public static final IRI nonNegativeInteger = createIRI(getNamespace() + "nonNegativeInteger");
+    public static final IRI nonPositiveInteger = createIRI(getNamespace() + "nonPositiveInteger");
+    public static final IRI normalizedString = createIRI(getNamespace() + "normalizedString");
+    public static final IRI positiveInteger = createIRI(getNamespace() + "positiveInteger");
+    public static final IRI short_ = createIRI(getNamespace() + "short");
+    public static final IRI string_ = createIRI(getNamespace() + "string");
+    public static final IRI time = createIRI(getNamespace() + "time");
+    public static final IRI token = createIRI(getNamespace() + "token");
+    public static final IRI unsignedByte = createIRI(getNamespace() + "unsignedByte");
+    public static final IRI unsignedInt = createIRI(getNamespace() + "unsignedInt");
+    public static final IRI unsignedLong = createIRI(getNamespace() + "unsignedLong");
+    public static final IRI unsignedShort = createIRI(getNamespace() + "unsignedShort");
+    public static final IRI yearMonthDuration = createIRI(getNamespace() + "yearMonthDuration");
 
     private XSD() {
         // prevent instantiation

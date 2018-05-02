@@ -93,7 +93,7 @@ class ContentBearingHandler extends BaseLdpHandler {
             ioService.read(input, identifier, syntax)
                 .map(skolemizeTriples(resourceService, baseUrl))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
-                        || !triple.getObject().ntriplesString().startsWith("<" + LDP.URI))
+                        || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace()))
                 .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
                 .map(triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(),
                             triple.getObject()))

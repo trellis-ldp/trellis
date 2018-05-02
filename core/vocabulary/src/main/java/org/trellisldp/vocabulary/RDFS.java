@@ -28,26 +28,35 @@ import org.apache.commons.rdf.api.IRI;
 public final class RDFS {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/2000/01/rdf-schema#";
+    private static final String URI = "http://www.w3.org/2000/01/rdf-schema#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI Resource = createIRI(URI + "Resource");
-    public static final IRI Class = createIRI(URI + "Class");
-    public static final IRI Literal = createIRI(URI + "Literal");
-    public static final IRI Container = createIRI(URI + "Container");
-    public static final IRI ContainerMembershipProperty = createIRI(URI + "ContainerMembershipProperty");
-    public static final IRI Datatype = createIRI(URI + "Datatype");
+    public static final IRI Resource = createIRI(getNamespace() + "Resource");
+    public static final IRI Class = createIRI(getNamespace() + "Class");
+    public static final IRI Literal = createIRI(getNamespace() + "Literal");
+    public static final IRI Container = createIRI(getNamespace() + "Container");
+    public static final IRI ContainerMembershipProperty = createIRI(getNamespace() + "ContainerMembershipProperty");
+    public static final IRI Datatype = createIRI(getNamespace() + "Datatype");
 
     /* Properties */
-    public static final IRI subClassOf = createIRI(URI + "subClassOf");
-    public static final IRI subPropertyOf = createIRI(URI + "subPropertyOf");
-    public static final IRI comment = createIRI(URI + "comment");
-    public static final IRI label = createIRI(URI + "label");
-    public static final IRI domain = createIRI(URI + "domain");
-    public static final IRI range = createIRI(URI + "range");
-    public static final IRI seeAlso = createIRI(URI + "seeAlso");
-    public static final IRI isDefinedBy = createIRI(URI + "isDefinedBy");
-    public static final IRI member = createIRI(URI + "member");
+    public static final IRI subClassOf = createIRI(getNamespace() + "subClassOf");
+    public static final IRI subPropertyOf = createIRI(getNamespace() + "subPropertyOf");
+    public static final IRI comment = createIRI(getNamespace() + "comment");
+    public static final IRI label = createIRI(getNamespace() + "label");
+    public static final IRI domain = createIRI(getNamespace() + "domain");
+    public static final IRI range = createIRI(getNamespace() + "range");
+    public static final IRI seeAlso = createIRI(getNamespace() + "seeAlso");
+    public static final IRI isDefinedBy = createIRI(getNamespace() + "isDefinedBy");
+    public static final IRI member = createIRI(getNamespace() + "member");
 
     private RDFS() {
         // prevent instantiation

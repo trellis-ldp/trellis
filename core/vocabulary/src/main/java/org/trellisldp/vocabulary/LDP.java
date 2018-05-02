@@ -27,47 +27,56 @@ import org.apache.commons.rdf.api.IRI;
 public final class LDP {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/ns/ldp#";
+    private static final String URI = "http://www.w3.org/ns/ldp#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI BasicContainer = createIRI(URI + "BasicContainer");
-    public static final IRI Container = createIRI(URI + "Container");
-    public static final IRI DirectContainer = createIRI(URI + "DirectContainer");
-    public static final IRI IndirectContainer = createIRI(URI + "IndirectContainer");
-    public static final IRI NonRDFSource = createIRI(URI + "NonRDFSource");
-    public static final IRI Resource = createIRI(URI + "Resource");
-    public static final IRI RDFSource = createIRI(URI + "RDFSource");
+    public static final IRI BasicContainer = createIRI(getNamespace() + "BasicContainer");
+    public static final IRI Container = createIRI(getNamespace() + "Container");
+    public static final IRI DirectContainer = createIRI(getNamespace() + "DirectContainer");
+    public static final IRI IndirectContainer = createIRI(getNamespace() + "IndirectContainer");
+    public static final IRI NonRDFSource = createIRI(getNamespace() + "NonRDFSource");
+    public static final IRI Resource = createIRI(getNamespace() + "Resource");
+    public static final IRI RDFSource = createIRI(getNamespace() + "RDFSource");
 
     /* Properties */
-    public static final IRI contains = createIRI(URI + "contains");
-    public static final IRI hasMemberRelation = createIRI(URI + "hasMemberRelation");
-    public static final IRI inbox = createIRI(URI + "inbox");
-    public static final IRI insertedContentRelation = createIRI(URI + "insertedContentRelation");
-    public static final IRI isMemberOfRelation = createIRI(URI + "isMemberOfRelation");
-    public static final IRI member = createIRI(URI + "member");
-    public static final IRI membershipResource = createIRI(URI + "membershipResource");
+    public static final IRI contains = createIRI(getNamespace() + "contains");
+    public static final IRI hasMemberRelation = createIRI(getNamespace() + "hasMemberRelation");
+    public static final IRI inbox = createIRI(getNamespace() + "inbox");
+    public static final IRI insertedContentRelation = createIRI(getNamespace() + "insertedContentRelation");
+    public static final IRI isMemberOfRelation = createIRI(getNamespace() + "isMemberOfRelation");
+    public static final IRI member = createIRI(getNamespace() + "member");
+    public static final IRI membershipResource = createIRI(getNamespace() + "membershipResource");
 
     /* Prefer-related Classes */
-    public static final IRI PreferContainment = createIRI(URI + "PreferContainment");
-    public static final IRI PreferMembership = createIRI(URI + "PreferMembership");
-    public static final IRI PreferMinimalContainer = createIRI(URI + "PreferMinimalContainer");
+    public static final IRI PreferContainment = createIRI(getNamespace() + "PreferContainment");
+    public static final IRI PreferMembership = createIRI(getNamespace() + "PreferMembership");
+    public static final IRI PreferMinimalContainer = createIRI(getNamespace() + "PreferMinimalContainer");
 
     /* Paging Classes */
-    public static final IRI PageSortCriterion = createIRI(URI + "PageSortCriterion");
-    public static final IRI Ascending = createIRI(URI + "Ascending");
-    public static final IRI Descending = createIRI(URI + "Descending");
-    public static final IRI Page = createIRI(URI + "Page");
+    public static final IRI PageSortCriterion = createIRI(getNamespace() + "PageSortCriterion");
+    public static final IRI Ascending = createIRI(getNamespace() + "Ascending");
+    public static final IRI Descending = createIRI(getNamespace() + "Descending");
+    public static final IRI Page = createIRI(getNamespace() + "Page");
 
     /* Paging Properties */
-    public static final IRI constrainedBy = createIRI(URI + "constrainedBy");
-    public static final IRI pageSortCriteria = createIRI(URI + "pageSortCriteria");
-    public static final IRI pageSortPredicate = createIRI(URI + "pageSortPredicate");
-    public static final IRI pageSortOrder = createIRI(URI + "pageSortOrder");
-    public static final IRI pageSortCollation = createIRI(URI + "pageSortCollation");
-    public static final IRI pageSequence = createIRI(URI + "pageSequence");
+    public static final IRI constrainedBy = createIRI(getNamespace() + "constrainedBy");
+    public static final IRI pageSortCriteria = createIRI(getNamespace() + "pageSortCriteria");
+    public static final IRI pageSortPredicate = createIRI(getNamespace() + "pageSortPredicate");
+    public static final IRI pageSortOrder = createIRI(getNamespace() + "pageSortOrder");
+    public static final IRI pageSortCollation = createIRI(getNamespace() + "pageSortCollation");
+    public static final IRI pageSequence = createIRI(getNamespace() + "pageSequence");
 
     /* Other Classes */
-    public static final IRI MemberSubject = createIRI(URI + "MemberSubject");
+    public static final IRI MemberSubject = createIRI(getNamespace() + "MemberSubject");
 
     private LDP() {
         // prevent instantiation

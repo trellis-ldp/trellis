@@ -27,29 +27,38 @@ import org.apache.commons.rdf.api.IRI;
 public final class ACL {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/ns/auth/acl#";
+    private static final String URI = "http://www.w3.org/ns/auth/acl#";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI Access = createIRI(URI + "Access");
-    public static final IRI Append = createIRI(URI + "Append");
-    public static final IRI AuthenticatedAgent = createIRI(URI + "AuthenticatedAgent");
-    public static final IRI Authorization = createIRI(URI + "Authorization");
-    public static final IRI Control = createIRI(URI + "Control");
-    public static final IRI Read = createIRI(URI + "Read");
-    public static final IRI Origin = createIRI(URI + "Origin");
-    public static final IRI Write = createIRI(URI + "Write");
+    public static final IRI Access = createIRI(getNamespace() + "Access");
+    public static final IRI Append = createIRI(getNamespace() + "Append");
+    public static final IRI AuthenticatedAgent = createIRI(getNamespace() + "AuthenticatedAgent");
+    public static final IRI Authorization = createIRI(getNamespace() + "Authorization");
+    public static final IRI Control = createIRI(getNamespace() + "Control");
+    public static final IRI Read = createIRI(getNamespace() + "Read");
+    public static final IRI Origin = createIRI(getNamespace() + "Origin");
+    public static final IRI Write = createIRI(getNamespace() + "Write");
 
     /* Properties */
-    public static final IRI accessControl = createIRI(URI + "accessControl");
-    public static final IRI accessTo = createIRI(URI + "accessTo");
-    public static final IRI accessToClass = createIRI(URI + "accessToClass");
-    public static final IRI agent = createIRI(URI + "agent");
-    public static final IRI agentClass = createIRI(URI + "agentClass");
-    public static final IRI agentGroup = createIRI(URI + "agentGroup");
-    public static final IRI default_ = createIRI(URI + "default");
-    public static final IRI delegates = createIRI(URI + "delegates");
-    public static final IRI mode = createIRI(URI + "mode");
-    public static final IRI owner = createIRI(URI + "owner");
+    public static final IRI accessControl = createIRI(getNamespace() + "accessControl");
+    public static final IRI accessTo = createIRI(getNamespace() + "accessTo");
+    public static final IRI accessToClass = createIRI(getNamespace() + "accessToClass");
+    public static final IRI agent = createIRI(getNamespace() + "agent");
+    public static final IRI agentClass = createIRI(getNamespace() + "agentClass");
+    public static final IRI agentGroup = createIRI(getNamespace() + "agentGroup");
+    public static final IRI default_ = createIRI(getNamespace() + "default");
+    public static final IRI delegates = createIRI(getNamespace() + "delegates");
+    public static final IRI mode = createIRI(getNamespace() + "mode");
+    public static final IRI owner = createIRI(getNamespace() + "owner");
 
     private ACL() {
         // prevent instantiation

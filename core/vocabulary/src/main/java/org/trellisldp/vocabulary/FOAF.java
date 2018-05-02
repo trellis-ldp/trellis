@@ -27,27 +27,36 @@ import org.apache.commons.rdf.api.IRI;
 public final class FOAF {
 
     /* Namespace */
-    public static final String URI = "http://xmlns.com/foaf/0.1/";
+    private static final String URI = "http://xmlns.com/foaf/0.1/";
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     /* Classes */
-    public static final IRI Agent = createIRI(URI + "Agent");
-    public static final IRI Document = createIRI(URI + "Document");
-    public static final IRI Group = createIRI(URI + "Group");
-    public static final IRI Image = createIRI(URI + "Image");
-    public static final IRI Organization = createIRI(URI + "Organization");
-    public static final IRI Person = createIRI(URI + "Person");
+    public static final IRI Agent = createIRI(getNamespace() + "Agent");
+    public static final IRI Document = createIRI(getNamespace() + "Document");
+    public static final IRI Group = createIRI(getNamespace() + "Group");
+    public static final IRI Image = createIRI(getNamespace() + "Image");
+    public static final IRI Organization = createIRI(getNamespace() + "Organization");
+    public static final IRI Person = createIRI(getNamespace() + "Person");
 
     /* Properties */
-    public static final IRI homepage = createIRI(URI + "homepage");
-    public static final IRI isPrimaryTopicOf = createIRI(URI + "isPrimaryTopicOf");
-    public static final IRI knows = createIRI(URI + "knows");
-    public static final IRI made = createIRI(URI + "made");
-    public static final IRI maker = createIRI(URI + "maker");
-    public static final IRI member = createIRI(URI + "member");
-    public static final IRI mbox = createIRI(URI + "mbox");
-    public static final IRI page = createIRI(URI + "page");
-    public static final IRI primaryTopic = createIRI(URI + "primaryTopic");
-    public static final IRI weblog = createIRI(URI + "weblog");
+    public static final IRI homepage = createIRI(getNamespace() + "homepage");
+    public static final IRI isPrimaryTopicOf = createIRI(getNamespace() + "isPrimaryTopicOf");
+    public static final IRI knows = createIRI(getNamespace() + "knows");
+    public static final IRI made = createIRI(getNamespace() + "made");
+    public static final IRI maker = createIRI(getNamespace() + "maker");
+    public static final IRI member = createIRI(getNamespace() + "member");
+    public static final IRI mbox = createIRI(getNamespace() + "mbox");
+    public static final IRI page = createIRI(getNamespace() + "page");
+    public static final IRI primaryTopic = createIRI(getNamespace() + "primaryTopic");
+    public static final IRI weblog = createIRI(getNamespace() + "weblog");
 
     private FOAF() {
         // prevent instantiation
