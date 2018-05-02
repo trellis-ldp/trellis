@@ -38,13 +38,17 @@ public final class PROV {
     public static final IRI Bundle = createIRI(NS + "Bundle");
     public static final IRI Collection = createIRI(NS + "Collection");
     public static final IRI EmptyCollection = createIRI(NS + "EmptyCollection");
-    public static final IRI KeyEntityPair = createIRI(NS + "KeyEntityPair");
     public static final IRI Location = createIRI(NS + "Location");
     public static final IRI Organization = createIRI(NS + "Organization");
     public static final IRI Person = createIRI(NS + "Person");
+    public static final IRI Role = createIRI(NS + "Role");
     public static final IRI SoftwareAgent = createIRI(NS + "SoftwareAgent");
 
-    /* DC Classes */
+    /* PROV-AQ Classes */
+    public static final IRI DirectQueryService = createIRI(NS + "DirectQueryService");
+    public static final IRI ServiceDescription = createIRI(NS + "ServiceDescription");
+
+    /* PROV-DC Classes */
     public static final IRI Accept = createIRI(NS + "Accept");
     public static final IRI Contribute = createIRI(NS + "Contribute");
     public static final IRI Contributor = createIRI(NS + "Contributor");
@@ -58,6 +62,14 @@ public final class PROV {
     public static final IRI RightsAssignment = createIRI(NS + "RightsAssignment");
     public static final IRI RightsHolder = createIRI(NS + "RightsHolder");
     public static final IRI Submit = createIRI(NS + "Submit");
+
+
+    /* PROV-DICTIONARY Classes */
+    public static final IRI Dictionary = createIRI(NS + "Dictionary");
+    public static final IRI EmptyDictionary = createIRI(NS + "EmptyDictionary");
+    public static final IRI Insertion = createIRI(NS + "Insertion");
+    public static final IRI KeyEntityPair = createIRI(NS + "KeyEntityPair");
+    public static final IRI Removal = createIRI(NS + "Removal");
 
     /* Qualified Classes */
     public static final IRI ActivityInfluence = createIRI(NS + "ActivityInfluence");
@@ -81,19 +93,29 @@ public final class PROV {
     public static final IRI Usage = createIRI(NS + "Usage");
 
     /* Properties */
+    public static final IRI activityOfInfluence  = createIRI(NS + "activityOfInfluence");
+    public static final IRI agentOfInfluence  = createIRI(NS + "agentOfInfluence");
     public static final IRI aq = createIRI(NS + "aq");
     public static final IRI actedOnBehalfOf = createIRI(NS + "actedOnBehalfOf");
+    public static final IRI category = createIRI(NS + "category");
+    public static final IRI component = createIRI(NS + "component");
+    public static final IRI constraints = createIRI(NS + "constraints");
+    public static final IRI contributed = createIRI(NS + "contributed");
     public static final IRI definition = createIRI(NS + "definition");
     public static final IRI dm = createIRI(NS + "dm");
+    public static final IRI editorialNote = createIRI(NS + "editorialNote");
     public static final IRI editorsDefinition = createIRI(NS + "editorsDefinition");
+    public static final IRI ended = createIRI(NS + "ended");
     public static final IRI endedAtTime = createIRI(NS + "endedAtTime");
     public static final IRI entityOfInfluence = createIRI(NS + "entityOfInfluence");
+    public static final IRI informed = createIRI(NS + "informed");
     public static final IRI inverse = createIRI(NS + "inverse");
-    public static final IRI insertedKeyEntityPair = createIRI(NS + "insertedKeyEntityPair");
     public static final IRI order = createIRI(NS + "order");
-    public static final IRI pairEntity = createIRI(NS + "pairEntity");
+    public static final IRI quotedAs = createIRI(NS + "quotedAs");
     public static final IRI revisedEntity = createIRI(NS + "revisedEntity");
     public static final IRI startedAtTime = createIRI(NS + "startedAtTime");
+    public static final IRI started = createIRI(NS + "started");
+    public static final IRI sharesDefinitionWith = createIRI(NS + "sharesDefinitionWith");
     public static final IRI used = createIRI(NS + "used");
     public static final IRI wasAssociatedWith = createIRI(NS + "wasAssociatedWith");
     public static final IRI wasAttributedTo = createIRI(NS + "wasAttributedTo");
@@ -101,26 +123,58 @@ public final class PROV {
     public static final IRI wasGeneratedBy = createIRI(NS + "wasGeneratedBy");
     public static final IRI wasInformedBy = createIRI(NS + "wasInformedBy");
 
+    /* PROV-AQ Properties */
+    public static final IRI describesService = createIRI(NS + "describesService");
+    public static final IRI pingback = createIRI(NS + "pingback");
+    public static final IRI provenanceUriTemplate = createIRI(NS + "provenanceUriTemplate");
+
+    /* PROV-DICTIONARY Properties */
+    public static final IRI derivedByInsertionFrom = createIRI(NS + "derivedByInsertionFrom");
+    public static final IRI derivedByRemovalFrom = createIRI(NS + "derivedByRemovalFrom");
+    public static final IRI dictionary = createIRI(NS + "dictionary");
+    public static final IRI hadDictionaryMember = createIRI(NS + "hadDictionaryMember");
+    public static final IRI insertedKeyEntityPair = createIRI(NS + "insertedKeyEntityPair");
+    public static final IRI pairEntity = createIRI(NS + "pairEntity");
+    public static final IRI pairKey = createIRI(NS + "pairKey");
+    public static final IRI qualifiedInsertion = createIRI(NS + "qualifiedInsertion");
+    public static final IRI qualifiedRemoval = createIRI(NS + "qualifiedRemoval");
+    public static final IRI removedKey = createIRI(NS + "removedKey");
+
     /* Expanded Properties */
     public static final IRI alternateOf = createIRI(NS + "alternateOf");
+    public static final IRI asInBundle = createIRI(NS + "asInBundle");
     public static final IRI atLocation = createIRI(NS + "atLocation");
     public static final IRI generated = createIRI(NS + "generated");
     public static final IRI generatedAsDerivation = createIRI(NS + "generatedAsDerivation");
     public static final IRI generatedAtTime = createIRI(NS + "generatedAtTime");
+    public static final IRI generalizationOf = createIRI(NS + "generalizationOf");
     public static final IRI hadDelegate = createIRI(NS + "hadDelegate");
+    public static final IRI hadDerivation = createIRI(NS + "hadDerivation");
     public static final IRI hadMember = createIRI(NS + "hadMember");
     public static final IRI hadPrimarySource = createIRI(NS + "hadPrimarySource");
+    public static final IRI hadInfluence = createIRI(NS + "hadInfluence");
+    public static final IRI hadRevision = createIRI(NS + "hadRevision");
     public static final IRI influenced = createIRI(NS + "influenced");
     public static final IRI invalidated = createIRI(NS + "invalidated");
     public static final IRI invalidatedAtTime = createIRI(NS + "invalidatedAtTime");
+    public static final IRI locationOf = createIRI(NS + "locationOf");
+    public static final IRI mentionOf = createIRI(NS + "mentionOf");
     public static final IRI qualifiedAssociationOf = createIRI(NS + "qualifiedAssociationOf");
+    public static final IRI qualifiedAttributionOf = createIRI(NS + "qualifiedAttributionOf");
     public static final IRI qualifiedCommunicationOf = createIRI(NS + "qualifiedCommunicationOf");
+    public static final IRI qualifiedDelegationOf = createIRI(NS + "qualifiedDelegationOf");
+    public static final IRI qualifiedDerivationOf = createIRI(NS + "qualifiedDerivationOf");
     public static final IRI qualifiedEndOf = createIRI(NS + "qualifiedEndOf");
+    public static final IRI qualifiedInfluenceOf = createIRI(NS + "qualifiedInfluenceOf");
+    public static final IRI qualifiedInvalidationOf = createIRI(NS + "qualifiedInvalidationOf");
     public static final IRI qualifiedGenerationOf = createIRI(NS + "qualifiedGenerationOf");
     public static final IRI qualifiedQuotationOf = createIRI(NS + "qualifiedQuotationOf");
+    public static final IRI qualifiedSourceOf = createIRI(NS + "qualifiedSourceOf");
+    public static final IRI qualifiedStartOf = createIRI(NS + "qualifiedStartOf");
     public static final IRI specializationOf = createIRI(NS + "specializationOf");
     public static final IRI value = createIRI(NS + "value");
     public static final IRI wasActivityOfInfluence = createIRI(NS + "wasActivityOfInfluence");
+    public static final IRI wasAssociateFor= createIRI(NS + "wasAssociateFor");
     public static final IRI wasEndedBy = createIRI(NS + "wasEndedBy");
     public static final IRI wasInvalidatedBy = createIRI(NS + "wasInvalidatedBy");
     public static final IRI wasMemberOf = createIRI(NS + "wasMemberOf");
@@ -129,6 +183,8 @@ public final class PROV {
     public static final IRI wasQuotedFrom = createIRI(NS + "wasQuotedFrom");
     public static final IRI wasRevisionOf = createIRI(NS + "wasRevisionOf");
     public static final IRI wasStartedBy = createIRI(NS + "wasStartedBy");
+    public static final IRI wasUsedBy = createIRI(NS + "wasUsedBy");
+    public static final IRI wasUsedInDerivation = createIRI(NS + "wasUsedInDerivation");
 
     /* Qualified Properties */
     public static final IRI activity = createIRI(NS + "activity");
@@ -147,16 +203,19 @@ public final class PROV {
     public static final IRI qualifiedDelegation = createIRI(NS + "qualifiedDelegation");
     public static final IRI qualifiedDerivation = createIRI(NS + "qualifiedDerivation");
     public static final IRI qualifiedEnd = createIRI(NS + "qualifiedEnd");
+    public static final IRI qualifiedForm = createIRI(NS + "qualifiedForm");
     public static final IRI qualifiedGeneration = createIRI(NS + "qualifiedGeneration");
     public static final IRI qualifiedInfluence = createIRI(NS + "qualifiedInfluence");
-    public static final IRI qualifiedInsertion = createIRI(NS + "qualifiedInsertion");
     public static final IRI qualifiedInvalidation = createIRI(NS + "qualifiedInvalidation");
     public static final IRI qualifiedPrimarySource = createIRI(NS + "qualifiedPrimarySource");
     public static final IRI qualifiedQuotation = createIRI(NS + "qualifiedQuotation");
     public static final IRI qualifiedRevision = createIRI(NS + "qualifiedRevision");
     public static final IRI qualifiedStart = createIRI(NS + "qualifiedStart");
     public static final IRI qualifiedUsage = createIRI(NS + "qualifiedUsage");
+    public static final IRI qualifiedUsingActivity = createIRI(NS + "qualifiedUsingActivity");
+    public static final IRI unqualifiedForm = createIRI(NS + "unqualifiedForm");
     public static final IRI wasInfluencedBy = createIRI(NS + "wasInfluencedBy");
+    public static final IRI wasRoleIn = createIRI(NS + "wasRoleIn");
 
     private PROV() {
         // prevent instantiation

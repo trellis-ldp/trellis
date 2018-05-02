@@ -48,6 +48,7 @@ public final class Trellis {
     public static final IRI PreferAudit = createIRI(NS + "PreferAudit");
     public static final IRI PreferServerManaged = createIRI(NS + "PreferServerManaged");
     public static final IRI PreferUserManaged = createIRI(NS + "PreferUserManaged");
+    public static final IRI ReadOnlyResource = createIRI(NS + "ReadOnlyResource");
     public static final IRI UnsupportedInteractionModel = createIRI(NS + "UnsupportedInteractionModel");
 
     private Trellis() {

@@ -69,7 +69,7 @@ public final class DC {
     public static final IRI Standard = createIRI(NS + "Standard");
     public static final IRI TGN = createIRI(NS + "TGN");
     public static final IRI UDC = createIRI(NS + "UDC");
-    public static final IRI URI = createIRI(NS + "NS");
+    public static final IRI URI = createIRI(NS + "URI");
     public static final IRI W3CDTF = createIRI(NS + "W3CDTF");
 
     /* Properties */

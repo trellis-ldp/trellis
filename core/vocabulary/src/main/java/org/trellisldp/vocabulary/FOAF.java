@@ -46,6 +46,7 @@ public final class FOAF {
 
     /* Properties */
     public static final IRI account = createIRI(NS + "account");
+    public static final IRI accountName = createIRI(NS + "accountName");
     public static final IRI accountServiceHomepage = createIRI(NS + "accountServiceHomepage");
     public static final IRI age = createIRI(NS + "age");
     public static final IRI aimChatID = createIRI(NS + "aimChatID");
