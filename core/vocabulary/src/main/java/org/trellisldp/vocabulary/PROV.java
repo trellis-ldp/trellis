@@ -27,98 +27,195 @@ import org.apache.commons.rdf.api.IRI;
 public final class PROV {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/ns/prov#";
+    public static final String NS = "http://www.w3.org/ns/prov#";
 
     /* Classes */
-    public static final IRI Activity = createIRI(URI + "Activity");
-    public static final IRI Agent = createIRI(URI + "Agent");
-    public static final IRI Entity = createIRI(URI + "Entity");
+    public static final IRI Activity = createIRI(NS + "Activity");
+    public static final IRI Agent = createIRI(NS + "Agent");
+    public static final IRI Entity = createIRI(NS + "Entity");
 
     /* Expanded Classes */
-    public static final IRI Bundle = createIRI(URI + "Bundle");
-    public static final IRI Collection = createIRI(URI + "Collection");
-    public static final IRI EmptyCollection = createIRI(URI + "EmptyCollection");
-    public static final IRI Location = createIRI(URI + "Location");
-    public static final IRI Organization = createIRI(URI + "Organization");
-    public static final IRI Person = createIRI(URI + "Person");
-    public static final IRI SoftwareAgent = createIRI(URI + "SoftwareAgent");
+    public static final IRI Bundle = createIRI(NS + "Bundle");
+    public static final IRI Collection = createIRI(NS + "Collection");
+    public static final IRI EmptyCollection = createIRI(NS + "EmptyCollection");
+    public static final IRI Location = createIRI(NS + "Location");
+    public static final IRI Organization = createIRI(NS + "Organization");
+    public static final IRI Person = createIRI(NS + "Person");
+    public static final IRI Role = createIRI(NS + "Role");
+    public static final IRI SoftwareAgent = createIRI(NS + "SoftwareAgent");
+
+    /* PROV-AQ Classes */
+    public static final IRI DirectQueryService = createIRI(NS + "DirectQueryService");
+    public static final IRI ServiceDescription = createIRI(NS + "ServiceDescription");
+
+    /* PROV-DC Classes */
+    public static final IRI Accept = createIRI(NS + "Accept");
+    public static final IRI Contribute = createIRI(NS + "Contribute");
+    public static final IRI Contributor = createIRI(NS + "Contributor");
+    public static final IRI Copyright = createIRI(NS + "Copyright");
+    public static final IRI Create = createIRI(NS + "Create");
+    public static final IRI Creator = createIRI(NS + "Creator");
+    public static final IRI Modify = createIRI(NS + "Modify");
+    public static final IRI Publish = createIRI(NS + "Publish");
+    public static final IRI Publisher = createIRI(NS + "Publisher");
+    public static final IRI Replace = createIRI(NS + "Replace");
+    public static final IRI RightsAssignment = createIRI(NS + "RightsAssignment");
+    public static final IRI RightsHolder = createIRI(NS + "RightsHolder");
+    public static final IRI Submit = createIRI(NS + "Submit");
+
+
+    /* PROV-DICTIONARY Classes */
+    public static final IRI Dictionary = createIRI(NS + "Dictionary");
+    public static final IRI EmptyDictionary = createIRI(NS + "EmptyDictionary");
+    public static final IRI Insertion = createIRI(NS + "Insertion");
+    public static final IRI KeyEntityPair = createIRI(NS + "KeyEntityPair");
+    public static final IRI Removal = createIRI(NS + "Removal");
 
     /* Qualified Classes */
-    public static final IRI ActivityInfluence = createIRI(URI + "ActivityInfluence");
-    public static final IRI AgentInfluence = createIRI(URI + "AgentInfluence");
-    public static final IRI Association = createIRI(URI + "Association");
-    public static final IRI Attribution = createIRI(URI + "Attribution");
-    public static final IRI Communication = createIRI(URI + "Communication");
-    public static final IRI Delegation = createIRI(URI + "Delegation");
-    public static final IRI Derivation = createIRI(URI + "Derivation");
-    public static final IRI End = createIRI(URI + "End");
-    public static final IRI EntityInfluence = createIRI(URI + "EntityInfluence");
-    public static final IRI Generation = createIRI(URI + "Generation");
-    public static final IRI Influence = createIRI(URI + "Influence");
-    public static final IRI InstantaneousEvent = createIRI(URI + "InstantaneousEvent");
-    public static final IRI Invalidation = createIRI(URI + "Invalidation");
-    public static final IRI Plan = createIRI(URI + "Plan");
-    public static final IRI PrimarySource = createIRI(URI + "PrimarySource");
-    public static final IRI Quotation = createIRI(URI + "Quotation");
-    public static final IRI Revision = createIRI(URI + "Revision");
-    public static final IRI Start = createIRI(URI + "Start");
-    public static final IRI Usage = createIRI(URI + "Usage");
+    public static final IRI ActivityInfluence = createIRI(NS + "ActivityInfluence");
+    public static final IRI AgentInfluence = createIRI(NS + "AgentInfluence");
+    public static final IRI Association = createIRI(NS + "Association");
+    public static final IRI Attribution = createIRI(NS + "Attribution");
+    public static final IRI Communication = createIRI(NS + "Communication");
+    public static final IRI Delegation = createIRI(NS + "Delegation");
+    public static final IRI Derivation = createIRI(NS + "Derivation");
+    public static final IRI End = createIRI(NS + "End");
+    public static final IRI EntityInfluence = createIRI(NS + "EntityInfluence");
+    public static final IRI Generation = createIRI(NS + "Generation");
+    public static final IRI Influence = createIRI(NS + "Influence");
+    public static final IRI InstantaneousEvent = createIRI(NS + "InstantaneousEvent");
+    public static final IRI Invalidation = createIRI(NS + "Invalidation");
+    public static final IRI Plan = createIRI(NS + "Plan");
+    public static final IRI PrimarySource = createIRI(NS + "PrimarySource");
+    public static final IRI Quotation = createIRI(NS + "Quotation");
+    public static final IRI Revision = createIRI(NS + "Revision");
+    public static final IRI Start = createIRI(NS + "Start");
+    public static final IRI Usage = createIRI(NS + "Usage");
 
     /* Properties */
-    public static final IRI actedOnBehalfOf = createIRI(URI + "actedOnBehalfOf");
-    public static final IRI endedAtTime = createIRI(URI + "endedAtTime");
-    public static final IRI startedAtTime = createIRI(URI + "startedAtTime");
-    public static final IRI used = createIRI(URI + "used");
-    public static final IRI wasAssociatedWith = createIRI(URI + "wasAssociatedWith");
-    public static final IRI wasAttributedTo = createIRI(URI + "wasAttributedTo");
-    public static final IRI wasDerivedFrom = createIRI(URI + "wasDerivedFrom");
-    public static final IRI wasGeneratedBy = createIRI(URI + "wasGeneratedBy");
-    public static final IRI wasInformedBy = createIRI(URI + "wasInformedBy");
+    public static final IRI activityOfInfluence  = createIRI(NS + "activityOfInfluence");
+    public static final IRI agentOfInfluence  = createIRI(NS + "agentOfInfluence");
+    public static final IRI aq = createIRI(NS + "aq");
+    public static final IRI actedOnBehalfOf = createIRI(NS + "actedOnBehalfOf");
+    public static final IRI category = createIRI(NS + "category");
+    public static final IRI component = createIRI(NS + "component");
+    public static final IRI constraints = createIRI(NS + "constraints");
+    public static final IRI contributed = createIRI(NS + "contributed");
+    public static final IRI definition = createIRI(NS + "definition");
+    public static final IRI dm = createIRI(NS + "dm");
+    public static final IRI editorialNote = createIRI(NS + "editorialNote");
+    public static final IRI editorsDefinition = createIRI(NS + "editorsDefinition");
+    public static final IRI ended = createIRI(NS + "ended");
+    public static final IRI endedAtTime = createIRI(NS + "endedAtTime");
+    public static final IRI entityOfInfluence = createIRI(NS + "entityOfInfluence");
+    public static final IRI informed = createIRI(NS + "informed");
+    public static final IRI inverse = createIRI(NS + "inverse");
+    public static final IRI order = createIRI(NS + "order");
+    public static final IRI quotedAs = createIRI(NS + "quotedAs");
+    public static final IRI revisedEntity = createIRI(NS + "revisedEntity");
+    public static final IRI startedAtTime = createIRI(NS + "startedAtTime");
+    public static final IRI started = createIRI(NS + "started");
+    public static final IRI sharesDefinitionWith = createIRI(NS + "sharesDefinitionWith");
+    public static final IRI used = createIRI(NS + "used");
+    public static final IRI wasAssociatedWith = createIRI(NS + "wasAssociatedWith");
+    public static final IRI wasAttributedTo = createIRI(NS + "wasAttributedTo");
+    public static final IRI wasDerivedFrom = createIRI(NS + "wasDerivedFrom");
+    public static final IRI wasGeneratedBy = createIRI(NS + "wasGeneratedBy");
+    public static final IRI wasInformedBy = createIRI(NS + "wasInformedBy");
+
+    /* PROV-AQ Properties */
+    public static final IRI describesService = createIRI(NS + "describesService");
+    public static final IRI pingback = createIRI(NS + "pingback");
+    public static final IRI provenanceUriTemplate = createIRI(NS + "provenanceUriTemplate");
+
+    /* PROV-DICTIONARY Properties */
+    public static final IRI derivedByInsertionFrom = createIRI(NS + "derivedByInsertionFrom");
+    public static final IRI derivedByRemovalFrom = createIRI(NS + "derivedByRemovalFrom");
+    public static final IRI dictionary = createIRI(NS + "dictionary");
+    public static final IRI hadDictionaryMember = createIRI(NS + "hadDictionaryMember");
+    public static final IRI insertedKeyEntityPair = createIRI(NS + "insertedKeyEntityPair");
+    public static final IRI pairEntity = createIRI(NS + "pairEntity");
+    public static final IRI pairKey = createIRI(NS + "pairKey");
+    public static final IRI qualifiedInsertion = createIRI(NS + "qualifiedInsertion");
+    public static final IRI qualifiedRemoval = createIRI(NS + "qualifiedRemoval");
+    public static final IRI removedKey = createIRI(NS + "removedKey");
 
     /* Expanded Properties */
-    public static final IRI alternateOf = createIRI(URI + "alternateOf");
-    public static final IRI atLocation = createIRI(URI + "atLocation");
-    public static final IRI generated = createIRI(URI + "generated");
-    public static final IRI generatedAtTime = createIRI(URI + "generatedAtTime");
-    public static final IRI hadMember = createIRI(URI + "hadMember");
-    public static final IRI hadPrimarySource = createIRI(URI + "hadPrimarySource");
-    public static final IRI influenced = createIRI(URI + "influenced");
-    public static final IRI invalidated = createIRI(URI + "invalidated");
-    public static final IRI invalidatedAtTime = createIRI(URI + "invalidatedAtTime");
-    public static final IRI specializationOf = createIRI(URI + "specializationOf");
-    public static final IRI value = createIRI(URI + "value");
-    public static final IRI wasEndedBy = createIRI(URI + "wasEndedBy");
-    public static final IRI wasInvalidatedBy = createIRI(URI + "wasInvalidatedBy");
-    public static final IRI wasQuotedFrom = createIRI(URI + "wasQuotedFrom");
-    public static final IRI wasRevisionOf = createIRI(URI + "wasRevisionOf");
-    public static final IRI wasStartedBy = createIRI(URI + "wasStartedBy");
+    public static final IRI alternateOf = createIRI(NS + "alternateOf");
+    public static final IRI asInBundle = createIRI(NS + "asInBundle");
+    public static final IRI atLocation = createIRI(NS + "atLocation");
+    public static final IRI generated = createIRI(NS + "generated");
+    public static final IRI generatedAsDerivation = createIRI(NS + "generatedAsDerivation");
+    public static final IRI generatedAtTime = createIRI(NS + "generatedAtTime");
+    public static final IRI generalizationOf = createIRI(NS + "generalizationOf");
+    public static final IRI hadDelegate = createIRI(NS + "hadDelegate");
+    public static final IRI hadDerivation = createIRI(NS + "hadDerivation");
+    public static final IRI hadMember = createIRI(NS + "hadMember");
+    public static final IRI hadPrimarySource = createIRI(NS + "hadPrimarySource");
+    public static final IRI hadInfluence = createIRI(NS + "hadInfluence");
+    public static final IRI hadRevision = createIRI(NS + "hadRevision");
+    public static final IRI influenced = createIRI(NS + "influenced");
+    public static final IRI invalidated = createIRI(NS + "invalidated");
+    public static final IRI invalidatedAtTime = createIRI(NS + "invalidatedAtTime");
+    public static final IRI locationOf = createIRI(NS + "locationOf");
+    public static final IRI mentionOf = createIRI(NS + "mentionOf");
+    public static final IRI qualifiedAssociationOf = createIRI(NS + "qualifiedAssociationOf");
+    public static final IRI qualifiedAttributionOf = createIRI(NS + "qualifiedAttributionOf");
+    public static final IRI qualifiedCommunicationOf = createIRI(NS + "qualifiedCommunicationOf");
+    public static final IRI qualifiedDelegationOf = createIRI(NS + "qualifiedDelegationOf");
+    public static final IRI qualifiedDerivationOf = createIRI(NS + "qualifiedDerivationOf");
+    public static final IRI qualifiedEndOf = createIRI(NS + "qualifiedEndOf");
+    public static final IRI qualifiedInfluenceOf = createIRI(NS + "qualifiedInfluenceOf");
+    public static final IRI qualifiedInvalidationOf = createIRI(NS + "qualifiedInvalidationOf");
+    public static final IRI qualifiedGenerationOf = createIRI(NS + "qualifiedGenerationOf");
+    public static final IRI qualifiedQuotationOf = createIRI(NS + "qualifiedQuotationOf");
+    public static final IRI qualifiedSourceOf = createIRI(NS + "qualifiedSourceOf");
+    public static final IRI qualifiedStartOf = createIRI(NS + "qualifiedStartOf");
+    public static final IRI specializationOf = createIRI(NS + "specializationOf");
+    public static final IRI value = createIRI(NS + "value");
+    public static final IRI wasActivityOfInfluence = createIRI(NS + "wasActivityOfInfluence");
+    public static final IRI wasAssociateFor= createIRI(NS + "wasAssociateFor");
+    public static final IRI wasEndedBy = createIRI(NS + "wasEndedBy");
+    public static final IRI wasInvalidatedBy = createIRI(NS + "wasInvalidatedBy");
+    public static final IRI wasMemberOf = createIRI(NS + "wasMemberOf");
+    public static final IRI wasPlanOf = createIRI(NS + "wasPlanOf");
+    public static final IRI wasPrimarySourceOf = createIRI(NS + "wasPrimarySourceOf");
+    public static final IRI wasQuotedFrom = createIRI(NS + "wasQuotedFrom");
+    public static final IRI wasRevisionOf = createIRI(NS + "wasRevisionOf");
+    public static final IRI wasStartedBy = createIRI(NS + "wasStartedBy");
+    public static final IRI wasUsedBy = createIRI(NS + "wasUsedBy");
+    public static final IRI wasUsedInDerivation = createIRI(NS + "wasUsedInDerivation");
 
     /* Qualified Properties */
-    public static final IRI activity = createIRI(URI + "activity");
-    public static final IRI agent = createIRI(URI + "agent");
-    public static final IRI atTime = createIRI(URI + "atTime");
-    public static final IRI entity = createIRI(URI + "entity");
-    public static final IRI hadActivity = createIRI(URI + "hadActivity");
-    public static final IRI hadGeneration = createIRI(URI + "hadGeneration");
-    public static final IRI hadPlan = createIRI(URI + "hadPlan");
-    public static final IRI hadRole = createIRI(URI + "hadRole");
-    public static final IRI hadUsage = createIRI(URI + "hadUsage");
-    public static final IRI influencer = createIRI(URI + "influencer");
-    public static final IRI qualifiedAssociation = createIRI(URI + "qualifiedAssociation");
-    public static final IRI qualifiedAttribution = createIRI(URI + "qualifiedAttribution");
-    public static final IRI qualifiedCommunication = createIRI(URI + "qualifiedCommunication");
-    public static final IRI qualifiedDelegation = createIRI(URI + "qualifiedDelegation");
-    public static final IRI qualifiedDerivation = createIRI(URI + "qualifiedDerivation");
-    public static final IRI qualifiedEnd = createIRI(URI + "qualifiedEnd");
-    public static final IRI qualifiedGeneration = createIRI(URI + "qualifiedGeneration");
-    public static final IRI qualifiedInfluence = createIRI(URI + "qualifiedInfluence");
-    public static final IRI qualifiedInvalidation = createIRI(URI + "qualifiedInvalidation");
-    public static final IRI qualifiedPrimarySource = createIRI(URI + "qualifiedPrimarySource");
-    public static final IRI qualifiedQuotation = createIRI(URI + "qualifiedQuotation");
-    public static final IRI qualifiedRevision = createIRI(URI + "qualifiedRevision");
-    public static final IRI qualifiedStart = createIRI(URI + "qualifiedStart");
-    public static final IRI qualifiedUsage = createIRI(URI + "qualifiedUsage");
-    public static final IRI wasInfluencedBy = createIRI(URI + "wasInfluencedBy");
+    public static final IRI activity = createIRI(NS + "activity");
+    public static final IRI agent = createIRI(NS + "agent");
+    public static final IRI atTime = createIRI(NS + "atTime");
+    public static final IRI entity = createIRI(NS + "entity");
+    public static final IRI hadActivity = createIRI(NS + "hadActivity");
+    public static final IRI hadGeneration = createIRI(NS + "hadGeneration");
+    public static final IRI hadPlan = createIRI(NS + "hadPlan");
+    public static final IRI hadRole = createIRI(NS + "hadRole");
+    public static final IRI hadUsage = createIRI(NS + "hadUsage");
+    public static final IRI influencer = createIRI(NS + "influencer");
+    public static final IRI qualifiedAssociation = createIRI(NS + "qualifiedAssociation");
+    public static final IRI qualifiedAttribution = createIRI(NS + "qualifiedAttribution");
+    public static final IRI qualifiedCommunication = createIRI(NS + "qualifiedCommunication");
+    public static final IRI qualifiedDelegation = createIRI(NS + "qualifiedDelegation");
+    public static final IRI qualifiedDerivation = createIRI(NS + "qualifiedDerivation");
+    public static final IRI qualifiedEnd = createIRI(NS + "qualifiedEnd");
+    public static final IRI qualifiedForm = createIRI(NS + "qualifiedForm");
+    public static final IRI qualifiedGeneration = createIRI(NS + "qualifiedGeneration");
+    public static final IRI qualifiedInfluence = createIRI(NS + "qualifiedInfluence");
+    public static final IRI qualifiedInvalidation = createIRI(NS + "qualifiedInvalidation");
+    public static final IRI qualifiedPrimarySource = createIRI(NS + "qualifiedPrimarySource");
+    public static final IRI qualifiedQuotation = createIRI(NS + "qualifiedQuotation");
+    public static final IRI qualifiedRevision = createIRI(NS + "qualifiedRevision");
+    public static final IRI qualifiedStart = createIRI(NS + "qualifiedStart");
+    public static final IRI qualifiedUsage = createIRI(NS + "qualifiedUsage");
+    public static final IRI qualifiedUsingActivity = createIRI(NS + "qualifiedUsingActivity");
+    public static final IRI unqualifiedForm = createIRI(NS + "unqualifiedForm");
+    public static final IRI wasInfluencedBy = createIRI(NS + "wasInfluencedBy");
+    public static final IRI wasRoleIn = createIRI(NS + "wasRoleIn");
 
     private PROV() {
         // prevent instantiation

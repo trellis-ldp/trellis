@@ -27,28 +27,29 @@ import org.apache.commons.rdf.api.IRI;
 public final class Trellis {
 
     /* Namespace */
-    public static final String URI = "http://www.trellisldp.org/ns/trellis#";
+    public static final String NS = "http://www.trellisldp.org/ns/trellis#";
 
     /* Classes */
-    public static final IRI ConstraintViolation = createIRI(URI + "ConstraintViolation");
-    public static final IRI DeletedResource = createIRI(URI + "DeletedResource");
-    public static final IRI BinaryUploadService = createIRI(URI + "BinaryUploadService");
+    public static final IRI ConstraintViolation = createIRI(NS + "ConstraintViolation");
+    public static final IRI DeletedResource = createIRI(NS + "DeletedResource");
+    public static final IRI BinaryUploadService = createIRI(NS + "BinaryUploadService");
 
     /* Properties */
-    public static final IRI multipartUploadService = createIRI(URI + "multipartUploadService");
+    public static final IRI multipartUploadService = createIRI(NS + "multipartUploadService");
 
     /* Named Individuals */
-    public static final IRI AdministratorAgent = createIRI(URI + "AdministratorAgent");
-    public static final IRI AnonymousAgent = createIRI(URI + "AnonymousAgent");
-    public static final IRI InvalidType = createIRI(URI + "InvalidType");
-    public static final IRI InvalidRange = createIRI(URI + "InvalidRange");
-    public static final IRI InvalidCardinality = createIRI(URI + "InvalidCardinality");
-    public static final IRI InvalidProperty = createIRI(URI + "InvalidProperty");
-    public static final IRI PreferAccessControl = createIRI(URI + "PreferAccessControl");
-    public static final IRI PreferAudit = createIRI(URI + "PreferAudit");
-    public static final IRI PreferServerManaged = createIRI(URI + "PreferServerManaged");
-    public static final IRI PreferUserManaged = createIRI(URI + "PreferUserManaged");
-    public static final IRI UnsupportedInteractionModel = createIRI(URI + "UnsupportedInteractionModel");
+    public static final IRI AdministratorAgent = createIRI(NS + "AdministratorAgent");
+    public static final IRI AnonymousAgent = createIRI(NS + "AnonymousAgent");
+    public static final IRI InvalidType = createIRI(NS + "InvalidType");
+    public static final IRI InvalidRange = createIRI(NS + "InvalidRange");
+    public static final IRI InvalidCardinality = createIRI(NS + "InvalidCardinality");
+    public static final IRI InvalidProperty = createIRI(NS + "InvalidProperty");
+    public static final IRI PreferAccessControl = createIRI(NS + "PreferAccessControl");
+    public static final IRI PreferAudit = createIRI(NS + "PreferAudit");
+    public static final IRI PreferServerManaged = createIRI(NS + "PreferServerManaged");
+    public static final IRI PreferUserManaged = createIRI(NS + "PreferUserManaged");
+    public static final IRI ReadOnlyResource = createIRI(NS + "ReadOnlyResource");
+    public static final IRI UnsupportedInteractionModel = createIRI(NS + "UnsupportedInteractionModel");
 
     private Trellis() {
         // prevent instantiation

@@ -40,7 +40,7 @@ public class XSDTest {
 
     @Test
     public void checkUri() {
-        assertEquals(namespace(), XSD.URI);
-        assertEquals(NS, XSD.URI);
+        assertEquals(namespace(), XSD.NS);
+        assertEquals(NS, XSD.NS);
     }
 }

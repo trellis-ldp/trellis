@@ -27,20 +27,20 @@ import org.apache.commons.rdf.api.IRI;
 public final class Memento {
 
     /* Namespace */
-    public static final String URI = "http://mementoweb.org/ns#";
+    public static final String NS = "http://mementoweb.org/ns#";
 
     /* Classes */
-    public static final IRI Memento = createIRI(URI + "Memento");
-    public static final IRI OriginalResource = createIRI(URI + "OriginalResource");
-    public static final IRI TimeGate = createIRI(URI + "TimeGate");
-    public static final IRI TimeMap = createIRI(URI + "TimeMap");
+    public static final IRI Memento = createIRI(NS + "Memento");
+    public static final IRI OriginalResource = createIRI(NS + "OriginalResource");
+    public static final IRI TimeGate = createIRI(NS + "TimeGate");
+    public static final IRI TimeMap = createIRI(NS + "TimeMap");
 
     /* Properties */
-    public static final IRI memento = createIRI(URI + "memento");
-    public static final IRI mementoDatetime = createIRI(URI + "mementoDatetime");
-    public static final IRI timegate = createIRI(URI + "timegate");
-    public static final IRI timemap = createIRI(URI + "timemap");
-    public static final IRI original = createIRI(URI + "original");
+    public static final IRI memento = createIRI(NS + "memento");
+    public static final IRI mementoDatetime = createIRI(NS + "mementoDatetime");
+    public static final IRI timegate = createIRI(NS + "timegate");
+    public static final IRI timemap = createIRI(NS + "timemap");
+    public static final IRI original = createIRI(NS + "original");
 
     private Memento() {
         // prevent instantiation

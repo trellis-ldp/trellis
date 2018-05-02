@@ -27,17 +27,17 @@ import org.apache.commons.rdf.api.IRI;
 public final class JSONLD {
 
     /* Namespace */
-    public static final String URI = "http://www.w3.org/ns/json-ld#";
+    public static final String NS = "http://www.w3.org/ns/json-ld#";
 
     /* Profiles */
-    public static final IRI context = createIRI(URI + "context");
+    public static final IRI context = createIRI(NS + "context");
 
     /* Extra definitions */
-    public static final IRI compacted = createIRI(URI + "compacted");
-    public static final IRI compacted_flattened = createIRI(URI + "compacted-flattened");
-    public static final IRI expanded = createIRI(URI + "expanded");
-    public static final IRI expanded_flattened = createIRI(URI + "expanded-flattened");
-    public static final IRI flattened = createIRI(URI + "flattened");
+    public static final IRI compacted = createIRI(NS + "compacted");
+    public static final IRI compacted_flattened = createIRI(NS + "compacted-flattened");
+    public static final IRI expanded = createIRI(NS + "expanded");
+    public static final IRI expanded_flattened = createIRI(NS + "expanded-flattened");
+    public static final IRI flattened = createIRI(NS + "flattened");
 
     private JSONLD() {
         // prevent instantiation
