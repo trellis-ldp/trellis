@@ -90,6 +90,7 @@ import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
@@ -157,9 +158,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-                    final Dataset dataset) {
+                    final Binary binary, final Dataset dataset) {
         LOGGER.debug("Creating: {}", id);
-        return supplyAsync(() -> createOrReplace(id, session, ixnModel, container, dataset, OperationType.CREATE));
+        return supplyAsync(() ->
+                createOrReplace(id, session, ixnModel, container, binary, dataset, OperationType.CREATE));
     }
 
     @Override
@@ -176,13 +178,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-                    final Dataset dataset) {
+                    final Binary binary, final Dataset dataset) {
         LOGGER.debug("Updating: {}", id);
-        return supplyAsync(() -> createOrReplace(id, session, ixnModel, container, dataset, OperationType.REPLACE));
+        return supplyAsync(() ->
+                createOrReplace(id, session, ixnModel, container, binary, dataset, OperationType.REPLACE));
     }
 
     private Boolean createOrReplace(final IRI identifier, final Session session, final IRI ixnModel,
-                    final IRI container, final Dataset dataset, final OperationType type) {
+                    final IRI container, final Binary binary, final Dataset dataset, final OperationType type) {
         final Instant eventTime = now();
 
         // Set the LDP type
@@ -205,10 +208,22 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                                                 .findFirst().orElse(LDP.MemberSubject));
             });
         }
+
         // Set the parent relationship
-        if (container != null) {
+        if (nonNull(container)) {
             dataset.add(PreferServerManaged, identifier, DC.isPartOf, container);
         }
+
+        if (nonNull(binary)) {
+            dataset.add(PreferServerManaged, identifier, DC.hasPart, binary.getIdentifier());
+            dataset.add(PreferServerManaged, binary.getIdentifier(), DC.modified,
+                    rdf.createLiteral(binary.getModified().toString(), XSD.dateTime));
+            binary.getMimeType().map(rdf::createLiteral).ifPresent(mimeType ->
+                    dataset.add(PreferServerManaged, binary.getIdentifier(), DC.format, mimeType));
+            binary.getSize().map(size -> rdf.createLiteral(size.toString(), XSD.long_)).ifPresent(size ->
+                    dataset.add(PreferServerManaged, binary.getIdentifier(), DC.extent, size));
+        }
+
         return storeAndNotify(identifier, session, dataset, eventTime, type);
     }
 

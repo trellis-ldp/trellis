@@ -100,14 +100,14 @@ public class JoiningResourceServiceTest {
 
         @Override
         public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-                        final Dataset dataset) {
+                        final Binary binary, final Dataset dataset) {
             resources.put(id, new TestResource(id, dataset));
             return isntBadId(id);
         }
 
         @Override
         public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-                        final Dataset dataset) {
+                        final Binary binary, final Dataset dataset) {
             resources.replace(id, new TestResource(id, dataset));
             return isntBadId(id);
         }
@@ -212,7 +212,7 @@ public class JoiningResourceServiceTest {
     public void testRoundtripping() throws InterruptedException, ExecutionException {
         final Quad testQuad = createQuad(testResourceId1, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(testResourceId1, testQuad);
-        assertTrue(testable.create(testResourceId1, mockSession, testResource.getInteractionModel(), null,
+        assertTrue(testable.create(testResourceId1, mockSession, testResource.getInteractionModel(), null, null,
                         testResource.dataset()).get(), "Couldn't create a resource!");
         Resource retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
         assertEquals(testResource.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
@@ -221,7 +221,7 @@ public class JoiningResourceServiceTest {
 
         final Quad testQuad2 = createQuad(testResourceId1, badId, testResourceId1, badId);
         final Resource testResource2 = new TestResource(testResourceId1, testQuad2);
-        assertTrue(testable.replace(testResourceId1, mockSession, testResource2.getInteractionModel(), null,
+        assertTrue(testable.replace(testResourceId1, mockSession, testResource2.getInteractionModel(), null, null,
                         testResource2.dataset()).get(), "Couldn't replace resource!");
         retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
         assertEquals(testResource2.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
@@ -240,7 +240,7 @@ public class JoiningResourceServiceTest {
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testMutableResource = new TestResource(testResourceId2, testMutableQuad);
-        assertTrue(testable.create(testResourceId2, mockSession, testMutableResource.getInteractionModel(), null,
+        assertTrue(testable.create(testResourceId2, mockSession, testMutableResource.getInteractionModel(), null, null,
                         testMutableResource.dataset()).get(), "Couldn't create a mutable resource!");
         final Resource testImmutableResource = new TestResource(testResourceId2, testImmutableQuad);
         assertTrue(testable.add(testResourceId2, mockSession, testImmutableResource.dataset()).get(),
@@ -261,8 +261,8 @@ public class JoiningResourceServiceTest {
     public void testBadPersist() throws InterruptedException, ExecutionException {
         final Quad testQuad = createQuad(badId, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(badId, testQuad);
-        assertFalse(testable
-                        .create(badId, mockSession, testResource.getInteractionModel(), null, testResource.dataset())
+        assertFalse(testable.create(badId, mockSession, testResource.getInteractionModel(), null, null,
+                            testResource.dataset())
                         .get(), "Could create a resource when underlying services should reject it!");
     }
 
@@ -316,6 +316,7 @@ public class JoiningResourceServiceTest {
         dataset.add(quad);
 
         final Resource res = new JoiningResourceService.PersistableResource(identifier, LDP.Container, dataset);
+        assertEquals(identifier, res.getIdentifier());
         assertEquals(LDP.Container, res.getInteractionModel());
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));

@@ -37,7 +37,6 @@ import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.File;
@@ -45,7 +44,6 @@ import java.net.URI;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -71,9 +69,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
-import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.XSD;
 
 /**
  * The PUT response handler.
@@ -191,40 +187,22 @@ public class PutHandler extends ContentBearingHandler {
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
             final IRI graphName = getActiveGraphName();
             final IRI otherGraph = getInactiveGraphName();
+            final Binary binary;
 
             // Add user-supplied data
             if (isBinaryRequest(ldpType, rdfSyntax)) {
                 // Check the expected digest value
                 checkForBadDigest(req.getDigest());
 
-                final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(req.getContentType())
-                        .orElse(APPLICATION_OCTET_STREAM));
+                final String mimeType = ofNullable(req.getContentType()).orElse(APPLICATION_OCTET_STREAM);
                 final IRI binaryLocation = rdf.createIRI(binaryService.generateIdentifier());
 
                 // Persist the content
-                persistContent(binaryLocation, metadata);
+                persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
 
-                dataset.add(rdf.createQuad(PreferServerManaged, internalId, DC.hasPart, binaryLocation));
-                dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.modified,
-                            rdf.createLiteral(now().toString(), XSD.dateTime)));
-                dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.format,
-                            rdf.createLiteral(ofNullable(req.getContentType()).orElse(APPLICATION_OCTET_STREAM))));
-                dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.extent,
-                            rdf.createLiteral(Long.toString(entity.length()), XSD.long_)));
-
+                binary = new Binary(binaryLocation, now(), mimeType, entity.length());
             } else {
                 readEntityIntoDataset(identifier, baseUrl, graphName, rdfSyntax.orElse(TURTLE), dataset);
-
-                // Add any existing binary-related quads.
-                ofNullable(res).flatMap(Resource::getBinary).ifPresent(b -> {
-                    dataset.add(rdf.createQuad(PreferServerManaged, internalId, DC.hasPart, b.getIdentifier()));
-                    dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.modified,
-                                rdf.createLiteral(b.getModified().toString(), XSD.dateTime)));
-                    dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
-                                rdf.createLiteral(b.getMimeType().orElse(APPLICATION_OCTET_STREAM))));
-                    b.getSize().ifPresent(size -> dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(),
-                                    DC.extent, rdf.createLiteral(Long.toString(size), XSD.long_))));
-                });
 
                 // Check for any constraints
                 if (ACL.equals(req.getExt())) {
@@ -232,6 +210,7 @@ public class PutHandler extends ContentBearingHandler {
                 } else {
                     checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
                 }
+                binary = ofNullable(res).flatMap(Resource::getBinary).orElse(null);
             }
 
             ofNullable(res).ifPresent(r -> {
@@ -240,7 +219,8 @@ public class PutHandler extends ContentBearingHandler {
                         .forEachOrdered(dataset::add);
                 }
             });
-            final Future<Boolean> success = createOrReplace(res, internalId, session, ldpType, dataset);
+
+            final Future<Boolean> success = createOrReplace(res, internalId, session, ldpType, binary, dataset);
             if (success.get()) {
                 // Add audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
@@ -274,11 +254,11 @@ public class PutHandler extends ContentBearingHandler {
     }
 
     private Future<Boolean> createOrReplace(final Resource res, final IRI internalId, final Session session,
-            final IRI ldpType, final TrellisDataset dataset) {
+            final IRI ldpType, final Binary binary, final TrellisDataset dataset) {
         final IRI container = resourceService.getContainer(internalId).orElse(null);
         return nonNull(res)
-            ? resourceService.replace(internalId, session, ldpType, container, dataset.asDataset())
-            : resourceService.create(internalId, session, ldpType, container, dataset.asDataset());
+            ? resourceService.replace(internalId, session, ldpType, container, binary, dataset.asDataset())
+            : resourceService.create(internalId, session, ldpType, container, binary, dataset.asDataset());
     }
 
     private void checkInteractionModelChange(final Resource res, final IRI ldpType, final Boolean isBinaryDescription) {

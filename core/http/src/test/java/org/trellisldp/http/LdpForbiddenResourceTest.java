@@ -196,7 +196,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
 
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(IRI.class),
+        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(IRI.class), any(),
                         any(Dataset.class))).thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());

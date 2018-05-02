@@ -140,7 +140,7 @@ public class PatchHandlerTest {
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(),
-                        any(Dataset.class))).thenReturn(completedFuture(true));
+                        any(), any(Dataset.class))).thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
@@ -210,7 +210,7 @@ public class PatchHandlerTest {
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(identifier.getIRIString()));
 
         verify(mockResourceService).replace(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(),
-                        any(Dataset.class));
+                        any(), any(Dataset.class));
     }
 
     @Test
@@ -283,7 +283,7 @@ public class PatchHandlerTest {
     @Test
     public void testError() {
         when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
-                    any(IRI.class), any(), any(Dataset.class))).thenReturn(completedFuture(false));
+                    any(IRI.class), any(), any(), any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
@@ -311,7 +311,7 @@ public class PatchHandlerTest {
     public void testException() throws Exception {
         when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
         when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
-                    any(IRI.class), any(), any(Dataset.class))).thenReturn(mockFuture);
+                    any(IRI.class), any(), any(), any(Dataset.class))).thenReturn(mockFuture);
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,

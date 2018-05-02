@@ -51,6 +51,7 @@ import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
@@ -237,7 +238,7 @@ public class TriplestoreResourceServiceTest {
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         assertThrows(ExecutionException.class, () ->
-                svc.create(resource, mockSession, LDP.RDFSource, root, rdf.createDataset()).get());
+                svc.create(resource, mockSession, LDP.RDFSource, root, null, rdf.createDataset()).get());
         assertThrows(ExecutionException.class, () -> svc.add(resource, mockSession, rdf.createDataset()).get());
     }
 
@@ -271,7 +272,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -309,7 +310,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -340,21 +341,16 @@ public class TriplestoreResourceServiceTest {
                 mockMementoService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI binary = rdf.createIRI("foo:binary");
+        final IRI binaryIdentifier = rdf.createIRI("foo:binary");
         final Instant binaryTime = now();
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferServerManaged, resource, RDF.type, LDP.NonRDFSource);
-        dataset.add(Trellis.PreferServerManaged, resource, DC.hasPart, binary);
-        dataset.add(Trellis.PreferServerManaged, binary, DC.modified,
-                rdf.createLiteral(binaryTime.toString(), XSD.dateTime));
-        dataset.add(Trellis.PreferServerManaged, binary, DC.extent, rdf.createLiteral("10", XSD.long_));
-        dataset.add(Trellis.PreferServerManaged, binary, DC.format, rdf.createLiteral("text/plain"));
+        final Binary binary = new Binary(binaryIdentifier, binaryTime, "text/plain", 10L);
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.NonRDFSource, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.NonRDFSource, root, binary, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.NonRDFSource, res.getInteractionModel());
@@ -363,7 +359,7 @@ public class TriplestoreResourceServiceTest {
             assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
             assertTrue(res.getBinary().isPresent());
             res.getBinary().ifPresent(b -> {
-                assertEquals(binary, b.getIdentifier());
+                assertEquals(binaryIdentifier, b.getIdentifier());
                 assertEquals(of("text/plain"), b.getMimeType());
                 assertEquals(of(10L), b.getSize());
                 assertEquals(binaryTime, b.getModified());
@@ -388,7 +384,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -434,7 +430,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.Container, res.getInteractionModel());
@@ -469,7 +465,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -508,7 +504,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -557,7 +553,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, root, dataset1).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, root, null, dataset1).get());
         assertTrue(svc.add(resource, mockSession, dataset2).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
@@ -601,7 +597,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.Container, res.getInteractionModel());
@@ -639,7 +635,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -722,7 +718,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.BasicContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.BasicContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
@@ -760,7 +756,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -799,7 +795,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -849,7 +845,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -883,7 +879,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -923,7 +919,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -987,7 +983,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -1023,7 +1019,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -1057,7 +1053,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1105,7 +1101,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1158,7 +1154,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, resource2, dataset).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, resource2, null, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1222,7 +1218,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -1259,7 +1255,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.DirectContainer, res.getInteractionModel());
@@ -1293,7 +1289,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1341,7 +1337,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1392,7 +1388,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, resource2, dataset).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, resource2, null, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1455,7 +1451,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1488,7 +1484,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1530,7 +1526,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1595,7 +1591,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1628,7 +1624,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1670,7 +1666,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1735,7 +1731,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1769,7 +1765,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1813,7 +1809,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -1881,7 +1877,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource).isPresent());
         svc.get(resource).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1918,7 +1914,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.IndirectContainer, root, dataset).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.IndirectContainer, root, null, dataset).get());
         assertTrue(svc.get(resource2).isPresent());
         svc.get(resource2).ifPresent(res -> {
             assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -1952,7 +1948,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, dataset).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, root, null, dataset).get());
         assertTrue(svc.get(members).isPresent());
         svc.get(members).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -2001,7 +1997,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, dataset).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, resource, null, dataset).get());
         assertTrue(svc.get(child).isPresent());
         svc.get(child).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());
@@ -2055,7 +2051,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, resource2, dataset).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, resource2, null, dataset).get());
         assertTrue(svc.get(child2).isPresent());
         svc.get(child2).ifPresent(res -> {
             assertEquals(LDP.RDFSource, res.getInteractionModel());

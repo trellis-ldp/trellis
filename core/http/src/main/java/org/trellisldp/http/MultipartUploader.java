@@ -47,8 +47,6 @@ import static org.trellisldp.http.domain.HttpConstants.UPLOAD_PREFIX;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
-import static org.trellisldp.vocabulary.RDF.type;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.multipartUploadService;
 
 import com.codahale.metrics.annotation.Timed;
@@ -100,8 +98,6 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.impl.HttpSession;
 import org.trellisldp.http.impl.TrellisDataset;
-import org.trellisldp.vocabulary.DC;
-import org.trellisldp.vocabulary.XSD;
 
 /**
  * An HTTP-based mechanism for uploading large LDP-NR resources via multi-part (chunked) operations.
@@ -273,18 +269,11 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
             // Add Audit quads
             audit.ifPresent(svc -> svc.creation(identifier, upload.getSession()).stream()
                 .map(skolemizeQuads(resourceService, upload.getBaseUrl())).forEachOrdered(dataset::add));
-            dataset.add(rdf.createQuad(null, identifier, DC.isPartOf, rdf.createIRI(upload.getBaseUrl())));
-            dataset.add(rdf.createQuad(PreferServerManaged, identifier, type, NonRDFSource));
-            dataset.add(rdf.createQuad(PreferServerManaged, identifier, DC.hasPart,
-                        upload.getBinary().getIdentifier()));
-            dataset.add(rdf.createQuad(PreferServerManaged, upload.getBinary().getIdentifier(), DC.format,
-                        rdf.createLiteral(upload.getBinary().getMimeType().orElse(APPLICATION_OCTET_STREAM))));
-            upload.getBinary().getSize().ifPresent(size -> dataset.add(rdf.createQuad(PreferServerManaged,
-                            upload.getBinary().getIdentifier(), DC.extent,
-                            rdf.createLiteral(size.toString(), XSD.long_))));
 
             final IRI container = resourceService.getContainer(rdf.createIRI(TRELLIS_DATA_PREFIX + id)).orElse(null);
-            if (resourceService.create(identifier, session, NonRDFSource, container, dataset.asDataset()).get()) {
+
+            if (resourceService.create(identifier, session, NonRDFSource, container, upload.getBinary(),
+                        dataset.asDataset()).get()) {
                 return created(create(upload.getBaseUrl() + upload.getPath())).build();
             }
         } catch (final InterruptedException | ExecutionException ex) {
