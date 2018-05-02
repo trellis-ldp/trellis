@@ -31,13 +31,10 @@ ext {
     jwtVersion = '0.9.0'
     kafkaVersion = '1.0.0_1'
     metricsVersion = '4.0.2'
-    mustacheVersion = '0.9.5_1'
+    mustacheVersion = '0.9.5'
     rabbitMqVersion = '5.2.0'
     slf4jVersion = '1.7.25'
     tamayaVersion = '0.3-incubating'
-
-    /* Transitive dependencies (for Karaf provisioning) */
-    transitiveGuavaVersion = '20.0' // via mustache 0.9.5
 
     /* Testing */
     apiguardianVersion = '1.0.0'

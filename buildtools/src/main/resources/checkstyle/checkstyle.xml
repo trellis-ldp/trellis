@@ -25,6 +25,9 @@
 
   <module name="TreeWalker">
 
+    <!-- Check for invalid whitespace before commas, semicolons, etc -->
+    <module name="NoWhitespaceBefore" />
+
     <!-- Checks for redundant import statements -->
     <module name="RedundantImport"/>
 

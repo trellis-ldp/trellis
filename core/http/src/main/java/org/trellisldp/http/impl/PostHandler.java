@@ -40,6 +40,7 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Link;
@@ -152,8 +153,10 @@ public class PostHandler extends ContentBearingHandler {
                 // Check for any constraints
                 checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
             }
-
-            if (resourceService.create(internalId, session, ldpType, dataset.asDataset()).get()) {
+            final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+            final Future<Boolean> success = resourceService.create(internalId, session, ldpType, container,
+                            dataset.asDataset());
+            if (success.get()) {
 
                 // Add Audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
