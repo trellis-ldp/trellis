@@ -48,8 +48,8 @@ public class Binary {
      *
      * @param identifier the identifier
      * @param modified the modified date
-     * @param mimeType the mimeType
-     * @param size the size
+     * @param mimeType the mimeType, may be {@code null}
+     * @param size the size, may be {@code null}
      */
     public Binary(final IRI identifier, final Instant modified, final String mimeType, final Long size) {
         requireNonNull(identifier);
