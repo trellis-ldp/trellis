@@ -46,6 +46,21 @@ to an Authorization statement. For example:
     acl:accessTo <https://example.org/resource> . # the resource
 ```
 
+## Access for any authenticated agent
+
+As with public access resources, it is possible to define the access controls on a resource for a class of agents such
+that it is accessible to any authenticated user. That is, any agent that is not the `trellis:AnonymousAgent`.
+For example:
+
+```turtle
+@prefix acl: <http://www.w3.org/ns/auth/acl#>.
+
+<#authorization> a acl:Authorization;
+    acl:agentClass acl:AuthenticatedAgent;  # everyone
+    acl:mode acl:Read;  # has Read-only access
+    acl:accessTo <https://example.org/resource> . # the resource
+```
+
 ## Unsupported features of WebAC
 
 Following the [Solid WebAC specification](https://github.com/solid/web-access-control-spec#not-supported-by-design) recommendation,

@@ -17,7 +17,7 @@ A [mailing list](https://groups.google.com/group/trellis-ldp) is available to an
 ## Downloads
 
 The fastest way to get started with Trellis is to download the [latest release](https://github.com/trellis-ldp/trellis/releases)
-and follow these [installation instructions](components/app-triplestore).
+and follow these [installation instructions](platform/linux).
 
 ## Features
 

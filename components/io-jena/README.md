@@ -4,5 +4,3 @@ This module implements the Trellis IOService using [Apache Jena](https://jena.ap
 This service handles all read (deserialization), write (serialization) and update (sparql-update)
 operations, converting InputStreams into RDF-based structures.
 
-This is the only core module that depends on a concrete RDF serialization library.
-

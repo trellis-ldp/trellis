@@ -22,8 +22,7 @@ A sample `create` event will follow this structure:
 _:b0    rdf:type                prov:Activity ;
         rdf:type                as:Create ;
         prov:wasAssociatedWith  <https://example.com/user/1> ;
-        prov:startedAtTime      "2017-10-23T19:48:16.076Z"^^xsd:dateTime ;
-        prov:endedAtTime        "2017-10-23T19:48:16.188Z"^^xsd:dateTime .
+        prov:atTime      "2017-10-23T19:48:16.076Z"^^xsd:dateTime .
 ```
 
 
@@ -38,8 +37,7 @@ A sample `update` event will follow this structure:
 _:b1    rdf:type                prov:Activity ;
         rdf:type                as:Update ;
         prov:wasAssociatedWith  <https://example.com/user/1> ;
-        prov:startedAtTime      "2017-10-23T19:52:16.076Z"^^xsd:dateTime ;
-        prov:endedAtTime        "2017-10-23T19:52:16.188Z"^^xsd:dateTime .
+        prov:atTime      "2017-10-23T19:48:16.076Z"^^xsd:dateTime .
 ```
 
 
@@ -52,9 +50,8 @@ A sample `delete` event will follow this structure:
         prov:wasGeneratedBy  _:b2 .
 
 _:b2    rdf:type                prov:Activity ;
-        rdf:type                as:Create ;
+        rdf:type                as:Delete ;
         prov:wasAssociatedWith  <https://example.com/user/1> ;
-        prov:startedAtTime      "2017-10-24T12:13:19.024Z"^^xsd:dateTime ;
-        prov:endedAtTime        "2017-10-24T12:13:19.631Z"^^xsd:dateTime .
+        prov:atTime      "2017-10-23T19:48:16.076Z"^^xsd:dateTime .
 ```
 

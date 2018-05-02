@@ -7,8 +7,8 @@ In Karaf, these features can be installed after first provisioning a concrete RD
 Note: the version numbers below are included for reference. A user should generally use the latest released version of the components.
 
 ```
-feature:repo-add mvn:org.apache.jena/jena-osgi-features/3.6.0/xml/features
-feature:repo-add mvn:org.trellisldp/trellis-karaf/0.5.1/xml/features
+feature:repo-add mvn:org.apache.jena/jena-osgi-features/RELEASE/xml/features
+feature:repo-add mvn:org.trellisldp/trellis-karaf/RELEASE/xml/features
 feature:install commons-rdf-jena
 ```
 
