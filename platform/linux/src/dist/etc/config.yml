@@ -34,8 +34,8 @@ mementos: /opt/trellis/data/mementos
 namespaces: /opt/trellis/data/namespaces.json
 
 # This may refer to a static base URL for resources. If left empty, the
-# base URL in responses will reflect the Host header in the request.
-baseUrl: http://localhost:8080/
+# base URL will reflect the Host header in the request.
+baseUrl:
 
 # This configuration will enable a WebSub "hub" header.
 hubUrl:
