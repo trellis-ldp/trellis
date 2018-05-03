@@ -18,7 +18,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -40,7 +39,6 @@ import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
 import static org.trellisldp.http.impl.RdfUtils.unskolemizeTriples;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.IOException;
@@ -72,10 +70,8 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
-import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
-import org.trellisldp.vocabulary.XSD;
 
 /**
  * The PATCH response builder.
@@ -170,16 +166,6 @@ public class PatchHandler extends BaseLdpHandler {
                 .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
                 .forEachOrdered(dataset::add);
 
-            res.getBinary().ifPresent(b -> {
-                dataset.add(rdf.createQuad(PreferServerManaged, res.getIdentifier(), DC.hasPart, b.getIdentifier()));
-                dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.modified,
-                            rdf.createLiteral(b.getModified().toString(), XSD.dateTime)));
-                dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
-                            rdf.createLiteral(b.getMimeType().orElse(APPLICATION_OCTET_STREAM))));
-                b.getSize().ifPresent(size -> dataset.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(),
-                                DC.extent, rdf.createLiteral(Long.toString(size), XSD.long_))));
-            });
-
             // Check any constraints
             final List<ConstraintViolation> violations = constraintServices.stream()
                 .flatMap(svc -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
@@ -207,7 +193,7 @@ public class PatchHandler extends BaseLdpHandler {
             final IRI resId = res.getIdentifier();
             final IRI container = resourceService.getContainer(resId).orElse(null);
             if (resourceService.replace(res.getIdentifier(), session, res.getInteractionModel(), container,
-                            dataset.asDataset()).get()) {
+                            res.getBinary().orElse(null), dataset.asDataset()).get()) {
 
                 // Add audit-related triples
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {

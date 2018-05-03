@@ -31,13 +31,11 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.File;
 import java.net.URI;
 import java.security.Principal;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -52,14 +50,13 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
-import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.XSD;
 
 /**
  * The POST response handler.
@@ -129,33 +126,31 @@ public class PostHandler extends ContentBearingHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
+            final Binary binary;
+
             // Add user-supplied data
             if (ldpType.equals(LDP.NonRDFSource)) {
                 // Check the expected digest value
                 checkForBadDigest(req.getDigest());
 
-                final Map<String, String> metadata = singletonMap(CONTENT_TYPE, ofNullable(contentType)
-                        .orElse(APPLICATION_OCTET_STREAM));
+                final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
                 final IRI binaryLocation = rdf.createIRI(binaryService.generateIdentifier());
-                dataset.add(rdf.createQuad(PreferServerManaged, internalId, DC.hasPart, binaryLocation));
-                dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.modified,
-                            rdf.createLiteral(now().toString(), XSD.dateTime)));
-                dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.format,
-                            rdf.createLiteral(ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM))));
-                dataset.add(rdf.createQuad(PreferServerManaged, binaryLocation, DC.extent,
-                            rdf.createLiteral(Long.toString(entity.length()), XSD.long_)));
 
                 // Persist the content
-                persistContent(binaryLocation, metadata);
+                persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+
+                binary = new Binary(binaryLocation, now(), mimeType, entity.length());
             } else {
                 readEntityIntoDataset(identifier, baseUrl, PreferUserManaged, rdfSyntax.orElse(TURTLE), dataset);
 
                 // Check for any constraints
                 checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
+
+                binary = null;
             }
             final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
             final Future<Boolean> success = resourceService.create(internalId, session, ldpType, container,
-                            dataset.asDataset());
+                            binary, dataset.asDataset());
             if (success.get()) {
 
                 // Add Audit quads

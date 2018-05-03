@@ -136,7 +136,7 @@ public class PostHandlerTest {
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(),
-                        any(Dataset.class))).thenReturn(completedFuture(true));
+                        any(), any(Dataset.class))).thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
@@ -316,7 +316,7 @@ public class PostHandlerTest {
         verify(mockIoService).read(any(InputStream.class), eq(baseUrl + path), eq(TURTLE));
 
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(),
-                        any(Dataset.class));
+                        any(), any(Dataset.class));
     }
 
     @Test
@@ -344,7 +344,7 @@ public class PostHandlerTest {
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(),
-                        any(Dataset.class));
+                        any(), any(Dataset.class));
     }
 
     @Test
@@ -373,7 +373,7 @@ public class PostHandlerTest {
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(),
-                        any(Dataset.class));
+                        any(), any(Dataset.class));
     }
 
     @Test
@@ -427,7 +427,7 @@ public class PostHandlerTest {
     @Test
     public void testError() throws IOException {
         when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(Session.class),
-                    any(IRI.class), any(), any(Dataset.class))).thenReturn(completedFuture(false));
+                    any(IRI.class), any(), any(), any(Dataset.class))).thenReturn(completedFuture(false));
         when(mockRequest.getContentType()).thenReturn("text/turtle");
 
         final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
@@ -441,7 +441,7 @@ public class PostHandlerTest {
     public void testException() throws Exception {
         when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
         when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(Session.class),
-                    any(IRI.class), any(), any(Dataset.class))).thenReturn(mockFuture);
+                    any(IRI.class), any(), any(), any(Dataset.class))).thenReturn(mockFuture);
         when(mockRequest.getContentType()).thenReturn("text/turtle");
 
         final File entity = new File(getClass().getResource("/emptyData.txt").getFile());

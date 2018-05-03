@@ -113,8 +113,9 @@ public class DeleteHandler extends BaseLdpHandler {
 
                 // update the resource
                 final IRI container = resourceService.getContainer(resId).orElse(null);
-                final Boolean success = resourceService
-                                .replace(resId, session, LDP.Resource, container, dataset.asDataset()).get();
+                final Boolean success = resourceService.replace(resId, session, LDP.Resource, container,
+                        res.getBinary().orElse(null), dataset.asDataset()).get();
+
                 if (success) {
 
                     // Add the audit quads
