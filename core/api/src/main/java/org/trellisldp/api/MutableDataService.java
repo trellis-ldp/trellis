@@ -34,7 +34,7 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
      * @param container an LDP container for this resource, {@code null} for none
-     * @param binary metadata for a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
+     * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
      * @param dataset the dataset to be persisted
      * @return whether the resource was added
      */
@@ -48,7 +48,7 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
      * @param container an LDP container for this resource, {@code null} for none
-     * @param binary metadata for a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
+     * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
      * @param dataset the dataset to be persisted
      * @return whether the resource was replaced
      */
