@@ -193,6 +193,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static final String BASE_URL = "http://example.org/";
 
+    protected static final String HUB = "http://hub.example.org/";
+
     protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
 
     @Mock
@@ -410,6 +412,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(BASE_URL + RESOURCE_PATH), "self")));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertTrue(res.hasEntity());
@@ -544,6 +548,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
                     l.getUri().toString().equals(BASE_URL + RESOURCE_PATH + "?ext=timemap")));
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
                     l.getUri().toString().equals(BASE_URL + RESOURCE_PATH)));
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
+        assertTrue(getLinks(res).stream()
+                .anyMatch(hasLink(rdf.createIRI(BASE_URL + RESOURCE_PATH + "?version=1496262729000"), "self")));
+        assertFalse(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(BASE_URL + RESOURCE_PATH), "self")));
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
                     l.getUri().toString().equals(BASE_URL + RESOURCE_PATH)));
         assertFalse(links.stream().anyMatch(hasLink(rdf.createIRI(BASE_URL + RESOURCE_PATH + "?ext=upload"),
@@ -582,6 +590,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(BASE_URL + BINARY_PATH), "self")));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
@@ -607,6 +617,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(res.getAllowedMethods().contains("OPTIONS"));
         assertFalse(res.getAllowedMethods().contains("POST"));
 
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(BASE_URL + BINARY_PATH), "self")));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));

@@ -15,6 +15,8 @@ mementos: /tmp/trellisData/mementos
 
 baseUrl: http://localhost:8080/
 
+hubUrl: http://hub.example.com/
+
 namespaces: /tmp/trellisData/namespaces.json
 
 auth:

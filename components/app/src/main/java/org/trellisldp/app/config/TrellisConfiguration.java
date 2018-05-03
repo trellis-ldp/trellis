@@ -66,6 +66,8 @@ public class TrellisConfiguration extends Configuration {
     @NotNull
     private Integer length =  2;
 
+    private String hubUrl = null;
+
     private String baseUrl = null;
 
     private String resourceLocation = null;
@@ -73,8 +75,8 @@ public class TrellisConfiguration extends Configuration {
     private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
     /**
-     * Get the base URL for the partition.
-     * @return the partition baseURL
+     * Get the base URL.
+     * @return the baseURL
      */
     @JsonProperty
     public String getBaseUrl() {
@@ -82,12 +84,30 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Set the base URL for the partition.
-     * @param baseUrl the partition baseURL
+     * Set the base URL.
+     * @param baseUrl the baseURL
      */
     @JsonProperty
     public void setBaseUrl(final String baseUrl) {
         this.baseUrl = baseUrl;
+    }
+
+    /**
+     * Get the websub hub URL.
+     * @return the websub hub URL
+     */
+    @JsonProperty
+    public String getHubUrl() {
+        return hubUrl;
+    }
+
+    /**
+     * Set the websub hub URL.
+     * @param hubUrl the hub URL
+     */
+    @JsonProperty
+    public void setHubUrl(final String hubUrl) {
+        this.hubUrl = hubUrl;
     }
 
     /**

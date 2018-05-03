@@ -14,6 +14,7 @@ binaries: /tmp/trellisData/binaries
 mementos: /tmp/trellisData/mementos
 
 baseUrl: http://localhost:8080/
+hubUrl:
 
 namespaces: /tmp/trellisData/namespaces.json
 

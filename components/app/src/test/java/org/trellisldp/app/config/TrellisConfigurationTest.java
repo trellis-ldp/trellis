@@ -47,6 +47,7 @@ public class TrellisConfigurationTest {
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
         assertNull(config.getResources());
+        assertEquals("http://hub.example.com/", config.getHubUrl());
         assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
         assertEquals((Integer) 1, config.getBinaryHierarchyLength());
         assertEquals("my.cluster.node", config.any().get("cassandraAddress"));
@@ -94,6 +95,7 @@ public class TrellisConfigurationTest {
         assertEquals("/tmp/trellisData/binaries", config.getBinaries());
         assertEquals("/tmp/trellisData/mementos", config.getMementos());
         assertEquals("http://localhost:8080/", config.getBaseUrl());
+        assertEquals("http://hub.example.com/", config.getHubUrl());
 
         final String resources = "http://triplestore.example.com/";
         config.setResources(resources);

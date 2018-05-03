@@ -23,6 +23,9 @@ mementos: mementos
 # Path to namespace file
 namespaces: namespaces.json
 
+baseUrl:
+hubUrl:
+
 auth:
     webac:
         enabled: true

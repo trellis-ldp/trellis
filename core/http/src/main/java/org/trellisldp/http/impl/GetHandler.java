@@ -17,6 +17,7 @@ import static java.lang.String.join;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -70,6 +71,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -148,19 +151,20 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         final ResponseBuilder builder = basicGetResponseBuilder(res, syntax);
+        final String self = getSelfIdentifier(identifier);
 
         // Add NonRDFSource-related "describe*" link headers
         res.getBinary().ifPresent(ds -> {
-            // Add any version parameter, if relevant
-            final String id = identifier + ofNullable(req.getVersion()).map(Version::getInstant)
-                .map(Instant::toEpochMilli).map(x -> "?version=" + x).orElse("");
             if (syntax.isPresent()) {
-                builder.link(id + "#description", "canonical").link(id, "describes");
+                builder.link(self + "#description", "canonical").link(self, "describes");
             } else {
-                builder.link(id, "canonical").link(id + "#description", "describedby")
+                builder.link(self, "canonical").link(self + "#description", "describedby")
                     .type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
             }
         });
+
+        // Add a "self" link header
+        builder.link(self, "self");
 
         // Only show memento links for the user-managed graph (not ACL)
         if (!ACL.equals(req.getExt())) {
@@ -181,6 +185,22 @@ public class GetHandler extends BaseLdpHandler {
         final RDFSyntax s = syntax.orElse(TURTLE);
         final IRI profile = getProfile(req.getHeaders().getAcceptableMediaTypes(), s);
         return getLdpRs(identifier, res, builder, s, profile);
+    }
+
+    private String getSelfIdentifier(final String identifier) {
+        // Add any version or ext parameters
+        if (nonNull(req.getVersion()) || ACL.equals(req.getExt())) {
+            final List<String> query = new ArrayList<>();
+
+            ofNullable(req.getVersion()).map(Version::getInstant).map(Instant::toEpochMilli).map(x -> "version=" + x)
+                .ifPresent(query::add);
+
+            if (ACL.equals(req.getExt())) {
+                query.add("ext=acl");
+            }
+            return identifier + "?" + join("&", query);
+        }
+        return identifier;
     }
 
     private ResponseBuilder getLdpRs(final String identifier, final Resource res, final ResponseBuilder builder,

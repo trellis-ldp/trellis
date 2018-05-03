@@ -40,6 +40,7 @@ public class LdpResourceNoAgentTest extends AbstractLdpResourceTest {
                     new SimpleAgentService(), mockAuditService));
         config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400));
+        config.register(new WebSubHeaderFilter(HUB));
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));

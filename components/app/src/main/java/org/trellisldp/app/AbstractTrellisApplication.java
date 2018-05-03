@@ -14,6 +14,7 @@
 package org.trellisldp.app;
 
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
 import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
@@ -44,6 +45,7 @@ import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.LdpResource;
 import org.trellisldp.http.MultipartUploader;
 import org.trellisldp.http.WebAcFilter;
+import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.webac.WebACService;
 
 /**
@@ -130,6 +132,9 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                 filter.setChallenges(challenges);
                 environment.jersey().register(filter);
         });
+
+        // WebSub
+        ofNullable(config.getHubUrl()).ifPresent(hub -> environment.jersey().register(new WebSubHeaderFilter(hub)));
 
         // CORS
         getCorsConfiguration(config).ifPresent(cors -> environment.jersey().register(
