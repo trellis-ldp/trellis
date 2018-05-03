@@ -201,7 +201,7 @@ public class TriplestoreResourceTest {
         final String binaryTime = "2018-01-10T14:02:00Z";
         final String size = "2560";
         final String mimeType = "image/jpeg";
-        final IRI binaryIdentifier = rdf.createIRI("file:binary");
+        final IRI binaryIdentifier = rdf.createIRI("file:///binary");
 
         final JenaDataset dataset = rdf.createDataset();
         dataset.add(identifier, identifier, RDF.type, SKOS.Concept);
