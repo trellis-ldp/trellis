@@ -33,13 +33,13 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param identifier the identifier for the new resource
      * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
+     * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
-     * @param dataset the dataset to be persisted
      * @return whether the resource was added
      */
-    Future<Boolean> create(IRI identifier, Session session, IRI ixnModel, IRI container, Binary binary,
-            Dataset dataset);
+    Future<Boolean> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
+            Binary binary);
 
     /**
      * Replace a resource in the server.
@@ -47,13 +47,13 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param identifier the identifier for the new resource
      * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
+     * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
-     * @param dataset the dataset to be persisted
      * @return whether the resource was replaced
      */
-    Future<Boolean> replace(IRI identifier, Session session, IRI ixnModel, IRI container, Binary binary,
-            Dataset dataset);
+    Future<Boolean> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
+            Binary binary);
 
     /**
      * Delete a resource from the server.

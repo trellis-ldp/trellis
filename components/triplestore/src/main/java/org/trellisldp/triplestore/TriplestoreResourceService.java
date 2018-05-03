@@ -157,11 +157,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-                    final Binary binary, final Dataset dataset) {
+    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
+                    final IRI container, final Binary binary) {
         LOGGER.debug("Creating: {}", id);
         return supplyAsync(() ->
-                createOrReplace(id, session, ixnModel, container, binary, dataset, OperationType.CREATE));
+                createOrReplace(id, session, ixnModel, dataset, OperationType.CREATE, container, binary));
     }
 
     @Override
@@ -177,15 +177,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-                    final Binary binary, final Dataset dataset) {
+    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
+                    final IRI container, final Binary binary) {
         LOGGER.debug("Updating: {}", id);
         return supplyAsync(() ->
-                createOrReplace(id, session, ixnModel, container, binary, dataset, OperationType.REPLACE));
+                createOrReplace(id, session, ixnModel, dataset, OperationType.REPLACE, container, binary));
     }
 
     private Boolean createOrReplace(final IRI identifier, final Session session, final IRI ixnModel,
-                    final IRI container, final Binary binary, final Dataset dataset, final OperationType type) {
+                    final Dataset dataset, final OperationType type, final IRI container, final Binary binary) {
         final Instant eventTime = now();
 
         // Set the LDP type

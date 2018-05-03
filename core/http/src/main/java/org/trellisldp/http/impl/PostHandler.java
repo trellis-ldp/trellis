@@ -149,8 +149,8 @@ public class PostHandler extends ContentBearingHandler {
                 binary = null;
             }
             final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-            final Future<Boolean> success = resourceService.create(internalId, session, ldpType, container,
-                            binary, dataset.asDataset());
+            final Future<Boolean> success = resourceService.create(internalId, session, ldpType, dataset.asDataset(),
+                    container, binary);
             if (success.get()) {
 
                 // Add Audit quads

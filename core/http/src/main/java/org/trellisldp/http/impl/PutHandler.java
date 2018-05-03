@@ -220,7 +220,7 @@ public class PutHandler extends ContentBearingHandler {
                 }
             });
 
-            final Future<Boolean> success = createOrReplace(res, internalId, session, ldpType, binary, dataset);
+            final Future<Boolean> success = createOrReplace(res, internalId, session, ldpType, dataset, binary);
             if (success.get()) {
                 // Add audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
@@ -254,11 +254,11 @@ public class PutHandler extends ContentBearingHandler {
     }
 
     private Future<Boolean> createOrReplace(final Resource res, final IRI internalId, final Session session,
-            final IRI ldpType, final Binary binary, final TrellisDataset dataset) {
+            final IRI ldpType, final TrellisDataset dataset, final Binary binary) {
         final IRI container = resourceService.getContainer(internalId).orElse(null);
         return nonNull(res)
-            ? resourceService.replace(internalId, session, ldpType, container, binary, dataset.asDataset())
-            : resourceService.create(internalId, session, ldpType, container, binary, dataset.asDataset());
+            ? resourceService.replace(internalId, session, ldpType, dataset.asDataset(), container, binary)
+            : resourceService.create(internalId, session, ldpType, dataset.asDataset(), container, binary);
     }
 
     private void checkInteractionModelChange(final Resource res, final IRI ldpType, final Boolean isBinaryDescription) {

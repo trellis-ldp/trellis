@@ -66,15 +66,15 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-            final Binary binary, final Dataset dataset) {
-        return mutableData.create(id, session, ixnModel, container, binary, dataset);
+    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
+            final IRI container, final Binary binary) {
+        return mutableData.create(id, session, ixnModel, dataset, container, binary);
     }
 
     @Override
-    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final IRI container,
-            final Binary binary, final Dataset dataset) {
-        return mutableData.replace(id, session, ixnModel, container, binary, dataset);
+    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
+            final IRI container, final Binary binary) {
+        return mutableData.replace(id, session, ixnModel, dataset, container, binary);
     }
 
     @Override

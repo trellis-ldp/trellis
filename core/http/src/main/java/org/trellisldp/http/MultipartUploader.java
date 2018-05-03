@@ -272,8 +272,8 @@ public class MultipartUploader implements ContainerRequestFilter, ContainerRespo
 
             final IRI container = resourceService.getContainer(rdf.createIRI(TRELLIS_DATA_PREFIX + id)).orElse(null);
 
-            if (resourceService.create(identifier, session, NonRDFSource, container, upload.getBinary(),
-                        dataset.asDataset()).get()) {
+            if (resourceService.create(identifier, session, NonRDFSource, dataset.asDataset(), container,
+                        upload.getBinary()).get()) {
                 return created(create(upload.getBaseUrl() + upload.getPath())).build();
             }
         } catch (final InterruptedException | ExecutionException ex) {

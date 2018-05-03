@@ -91,8 +91,8 @@ public interface ResourceServiceTests {
         dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, ROOT_CONTAINER, null,
-                    dataset).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+                .get());
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());
         res.ifPresent(r -> r.stream(Trellis.PreferUserManaged)
@@ -114,16 +114,16 @@ public interface ResourceServiceTests {
         dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, ROOT_CONTAINER, null,
-                    dataset).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+                .get());
 
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.prefLabel, rdf.createLiteral("preferred label"));
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.altLabel, rdf.createLiteral("alternate label"));
         dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
 
-        assertTrue(getResourceService().replace(identifier, getSession(), LDP.RDFSource, ROOT_CONTAINER, null,
-                    dataset).get());
+        assertTrue(getResourceService().replace(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+                    .get());
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());
         res.ifPresent(r -> {
@@ -149,8 +149,8 @@ public interface ResourceServiceTests {
 
         assertFalse(getResourceService().get(identifier).isPresent());
 
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, ROOT_CONTAINER, null,
-                    dataset).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+                .get());
         assertTrue(getResourceService().get(identifier).filter(res -> !res.isDeleted()).isPresent());
 
         assertTrue(getResourceService().delete(identifier, getSession(), LDP.Resource, rdf.createDataset()).get());
@@ -169,8 +169,8 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = rdf.createDataset();
         dataset0.add(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Immutable Resource Test"));
 
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, ROOT_CONTAINER, null,
-                    dataset0).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset0, ROOT_CONTAINER, null)
+                .get());
 
         final IRI audit1 = rdf.createIRI(TRELLIS_BNODE_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset1 = rdf.createDataset();
@@ -229,8 +229,8 @@ public interface ResourceServiceTests {
         dataset.add(Trellis.PreferUserManaged, identifier, DC.subject, rdf.createIRI(SUBJECT1));
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, ROOT_CONTAINER, null,
-                    dataset).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+                .get());
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());
         res.ifPresent(r -> {
@@ -272,8 +272,8 @@ public interface ResourceServiceTests {
         final Binary binary = new Binary(binaryLocation, binaryTime, "text/plain", 150L);
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.NonRDFSource, ROOT_CONTAINER, binary,
-                    dataset).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.NonRDFSource, dataset, ROOT_CONTAINER,
+                    binary).get());
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());
         res.ifPresent(r -> {
@@ -319,8 +319,8 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, DC.subject, rdf.createIRI(SUBJECT0));
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.Container, ROOT_CONTAINER, null,
-                    dataset0).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.Container, dataset0, ROOT_CONTAINER, null)
+                .get());
 
         final IRI child1 = rdf.createIRI(base + "/child01");
         final Dataset dataset1 = rdf.createDataset();
@@ -328,7 +328,7 @@ public interface ResourceServiceTests {
         dataset1.add(Trellis.PreferUserManaged, child1, DC.subject, rdf.createIRI(SUBJECT1));
 
         assertFalse(getResourceService().get(child1).isPresent());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, identifier, null, dataset1).get());
+        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).get());
 
         final IRI child2 = rdf.createIRI(base + "/child02");
         final Dataset dataset2 = rdf.createDataset();
@@ -336,7 +336,7 @@ public interface ResourceServiceTests {
         dataset2.add(Trellis.PreferUserManaged, child2, DC.subject, rdf.createIRI(SUBJECT2));
 
         assertFalse(getResourceService().get(child2).isPresent());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, identifier, null, dataset2).get());
+        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).get());
 
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());
@@ -382,8 +382,8 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, DC.subject, rdf.createIRI(SUBJECT0));
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.BasicContainer, ROOT_CONTAINER, null,
-                    dataset0).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.BasicContainer, dataset0, ROOT_CONTAINER,
+                    null).get());
 
         final IRI child1 = rdf.createIRI(base + "/child11");
         final Dataset dataset1 = rdf.createDataset();
@@ -391,7 +391,7 @@ public interface ResourceServiceTests {
         dataset1.add(Trellis.PreferUserManaged, child1, DC.subject, rdf.createIRI(SUBJECT1));
 
         assertFalse(getResourceService().get(child1).isPresent());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, identifier, null, dataset1).get());
+        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).get());
 
         final IRI child2 = rdf.createIRI(base + "/child12");
         final Dataset dataset2 = rdf.createDataset();
@@ -399,7 +399,7 @@ public interface ResourceServiceTests {
         dataset2.add(Trellis.PreferUserManaged, child2, DC.subject, rdf.createIRI(SUBJECT2));
 
         assertFalse(getResourceService().get(child2).isPresent());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, identifier, null, dataset2).get());
+        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).get());
 
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());
@@ -451,8 +451,8 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.isMemberOfRelation, DC.isPartOf);
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.DirectContainer, ROOT_CONTAINER, null,
-                    dataset0).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.DirectContainer, dataset0, ROOT_CONTAINER,
+                    null).get());
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = rdf.createDataset();
@@ -460,7 +460,7 @@ public interface ResourceServiceTests {
         dataset1.add(Trellis.PreferUserManaged, child1, DC.subject, rdf.createIRI(SUBJECT1));
 
         assertFalse(getResourceService().get(child1).isPresent());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, identifier, null, dataset1).get());
+        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).get());
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = rdf.createDataset();
@@ -468,7 +468,7 @@ public interface ResourceServiceTests {
         dataset2.add(Trellis.PreferUserManaged, child2, DC.subject, rdf.createIRI(SUBJECT2));
 
         assertFalse(getResourceService().get(child2).isPresent());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, identifier, null, dataset2).get());
+        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).get());
 
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());
@@ -521,8 +521,8 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.insertedContentRelation, FOAF.primaryTopic);
 
         assertFalse(getResourceService().get(identifier).isPresent());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.IndirectContainer, ROOT_CONTAINER,
-                    null, dataset0).get());
+        assertTrue(getResourceService().create(identifier, getSession(), LDP.IndirectContainer, dataset0,
+                    ROOT_CONTAINER, null).get());
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = rdf.createDataset();
@@ -530,7 +530,7 @@ public interface ResourceServiceTests {
         dataset1.add(Trellis.PreferUserManaged, child1, DC.subject, rdf.createIRI(SUBJECT1));
 
         assertFalse(getResourceService().get(child1).isPresent());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, identifier, null, dataset1).get());
+        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).get());
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = rdf.createDataset();
@@ -538,7 +538,7 @@ public interface ResourceServiceTests {
         dataset2.add(Trellis.PreferUserManaged, child2, DC.subject, rdf.createIRI(SUBJECT2));
 
         assertFalse(getResourceService().get(child2).isPresent());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, identifier, null, dataset2).get());
+        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).get());
 
         final Optional<? extends Resource> res = getResourceService().get(identifier);
         assertTrue(res.isPresent());

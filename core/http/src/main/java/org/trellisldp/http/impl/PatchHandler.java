@@ -192,8 +192,8 @@ public class PatchHandler extends BaseLdpHandler {
             // Save new dataset
             final IRI resId = res.getIdentifier();
             final IRI container = resourceService.getContainer(resId).orElse(null);
-            if (resourceService.replace(res.getIdentifier(), session, res.getInteractionModel(), container,
-                            res.getBinary().orElse(null), dataset.asDataset()).get()) {
+            if (resourceService.replace(res.getIdentifier(), session, res.getInteractionModel(), dataset.asDataset(),
+                        container, res.getBinary().orElse(null)).get()) {
 
                 // Add audit-related triples
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {

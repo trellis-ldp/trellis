@@ -203,8 +203,8 @@ public class DeleteHandlerTest {
 
     @Test
     public void testDeleteACLError() {
-        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(), any(),
-                        any(Dataset.class))).thenReturn(completedFuture(false));
+        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class), any(),
+                        any())).thenReturn(completedFuture(false));
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
                     agentService, baseUrl);
@@ -214,8 +214,8 @@ public class DeleteHandlerTest {
 
     @Test
     public void testDeleteACLAuditError() {
-        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(), any(),
-                        any(Dataset.class))).thenReturn(completedFuture(true));
+        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class), any(),
+                        any())).thenReturn(completedFuture(true));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
         when(mockLdpRequest.getExt()).thenReturn(ACL);
