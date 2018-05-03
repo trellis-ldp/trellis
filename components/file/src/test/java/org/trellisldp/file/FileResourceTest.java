@@ -80,7 +80,7 @@ public class FileResourceTest {
             assertEquals(parse("2017-02-16T11:17:00Z"), binary.getModified());
             assertEquals(of(10L), binary.getSize());
             assertEquals(of("text/plain"), binary.getMimeType());
-            assertEquals(rdf.createIRI("file:path/to/binary"), binary.getIdentifier());
+            assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier());
         });
         assertFalse(res.hasAcl());
         assertFalse(res.isMemento());

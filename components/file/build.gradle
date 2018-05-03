@@ -15,6 +15,7 @@ dependencies {
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("org.apache.commons:commons-collections4:$commonsCollectionsVersion")
+    implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     implementation("org.apache.jena:jena-osgi:$jenaVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")

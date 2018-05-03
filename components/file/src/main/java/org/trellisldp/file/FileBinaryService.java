@@ -29,6 +29,7 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
 import static org.apache.commons.collections4.IteratorUtils.asEnumeration;
+import static org.apache.commons.lang3.StringUtils.stripStart;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -113,7 +114,7 @@ public class FileBinaryService implements BinaryService {
             final Integer hierarchy, final Integer length) {
         requireNonNull(basePath, BINARY_BASE_PATH + " configuration may not be null!");
         this.basePath = basePath;
-        this.idSupplier = idService.getSupplier("file:", hierarchy, length);
+        this.idSupplier = idService.getSupplier("file:///", hierarchy, length);
     }
 
     private FileBinaryService(final IdentifierService idService, final Configuration config) {
@@ -194,7 +195,7 @@ public class FileBinaryService implements BinaryService {
 
     private Optional<File> getFileFromIdentifier(final IRI identifier) {
         return ofNullable(identifier).map(IRI::getIRIString).map(URI::create).map(URI::getSchemeSpecificPart)
-            .map(x -> new File(basePath, x));
+            .map(x -> stripStart(x, "/")).map(x -> new File(basePath, x));
     }
 
     private Function<MessageDigest, Optional<String>> digest(final InputStream stream) {

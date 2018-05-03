@@ -131,7 +131,7 @@ public class PostHandlerTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
+        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
@@ -340,7 +340,7 @@ public class PostHandlerTest {
 
         verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
                 metadataArgument.capture());
-        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:"));
+        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"));
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(),
@@ -369,7 +369,7 @@ public class PostHandlerTest {
 
         verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
                 metadataArgument.capture());
-        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:"));
+        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"));
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
 
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(),

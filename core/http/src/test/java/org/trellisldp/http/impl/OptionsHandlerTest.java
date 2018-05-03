@@ -67,7 +67,7 @@ public class OptionsHandlerTest {
     private static final String baseUrl = "http://localhost:8080/repo";
     private static final RDF rdf = getInstance();
 
-    private Binary testBinary = new Binary(rdf.createIRI("file:testResource.txt"), binaryTime, "text/plain", 100L);
+    private Binary testBinary = new Binary(rdf.createIRI("file:///testResource.txt"), binaryTime, "text/plain", 100L);
 
     @Mock
     private ResourceService mockResourceService;

@@ -101,7 +101,7 @@ public class PutHandlerTest {
     private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
             LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
 
-    private final Binary testBinary = new Binary(rdf.createIRI("file:binary.txt"), binaryTime, "text/plain", null);
+    private final Binary testBinary = new Binary(rdf.createIRI("file:///binary.txt"), binaryTime, "text/plain", null);
 
     private final AgentService agentService = new SimpleAgentService();
 
@@ -141,7 +141,7 @@ public class PutHandlerTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
-        when(mockBinaryService.generateIdentifier()).thenReturn("file:" + randomUUID());
+        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
 
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))

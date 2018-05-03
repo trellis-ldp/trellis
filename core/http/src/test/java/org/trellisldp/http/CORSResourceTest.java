@@ -120,7 +120,7 @@ public class CORSResourceTest extends JerseyTest {
     private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX + REPO1);
     private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
-    private static final IRI binaryInternalIdentifier = rdf.createIRI("file:some/file");
+    private static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
     private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
     private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
 
