@@ -203,6 +203,22 @@ Trellis supports the [HTTP/2 protocol](https://http2.github.io/faq/). For more i
 please refer to the [dropwizard documentation](http://www.dropwizard.io/1.2.0/docs/manual/configuration.html#http-2-over-tls).
 In particular, an `h2` connector type must be used, typically with a corresponding TLS configuration.
 
+#### HTTP/2 Java Implementation Notes:
+To use HTTP/2 over TLS with JRE 1.8 requires the [alpn-boot](https://mvnrepository.com/artifact/org.mortbay.jetty.alpn/alpn-boot/8.1.12.v20180117) library to be in the bootclasspath.
+
+If using the Linux distribution, you can set an environment variable:
+
+```bash
+JAVA_OPTS=-Xbootclasspath/p:/path/to/alpn-boot.jar
+```
+
+For JDK 9+, you can simply add a dependency like this to the `trellis-app-triplestore` build.gradle:
+
+```groovy
+jettyAlpnServerVersion = '9.4.8.v20171121'
+compile("org.eclipse.jetty:jetty-alpn-java-server:$jettyAlpnServerVersion")
+```
+
 ## Metrics reporting
 
 Application metrics can be configured by defining a frequency and a reporter. For more information about configuring these
