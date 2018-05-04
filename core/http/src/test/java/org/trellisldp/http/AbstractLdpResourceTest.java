@@ -2702,7 +2702,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPatchExistingResponse() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
-            .header("Prefer", "return=representation; include=\"" + Trellis.PreferUserManaged.getIRIString() + "\"")
+            .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
