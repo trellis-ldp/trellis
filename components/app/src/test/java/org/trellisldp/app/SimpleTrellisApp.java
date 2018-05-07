@@ -14,7 +14,7 @@
 package org.trellisldp.app;
 
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Optional.empty;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
@@ -73,7 +73,7 @@ public class SimpleTrellisApp extends AbstractTrellisApplication<TrellisConfigur
     @Override
     protected void initialize(final TrellisConfiguration config, final Environment env) {
         super.initialize(config, env);
-        ioService = new JenaIOService(new NoopNamespaceService(), null, emptyMap());
+        ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(), emptySet());
         binaryService = new FileBinaryService(new UUIDGenerator(), resourceFilePath("data") + "/binaries", 2, 2);
         resourceService = new TriplestoreResourceService(connect(createTxnMem()), new UUIDGenerator(),
                 new NoopMementoService(), new NoopEventService());

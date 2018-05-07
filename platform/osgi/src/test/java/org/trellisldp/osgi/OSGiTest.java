@@ -125,6 +125,12 @@ public class OSGiTest {
     }
 
     @Test
+    public void testRDFaInstallation() throws Exception {
+        featuresService.installFeature("trellis-rdfa");
+        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-rdfa")));
+    }
+
+    @Test
     public void testIdInstallation() throws Exception {
         assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-id")));
         featuresService.installFeature("trellis-id");

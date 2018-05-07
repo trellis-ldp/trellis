@@ -14,7 +14,6 @@
 package org.trellisldp.app.triplestore;
 
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.joining;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.query.DatasetFactory.wrap;
@@ -23,17 +22,10 @@ import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
-import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
-import static org.trellisldp.io.JenaIOService.IO_HTML_ICON;
-import static org.trellisldp.io.JenaIOService.IO_HTML_JS;
-import static org.trellisldp.io.JenaIOService.IO_JSONLD_DOMAINS;
-import static org.trellisldp.io.JenaIOService.IO_JSONLD_PROFILES;
 
 import io.dropwizard.lifecycle.AutoCloseableManager;
 import io.dropwizard.setup.Environment;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -56,23 +48,6 @@ final class AppUtils {
     private static final String UN_KEY = "username";
     private static final String PW_KEY = "password";
     private static final Logger LOGGER = getLogger(AppUtils.class);
-
-    public static Map<String, String> getAssetConfiguration(final TrellisConfiguration config) {
-        final Map<String, String> assetMap = new HashMap<>();
-        assetMap.put(IO_HTML_ICON, config.getAssets().getIcon());
-        assetMap.put(IO_HTML_CSS, config.getAssets().getCss().stream().map(String::trim).collect(joining(",")));
-        assetMap.put(IO_HTML_JS, config.getAssets().getJs().stream().map(String::trim).collect(joining(",")));
-        if (!config.getJsonld().getContextWhitelist().isEmpty()) {
-            assetMap.put(IO_JSONLD_PROFILES, config.getJsonld().getContextWhitelist().stream()
-                    .map(String::trim).collect(joining(",")));
-        }
-        if (!config.getJsonld().getContextDomainWhitelist().isEmpty()) {
-            assetMap.put(IO_JSONLD_DOMAINS, config.getJsonld().getContextDomainWhitelist().stream()
-                    .map(String::trim).collect(joining(",")));
-        }
-
-        return assetMap;
-    }
 
     public static Properties getKafkaProperties(final NotificationsConfiguration config) {
         final Properties p = new Properties();

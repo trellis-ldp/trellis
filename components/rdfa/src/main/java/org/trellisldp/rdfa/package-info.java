@@ -11,12 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.io.impl;
-
-import org.trellisldp.api.NoopCacheService;
-
 /**
- * A specialized no-op cache.
+ * HTML serialization classes.
+ *
+ * @author acoburn
  */
-public class NoopProfileCache extends NoopCacheService<String, String> {
-}
+package org.trellisldp.rdfa;

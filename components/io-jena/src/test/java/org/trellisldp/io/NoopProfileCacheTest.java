@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package org.trellisldp.io.impl;
+package org.trellisldp.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

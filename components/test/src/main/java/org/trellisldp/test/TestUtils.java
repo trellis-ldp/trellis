@@ -15,7 +15,7 @@ package org.trellisldp.test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.LINK;
@@ -52,7 +52,8 @@ import org.trellisldp.vocabulary.LDP;
  */
 public final class TestUtils {
 
-    private static final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, emptyMap());
+    private static final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(),
+            emptySet());
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.io.impl;
+package org.trellisldp.rdfa;
 
 import static java.util.Objects.nonNull;
 
@@ -24,7 +24,7 @@ import org.apache.commons.rdf.api.Triple;
  *
  * @author acoburn
  */
-public class LabelledTriple {
+class LabelledTriple {
 
     private final Triple triple;
     private final String predLabel;

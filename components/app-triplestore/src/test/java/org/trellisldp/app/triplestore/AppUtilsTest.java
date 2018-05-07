@@ -21,9 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
-import static org.trellisldp.io.JenaIOService.IO_HTML_ICON;
-import static org.trellisldp.io.JenaIOService.IO_HTML_JS;
 
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.Jackson;
@@ -32,7 +29,6 @@ import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.jms.JMSException;
@@ -62,19 +58,6 @@ public class AppUtilsTest {
     public void setUp() {
         initMocks(this);
         when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
-    }
-
-    @Test
-    public void testGetAssetConfigurations() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
-        final Map<String, String> assets = AppUtils.getAssetConfiguration(config);
-        assertEquals(4L, assets.size());
-        assertEquals("http://example.org/image.icon", assets.get(IO_HTML_ICON));
-        assertEquals("http://example.org/styles1.css,http://example.org/styles2.css", assets.get(IO_HTML_CSS));
-        assertEquals("http://example.org/scripts1.js,http://example.org/scripts2.js", assets.get(IO_HTML_JS));
     }
 
     @Test

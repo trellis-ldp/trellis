@@ -14,6 +14,8 @@
 package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
@@ -40,15 +42,13 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.io.JenaIOService.IO_HTML_CSS;
-import static org.trellisldp.io.JenaIOService.IO_HTML_ICON;
-import static org.trellisldp.io.JenaIOService.IO_HTML_TEMPLATE;
-import static org.trellisldp.io.JenaIOService.IO_JSONLD_DOMAINS;
-import static org.trellisldp.io.JenaIOService.IO_JSONLD_PROFILES;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
+import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
+import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
 import static org.trellisldp.vocabulary.JSONLD.flattened;
 
 import java.io.ByteArrayInputStream;
@@ -79,6 +79,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
@@ -99,6 +100,9 @@ public class IOServiceTest {
     private OutputStream mockOutputStream;
 
     @Mock
+    private RDFaWriterService mockHtmlSerializer;
+
+    @Mock
     private CacheService<String, String> mockCache;
 
     @Mock
@@ -112,22 +116,13 @@ public class IOServiceTest {
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
 
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
-        properties.put(IO_JSONLD_PROFILES, "http://www.w3.org/ns/anno.jsonld");
-        properties.put(IO_JSONLD_DOMAINS, "http://www.trellisldp.org/ns/");
+        service = new JenaIOService(mockNamespaceService, null, mockCache,
+                "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/");
 
-        service = new JenaIOService(mockNamespaceService, mockCache, properties);
+        service2 = new JenaIOService(mockNamespaceService, null, mockCache, emptySet(),
+                singleton("http://www.w3.org/ns/"));
 
-        final Map<String, String> properties2 = new HashMap<>();
-        properties.forEach(properties2::put);
-        properties2.remove(IO_JSONLD_PROFILES);
-        properties2.put(IO_JSONLD_DOMAINS, "http://www.w3.org/ns/");
-        service2 = new JenaIOService(mockNamespaceService, mockCache, properties2);
-
-        final Map<String, String> properties3 = new HashMap<>();
-        service3 = new JenaIOService(mockNamespaceService, mockCache, properties3);
+        service3 = new JenaIOService(mockNamespaceService, null, mockCache, emptySet(), emptySet());
 
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
@@ -219,13 +214,8 @@ public class IOServiceTest {
 
     @Test
     public void testJsonLdNullCache() throws UnsupportedEncodingException {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
-        properties.put(IO_JSONLD_DOMAINS, "http://www.w3.org/ns/");
-
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final IOService myservice = new JenaIOService(null, null, properties);
+        final IOService myservice = new JenaIOService();
         myservice.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
         final String output = out.toString("UTF-8");
         assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
@@ -294,6 +284,48 @@ public class IOServiceTest {
     }
 
     @Test
+    public void testJsonLdFlattenedSerializer2() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, compacted_flattened);
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"title\":\"A title\""));
+        assertTrue(output.contains("\"@context\":"));
+        assertTrue(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdFlattenedSerializer3() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, expanded_flattened);
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"title\":\"A title\""));
+        assertTrue(output.contains("\"@context\":"));
+        assertTrue(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdFlattenedSerializer4() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, compacted, flattened);
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"title\":\"A title\""));
+        assertTrue(output.contains("\"@context\":"));
+        assertTrue(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
     public void testMalformedInput() {
         final ByteArrayInputStream in = new ByteArrayInputStream("<> <ex:test> a Literal\" . ".getBytes(UTF_8));
         assertThrows(RuntimeTrellisException.class, () -> service.read(in, null, TURTLE));
@@ -338,73 +370,31 @@ public class IOServiceTest {
     }
 
     @Test
-    public void testHtmlSerializer() {
+    public void testHtmlSerializer() throws Exception {
+        final IOService service4 = new JenaIOService(mockNamespaceService, mockHtmlSerializer);
+
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA);
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
+        service4.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
+        verify(mockHtmlSerializer).write(any(), eq(out), eq("http://example.org/"));
     }
 
     @Test
-    public void testHtmlSerializer2() {
+    public void testHtmlSerializer2() throws Exception {
+        final IOService service4 = new JenaIOService(mockNamespaceService, mockHtmlSerializer);
+
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
+        service4.write(getComplexTriples(), out, RDFA);
+        verify(mockHtmlSerializer).write(any(), eq(out), eq(null));
     }
 
     @Test
-    public void testHtmlSerializer3() {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
-        properties.put(IO_HTML_TEMPLATE, "/resource-test.mustache");
-
-        final IOService service4 = new JenaIOService(mockNamespaceService, mockCache, properties);
-
+    public void testNullHtmlSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
-    }
-
-    @Test
-    public void testHtmlSerializer4() throws Exception {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(IO_HTML_ICON, "//www.trellisldp.org/assets/img/trellis.png");
-        properties.put(IO_HTML_CSS, "//www.trellisldp.org/assets/css/trellis.css");
-        properties.put(IO_HTML_TEMPLATE, getClass().getResource("/resource-test.mustache").toURI().getPath());
-
-        final IOService service4 = new JenaIOService(mockNamespaceService, mockCache, properties);
-
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
+        service.write(getTriples(), out, RDFA);
+        final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        final org.apache.jena.graph.Graph graph = createDefaultGraph();
+        RDFDataMgr.read(graph, in, Lang.TURTLE);
+        validateGraph(rdf.asGraph(graph));
     }
 
     @Test

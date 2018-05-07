@@ -1,10 +1,10 @@
 apply plugin: 'java-library'
 apply plugin: 'osgi'
 
-description = 'Trellis IO Module (Jena)'
+description = 'Trellis RDFa Module'
 
 ext {
-    moduleName = 'org.trellisldp.io'
+    moduleName = 'org.trellisldp.rdfa'
 }
 
 dependencies {
@@ -16,6 +16,7 @@ dependencies {
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     implementation("org.apache.jena:jena-osgi:$jenaVersion")
+    implementation("com.github.spullara.mustache.java:compiler:$mustacheVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
@@ -35,13 +36,6 @@ jar {
         instruction 'Automatic-Module-Name', moduleName
         instruction 'Import-Package', '*'
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
-    }
-}
-
-artifacts {
-    archives (file('build/cfg/main/org.trellisldp.io.cfg')) {
-        classifier 'configuration'
-        type 'cfg'
     }
 }
 

@@ -15,25 +15,36 @@ package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
+import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
 import static org.apache.jena.riot.RDFFormat.JSONLD_COMPACT_FLAT;
+import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT;
+import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.io.impl.IOUtils.getJsonLdProfile;
+import static org.trellisldp.vocabulary.JSONLD.compacted;
+import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
+import static org.trellisldp.vocabulary.JSONLD.expanded;
+import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
+import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static org.trellisldp.vocabulary.JSONLD.getNamespace;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -70,9 +81,8 @@ import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.io.impl.HtmlSerializer;
-
 
 /**
  * An IOService implemented using Jena.
@@ -81,10 +91,6 @@ import org.trellisldp.io.impl.HtmlSerializer;
  */
 public class JenaIOService implements IOService {
 
-    public static final String IO_HTML_CSS = "trellis.io.html.css";
-    public static final String IO_HTML_JS = "trellis.io.html.js";
-    public static final String IO_HTML_TEMPLATE = "trellis.io.html.template";
-    public static final String IO_HTML_ICON = "trellis.io.html.icon";
     public static final String IO_JSONLD_PROFILES = "trellis.io.jsonld.profiles";
     public static final String IO_JSONLD_DOMAINS = "trellis.io.jsonld.domains";
 
@@ -92,51 +98,92 @@ public class JenaIOService implements IOService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
+    private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
+                new SimpleEntry<>(compacted, JSONLD_COMPACT_FLAT),
+                new SimpleEntry<>(flattened, JSONLD_FLATTEN_FLAT),
+                new SimpleEntry<>(expanded, JSONLD_EXPAND_FLAT),
+                new SimpleEntry<>(compacted_flattened, JSONLD_FLATTEN_FLAT),
+                new SimpleEntry<>(expanded_flattened, JSONLD_FLATTEN_FLAT))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
     private final NamespaceService nsService;
     private final CacheService<String, String> cache;
-    private final HtmlSerializer htmlSerializer;
+    private final RDFaWriterService htmlSerializer;
     private final Set<String> whitelist;
     private final Set<String> whitelistDomains;
 
     /**
      * Create a serialization service.
-     *
+     */
+    public JenaIOService() {
+        this(null);
+    }
+
+    /**
+     * Create a serialization service.
      * @param namespaceService the namespace service
      */
     public JenaIOService(final NamespaceService namespaceService) {
-        this(namespaceService, null, ConfigurationProvider.getConfiguration().getProperties());
+        this(namespaceService, null);
     }
 
     /**
      * Create a serialization service.
      *
      * @param namespaceService the namespace service
+     * @param htmlSerializer the HTML serializer service
+     */
+    public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer) {
+        this(namespaceService, htmlSerializer, null);
+    }
+
+    /**
+     * Create a serialization service.
+     *
+     * @param namespaceService the namespace service
+     * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
      */
     @Inject
     public JenaIOService(final NamespaceService namespaceService,
+            final RDFaWriterService htmlSerializer,
             @Named("TrellisProfileCache") final CacheService<String, String> cache) {
-        this(namespaceService, cache, ConfigurationProvider.getConfiguration().getProperties());
+        this(namespaceService, htmlSerializer, cache,
+                ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_PROFILES, ""),
+                ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_DOMAINS, ""));
     }
 
     /**
      * Create a serialization service.
      *
      * @param namespaceService the namespace service
+     * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
-     * @param properties additional properties for the serialization service
+     * @param whitelist a whitelist of JSON-LD profiles
+     * @param whitelistDomains a whitelist of JSON-LD profile domains
      */
-    public JenaIOService(final NamespaceService namespaceService, final CacheService<String, String> cache,
-            final Map<String, String> properties) {
+    public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
+            final CacheService<String, String> cache, final String whitelist, final String whitelistDomains) {
+        this(namespaceService, htmlSerializer, cache, intoSet(whitelist), intoSet(whitelistDomains));
+    }
+
+
+    /**
+     * Create a serialization service.
+     *
+     * @param namespaceService the namespace service
+     * @param htmlSerializer the HTML serializer service
+     * @param cache a cache for custom JSON-LD profile resolution
+     * @param whitelist a whitelist of JSON-LD profiles
+     * @param whitelistDomains a whitelist of JSON-LD profile domains
+     */
+    public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
+            final CacheService<String, String> cache, final Set<String> whitelist, final Set<String> whitelistDomains) {
         this.nsService = namespaceService;
+        this.htmlSerializer = htmlSerializer;
         this.cache = cache;
-
-        this.htmlSerializer = new HtmlSerializer(namespaceService, properties);
-
-        this.whitelist = stream(properties.getOrDefault(IO_JSONLD_PROFILES, "").split(",")).map(String::trim)
-            .filter(x -> !x.isEmpty()).collect(toSet());
-        this.whitelistDomains = stream(properties.getOrDefault(IO_JSONLD_DOMAINS, "").split(",")).map(String::trim)
-            .filter(x -> !x.isEmpty()).collect(toSet());
+        this.whitelist = whitelist;
+        this.whitelistDomains = whitelistDomains;
     }
 
     @Override
@@ -148,7 +195,7 @@ public class JenaIOService implements IOService {
 
         try {
             if (RDFA.equals(syntax)) {
-                htmlSerializer.write(output, triples, profiles.length > 0 ? profiles[0] : null);
+                writeHTML(triples, output, profiles.length > 0 ? profiles[0].getIRIString() : null);
             } else {
                 final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                         new RuntimeTrellisException("Invalid content type: " + syntax.mediaType()));
@@ -177,6 +224,14 @@ public class JenaIOService implements IOService {
             }
         } catch (final AtlasException ex) {
             throw new RuntimeTrellisException(ex);
+        }
+    }
+
+    private void writeHTML(final Stream<? extends Triple> triples, final OutputStream output, final String subject) {
+        if (nonNull(htmlSerializer)) {
+            htmlSerializer.write(triples, output, subject);
+        } else {
+            write(triples, output, TURTLE);
         }
     }
 
@@ -261,4 +316,37 @@ public class JenaIOService implements IOService {
             throw new RuntimeTrellisException(ex);
         }
     }
+
+    private static Set<String> intoSet(final String property) {
+        return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toSet());
+    }
+
+    private static IRI mergeProfiles(final IRI... profiles) {
+        Boolean isExpanded = true;
+        Boolean isFlattened = false;
+
+        for (final IRI uri : profiles) {
+            if (compacted_flattened.equals(uri) || expanded_flattened.equals(uri)) {
+                return uri;
+            }
+
+            if (flattened.equals(uri)) {
+                isFlattened = true;
+            } else if (compacted.equals(uri)) {
+                isExpanded = false;
+            } else if (expanded.equals(uri)) {
+                isExpanded = true;
+            }
+        }
+        if (isFlattened) {
+            return isExpanded ? expanded_flattened : compacted_flattened;
+        }
+        return isExpanded ? expanded : compacted;
+    }
+
+    private static RDFFormat getJsonLdProfile(final IRI... profiles) {
+        return of(mergeProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
+    }
+
+
 }

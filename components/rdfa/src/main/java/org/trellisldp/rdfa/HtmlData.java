@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.io.impl;
+package org.trellisldp.rdfa;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -39,14 +40,16 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * @author acoburn
  */
-public class HtmlData {
+class HtmlData {
 
     private static final Set<IRI> titleCandidates = new HashSet<>(asList(SKOS.prefLabel, RDFS.label, DC.title));
 
     private final List<Triple> triples;
-    private final IRI subject;
+    private final String subject;
     private final NamespaceService namespaceService;
-    private final Map<String, String> properties;
+    private final List<String> css;
+    private final List<String> js;
+    private final String icon;
 
     /**
      * Create an HTML Data object.
@@ -54,14 +57,20 @@ public class HtmlData {
      * @param namespaceService the namespace service
      * @param subject the subject
      * @param triples the triples
-     * @param properties additional properties for static resources
+     * @param css the stylesheets
+     * @param js the javascripts
+     * @param icon the icon
      */
-    public HtmlData(final NamespaceService namespaceService, final IRI subject, final List<Triple> triples,
-            final Map<String, String> properties) {
+    public HtmlData(final NamespaceService namespaceService, final String subject, final List<Triple> triples,
+            final List<String> css, final List<String> js, final String icon) {
+        requireNonNull(css, "The CSS list may not be null!");
+        requireNonNull(js, "The JS list may not be null!");
         this.namespaceService = namespaceService;
-        this.subject = subject;
+        this.subject = nonNull(subject) ? subject : "";
         this.triples = triples;
-        this.properties = properties;
+        this.css = css;
+        this.js = js;
+        this.icon = nonNull(icon) ? icon : "//www.trellisldp.org/assets/img/trellis.png";
     }
 
     /**
@@ -80,8 +89,7 @@ public class HtmlData {
      * @return a list of any CSS documents
      */
     public List<String> getCss() {
-        return stream(properties.getOrDefault("trellis.io.html.css", "//www.trellisldp.org/assets/css/trellis.css")
-                .split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
+        return css;
     }
 
     /**
@@ -90,7 +98,7 @@ public class HtmlData {
      * @return the location of an icon, if one exists
      */
     public String getIcon() {
-        return properties.getOrDefault("trellis.io.html.icon", "//www.trellisldp.org/assets/img/trellis.png");
+        return icon;
     }
 
     /**
@@ -99,8 +107,7 @@ public class HtmlData {
      * @return a list of JS documents
      */
     public List<String> getJs() {
-        return stream(properties.getOrDefault("trellis.io.html.js", "").split(","))
-            .map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
+        return js;
     }
 
     /**
@@ -120,7 +127,7 @@ public class HtmlData {
     }
 
     private String getSubject() {
-        return ofNullable(subject).map(IRI::getIRIString).orElse("");
+        return subject;
     }
 
     private Function<Triple, LabelledTriple> labelTriple = triple -> {
