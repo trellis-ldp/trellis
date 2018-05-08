@@ -90,7 +90,7 @@ class ContentBearingHandler extends BaseLdpHandler {
     protected void readEntityIntoDataset(final String identifier, final String baseUrl, final IRI graphName,
             final RDFSyntax syntax, final TrellisDataset dataset) {
         try (final InputStream input = new FileInputStream(entity)) {
-            ioService.read(input, identifier, syntax)
+            ioService.read(input, syntax, identifier)
                 .map(skolemizeTriples(resourceService, baseUrl))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
                         || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace()))

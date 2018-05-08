@@ -86,7 +86,7 @@ public final class TestUtils {
     public static Graph readEntityAsGraph(final Object entity, final String baseURL,
             final RDFSyntax syntax) {
         final Graph g = getInstance().createGraph();
-        getIOService().read((InputStream) entity, baseURL, syntax).forEach(g::add);
+        getIOService().read((InputStream) entity, syntax, baseURL).forEach(g::add);
         return g;
     }
 

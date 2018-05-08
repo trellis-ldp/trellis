@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
+import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
@@ -85,6 +86,7 @@ public class PatchHandler extends BaseLdpHandler {
     private final IOService ioService;
     private final AgentService agentService;
     private final String sparqlUpdate;
+    private final RDFSyntax syntax;
 
     /**
      * Create a handler for PATCH operations.
@@ -104,6 +106,7 @@ public class PatchHandler extends BaseLdpHandler {
         this.ioService = ioService;
         this.agentService = agentService;
         this.sparqlUpdate = sparqlUpdate;
+        this.syntax = SPARQL_UPDATE;
     }
 
     private List<Triple> updateGraph(final Resource res, final IRI graphName) {
@@ -113,7 +116,7 @@ public class PatchHandler extends BaseLdpHandler {
             try (final Stream<? extends Triple> stream = res.stream(graphName)) {
                 stream.forEachOrdered(graph::add);
             }
-            ioService.update(graph.asGraph(), sparqlUpdate, TRELLIS_DATA_PREFIX + req.getPath() +
+            ioService.update(graph.asGraph(), sparqlUpdate, syntax, TRELLIS_DATA_PREFIX + req.getPath() +
                     (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                     || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
@@ -214,21 +217,21 @@ public class PatchHandler extends BaseLdpHandler {
 
                 return ofNullable(req.getPrefer()).flatMap(Prefer::getPreference).filter(PREFER_REPRESENTATION::equals)
                     .map(prefer -> {
-                        final RDFSyntax syntax = getSyntax(req.getHeaders().getAcceptableMediaTypes(), empty())
-                            .orElseThrow(NotAcceptableException::new);
-                        final IRI profile = ofNullable(getProfile(req.getHeaders().getAcceptableMediaTypes(), syntax))
-                            .orElseGet(() -> getDefaultProfile(syntax, identifier));
+                        final RDFSyntax outputSyntax = getSyntax(ioService, req.getHeaders().getAcceptableMediaTypes(),
+                                empty()).orElseThrow(NotAcceptableException::new);
+                        final IRI profile = ofNullable(getProfile(req.getHeaders().getAcceptableMediaTypes(),
+                                    outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, identifier));
 
                         final StreamingOutput stream = new StreamingOutput() {
                             @Override
                             public void write(final OutputStream out) throws IOException {
                                 ioService.write(triples.stream().map(unskolemizeTriples(resourceService, baseUrl)),
-                                        out, syntax, profile);
+                                        out, outputSyntax, profile);
                             }
                         };
 
-                        return builder.header(PREFERENCE_APPLIED, "return=representation").type(syntax.mediaType())
-                               .entity(stream);
+                        return builder.header(PREFERENCE_APPLIED, "return=representation")
+                            .type(outputSyntax.mediaType()).entity(stream);
                     }).orElseGet(() -> builder.status(NO_CONTENT));
             }
             throw new BadRequestException("Unable to save resource to persistence layer. "

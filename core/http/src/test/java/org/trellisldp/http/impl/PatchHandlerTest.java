@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.time.Instant.ofEpochSecond;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -28,6 +29,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
+import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -44,6 +46,7 @@ import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
@@ -151,6 +154,7 @@ public class PatchHandlerTest {
         when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
         when(mockLdpRequest.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
+        when(mockIoService.supportedReadSyntaxes()).thenReturn(asList(TURTLE, RDFA));
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);
             final String base = (String) inv.getArgument(1);
@@ -207,7 +211,7 @@ public class PatchHandlerTest {
         final Response res = patchHandler.updateResource(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
 
-        verify(mockIoService).update(any(Graph.class), eq(insert), eq(identifier.getIRIString()));
+        verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
 
         verify(mockResourceService).replace(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class),
                         any(), any());
@@ -324,7 +328,7 @@ public class PatchHandlerTest {
     @Test
     public void testError2() {
         doThrow(RuntimeTrellisException.class).when(mockIoService)
-            .update(any(Graph.class), eq(insert), eq(identifier.getIRIString()));
+            .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,

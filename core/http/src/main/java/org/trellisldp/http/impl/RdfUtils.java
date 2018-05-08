@@ -26,7 +26,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.DEFAULT_REPRESENTATION;
-import static org.trellisldp.http.domain.RdfMediaType.MEDIA_TYPES;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
@@ -53,6 +52,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -209,11 +209,12 @@ public final class RdfUtils {
     /**
      * Given a list of acceptable media types, get an RDF syntax.
      *
+     * @param ioService the I/O service
      * @param acceptableTypes the types from HTTP headers
      * @param mimeType an additional "default" mimeType to match
      * @return an RDFSyntax
      */
-    public static Optional<RDFSyntax> getSyntax(final List<MediaType> acceptableTypes,
+    public static Optional<RDFSyntax> getSyntax(final IOService ioService, final List<MediaType> acceptableTypes,
             final Optional<String> mimeType) {
         if (acceptableTypes.isEmpty()) {
             // TODO -- JDK9 refactor with Optional::or
@@ -227,8 +228,8 @@ public final class RdfUtils {
             if (mt.filter(type::isCompatible).isPresent()) {
                 return empty();
             }
-            final Optional<RDFSyntax> syntax = MEDIA_TYPES.stream().filter(type::isCompatible)
-                .findFirst().map(MediaType::toString).flatMap(RDFSyntax::byMediaType);
+            final Optional<RDFSyntax> syntax = ioService.supportedReadSyntaxes().stream()
+                .filter(s -> MediaType.valueOf(s.mediaType()).isCompatible(type)).findFirst();
             if (syntax.isPresent()) {
                 return syntax;
             }

@@ -22,7 +22,6 @@ import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
-import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -32,7 +31,6 @@ import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.HttpConstants.PATCH;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.domain.RdfMediaType.MEDIA_TYPES;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
@@ -42,7 +40,9 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
+import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
@@ -56,15 +56,20 @@ public class OptionsHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(OptionsHandler.class);
 
+    private final IOService ioService;
+
     /**
      * An OPTIONS response builder.
      *
      * @param req the LDP request
      * @param resourceService the resource service
+     * @param ioService the I/O service
      * @param baseUrl the base URL
      */
-    public OptionsHandler(final LdpRequest req, final ResourceService resourceService, final String baseUrl) {
+    public OptionsHandler(final LdpRequest req, final ResourceService resourceService, final IOService ioService,
+            final String baseUrl) {
         super(req, resourceService, null, baseUrl);
+        this.ioService = ioService;
     }
 
     /**
@@ -100,8 +105,8 @@ public class OptionsHandler extends BaseLdpHandler {
             } else {
                 // Containers and binaries support POST
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
-                builder.header(ACCEPT_POST, MEDIA_TYPES.stream().map(mt -> mt.getType() + "/" + mt.getSubtype())
-                        .filter(mt -> !TEXT_HTML.equals(mt)).collect(joining(",")));
+                builder.header(ACCEPT_POST, ioService.supportedWriteSyntaxes().stream().map(RDFSyntax::mediaType)
+                        .collect(joining(",")));
             }
         }
 

@@ -45,6 +45,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.Syntax.LD_PATCH;
+import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
@@ -119,7 +121,7 @@ public class IOServiceTest {
         service = new JenaIOService(mockNamespaceService, null, mockCache,
                 "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/");
 
-        service2 = new JenaIOService(mockNamespaceService, null, mockCache, emptySet(),
+        service2 = new JenaIOService(mockNamespaceService, mockHtmlSerializer, mockCache, emptySet(),
                 singleton("http://www.w3.org/ns/"));
 
         service3 = new JenaIOService(mockNamespaceService, null, mockCache, emptySet(), emptySet());
@@ -148,7 +150,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service3.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service3.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -162,7 +164,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -178,7 +180,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -194,7 +196,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -208,7 +210,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -223,7 +225,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        myservice.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        myservice.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -237,7 +239,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -251,7 +253,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -265,7 +267,7 @@ public class IOServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -279,7 +281,7 @@ public class IOServiceTest {
         assertTrue(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -293,7 +295,7 @@ public class IOServiceTest {
         assertTrue(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -307,7 +309,7 @@ public class IOServiceTest {
         assertTrue(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -321,14 +323,14 @@ public class IOServiceTest {
         assertTrue(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         validateGraph(graph);
     }
 
     @Test
     public void testMalformedInput() {
         final ByteArrayInputStream in = new ByteArrayInputStream("<> <ex:test> a Literal\" . ".getBytes(UTF_8));
-        assertThrows(RuntimeTrellisException.class, () -> service.read(in, null, TURTLE));
+        assertThrows(RuntimeTrellisException.class, () -> service.read(in, TURTLE, null));
     }
 
     @Test
@@ -364,7 +366,7 @@ public class IOServiceTest {
     @Test
     public void testTurtleReaderWithContext() {
         final Graph graph = rdf.createGraph();
-        service.read(getClass().getResourceAsStream("/testRdf.ttl"), "trellis:repository/resource", TURTLE)
+        service.read(getClass().getResourceAsStream("/testRdf.ttl"), TURTLE, "trellis:repository/resource")
             .forEach(graph::add);
         validateGraph(graph);
     }
@@ -402,13 +404,14 @@ public class IOServiceTest {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
-        assertThrows(RuntimeTrellisException.class, () -> service.update(graph, "blah blah blah blah blah", null));
+        assertThrows(RuntimeTrellisException.class, () ->
+                service.update(graph, "blah blah blah blah blah", null, null));
     }
 
     @Test
     public void testReadError() throws IOException {
         doThrow(new IOException()).when(mockInputStream).read(any(byte[].class), anyInt(), anyInt());
-        assertThrows(RuntimeTrellisException.class, () -> service.read(mockInputStream, "context", TURTLE));
+        assertThrows(RuntimeTrellisException.class, () -> service.read(mockInputStream, TURTLE, "context"));
     }
 
     @Test
@@ -422,14 +425,14 @@ public class IOServiceTest {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
-        service.update(graph, "DELETE WHERE { ?s <http://purl.org/dc/terms/title> ?o }", "test:info");
+        service.update(graph, "DELETE WHERE { ?s <http://purl.org/dc/terms/title> ?o }", mockSyntax, "test:info");
         assertEquals(2L, graph.size());
         service.update(graph, "INSERT { " +
-                "<> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}",
+                "<> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", mockSyntax,
                 "trellis:repository/resource");
         assertEquals(3L, graph.size());
         service.update(graph, "DELETE WHERE { ?s ?p ?o };" +
-                "INSERT { <> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}",
+                "INSERT { <> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", mockSyntax,
                 "trellis:repository");
         assertEquals(1L, graph.size());
         assertEquals("<trellis:repository>", graph.stream().findFirst().map(Triple::getSubject)
@@ -450,7 +453,33 @@ public class IOServiceTest {
         final String output = "blah blah blah";
 
         assertThrows(RuntimeTrellisException.class, () ->
-                service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, mockSyntax));
+                service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), mockSyntax, null));
+    }
+
+    @Test
+    public void testReadSyntaxes() {
+        assertTrue(service.supportedReadSyntaxes().contains(TURTLE));
+        assertTrue(service.supportedReadSyntaxes().contains(JSONLD));
+        assertTrue(service.supportedReadSyntaxes().contains(NTRIPLES));
+        assertFalse(service.supportedReadSyntaxes().contains(RDFXML));
+        assertFalse(service.supportedReadSyntaxes().contains(RDFA));
+        assertTrue(service2.supportedReadSyntaxes().contains(RDFA));
+    }
+
+    @Test
+    public void testWriteSyntaxes() {
+        assertTrue(service.supportedWriteSyntaxes().contains(TURTLE));
+        assertTrue(service.supportedWriteSyntaxes().contains(JSONLD));
+        assertTrue(service.supportedWriteSyntaxes().contains(NTRIPLES));
+        assertFalse(service.supportedWriteSyntaxes().contains(RDFXML));
+        assertFalse(service.supportedWriteSyntaxes().contains(RDFA));
+        assertFalse(service2.supportedWriteSyntaxes().contains(RDFA));
+    }
+
+    @Test
+    public void testUpdateSyntaxes() {
+        assertTrue(service.supportedUpdateSyntaxes().contains(SPARQL_UPDATE));
+        assertFalse(service.supportedUpdateSyntaxes().contains(LD_PATCH));
     }
 
     private static Stream<Triple> getTriples() {

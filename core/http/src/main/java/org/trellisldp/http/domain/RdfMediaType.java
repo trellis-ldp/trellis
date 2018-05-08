@@ -13,12 +13,6 @@
  */
 package org.trellisldp.http.domain;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
-import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
-
-import java.util.List;
-
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -45,9 +39,6 @@ public final class RdfMediaType {
     public static final String TEXT_TURTLE = "text/turtle;charset=utf-8";
 
     public static final MediaType TEXT_TURTLE_TYPE = new MediaType("text", "turtle", "utf-8");
-
-    public static final List<MediaType> MEDIA_TYPES = unmodifiableList(asList(TEXT_TURTLE_TYPE,
-                APPLICATION_LD_JSON_TYPE, APPLICATION_N_TRIPLES_TYPE, TEXT_HTML_TYPE));
 
     private RdfMediaType() {
         // prevent instantiation

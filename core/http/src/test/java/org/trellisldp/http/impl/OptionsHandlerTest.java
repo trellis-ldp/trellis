@@ -15,7 +15,9 @@ package org.trellisldp.http.impl;
 
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -24,6 +26,9 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
+import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
+import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -52,6 +57,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
@@ -78,6 +84,9 @@ public class OptionsHandlerTest {
     @Mock
     private LdpRequest mockRequest;
 
+    @Mock
+    private IOService mockIOService;
+
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -86,12 +95,15 @@ public class OptionsHandlerTest {
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> empty());
         when(mockRequest.getBaseUrl()).thenReturn(baseUrl);
         when(mockRequest.getPath()).thenReturn("/");
+        when(mockIOService.supportedReadSyntaxes()).thenReturn(of(TURTLE, JSONLD).collect(toList()));
+        when(mockIOService.supportedWriteSyntaxes()).thenReturn(of(TURTLE, JSONLD, NTRIPLES).collect(toList()));
     }
 
     @Test
     public void testOptionsLdprs() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, mockIOService,
+                null);
 
         final Response res = optionsHandler.ldpOptions(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -111,7 +123,8 @@ public class OptionsHandlerTest {
     @Test
     public void testOptionsLdpc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, baseUrl);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, mockIOService,
+                baseUrl);
 
         final Response res = optionsHandler.ldpOptions(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -139,7 +152,8 @@ public class OptionsHandlerTest {
     public void testOptionsLdpnr() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, mockIOService,
+                null);
 
         final Response res = optionsHandler.ldpOptions(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -159,7 +173,8 @@ public class OptionsHandlerTest {
     public void testOptionsAcl() {
         when(mockRequest.getExt()).thenReturn("acl");
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, baseUrl);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, mockIOService,
+                baseUrl);
 
         final Response res = optionsHandler.ldpOptions(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -181,7 +196,8 @@ public class OptionsHandlerTest {
     public void testOptionsMemento() {
         when(mockResource.isMemento()).thenReturn(true);
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, mockIOService,
+                null);
 
         final Response res = optionsHandler.ldpOptions(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -202,7 +218,8 @@ public class OptionsHandlerTest {
     public void testOptionsDeleted() {
         when(mockResource.isDeleted()).thenReturn(true);
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, baseUrl);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockResourceService, mockIOService,
+                baseUrl);
 
         assertThrows(WebApplicationException.class, () -> optionsHandler.ldpOptions(mockResource));
     }

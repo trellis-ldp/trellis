@@ -217,7 +217,7 @@ public class PutHandlerTest {
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), eq(baseUrl + "resource"), eq(TURTLE));
+        verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
     }
 
     @Test
@@ -237,7 +237,7 @@ public class PutHandlerTest {
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), eq(baseUrl + "resource"), eq(TURTLE));
+        verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
     }
 
     @Test
@@ -270,7 +270,7 @@ public class PutHandlerTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any());
-        verify(mockIoService, never()).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString());
     }
 
     @Test
@@ -292,7 +292,7 @@ public class PutHandlerTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any());
-        verify(mockIoService, never()).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString());
     }
 
     @Test
@@ -314,7 +314,7 @@ public class PutHandlerTest {
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
     }
 
     @Test
@@ -335,7 +335,7 @@ public class PutHandlerTest {
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
     }
 
     @Test
@@ -352,7 +352,7 @@ public class PutHandlerTest {
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), anyString(), any(RDFSyntax.class));
+        verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
     }
 
     @Test

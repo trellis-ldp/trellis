@@ -311,7 +311,7 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final OptionsHandler optionsHandler = new OptionsHandler(req, resourceService, urlBase);
+        final OptionsHandler optionsHandler = new OptionsHandler(req, resourceService, ioService, urlBase);
 
         if (nonNull(req.getVersion())) {
             return resourceService.get(identifier, req.getVersion().getInstant()).map(optionsHandler::ldpOptions)

@@ -53,8 +53,10 @@ import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -67,6 +69,8 @@ public class RdfUtilsTest {
     private static final Long size = 10000L;
     private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
         .withinRange('a', 'z').build();
+
+    private static final IOService ioService = new JenaIOService();
 
     @Mock
     private ResourceService mockResourceService;
@@ -83,13 +87,13 @@ public class RdfUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("text", "turtle"));
 
-        assertEquals(of(TURTLE), RdfUtils.getSyntax(types, empty()));
+        assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, types, empty()));
     }
 
     @Test
     public void testGetSyntaxEmpty() {
-        assertFalse(RdfUtils.getSyntax(emptyList(), of("some/type")).isPresent());
-        assertEquals(of(TURTLE), RdfUtils.getSyntax(emptyList(), empty()));
+        assertFalse(RdfUtils.getSyntax(ioService, emptyList(), of("some/type")).isPresent());
+        assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, emptyList(), empty()));
     }
 
     @Test
@@ -99,7 +103,7 @@ public class RdfUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("text", "turtle"));
 
-        assertFalse(RdfUtils.getSyntax(types, of("application/json")).isPresent());
+        assertFalse(RdfUtils.getSyntax(ioService, types, of("application/json")).isPresent());
     }
 
     @Test
@@ -108,7 +112,7 @@ public class RdfUtilsTest {
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"));
 
-        assertThrows(NotAcceptableException.class, () -> RdfUtils.getSyntax(types, empty()));
+        assertThrows(NotAcceptableException.class, () -> RdfUtils.getSyntax(ioService, types, empty()));
     }
 
     @Test

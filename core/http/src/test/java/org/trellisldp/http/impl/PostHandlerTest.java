@@ -95,8 +95,6 @@ public class PostHandlerTest {
     private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource,
             LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
 
-    private File entity;
-
     @Mock
     private ResourceService mockResourceService;
 
@@ -295,7 +293,7 @@ public class PostHandlerTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
         final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
                         rdf.createLiteral("A title"));
-        when(mockIoService.read(any(), any(), eq(TURTLE))).thenAnswer(x -> Stream.of(triple));
+        when(mockIoService.read(any(), eq(TURTLE), any())).thenAnswer(x -> Stream.of(triple));
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
 
         when(mockRequest.getContentType()).thenReturn("text/turtle");
@@ -313,7 +311,7 @@ public class PostHandlerTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
 
-        verify(mockIoService).read(any(InputStream.class), eq(baseUrl + path), eq(TURTLE));
+        verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
 
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class),
                         any(), any());

@@ -14,7 +14,9 @@
 package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -22,6 +24,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
@@ -34,6 +37,7 @@ import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
@@ -45,6 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -111,6 +117,10 @@ public class JenaIOService implements IOService {
     private final RDFaWriterService htmlSerializer;
     private final Set<String> whitelist;
     private final Set<String> whitelistDomains;
+
+    private final List<RDFSyntax> readable;
+    private final List<RDFSyntax> writable;
+    private final List<RDFSyntax> updatable;
 
     /**
      * Create a serialization service.
@@ -184,6 +194,29 @@ public class JenaIOService implements IOService {
         this.cache = cache;
         this.whitelist = whitelist;
         this.whitelistDomains = whitelistDomains;
+
+        final List<RDFSyntax> reads = new ArrayList<>(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
+        if (nonNull(htmlSerializer)) {
+            reads.add(RDFA);
+        }
+        this.readable = unmodifiableList(reads);
+        this.updatable = unmodifiableList(asList(SPARQL_UPDATE));
+        this.writable = unmodifiableList(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
+    }
+
+    @Override
+    public List<RDFSyntax> supportedReadSyntaxes() {
+        return readable;
+    }
+
+    @Override
+    public List<RDFSyntax> supportedWriteSyntaxes() {
+        return writable;
+    }
+
+    @Override
+    public List<RDFSyntax> supportedUpdateSyntaxes() {
+        return updatable;
     }
 
     @Override
@@ -278,7 +311,7 @@ public class JenaIOService implements IOService {
     }
 
     @Override
-    public Stream<? extends Triple> read(final InputStream input, final String base, final RDFSyntax syntax) {
+    public Stream<? extends Triple> read(final InputStream input, final RDFSyntax syntax, final String base) {
         requireNonNull(input, "The input stream may not be null!");
         requireNonNull(syntax, "The syntax value may not be null!");
 
@@ -307,7 +340,7 @@ public class JenaIOService implements IOService {
     }
 
     @Override
-    public void update(final Graph graph, final String update, final String base) {
+    public void update(final Graph graph, final String update, final RDFSyntax syntax, final String base) {
         requireNonNull(graph, "The input graph may not be null");
         requireNonNull(update, "The update command may not be null");
         try {
@@ -347,6 +380,4 @@ public class JenaIOService implements IOService {
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {
         return of(mergeProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
     }
-
-
 }

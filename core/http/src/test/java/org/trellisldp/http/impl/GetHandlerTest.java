@@ -17,11 +17,13 @@ import static java.time.Instant.ofEpochSecond;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -38,7 +40,10 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.notModified;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
+import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
+import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -50,6 +55,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Syntax.LD_PATCH;
+import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
@@ -141,6 +148,7 @@ public class GetHandlerTest {
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.isMemento()).thenReturn(false);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        when(mockIoService.supportedReadSyntaxes()).thenReturn(asList(TURTLE, JSONLD, RDFA));
 
         when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
         when(mockLdpRequest.getPath()).thenReturn("");
@@ -151,6 +159,7 @@ public class GetHandlerTest {
     @Test
     public void testGetLdprs() {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
+        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
                 mockIoService, mockBinaryService, null);
@@ -191,6 +200,7 @@ public class GetHandlerTest {
     @Test
     public void testGetPreferLdprs() {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
+        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(LD_PATCH));
         when(mockLdpRequest.getPrefer())
             .thenReturn(Prefer.valueOf("return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment"));
 
@@ -203,7 +213,7 @@ public class GetHandlerTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
+        assertEquals("text/ldpatch", res.getHeaderString(ACCEPT_PATCH));
         assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
@@ -314,6 +324,7 @@ public class GetHandlerTest {
     @Test
     public void testMinimalLdprs() {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_LD_JSON_TYPE));
+        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
@@ -355,6 +366,8 @@ public class GetHandlerTest {
     @Test
     public void testGetLdpc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockIoService.supportedWriteSyntaxes()).thenReturn(Stream.of(TURTLE, NTRIPLES, JSONLD).collect(toList()));
+        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(
                     MediaType.valueOf(APPLICATION_LD_JSON + "; profile=\"" + compacted.getIRIString() + "\"")));
 
@@ -405,6 +418,7 @@ public class GetHandlerTest {
     @Test
     public void testGetHTML() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,

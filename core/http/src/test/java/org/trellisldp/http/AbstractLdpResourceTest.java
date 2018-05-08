@@ -147,7 +147,7 @@ import org.trellisldp.vocabulary.XSD;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractLdpResourceTest extends JerseyTest {
 
-    protected static final IOService ioService = new JenaIOService(null);
+    protected static final IOService ioService = new JenaIOService();
 
     protected static final AuditService mockAuditService = none();
 

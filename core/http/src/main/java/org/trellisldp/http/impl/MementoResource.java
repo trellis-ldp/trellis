@@ -126,7 +126,7 @@ public final class MementoResource {
         builder.links(links.toArray(new Link[0])).link(Resource.getIRIString(), "type")
             .link(RDFSource.getIRIString(), "type").header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
-        final RDFSyntax syntax = getSyntax(acceptableTypes, of(APPLICATION_LINK_FORMAT)).orElse(null);
+        final RDFSyntax syntax = getSyntax(serializer, acceptableTypes, of(APPLICATION_LINK_FORMAT)).orElse(null);
         if (nonNull(syntax)) {
             final IRI profile = ofNullable(getProfile(acceptableTypes, syntax)).orElse(expanded);
 

@@ -32,7 +32,6 @@ import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
 import static org.apache.commons.lang3.Range.between;
@@ -54,8 +53,6 @@ import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.domain.Prefer.PREFER_MINIMAL;
 import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.domain.Prefer.PREFER_RETURN;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.domain.RdfMediaType.MEDIA_TYPES;
 import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.filterWithLDF;
 import static org.trellisldp.http.impl.RdfUtils.filterWithPrefer;
@@ -143,8 +140,8 @@ public class GetHandler extends BaseLdpHandler {
         checkDeleted(res, identifier);
 
         LOGGER.debug("Acceptable media types: {}", req.getHeaders().getAcceptableMediaTypes());
-        final Optional<RDFSyntax> syntax = getSyntax(req.getHeaders().getAcceptableMediaTypes(), res.getBinary()
-                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)));
+        final Optional<RDFSyntax> syntax = getSyntax(ioService, req.getHeaders().getAcceptableMediaTypes(),
+                res.getBinary().map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)));
 
         if (ACL.equals(req.getExt()) && !res.hasAcl()) {
             throw new NotFoundException();
@@ -348,12 +345,11 @@ public class GetHandler extends BaseLdpHandler {
             builder.link(type.getIRIString(), "type");
             // Mementos don't accept POST or PATCH
             if (LDP.Container.equals(type) && !res.isMemento()) {
-                builder.header(ACCEPT_POST, MEDIA_TYPES.stream()
-                        .map(mt -> mt.getType() + "/" + mt.getSubtype())
-                        // text/html is excluded
-                        .filter(mt -> !TEXT_HTML.equals(mt)).collect(joining(",")));
+                builder.header(ACCEPT_POST, ioService.supportedWriteSyntaxes().stream()
+                        .map(RDFSyntax::mediaType).collect(joining(",")));
             } else if (LDP.RDFSource.equals(type) && !res.isMemento()) {
-                builder.header(ACCEPT_PATCH, APPLICATION_SPARQL_UPDATE);
+                builder.header(ACCEPT_PATCH, ioService.supportedUpdateSyntaxes().stream()
+                        .map(RDFSyntax::mediaType).collect(joining(",")));
             }
         });
 
