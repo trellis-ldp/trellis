@@ -94,6 +94,39 @@ public final class MementoResource {
 
     private static final String TIMEMAP_PARAM = "?ext=timemap";
 
+    private static final Function<Link, Stream<Triple>> linkToTriples = link -> {
+        final String linkUri = link.getUri().toString();
+        final IRI iri = rdf.createIRI(linkUri);
+        final List<Triple> buffer = new ArrayList<>();
+        final String timeIriPrefix = "http://reference.data.gov.uk/id/gregorian-instant/";
+
+        // TimeMap quads
+        if (link.getParams().containsKey(FROM)) {
+            buffer.add(rdf.createTriple(iri, type, Memento.TimeMap));
+            buffer.add(rdf.createTriple(iri, Time.hasBeginning, rdf.createIRI(timeIriPrefix +
+                            parse(link.getParams().get(FROM), RFC_1123_DATE_TIME).toString())));
+        }
+        if (link.getParams().containsKey(UNTIL)) {
+            buffer.add(rdf.createTriple(iri, Time.hasEnd, rdf.createIRI(timeIriPrefix +
+                            parse(link.getParams().get(UNTIL), RFC_1123_DATE_TIME).toString())));
+        }
+
+        // Quads for Mementos
+        if (MEMENTO.equals(link.getRel()) && link.getParams().containsKey(DATETIME)) {
+            final IRI original = rdf.createIRI(linkUri.split("\\?")[0]);
+            final IRI timemapUrl = rdf.createIRI(linkUri.split("\\?")[0] + TIMEMAP_PARAM);
+            buffer.add(rdf.createTriple(iri, type, Memento.Memento));
+            buffer.add(rdf.createTriple(iri, Memento.original, original));
+            buffer.add(rdf.createTriple(iri, timegate, original));
+            buffer.add(rdf.createTriple(iri, timemap, timemapUrl));
+            buffer.add(rdf.createTriple(iri, Time.hasTime, rdf.createIRI(timeIriPrefix +
+                            parse(link.getParams().get(DATETIME), RFC_1123_DATE_TIME).toString())));
+            buffer.add(rdf.createTriple(iri, mementoDatetime, rdf.createLiteral(parse(
+                                link.getParams().get(DATETIME), RFC_1123_DATE_TIME).toString(), dateTime)));
+        }
+        return buffer.stream();
+    };
+
     private final ResourceService resourceService;
 
     /**
@@ -197,39 +230,6 @@ public final class MementoResource {
     private String getBaseUrl(final String baseUrl, final LdpRequest req) {
         return ofNullable(baseUrl).orElseGet(req::getBaseUrl);
     }
-
-    private static final Function<Link, Stream<Triple>> linkToTriples = link -> {
-        final String linkUri = link.getUri().toString();
-        final IRI iri = rdf.createIRI(linkUri);
-        final List<Triple> buffer = new ArrayList<>();
-        final String timeIriPrefix = "http://reference.data.gov.uk/id/gregorian-instant/";
-
-        // TimeMap quads
-        if (link.getParams().containsKey(FROM)) {
-            buffer.add(rdf.createTriple(iri, type, Memento.TimeMap));
-            buffer.add(rdf.createTriple(iri, Time.hasBeginning, rdf.createIRI(timeIriPrefix +
-                            parse(link.getParams().get(FROM), RFC_1123_DATE_TIME).toString())));
-        }
-        if (link.getParams().containsKey(UNTIL)) {
-            buffer.add(rdf.createTriple(iri, Time.hasEnd, rdf.createIRI(timeIriPrefix +
-                            parse(link.getParams().get(UNTIL), RFC_1123_DATE_TIME).toString())));
-        }
-
-        // Quads for Mementos
-        if (MEMENTO.equals(link.getRel()) && link.getParams().containsKey(DATETIME)) {
-            final IRI original = rdf.createIRI(linkUri.split("\\?")[0]);
-            final IRI timemapUrl = rdf.createIRI(linkUri.split("\\?")[0] + TIMEMAP_PARAM);
-            buffer.add(rdf.createTriple(iri, type, Memento.Memento));
-            buffer.add(rdf.createTriple(iri, Memento.original, original));
-            buffer.add(rdf.createTriple(iri, timegate, original));
-            buffer.add(rdf.createTriple(iri, timemap, timemapUrl));
-            buffer.add(rdf.createTriple(iri, Time.hasTime, rdf.createIRI(timeIriPrefix +
-                            parse(link.getParams().get(DATETIME), RFC_1123_DATE_TIME).toString())));
-            buffer.add(rdf.createTriple(iri, mementoDatetime, rdf.createLiteral(parse(
-                                link.getParams().get(DATETIME), RFC_1123_DATE_TIME).toString(), dateTime)));
-        }
-        return buffer.stream();
-    };
 
     private static Stream<Link> getTimeMap(final String identifier, final Stream<Range<Instant>> mementos) {
         return mementos.reduce((acc, x) -> between(acc.getMinimum(), x.getMaximum()))

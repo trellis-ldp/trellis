@@ -42,6 +42,7 @@ import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.util.tracker.ServiceTracker;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Test OSGi provisioning.
@@ -211,13 +212,13 @@ public class OSGiTest {
             tracker.open(true);
             final T svc = tracker.waitForService(timeout);
             if (svc == null) {
-                throw new RuntimeException("Gave up waiting for service " + filter);
+                throw new RuntimeTrellisException("Gave up waiting for service " + filter);
             }
             return svc;
         } catch (InvalidSyntaxException e) {
             throw new IllegalArgumentException("Invalid filter", e);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeTrellisException(e);
         }
     }
 }

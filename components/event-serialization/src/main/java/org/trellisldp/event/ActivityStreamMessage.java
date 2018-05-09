@@ -37,6 +37,19 @@ import org.trellisldp.vocabulary.AS;
 @JsonPropertyOrder({"@context","id", "type", "inbox", "actor", "object", "published"})
 class ActivityStreamMessage {
 
+    private String id;
+    private List<String> type;
+    private String inbox;
+    private List<String> actor;
+    private EventResource object;
+    private String published;
+
+    /**
+     * The JSON-LD context.
+     */
+    @JsonProperty("@context")
+    public String context = "https://www.w3.org/ns/activitystreams";
+
     /**
      * The target resource of a message.
      */
@@ -74,13 +87,6 @@ class ActivityStreamMessage {
             return type;
         }
     }
-
-    private String id;
-    private List<String> type;
-    private String inbox;
-    private List<String> actor;
-    private EventResource object;
-    private String published;
 
     /**
      * Get the event identifier.
@@ -128,12 +134,6 @@ class ActivityStreamMessage {
     public String getPublished() {
         return published;
     }
-
-    /**
-     * The JSON-LD context.
-     */
-    @JsonProperty("@context")
-    public String context = "https://www.w3.org/ns/activitystreams";
 
     /**
      * Populate a ActivityStreamMessage from an Event.

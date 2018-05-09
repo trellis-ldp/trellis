@@ -2965,7 +2965,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testMultipartPut() throws IOException {
-        final InputStream inputStream = new ByteArrayInputStream("blah blah blah".getBytes(UTF_8));
         when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
         when(mockBinaryResolver.uploadPart(eq(UPLOAD_SESSION_ID), eq(15), any(InputStream.class)))
             .thenReturn("digest1");
@@ -3000,9 +2999,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testMultipartPostNotFound() {
-        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(BASE_URL, BINARY_PATH,
-                new HttpSession(), mockBinary);
-
         when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(false);
 
         final Response res = target("upload/" + UPLOAD_SESSION_ID).request()

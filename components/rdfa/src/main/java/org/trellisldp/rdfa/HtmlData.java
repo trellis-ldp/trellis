@@ -43,12 +43,31 @@ class HtmlData {
 
     private static final Set<IRI> titleCandidates = new HashSet<>(asList(SKOS.prefLabel, RDFS.label, DC.title));
 
+    private static final Comparator<LabelledTriple> sortSubjects = (q1, q2) ->
+        q1.getSubject().compareTo(q2.getSubject());
+
+    private static final Comparator<LabelledTriple> sortPredicates = (q1, q2) ->
+        q1.getPredicate().compareTo(q2.getPredicate());
+
+    private static final Comparator<LabelledTriple> sortObjects = (q1, q2) ->
+        q1.getObject().compareTo(q2.getObject());
+
     private final List<Triple> triples;
     private final String subject;
     private final NamespaceService namespaceService;
     private final List<String> css;
     private final List<String> js;
     private final String icon;
+
+    private Function<Triple, LabelledTriple> labelTriple = triple -> {
+        final String pred = triple.getPredicate().getIRIString();
+        if (triple.getObject() instanceof IRI) {
+            return new LabelledTriple(triple, getLabel(pred), getLabel(((IRI) triple.getObject()).getIRIString()));
+        } else if (triple.getObject() instanceof Literal) {
+            return new LabelledTriple(triple, getLabel(pred), ((Literal) triple.getObject()).getLexicalForm());
+        }
+        return new LabelledTriple(triple, getLabel(pred), triple.getObject().ntriplesString());
+    };
 
     /**
      * Create an HTML Data object.
@@ -129,16 +148,6 @@ class HtmlData {
         return subject;
     }
 
-    private Function<Triple, LabelledTriple> labelTriple = triple -> {
-        final String pred = triple.getPredicate().getIRIString();
-        if (triple.getObject() instanceof IRI) {
-            return new LabelledTriple(triple, getLabel(pred), getLabel(((IRI) triple.getObject()).getIRIString()));
-        } else if (triple.getObject() instanceof Literal) {
-            return new LabelledTriple(triple, getLabel(pred), ((Literal) triple.getObject()).getLexicalForm());
-        }
-        return new LabelledTriple(triple, getLabel(pred), triple.getObject().ntriplesString());
-    };
-
     private String getLabel(final String iri) {
         final int lastHash = iri.lastIndexOf('#');
         String namespace = null;
@@ -161,13 +170,4 @@ class HtmlData {
         }
         return iri;
     }
-
-    private static final Comparator<LabelledTriple> sortSubjects = (q1, q2) ->
-        q1.getSubject().compareTo(q2.getSubject());
-
-    private static final Comparator<LabelledTriple> sortPredicates = (q1, q2) ->
-        q1.getPredicate().compareTo(q2.getPredicate());
-
-    private static final Comparator<LabelledTriple> sortObjects = (q1, q2) ->
-        q1.getObject().compareTo(q2.getObject());
 }

@@ -87,8 +87,6 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
 
     private static final IRI identifier = rdf.createIRI("trellis:repo1/resource");
 
-    private static final IRI agent = rdf.createIRI("user:agent");
-
     private static final BlankNode bnode = rdf.createBlankNode();
 
     @Mock

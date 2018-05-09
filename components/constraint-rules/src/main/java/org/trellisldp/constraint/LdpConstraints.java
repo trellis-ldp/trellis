@@ -100,11 +100,6 @@ public class LdpConstraints implements ConstraintService {
                 ACL.accessControl, LDP.contains, RDF.type, LDP.membershipResource, LDP.hasMemberRelation,
                 LDP.inbox, LDP.insertedContentRelation, OA.annotationService).collect(toSet()));
 
-    // Ensure that any LDP properties are appropriate for the interaction model
-    private static Predicate<Triple> propertyFilter(final IRI model) {
-        return of(model).filter(typeMap::containsKey).map(typeMap::get).orElse(basicConstraints);
-    }
-
     // Verify that the object of a triple whose predicate is either ldp:hasMemberRelation or ldp:isMemberOfRelation
     // is not equal to ldp:contains or any of the other cardinality-restricted IRIs
     private static Predicate<Triple> invalidMembershipProperty = triple ->
@@ -115,6 +110,11 @@ public class LdpConstraints implements ConstraintService {
     private static Predicate<Triple> uriRangeFilter = invalidMembershipProperty.or(triple ->
         propertiesWithUriRange.contains(triple.getPredicate()) && !(triple.getObject() instanceof IRI))
         .or(triple -> RDF.type.equals(triple.getPredicate()) && !(triple.getObject() instanceof IRI));
+
+    // Ensure that any LDP properties are appropriate for the interaction model
+    private static Predicate<Triple> propertyFilter(final IRI model) {
+        return of(model).filter(typeMap::containsKey).map(typeMap::get).orElse(basicConstraints);
+    }
 
     // Verify that the range of the property is in the server's domain
     private static Predicate<Triple> inDomainRangeFilter(final String domain) {

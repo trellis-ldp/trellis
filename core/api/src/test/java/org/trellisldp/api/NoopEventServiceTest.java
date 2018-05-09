@@ -34,7 +34,7 @@ public class NoopEventServiceTest {
     }
 
     @Test
-    final void testNoopEventSvc() {
+    public void testNoopEventSvc() {
         final EventService svc = new NoopEventService();
         svc.emit(mockEvent);
         // no exception above, so test passes if we make it this far.

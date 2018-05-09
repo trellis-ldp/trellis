@@ -29,6 +29,12 @@ import org.apache.commons.rdf.api.Quad;
 public interface AuditService {
 
     /**
+     * Singleton.
+     * TODO make private in Java 9
+     */
+    AuditService nullInstance = new NoopAuditService();
+
+    /**
      * Generate the audit quads for a Create event.
      *
      * @param identifier the resource identifier
@@ -60,12 +66,6 @@ public interface AuditService {
     default List<Quad> update(IRI identifier, Session session) {
         return emptyList();
     }
-
-    /**
-     * Singleton.
-     * TODO make private in Java 9
-     */
-    AuditService nullInstance = new NoopAuditService();
 
     /**
      * @return an {@code AuditService} that does nothing and throws away all inputs

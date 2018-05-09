@@ -66,7 +66,6 @@ import org.trellisldp.vocabulary.Trellis;
 public class RdfUtilsTest {
 
     private static final RDF rdf = getInstance();
-    private static final Long size = 10000L;
     private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
         .withinRange('a', 'z').build();
 
@@ -271,9 +270,5 @@ public class RdfUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("application", "ld+json"));
         assertNull(RdfUtils.getProfile(types, JSONLD));
-    }
-
-    private IRI getIRI() {
-        return rdf.createIRI("ex:" + generator.generate(5));
     }
 }

@@ -66,7 +66,6 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
-import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
@@ -85,7 +84,7 @@ import org.trellisldp.vocabulary.XSD;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CORSResourceTest extends JerseyTest {
 
-    protected static final IOService ioService = new JenaIOService(null);
+    protected static final IOService ioService = new JenaIOService();
 
     private static final int timestamp = 1496262729;
 
@@ -95,13 +94,7 @@ public class CORSResourceTest extends JerseyTest {
 
     private static final IRI agent = rdf.createIRI("user:agent");
 
-    private static final String UPLOAD_SESSION_ID = "upload-session-id";
-
     private static final BlankNode bnode = rdf.createBlankNode();
-
-    private static final String BINARY_MIME_TYPE = "text/plain";
-
-    private static final Long BINARY_SIZE = 100L;
 
     private static final String REPO1 = "repo1";
 
@@ -117,7 +110,6 @@ public class CORSResourceTest extends JerseyTest {
     private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX + REPO1);
     private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
-    private static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
     private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
     private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
 
@@ -143,18 +135,12 @@ public class CORSResourceTest extends JerseyTest {
     protected AgentService mockAgentService;
 
     @Mock
-    private Resource mockResource, mockVersionedResource, mockBinaryResource, mockDeletedResource,
-            mockUserDeletedResource, mockBinaryVersionedResource;
-
-    @Mock
-    private Binary mockBinary;
+    private Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource;
 
     @Override
     public Application configure() {
 
         initMocks(this);
-
-        final String baseUri = getBaseUri().toString();
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService));

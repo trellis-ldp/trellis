@@ -106,7 +106,6 @@ import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.RDF;
-import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.XSD;
 
 /**
@@ -263,15 +262,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         return unmodifiableList(versions);
     }
 
-    private static final Predicate<BlankNodeOrIRI> isUserGraph = Trellis.PreferUserManaged::equals;
-    private static final Predicate<BlankNodeOrIRI> isServerGraph = Trellis.PreferServerManaged::equals;
+    private static final Predicate<BlankNodeOrIRI> isUserGraph = PreferUserManaged::equals;
+    private static final Predicate<BlankNodeOrIRI> isServerGraph = PreferServerManaged::equals;
 
     private void emitEvents(final IRI identifier, final Session session, final OperationType opType,
             final Literal time, final Dataset dataset) {
 
         // Get the base URL
         final Optional<String> baseUrl = session.getProperty(TRELLIS_SESSION_BASE_URL);
-        final IRI inbox = dataset.getGraph(Trellis.PreferUserManaged)
+        final IRI inbox = dataset.getGraph(PreferUserManaged)
             .flatMap(graph -> graph.stream(null, LDP.inbox, null).map(Triple::getObject)
                     .filter(term -> term instanceof IRI).map(term -> (IRI) term).findFirst())
             .orElse(null);
@@ -334,7 +333,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         final ElementGroup eg = new ElementGroup();
         eg.addElement(epb1);
         eg.addElement(new ElementOptional(epb2));
-        q.setQueryPattern(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), eg));
+        q.setQueryPattern(new ElementNamedGraph(rdf.asJenaNode(PreferServerManaged), eg));
         rdfConnection.querySelect(q, qs -> {
             final IRI type = getPredicate(qs);
             final Optional<IRI> member = ofNullable(qs.get("subject")).map(RDFNode::asNode)
@@ -695,7 +694,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         return supplyAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
             try (final Dataset data = rdf.createDataset()) {
-                dataset.getGraph(Trellis.PreferAudit).ifPresent(g ->
+                dataset.getGraph(PreferAudit).ifPresent(g ->
                         g.stream().forEach(t -> data.add(graphName, t.getSubject(), t.getPredicate(), t.getObject())));
                 executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(data)));
                 return true;

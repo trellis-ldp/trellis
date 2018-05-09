@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
@@ -47,8 +46,6 @@ import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
-import java.time.Instant;
-
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -67,7 +64,6 @@ import org.trellisldp.vocabulary.LDP;
  */
 public class OptionsHandlerTest {
 
-    private static final Instant binaryTime = ofEpochSecond(1496262750);
     private static final String baseUrl = "http://localhost:8080/repo";
     private static final RDF rdf = getInstance();
 

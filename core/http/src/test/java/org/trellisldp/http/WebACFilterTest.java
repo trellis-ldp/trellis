@@ -45,11 +45,6 @@ import org.trellisldp.vocabulary.ACL;
 public class WebACFilterTest {
 
     private static final String REPO1 = "repo1";
-    private static final String REPO2 = "repo2";
-    private static final String REPO3 = "repo3";
-    private static final String REPO4 = "repo4";
-
-    private static final String BASE_URL = "http://example.org/";
 
     private static final Set<IRI> allModes = new HashSet<>();
 

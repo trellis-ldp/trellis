@@ -36,9 +36,6 @@ import org.trellisldp.vocabulary.Trellis;
 @Priority(AUTHENTICATION)
 public final class AnonymousAuthFilter extends AuthFilter<String, Principal> {
 
-    private AnonymousAuthFilter() {
-    }
-
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
 
@@ -75,11 +72,14 @@ public final class AnonymousAuthFilter extends AuthFilter<String, Principal> {
     /**
      * Builder for an anonymous auth filter.
      */
-    public static class Builder
-            extends AuthFilterBuilder<String, Principal, AnonymousAuthFilter> {
+    public static class Builder extends AuthFilterBuilder<String, Principal, AnonymousAuthFilter> {
         @Override
         protected AnonymousAuthFilter newInstance() {
             return new AnonymousAuthFilter();
         }
+    }
+
+    private AnonymousAuthFilter() {
+        // prevent instantiation
     }
 }
