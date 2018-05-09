@@ -13,7 +13,7 @@
  */
 package org.trellisldp.api;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,9 +35,11 @@ public class NoopEventServiceTest {
 
     @Test
     public void testNoopEventSvc() {
-        final EventService svc = new NoopEventService();
-        svc.emit(mockEvent);
-        // no exception above, so test passes if we make it this far.
-        assertTrue(true);
+        try {
+            final EventService svc = new NoopEventService();
+            svc.emit(mockEvent);
+        } catch (final Exception ex) {
+            fail();
+        }
     }
 }

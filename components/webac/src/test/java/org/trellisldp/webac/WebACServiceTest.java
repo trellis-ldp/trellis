@@ -66,8 +66,7 @@ public class WebACServiceTest {
 
     @Mock
     private Resource mockResource, mockChildResource, mockParentResource, mockRootResource,
-                mockPublicAclResource, mockAuthResource4, mockAuthResource5,
-                mockAuthResource8, mockGroupResource;
+                mockPublicAclResource, mockAuthResource5, mockGroupResource;
 
     private AccessControlService testService;
 
