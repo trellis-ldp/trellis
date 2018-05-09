@@ -65,8 +65,7 @@ public class WebACServiceTest {
     private CacheService<String, Set<IRI>> mockCache;
 
     @Mock
-    private Resource mockResource, mockChildResource, mockParentResource, mockRootResource,
-                mockPublicAclResource, mockGroupResource;
+    private Resource mockResource, mockChildResource, mockParentResource, mockRootResource, mockGroupResource;
 
     private AccessControlService testService;
 
