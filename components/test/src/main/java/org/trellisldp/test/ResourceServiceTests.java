@@ -296,8 +296,8 @@ public interface ResourceServiceTests {
             r.getBinary().ifPresent(b -> {
                 assertEquals(binaryLocation, b.getIdentifier());
                 assertEquals(binaryTime, b.getModified());
-                assertEquals(Optional.of("text/plain"), b.getMimeType());
-                assertEquals(Optional.of(150L), b.getSize());
+                assertEquals(of("text/plain"), b.getMimeType());
+                assertEquals(of(150L), b.getSize());
             });
         });
     }

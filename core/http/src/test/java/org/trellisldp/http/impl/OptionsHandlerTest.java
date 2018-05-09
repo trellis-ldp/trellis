@@ -37,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.PATCH;
@@ -49,7 +48,6 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -65,7 +63,6 @@ import org.trellisldp.vocabulary.LDP;
 public class OptionsHandlerTest {
 
     private static final String baseUrl = "http://localhost:8080/repo";
-    private static final RDF rdf = getInstance();
 
     @Mock
     private ResourceService mockResourceService;

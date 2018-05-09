@@ -64,6 +64,10 @@ public class Prefer {
 
     public static final String PREFER_WAIT = "wait";
 
+    private static Function<String, String> trimQuotes = param ->
+        param.startsWith("\"") && param.endsWith("\"") && param.length() > 1 ?
+            param.substring(1, param.length() - 1) : param;
+
     private final Optional<String> preference;
 
     private final Optional<String> handling;
@@ -96,7 +100,6 @@ public class Prefer {
         this.wait = ofNullable(wait);
         this.params = ofNullable(params).orElseGet(Collections::emptySet);
     }
-
 
     /**
      * Create a Prefer header representation from a header string.
@@ -184,14 +187,6 @@ public class Prefer {
         return unmodifiableList(omit);
     }
 
-    private static List<String> parseParameter(final String param) {
-        return ofNullable(param).map(trimQuotes).map(x -> asList(x.split("\\s+"))).orElseGet(Collections::emptyList);
-    }
-
-    private static Function<String, String> trimQuotes = param ->
-        param.startsWith("\"") && param.endsWith("\"") && param.length() > 1 ?
-            param.substring(1, param.length() - 1) : param;
-
     /**
      * Build a Prefer object with a set of included IRIs.
      *
@@ -220,5 +215,9 @@ public class Prefer {
         }
         return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION) + "; " + PREFER_OMIT + "=\"" +
                 iris.stream().collect(joining(" ")) + "\"");
+    }
+
+    private static List<String> parseParameter(final String param) {
+        return ofNullable(param).map(trimQuotes).map(x -> asList(x.split("\\s+"))).orElseGet(Collections::emptyList);
     }
 }

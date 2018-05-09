@@ -118,7 +118,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     @Test
     @DisplayName("Test bad timegate request")
     default void testBadTimeGateRequest() {
-        final Instant time = now();
         try (final Response res = target(getResourceLocation()).request()
                 .header(ACCEPT_DATETIME, "unparseable date string").get()) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());

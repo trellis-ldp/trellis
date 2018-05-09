@@ -25,7 +25,6 @@ dependencies {
     testImplementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     testImplementation("com.google.guava:guava:$guavaVersion")
-    testImplementation("org.apache.commons:commons-text:$commonsTextVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.glassfish:javax.json:$jsonVersion")

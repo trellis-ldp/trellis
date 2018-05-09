@@ -120,6 +120,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
 
+    private static final Predicate<BlankNodeOrIRI> isUserGraph = PreferUserManaged::equals;
+    private static final Predicate<BlankNodeOrIRI> isServerGraph = PreferServerManaged::equals;
+
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
     private final Optional<EventService> eventService;
@@ -261,9 +264,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         }
         return unmodifiableList(versions);
     }
-
-    private static final Predicate<BlankNodeOrIRI> isUserGraph = PreferUserManaged::equals;
-    private static final Predicate<BlankNodeOrIRI> isServerGraph = PreferServerManaged::equals;
 
     private void emitEvents(final IRI identifier, final Session session, final OperationType opType,
             final Literal time, final Dataset dataset) {

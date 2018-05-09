@@ -49,7 +49,6 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -66,8 +65,6 @@ import org.trellisldp.vocabulary.Trellis;
 public class RdfUtilsTest {
 
     private static final RDF rdf = getInstance();
-    private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
-        .withinRange('a', 'z').build();
 
     private static final IOService ioService = new JenaIOService();
 
