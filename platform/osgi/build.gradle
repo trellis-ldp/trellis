@@ -49,7 +49,7 @@ dependencies {
     testCompile("org.osgi:org.osgi.core:$osgiVersion")
     testCompile("org.osgi:org.osgi.compendium:$osgiCompendiumVersion")
     testCompile("org.mockito:mockito-core:$mockitoVersion")
-    testCompile("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.javax-inject:1_2")
     testCompile project(':trellis-agent')
     testCompile project(':trellis-amqp')
     testCompile project(':trellis-audit')
