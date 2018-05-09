@@ -71,6 +71,7 @@ public abstract class AbstractVocabularyTest {
         final Set<String> subjects = graph.find(ANY, ANY, ANY).mapWith(Triple::getSubject)
                 .filterKeep(Node::isURI).mapWith(Node::getURI).filterKeep(Objects::nonNull).toSet();
 
+        assertTrue(fields().count() > 0);
         fields().forEach(field -> {
             if (isStrict()) {
                 assertTrue(subjects.contains(namespace() + field),
