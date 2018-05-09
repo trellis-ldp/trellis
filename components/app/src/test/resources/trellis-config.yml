@@ -23,6 +23,8 @@ mementos: mementos
 # Path to namespace file
 namespaces: namespaces.json
 
+hubUrl: http://example.com/websubhub/
+
 auth:
     webac:
         enabled: true

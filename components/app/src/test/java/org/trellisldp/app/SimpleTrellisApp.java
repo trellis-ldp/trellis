@@ -16,8 +16,10 @@ package org.trellisldp.app;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
+import static org.mockito.Mockito.mock;
 
 import io.dropwizard.setup.Environment;
 
@@ -67,7 +69,7 @@ public class SimpleTrellisApp extends AbstractTrellisApplication<TrellisConfigur
 
     @Override
     protected Optional<BinaryService.MultipartCapable> getMultipartUploadService() {
-        return empty();
+        return of(mock(BinaryService.MultipartCapable.class));
     }
 
     @Override
