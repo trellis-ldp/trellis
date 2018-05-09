@@ -15,6 +15,7 @@ package org.trellisldp.http.impl;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.net.URI.create;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -22,6 +23,8 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
+import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -137,6 +140,7 @@ public class PostHandlerTest {
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
 
+        when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD));
         when(mockRequest.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockRequest.getPath()).thenReturn("");
         when(mockRequest.getBaseUrl()).thenReturn(baseUrl);
@@ -290,6 +294,7 @@ public class PostHandlerTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
         final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
                         rdf.createLiteral("A title"));
+        when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
         when(mockIoService.read(any(), eq(TURTLE), any())).thenAnswer(x -> Stream.of(triple));
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
 

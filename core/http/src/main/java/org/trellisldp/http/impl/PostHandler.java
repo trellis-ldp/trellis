@@ -42,6 +42,7 @@ import java.util.concurrent.Future;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
@@ -105,8 +106,9 @@ public class PostHandler extends ContentBearingHandler {
 
         LOGGER.debug("Creating resource as {}", identifier);
 
-        final Optional<RDFSyntax> rdfSyntax = ofNullable(contentType).flatMap(RDFSyntax::byMediaType)
-            .filter(SUPPORTED_RDF_TYPES::contains);
+        final Optional<RDFSyntax> rdfSyntax = ofNullable(contentType).map(MediaType::valueOf).flatMap(ct ->
+                ioService.supportedWriteSyntaxes().stream().filter(s ->
+                    ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst());
 
         final IRI defaultType = nonNull(contentType) && !rdfSyntax.isPresent() ? LDP.NonRDFSource : LDP.RDFSource;
         final IRI internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath() + separator + id);

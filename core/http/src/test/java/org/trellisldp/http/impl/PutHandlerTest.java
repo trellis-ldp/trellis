@@ -15,6 +15,7 @@ package org.trellisldp.http.impl;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.time.Instant.ofEpochSecond;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
@@ -27,6 +28,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
+import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -150,6 +152,7 @@ public class PutHandlerTest {
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
 
+        when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD));
         when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
         when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);

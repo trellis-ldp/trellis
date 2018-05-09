@@ -53,6 +53,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
@@ -153,8 +154,9 @@ public class PutHandler extends ContentBearingHandler {
             .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
-        final Optional<RDFSyntax> rdfSyntax = ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType)
-            .filter(SUPPORTED_RDF_TYPES::contains);
+        final Optional<RDFSyntax> rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->
+                ioService.supportedWriteSyntaxes().stream().filter(s ->
+                    ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst());
 
         // One cannot put binaries into the ACL graph
         if (isAclAndNonRdfContent(rdfSyntax)) {

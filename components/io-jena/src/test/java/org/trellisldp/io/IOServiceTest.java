@@ -441,8 +441,10 @@ public class IOServiceTest {
 
     @Test
     public void testUpdateInvalidSyntax() {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertThrows(RuntimeTrellisException.class, () -> service.write(getTriples(), out, LD_PATCH));
+        final Graph graph = rdf.createGraph();
+        getTriples().forEach(graph::add);
+        final String patch = "UpdateList <#> <http://example.org/vocab#preferredLanguages> 1..2 ( \"fr\" ) .";
+        assertThrows(RuntimeTrellisException.class, () -> service.update(graph, patch, LD_PATCH, null));
     }
 
     @Test
