@@ -343,6 +343,11 @@ public class JenaIOService implements IOService {
     public void update(final Graph graph, final String update, final RDFSyntax syntax, final String base) {
         requireNonNull(graph, "The input graph may not be null");
         requireNonNull(update, "The update command may not be null");
+        requireNonNull(syntax, "The RDF syntax may not be null");
+        if (!SPARQL_UPDATE.equals(syntax)) {
+            throw new RuntimeTrellisException("The syntax " + syntax + " is not supported for updates.");
+        }
+
         try {
             execute(create(update, base), rdf.asJenaGraph(graph));
         } catch (final UpdateException | QueryParseException ex) {

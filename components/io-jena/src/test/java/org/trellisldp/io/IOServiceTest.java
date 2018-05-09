@@ -405,7 +405,7 @@ public class IOServiceTest {
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
         assertThrows(RuntimeTrellisException.class, () ->
-                service.update(graph, "blah blah blah blah blah", null, null));
+                service.update(graph, "blah blah blah blah blah", SPARQL_UPDATE, null));
     }
 
     @Test
@@ -425,18 +425,24 @@ public class IOServiceTest {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
-        service.update(graph, "DELETE WHERE { ?s <http://purl.org/dc/terms/title> ?o }", mockSyntax, "test:info");
+        service.update(graph, "DELETE WHERE { ?s <http://purl.org/dc/terms/title> ?o }", SPARQL_UPDATE, "test:info");
         assertEquals(2L, graph.size());
         service.update(graph, "INSERT { " +
-                "<> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", mockSyntax,
+                "<> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", SPARQL_UPDATE,
                 "trellis:repository/resource");
         assertEquals(3L, graph.size());
         service.update(graph, "DELETE WHERE { ?s ?p ?o };" +
-                "INSERT { <> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", mockSyntax,
+                "INSERT { <> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", SPARQL_UPDATE,
                 "trellis:repository");
         assertEquals(1L, graph.size());
         assertEquals("<trellis:repository>", graph.stream().findFirst().map(Triple::getSubject)
                 .map(RDFTerm::ntriplesString).get());
+    }
+
+    @Test
+    public void testUpdateInvalidSyntax() {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        assertThrows(RuntimeTrellisException.class, () -> service.write(getTriples(), out, LD_PATCH));
     }
 
     @Test

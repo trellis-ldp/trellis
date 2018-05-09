@@ -27,7 +27,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
-import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
@@ -51,6 +50,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -85,38 +85,41 @@ public class PatchHandler extends BaseLdpHandler {
 
     private final IOService ioService;
     private final AgentService agentService;
-    private final String sparqlUpdate;
-    private final RDFSyntax syntax;
+    private final String updateBody;
 
     /**
      * Create a handler for PATCH operations.
      *
      * @param req the LDP request
-     * @param sparqlUpdate the sparql update body
+     * @param updateBody the sparql update body
      * @param auditService an audit service
      * @param resourceService the resource service
      * @param ioService the serialization service
      * @param agentService the agent service
      * @param baseUrl the base URL
      */
-    public PatchHandler(final LdpRequest req, final String sparqlUpdate, final ResourceService resourceService,
+    public PatchHandler(final LdpRequest req, final String updateBody, final ResourceService resourceService,
             final AuditService auditService, final IOService ioService, final AgentService agentService,
             final String baseUrl) {
         super(req, resourceService, auditService, baseUrl);
         this.ioService = ioService;
         this.agentService = agentService;
-        this.sparqlUpdate = sparqlUpdate;
-        this.syntax = SPARQL_UPDATE;
+        this.updateBody = updateBody;
     }
 
     private List<Triple> updateGraph(final Resource res, final IRI graphName) {
         final List<Triple> triples;
+        // Get the incoming syntax and check that the underlying I/O service supports it
+        final RDFSyntax syntax = ioService.supportedUpdateSyntaxes().stream()
+            .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst()
+            .orElseThrow(() -> new NotSupportedException("Content-Type: " + req.getContentType() + " not supported"));
+
         // Update existing graph
         try (final TrellisGraph graph = TrellisGraph.createGraph()) {
             try (final Stream<? extends Triple> stream = res.stream(graphName)) {
                 stream.forEachOrdered(graph::add);
             }
-            ioService.update(graph.asGraph(), sparqlUpdate, syntax, TRELLIS_DATA_PREFIX + req.getPath() +
+            ioService.update(graph.asGraph(), updateBody, syntax, TRELLIS_DATA_PREFIX + req.getPath() +
                     (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                     || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
@@ -138,8 +141,8 @@ public class PatchHandler extends BaseLdpHandler {
         final String baseUrl = getBaseUrl();
         final String identifier = baseUrl + req.getPath() + (ACL.equals(req.getExt()) ? "?ext=acl" : "");
 
-        if (isNull(sparqlUpdate)) {
-            throw new BadRequestException("Missing Sparql-Update body");
+        if (isNull(updateBody)) {
+            throw new BadRequestException("Missing body for update");
         }
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
             .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);

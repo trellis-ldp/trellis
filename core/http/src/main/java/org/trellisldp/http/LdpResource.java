@@ -48,7 +48,6 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -332,7 +331,6 @@ public class LdpResource implements ContainerRequestFilter {
      */
     @PATCH
     @Timed
-    @Consumes("application/sparql-update")
     public Response updateResource(@BeanParam final LdpRequest req, final String body) {
 
         final String urlBase = getBaseUrl(req);

@@ -50,7 +50,7 @@ import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.time.Instant;
@@ -153,8 +153,10 @@ public class PatchHandlerTest {
         when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);
         when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
         when(mockLdpRequest.getSecurityContext()).thenReturn(mockSecurityContext);
+        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
         when(mockIoService.supportedReadSyntaxes()).thenReturn(asList(TURTLE, RDFA));
+        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(asList(SPARQL_UPDATE));
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);
             final String base = (String) inv.getArgument(1);
@@ -179,7 +181,7 @@ public class PatchHandlerTest {
     public void testBadAudit() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
-        when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         // will never store audit
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
