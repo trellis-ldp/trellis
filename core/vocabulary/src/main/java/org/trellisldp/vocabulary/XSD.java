@@ -29,15 +29,6 @@ public final class XSD {
     /* Namespace */
     private static final String URI = "http://www.w3.org/2001/XMLSchema#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* DataTypes */
     public static final IRI anyURI = createIRI(getNamespace() + "anyURI");
     public static final IRI base64Binary = createIRI(getNamespace() + "base64Binary");
@@ -75,6 +66,15 @@ public final class XSD {
     public static final IRI unsignedLong = createIRI(getNamespace() + "unsignedLong");
     public static final IRI unsignedShort = createIRI(getNamespace() + "unsignedShort");
     public static final IRI yearMonthDuration = createIRI(getNamespace() + "yearMonthDuration");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private XSD() {
         // prevent instantiation

@@ -29,15 +29,6 @@ public final class OA {
     /* Namespace */
     private static final String URI = "http://www.w3.org/ns/oa#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Annotation = createIRI(getNamespace() + "Annotation");
     public static final IRI Choice = createIRI(getNamespace() + "Choice");
@@ -112,6 +103,15 @@ public final class OA {
     /* Prefer-related Classes */
     public static final IRI PreferContainedDescriptions = createIRI(getNamespace() + "PreferContainedDescriptions");
     public static final IRI PreferContainedIRIs = createIRI(getNamespace() + "PreferContainedIRIs");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private OA() {
         // prevent instantiation

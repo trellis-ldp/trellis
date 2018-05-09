@@ -29,15 +29,6 @@ public final class JSONLD {
     /* Namespace */
     private static final String URI = "http://www.w3.org/ns/json-ld#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Profiles */
     public static final IRI context = createIRI(getNamespace() + "context");
 
@@ -47,6 +38,15 @@ public final class JSONLD {
     public static final IRI expanded = createIRI(getNamespace() + "expanded");
     public static final IRI expanded_flattened = createIRI(getNamespace() + "expanded-flattened");
     public static final IRI flattened = createIRI(getNamespace() + "flattened");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private JSONLD() {
         // prevent instantiation

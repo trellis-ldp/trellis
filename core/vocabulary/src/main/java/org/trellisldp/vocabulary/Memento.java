@@ -29,15 +29,6 @@ public final class Memento {
     /* Namespace */
     private static final String URI = "http://mementoweb.org/ns#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Memento = createIRI(getNamespace() + "Memento");
     public static final IRI OriginalResource = createIRI(getNamespace() + "OriginalResource");
@@ -50,6 +41,15 @@ public final class Memento {
     public static final IRI timegate = createIRI(getNamespace() + "timegate");
     public static final IRI timemap = createIRI(getNamespace() + "timemap");
     public static final IRI original = createIRI(getNamespace() + "original");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private Memento() {
         // prevent instantiation

@@ -14,7 +14,6 @@
 package org.trellisldp.rdfa;
 
 import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;

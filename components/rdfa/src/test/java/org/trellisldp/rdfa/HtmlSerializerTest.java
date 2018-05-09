@@ -36,7 +36,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
@@ -64,9 +63,6 @@ public class HtmlSerializerTest {
 
     @Mock
     private NamespaceService mockNamespaceService;
-
-    @Mock
-    private InputStream mockInputStream;
 
     @Mock
     private OutputStream mockOutputStream;

@@ -56,7 +56,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.trellisldp.api.Binary;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -68,12 +67,9 @@ import org.trellisldp.vocabulary.LDP;
  */
 public class OptionsHandlerTest {
 
-    private static final Instant time = ofEpochSecond(1496262729);
     private static final Instant binaryTime = ofEpochSecond(1496262750);
     private static final String baseUrl = "http://localhost:8080/repo";
     private static final RDF rdf = getInstance();
-
-    private Binary testBinary = new Binary(rdf.createIRI("file:///testResource.txt"), binaryTime, "text/plain", 100L);
 
     @Mock
     private ResourceService mockResourceService;

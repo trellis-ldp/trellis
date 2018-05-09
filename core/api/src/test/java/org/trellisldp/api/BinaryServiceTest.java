@@ -28,7 +28,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
@@ -74,7 +73,6 @@ public class BinaryServiceTest {
     @Test
     public void testDefaultMethods() {
         when(mockBinaryService.getContent(any())).thenReturn(of(mockInputStream));
-        final Map<String, String> data = emptyMap();
         mockBinaryService.setContent(identifier, mockInputStream);
         assertEquals(of(checksum), mockBinaryService.calculateDigest(other, "md5"));
         verify(mockBinaryService).setContent(eq(identifier), eq(mockInputStream),

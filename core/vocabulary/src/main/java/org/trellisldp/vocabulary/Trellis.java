@@ -29,15 +29,6 @@ public final class Trellis {
     /* Namespace */
     private static final String URI = "http://www.trellisldp.org/ns/trellis#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI ConstraintViolation = createIRI(getNamespace() + "ConstraintViolation");
     public static final IRI DeletedResource = createIRI(getNamespace() + "DeletedResource");
@@ -58,6 +49,15 @@ public final class Trellis {
     public static final IRI PreferServerManaged = createIRI(getNamespace() + "PreferServerManaged");
     public static final IRI PreferUserManaged = createIRI(getNamespace() + "PreferUserManaged");
     public static final IRI UnsupportedInteractionModel = createIRI(getNamespace() + "UnsupportedInteractionModel");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private Trellis() {
         // prevent instantiation

@@ -29,15 +29,6 @@ public final class VCARD {
     /* Namespace */
     private static final String URI = "http://www.w3.org/2006/vcard/ns#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Acquaintance = createIRI(getNamespace() + "Acquaintance");
     public static final IRI Address = createIRI(getNamespace() + "Address");
@@ -154,6 +145,15 @@ public final class VCARD {
     public static final IRI title = createIRI(getNamespace() + "title");
     public static final IRI tz = createIRI(getNamespace() + "tz");
     public static final IRI value = createIRI(getNamespace() + "value");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private VCARD() {
         // prevent instantiation

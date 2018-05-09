@@ -189,7 +189,6 @@ public class RdfUtilsTest {
     public void testSkolemize() {
         final IRI iri = rdf.createIRI("trellis:data/repository/resource");
         final String baseUrl = "http://example.org/";
-        final IRI anonIri = rdf.createIRI(TRELLIS_BNODE_PREFIX + "foo");
         final Literal literal = rdf.createLiteral("A title");
         final BlankNode bnode = rdf.createBlankNode("foo");
 

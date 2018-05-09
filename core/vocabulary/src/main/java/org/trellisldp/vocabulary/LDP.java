@@ -29,15 +29,6 @@ public final class LDP {
     /* Namespace */
     private static final String URI = "http://www.w3.org/ns/ldp#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI BasicContainer = createIRI(getNamespace() + "BasicContainer");
     public static final IRI Container = createIRI(getNamespace() + "Container");
@@ -77,6 +68,15 @@ public final class LDP {
 
     /* Other Classes */
     public static final IRI MemberSubject = createIRI(getNamespace() + "MemberSubject");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private LDP() {
         // prevent instantiation

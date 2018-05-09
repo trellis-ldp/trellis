@@ -195,7 +195,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             + "<> foaf:primaryTopic <#it> .";
 
         // PUT an LDP-RS
-        try (final Response res = target(getSecondIndirectContainerLocation()).request().post(entity(containerContent,
+        try (final Response res = target(getSecondIndirectContainerLocation()).request().post(entity(memberContent,
                         TEXT_TURTLE))) {
             assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
                     "Creation of RDFSource appears to be unsupported");

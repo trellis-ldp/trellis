@@ -29,15 +29,6 @@ public final class DC {
     /* Namespace */
     private static final String URI = "http://purl.org/dc/terms/";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Agent = createIRI(getNamespace() + "Agent");
     public static final IRI AgentClass = createIRI(getNamespace() + "AgentClass");
@@ -118,6 +109,15 @@ public final class DC {
     public static final IRI title = createIRI(getNamespace() + "title");
     public static final IRI type = createIRI(getNamespace() + "type");
     public static final IRI valid = createIRI(getNamespace() + "valid");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private DC() {
         // prevent instantiation

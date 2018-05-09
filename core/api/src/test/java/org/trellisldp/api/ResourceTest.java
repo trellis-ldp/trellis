@@ -40,7 +40,6 @@ public class ResourceTest {
 
     private static final RDF rdf = new SimpleRDF();
 
-    private final IRI identifier = rdf.createIRI("trellis:repository/resource");
     private final IRI prefer = rdf.createIRI("http://example.org/prefer/Custom");
 
     @Mock

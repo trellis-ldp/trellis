@@ -29,15 +29,6 @@ public final class Time {
     /* Namespace */
     private static final String URI = "http://www.w3.org/2006/time#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI DateTimeDescription = createIRI(getNamespace() + "DateTimeDescription");
     public static final IRI DateTimeInterval = createIRI(getNamespace() + "DateTimeInterval");
@@ -138,6 +129,15 @@ public final class Time {
     public static final IRI Thursday = createIRI(getNamespace() + "Thursday");
     public static final IRI Tuesday = createIRI(getNamespace() + "Tuesday");
     public static final IRI Wednesday = createIRI(getNamespace() + "Wednesday");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private Time() {
         // prevent instantiation

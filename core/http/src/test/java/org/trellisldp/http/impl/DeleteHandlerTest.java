@@ -70,7 +70,6 @@ import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
-import org.trellisldp.vocabulary.XSD;
 
 /**
  * @author acoburn
@@ -80,7 +79,6 @@ public class DeleteHandlerTest {
     private static final RDF rdf = getInstance();
     private static final Instant time = ofEpochSecond(1496262729);
     private static final String baseUrl = "http://localhost:8080/repo";
-    private static final Literal date = rdf.createLiteral(time.toString(), XSD.dateTime);
 
     private final AuditService mockAuditService = none();
 

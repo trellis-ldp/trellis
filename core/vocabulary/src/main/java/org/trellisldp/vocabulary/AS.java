@@ -29,15 +29,6 @@ public final class AS {
     /* Namespace */
     private static final String URI = "https://www.w3.org/ns/activitystreams#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Accept = createIRI(getNamespace() + "Accept");
     public static final IRI Activity = createIRI(getNamespace() + "Activity");
@@ -178,6 +169,15 @@ public final class AS {
     public static final IRI provideClientKey = createIRI(getNamespace() + "provideClientKey");
     public static final IRI authorizeClientKey = createIRI(getNamespace() + "authorizeClientKey");
     public static final IRI source = createIRI(getNamespace() + "source");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private AS() {
         // prevent instantiation

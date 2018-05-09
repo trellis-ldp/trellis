@@ -29,15 +29,6 @@ public final class SKOS {
     /* Namespace */
     private static final String URI = "http://www.w3.org/2004/02/skos/core#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Concept = createIRI(getNamespace() + "Concept");
     public static final IRI ConceptScheme = createIRI(getNamespace() + "ConceptScheme");
@@ -73,6 +64,15 @@ public final class SKOS {
     public static final IRI relatedMatch = createIRI(getNamespace() + "relatedMatch");
     public static final IRI exactMatch = createIRI(getNamespace() + "exactMatch");
     public static final IRI closeMatch = createIRI(getNamespace() + "closeMatch");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private SKOS() {
         // prevent instantiation

@@ -15,7 +15,6 @@ package org.trellisldp.http.impl;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.net.URI.create;
-import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -44,7 +43,6 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -89,7 +87,6 @@ import org.trellisldp.vocabulary.Trellis;
  */
 public class PostHandlerTest {
 
-    private static final Instant time = ofEpochSecond(1496262729);
     private static final String baseUrl = "http://example.org/repo/";
     private static final RDF rdf = getInstance();
     private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource,
@@ -412,7 +409,6 @@ public class PostHandlerTest {
 
     @Test
     public void testEntityError() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource");
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
         when(mockRequest.getContentType()).thenReturn("text/plain");
 

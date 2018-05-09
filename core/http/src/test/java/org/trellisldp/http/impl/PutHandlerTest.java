@@ -70,8 +70,6 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
@@ -130,9 +128,6 @@ public class PutHandlerTest {
 
     @Mock
     private Future<Boolean> mockFuture;
-
-    @Captor
-    private ArgumentCaptor<Dataset> dataset;
 
     @BeforeEach
     public void setUp() {

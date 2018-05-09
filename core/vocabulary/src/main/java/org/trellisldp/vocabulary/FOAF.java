@@ -29,15 +29,6 @@ public final class FOAF {
     /* Namespace */
     private static final String URI = "http://xmlns.com/foaf/0.1/";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Agent = createIRI(getNamespace() + "Agent");
     public static final IRI Document = createIRI(getNamespace() + "Document");
@@ -57,6 +48,15 @@ public final class FOAF {
     public static final IRI page = createIRI(getNamespace() + "page");
     public static final IRI primaryTopic = createIRI(getNamespace() + "primaryTopic");
     public static final IRI weblog = createIRI(getNamespace() + "weblog");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private FOAF() {
         // prevent instantiation

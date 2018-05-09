@@ -30,15 +30,6 @@ public final class RDFS {
     /* Namespace */
     private static final String URI = "http://www.w3.org/2000/01/rdf-schema#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Resource = createIRI(getNamespace() + "Resource");
     public static final IRI Class = createIRI(getNamespace() + "Class");
@@ -57,6 +48,15 @@ public final class RDFS {
     public static final IRI seeAlso = createIRI(getNamespace() + "seeAlso");
     public static final IRI isDefinedBy = createIRI(getNamespace() + "isDefinedBy");
     public static final IRI member = createIRI(getNamespace() + "member");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private RDFS() {
         // prevent instantiation

@@ -50,6 +50,20 @@ import org.trellisldp.vocabulary.LDP;
 
 public class JoiningResourceServiceTest {
 
+    private static final IRI testResourceId1 = createIRI("http://example.com/1");
+    private static final IRI testResourceId2 = createIRI("http://example.com/2");
+    private static final IRI testResourceId3 = createIRI("http://example.com/3");
+    private static final Session mockSession = mock(Session.class);
+
+    private static IRI badId = createIRI("http://bad.com");
+
+    private final ImmutableDataService<Resource> testImmutableService = new TestableImmutableService();
+
+    private final MutableDataService<Resource> testMutableService = new TestableMutableDataService();
+
+    private final ResourceService testable = new TestableJoiningResourceService(testImmutableService,
+                    testMutableService);
+
     private static IRI createIRI(final String value) {
         return RDFUtils.getInstance().createIRI(value);
     }
@@ -57,13 +71,6 @@ public class JoiningResourceServiceTest {
     private static Quad createQuad(final BlankNodeOrIRI g, final BlankNodeOrIRI s, final IRI p, final RDFTerm o) {
         return RDFUtils.getInstance().createQuad(g, s, p, o);
     }
-
-    private static final IRI testResourceId1 = createIRI("http://example.com/1");
-    private static final IRI testResourceId2 = createIRI("http://example.com/2");
-    private static final IRI testResourceId3 = createIRI("http://example.com/3");
-    private static final Session mockSession = mock(Session.class);
-
-    private static IRI badId = createIRI("http://bad.com");
 
     private static class TestableRetrievalService implements RetrievalService<Resource> {
 
@@ -93,8 +100,6 @@ public class JoiningResourceServiceTest {
         }
     }
 
-    private final ImmutableDataService<Resource> testImmutableService = new TestableImmutableService();
-
     private static class TestableMutableDataService extends TestableRetrievalService
                     implements MutableDataService<Resource> {
 
@@ -119,8 +124,6 @@ public class JoiningResourceServiceTest {
             return isntBadId(identifier);
         }
     };
-
-    private final MutableDataService<Resource> testMutableService = new TestableMutableDataService();
 
     private static class TestableJoiningResourceService extends JoiningResourceService {
 
@@ -160,12 +163,9 @@ public class JoiningResourceServiceTest {
         }
     }
 
-    private final ResourceService testable = new TestableJoiningResourceService(testImmutableService,
-                    testMutableService);
-
     private static class TestResource implements Resource {
 
-        private final Instant mod = Instant.now();
+        private final Instant mod = now();
         private final Dataset dataset = RDFUtils.getInstance().createDataset();
         private final IRI id;
 

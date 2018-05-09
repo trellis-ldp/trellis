@@ -29,15 +29,6 @@ public final class ACL {
     /* Namespace */
     private static final String URI = "http://www.w3.org/ns/auth/acl#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Access = createIRI(getNamespace() + "Access");
     public static final IRI Append = createIRI(getNamespace() + "Append");
@@ -59,6 +50,15 @@ public final class ACL {
     public static final IRI delegates = createIRI(getNamespace() + "delegates");
     public static final IRI mode = createIRI(getNamespace() + "mode");
     public static final IRI owner = createIRI(getNamespace() + "owner");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private ACL() {
         // prevent instantiation

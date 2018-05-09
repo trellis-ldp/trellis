@@ -29,15 +29,6 @@ public final class PROV {
     /* Namespace */
     private static final String URI = "http://www.w3.org/ns/prov#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Activity = createIRI(getNamespace() + "Activity");
     public static final IRI Agent = createIRI(getNamespace() + "Agent");
@@ -128,6 +119,15 @@ public final class PROV {
     public static final IRI qualifiedStart = createIRI(getNamespace() + "qualifiedStart");
     public static final IRI qualifiedUsage = createIRI(getNamespace() + "qualifiedUsage");
     public static final IRI wasInfluencedBy = createIRI(getNamespace() + "wasInfluencedBy");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private PROV() {
         // prevent instantiation

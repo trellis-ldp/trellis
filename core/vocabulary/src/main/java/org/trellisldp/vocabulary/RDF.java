@@ -30,15 +30,6 @@ public final class RDF {
     /* Namespace */
     private static final String URI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
-    /**
-     * get the namespace.
-     *
-     * @return namespace
-     */
-    public static String getNamespace() {
-        return URI;
-    }
-
     /* Classes */
     public static final IRI Property = createIRI(getNamespace() + "Property");
     public static final IRI Statement = createIRI(getNamespace() + "Statement");
@@ -63,6 +54,15 @@ public final class RDF {
     public static final IRI value = createIRI(getNamespace() + "value");
     public static final IRI first = createIRI(getNamespace() + "first");
     public static final IRI rest = createIRI(getNamespace() + "rest");
+
+    /**
+     * get the namespace.
+     *
+     * @return namespace
+     */
+    public static String getNamespace() {
+        return URI;
+    }
 
     private RDF() {
         // prevent instantiation
