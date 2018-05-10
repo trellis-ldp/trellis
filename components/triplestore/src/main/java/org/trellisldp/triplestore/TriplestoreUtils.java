@@ -13,11 +13,17 @@
  */
 package org.trellisldp.triplestore;
 
+import static org.apache.jena.query.DatasetFactory.wrap;
+
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFTerm;
+import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Var;
 
 /**
@@ -45,6 +51,23 @@ final class TriplestoreUtils {
 
     public static RDFTerm getObject(final QuerySolution qs) {
         return rdf.asRDFTerm(qs.get("object").asNode());
+    }
+
+    /**
+     * TODO Replace when COMMONSRDF-74 is released.
+     *
+     * @param dataset a Commons RDF {@link Dataset}
+     * @return a Jena {@link org.apache.jena.query.Dataset}
+     */
+    public static org.apache.jena.query.Dataset asJenaDataset(final Dataset dataset) {
+        final DatasetGraph dsg;
+        if (dataset instanceof JenaDataset) {
+            dsg = ((JenaDataset) dataset).asJenaDatasetGraph();
+        } else {
+            dsg = DatasetGraphFactory.createGeneral();
+            dataset.stream().map(rdf::asJenaQuad).forEach(dsg::add);
+        }
+        return wrap(dsg);
     }
 
     private TriplestoreUtils() {

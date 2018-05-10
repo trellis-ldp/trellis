@@ -38,6 +38,7 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
+import static org.trellisldp.triplestore.TriplestoreUtils.asJenaDataset;
 import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
@@ -67,14 +68,11 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.modify.request.QuadAcc;
@@ -708,23 +706,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     @Override
     public Set<IRI> supportedInteractionModels() {
         return supportedIxnModels;
-    }
-
-    /**
-     * TODO Replace when COMMONSRDF-74 is released.
-     *
-     * @param dataset a Commons RDF {@link Dataset}
-     * @return a Jena {@link org.apache.jena.query.Dataset}
-     */
-    private org.apache.jena.query.Dataset asJenaDataset(final Dataset dataset) {
-        final DatasetGraph dsg;
-        if (dataset instanceof JenaDataset) {
-            dsg = ((JenaDataset) dataset).asJenaDatasetGraph();
-        } else {
-            dsg = DatasetGraphFactory.createGeneral();
-            dataset.stream().map(rdf::asJenaQuad).forEach(dsg::add);
-        }
-        return org.apache.jena.query.DatasetFactory.wrap(dsg);
     }
 
     /**
