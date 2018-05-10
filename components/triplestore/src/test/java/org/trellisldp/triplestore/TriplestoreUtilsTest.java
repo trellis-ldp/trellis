@@ -68,4 +68,22 @@ public class TriplestoreUtilsTest {
         assertNotEquals(TriplestoreUtils.asJenaDataset(dataset).asDatasetGraph(),
                 TriplestoreUtils.asJenaDataset(dataset).asDatasetGraph());
     }
+
+    @Test
+    public void testBaseIRItruncate() {
+        final IRI iri = jenaRdf.createIRI("http://example.com/resource#i");
+        assertEquals(jenaRdf.createIRI("http://example.com/resource"), TriplestoreUtils.getBaseIRI(iri));
+    }
+
+    @Test
+    public void testBaseIRInoTruncate() {
+        final IRI iri = jenaRdf.createIRI("http://example.com/resource");
+        assertEquals(iri, TriplestoreUtils.getBaseIRI(iri));
+    }
+
+    @Test
+    public void testBaseIRIliteral() {
+        final Literal l = jenaRdf.createLiteral("a literal");
+        assertEquals(l, TriplestoreUtils.getBaseIRI(l));
+    }
 }

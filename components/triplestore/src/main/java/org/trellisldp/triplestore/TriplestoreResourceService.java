@@ -39,6 +39,7 @@ import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.asJenaDataset;
+import static org.trellisldp.triplestore.TriplestoreUtils.getBaseIRI;
 import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
@@ -146,14 +147,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         this.supportedIxnModels = unmodifiableSet(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                 LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer).stream().collect(toSet()));
         init();
-    }
-
-    private static RDFTerm getBaseIRI(final RDFTerm object) {
-        if (object instanceof IRI) {
-            final String iri = ((IRI) object).getIRIString().split("#")[0];
-            return rdf.createIRI(iri);
-        }
-        return object;
     }
 
     @Override

@@ -53,6 +53,14 @@ final class TriplestoreUtils {
         return rdf.asRDFTerm(qs.get("object").asNode());
     }
 
+    public static RDFTerm getBaseIRI(final RDFTerm object) {
+        if (object instanceof IRI) {
+            final String iri = ((IRI) object).getIRIString().split("#")[0];
+            return rdf.createIRI(iri);
+        }
+        return object;
+    }
+
     /**
      * TODO Replace when COMMONSRDF-74 is released.
      *
