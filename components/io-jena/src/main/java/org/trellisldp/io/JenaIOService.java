@@ -349,7 +349,8 @@ public class JenaIOService implements IOService {
         }
 
         try {
-            execute(create(update, base), rdf.asJenaGraph(graph));
+            final org.apache.jena.graph.Graph g = rdf.asJenaGraph(graph);
+            execute(create(update, base), g);
         } catch (final UpdateException | QueryParseException ex) {
             throw new RuntimeTrellisException(ex);
         }
