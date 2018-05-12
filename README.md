@@ -8,7 +8,7 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 
 General documentation for [Trellis](https://www.trellisldp.org) is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
-API documentation ([JavaDocs](https://trellis-ldp.github.io/trellis/apidocs)) is also available for the latest release.
+API documentation ([JavaDocs](https://trellis-ldp.github.io/trellis/apidocs)) for the latest release is also available.
 
 ## Mailing list
 
@@ -31,10 +31,7 @@ Trellis has been designed with four primary goals:
 ### Scalability
 
 Trellis has been built from the ground up to support horizontal scalability. While it is
-possible to run Trellis on a single machine, scaling out across a cluster is well-defined and supported. Trellis is
-eventually consistent, which is to say that many operations run asynchronously. While this makes the system very responsive, it
-also means that clients cannot always expect operations to be atomic. In general, per-resource operations are atomic; operations
-that cause other resources to change tend to be handled asynchronously.
+possible to run Trellis on a single machine, scaling out across a cluster is well-defined and supported.
 
 ### Durability
 
@@ -46,8 +43,7 @@ lists who made what change and when that change was made.
 ### Modularity
 
 The overall code base for Trellis is small, and it is divided up into even smaller modules.
-This simplifies maintenance and it also makes it easy to customize individual components as needed. Trellis
-has also been designed to fully support OSGi deployment.
+This simplifies maintenance and it also makes it easy to customize individual components as needed.
 
 ### Web Standards
 
@@ -91,9 +87,7 @@ This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the T
 
 This repository contains the core abstractions and interfaces for Trellis along with a number of default service
 implementations. It contains a [reference implementation](components/app-triplestore) that uses a [persistence layer](components/triplestore)
-based on a triplestore or local dataset. In addition, below is a list of other known implementations.
-
- * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A Kafka-based application that uses file-based persistence.
+based on a triplestore or local dataset.
 
 ## Principle dependencies
 
@@ -105,6 +99,7 @@ based on a triplestore or local dataset. In addition, below is a list of other k
 
   * [py-ldnlib](https://github.com/trellis-ldp/py-ldnlib) A Python3 library for linked data notifications
   * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
+  * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A horizontally scalable, Kafka-based Trellis application
 
 ## Building
 
