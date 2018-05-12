@@ -4,6 +4,7 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 
 [![Build Status](https://travis-ci.org/trellis-ldp/trellis.png?branch=master)](https://travis-ci.org/trellis-ldp/trellis)
 [![Build status](https://ci.appveyor.com/api/projects/status/nvdwx442663ib39d/branch/master?svg=true)](https://ci.appveyor.com/project/acoburn/trellis/branch/master)
+[![CircleCI](https://circleci.com/gh/trellis-ldp/trellis.svg?style=svg)](https://circleci.com/gh/trellis-ldp/trellis)
 [![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/09f8d4ae61764bd9a1fead16514b6db2)](https://www.codacy.com/app/acoburn/trellis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=trellis-ldp/trellis&amp;utm_campaign=Badge_Grade)
 [![Javadoc](https://javadoc-badge.appspot.com/org.trellisldp/trellis-api.svg?label=javadoc)](https://trellis-ldp.github.io/trellis/apidocs/)
