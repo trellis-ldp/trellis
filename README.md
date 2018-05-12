@@ -8,7 +8,7 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 
 General documentation for [Trellis](https://www.trellisldp.org) is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
-[API (JavaDocs) documentation](https://trellis-ldp.github.io/trellis/apidocs) is also available for the latest release.
+API documentation ([JavaDocs](https://trellis-ldp.github.io/trellis/apidocs)) is also available for the latest release.
 
 ## Mailing list
 
