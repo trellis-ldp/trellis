@@ -38,6 +38,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.jms.JmsPublisher;
@@ -90,14 +91,18 @@ final class AppUtils {
     }
 
     public static EventService getNotificationService(final NotificationsConfiguration config,
-            final Environment environment) throws JMSException {
+            final Environment environment) {
 
         if (config.getEnabled()) {
             if (KAFKA.equals(config.getType())) {
                 return buildKafkaPublisher(config, environment);
 
             } else if (JMS.equals(config.getType())) {
-                return buildJmsPublisher(config, environment);
+                try {
+                    return buildJmsPublisher(config, environment);
+                } catch (final JMSException ex) {
+                    throw new RuntimeTrellisException(ex);
+                }
             }
         }
         final String status = "notifications will be disabled";

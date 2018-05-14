@@ -24,8 +24,6 @@ import io.dropwizard.setup.Environment;
 
 import java.util.Optional;
 
-import javax.jms.JMSException;
-
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -36,7 +34,6 @@ import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.AbstractTrellisApplication;
 import org.trellisldp.app.TrellisCache;
 import org.trellisldp.app.config.TrellisConfiguration;
@@ -107,14 +104,9 @@ public class TrellisApplication extends AbstractTrellisApplication<TrellisConfig
     private TriplestoreResourceService buildResourceService(final IdentifierService idService,
             final TrellisConfiguration config, final Environment environment) {
         final MementoService mementoService = new FileMementoService(config.getMementos());
-        final EventService notificationService;
         final RDFConnection rdfConnection = AppUtils.getRDFConnection(config);
-
-        try {
-            notificationService = AppUtils.getNotificationService(config.getNotifications(), environment);
-        } catch (final JMSException ex) {
-            throw new RuntimeTrellisException(ex);
-        }
+        final EventService notificationService = AppUtils.getNotificationService(config.getNotifications(),
+                environment);
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));

@@ -31,14 +31,13 @@ import io.dropwizard.setup.Environment;
 import java.io.File;
 import java.util.Properties;
 
-import javax.jms.JMSException;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.kafka.KafkaPublisher;
@@ -144,7 +143,7 @@ public class AppUtilsTest {
         c.setConnectionString("tcp://localhost:61616");
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.JMS);
-        assertThrows(JMSException.class, () -> AppUtils.getNotificationService(c, mockEnv));
+        assertThrows(RuntimeTrellisException.class, () -> AppUtils.getNotificationService(c, mockEnv));
     }
 
     @Test
