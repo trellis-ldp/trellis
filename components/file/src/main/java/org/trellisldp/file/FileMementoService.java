@@ -20,9 +20,14 @@ import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static java.time.Instant.now;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.sort;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
+import static org.apache.commons.lang3.Range.between;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.BufferedWriter;
@@ -40,6 +45,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.tamaya.ConfigurationProvider;
@@ -101,12 +107,15 @@ public class FileMementoService implements MementoService {
         if (file.exists()) {
             return of(new FileMementoResource(identifier, file));
         }
-        return list(identifier).stream().filter(v -> !v.isAfter(time)).max((t1, t2) -> t1.compareTo(t2))
-                .map(t -> getNquadsFile(resourceDir, t)).map(f -> new FileMementoResource(identifier, f));
+        return list(identifier).stream()
+                .filter(range -> !range.getMinimum().isAfter(time))
+                .max((t1, t2) -> t1.getMinimum().compareTo(t2.getMinimum()))
+                .map(t -> getNquadsFile(resourceDir, t.getMinimum()))
+                .map(f -> new FileMementoResource(identifier, f));
     }
 
     @Override
-    public List<Instant> list(final IRI identifier) {
+    public List<Range<Instant>> list(final IRI identifier) {
         final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
         if (!resourceDir.exists()) {
             return emptyList();
@@ -119,7 +128,21 @@ public class FileMementoService implements MementoService {
         } catch (final IOException ex) {
             LOGGER.error("Error fetching memento list for " + identifier, ex);
         }
-        return instants;
+
+        sort(instants);
+
+        final List<Range<Instant>> versions = new ArrayList<>();
+        Instant last = null;
+        for (final Instant time : instants) {
+            if (nonNull(last)) {
+                versions.add(between(last, time));
+            }
+            last = time;
+        }
+        if (nonNull(last)) {
+            versions.add(between(last, now()));
+        }
+        return unmodifiableList(versions);
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 
@@ -40,7 +41,7 @@ public class NoopMementoService implements MementoService {
     }
 
     @Override
-    public List<Instant> list(final IRI identifier) {
+    public List<Range<Instant>> list(final IRI identifier) {
         return emptyList();
     }
 

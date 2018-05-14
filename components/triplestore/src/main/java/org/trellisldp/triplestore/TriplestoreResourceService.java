@@ -17,9 +17,7 @@ import static java.time.Instant.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.sort;
 import static java.util.Collections.synchronizedList;
-import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -29,7 +27,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
-import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -239,21 +236,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public List<Range<Instant>> getMementos(final IRI identifier) {
-        final List<Instant> mementos = mementoService.map(svc -> svc.list(identifier)).orElse(emptyList());
-        sort(mementos);
-
-        final List<Range<Instant>> versions = new ArrayList<>();
-        Instant last = null;
-        for (final Instant time : mementos) {
-            if (nonNull(last)) {
-                versions.add(between(last, time));
-            }
-            last = time;
-        }
-        if (nonNull(last)) {
-            versions.add(between(last, now()));
-        }
-        return unmodifiableList(versions);
+        return mementoService.map(svc -> svc.list(identifier)).orElse(emptyList());
     }
 
     private void emitEvents(final IRI identifier, final Session session, final OperationType opType,

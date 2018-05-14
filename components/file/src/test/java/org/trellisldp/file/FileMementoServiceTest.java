@@ -62,7 +62,7 @@ public class FileMementoServiceTest {
     @Test
     public void testList() {
         final Instant time = parse("2017-02-16T11:15:01Z");
-        final Instant future = parse("2283-04-25T16:35:01Z");
+        final Instant time2 = parse("2017-02-16T11:15:11Z");
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File dir = new File(getClass().getResource("/versions").getFile());
         assertTrue(dir.exists());
@@ -74,14 +74,14 @@ public class FileMementoServiceTest {
 
         assertEquals(2L, svc.list(identifier).size());
         assertTrue(svc.get(identifier, now()).isPresent());
-        svc.get(identifier, now()).ifPresent(res -> assertEquals(time, res.getModified()));
+        svc.get(identifier, now()).ifPresent(res -> assertEquals(time2, res.getModified()));
         assertTrue(svc.get(identifier, time).isPresent());
         svc.get(identifier, time).ifPresent(res -> assertEquals(time, res.getModified()));
         assertFalse(svc.get(identifier, parse("2015-02-16T10:00:00Z")).isPresent());
-        assertTrue(svc.get(identifier, future).isPresent());
-        svc.get(identifier, future).ifPresent(res -> assertEquals(future, res.getModified()));
+        assertTrue(svc.get(identifier, time2).isPresent());
+        svc.get(identifier, time2).ifPresent(res -> assertEquals(time2, res.getModified()));
         assertTrue(svc.get(identifier, MAX).isPresent());
-        svc.get(identifier, MAX).ifPresent(res -> assertEquals(future, res.getModified()));
+        svc.get(identifier, MAX).ifPresent(res -> assertEquals(time2, res.getModified()));
     }
 
     @Test

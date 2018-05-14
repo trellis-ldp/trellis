@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 
@@ -45,9 +46,9 @@ public interface MementoService {
     /**
      * List all of the Mementos for a resource.
      * @param identifier the resource identifier
-     * @return a list of Memento dateTimes
+     * @return a list of Memento dateTime ranges
      */
-    List<Instant> list(IRI identifier);
+    List<Range<Instant>> list(IRI identifier);
 
     /**
      * Delete a Memento resource.

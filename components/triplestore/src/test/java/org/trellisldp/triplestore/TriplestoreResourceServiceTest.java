@@ -18,10 +18,12 @@ import static java.time.Instant.parse;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -80,6 +82,10 @@ public class TriplestoreResourceServiceTest {
 
     private final Instant created = now();
 
+    static {
+        setDefaultPollInterval(100L, MILLISECONDS);
+    }
+
     @Mock
     private Session mockSession;
 
@@ -121,8 +127,9 @@ public class TriplestoreResourceServiceTest {
         final Instant time1 = parse("2014-10-14T12:00:00Z");
         final Instant time2 = parse("2018-01-03T12:00:00Z");
         final Instant time3 = parse("2018-01-03T14:30:00Z");
-        final Instant time4 = now();
-        when(mockMementoService.list(eq(identifier))).thenReturn(asList(time2, time3, time1, time4));
+        final Instant time4 = now().minusSeconds(10L);
+        when(mockMementoService.list(eq(identifier))).thenReturn(asList(between(time1, time2),
+                    between(time3, time4), between(time2, time3), between(time4, now())));
         assertTrue(svc.getMementos(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).isEmpty());
         assertEquals(4L, svc.getMementos(identifier).size());
         assertTrue(svc.getMementos(identifier).contains(between(time1, time2)));
