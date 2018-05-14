@@ -15,6 +15,8 @@ package org.trellisldp.app.triplestore;
 
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 
@@ -43,6 +45,7 @@ public class TrellisMementoTest extends AbstractApplicationMementoTests {
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
         CLIENT.property(CONNECT_TIMEOUT, 5000);
         CLIENT.property(READ_TIMEOUT, 5000);
+        setDefaultPollInterval(100L, MILLISECONDS);
     }
 
     @Override
