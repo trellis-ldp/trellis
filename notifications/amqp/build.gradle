@@ -43,10 +43,3 @@ jar {
     }
 }
 
-artifacts {
-    archives (file('build/cfg/main/org.trellisldp.amqp.cfg')) {
-        classifier 'configuration'
-        type 'cfg'
-    }
-}
-

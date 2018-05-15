@@ -32,7 +32,7 @@ jar {
         license project.license
 
         instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', 'org.apache.kafka.common.serialization,*'
+        instruction 'Import-Package', '*'
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
         instruction 'Require-Capability', '''\
             osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",
@@ -40,13 +40,6 @@ jar {
                 filter:="(osgi.serviceloader=org.trellisldp.api.ActivityStreamService)";
                 resolution:=mandatory; cardinality:=mandatory
             '''
-    }
-}
-
-artifacts {
-    archives (file('build/cfg/main/org.trellisldp.kafka.cfg')) {
-        classifier 'configuration'
-        type 'cfg'
     }
 }
 
