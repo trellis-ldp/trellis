@@ -77,6 +77,7 @@ import static org.trellisldp.vocabulary.JSONLD.compacted;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -188,7 +189,7 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + ".." + baseUrl), etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -254,7 +255,7 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + ".." + baseUrl), etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -354,7 +355,9 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
+        final String preferHash = new ArrayList().hashCode() + "." + new ArrayList().hashCode();
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + "." + preferHash + "." + baseUrl),
+                etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -406,7 +409,7 @@ public class GetHandlerTest {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
-        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + baseUrl), etag.getValue());
+        assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + ".." + baseUrl), etag.getValue());
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));

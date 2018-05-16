@@ -107,10 +107,10 @@ public class PutHandler extends ContentBearingHandler {
         if (binaryModification.isPresent() &&
                 !ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType).isPresent()) {
             modified = binaryModification.get();
-            etag = new EntityTag(buildEtagHash(identifier, modified));
+            etag = new EntityTag(buildEtagHash(identifier + "BINARY", modified, null));
         } else {
             modified = res.getModified();
-            etag = new EntityTag(buildEtagHash(identifier, modified), true);
+            etag = new EntityTag(buildEtagHash(identifier, modified, req.getPrefer()), true);
         }
         // Check the cache
         checkCache(req.getRequest(), modified, etag);

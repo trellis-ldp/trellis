@@ -203,8 +203,13 @@ public class GetHandler extends BaseLdpHandler {
     private ResponseBuilder getLdpRs(final String identifier, final Resource res, final ResponseBuilder builder,
             final RDFSyntax syntax, final IRI profile) {
 
+        final Prefer prefer = ACL.equals(req.getExt()) ?
+            new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
+                    of(PreferUserManaged, LDP.PreferContainment, LDP.PreferMembership).map(IRI::getIRIString)
+                        .collect(toList()), null, null, null) : req.getPrefer();
+
         // Check for a cache hit
-        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()), true);
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), prefer), true);
         checkCache(req.getRequest(), res.getModified(), etag);
 
         builder.tag(etag);
@@ -221,11 +226,6 @@ public class GetHandler extends BaseLdpHandler {
         // URI Templates
         builder.header(LINK_TEMPLATE, "<" + identifier + "{?subject,predicate,object}>; rel=\""
                 + LDP.RDFSource.getIRIString() + "\"");
-
-        final Prefer prefer = ACL.equals(req.getExt()) ?
-            new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
-                    of(PreferUserManaged, LDP.PreferContainment, LDP.PreferMembership).map(IRI::getIRIString)
-                        .collect(toList()), null, null, null) : req.getPrefer();
 
         ofNullable(prefer).ifPresent(p -> builder.header(PREFERENCE_APPLIED, PREFER_RETURN + "=" + p.getPreference()
                     .orElse(PREFER_REPRESENTATION)));
@@ -260,7 +260,7 @@ public class GetHandler extends BaseLdpHandler {
 
         final Instant mod = res.getBinary().map(Binary::getModified).orElseThrow(() ->
                 new WebApplicationException("Could not access binary metadata for " + res.getIdentifier()));
-        final EntityTag etag = new EntityTag(buildEtagHash(identifier + "BINARY", mod));
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier + "BINARY", mod, null));
         checkCache(req.getRequest(), mod, etag);
 
         // Set last-modified to be the binary's last-modified value

@@ -107,10 +107,13 @@ public final class RdfUtils {
      * Build a hash value suitable for generating an ETag.
      * @param identifier the resource identifier
      * @param modified the last modified value
+     * @param prefer a prefer header, may be null
      * @return a corresponding hash value
      */
-    public static String buildEtagHash(final String identifier, final Instant modified) {
-        return md5Hex(modified.toEpochMilli() + "." + modified.getNano() + identifier);
+    public static String buildEtagHash(final String identifier, final Instant modified, final Prefer prefer) {
+        final String sep = ".";
+        final String hash = nonNull(prefer) ? prefer.getInclude().hashCode() + sep + prefer.getOmit().hashCode() : "";
+        return md5Hex(modified.toEpochMilli() + sep + modified.getNano() + sep + hash + sep + identifier);
     }
 
     /**

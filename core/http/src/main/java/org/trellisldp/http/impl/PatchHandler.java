@@ -152,7 +152,7 @@ public class PatchHandler extends BaseLdpHandler {
         checkDeleted(res, identifier);
 
         // Check the cache
-        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()));
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), req.getPrefer()));
         checkCache(req.getRequest(), res.getModified(), etag);
 
         // Check that the persistence layer supports LDP-RS

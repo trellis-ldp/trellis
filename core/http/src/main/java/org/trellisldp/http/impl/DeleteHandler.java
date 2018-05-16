@@ -89,7 +89,7 @@ public class DeleteHandler extends BaseLdpHandler {
         checkDeleted(res, identifier);
 
         // Check the cache
-        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified()));
+        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), null));
         checkCache(req.getRequest(), res.getModified(), etag);
 
         // Check that the persistence layer supports LDP-R
