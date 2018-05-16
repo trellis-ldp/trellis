@@ -128,6 +128,31 @@ jsonld:
 | cacheExpireHours | 24 | The number of hours that a JSON-LD profile value will be stored in a cache. |
 | cacheSize | 100 | The number of entries stored in the JSON-LD profile cache. |
 
+## Alternate HTML Representation
+The Trellis RDFa module includes a configurable HTMLSerializer.  It accepts the following optional asset configuration options.
+
+For example, to configure the HTML to produce a table, one can opt to use the `resource-table.mustache` template.  
+With this tabular HTML, one could then add sorting and search filter functionality with a JS library.
+
+```yaml
+assets:
+    template: org/trellisldp/rdfa/resource-table.mustache
+    icon: "http://example.org/image.icon"
+    js:
+        - "https://unpkg.com/vanilla-datatables@latest/dist/vanilla-dataTables.min.js"
+        - "http://example.org/table.js"
+    css:
+        - "http://example.org/styles1.css"
+        - "http://example.org/styles2.css"
+```
+
+| Name | Default | Description |
+| ---- | ------- | ----------- |
+| template | org/trellisldp/rdfa/resource.mustache | an HTML template located in the `org.trellisldp.rdfa` module classpath |
+| icon | none | a URL to a favicon |
+| js | none | a list of URLs for javascript assets |
+| css | none | a list of URLs for CSS assets |
+
 ## HTTP/2
 
 Trellis supports the [HTTP/2 protocol](https://http2.github.io/faq/). For more information about how to enable HTTP/2 with Trellis,
