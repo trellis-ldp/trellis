@@ -27,6 +27,8 @@ public class AssetConfiguration {
 
     private String icon = "//www.trellisldp.org/assets/img/trellis.png";
 
+    private String template;
+
     private List<String> css = singletonList("//www.trellisldp.org/assets/css/trellis.css");
 
     private List<String> js = emptyList();
@@ -83,5 +85,23 @@ public class AssetConfiguration {
     @JsonProperty
     public List<String> getJs() {
         return js;
+    }
+
+    /**
+     * Set the template filename.
+     * @param template the template filename
+     */
+    @JsonProperty
+    public void setTemplate(final String template) {
+        this.template = template;
+    }
+
+    /**
+     * Get the template filename.
+     * @return the template filename
+     */
+    @JsonProperty
+    public String getTemplate() {
+        return template;
     }
 }
