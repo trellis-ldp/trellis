@@ -66,7 +66,7 @@ public class TrellisConfigurationTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
-
+        assertEquals("org/trellisldp/rdfa/resource.mustache", config.getAssets().getTemplate());
         assertEquals("http://example.org/image.icon", config.getAssets().getIcon());
         assertTrue(config.getAssets().getJs().contains("http://example.org/scripts1.js"));
         assertTrue(config.getAssets().getCss().contains("http://example.org/styles1.css"));
