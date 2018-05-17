@@ -41,7 +41,11 @@ auth:
             - bar
 
 defaultName: Trellis
-cacheMaxAge: 86400
+
+cache:
+    maxAge: 86400
+    mustRevalidate: true
+    noCache: false
 
 assets:
     template: org/trellisldp/rdfa/resource.mustache

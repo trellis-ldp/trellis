@@ -35,14 +35,20 @@ import javax.ws.rs.core.CacheControl;
 public class CacheControlFilter implements ContainerResponseFilter {
 
     private final Integer cacheAge;
+    private final Boolean revalidate;
+    private final Boolean noCache;
 
     /**
      * Create a new CacheControl Decorator.
      *
      * @param cacheAge the length of time to cache resources
+     * @param revalidate whether the cache must verify the status of stale resources
+     * @param noCache whether to set the no-cache value
      */
-    public CacheControlFilter(final Integer cacheAge) {
+    public CacheControlFilter(final Integer cacheAge, final Boolean revalidate, final Boolean noCache) {
         this.cacheAge = cacheAge;
+        this.revalidate = revalidate;
+        this.noCache = noCache;
     }
 
     @Override
@@ -51,6 +57,8 @@ public class CacheControlFilter implements ContainerResponseFilter {
         if (req.getMethod().equals(GET)) {
             final CacheControl cc = new CacheControl();
             cc.setMaxAge(cacheAge);
+            cc.setMustRevalidate(revalidate);
+            cc.setNoCache(noCache);
             res.getHeaders().add(CACHE_CONTROL, cc);
         }
     }

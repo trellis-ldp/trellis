@@ -37,6 +37,11 @@ auth:
     basic:
         enabled: true
 
+cache:
+    maxAge: 3600
+    mustRevalidate: true
+    noCache: false
+
 cors:
     enabled: true
     allowOrigin:

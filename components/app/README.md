@@ -104,12 +104,17 @@ cors:
 | allowCredentials | true | Whether the actual request can be made with credentials |
 
 ```yaml
-cacheMaxAge: 86400
+cache:
+    maxAge: 86400
+    mustRevalidate: true
+    noCache: false
 ```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| cacheMaxAge | 86400 | The value of the `Cache-Control: max-age=` response header |
+| maxAge | 86400 | The value of the `Cache-Control: max-age=` response header |
+| mustRevalidate | true | Whether to include a `Cache-Controle: must-revalidate` directive |
+| noCache | false | Whether to include a `Cache-Control: no-cache` directive |
 
 ```yaml
 jsonld:

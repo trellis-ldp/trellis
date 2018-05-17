@@ -59,6 +59,10 @@ cors:
         - "*"
     maxAge: 180
 
+cache:
+    maxAge: 86400
+    mustRevalidate: true
+
 notifications:
     enabled: false
     type: JMS

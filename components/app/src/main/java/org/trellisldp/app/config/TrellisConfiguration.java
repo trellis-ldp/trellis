@@ -31,13 +31,14 @@ import javax.validation.constraints.NotNull;
  */
 public class TrellisConfiguration extends Configuration {
 
-    private Integer cacheMaxAge = 86400;
-
     @NotNull
     private String defaultName = "Trellis";
 
     @NotNull
     private AuthConfiguration auth = new AuthConfiguration();
+
+    @NotNull
+    private CacheConfiguration cache = new CacheConfiguration();
 
     @NotNull
     private AssetConfiguration assets = new AssetConfiguration();
@@ -222,21 +223,21 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Set the cache max-age value.
-     * @param cacheMaxAge the cache max age header value
+     * Set the cache configuration.
+     * @param cache the cache configuration
      */
     @JsonProperty
-    public void setCacheMaxAge(final Integer cacheMaxAge) {
-        this.cacheMaxAge = cacheMaxAge;
+    public void setCache(final CacheConfiguration cache) {
+        this.cache = cache;
     }
 
     /**
-     * Get the value of the cache max age.
-     * @return the cache max age header value
+     * Get the cache configuration.
+     * @return the cache configuration
      */
     @JsonProperty
-    public Integer getCacheMaxAge() {
-        return cacheMaxAge;
+    public CacheConfiguration getCache() {
+        return cache;
     }
 
     /**

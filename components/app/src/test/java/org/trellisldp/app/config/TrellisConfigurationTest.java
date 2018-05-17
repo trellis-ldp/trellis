@@ -41,7 +41,9 @@ public class TrellisConfigurationTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertEquals("Trellis", config.getDefaultName());
-        assertEquals((Integer) 86400, config.getCacheMaxAge());
+        assertEquals((Integer) 86400, config.getCache().getMaxAge());
+        assertTrue(config.getCache().getMustRevalidate());
+        assertFalse(config.getCache().getNoCache());
         assertEquals((Long) 10L, config.getJsonld().getCacheSize());
         assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours());
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());

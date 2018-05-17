@@ -34,7 +34,9 @@ auth:
         key: secret
 
 defaultName: Trellis
-cacheMaxAge: 86400
+
+cache:
+    maxAge: 86400
 
 assets:
     template: org/trellisldp/rdfa/resource.mustache

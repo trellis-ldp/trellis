@@ -93,7 +93,10 @@ public class TrellisApplication extends ResourceConfig {
         register(new AgentAuthorizationFilter(agentService));
 
         if (config.getOrDefault("trellis.cache.enabled", Boolean.class, false)) {
-            register(new CacheControlFilter(config.getOrDefault("trellis.cache.maxAge", Integer.class, 86400)));
+            register(new CacheControlFilter(
+                        config.getOrDefault("trellis.cache.maxAge", Integer.class, 86400),
+                        config.getOrDefault("trellis.cache.mustRevalidate", Boolean.class, true),
+                        config.getOrDefault("trellis.cache.noCache", Boolean.class, false)));
         }
 
         if (config.getOrDefault("trellis.cors.enabled", Boolean.class, false)) {

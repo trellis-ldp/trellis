@@ -119,7 +119,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Filters
         environment.jersey().register(new AgentAuthorizationFilter(agentService));
-        environment.jersey().register(new CacheControlFilter(config.getCacheMaxAge()));
+        environment.jersey().register(new CacheControlFilter(config.getCache().getMaxAge(),
+                    config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
 
         // Authorization
         getWebacConfiguration(config).ifPresent(webacCache -> {
