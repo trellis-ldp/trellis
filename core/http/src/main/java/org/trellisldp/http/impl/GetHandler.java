@@ -29,6 +29,7 @@ import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
+import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -42,6 +43,7 @@ import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
+import static org.trellisldp.http.domain.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.domain.HttpConstants.DIGEST;
 import static org.trellisldp.http.domain.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.domain.HttpConstants.MEMENTO_DATETIME;
@@ -141,7 +143,8 @@ public class GetHandler extends BaseLdpHandler {
 
         LOGGER.debug("Acceptable media types: {}", req.getHeaders().getAcceptableMediaTypes());
         final Optional<RDFSyntax> syntax = getSyntax(ioService, req.getHeaders().getAcceptableMediaTypes(),
-                res.getBinary().map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)));
+                res.getBinary().filter(b -> !DESCRIPTION.equals(req.getExt()))
+                               .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)));
 
         if (ACL.equals(req.getExt()) && !res.hasAcl()) {
             throw new NotFoundException();
@@ -153,9 +156,9 @@ public class GetHandler extends BaseLdpHandler {
         // Add NonRDFSource-related "describe*" link headers
         res.getBinary().ifPresent(ds -> {
             if (syntax.isPresent()) {
-                builder.link(self + "#description", "canonical").link(self, "describes");
+                builder.link(self + "?ext=description", "canonical").link(self, "describes");
             } else {
-                builder.link(self, "canonical").link(self + "#description", "describedby")
+                builder.link(self, "canonical").link(self + "?ext=description", "describedby")
                     .type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
             }
         });
@@ -322,11 +325,11 @@ public class GetHandler extends BaseLdpHandler {
         final ResponseBuilder builder = ok();
 
         // Standard HTTP Headers
-        builder.lastModified(from(res.getModified()));
+        builder.lastModified(from(res.getModified())).header(VARY, ACCEPT);
 
         final IRI model;
 
-        if (isNull(req.getExt())) {
+        if (isNull(req.getExt()) || DESCRIPTION.equals(req.getExt())) {
             syntax.ifPresent(s -> {
                 builder.header(VARY, PREFER);
                 builder.type(s.mediaType());

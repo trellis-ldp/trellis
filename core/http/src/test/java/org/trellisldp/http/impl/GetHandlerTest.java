@@ -61,6 +61,7 @@ import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
+import static org.trellisldp.http.domain.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.domain.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.PATCH;
 import static org.trellisldp.http.domain.HttpConstants.PREFER;
@@ -456,10 +457,33 @@ public class GetHandlerTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("describes") &&
-                    !link.getUri().toString().endsWith("#description")));
+                    !link.getUri().toString().endsWith("?ext=description")));
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("canonical") &&
-                    link.getUri().toString().endsWith("#description")));
+                    link.getUri().toString().endsWith("?ext=description")));
+    }
+
+    @Test
+    public void testGetBinaryDescription2() {
+        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
+        when(mockLdpRequest.getExt()).thenReturn(DESCRIPTION);
+
+        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
+                mockIoService, mockBinaryService, null);
+
+        final Response res = getHandler.getRepresentation(mockResource).build();
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+        assertEquals(-1, res.getLength());
+        assertEquals(from(time), res.getLastModified());
+        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
+        assertTrue(res.getLinks().stream()
+                .anyMatch(link -> link.getRel().equals("describes") &&
+                    !link.getUri().toString().endsWith("?ext=description")));
+        assertTrue(res.getLinks().stream()
+                .anyMatch(link -> link.getRel().equals("canonical") &&
+                    link.getUri().toString().endsWith("?ext=description")));
     }
 
     @Test
@@ -478,10 +502,10 @@ public class GetHandlerTest {
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("describedby") &&
-                    link.getUri().toString().endsWith("#description")));
+                    link.getUri().toString().endsWith("?ext=description")));
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("canonical") &&
-                    !link.getUri().toString().endsWith("#description")));
+                    !link.getUri().toString().endsWith("?ext=description")));
     }
 
     @Test

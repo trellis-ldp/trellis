@@ -47,6 +47,8 @@ public final class HttpConstants {
 
     public static final String EXT = "ext";
 
+    public static final String DESCRIPTION = "description";
+
     public static final String DIGEST = "Digest";
 
     public static final String LINK_TEMPLATE = "Link-Template";

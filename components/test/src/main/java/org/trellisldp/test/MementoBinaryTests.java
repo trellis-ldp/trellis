@@ -65,7 +65,7 @@ public interface MementoBinaryTests extends MementoResourceTests {
                 assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("canonical"))
                         .anyMatch(link -> link.getUri().toString().equals(memento)));
                 assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("describedby"))
-                        .anyMatch(link -> link.getUri().toString().equals(memento + "#description")));
+                        .anyMatch(link -> link.getUri().toString().equals(memento + "?ext=description")));
             }
         });
     }
@@ -80,7 +80,7 @@ public interface MementoBinaryTests extends MementoResourceTests {
             try (final Response res = target(memento).request().accept("text/turtle").get()) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
                 assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("canonical"))
-                        .anyMatch(link -> link.getUri().toString().equals(memento + "#description")));
+                        .anyMatch(link -> link.getUri().toString().equals(memento + "?ext=description")));
                 assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("describes"))
                         .anyMatch(link -> link.getUri().toString().equals(memento)));
             }
