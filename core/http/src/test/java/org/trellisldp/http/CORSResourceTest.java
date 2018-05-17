@@ -145,7 +145,8 @@ public class CORSResourceTest extends JerseyTest {
         final ResourceConfig config = new ResourceConfig();
         config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService));
         config.register(new CrossOriginResourceSharingFilter(asList("*"),
-                    asList("PATCH", "POST", "PUT"), asList("Link", "Content-Type", "Accept", "Accept-Datetime"),
+                    asList("GET", "HEAD", "PATCH", "POST", "PUT"),
+                    asList("Link", "Content-Type", "Accept", "Accept-Datetime"),
                     emptyList(), false, 0));
         return config;
     }
@@ -278,16 +279,19 @@ public class CORSResourceTest extends JerseyTest {
 
         final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
             .collect(toList());
-        assertEquals(3L, headers.size());
+        assertEquals(4L, headers.size());
+        assertTrue(headers.contains("accept"));
         assertTrue(headers.contains("link"));
         assertTrue(headers.contains("content-type"));
         assertTrue(headers.contains("accept-datetime"));
 
         final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
-        assertEquals(2L, methods.size());
+        assertEquals(4L, methods.size());
         assertTrue(methods.contains("PUT"));
         assertTrue(methods.contains("PATCH"));
+        assertTrue(methods.contains("GET"));
+        assertTrue(methods.contains("HEAD"));
     }
 
 }

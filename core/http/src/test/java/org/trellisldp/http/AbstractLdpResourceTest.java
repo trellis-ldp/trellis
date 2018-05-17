@@ -1803,10 +1803,11 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
             .collect(toList());
-        assertEquals(3L, headers.size());
+        assertEquals(4L, headers.size());
         assertTrue(headers.contains("link"));
         assertTrue(headers.contains("content-type"));
         assertTrue(headers.contains("accept-datetime"));
+        assertTrue(headers.contains("accept"));
 
         final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
@@ -1827,8 +1828,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
         assertEquals("100", res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertTrue(res.getHeaderString("Access-Control-Allow-Headers").contains("accept"));
+        assertFalse(res.getHeaderString("Access-Control-Allow-Methods").contains("POST"));
+        assertTrue(res.getHeaderString("Access-Control-Allow-Methods").contains("PATCH"));
     }
 
     @Test

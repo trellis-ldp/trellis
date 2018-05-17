@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
 
+import org.slf4j.Logger;
 
 /**
  * A {@link ContainerResponseFilter} that adds CORS-related headers to HTTP responses.
@@ -49,13 +51,13 @@ import javax.ws.rs.container.PreMatching;
 @Priority(AUTHORIZATION - 10)
 public class CrossOriginResourceSharingFilter implements ContainerResponseFilter {
 
+    private static final Logger LOGGER = getLogger(CrossOriginResourceSharingFilter.class);
+
     private static final Set<String> simpleResponseHeaders = unmodifiableSet(new HashSet<>(asList("cache-control",
                     "content-language", "expires", "last-modified", "pragma")));
 
-    private static final Set<String> simpleHeaders = unmodifiableSet(new HashSet<>(asList("accept", "accept-language",
+    private static final Set<String> simpleHeaders = unmodifiableSet(new HashSet<>(asList("accept-language",
                     "content-language")));
-
-    private static final Set<String> simpleMethods = unmodifiableSet(new HashSet<>(asList("GET", "HEAD", "POST")));
 
     private final Set<String> origins;
 
@@ -99,6 +101,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
 
     private Map<String, String> handleRequest(final ContainerRequestContext req, final ContainerResponseContext res) {
         if (OPTIONS.equals(req.getMethod())) {
+
             return handlePreflightRequest(req, res);
         }
         return handleSimpleRequest(req);
@@ -114,11 +117,13 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
 
         // 6.1.1 Terminate if an Origin header is not present
         if (isNull(origin)) {
+            LOGGER.debug("CORS: No Origin header");
             return emptyMap();
         }
 
         // 6.1.2 Check for a case-sensitive match of the origin header string
         if (!originMatches(origin)) {
+            LOGGER.debug("CORS: No Origin header match");
             return emptyMap();
         }
 
@@ -143,11 +148,13 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
 
         // 6.1.1 Terminate if an Origin header is not present
         if (isNull(origin)) {
+            LOGGER.debug("CORS PreFlight: No Origin header");
             return emptyMap();
         }
 
         // 6.1.2 Check for a case-sensitive match of the origin header string
         if (!originMatches(origin)) {
+            LOGGER.debug("CORS PreFlight: No Origin header match");
             return emptyMap();
         }
 
@@ -191,11 +198,8 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
 
         // 6.2.9 If this method is a simple method, this step may be skipped. Add one or more
         // Access-Control-Allow-Methods headers consisting of (a subset of) the list of methods.
-        if (!simpleMethods.contains(method)) {
-            headers.put("Access-Control-Allow-Methods", allowedMethods.stream()
-                    .filter(x -> !simpleMethods.contains(x)).filter(res.getAllowedMethods()::contains)
-                    .collect(joining(",")));
-        }
+        headers.put("Access-Control-Allow-Methods", allowedMethods.stream()
+                .filter(res.getAllowedMethods()::contains).collect(joining(",")));
 
         // 6.2.10 If each of the header field names is a simple header and none is Content-Type, this may be
         // skipped. Add one or more Access-Control-Allow-Headers consisting of (a subset of) the list of headers.
