@@ -13,8 +13,11 @@
  */
 package org.trellisldp.http;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -104,5 +107,29 @@ public class WebACFilterTest {
 
         modes.clear();
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext));
+    }
+
+    @Test
+    public void testFilterChallenges() throws Exception {
+        when(mockContext.getMethod()).thenReturn("POST");
+        when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
+
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
+        filter.setChallenges(asList("Foo", "Bar"));
+
+        try {
+            filter.filter(mockContext);
+        } catch (final NotAuthorizedException ex) {
+            assertTrue(ex.getChallenges().contains("Foo"));
+            assertTrue(ex.getChallenges().contains("Bar"));
+        }
+
+        filter.setChallenges(emptyList());
+        try {
+            filter.filter(mockContext);
+        } catch (final NotAuthorizedException ex) {
+            assertTrue(ex.getChallenges().contains("Foo"));
+            assertTrue(ex.getChallenges().contains("Bar"));
+        }
     }
 }

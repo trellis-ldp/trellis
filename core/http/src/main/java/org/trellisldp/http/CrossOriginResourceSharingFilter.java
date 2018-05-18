@@ -101,7 +101,6 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
 
     private Map<String, String> handleRequest(final ContainerRequestContext req, final ContainerResponseContext res) {
         if (OPTIONS.equals(req.getMethod())) {
-
             return handlePreflightRequest(req, res);
         }
         return handleSimpleRequest(req);

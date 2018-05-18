@@ -513,7 +513,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
     }
 
-    private List<Link> getLinks(final Response res) {
+    protected List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
     }
@@ -776,8 +776,26 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testGetVersionError() throws IOException {
         final Response res = target(BINARY_PATH).queryParam("version", "looking at my history").request().get();
-
         assertEquals(BAD_REQUEST, res.getStatusInfo());
+    }
+
+    @Test
+    public void testGetVersionNotFound() throws IOException {
+        final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().get();
+        assertEquals(NOT_FOUND, res.getStatusInfo());
+    }
+
+    @Test
+    public void testGetTimemapNotFound() throws IOException {
+        final Response res = target(NON_EXISTENT_PATH).queryParam("ext", "timemap").request().get();
+        assertEquals(NOT_FOUND, res.getStatusInfo());
+    }
+
+    @Test
+    public void testGetTimegateNotFound() throws IOException {
+        final Response res = target(NON_EXISTENT_PATH).request()
+            .header(ACCEPT_DATETIME, "Wed, 16 May 2018 13:18:57 GMT").get();
+        assertEquals(NOT_FOUND, res.getStatusInfo());
     }
 
     @Test
@@ -1841,6 +1859,12 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testOptionsVersionNotFound() throws IOException {
+        final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().options();
+        assertEquals(NOT_FOUND, res.getStatusInfo());
+    }
+
+    @Test
     public void testOptionsGone() {
         final Response res = target(DELETED_PATH).request().options();
 
@@ -1962,8 +1986,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostTypeMismatch() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
@@ -1973,10 +1997,23 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPostConflict() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> of(mockResource));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(CONFLICT, res.getStatusInfo());
+    }
+
+    @Test
     public void testPostUnknownLinkType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
@@ -1992,8 +2029,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostBadContent() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> A title\" .", TEXT_TURTLE_TYPE));
@@ -2003,8 +2040,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPostToLdpRs() {
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+                .thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2081,8 +2118,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostConstraint() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://www.w3.org/ns/ldp#inbox> \"Some literal\" .",
@@ -2096,8 +2133,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostIgnoreContains() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
