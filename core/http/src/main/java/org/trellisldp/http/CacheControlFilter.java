@@ -16,6 +16,7 @@ package org.trellisldp.http;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.Priorities.USER;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 import java.io.IOException;
 
@@ -53,8 +54,7 @@ public class CacheControlFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-
-        if (req.getMethod().equals(GET)) {
+        if (req.getMethod().equals(GET) && SUCCESSFUL.equals(res.getStatusInfo().getFamily())) {
             final CacheControl cc = new CacheControl();
             cc.setMaxAge(cacheAge);
             cc.setMustRevalidate(revalidate);

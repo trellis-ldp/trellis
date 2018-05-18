@@ -17,6 +17,7 @@ import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.Priorities.USER;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 import java.io.IOException;
 
@@ -47,7 +48,7 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-        if (req.getMethod().equals(GET)) {
+        if (req.getMethod().equals(GET) && SUCCESSFUL.equals(res.getStatusInfo().getFamily())) {
             res.getHeaders().add(LINK, fromUri(hub).rel("hub").build());
         }
     }

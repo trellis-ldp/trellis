@@ -19,6 +19,7 @@ import static java.util.Objects.nonNull;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
@@ -126,8 +127,9 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-        if (!req.getUriInfo().getQueryParameters().containsKey(HttpConstants.EXT) ||
-                !req.getUriInfo().getQueryParameters().get(HttpConstants.EXT).contains(HttpConstants.ACL)) {
+        if (SUCCESSFUL.equals(res.getStatusInfo().getFamily())
+                && (!req.getUriInfo().getQueryParameters().containsKey(HttpConstants.EXT)
+                    || !req.getUriInfo().getQueryParameters().get(HttpConstants.EXT).contains(HttpConstants.ACL))) {
             res.getHeaders().add(LINK, fromUri(req.getUriInfo().getAbsolutePathBuilder()
                     .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(HttpConstants.ACL).build());
         }
