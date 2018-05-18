@@ -152,14 +152,15 @@ public class GetHandler extends BaseLdpHandler {
 
         final ResponseBuilder builder = basicGetResponseBuilder(res, syntax);
 
-        // Add NonRDFSource-related "describe*" link headers
-        res.getBinary().ifPresent(ds -> {
+        // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
+        res.getBinary().filter(ds -> !ACL.equals(req.getExt())).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier(identifier);
-            final String sep = base.contains("?") ? "&" : "?";
+            final String description = base + (base.contains("?") ? "&" : "?") + "ext=description";
             if (syntax.isPresent()) {
-                builder.link(base + sep + "ext=description", "canonical").link(base, "describes");
+                builder.link(description, "canonical").link(base, "describes")
+                    .link(base + "#description", "alternate");
             } else {
-                builder.link(base, "canonical").link(base + sep + "ext=description", "describedby")
+                builder.link(base, "canonical").link(description, "describedby")
                     .type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
             }
         });
@@ -190,7 +191,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private String getSelfIdentifier(final String identifier) {
         // Add any version or ext parameters
-        if (nonNull(req.getVersion()) || ACL.equals(req.getExt())) {
+        if (nonNull(req.getVersion()) || nonNull(req.getExt())) {
             final List<String> query = new ArrayList<>();
 
             ofNullable(req.getVersion()).map(Version::getInstant).map(Instant::toEpochMilli).map(x -> "version=" + x)
