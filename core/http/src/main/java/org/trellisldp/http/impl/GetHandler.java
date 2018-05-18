@@ -151,20 +151,21 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         final ResponseBuilder builder = basicGetResponseBuilder(res, syntax);
-        final String self = getSelfIdentifier(identifier);
 
         // Add NonRDFSource-related "describe*" link headers
         res.getBinary().ifPresent(ds -> {
+            final String base = getBaseBinaryIdentifier(identifier);
+            final String sep = base.contains("?") ? "&" : "?";
             if (syntax.isPresent()) {
-                builder.link(self + "?ext=description", "canonical").link(self, "describes");
+                builder.link(base + sep + "ext=description", "canonical").link(base, "describes");
             } else {
-                builder.link(self, "canonical").link(self + "?ext=description", "describedby")
+                builder.link(base, "canonical").link(base + sep + "ext=description", "describedby")
                     .type(ds.getMimeType().orElse(APPLICATION_OCTET_STREAM));
             }
         });
 
         // Add a "self" link header
-        builder.link(self, "self");
+        builder.link(getSelfIdentifier(identifier), "self");
 
         // Only show memento links for the user-managed graph (not ACL)
         if (!ACL.equals(req.getExt())) {
@@ -197,10 +198,18 @@ public class GetHandler extends BaseLdpHandler {
 
             if (ACL.equals(req.getExt())) {
                 query.add("ext=acl");
+            } else if (DESCRIPTION.equals(req.getExt())) {
+                query.add("ext=description");
             }
             return identifier + "?" + join("&", query);
         }
         return identifier;
+    }
+
+    private String getBaseBinaryIdentifier(final String identifier) {
+        // Add the version parameter, if present
+        return identifier + ofNullable(req.getVersion()).map(Version::getInstant).map(Instant::toEpochMilli)
+                .map(x -> "?version=" + x).orElse("");
     }
 
     private ResponseBuilder getLdpRs(final String identifier, final Resource res, final ResponseBuilder builder,
