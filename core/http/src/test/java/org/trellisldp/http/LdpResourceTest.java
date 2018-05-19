@@ -65,6 +65,11 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
     private ContainerResponseContext mockResponseContext;
 
     @Override
+    protected String getBaseUrl() {
+        return getBaseUri().toString();
+    }
+
+    @Override
     public Application configure() {
 
         initMocks(this);
@@ -75,7 +80,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         final ResourceConfig config = new ResourceConfig();
 
         config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService,
-                    mockAuditService));
+                    mockAuditService, null));
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400, true, false));
