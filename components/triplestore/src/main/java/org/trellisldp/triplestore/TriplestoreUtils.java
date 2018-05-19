@@ -13,15 +13,22 @@
  */
 package org.trellisldp.triplestore;
 
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.apache.jena.query.DatasetFactory.wrap;
+
+import java.util.Optional;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFTerm;
+import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Var;
@@ -59,6 +66,14 @@ final class TriplestoreUtils {
             return rdf.createIRI(iri);
         }
         return object;
+    }
+
+    public static Optional<Triple> nodesToTriple(final RDFNode s, final RDFNode p, final RDFNode o) {
+        if (nonNull(s) && nonNull(p) && nonNull(o)) {
+            return of(rdf.createTriple((BlankNodeOrIRI) rdf.asRDFTerm(s.asNode()),
+                            (IRI) rdf.asRDFTerm(p.asNode()), rdf.asRDFTerm(o.asNode())));
+        }
+        return empty();
     }
 
     /**

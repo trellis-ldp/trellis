@@ -28,6 +28,7 @@ import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
 import static org.trellisldp.triplestore.TriplestoreUtils.getSubject;
+import static org.trellisldp.triplestore.TriplestoreUtils.nodesToTriple;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -37,7 +38,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
@@ -158,10 +158,7 @@ public class TriplestoreResource implements Resource {
             final RDFNode s = qs.get("binarySubject");
             final RDFNode p = qs.get("binaryPredicate");
             final RDFNode o = qs.get("binaryObject");
-            if (nonNull(s) && nonNull(p) && nonNull(o)) {
-                graph.add((BlankNodeOrIRI) rdf.asRDFTerm(s.asNode()), (IRI) rdf.asRDFTerm(p.asNode()),
-                        rdf.asRDFTerm(o.asNode()));
-            }
+            nodesToTriple(s, p, o).ifPresent(graph::add);
             graph.add(identifier, getPredicate(qs), getObject(qs));
         });
     }

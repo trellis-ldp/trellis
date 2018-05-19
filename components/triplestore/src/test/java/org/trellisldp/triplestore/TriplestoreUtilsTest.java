@@ -13,7 +13,10 @@
  */
 package org.trellisldp.triplestore;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.vocabulary.RDF.type;
@@ -25,6 +28,8 @@ import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.DC;
@@ -79,6 +84,21 @@ public class TriplestoreUtilsTest {
     public void testBaseIRInoTruncate() {
         final IRI iri = jenaRdf.createIRI("http://example.com/resource");
         assertEquals(iri, TriplestoreUtils.getBaseIRI(iri));
+    }
+
+    @Test
+    public void testNodeConversion() {
+        final Resource s = createResource("http://example.com/Resource");
+        final Property p = createProperty("http://example.com/prop");
+        final Resource o = createResource("http://example.com/Other");
+        assertFalse(TriplestoreUtils.nodesToTriple(null, null, null).isPresent());
+        assertFalse(TriplestoreUtils.nodesToTriple(s, null, null).isPresent());
+        assertFalse(TriplestoreUtils.nodesToTriple(null, p, null).isPresent());
+        assertFalse(TriplestoreUtils.nodesToTriple(null, null, o).isPresent());
+        assertFalse(TriplestoreUtils.nodesToTriple(s, p, null).isPresent());
+        assertFalse(TriplestoreUtils.nodesToTriple(s, null, o).isPresent());
+        assertFalse(TriplestoreUtils.nodesToTriple(null, p, o).isPresent());
+        assertTrue(TriplestoreUtils.nodesToTriple(s, p, o).isPresent());
     }
 
     @Test

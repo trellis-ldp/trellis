@@ -60,6 +60,7 @@ import org.trellisldp.api.MementoService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.id.UUIDGenerator;
+import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -273,9 +274,11 @@ public class TriplestoreResourceServiceTest {
                 mockMementoService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final BlankNode acl = rdf.createBlankNode();
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAccessControl, acl, RDF.type, ACL.Authorization);
 
         final Instant later = meanwhile();
 
@@ -290,8 +293,8 @@ public class TriplestoreResourceServiceTest {
             assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
+            assertEquals(1L, res.stream(Trellis.PreferAccessControl).count());
+            assertEquals(6L, res.stream().count());
         });
 
         assertTrue(svc.get(root).isPresent());
@@ -675,10 +678,12 @@ public class TriplestoreResourceServiceTest {
 
         // Now delete the child resource
         final BlankNode bnode = rdf.createBlankNode();
+        final BlankNode acl = rdf.createBlankNode();
         dataset.clear();
         dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Delete);
         dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
         dataset.add(Trellis.PreferServerManaged, child, RDF.type, LDP.Resource);
+        dataset.add(Trellis.PreferAccessControl, acl, RDF.type, ACL.Authorization);
 
         final Instant preDelete = meanwhile();
 
