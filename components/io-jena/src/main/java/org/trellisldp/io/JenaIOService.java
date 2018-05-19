@@ -268,14 +268,18 @@ public class JenaIOService implements IOService {
         }
     }
 
+    private Boolean canUseCustomJsonLdProfile(final String profile) {
+        return nonNull(profile) && nonNull(cache);
+    }
+
     private void writeJsonLd(final OutputStream output, final DatasetGraph graph, final IRI... profiles) {
         final String profile = getCustomJsonLdProfile(profiles);
-        final RDFFormat format = nonNull(profile) && nonNull(cache) ? JSONLD_COMPACT_FLAT : getJsonLdProfile(profiles);
+        final RDFFormat format = canUseCustomJsonLdProfile(profile) ? JSONLD_COMPACT_FLAT : getJsonLdProfile(profiles);
         final WriterDatasetRIOT writer = RDFDataMgr.createDatasetWriter(format);
         final PrefixMap pm = RiotLib.prefixMap(graph);
         final String base = null;
         final JsonLDWriteContext ctx = new JsonLDWriteContext();
-        if (nonNull(profile) && nonNull(cache)) {
+        if (canUseCustomJsonLdProfile(profile)) {
             LOGGER.debug("Setting JSON-LD context with profile: {}", profile);
             final String c = cache.get(profile, p -> {
                 try (final TypedInputStream res = HttpOp.execHttpGet(profile)) {

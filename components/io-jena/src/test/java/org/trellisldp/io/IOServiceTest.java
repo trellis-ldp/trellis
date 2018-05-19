@@ -185,6 +185,25 @@ public class IOServiceTest {
     }
 
     @Test
+    public void testJsonLdCustomSerializerNoCache() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final IOService svc = new JenaIOService(mockNamespaceService, null, null,
+                "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/");
+
+        svc.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
+        assertFalse(output.contains("\"@context\":"));
+        assertFalse(output.contains("\"@context\":\"http://www.w3.org/ns/anno.jsonld\""));
+        assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
+        assertTrue(validateGraph(graph));
+    }
+
+
+    @Test
     public void testJsonLdCustomSerializer2() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service2.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
