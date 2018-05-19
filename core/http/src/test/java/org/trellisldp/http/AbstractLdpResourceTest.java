@@ -2330,6 +2330,22 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
+
+    @Test
+    public void testPutExistingIgnoreProperties() {
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" ;"
+                        + " <http://example.com/foo> <http://www.w3.org/ns/ldp#IndirectContainer> ;"
+                        + " a <http://example.com/Type1>, <http://www.w3.org/ns/ldp#BasicContainer> .",
+                        TEXT_TURTLE_TYPE));
+
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
     @Test
     public void testPutInterrupted() throws Exception {
         when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), any(Session.class),
@@ -2760,6 +2776,26 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
+
+    @Test
+    public void testPatchExistingIgnoreLdpType() throws IOException {
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" ;"
+                        + " <http://example.com/foo> <http://www.w3.org/ns/ldp#IndirectContainer> ;"
+                        + " a <http://example.com/Type1>, <http://www.w3.org/ns/ldp#BasicContainer> } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(OK, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
+        assertFalse(entity.contains("BasicContainer"));
+        assertTrue(entity.contains("Type1"));
+    }
+
 
     @Test
     public void testPatchExistingBinary() {

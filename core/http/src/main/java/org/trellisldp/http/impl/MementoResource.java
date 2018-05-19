@@ -112,7 +112,7 @@ public final class MementoResource {
         }
 
         // Quads for Mementos
-        if (MEMENTO.equals(link.getRel()) && link.getParams().containsKey(DATETIME)) {
+        if (isMementoLink(link)) {
             final IRI original = rdf.createIRI(linkUri.split("\\?")[0]);
             final IRI timemapUrl = rdf.createIRI(linkUri.split("\\?")[0] + TIMEMAP_PARAM);
             buffer.add(rdf.createTriple(iri, type, Memento.Memento));
@@ -225,6 +225,15 @@ public final class MementoResource {
      */
     public static Stream<Link> getMementoLinks(final String identifier, final List<Range<Instant>> mementos) {
         return concat(getTimeMap(identifier, mementos.stream()), mementos.stream().map(mementoToLink(identifier)));
+    }
+
+    /**
+     * Determine whether a link is a well-formed Memento link.
+     * @param link the link header
+     * @return true if this is a memento link; false otherwise
+     */
+    public static Boolean isMementoLink(final Link link) {
+        return MEMENTO.equals(link.getRel()) && link.getParams().containsKey(DATETIME);
     }
 
     private String getBaseUrl(final String baseUrl, final LdpRequest req) {

@@ -192,6 +192,30 @@ public class PreferTest {
     }
 
     @Test
+    public void testPreferBadQuotes() {
+        final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test");
+        assertEquals(of("representation"), prefer.getPreference());
+        assertEquals(1L, prefer.getInclude().size());
+        assertTrue(prefer.getInclude().contains("\"http://example.org/test"));
+        assertTrue(prefer.getOmit().isEmpty());
+        assertFalse(prefer.getHandling().isPresent());
+        assertFalse(prefer.getWait().isPresent());
+        assertFalse(prefer.getRespondAsync());
+    }
+
+    @Test
+    public void testPreferBadQuotes2() {
+        final Prefer prefer = Prefer.valueOf("return=representation; include=\"");
+        assertEquals(of("representation"), prefer.getPreference());
+        assertEquals(1L, prefer.getInclude().size());
+        assertTrue(prefer.getInclude().contains("\""));
+        assertTrue(prefer.getOmit().isEmpty());
+        assertFalse(prefer.getHandling().isPresent());
+        assertFalse(prefer.getWait().isPresent());
+        assertFalse(prefer.getRespondAsync());
+    }
+
+    @Test
     public void testNullPrefer() {
         assertNull(Prefer.valueOf(null));
     }
