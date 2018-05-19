@@ -237,6 +237,55 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
+    public void testUpdateRoot() throws Exception {
+        final Instant early = now();
+        final JenaDataset dataset = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
+                mockMementoService, mockEventService);
+
+        assertTrue(svc.get(root).isPresent());
+        svc.get(root).ifPresent(res -> {
+            assertEquals(LDP.BasicContainer, res.getInteractionModel());
+            assertEquals(root, res.getIdentifier());
+            assertFalse(res.getModified().isBefore(early));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+            assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
+            assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
+            assertEquals(7L, res.stream().count());
+        });
+
+        final Dataset data = rdf.createDataset();
+        svc.get(root).ifPresent(res ->
+                res.stream().filter(q -> !q.getGraphName().filter(Trellis.PreferServerManaged::equals).isPresent())
+                            .forEach(data::add));
+        data.add(Trellis.PreferUserManaged, root, RDFS.label, rdf.createLiteral("Resource Label"));
+        data.add(Trellis.PreferUserManaged, root, RDFS.seeAlso, rdf.createIRI("http://example.com"));
+        data.add(Trellis.PreferUserManaged, root, LDP.inbox, rdf.createIRI("http://ldn.example.com/"));
+        data.add(Trellis.PreferUserManaged, root, RDF.type, rdf.createLiteral("Some weird type"));
+        data.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
+
+        final Instant later = meanwhile();
+
+        assertTrue(svc.replace(root, mockSession, LDP.BasicContainer, data, null, null).get());
+        assertTrue(svc.get(root).isPresent());
+        svc.get(root).ifPresent(res -> {
+            assertEquals(LDP.BasicContainer, res.getInteractionModel());
+            assertEquals(root, res.getIdentifier());
+            assertFalse(res.getModified().isBefore(later));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+            assertFalse(res.getBinary().isPresent());
+            assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
+            assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+            assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
+            assertEquals(12L, res.stream().count());
+        });
+    }
+
+
+    @Test
     public void testRDFConnectionError() throws Exception {
         final ResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService,
                 mockMementoService, mockEventService);
@@ -837,6 +886,97 @@ public class TriplestoreResourceServiceTest {
         });
 
         verify(mockEventService, times(5)).emit(any());
+    }
+
+    @Test
+    public void testPutLdpDcSelf() throws Exception {
+        final Instant early = now();
+        final JenaDataset d = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
+                mockMementoService, mockEventService);
+
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, resource);
+        dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
+
+        final Instant later = meanwhile();
+
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
+        assertTrue(svc.get(resource).isPresent());
+        svc.get(resource).ifPresent(res -> {
+            assertEquals(LDP.DirectContainer, res.getInteractionModel());
+            assertEquals(resource, res.getIdentifier());
+            assertFalse(res.getModified().isBefore(early));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+            assertFalse(res.getModified().isBefore(later));
+            assertFalse(res.getBinary().isPresent());
+            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+            assertEquals(0L, res.stream(LDP.PreferContainment).count());
+            assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            assertEquals(11L, res.stream().count());
+        });
+
+        assertTrue(svc.get(root).isPresent());
+        svc.get(root).ifPresent(res -> {
+            assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            assertFalse(res.getModified().isBefore(later));
+        });
+
+        verify(mockEventService, times(2)).emit(any());
+
+        // Now add the child resources to the ldp-dc
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
+        dataset.clear();
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
+
+        final Instant evenLater2 = meanwhile();
+
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.get(child).isPresent());
+        svc.get(child).ifPresent(res -> {
+            assertEquals(LDP.RDFSource, res.getInteractionModel());
+            assertEquals(child, res.getIdentifier());
+            assertFalse(res.getModified().isBefore(early));
+            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+            assertFalse(res.getModified().isBefore(evenLater2));
+            assertFalse(res.getBinary().isPresent());
+            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+            assertEquals(5L, res.stream().count());
+        });
+
+        assertTrue(svc.get(root).isPresent());
+        svc.get(root).ifPresent(res -> {
+            assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            assertTrue(res.getModified().isBefore(evenLater2));
+        });
+
+        assertTrue(svc.get(resource).isPresent());
+        svc.get(resource).ifPresent(res -> {
+            assertFalse(res.getModified().isBefore(evenLater2));
+            assertEquals(1L, res.stream(LDP.PreferMembership).count());
+            assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                        && t.getObject().equals(child)).findFirst().isPresent());
+            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                        t.getSubject().equals(resource) && t.getPredicate().equals(DC.relation)
+                        && t.getObject().equals(child)).findFirst().isPresent());
+        });
+
+        verify(mockEventService, times(4)).emit(any());
     }
 
     @Test
