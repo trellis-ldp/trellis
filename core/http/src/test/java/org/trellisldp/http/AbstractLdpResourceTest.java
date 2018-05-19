@@ -1544,6 +1544,41 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testGetBinaryAcl() throws IOException {
+        when(mockBinaryResource.hasAcl()).thenReturn(true);
+        final Response res = target(BINARY_PATH).queryParam("ext", "acl").request().get();
+
+        assertEquals(OK, res.getStatusInfo());
+        assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
+        assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
+        assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
+        assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("alternate")));
+    }
+
+    @Test
+    public void testGetBinaryLinks() throws IOException {
+        final Response res = target(BINARY_PATH).request().get();
+
+        assertEquals(OK, res.getStatusInfo());
+        assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
+        assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
+        assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
+        assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("alternate")));
+    }
+
+    @Test
+    public void testGetBinaryDescriptionLinks() throws IOException {
+        final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
+
+        assertEquals(OK, res.getStatusInfo());
+        assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
+        assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
+        assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
+        assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("alternate")));
+    }
+
+
+    @Test
     public void testGetAclJsonCompact() throws IOException {
         when(mockResource.hasAcl()).thenReturn(true);
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
