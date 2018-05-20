@@ -102,7 +102,7 @@ allprojects { subproj ->
         license = 'Apache 2'
 
         jacocoVersion = '0.8.1'
-        checkstyleVersion = '8.8'
+        checkstyleVersion = '8.10'
     }
 
     jacoco.toolVersion = jacocoVersion
