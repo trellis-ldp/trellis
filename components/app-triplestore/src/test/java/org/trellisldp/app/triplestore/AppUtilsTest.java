@@ -39,6 +39,7 @@ import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
+import org.trellisldp.app.config.ResourceConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.kafka.KafkaPublisher;
 
@@ -64,21 +65,23 @@ public class AppUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        final ResourceConfiguration rc = new ResourceConfiguration();
+        assertNotNull(AppUtils.getRDFConnection(config));
+        assertFalse(AppUtils.getRDFConnection(config).isClosed());
+        rc.setResourceLocation("http://localhost/sparql");
+        config.setResources(rc);
 
         assertNotNull(AppUtils.getRDFConnection(config));
         assertFalse(AppUtils.getRDFConnection(config).isClosed());
 
-        config.setResources("http://localhost/sparql");
-
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
-
-        config.setResources("https://localhost/sparql");
+        rc.setResourceLocation("https://localhost/sparql");
+        config.setResources(rc);
         assertNotNull(AppUtils.getRDFConnection(config));
         assertFalse(AppUtils.getRDFConnection(config).isClosed());
 
         final File dir = new File(new File(getClass().getResource("/data").toURI()), "resources");
-        config.setResources(dir.getAbsolutePath());
+        rc.setResourceLocation(dir.getAbsolutePath());
+        config.setResources(rc);
         assertNotNull(AppUtils.getRDFConnection(config));
         assertFalse(AppUtils.getRDFConnection(config).isClosed());
     }

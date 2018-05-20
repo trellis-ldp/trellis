@@ -48,7 +48,9 @@ public class TrellisConfigurationTest {
         assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours());
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
-        assertNull(config.getResources());
+        assertNull(config.getResources().getResourceLocation());
+        assertNull(config.getResources().getUserName());
+        assertNull(config.getResources().getPassword());
         assertEquals("http://hub.example.com/", config.getHubUrl());
         assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
         assertEquals((Integer) 1, config.getBinaryHierarchyLength());
@@ -100,8 +102,10 @@ public class TrellisConfigurationTest {
         assertEquals("http://hub.example.com/", config.getHubUrl());
 
         final String resources = "http://triplestore.example.com/";
-        config.setResources(resources);
-        assertEquals(resources, config.getResources());
+        final ResourceConfiguration rc = new ResourceConfiguration();
+        rc.setResourceLocation("http://triplestore.example.com/");
+        config.setResources(rc);
+        assertEquals(resources, config.getResources().getResourceLocation());
     }
 
     @Test

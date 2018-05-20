@@ -71,7 +71,7 @@ public class TrellisConfiguration extends Configuration {
 
     private String baseUrl = null;
 
-    private String resourceLocation = null;
+    private ResourceConfiguration resources = new ResourceConfiguration();
 
     private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
@@ -188,8 +188,8 @@ public class TrellisConfiguration extends Configuration {
      * @param config the RDF Connection location
      */
     @JsonProperty
-    public void setResources(final String config) {
-        this.resourceLocation = config;
+    public void setResources(final ResourceConfiguration config) {
+        this.resources = config;
     }
 
     /**
@@ -197,8 +197,8 @@ public class TrellisConfiguration extends Configuration {
      * @return the RDF Connection location
      */
     @JsonProperty
-    public String getResources() {
-        return resourceLocation;
+    public ResourceConfiguration getResources() {
+        return resources;
     }
 
     /**

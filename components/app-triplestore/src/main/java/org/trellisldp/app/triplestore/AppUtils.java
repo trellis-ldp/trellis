@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.trellisldp.app.triplestore;
 
 import static java.util.Optional.ofNullable;
@@ -18,6 +19,7 @@ import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
+import static org.apache.jena.rdfconnection.RDFConnectionRemote.create;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
@@ -33,6 +35,12 @@ import javax.jms.Connection;
 import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
@@ -65,8 +73,7 @@ final class AppUtils {
     }
 
     public static ActiveMQConnectionFactory getJmsFactory(final NotificationsConfiguration config) {
-        final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
-                config.getConnectionString());
+        final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(config.getConnectionString());
         if (config.any().containsKey(PW_KEY) && config.any().containsKey(UN_KEY)) {
             factory.setUserName(config.any().get(UN_KEY));
             factory.setPassword(config.any().get(PW_KEY));
@@ -74,16 +81,16 @@ final class AppUtils {
         return factory;
     }
 
-    private static EventService buildKafkaPublisher(final NotificationsConfiguration config,
-            final Environment environment) {
+    private static EventService buildKafkaPublisher(final NotificationsConfiguration config, final Environment
+            environment) {
         LOGGER.info("Connecting to Kafka broker at {}", config.getConnectionString());
         final KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getKafkaProperties(config));
         environment.lifecycle().manage(new AutoCloseableManager(kafkaProducer));
         return new KafkaPublisher(kafkaProducer, config.getTopicName());
     }
 
-    private static EventService buildJmsPublisher(final NotificationsConfiguration config,
-            final Environment environment) throws JMSException {
+    private static EventService buildJmsPublisher(final NotificationsConfiguration config, final Environment
+            environment) throws JMSException {
         LOGGER.info("Connecting to JMS broker at {}", config.getConnectionString());
         final Connection jmsConnection = getJmsFactory(config).createConnection();
         environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
@@ -111,18 +118,31 @@ final class AppUtils {
     }
 
     public static RDFConnection getRDFConnection(final TrellisConfiguration config) {
-        final Optional<String> location = ofNullable(config.getResources());
+
+        final Optional<String> location = ofNullable(config.getResources().getResourceLocation());
         if (location.isPresent()) {
             final String loc = location.get();
             if (loc.startsWith("http://") || loc.startsWith("https://")) {
                 // Remote
-                return connect(loc);
+                return create().httpClient(buildHttpClient(config)).destination(loc).build();
             }
             // TDB2
             return connect(wrap(connectDatasetGraph(loc)));
         }
         // in-memory
         return connect(createTxnMem());
+    }
+
+    private static HttpClient buildHttpClient(final TrellisConfiguration config) {
+        final Optional<String> userName = ofNullable(config.getResources().getUserName());
+        final Optional<String> password = ofNullable(config.getResources().getPassword());
+        final CredentialsProvider provider = new BasicCredentialsProvider();
+        if (userName.isPresent() && password.isPresent()) {
+            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
+                    userName.get(), password.get());
+            provider.setCredentials(AuthScope.ANY, credentials);
+        }
+        return HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
     }
 
     private AppUtils() {

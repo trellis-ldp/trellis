@@ -46,6 +46,8 @@ dependencies {
     testCompile("io.dropwizard:dropwizard-client:$dropwizardVersion")
     testCompile("io.dropwizard:dropwizard-testing:$dropwizardVersion")
     testCompile("org.apache.activemq:activemq-broker:$activeMqVersion")
+    testCompile("org.apache.jena:jena-core:$jenaVersion")
+    testCompile("org.apache.jena:jena-fuseki-embedded:$jenaVersion")
     testCompile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testCompile("org.awaitility:awaitility:$awaitilityVersion")
     testCompile("ch.qos.logback:logback-classic:$logbackVersion")
