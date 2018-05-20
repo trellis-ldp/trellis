@@ -141,6 +141,19 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
+    public void testNoMementoService() {
+        final JenaDataset dataset = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
+                null, mockEventService);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final Instant time = now();
+        assertTrue(svc.getMementos(identifier).isEmpty());
+        svc.get(identifier, time).ifPresent(res -> assertFalse(res.isMemento()));
+        assertEquals(svc.get(identifier), svc.get(identifier, time));
+    }
+
+    @Test
     public void testResourceNotFound() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
