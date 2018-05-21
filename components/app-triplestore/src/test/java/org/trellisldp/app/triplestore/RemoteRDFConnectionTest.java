@@ -49,7 +49,7 @@ import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.util.security.Password;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.app.config.ResourceConfiguration;
+import org.trellisldp.app.config.DatasetConnectionConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 
 public class RemoteRDFConnectionTest {
@@ -72,12 +72,12 @@ public class RemoteRDFConnectionTest {
 
     @Test
     void testBasicAuthRemoteRDFConnection() {
-        final ResourceConfiguration rc = new ResourceConfiguration();
-        rc.setResourceLocation("http://localhost:" + PORT + "/ds");
+        final DatasetConnectionConfiguration rc = new DatasetConnectionConfiguration();
+        rc.setDatasetLocation("http://localhost:" + PORT + "/ds");
         rc.setUserName(USER);
         rc.setPassword(PASSWORD);
         config.setResources(rc);
-        final RDFConnection conn = AppUtils.getRDFConnection(config);
+        final RDFConnection conn = JenaRDFConnection.getRDFConnection(config).getConnection();
         final UpdateRequest req = UpdateFactory.create("INSERT DATA { <x> <p> 2 . }");
         conn.update(req);
         conn.querySelect("SELECT ?s ?p ?o WHERE {?s ?p ?o}", (qs) -> {
@@ -90,12 +90,12 @@ public class RemoteRDFConnectionTest {
 
     @Test
     void testBasicAuthRemoteRDFConnectionException() {
-        final ResourceConfiguration rc = new ResourceConfiguration();
-        rc.setResourceLocation("http://localhost:" + PORT + "/ds");
+        final DatasetConnectionConfiguration rc = new DatasetConnectionConfiguration();
+        rc.setDatasetLocation("http://localhost:" + PORT + "/ds");
         rc.setUserName(USER);
         rc.setPassword("false-password");
         config.setResources(rc);
-        final RDFConnection conn = AppUtils.getRDFConnection(config);
+        final RDFConnection conn = JenaRDFConnection.getRDFConnection(config).getConnection();
         try {
             conn.querySelect("SELECT ?s { ?s ?p ?o }", (qs) -> {
             });
@@ -105,6 +105,7 @@ public class RemoteRDFConnectionTest {
     }
 
     /**
+     * Derived from org.apache.jena.fuseki.embedded.FusekiTestAuth.java
      * Create a Jetty {@link SecurityHandler} for basic authentication, one user/password/role.
      */
     private static SecurityHandler makeSimpleSecurityHandler(final String pathSpec, final String realm, final String
@@ -144,9 +145,6 @@ public class RemoteRDFConnectionTest {
         return securityHandler;
     }
 
-    /**
-     * Very simple!
-     */
     private static UserStore makeUserStore(final String user, final String password, final String role) {
         final Credential cred = new Password(password);
         final PropertyUserStore propertyUserStore = new PropertyUserStore();

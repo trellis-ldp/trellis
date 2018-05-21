@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.trellisldp.app.triplestore;
 
 import static org.apache.jena.query.DatasetFactory.wrap;
@@ -24,6 +25,7 @@ import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.DatasetConnection;
 
 /**
  * @author acoburn
@@ -33,19 +35,22 @@ public class RDFConnectionHealthCheckTest {
     private static final JenaRDF rdf = new JenaRDF();
 
     @Test
-    public void testIsConnected() throws Exception {
+    public void testIsConnected() {
         final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final HealthCheck check = new RDFConnectionHealthCheck(rdfConnection);
+        final DatasetConnection<RDFConnection> conn = new DatasetConnection<>();
+        conn.setConnection(connect(wrap(dataset.asJenaDatasetGraph())));
+        final HealthCheck check = new RDFConnectionHealthCheck(conn);
         assertTrue(check.execute().isHealthy());
     }
 
     @Test
-    public void testNonConnected() throws Exception {
+    public void testNonConnected() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         rdfConnection.close();
-        final HealthCheck check = new RDFConnectionHealthCheck(rdfConnection);
+        final DatasetConnection<RDFConnection> conn = new DatasetConnection<>();
+        conn.setConnection(rdfConnection);
+        final HealthCheck check = new RDFConnectionHealthCheck(conn);
         assertFalse(check.execute().isHealthy());
     }
 }

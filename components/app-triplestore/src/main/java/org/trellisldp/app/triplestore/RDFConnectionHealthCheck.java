@@ -19,6 +19,7 @@ import static com.codahale.metrics.health.HealthCheck.Result.unhealthy;
 import com.codahale.metrics.health.HealthCheck;
 
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.trellisldp.api.DatasetConnection;
 
 /**
  * Check the health of the RDF connection.
@@ -31,8 +32,8 @@ public class RDFConnectionHealthCheck extends HealthCheck {
      * Create an object that checks the health of an RDF Connection.
      * @param rdfConnection the RDF Connection
      */
-    public RDFConnectionHealthCheck(final RDFConnection rdfConnection) {
-        this.rdfConnection = rdfConnection;
+    public RDFConnectionHealthCheck(final DatasetConnection rdfConnection) {
+        this.rdfConnection = (RDFConnection) rdfConnection.getConnection();
     }
 
     @Override

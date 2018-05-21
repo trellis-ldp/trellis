@@ -14,13 +14,7 @@
 
 package org.trellisldp.app.triplestore;
 
-import static java.util.Optional.ofNullable;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.apache.jena.query.DatasetFactory.createTxnMem;
-import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
-import static org.apache.jena.rdfconnection.RDFConnectionRemote.create;
-import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
@@ -28,27 +22,18 @@ import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
 import io.dropwizard.lifecycle.AutoCloseableManager;
 import io.dropwizard.setup.Environment;
 
-import java.util.Optional;
 import java.util.Properties;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
-import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.jms.JmsPublisher;
 import org.trellisldp.kafka.KafkaPublisher;
 
@@ -117,33 +102,7 @@ final class AppUtils {
         return new NoopEventService();
     }
 
-    public static RDFConnection getRDFConnection(final TrellisConfiguration config) {
 
-        final Optional<String> location = ofNullable(config.getResources().getResourceLocation());
-        if (location.isPresent()) {
-            final String loc = location.get();
-            if (loc.startsWith("http://") || loc.startsWith("https://")) {
-                // Remote
-                return create().httpClient(buildHttpClient(config)).destination(loc).build();
-            }
-            // TDB2
-            return connect(wrap(connectDatasetGraph(loc)));
-        }
-        // in-memory
-        return connect(createTxnMem());
-    }
-
-    private static HttpClient buildHttpClient(final TrellisConfiguration config) {
-        final Optional<String> userName = ofNullable(config.getResources().getUserName());
-        final Optional<String> password = ofNullable(config.getResources().getPassword());
-        final CredentialsProvider provider = new BasicCredentialsProvider();
-        if (userName.isPresent() && password.isPresent()) {
-            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                    userName.get(), password.get());
-            provider.setCredentials(AuthScope.ANY, credentials);
-        }
-        return HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
-    }
 
     private AppUtils() {
         // prevent instantiation

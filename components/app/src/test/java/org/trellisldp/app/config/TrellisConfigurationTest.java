@@ -16,7 +16,6 @@ package org.trellisldp.app.config;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.dropwizard.configuration.YamlConfigurationFactory;
@@ -48,9 +47,9 @@ public class TrellisConfigurationTest {
         assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours());
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
-        assertNull(config.getResources().getResourceLocation());
-        assertNull(config.getResources().getUserName());
-        assertNull(config.getResources().getPassword());
+        assertFalse(config.getResources().getDatasetLocation().isPresent());
+        assertFalse(config.getResources().getUserName().isPresent());
+        assertFalse(config.getResources().getPassword().isPresent());
         assertEquals("http://hub.example.com/", config.getHubUrl());
         assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
         assertEquals((Integer) 1, config.getBinaryHierarchyLength());
@@ -102,10 +101,10 @@ public class TrellisConfigurationTest {
         assertEquals("http://hub.example.com/", config.getHubUrl());
 
         final String resources = "http://triplestore.example.com/";
-        final ResourceConfiguration rc = new ResourceConfiguration();
-        rc.setResourceLocation("http://triplestore.example.com/");
+        final DatasetConnectionConfiguration rc = new DatasetConnectionConfiguration();
+        rc.setDatasetLocation("http://triplestore.example.com/");
         config.setResources(rc);
-        assertEquals(resources, config.getResources().getResourceLocation());
+        assertEquals(resources, config.getResources().getDatasetLocation().orElse(""));
     }
 
     @Test

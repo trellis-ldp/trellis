@@ -71,7 +71,7 @@ public class TrellisConfiguration extends Configuration {
 
     private String baseUrl = null;
 
-    private ResourceConfiguration resources = new ResourceConfiguration();
+    private DatasetConnectionConfiguration resources = new DatasetConnectionConfiguration();
 
     private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
@@ -184,20 +184,20 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Set the RDF Connection configuration.
-     * @param config the RDF Connection location
+     * Set the Dataset Connection configuration.
+     * @param config the Dataset Connection location
      */
     @JsonProperty
-    public void setResources(final ResourceConfiguration config) {
+    public void setResources(final DatasetConnectionConfiguration config) {
         this.resources = config;
     }
 
     /**
-     * Get the RDF Connection configuration.
-     * @return the RDF Connection location
+     * Get the Dataset Connection configuration.
+     * @return the Dataset Connection location
      */
     @JsonProperty
-    public ResourceConfiguration getResources() {
+    public DatasetConnectionConfiguration getResources() {
         return resources;
     }
 
