@@ -25,9 +25,9 @@ import io.dropwizard.setup.Environment;
 
 import java.util.Optional;
 
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.DatasetConnection;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
@@ -103,16 +103,16 @@ public class TrellisApplication extends AbstractTrellisApplication<TrellisConfig
         this.ioService = buildIoService(config);
     }
 
-    private TriplestoreResourceService buildResourceService(final IdentifierService idService,
-            final TrellisConfiguration config, final Environment environment) {
+    private TriplestoreResourceService buildResourceService(final IdentifierService idService, final
+    TrellisConfiguration config, final Environment environment) {
         final MementoService mementoService = new FileMementoService(config.getMementos());
-        final RDFConnection rdfConnection = AppUtils.getRDFConnection(config);
+        final DatasetConnection datasetConnection = JenaRDFConnection.getRDFConnection(config);
         final EventService notificationService = AppUtils.getNotificationService(config.getNotifications(),
                 environment);
 
         // Health checks
-        environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
-        return new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
+        environment.healthChecks().register("rdfConnection", new RDFConnectionHealthCheck(datasetConnection));
+        return new TriplestoreResourceService(datasetConnection, idService, mementoService, notificationService);
     }
 
     private IOService buildIoService(final TrellisConfiguration config) {

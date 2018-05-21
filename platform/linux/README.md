@@ -79,12 +79,17 @@ available. Any of the configuration options defined by Dropwizard can be part of
 Trellis defines its own configuration options, including:
 
 ```yaml
-resources: /path/to/resources
+resources:
+    datasetLocation: /path/to/resources
+    userName:
+    password:
 ```
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| resources | (none) | The path for storing resources. If not defined, an in-memory dataset will be used. If this value begins with `http://` or `https://`, a remote triplestore will be used. |
+| datasetLocation | (none) | The path for storing resources. If not defined, an in-memory dataset will be used. If this value begins with `http://` or `https://`, a remote triplestore will be used. |
+| userName | (none) | An optional userName for BasicAuthentication provided to an HttpClient |
+| password | (none) | An optional password for BasicAuthentication provided to an HttpClient |
 
 ```yaml
 binaries: /path/to/binaries

@@ -11,14 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.trellisldp.app.triplestore;
 
-import static java.util.Optional.ofNullable;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.apache.jena.query.DatasetFactory.createTxnMem;
-import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
-import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
@@ -26,21 +22,18 @@ import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
 import io.dropwizard.lifecycle.AutoCloseableManager;
 import io.dropwizard.setup.Environment;
 
-import java.util.Optional;
 import java.util.Properties;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
-import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.jms.JmsPublisher;
 import org.trellisldp.kafka.KafkaPublisher;
 
@@ -65,8 +58,7 @@ final class AppUtils {
     }
 
     public static ActiveMQConnectionFactory getJmsFactory(final NotificationsConfiguration config) {
-        final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
-                config.getConnectionString());
+        final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(config.getConnectionString());
         if (config.any().containsKey(PW_KEY) && config.any().containsKey(UN_KEY)) {
             factory.setUserName(config.any().get(UN_KEY));
             factory.setPassword(config.any().get(PW_KEY));
@@ -74,16 +66,16 @@ final class AppUtils {
         return factory;
     }
 
-    private static EventService buildKafkaPublisher(final NotificationsConfiguration config,
-            final Environment environment) {
+    private static EventService buildKafkaPublisher(final NotificationsConfiguration config, final Environment
+            environment) {
         LOGGER.info("Connecting to Kafka broker at {}", config.getConnectionString());
         final KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getKafkaProperties(config));
         environment.lifecycle().manage(new AutoCloseableManager(kafkaProducer));
         return new KafkaPublisher(kafkaProducer, config.getTopicName());
     }
 
-    private static EventService buildJmsPublisher(final NotificationsConfiguration config,
-            final Environment environment) throws JMSException {
+    private static EventService buildJmsPublisher(final NotificationsConfiguration config, final Environment
+            environment) throws JMSException {
         LOGGER.info("Connecting to JMS broker at {}", config.getConnectionString());
         final Connection jmsConnection = getJmsFactory(config).createConnection();
         environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
@@ -110,20 +102,7 @@ final class AppUtils {
         return new NoopEventService();
     }
 
-    public static RDFConnection getRDFConnection(final TrellisConfiguration config) {
-        final Optional<String> location = ofNullable(config.getResources());
-        if (location.isPresent()) {
-            final String loc = location.get();
-            if (loc.startsWith("http://") || loc.startsWith("https://")) {
-                // Remote
-                return connect(loc);
-            }
-            // TDB2
-            return connect(wrap(connectDatasetGraph(loc)));
-        }
-        // in-memory
-        return connect(createTxnMem());
-    }
+
 
     private AppUtils() {
         // prevent instantiation

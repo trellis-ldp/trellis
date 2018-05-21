@@ -14,7 +14,6 @@
 package org.trellisldp.app.triplestore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,13 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import io.dropwizard.configuration.YamlConfigurationFactory;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
-import java.io.File;
 import java.util.Properties;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -39,7 +34,6 @@ import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
-import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.kafka.KafkaPublisher;
 
 /**
@@ -60,31 +54,7 @@ public class AppUtilsTest {
     }
 
     @Test
-    public void testGetRDFConnection() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
-
-        config.setResources("http://localhost/sparql");
-
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
-
-        config.setResources("https://localhost/sparql");
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
-
-        final File dir = new File(new File(getClass().getResource("/data").toURI()), "resources");
-        config.setResources(dir.getAbsolutePath());
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
-    }
-
-    @Test
-    public void testEventServiceNone() throws Exception {
+    public void testEventServiceNone() {
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.setConnectionString("localhost");
         c.setEnabled(true);
@@ -95,7 +65,7 @@ public class AppUtilsTest {
     }
 
     @Test
-    public void testEventServiceDisabled() throws Exception {
+    public void testEventServiceDisabled() {
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.set("batch.size", "1000");
         c.set("retries", "10");
@@ -109,7 +79,7 @@ public class AppUtilsTest {
     }
 
     @Test
-    public void testEventServiceKafka() throws Exception {
+    public void testEventServiceKafka() {
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.set("batch.size", "1000");
         c.set("retries", "10");
@@ -138,7 +108,7 @@ public class AppUtilsTest {
     }
 
     @Test
-    public void testEventServiceJms() throws Exception {
+    public void testEventServiceJms() {
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.setConnectionString("tcp://localhost:61616");
         c.setEnabled(true);
