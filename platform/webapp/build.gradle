@@ -23,6 +23,16 @@ dependencies {
     runtime("javax.xml.bind:jaxb-api:$jaxbVersion")
     runtime("javax.activation:javax.activation-api:$activationApiVersion")
     runtime("ch.qos.logback:logback-classic:$logbackVersion")
+
+    testImplementation("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jetty:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
+    testImplementation("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    testImplementation project(':trellis-test')
+
+    testRuntimeClasspath("javax.xml.bind:jaxb-api:$jaxbVersion")
+    testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
+    testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
 uploadArchives {

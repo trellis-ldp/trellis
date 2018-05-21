@@ -18,7 +18,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
-import static org.apache.jena.query.DatasetFactory.create;
+import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
@@ -66,7 +66,7 @@ public class TrellisApplication extends ResourceConfig {
         final String location = config.get("trellis.rdf.location");
         final RDFConnection rdfConnection;
         if (isNull(location)) {
-            rdfConnection = connect(create());
+            rdfConnection = connect(createTxnMem());
         } else if (location.startsWith("http://") || location.startsWith("https://")) {
             rdfConnection = connect(location);
         } else {

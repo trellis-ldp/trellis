@@ -82,6 +82,7 @@ ext {
             'trellis-triplestore',
             'trellis-vocabulary',
             'trellis-webac',
+            'trellis-webapp'
     ]
 }
 
