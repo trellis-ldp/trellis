@@ -40,3 +40,9 @@ uploadArchives {
     enabled = false
 }
 
+test {
+    systemProperty 'trellis.file.memento.basepath', "$buildDir/data/mementos"
+    systemProperty 'trellis.file.binary.basepath', "$buildDir/data/binaries"
+    systemProperty 'trellis.rdf.location', "$buildDir/data/rdf"
+    systemProperty 'trellis.namespaces.path', "$buildDir/data/namespaces.json"
+}
