@@ -25,7 +25,8 @@ logging:
     io.dropwizard: INFO
 
 # This may refer to a remote Triplestore, e.g. https://example.org/sparql
-resources: /opt/trellis/data/rdf
+resources:
+  datasetLocation: /opt/trellis/data/rdf
 
 binaries: /opt/trellis/data/binaries
 

@@ -21,7 +21,6 @@ import static org.apache.jena.riot.RDFDataMgr.read;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.List;
 import java.util.Optional;

@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
@@ -87,6 +88,7 @@ import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.DatasetConnection;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
@@ -120,24 +122,25 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private static final Predicate<BlankNodeOrIRI> isServerGraph = PreferServerManaged::equals;
 
     private final Supplier<String> supplier;
-    private final RDFConnection rdfConnection;
+    private final DatasetConnection datasetConnection;
     private final Optional<EventService> eventService;
     private final Optional<MementoService> mementoService;
     private final Set<IRI> supportedIxnModels;
 
     /**
      * Create a triplestore-backed resource service.
-     * @param rdfConnection the connection to an RDF datastore
-     * @param identifierService an ID supplier service
-     * @param mementoService a service for memento resources
-     * @param eventService an event service
+     *
+     * @param datasetConnection the connection to an RDF datastore
+     * @param identifierService  an ID supplier service
+     * @param mementoService     a service for memento resources
+     * @param eventService       an event service
      */
     @Inject
-    public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
-            final MementoService mementoService, final EventService eventService) {
-        requireNonNull(rdfConnection, "RDFConnection may not be null!");
+    public TriplestoreResourceService(final DatasetConnection datasetConnection, final IdentifierService
+            identifierService, final MementoService mementoService, final EventService eventService) {
+        requireNonNull(datasetConnection, "datasetConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
-        this.rdfConnection = rdfConnection;
+        this.datasetConnection = datasetConnection;
         this.supplier = identifierService.getSupplier();
         this.eventService = ofNullable(eventService);
         this.mementoService = ofNullable(mementoService);
@@ -221,7 +224,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             final Instant eventTime, final OperationType type) {
         final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
         try {
-            rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
+            final RDFConnection conn = (RDFConnection) datasetConnection.getConnection();
+            conn.update(buildUpdateRequest(identifier, time, dataset, type));
             if (type != OperationType.DELETE) {
                 mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
                             svc.put(identifier, eventTime, res.stream())));
@@ -308,7 +312,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         eg.addElement(epb1);
         eg.addElement(new ElementOptional(epb2));
         q.setQueryPattern(new ElementNamedGraph(rdf.asJenaNode(PreferServerManaged), eg));
-        rdfConnection.querySelect(q, qs -> {
+        final RDFConnection conn = (RDFConnection) datasetConnection.getConnection();
+        conn.querySelect(q, qs -> {
             final IRI type = getPredicate(qs);
             final Optional<IRI> member = ofNullable(qs.get("subject")).map(RDFNode::asNode)
                 .map(rdf::asRDFTerm).map(t -> (IRI) t).filter(t -> !t.equals(parent));
@@ -317,7 +322,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             if (isCreate || isDelete) {
                 if (type.getIRIString().endsWith("Container")) {
                     svc.emit(new SimpleEvent(getUrl(parent, session.getProperty(TRELLIS_SESSION_BASE_URL)),
-                                    asList(session.getAgent()), asList(PROV.Activity, AS.Update), asList(type), null));
+                            asList(session.getAgent()), asList(PROV.Activity, AS.Update), asList(type), null));
                 }
                 if (LDP.DirectContainer.equals(type) && memberIsModified) {
                     member.ifPresent(m ->
@@ -562,7 +567,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         q.setQueryPattern(elg);
 
         final Stream.Builder<Triple> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createTriple(getSubject(qs), RDF.type, getObject(qs))));
+        final RDFConnection conn = (RDFConnection) datasetConnection.getConnection();
+        conn.querySelect(q, qs -> builder.accept(rdf.createTriple(getSubject(qs), RDF.type, getObject(qs))));
         return builder.build();
     }
 
@@ -610,7 +616,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         q.setQueryPattern(elg);
 
         final Stream.Builder<RDFTerm> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(getObject(qs)));
+        final RDFConnection conn = (RDFConnection) datasetConnection.getConnection();
+        conn.querySelect(q, qs -> builder.accept(getObject(qs)));
         if (!builder.build().findFirst().isPresent()) {
             final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
             final IRI auth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
@@ -634,7 +641,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                             rdf.asJenaNode(root))));
 
             update.add(new UpdateDataInsert(sink));
-            rdfConnection.update(update);
+            conn.update(update);
         }
     }
 
@@ -645,7 +652,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public Optional<Resource> get(final IRI identifier) {
-        return TriplestoreResource.findResource(rdfConnection, identifier);
+        final RDFConnection conn = (RDFConnection) datasetConnection.getConnection();
+        return TriplestoreResource.findResource(conn, identifier);
     }
 
     @Override
@@ -670,7 +678,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             try (final Dataset data = rdf.createDataset()) {
                 dataset.getGraph(PreferAudit).ifPresent(g ->
                         g.stream().forEach(t -> data.add(graphName, t.getSubject(), t.getPredicate(), t.getObject())));
-                executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(data)));
+                final RDFConnection conn = (RDFConnection) datasetConnection.getConnection();
+                executeWrite(conn, () -> conn.loadDataset(asJenaDataset(data)));
                 return true;
             } catch (final Exception ex) {
                 LOGGER.error("Error storing audit dataset: {}", ex.getMessage());
@@ -686,11 +695,11 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     /**
      * Alias{@link org.apache.jena.graph.Triple#create(Node, Node, Node)} to
-     * avoid collision with {@link ResourceService#create(IRI, IRI, Dataset)}.
+     * avoid collision with {@link TriplestoreResourceService#create(IRI, Session, IRI, Dataset, IRI, Binary)}.
      *
      * @param subj the subject
      * @param pred the predicate
-     * @param obj the object
+     * @param obj  the object
      * @return a {@link org.apache.jena.graph.Triple}
      */
     private static org.apache.jena.graph.Triple triple(final Node subj, final Node pred, final Node obj) {

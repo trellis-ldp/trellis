@@ -25,8 +25,10 @@ import io.dropwizard.setup.Environment;
 
 import java.util.Optional;
 
+import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.DatasetConnection;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
@@ -77,7 +79,9 @@ public class SimpleTrellisApp extends AbstractTrellisApplication<TrellisConfigur
         super.initialize(config, env);
         ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(), emptySet());
         binaryService = new FileBinaryService(new UUIDGenerator(), resourceFilePath("data") + "/binaries", 2, 2);
-        resourceService = new TriplestoreResourceService(connect(createTxnMem()), new UUIDGenerator(),
+        final DatasetConnection<RDFConnection> conn = new DatasetConnection<>();
+        conn.setConnection(connect(createTxnMem()));
+        resourceService = new TriplestoreResourceService(conn, new UUIDGenerator(),
                 new NoopMementoService(), new NoopEventService());
     }
 }

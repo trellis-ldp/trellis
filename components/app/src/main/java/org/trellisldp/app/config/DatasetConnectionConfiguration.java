@@ -15,30 +15,32 @@ package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ResourceConfiguration {
+import java.util.Optional;
 
-    private String resourceLocation;
+public class DatasetConnectionConfiguration {
+
+    private String datasetLocation;
 
     private String userName;
 
     private String password;
 
     /**
-     * Set the RDF Connection configuration.
-     * @param config the RDF Connection location
+     * Set the Dataset Location.
+     * @param datasetLocation the Dataset Location
      */
     @JsonProperty
-    public void setResourceLocation(final String config) {
-        this.resourceLocation = config;
+    public void setDatasetLocation(final String datasetLocation) {
+        this.datasetLocation = datasetLocation;
     }
 
     /**
-     * Get the RDF Connection configuration.
-     * @return the RDF Connection location
+     * Get the Dataset Location.
+     * @return the Dataset Location
      */
     @JsonProperty
-    public String getResourceLocation() {
-        return resourceLocation;
+    public Optional<String> getDatasetLocation() {
+        return Optional.ofNullable(datasetLocation);
     }
 
     /**
@@ -55,8 +57,8 @@ public class ResourceConfiguration {
      * @return a BasicAuth userName
      */
     @JsonProperty
-    public String getUserName() {
-        return userName;
+    public Optional<String> getUserName() {
+        return Optional.ofNullable(userName);
     }
 
     /**
@@ -73,7 +75,7 @@ public class ResourceConfiguration {
      * @return a BasicAuth password
      */
     @JsonProperty
-    public String getPassword() {
-        return password;
+    public Optional<String> getPassword() {
+        return Optional.ofNullable(password);
     }
 }

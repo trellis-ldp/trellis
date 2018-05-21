@@ -33,6 +33,7 @@ import org.apache.tamaya.ConfigurationProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.DatasetConnection;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
@@ -64,13 +65,13 @@ public class TrellisApplication extends ResourceConfig {
         super();
 
         final String location = config.get("trellis.rdf.location");
-        final RDFConnection rdfConnection;
+        final DatasetConnection<RDFConnection> conn = new DatasetConnection<>();
         if (isNull(location)) {
-            rdfConnection = connect(create());
+            conn.setConnection(connect(create()));
         } else if (location.startsWith("http://") || location.startsWith("https://")) {
-            rdfConnection = connect(location);
+            conn.setConnection(connect(location));
         } else {
-            rdfConnection = connect(wrap(connectDatasetGraph(location)));
+            conn.setConnection(connect(wrap(connectDatasetGraph(location))));
         }
 
         final AgentService agentService = loadFirst(AgentService.class).orElseThrow(() ->
@@ -87,7 +88,7 @@ public class TrellisApplication extends ResourceConfig {
         final IOService ioService = new JenaIOService(namespaceService);
 
         final TriplestoreResourceService resourceService = new TriplestoreResourceService(
-                rdfConnection, idService, mementoService, eventService);
+                conn, idService, mementoService, eventService);
 
         register(new LdpResource(resourceService, ioService, binaryService, agentService, resourceService));
         register(new AgentAuthorizationFilter(agentService));
