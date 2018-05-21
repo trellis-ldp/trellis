@@ -197,10 +197,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
 
-    protected String getBaseUrl() {
-        return BASE_URL;
-    }
-
     @Mock
     protected ResourceService mockResourceService;
 
@@ -237,6 +233,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @AfterAll
     public void after() throws Exception {
         super.tearDown();
+    }
+
+    protected String getBaseUrl() {
+        return BASE_URL;
     }
 
     private static OngoingStubbing<Optional<? extends Resource>> whenResource(
