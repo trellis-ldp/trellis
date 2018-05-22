@@ -39,7 +39,6 @@ final class AppUtils {
     }
 
     public static <T> T loadWithDefault(final Class<T> service, final Supplier<? extends T> other) {
-        load(service).forEach(s -> System.out.println("Services: " + s.getClass().getName()));
         return of(load(service).iterator()).filter(Iterator::hasNext).map(Iterator::next).orElseGet(other);
     }
 
