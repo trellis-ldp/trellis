@@ -31,10 +31,10 @@ import org.trellisldp.api.RuntimeTrellisException;
 
 public class AppUtilsTest {
 
+    private static final Configuration config = ConfigurationProvider.getConfiguration();
+
     private static class MyAgentService extends SimpleAgentService {
     }
-
-    private static final Configuration config = ConfigurationProvider.getConfiguration();
 
     @Test
     public void testLoaderError() {
