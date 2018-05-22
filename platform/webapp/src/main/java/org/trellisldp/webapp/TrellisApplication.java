@@ -13,12 +13,6 @@
  */
 package org.trellisldp.webapp;
 
-import static java.util.Objects.isNull;
-import static org.apache.jena.query.DatasetFactory.createTxnMem;
-import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
-import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
-
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
@@ -54,16 +48,7 @@ public class TrellisApplication extends ResourceConfig {
     public TrellisApplication() {
         super();
 
-        final String location = config.get("trellis.rdf.location");
-        final RDFConnection rdfConnection;
-        if (isNull(location)) {
-            rdfConnection = connect(createTxnMem());
-        } else if (location.startsWith("http://") || location.startsWith("https://")) {
-            rdfConnection = connect(location);
-        } else {
-            rdfConnection = connect(wrap(connectDatasetGraph(location)));
-        }
-
+        final RDFConnection rdfConnection = AppUtils.getRDFConnection(config.get("trellis.rdf.location"));
         final AgentService agentService = AppUtils.loadFirst(AgentService.class);
 
         final IdentifierService idService = AppUtils.loadFirst(IdentifierService.class);

@@ -14,9 +14,15 @@
 package org.trellisldp.webapp;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionLocal;
+import org.apache.jena.rdfconnection.RDFConnectionRemote;
+import org.apache.tamaya.Configuration;
+import org.apache.tamaya.ConfigurationProvider;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
@@ -27,6 +33,8 @@ public class AppUtilsTest {
 
     private static class MyAgentService extends SimpleAgentService {
     }
+
+    private static final Configuration config = ConfigurationProvider.getConfiguration();
 
     @Test
     public void testLoaderError() {
@@ -46,4 +54,41 @@ public class AppUtilsTest {
         assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("2"));
         assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("1"));
     }
+
+    @Test
+    public void testRDFConnectionMem() {
+        final RDFConnection conn = AppUtils.getRDFConnection(null);
+
+        assertNotNull(conn);
+        assertTrue(conn instanceof RDFConnectionLocal);
+        assertFalse(conn.isClosed());
+    }
+
+    @Test
+    public void testRDFConnectionLocal() {
+        final RDFConnection conn = AppUtils.getRDFConnection(config.get("trellis.rdf.location"));
+
+        assertNotNull(conn);
+        assertTrue(conn instanceof RDFConnectionLocal);
+        assertFalse(conn.isClosed());
+    }
+
+    @Test
+    public void testRDFConnectionRemote() {
+        final RDFConnection conn = AppUtils.getRDFConnection("http://example.com");
+
+        assertNotNull(conn);
+        assertTrue(conn instanceof RDFConnectionRemote);
+        assertFalse(conn.isClosed());
+    }
+
+    @Test
+    public void testRDFConnectionRemoteSSL() {
+        final RDFConnection conn = AppUtils.getRDFConnection("https://example.com");
+
+        assertNotNull(conn);
+        assertTrue(conn instanceof RDFConnectionRemote);
+        assertFalse(conn.isClosed());
+    }
+
 }
