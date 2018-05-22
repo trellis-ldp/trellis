@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.trellisldp.webapp.AppUtils.loadWithDefault;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionLocal;
@@ -24,28 +25,25 @@ import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.agent.SimpleAgentService;
-import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService.MultipartCapable;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.file.FileMementoService;
 
 public class AppUtilsTest {
 
     private static final Configuration config = ConfigurationProvider.getConfiguration();
 
-    private static class MyAgentService extends SimpleAgentService {
-    }
-
     @Test
     public void testLoaderError() {
-        assertThrows(RuntimeTrellisException.class, () ->
-                AppUtils.loadFirst(MultipartCapable.class));
+        assertThrows(RuntimeTrellisException.class, () -> AppUtils.loadFirst(MultipartCapable.class));
     }
 
     @Test
     public void testLoaderWithDefault() {
-        assertFalse(AppUtils.loadWithDefault(AgentService.class, MyAgentService::new) instanceof MyAgentService);
-        assertTrue(AppUtils.loadWithDefault(AgentService.class, MyAgentService::new) instanceof SimpleAgentService);
+        assertFalse(loadWithDefault(MementoService.class, NoopMementoService::new) instanceof NoopMementoService);
+        assertTrue(loadWithDefault(MementoService.class, NoopMementoService::new) instanceof FileMementoService);
     }
 
     @Test
