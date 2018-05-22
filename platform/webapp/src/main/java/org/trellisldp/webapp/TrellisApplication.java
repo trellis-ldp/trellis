@@ -13,19 +13,11 @@
  */
 package org.trellisldp.webapp;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
-import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.tamaya.Configuration;
@@ -39,7 +31,6 @@ import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopEventService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.http.AgentAuthorizationFilter;
@@ -73,13 +64,11 @@ public class TrellisApplication extends ResourceConfig {
             rdfConnection = connect(wrap(connectDatasetGraph(location)));
         }
 
-        final AgentService agentService = loadFirst(AgentService.class).orElseThrow(() ->
-                new RuntimeTrellisException("No loadable AgentService on the classpath"));
+        final AgentService agentService = AppUtils.loadFirst(AgentService.class);
 
-        final IdentifierService idService = loadFirst(IdentifierService.class).orElseThrow(() ->
-                new RuntimeTrellisException("No loadable IdentifierService on the classpath"));
+        final IdentifierService idService = AppUtils.loadFirst(IdentifierService.class);
 
-        final EventService eventService = loadFirst(EventService.class).orElseGet(NoopEventService::new);
+        final EventService eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);
 
         final BinaryService binaryService = new FileBinaryService(idService);
         final MementoService mementoService = new FileMementoService();
@@ -101,20 +90,12 @@ public class TrellisApplication extends ResourceConfig {
 
         if (config.getOrDefault("trellis.cors.enabled", Boolean.class, false)) {
             register(new CrossOriginResourceSharingFilter(
-                        asCollection(config.get("trellis.cors.allowOrigin")),
-                        asCollection(config.get("trellis.cors.allowMethods")),
-                        asCollection(config.get("trellis.cors.allowHeaders")),
-                        asCollection(config.get("trellis.cors.exposeHeaders")),
+                        AppUtils.asCollection(config.get("trellis.cors.allowOrigin")),
+                        AppUtils.asCollection(config.get("trellis.cors.allowMethods")),
+                        AppUtils.asCollection(config.get("trellis.cors.allowHeaders")),
+                        AppUtils.asCollection(config.get("trellis.cors.exposeHeaders")),
                         false, // <- Allow-Credentials not supported
                         config.getOrDefault("trellis.cors.maxAge", Integer.class, 180)));
         }
-    }
-
-    private static Collection<String> asCollection(final String value) {
-        return isNull(value) ? emptyList() :  asList(value.split("\\s*,\\s*"));
-    }
-
-    private static <T> Optional<T> loadFirst(final Class<T> service) {
-        return of(load(service).iterator()).filter(Iterator::hasNext).map(Iterator::next);
     }
 }
