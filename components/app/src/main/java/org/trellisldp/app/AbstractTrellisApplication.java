@@ -117,8 +117,12 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getMultipartUploadService().ifPresent(uploader -> environment.jersey()
                 .register(new MultipartUploader(getResourceService(), uploader, config.getBaseUrl())));
 
+        // Authentication
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(agentService);
+        agentFilter.setAdminUsers(config.getAuth().getAdminUsers());
+
         // Filters
-        environment.jersey().register(new AgentAuthorizationFilter(agentService));
+        environment.jersey().register(agentFilter);
         environment.jersey().register(new CacheControlFilter(config.getCache().getMaxAge(),
                     config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
 

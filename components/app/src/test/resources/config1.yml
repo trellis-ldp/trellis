@@ -20,6 +20,9 @@ hubUrl: http://hub.example.com/
 namespaces: /tmp/trellisData/namespaces.json
 
 auth:
+    adminUsers:
+        - baoyu
+        - daiyu
     webac:
         enabled: true
         cacheSize: 100

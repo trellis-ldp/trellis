@@ -51,6 +51,7 @@ namespaces: /path/to/namespaces.json
 
 ```yaml
 auth:
+    adminUsers: []
     webac:
         enabled: true
     anon:
@@ -66,6 +67,7 @@ auth:
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
+| adminUsers | (none) | A list of webIDs that should be given admin access for the purpose of authorization |
 | webac / enabled | true | Whether WebAC authorization is enabled |
 | anon / enabled | false | Whether anonymous authentication is enabled |
 | jwt / enabled | true | Whether jwt authentication is enabled |

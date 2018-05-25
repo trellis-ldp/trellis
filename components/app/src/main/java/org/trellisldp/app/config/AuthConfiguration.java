@@ -15,6 +15,11 @@ package org.trellisldp.app.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
 /**
  * Configuration for authN/authZ.
  */
@@ -23,6 +28,27 @@ public class AuthConfiguration {
     private BasicAuthConfiguration basic = new BasicAuthConfiguration();
     private WebacConfiguration webac = new WebacConfiguration();
     private AnonAuthConfiguration anon = new AnonAuthConfiguration();
+
+    @NotNull
+    private List<String> adminUsers = new ArrayList<>();
+
+    /**
+     * Set the admin users.
+     * @param adminUsers the admin users
+     */
+    @JsonProperty
+    public void setAdminUsers(final List<String> adminUsers) {
+        this.adminUsers = adminUsers;
+    }
+
+    /**
+     * Get the admin users.
+     * @return the admin users
+     */
+    @JsonProperty
+    public List<String> getAdminUsers() {
+        return adminUsers;
+    }
 
     /**
      * Set the basic auth configuration.

@@ -41,14 +41,15 @@ baseUrl:
 hubUrl:
 
 auth:
+    adminUsers: []
     webac:
         enabled: true
     anon:
         enabled: true
     jwt:
-        enabled: true
+        enabled: false
         base64Encoded: false
-        key: secret
+        key: changeme
     basic:
         enabled: true
         usersFile: /opt/trellis/etc/users.auth
