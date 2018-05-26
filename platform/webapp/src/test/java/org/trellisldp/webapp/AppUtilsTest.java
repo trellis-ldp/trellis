@@ -89,4 +89,27 @@ public class AppUtilsTest {
         assertFalse(conn.isClosed());
     }
 
+    @Test
+    public void testNoCORSFilter() {
+       System.getProperties().setProperty("trellis.cors.enabled", "false");
+       assertFalse(AppUtils.getCORSFilter().isPresent());
+       System.getProperties().remove("trellis.cors.enabled");
+    }
+
+    @Test
+    public void testCORSFilter() {
+       assertTrue(AppUtils.getCORSFilter().isPresent());
+    }
+
+    @Test
+    public void testNoCacheFilter() {
+       System.getProperties().setProperty("trellis.cache.enabled", "false");
+       assertFalse(AppUtils.getCacheControlFilter().isPresent());
+       System.getProperties().remove("trellis.cache.enabled");
+    }
+
+    @Test
+    public void testCacheFilter() {
+       assertTrue(AppUtils.getCacheControlFilter().isPresent());
+    }
 }

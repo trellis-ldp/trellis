@@ -28,8 +28,6 @@ import org.trellisldp.api.NoopEventService;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.http.AgentAuthorizationFilter;
-import org.trellisldp.http.CacheControlFilter;
-import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.LdpResource;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.namespaces.NamespacesJsonContext;
@@ -66,21 +64,8 @@ public class TrellisApplication extends ResourceConfig {
         register(new LdpResource(resourceService, ioService, binaryService, agentService, resourceService));
         register(new AgentAuthorizationFilter(agentService));
 
-        if (config.getOrDefault("trellis.cache.enabled", Boolean.class, false)) {
-            register(new CacheControlFilter(
-                        config.getOrDefault("trellis.cache.maxAge", Integer.class, 86400),
-                        config.getOrDefault("trellis.cache.mustRevalidate", Boolean.class, true),
-                        config.getOrDefault("trellis.cache.noCache", Boolean.class, false)));
-        }
+        AppUtils.getCacheControlFilter().ifPresent(this::register);
+        AppUtils.getCORSFilter().ifPresent(this::register);
 
-        if (config.getOrDefault("trellis.cors.enabled", Boolean.class, false)) {
-            register(new CrossOriginResourceSharingFilter(
-                        AppUtils.asCollection(config.get("trellis.cors.allowOrigin")),
-                        AppUtils.asCollection(config.get("trellis.cors.allowMethods")),
-                        AppUtils.asCollection(config.get("trellis.cors.allowHeaders")),
-                        AppUtils.asCollection(config.get("trellis.cors.exposeHeaders")),
-                        false, // <- Allow-Credentials not supported
-                        config.getOrDefault("trellis.cors.maxAge", Integer.class, 180)));
-        }
     }
 }
