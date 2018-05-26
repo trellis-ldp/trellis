@@ -2,8 +2,8 @@
 
 A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) applications.
 
-[![Build Status](https://travis-ci.org/trellis-ldp/trellis.png?branch=master)](https://travis-ci.org/trellis-ldp/trellis)
-[![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
+[![Build Status](https://travis-ci.org/trellis-ldp/trellis.png?branch=trellis-0.7.x)](https://travis-ci.org/trellis-ldp/trellis)
+[![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=trellis-0.7.x)](https://coveralls.io/github/trellis-ldp/trellis?branch=trellis-0.7.x)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/09f8d4ae61764bd9a1fead16514b6db2)](https://www.codacy.com/app/acoburn/trellis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=trellis-ldp/trellis&amp;utm_campaign=Badge_Grade)
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 

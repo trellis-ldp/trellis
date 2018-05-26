@@ -131,6 +131,7 @@ allprojects { subproj ->
     release {
         tagTemplate = '$name-$version'
         git {
+            requireBranch = 'trellis-0.7.x'
             signTag = true
         }
     }
