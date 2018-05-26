@@ -16,7 +16,7 @@ A [mailing list](https://groups.google.com/group/trellis-ldp) is available to an
 
 ## Downloads
 
-The fastest way to get started with Trellis is to download the [latest release](https://github.com/trellis-ldp/trellis/releases)
+The fastest way to get started with Trellis is to download the [latest release](https://www.trellisldp.org/download.html)
 and follow these [installation instructions](platform/linux).
 
 ## Features
@@ -78,29 +78,6 @@ Trellis is an [HTTP/1.1](https://tools.ietf.org/html/rfc7231) server, which comp
 
 All source code is open source and licensed as Apache 2. Contributions are welcome.
 
-### Trellis Vocabulary
-
-This [vocabulary](https://github.com/trellis-ldp/trellis-ontology) defines the Trellis-specific
-[RDF terms](https://www.trellisldp.org/ns/trellis.html).
-
-### Implementations
-
-This repository contains the core abstractions and interfaces for Trellis along with a number of default service
-implementations. It contains a [reference implementation](components/app-triplestore) that uses a [persistence layer](components/triplestore)
-based on a triplestore or local dataset.
-
-## Principle dependencies
-
-  * [Commons-RDF](https://commons.apache.org/proper/commons-rdf/) -- for RDF abstractions
-  * [Jena](https://jena.apache.org/) -- for RDF I/O processing
-  * [Jackson](https://github.com/FasterXML/jackson) -- for JSON processing
-
-## Related projects
-
-  * [py-ldnlib](https://github.com/trellis-ldp/py-ldnlib) A Python3 library for linked data notifications
-  * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
-  * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A horizontally scalable, Kafka-based Trellis application
-
 ## Building
 
  * Trellis is written in Java and requires at least Java 8. It can be built with [Gradle](https://gradle.org).
@@ -108,4 +85,10 @@ based on a triplestore or local dataset.
 ```
 $ ./gradlew install
 ````
+
+## Related projects
+
+  * [py-ldnlib](https://github.com/trellis-ldp/py-ldnlib) A Python3 library for linked data notifications
+  * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
+  * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A horizontally scalable, Kafka-based Trellis application
 
