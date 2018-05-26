@@ -4,7 +4,7 @@ org.trellisldp.api
 org.trellisldp.app
 org.trellisldp.app.auth
 org.trellisldp.app.config
-org.trellisldp.app.health
+org.trellisldp.app.triplestore
 org.trellisldp.audit
 org.trellisldp.constraint
 org.trellisldp.event
@@ -16,6 +16,10 @@ org.trellisldp.io
 org.trellisldp.jms
 org.trellisldp.kafka
 org.trellisldp.namespaces
+org.trellisldp.osgi
+org.trellisldp.rdfa
+org.trellisldp.test
 org.trellisldp.triplestore
 org.trellisldp.vocabulary
 org.trellisldp.webac
+org.trellisldp.webapp
