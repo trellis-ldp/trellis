@@ -6,6 +6,7 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 [![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/09f8d4ae61764bd9a1fead16514b6db2)](https://www.codacy.com/app/acoburn/trellis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=trellis-ldp/trellis&amp;utm_campaign=Badge_Grade)
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
+[![DOI](https://zenodo.org/badge/77492072.svg)](https://zenodo.org/badge/latestdoi/77492072)
 
 General documentation for [Trellis](https://www.trellisldp.org) is available on the [project wiki](https://github.com/trellis-ldp/trellis/wiki).
 API documentation ([JavaDocs](https://trellis-ldp.github.io/trellis/apidocs)) for the latest release is also available.
