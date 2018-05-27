@@ -18,13 +18,13 @@ It is modular, extensible and fast.
 
   * [Wiki](https://github.com/trellis-ldp/trellis/wiki)
   * [Configuration guide](https://github.com/trellis-ldp/trellis/tree/master/platform/linux#configuration)
-  * [Mailing List]((https://groups.google.com/group/trellis-ldp)
+  * [Mailing List](https://groups.google.com/group/trellis-ldp)
   * [API Documentation](https://trellis-ldp.github.io/trellis/apidocs) (JavaDocs)
   * [Website](https://www.trellisldp.org)
 
 All source code is open source and licensed as Apache 2. Contributions are always welcome.
 
-## Building
+## Building Trellis
 
 In most cases, you won't need to compile Trellis. Released components are available on Maven Central,
 and the deployable applicaton can be [downloaded](https://www.trellisldp.org/download.html) directly
