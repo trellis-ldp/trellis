@@ -62,7 +62,6 @@ buildDeb {
 }
 
 signing {
-    required { !version.endsWith("SNAPSHOT") }
     sign buildRpm
     sign buildDeb
     sign distTar
