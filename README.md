@@ -40,5 +40,4 @@ $ ./gradlew install
   * [py-ldnlib](https://github.com/trellis-ldp/py-ldnlib) A Python3 library for linked data notifications
   * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
   * [trellis-ui](https://github.com/trellis-ldp/trellis-ui) A JavaScript single page app for managing Trellis
-  * [Rosid](https://github.com/trellis-ldp/trellis-rosid): A horizontally scalable, Kafka-based Trellis application
 
