@@ -13,11 +13,11 @@ The quickest way to get started with Trellis is to download the
 [latest release](https://www.trellisldp.org/download.html)
 and follow the installation instructions.
 
-Trellis is built on existing [W3C](http://www.w3.org) standards.
+Trellis is built on existing [Web standards](https://github.com/trellis-ldp/trellis/wiki/Web-Standards).
 It is modular, extensible and fast.
 
   * [Wiki](https://github.com/trellis-ldp/trellis/wiki)
-  * [Configuration guide](https://github.com/trellis-ldp/trellis/tree/master/platform/linux#configuration)
+  * [Configuration guide](https://github.com/trellis-ldp/trellis/wiki/Configuration-Guide)
   * [Mailing List](https://groups.google.com/group/trellis-ldp)
   * [API Documentation](https://trellis-ldp.github.io/trellis/apidocs) (JavaDocs)
   * [Website](https://www.trellisldp.org)
@@ -33,7 +33,7 @@ to have Java 8+ available. The software can be built with [Gradle](https://gradl
 
 ```
 $ ./gradlew install
-````
+```
 
 ## Related projects
 
