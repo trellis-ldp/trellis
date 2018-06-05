@@ -13,6 +13,7 @@
  */
 package org.trellisldp.app;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -88,6 +89,17 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     protected abstract Optional<AuditService> getAuditService();
 
     /**
+     * Get any additional components to register with Jersey.
+     *
+     * <p>Note: by default, this returns an empty list.
+     *
+     * @return any additional components.
+     */
+    protected List<Object> getComponents() {
+        return emptyList();
+    }
+
+    /**
      * Setup the trellis application.
      *
      * <p>This method is called at the very beginning of the {@link Application#run} method. It can be used
@@ -145,5 +157,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getCorsConfiguration(config).ifPresent(cors -> environment.jersey().register(
                 new CrossOriginResourceSharingFilter(cors.getAllowOrigin(), cors.getAllowMethods(),
                     cors.getAllowHeaders(), cors.getExposeHeaders(), cors.getAllowCredentials(), cors.getMaxAge())));
+
+        // Additional components
+        getComponents().forEach(environment.jersey()::register);
     }
 }
