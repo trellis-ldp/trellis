@@ -14,6 +14,7 @@
 package org.trellisldp.test;
 
 import static java.time.Instant.now;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
@@ -295,7 +296,8 @@ public interface ResourceServiceTests {
                         t.getObject())));
             r.getBinary().ifPresent(b -> {
                 assertEquals(binaryLocation, b.getIdentifier());
-                assertEquals(binaryTime, b.getModified());
+                assertFalse(b.getModified().isBefore(binaryTime.truncatedTo(MILLIS)));
+                assertFalse(b.getModified().isAfter(now()));
                 assertEquals(of("text/plain"), b.getMimeType());
                 assertEquals(of(150L), b.getSize());
             });
