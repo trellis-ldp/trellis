@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  zoo1:
+    image: zookeeper:3.5
+    container_name: zoo1
+    restart: always
+    hostname: zoo1
+    ports:
+       - "2181:2181"
+       - "8500:8090"
+    environment:
+        ZOO_MY_ID: 1
+        ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2182 server.3=zoo3:2888:3888;2183
+
+  zoo2:
+    image: zookeeper:3.5
+    restart: always
+    hostname: zoo2
+    ports:
+       - "2182:2181"
+    environment:
+        ZOO_MY_ID: 2
+        ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2182 server.3=zoo3:2888:3888;2183
+
+  zoo3:
+    image: zookeeper:3.5
+    restart: always
+    hostname: zoo3
+    ports:
+       - "2183:2181"
+    environment:
+        ZOO_MY_ID: 3
+        ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2182 server.3=zoo3:2888:3888;2183
+
+  kafka:
+    image: trellisldp/kafka:1.1.0
+    ports:
+        - "9094:9094"
+        - "1099:1099"
+    environment:
+      HOSTNAME_COMMAND: "ifconfig|grep inet|head -1|sed 's/\\:/ /'|awk '{print $$3}'"
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://_{HOSTNAME_COMMAND}:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+     # KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.rmi.port=1099"
+     # JMX_PORT: 1099
+      KAFKA_MESSAGE_MAX_BYTES: 5000000
+    volumes:
+      - kafka-data-volume:/kafka
+
+volumes:
+  kafka-data-volume:
+    driver_opts:
+      type: none
+      device: /mnt/kafka-data
+      o: bind
+
+
