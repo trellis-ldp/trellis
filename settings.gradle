@@ -6,6 +6,7 @@ include ':trellis-vocabulary'
 include ':trellis-amqp'
 include ':trellis-jms'
 include ':trellis-kafka'
+include ':trellis-camel-producer'
 
 include ':trellis-agent'
 include ':trellis-audit'
@@ -34,6 +35,7 @@ project(':trellis-vocabulary').projectDir = "$rootDir/core/vocabulary" as File
 project(':trellis-amqp').projectDir = "$rootDir/notifications/amqp" as File
 project(':trellis-jms').projectDir = "$rootDir/notifications/jms" as File
 project(':trellis-kafka').projectDir = "$rootDir/notifications/kafka" as File
+project(':trellis-camel-producer').projectDir = "$rootDir/notifications/camel-producer" as File
 
 project(':trellis-agent').projectDir = "$rootDir/components/agent" as File
 project(':trellis-app').projectDir = "$rootDir/components/app" as File

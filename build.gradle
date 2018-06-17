@@ -12,6 +12,7 @@ ext {
     /* Dependencies */
     activationApiVersion = '1.2.0'
     activeMqVersion = '5.15.4'
+    camelVersion = '2.21.1'
     commonsCodecVersion = '1.11'
     commonsCollectionsVersion = '4.1'
     commonsIoVersion = '2.6'

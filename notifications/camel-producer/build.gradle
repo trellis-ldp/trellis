@@ -1,0 +1,48 @@
+apply plugin: 'java-library'
+apply plugin: 'osgi'
+
+description = 'Trellis Notifications (Kafka)'
+
+ext {
+    moduleName = 'org.trellisldp.kafka'
+}
+
+dependencies {
+    api("org.apache.camel:camel-core:$camelVersion")
+    api("org.apache.camel:camel-kafka:$camelVersion")
+    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    api project(':trellis-api')
+
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("javax.activation:javax.activation-api:$activationApiVersion")
+    testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    testImplementation("javax.xml.bind:jaxb-api:$jaxbVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-vocabulary')
+}
+
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Automatic-Module-Name', moduleName
+        instruction 'Import-Package', '*'
+        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+        instruction 'Require-Capability', '''\
+            osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",
+            osgi.serviceloader;
+                filter:="(osgi.serviceloader=org.trellisldp.api.ActivityStreamService)";
+                resolution:=mandatory; cardinality:=mandatory
+            '''
+    }
+}
