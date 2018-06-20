@@ -15,7 +15,6 @@
 package org.trellisldp.app.triplestore;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.HOURS;
 
@@ -85,11 +84,6 @@ public class TrellisApplication extends AbstractTrellisApplication<TrellisConfig
     @Override
     protected Optional<AuditService> getAuditService() {
         return of(resourceService);
-    }
-
-    @Override
-    protected Optional<BinaryService.MultipartCapable> getMultipartUploadService() {
-        return empty();
     }
 
     @Override

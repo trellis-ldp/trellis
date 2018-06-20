@@ -44,7 +44,6 @@ import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.LdpResource;
-import org.trellisldp.http.MultipartUploader;
 import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.webac.WebACService;
@@ -75,12 +74,6 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      * @return a binary service
      */
     protected abstract BinaryService getBinaryService();
-
-    /**
-     * Get a multipart uploader service.
-     * @return a multipart uploader service, if one exists
-     */
-    protected abstract Optional<BinaryService.MultipartCapable> getMultipartUploadService();
 
     /**
      * Get the audit service.
@@ -126,8 +119,6 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         // Resource matchers
         environment.jersey().register(new LdpResource(getResourceService(), getIOService(), getBinaryService(),
                     agentService, getAuditService().orElseGet(NoopAuditService::new), config.getBaseUrl()));
-        getMultipartUploadService().ifPresent(uploader -> environment.jersey()
-                .register(new MultipartUploader(getResourceService(), uploader, config.getBaseUrl())));
 
         // Authentication
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(agentService);
