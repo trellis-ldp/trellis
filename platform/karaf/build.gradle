@@ -6,9 +6,11 @@ processResources {
     expand project.properties
 }
 
-artifacts {
-    archives (file('build/resources/main/features.xml')) {
-        classifier 'features'
-        type 'xml'
+publishing.publications {
+    maven(MavenPublication) {
+        artifact ('build/resources/main/features.xml') {
+            classifier 'features'
+            extension 'xml'
+        }
     }
 }
