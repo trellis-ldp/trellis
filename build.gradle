@@ -51,6 +51,7 @@ ext {
 
     /* OSGi */
     asmVersion = '6.1.1'
+    mustacheOsgiVersion = '0.9.5_3'
     jenaVersionRange = '[3.7,4)'
     kafkaOsgiVersion = "${kafkaVersion}_1"
     karafVersion = '4.2.0'
