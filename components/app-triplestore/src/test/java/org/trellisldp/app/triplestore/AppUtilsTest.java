@@ -39,7 +39,6 @@ import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
-import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.kafka.KafkaPublisher;
 
 /**
@@ -61,7 +60,7 @@ public class AppUtilsTest {
 
     @Test
     public void testGetRDFConnection() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 

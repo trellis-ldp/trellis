@@ -52,26 +52,9 @@ public class TrellisConfiguration extends Configuration {
     @NotNull
     private NotificationsConfiguration notifications = new NotificationsConfiguration();
 
-    @NotNull
-    private String mementos;
-
-    @NotNull
-    private String binaries;
-
-    @NotNull
-    private String namespaces;
-
-    @NotNull
-    private Integer levels = 3;
-
-    @NotNull
-    private Integer length =  2;
-
     private String hubUrl = null;
 
     private String baseUrl = null;
-
-    private String resourceLocation = null;
 
     private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
@@ -112,42 +95,6 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Get the Memento configuration.
-     * @return the Memento resource location
-     */
-    @JsonProperty
-    public String getMementos() {
-        return mementos;
-    }
-
-    /**
-     * Set the Memento resource configuration.
-     * @param config the Memento resource location
-     */
-    @JsonProperty
-    public void setMementos(final String config) {
-        this.mementos = config;
-    }
-
-    /**
-     * Get the binary configuration.
-     * @return the binary configuration
-     */
-    @JsonProperty
-    public String getBinaries() {
-        return binaries;
-    }
-
-    /**
-     * Set the binary configuration.
-     * @param config the binary configuration
-     */
-    @JsonProperty
-    public void setBinaries(final String config) {
-        this.binaries = config;
-    }
-
-    /**
      * Set the asset configuration.
      * @param assets the asset config
      */
@@ -181,24 +128,6 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public void setDefaultName(final String name) {
         this.defaultName = name;
-    }
-
-    /**
-     * Set the RDF Connection configuration.
-     * @param config the RDF Connection location
-     */
-    @JsonProperty
-    public void setResources(final String config) {
-        this.resourceLocation = config;
-    }
-
-    /**
-     * Get the RDF Connection configuration.
-     * @return the RDF Connection location
-     */
-    @JsonProperty
-    public String getResources() {
-        return resourceLocation;
     }
 
     /**
@@ -277,24 +206,6 @@ public class TrellisConfiguration extends Configuration {
     }
 
     /**
-     * Set the namespaces filename.
-     * @param namespaces the namespaces filename
-     */
-    @JsonProperty
-    public void setNamespaces(final String namespaces) {
-        this.namespaces = namespaces;
-    }
-
-    /**
-     * Get the namespace filename.
-     * @return the namespace filename
-     */
-    @JsonProperty
-    public String getNamespaces() {
-        return namespaces;
-    }
-
-    /**
      * Set the json-ld configuration.
      * @param jsonld the jsond-ld configuration
      */
@@ -328,63 +239,5 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public NotificationsConfiguration getNotifications() {
         return notifications;
-    }
-
-    /**
-     * Set the character length of intermediate path components for internal binary resource identifiers.
-     *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Setting this to "2" results in a maximum of 256 subdirectories in each intermediate segment.
-     * Values between 1 and 3 are suitable for most cases.
-     *
-     * @param length the character length of each hierarchy segment
-     */
-    @JsonProperty
-    public void setBinaryHierarchyLength(final Integer length) {
-        this.length = length;
-    }
-
-    /**
-     * Get the character length of intermediate path components for internal binary resource identifiers.
-     *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Setting this to "2" results in a maximum of 256 subdirectories in each intermediate segment.
-     * Values between 1 and 3 are suitable for most cases.
-     *
-     * @return the character length of each hierarchy segment
-     */
-    @JsonProperty
-    public Integer getBinaryHierarchyLength() {
-        return length;
-    }
-
-    /**
-     * Set the number of levels of hierarchy for internal binary resource identifiers.
-     *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Values between 2 and 4 are generally suitable for most uses.
-     *
-     * @param levels the number of levels of hierarchy.
-     */
-    @JsonProperty
-    public void setBinaryHierarchyLevels(final Integer levels) {
-        this.levels = levels;
-    }
-
-    /**
-     * Get the number of levels of hierarchy for internal binary resource identifiers.
-     *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Values between 2 and 4 are generally suitable for most uses.
-     *
-     * @return the number of levels of hierarchy.
-     */
-    @JsonProperty
-    public Integer getBinaryHierarchyLevels() {
-        return levels;
     }
 }

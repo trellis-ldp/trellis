@@ -36,7 +36,6 @@ import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.app.AbstractTrellisApplication;
 import org.trellisldp.app.TrellisCache;
-import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.id.UUIDGenerator;
@@ -48,7 +47,7 @@ import org.trellisldp.triplestore.TriplestoreResourceService;
 /**
  * A deployable Trellis application.
  */
-public class TrellisApplication extends AbstractTrellisApplication<TrellisConfiguration> {
+public class TrellisApplication extends AbstractTrellisApplication<AppConfiguration> {
 
     private TriplestoreResourceService resourceService;
 
@@ -87,7 +86,7 @@ public class TrellisApplication extends AbstractTrellisApplication<TrellisConfig
     }
 
     @Override
-    protected void initialize(final TrellisConfiguration config, final Environment environment) {
+    protected void initialize(final AppConfiguration config, final Environment environment) {
         super.initialize(config, environment);
 
         final IdentifierService idService = new UUIDGenerator();
@@ -98,7 +97,7 @@ public class TrellisApplication extends AbstractTrellisApplication<TrellisConfig
     }
 
     private TriplestoreResourceService buildResourceService(final IdentifierService idService,
-            final TrellisConfiguration config, final Environment environment) {
+            final AppConfiguration config, final Environment environment) {
         final MementoService mementoService = new FileMementoService(config.getMementos());
         final RDFConnection rdfConnection = AppUtils.getRDFConnection(config);
         final EventService notificationService = AppUtils.getNotificationService(config.getNotifications(),
@@ -109,7 +108,7 @@ public class TrellisApplication extends AbstractTrellisApplication<TrellisConfig
         return new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
     }
 
-    private IOService buildIoService(final TrellisConfiguration config) {
+    private IOService buildIoService(final AppConfiguration config) {
         final Long cacheSize = config.getJsonld().getCacheSize();
         final Long hours = config.getJsonld().getCacheExpireHours();
         final Cache<String, String> cache = newBuilder().maximumSize(cacheSize).expireAfterAccess(hours, HOURS).build();
@@ -121,7 +120,7 @@ public class TrellisApplication extends AbstractTrellisApplication<TrellisConfig
                 config.getJsonld().getContextWhitelist(), config.getJsonld().getContextDomainWhitelist());
     }
 
-    private BinaryService buildBinaryService(final IdentifierService idService, final TrellisConfiguration config) {
+    private BinaryService buildBinaryService(final IdentifierService idService, final AppConfiguration config) {
         return new FileBinaryService(idService, config.getBinaries(), config.getBinaryHierarchyLevels(),
                 config.getBinaryHierarchyLength());
     }
