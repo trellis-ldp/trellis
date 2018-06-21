@@ -33,14 +33,15 @@ jar {
     }
 }
 
-artifacts {
-    archives (file('build/cfg/main/org.trellisldp.namespaces.cfg')) {
-        classifier 'configuration'
-        type 'cfg'
-    }
-    archives (file('build/resources/main/defaultNamespaces.json')) {
-        classifier 'configuration'
-        type 'json'
+publishing.publications {
+    maven(MavenPublication) {
+        artifact (file('build/cfg/main/org.trellisldp.namespaces.cfg')) {
+            classifier 'configuration'
+            extension 'cfg'
+        }
+        artifact (file('build/resources/main/defaultNamespaces.json')) {
+            classifier 'configuration'
+            extension 'json'
+        }
     }
 }
-
