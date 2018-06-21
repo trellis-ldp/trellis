@@ -35,11 +35,6 @@ dependencies {
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
-uploadArchives {
-    // There is no need to store these artifacts on maven central
-    enabled = false
-}
-
 test {
     systemProperty 'trellis.file.memento.basepath', "$buildDir/data/mementos"
     systemProperty 'trellis.file.binary.basepath', "$buildDir/data/binaries"

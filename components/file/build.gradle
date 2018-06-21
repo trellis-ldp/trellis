@@ -44,10 +44,12 @@ jar {
     }
 }
 
-artifacts {
-    archives (file('build/cfg/main/org.trellisldp.file.cfg')) {
-        classifier 'configuration'
-        type 'cfg'
+publishing.publications {
+    maven(MavenPublication) {
+        artifact ('build/cfg/main/org.trellisldp.file.cfg') {
+            classifier 'configuration'
+            extension 'cfg'
+        }
     }
 }
 
