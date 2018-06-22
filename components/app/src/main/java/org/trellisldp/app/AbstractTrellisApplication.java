@@ -58,26 +58,36 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     private final AgentService agentService = new SimpleAgentService();
 
     /**
-     * Get the resource service.
-     * @return a resource service
+     * Get the {@link ResourceService}. There should be one and only one
+     * {@code ResourceService} in a deployed Trellis instance. This method should
+     * return the same {@code ResourceService} every time it is called.
+     * 
+     * @return the {@code ResourceService},
      */
     protected abstract ResourceService getResourceService();
 
     /**
-     * Get the IO Service.
-     * @return an IO service
+     * Get the {@link IOService}. There should be one and only one
+     * {@code IOService} in a deployed Trellis instance. This method should
+     * return the same {@code IOService} every time it is called.
+     * @return the {@code IOService}
      */
     protected abstract IOService getIOService();
 
     /**
-     * Get the binary service.
-     * @return a binary service
+     * Get the {@link BinaryService}. There should be one and only one
+     * {@code BinaryService} in a deployed Trellis instance. This method should
+     * return the same {@code BinaryService} every time it is called.
+     * @return the {@code BinaryService}
      */
     protected abstract BinaryService getBinaryService();
 
     /**
-     * Get the audit service.
-     * @return an audit service, if one exists
+     * Get an optional {@link AuditService}. There should be at most one
+     * {@code AuditService} in a deployed Trellis instance. If there is one, this
+     * method should return the same {@code AuditService} every time it is called.
+     * 
+     * @return an {@code AuditService}, if one exists
      */
     protected abstract Optional<AuditService> getAuditService();
 
