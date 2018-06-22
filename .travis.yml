@@ -15,17 +15,15 @@ matrix:
   include:
     # JDK 8
     - jdk: oraclejdk8
-      script: ./gradlew clean check install
       after_success: ./gradlew jacocoRootReport coveralls sonarqube
 
     # JDK 9
     - jdk: oraclejdk9
-      script: ./gradlew clean check install
 
     # JDK 10
     - jdk: oraclejdk10
-      script: ./gradlew clean check install
 
     # JDK 11
     - jdk: oraclejdk11
-      script: ./gradlew clean check install
+
+script: ./gradlew clean check install
