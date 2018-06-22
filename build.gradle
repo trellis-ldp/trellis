@@ -203,65 +203,46 @@ subprojects { subproj ->
 
     publishing {
         publications {
-            mavenJava(MavenPublication) {
-                pom.packaging = 'jar'
+            maven(MavenPublication) {
+                pom {
+                    packaging = 'jar'
+                    url = 'https://www.trellisldp.org'
+                    inceptionYear = '2017'
+                    name = 'Trellis Linked Data Server'
+                    description = 'The core components for a Trellis linked data server'
 
+                    organization {
+                        name = project.vendor
+                        url = project.homepage
+                    }
+
+                    developers {
+                        developer {
+                            id = 'acoburn'
+                            name = 'Aaron Coburn'
+                            email = 'acoburn (at) apache (dot) org'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:git://github.com/trellis-ldp/trellis.git'
+                        developerConnection = 'scm:git:git@github.com/trellis-ldp/trellis.git'
+                        url = 'https://github.com/trellis-ldp/trellis'
+                        tag = 'HEAD'
+                    }
+
+                    licenses {
+                        license {
+                            name = 'Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0'
+                            comments = 'Copyright (c) 2017-2018 Trellis LDP'
+                        }
+                    }
+
+                }
                 pom.withXml {
-                    def root = asNode()
-
                     // eliminate test-scoped dependencies
-                    root.dependencies.removeAll { dep -> dep.scope == "test" }
-
-                    // add items for maven central
-                    root.children().last() + {
-                        resolveStrategy = Closure.DELEGATE_FIRST
-                        url 'https://www.trellisldp.org'
-                        inceptionYear '2017'
-                        name 'Trellis Linked Data Server'
-                        description 'The core components for a Trellis linked data server'
-
-                        organization {
-                            name project.vendor
-                            url project.homepage
-                        }
-
-                        developers {
-                            developer {
-                                id 'acoburn'
-                                name 'Aaron Coburn'
-                                email 'acoburn (at) apache (dot) org'
-                                roles {
-                                    role 'developer'
-                                }
-                                timezone '-5'
-                            }
-                        }
-
-                        scm {
-                            connection 'scm:git:git://github.com/trellis-ldp/trellis.git'
-                            developerConnection 'scm:git:git@github.com/trellis-ldp/trellis.git'
-                            url 'https://github.com/trellis-ldp/trellis'
-                            tag 'HEAD'
-                        }
-
-                        licenses {
-                            license {
-                                name 'Apache License, Version 2.0'
-                                url 'http://www.apache.org/licenses/LICENSE-2.0'
-                                comments 'Copyright (c) 2017-2018 Trellis LDP'
-                            }
-                        }
-                    }
-
-                    def pomFile = file("${project.buildDir}/generated-pom.xml")
-                    writeTo(pomFile)
-                    def pomAscFile = signing.sign(pomFile).signatureFiles[0]
-                    if (pomAscFile.file) {
-                        artifact(pomAscFile) {
-                            classifier = null
-                            extension = 'pom.asc'
-                        }
-                    }
+                    asNode().dependencies.removeAll { dep -> dep.scope == "test" }
                 }
 
                 from components.java
@@ -272,28 +253,6 @@ subprojects { subproj ->
 
                 artifact(javadocJar) {
                     classifier = 'javadoc'
-                }
-
-                project.tasks.signArchives.signatureFiles.each {
-                    if (it.file) {
-                        def matcher = it =~ /-(sources|javadoc|features|configuration)\.(jar|xml|cfg)\.asc$/
-                        if (matcher.find()) {
-                            artifact(it) {
-                                classifier = matcher.group(1)
-                                extension = matcher.group(2) + ".asc"
-                            }
-                        } else if (it.getPath().endsWith('.jar.asc')) {
-                            artifact(it) {
-                                classifier = null
-                                extension = "jar.asc"
-                            }
-                        } else if (it.getPath().endsWith(".war.asc")) {
-                            artifact(it) {
-                                classifier = null
-                                extension = "war.asc"
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -314,18 +273,6 @@ subprojects { subproj ->
         }
     }
 
-    model {
-        tasks.generatePomFileForMavenJavaPublication {
-            destination = file("$buildDir/generated-pom.xml")
-        }
-        tasks.publishMavenJavaPublicationToMavenLocal {
-            dependsOn project.tasks.signArchives
-        }
-        tasks.publishMavenJavaPublicationToMavenRepository {
-            dependsOn project.tasks.signArchives
-        }
-    }
-
     tasks.withType(PublishToMavenRepository) {
         onlyIf {
             ! omitFromMavenPublishing.contains(subproj.name)
@@ -341,7 +288,7 @@ subprojects { subproj ->
 
     signing {
         required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("publish") }
-        sign configurations.archives
+        sign publishing.publications
     }
 
     processResources {
