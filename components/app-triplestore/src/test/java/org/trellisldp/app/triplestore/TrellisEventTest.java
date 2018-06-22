@@ -50,7 +50,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
-import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.test.AbstractApplicationEventTests;
 
 /**
@@ -66,8 +65,8 @@ public class TrellisEventTest extends AbstractApplicationEventTests implements M
 
     private static final Client CLIENT;
 
-    private static final DropwizardTestSupport<TrellisConfiguration> APP
-        = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,
+    private static final DropwizardTestSupport<AppConfiguration> APP
+        = new DropwizardTestSupport<AppConfiguration>(TrellisApplication.class,
                 resourceFilePath("trellis-config.yml"),
                 config("notifications.type", "JMS"),
                 config("notifications.connectionString", "vm://localhost"),

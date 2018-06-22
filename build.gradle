@@ -51,6 +51,7 @@ ext {
 
     /* OSGi */
     asmVersion = '6.1.1'
+    mustacheOsgiVersion = '0.9.5_3'
     jenaVersionRange = '[3.7,4)'
     kafkaOsgiVersion = "${kafkaVersion}_1"
     karafVersion = '4.2.0'
@@ -85,6 +86,11 @@ ext {
             'trellis-webac',
             'trellis-webapp'
     ]
+
+    omitFromMavenPublishing = [
+        'trellis-linux',
+        'trellis-webapp'
+    ]
 }
 
 allprojects { subproj ->
@@ -93,7 +99,6 @@ allprojects { subproj ->
     apply plugin: 'com.github.hierynomus.license'
     apply plugin: 'jacoco'
     apply plugin: 'java'
-    apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
@@ -199,78 +204,97 @@ subprojects { subproj ->
     publishing {
         publications {
             maven(MavenPublication) {
+                pom {
+                    packaging = 'jar'
+                    url = 'https://www.trellisldp.org'
+                    inceptionYear = '2017'
+                    name = 'Trellis Linked Data Server'
+                    description = 'The core components for a Trellis linked data server'
+
+                    organization {
+                        name = project.vendor
+                        url = project.homepage
+                    }
+
+                    developers {
+                        developer {
+                            id = 'acoburn'
+                            name = 'Aaron Coburn'
+                            email = 'acoburn (at) apache (dot) org'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:git://github.com/trellis-ldp/trellis.git'
+                        developerConnection = 'scm:git:git@github.com/trellis-ldp/trellis.git'
+                        url = 'https://github.com/trellis-ldp/trellis'
+                        tag = 'HEAD'
+                    }
+
+                    licenses {
+                        license {
+                            name = 'Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0'
+                            comments = 'Copyright (c) 2017-2018 Trellis LDP'
+                        }
+                    }
+
+                }
+                pom.withXml {
+                    // eliminate test-scoped dependencies
+                    asNode().dependencies.removeAll { dep -> dep.scope == "test" }
+                }
+
                 from components.java
+
+                artifact(sourceJar) {
+                    classifier = 'sources'
+                }
+
+                artifact(javadocJar) {
+                    classifier = 'javadoc'
+                }
             }
         }
+        repositories {
+            maven {
+                def sonatypeUsername = project.hasProperty('ossrhUsername') ? ossrhUsername : ""
+                def sonatypePassword = project.hasProperty('ossrhPassword') ? ossrhPassword : ""
+                if (version.endsWith("SNAPSHOT")) {
+                    url "https://oss.sonatype.org/content/repositories/snapshots/"
+                } else {
+                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                }
+                credentials {
+                    username sonatypeUsername
+                    password sonatypePassword
+                }
+            }
+        }
+    }
+
+    tasks.withType(PublishToMavenRepository) {
+        onlyIf {
+            ! omitFromMavenPublishing.contains(subproj.name)
+        }
+    }
+    tasks.withType(PublishToMavenLocal) {
+        onlyIf {
+            ! omitFromMavenPublishing.contains(subproj.name)
+        }
+    }
+    task install(dependsOn: [assemble, publishToMavenLocal])
+    task upload(dependsOn: [assemble, publish])
+
+    signing {
+        required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications
     }
 
     processResources {
         outputs.upToDateWhen { false }
         filesMatching(['**/features.xml', '**/banner.txt']) {
             expand project.properties
-        }
-    }
-
-    signing {
-        required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
-        sign configurations.archives
-    }
-
-    uploadArchives {
-        repositories.mavenDeployer {
-            def sonatypeUsername = project.hasProperty('ossrhUsername') ? ossrhUsername : ""
-            def sonatypePassword = project.hasProperty('ossrhPassword') ? ossrhPassword : ""
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-
-            pom.project {
-                packaging 'jar'
-                url 'https://www.trellisldp.org'
-                inceptionYear '2017'
-                name 'Trellis Linked Data Server'
-                description 'The core components for a Trellis linked data server'
-
-                organization {
-                    name project.vendor
-                    url project.homepage
-                }
-
-                developers {
-                    developer {
-                        id 'acoburn'
-                        name 'Aaron Coburn'
-                        email 'acoburn (at) apache (dot) org'
-                        organization = 'Trellis LDP'
-                        organizationUrl 'https://www.trellisldp.org'
-                        roles {
-                            role 'developer'
-                        }
-                        timezone '-5'
-                    }
-                }
-
-                scm {
-                    connection 'scm:git:git://github.com/trellis-ldp/trellis.git'
-                    developerConnection 'scm:git:git@github.com/trellis-ldp/trellis.git'
-                    url 'https://github.com/trellis-ldp/trellis'
-                    tag 'HEAD'
-                }
-
-                licenses {
-                    license {
-                        name 'Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0'
-                        comments 'Copyright (c) 2017-2018 Trellis LDP'
-                    }
-                }
-            }
         }
     }
 

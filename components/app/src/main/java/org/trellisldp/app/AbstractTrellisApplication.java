@@ -44,7 +44,6 @@ import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.LdpResource;
-import org.trellisldp.http.MultipartUploader;
 import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.webac.WebACService;
@@ -82,16 +81,6 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      * @return the {@code BinaryService}
      */
     protected abstract BinaryService getBinaryService();
-
-    /**
-     * Get an optional {@link MultipartCapable} {@link BinaryService}. There should
-     * be at most one {@code MultipartCapable} {@code BinaryService} in a deployed
-     * Trellis instance. If there is one, this method should return the same
-     * {@code MultipartCapable} {@code BinaryService} every time it is called.
-     * 
-     * @return a {@code MultipartCapable} {@code BinaryService}, if one exists
-     */
-    protected abstract Optional<BinaryService.MultipartCapable> getMultipartUploadService();
 
     /**
      * Get an optional {@link AuditService}. There should be at most one
@@ -140,8 +129,6 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         // Resource matchers
         environment.jersey().register(new LdpResource(getResourceService(), getIOService(), getBinaryService(),
                     agentService, getAuditService().orElseGet(NoopAuditService::new), config.getBaseUrl()));
-        getMultipartUploadService().ifPresent(uploader -> environment.jersey()
-                .register(new MultipartUploader(getResourceService(), uploader, config.getBaseUrl())));
 
         // Authentication
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(agentService);

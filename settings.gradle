@@ -1,3 +1,4 @@
+enableFeaturePreview('STABLE_PUBLISHING')
 rootProject.name = 'trellis'
 include ':trellis-api'
 include ':trellis-http'

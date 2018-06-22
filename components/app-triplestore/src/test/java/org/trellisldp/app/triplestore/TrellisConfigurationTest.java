@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.config;
+package org.trellisldp.app.triplestore;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.dropwizard.configuration.YamlConfigurationFactory;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.trellisldp.app.config.NotificationsConfiguration;
 
 /**
  * @author acoburn
@@ -35,7 +37,7 @@ public class TrellisConfigurationTest {
 
     @Test
     public void testConfigurationGeneral1() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
@@ -47,9 +49,10 @@ public class TrellisConfigurationTest {
         assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours());
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
-        assertTrue(config.getAuth().getAdminUsers().contains("daiyu"));
-        assertTrue(config.getAuth().getAdminUsers().contains("baoyu"));
+        assertNull(config.getResources());
         assertEquals("http://hub.example.com/", config.getHubUrl());
+        assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
+        assertEquals((Integer) 1, config.getBinaryHierarchyLength());
         assertEquals("my.cluster.node", config.any().get("cassandraAddress"));
         assertEquals((Integer)245993, config.any().get("cassandraPort"));
         @SuppressWarnings("unchecked")
@@ -63,7 +66,7 @@ public class TrellisConfigurationTest {
 
     @Test
     public void testConfigurationAssets1() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         assertEquals("org/trellisldp/rdfa/resource.mustache", config.getAssets().getTemplate());
@@ -74,7 +77,7 @@ public class TrellisConfigurationTest {
 
     @Test
     public void testConfigurationNotifications() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
@@ -88,17 +91,23 @@ public class TrellisConfigurationTest {
 
     @Test
     public void testConfigurationLocations() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
+        assertEquals("/tmp/trellisData/binaries", config.getBinaries());
+        assertEquals("/tmp/trellisData/mementos", config.getMementos());
         assertEquals("http://localhost:8080/", config.getBaseUrl());
         assertEquals("http://hub.example.com/", config.getHubUrl());
+
+        final String resources = "http://triplestore.example.com/";
+        config.setResources(resources);
+        assertEquals(resources, config.getResources());
     }
 
     @Test
     public void testConfigurationAuth1() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
@@ -128,8 +137,17 @@ public class TrellisConfigurationTest {
     }
 
     @Test
+    public void testConfigurationNamespaces1() throws Exception {
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        assertEquals("/tmp/trellisData/namespaces.json", config.getNamespaces());
+    }
+
+    @Test
     public void testConfigurationCORS1() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 

@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.dropwizard.Application;
 
 import org.junit.jupiter.api.Test;
-import org.trellisldp.app.config.TrellisConfiguration;
 
 /**
  * LDP-related tests for Trellis.
@@ -27,7 +26,7 @@ public class TrellisApplicationTest {
 
     @Test
     public void testGetName() {
-        final Application<TrellisConfiguration> app = new TrellisApplication();
+        final Application<AppConfiguration> app = new TrellisApplication();
         assertEquals("Trellis LDP", app.getName());
     }
 }

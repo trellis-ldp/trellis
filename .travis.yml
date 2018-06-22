@@ -15,16 +15,15 @@ matrix:
   include:
     # JDK 8
     - jdk: oraclejdk8
-      env: JDK_RELEASE='JDK 1.8'
-      script: ./gradlew clean check install
       after_success: ./gradlew jacocoRootReport coveralls sonarqube
 
     # JDK 9
     - jdk: oraclejdk9
-      env: JDK_RELEASE='JDK 9'
-      script: ./gradlew clean check install
 
     # JDK 10
-    - env: JDK_RELEASE='JDK 10'
-      install: . ./buildtools/src/install/install-jdk-10.sh
-      script: ./gradlew clean check install
+    - jdk: oraclejdk10
+
+    # JDK 11
+    - jdk: oraclejdk11
+
+script: ./gradlew clean check install

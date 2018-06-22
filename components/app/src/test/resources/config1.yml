@@ -9,15 +9,9 @@ logging:
     org.trellisldp: INFO
     io.dropwizard: INFO
 
-binaries: /tmp/trellisData/binaries
-
-mementos: /tmp/trellisData/mementos
-
 baseUrl: http://localhost:8080/
 
 hubUrl: http://hub.example.com/
-
-namespaces: /tmp/trellisData/namespaces.json
 
 auth:
     adminUsers:
@@ -90,9 +84,6 @@ cors:
         - "Location"
     maxAge: 180
     allowCredentials: true
-
-binaryHierarchyLevels: 2
-binaryHierarchyLength: 1
 
 cassandraAddress: my.cluster.node
 cassandraPort: 245993

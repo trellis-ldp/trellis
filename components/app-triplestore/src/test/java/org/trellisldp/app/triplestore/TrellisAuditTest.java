@@ -24,7 +24,6 @@ import io.dropwizard.testing.DropwizardTestSupport;
 import javax.ws.rs.client.Client;
 
 import org.junit.jupiter.api.AfterAll;
-import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.test.AbstractApplicationAuditTests;
 
 /**
@@ -32,8 +31,8 @@ import org.trellisldp.test.AbstractApplicationAuditTests;
  */
 public class TrellisAuditTest extends AbstractApplicationAuditTests {
 
-    private static final DropwizardTestSupport<TrellisConfiguration> APP
-        = new DropwizardTestSupport<TrellisConfiguration>(TrellisApplication.class,
+    private static final DropwizardTestSupport<AppConfiguration> APP
+        = new DropwizardTestSupport<AppConfiguration>(TrellisApplication.class,
                 resourceFilePath("trellis-config.yml"),
                 config("binaries", resourceFilePath("data") + "/binaries"),
                 config("mementos", resourceFilePath("data") + "/mementos"),

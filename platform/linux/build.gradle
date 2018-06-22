@@ -68,20 +68,17 @@ signing {
     sign distZip
 }
 
-install {
-    enabled = false
-}
-
-uploadArchives {
-    // There is no need to store these artifacts on maven central
-    enabled = false
-}
-
 task copyDistTask(type: Copy) {
     from '../LICENSE'
     from 'README.md'
     into 'src/dist'
 }
 
-assembleDist.dependsOn copyDistTask
+assembleDist {
+    dependsOn copyDistTask
+    dependsOn buildRpm
+    dependsOn buildDeb
+    dependsOn signBuildRpm
+    dependsOn signBuildDeb
+}
 
