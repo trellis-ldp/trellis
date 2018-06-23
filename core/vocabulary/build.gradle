@@ -13,9 +13,9 @@ dependencies {
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation group: 'xerces', name: 'xercesImpl', version: xercesVersion
+    testImplementation("xerces:xercesImpl:$xercesVersion")
 
-    testRuntimeClasspath group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
 jar {
