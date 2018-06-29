@@ -49,6 +49,8 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -267,14 +269,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * The following SPARQL query is equivalent to the code below.
      *
      * <p><pre><code>
-     * SELECT ?predicate ?object ?subject ?memberDate
+     * SELECT ?predicate ?object ?subject ?memberDate ?memberType
      * WHERE {
      *   GRAPH trellis:PreferServerManaged {
      *     PARENT rdf:type ?predicate
      *     PARENT dc:modified ?object
      *     OPTIONAL {
-     *       PARENT ldp:memberResource ?subject
+     *       PARENT ldp:member ?subject
      *       ?subject dc:modified ?memberDate
+     *       ?subject rdf:type ? memberType
      *     }
      *   }
      * }
@@ -288,10 +291,12 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         final Boolean isDelete = opType == OperationType.DELETE;
         final Boolean isCreate = opType == OperationType.CREATE;
         final Var memberDate = Var.alloc("memberDate");
+        final Var memberType = Var.alloc("memberType");
 
         final Query q = new Query();
         q.setQuerySelectType();
         q.addResultVar(memberDate);
+        q.addResultVar(memberType);
         q.addResultVar(SUBJECT);
         q.addResultVar(PREDICATE);
         q.addResultVar(OBJECT);
@@ -301,8 +306,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         epb1.addTriple(triple(rdf.asJenaNode(parent), rdf.asJenaNode(DC.modified), OBJECT));
 
         final ElementPathBlock epb2 = new ElementPathBlock();
-        epb2.addTriple(triple(rdf.asJenaNode(parent), rdf.asJenaNode(LDP.membershipResource), SUBJECT));
+        epb2.addTriple(triple(rdf.asJenaNode(parent), rdf.asJenaNode(LDP.member), SUBJECT));
         epb2.addTriple(triple(SUBJECT, rdf.asJenaNode(DC.modified), memberDate));
+        epb2.addTriple(triple(SUBJECT, rdf.asJenaNode(RDF.type), memberType));
 
         final ElementGroup eg = new ElementGroup();
         eg.addElement(epb1);
@@ -312,6 +318,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             final IRI type = getPredicate(qs);
             final Optional<IRI> member = ofNullable(qs.get("subject")).map(RDFNode::asNode)
                 .map(rdf::asRDFTerm).map(t -> (IRI) t).filter(t -> !t.equals(parent));
+            final Optional<IRI> memberRdfType = ofNullable(qs.get("memberType")).map(RDFNode::asNode)
+                .map(rdf::asRDFTerm).map(t -> (IRI) t);
             final Boolean memberIsModified = ofNullable(qs.get("memberDate"))
                 .map(RDFNode::asNode).map(rdf::asRDFTerm).filter(time::equals).isPresent();
             if (isCreate || isDelete) {
@@ -323,12 +331,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                     member.ifPresent(m ->
                             svc.emit(new SimpleEvent(getUrl(m, session.getProperty(TRELLIS_SESSION_BASE_URL)),
                                         asList(session.getAgent()), asList(PROV.Activity, AS.Update),
-                                        asList(type), null)));
+                                        memberRdfType.map(Arrays::asList).orElseGet(Collections::emptyList), null)));
                 }
             }
             if (LDP.IndirectContainer.equals(type)) {
                 member.ifPresent(m -> svc.emit(new SimpleEvent(getUrl(m, session.getProperty(TRELLIS_SESSION_BASE_URL)),
-                                asList(session.getAgent()), asList(PROV.Activity, AS.Update), asList(type), null)));
+                                asList(session.getAgent()), asList(PROV.Activity, AS.Update),
+                                memberRdfType.map(Arrays::asList).orElseGet(Collections::emptyList), null)));
             }
         });
     }

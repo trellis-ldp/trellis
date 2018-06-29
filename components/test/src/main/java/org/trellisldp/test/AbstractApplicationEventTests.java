@@ -19,6 +19,29 @@ package org.trellisldp.test;
 public abstract class AbstractApplicationEventTests implements EventTests {
 
     private String container;
+    private String member;
+    private String directContainer;
+    private String indirectContainer;
+
+    @Override
+    public String getDirectContainerLocation() {
+        return directContainer;
+    }
+
+    @Override
+    public void setDirectContainerLocation(final String location) {
+        directContainer = location;
+    }
+
+    @Override
+    public String getIndirectContainerLocation() {
+        return indirectContainer;
+    }
+
+    @Override
+    public void setIndirectContainerLocation(final String location) {
+        indirectContainer = location;
+    }
 
     @Override
     public String getContainerLocation() {
@@ -28,5 +51,15 @@ public abstract class AbstractApplicationEventTests implements EventTests {
     @Override
     public void setContainerLocation(final String location) {
         container = location;
+    }
+
+    @Override
+    public String getMemberLocation() {
+        return member;
+    }
+
+    @Override
+    public void setMemberLocation(final String location) {
+        member = location;
     }
 }
