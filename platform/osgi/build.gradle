@@ -32,6 +32,7 @@ sonarqube {
 
 dependencies {
     compile("org.apache.jena:jena-osgi:$jenaVersion")
+    compile("org.apache.commons:commons-compress:$commonsCompressVersion")
     compile project(':trellis-api')
     compile project(':trellis-http')
     compile project(':trellis-io-jena')
@@ -40,7 +41,6 @@ dependencies {
     compile project(':trellis-triplestore')
 
     testCompile("ch.qos.logback:logback-classic:$logbackVersion")
-    testCompile("org.apache.jena:jena-osgi:$jenaVersion")
     testCompile("org.apache.karaf.features:standard:$karafVersion")
     testCompile("org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion")
     testCompile("org.ops4j.pax.exam:pax-exam:$paxExamVersion")

@@ -15,6 +15,7 @@ ext {
     activeMqVersion = '5.15.4'
     commonsCodecVersion = '1.11'
     commonsCollectionsVersion = '4.1'
+    commonsCompressVersion = '1.7'
     commonsIoVersion = '2.6'
     commonsLangVersion = '3.7'
     commonsRdfVersion = '0.5.0'
@@ -25,7 +26,7 @@ ext {
     javaxJsonVersion = '1.1.2'
     jaxbVersion = '2.3.0'
     jaxrsVersion = '2.1'
-    jenaVersion = '3.7.0'
+    jenaVersion = '3.8.0'
     jerseyVersion = '2.27'
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.0'
@@ -47,11 +48,11 @@ ext {
     junitVersion = '5.2.0'
     logbackVersion = '1.2.3'
     mockitoVersion = '2.19.0'
-    xercesVersion = '2.11.0'
 
     /* OSGi */
     asmVersion = '6.1.1'
-    jenaVersionRange = '[3.7,4)'
+    mustacheOsgiVersion = '0.9.5_3'
+    jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = "${kafkaVersion}_1"
     karafVersion = '4.2.0'
     osgiVersion = '6.0.0'

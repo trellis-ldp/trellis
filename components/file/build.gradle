@@ -22,6 +22,9 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
+    // Required transitively via jena-osgi
+    implementation("org.apache.commons:commons-compress:$commonsCompressVersion")
+
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     //Note JSON-LD is transitive dependency, but the version can be managed here
     testImplementation("com.github.jsonld-java:jsonld-java:$jsonldVersion")
