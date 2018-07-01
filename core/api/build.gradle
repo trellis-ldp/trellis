@@ -17,6 +17,7 @@ dependencies {
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     testImplementation("org.apache.commons:commons-text:$commonsTextVersion")
     testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
+    testImplementation("org.apache.commons:commons-compress:$commonsCompressVersion")
 }
 
 jar {

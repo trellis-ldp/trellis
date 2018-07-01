@@ -18,6 +18,7 @@ dependencies {
     implementation("org.apache.jena:jena-osgi:$jenaVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.apache.commons:commons-compress:$commonsCompressVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
