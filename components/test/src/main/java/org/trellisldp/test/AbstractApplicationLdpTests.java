@@ -246,6 +246,7 @@ public abstract class AbstractApplicationLdpTests {
         private String dc1;
         private String dc2;
         private String dc3;
+        private String dc4;
 
         @Override
         public void setChildLocation(final String location) {
@@ -305,6 +306,16 @@ public abstract class AbstractApplicationLdpTests {
         @Override
         public String getThirdDirectContainerLocation() {
             return dc3;
+        }
+
+        @Override
+        public void setFourthDirectContainerLocation(final String location) {
+            dc4 = location;
+        }
+
+        @Override
+        public String getFourthDirectContainerLocation() {
+            return dc4;
         }
     }
 

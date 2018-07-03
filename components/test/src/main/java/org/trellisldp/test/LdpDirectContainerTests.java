@@ -65,6 +65,7 @@ public interface LdpDirectContainerTests extends CommonTests {
     String BASIC_CONTAINER = "/basicContainer.ttl";
     String DIRECT_CONTAINER = "/directContainer.ttl";
     String SIMPLE_RESOURCE = "/simpleResource.ttl";
+    String DIRECT_CONTAINER_INVERSE = "/directContainerInverse.ttl";
 
     /**
      * Set the location of the test resource.
@@ -139,12 +140,26 @@ public interface LdpDirectContainerTests extends CommonTests {
     String getThirdDirectContainerLocation();
 
     /**
+     * Set the location of the other direct container.
+     * @param location the location
+     */
+    void setFourthDirectContainerLocation(String location);
+
+    /**
+     * Get the location of the other direct container.
+     * @return the test container location
+     */
+    String getFourthDirectContainerLocation();
+
+    /**
      * Initialize Direct Container tests.
      */
     @BeforeAll
     @DisplayName("Initialize Direct Container tests")
     default void beforeAllTests() {
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
+        final String dcUnsupported = "Creation of DirectContainer appears to be unsupported";
+        final String notDcType = "New resource was not of expected DirectContainer type";
 
         // POST an LDP-BC
         try (final Response res = target().request()
@@ -167,10 +182,8 @@ public interface LdpDirectContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(content, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of DirectContainer appears to be unsupported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)),
-                    "New resource was not of expected DirectContainer type");
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()), dcUnsupported);
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)), notDcType);
 
             setFirstDirectContainerLocation(res.getLocation().toString());
         }
@@ -192,10 +205,8 @@ public interface LdpDirectContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(simpleContent, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of DirectContainer appears to be unsupported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)),
-                    "New resource was not of expected DirectContainer type");
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()), dcUnsupported);
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)), notDcType);
 
             setSecondDirectContainerLocation(res.getLocation().toString());
         }
@@ -217,10 +228,21 @@ public interface LdpDirectContainerTests extends CommonTests {
         try (final Response res = target(getThirdDirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of DirectContainer appears to be unsupported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)),
-                    "New resource was not of expected DirectContainer type");
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()), dcUnsupported);
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)), notDcType);
+        }
+
+        final String directContainerInverse = getResourceAsString(DIRECT_CONTAINER_INVERSE)
+            + membershipResource(getMemberLocation());
+
+        // POST an LDP-DC
+        try (final Response res = target(getContainerLocation()).request()
+                .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
+                .post(entity(directContainerInverse, TEXT_TURTLE))) {
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()), dcUnsupported);
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)), notDcType);
+
+            setFourthDirectContainerLocation(res.getLocation().toString());
         }
     }
 
@@ -505,6 +527,29 @@ public interface LdpDirectContainerTests extends CommonTests {
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
             assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+        }
+    }
+
+    /**
+     * Test fetching inverse member properties on a direct container.
+     */
+    @Test
+    @DisplayName("Test with inverse direct containment")
+    default void testDirectContainerWithInverseMembership() {
+        final RDF rdf = getInstance();
+        final String location;
+        // Create an LDP-RS
+        try (final Response res = target(getFourthDirectContainerLocation()).request()
+                .post(entity("", TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            location = res.getLocation().toString();
+        }
+
+        try (final Response res = target(location).request().get()) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+            final IRI identifier = rdf.createIRI(getMemberLocation());
+            assertTrue(g.contains(rdf.createIRI(location), DC.isPartOf, identifier));
         }
     }
 
