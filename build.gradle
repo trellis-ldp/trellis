@@ -330,7 +330,7 @@ subprojects { subproj ->
     }
 
     afterReleaseBuild.dependsOn docs
-    afterReleaseBuild.dependsOn uploadArchives
+    afterReleaseBuild.dependsOn publish
 
     afterEvaluate {
         if (subproj.name in jacocoTestProjects) {
