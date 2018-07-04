@@ -13,6 +13,7 @@
  */
 package org.trellisldp.webac;
 
+import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -117,6 +119,13 @@ public class WebACServiceTest {
     @SuppressWarnings("unchecked")
     public void setUp() {
         initMocks(this);
+        final Set<IRI> allModels = new HashSet<>();
+        allModels.add(LDP.RDFSource);
+        allModels.add(LDP.NonRDFSource);
+        allModels.add(LDP.DirectContainer);
+        allModels.add(LDP.IndirectContainer);
+        allModels.add(LDP.BasicContainer);
+        allModels.add(LDP.Container);
 
         testService = new WebACService(mockResourceService);
 
@@ -188,6 +197,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
 
         when(mockResourceService.get(eq(nonexistentIRI))).thenReturn(empty());
+        when(mockResourceService.supportedInteractionModels()).thenReturn(allModels);
         whenResource(mockResourceService.get(eq(resourceIRI))).thenReturn(of(mockResource));
         whenResource(mockResourceService.get(eq(childIRI))).thenReturn(of(mockChildResource));
         whenResource(mockResourceService.get(eq(parentIRI))).thenReturn(of(mockParentResource));
@@ -255,6 +265,7 @@ public class WebACServiceTest {
     public void testCanRead4() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.DirectContainer));
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read));
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read));
@@ -266,6 +277,7 @@ public class WebACServiceTest {
     @Test
     public void testCanRead5() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
+        when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.IndirectContainer));
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read));
@@ -288,6 +300,7 @@ public class WebACServiceTest {
     @Test
     public void testCanWrite2() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
+        when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Container));
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write));

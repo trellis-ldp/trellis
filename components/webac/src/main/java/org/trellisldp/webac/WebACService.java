@@ -47,6 +47,7 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
+import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.VCARD;
 
@@ -128,13 +129,23 @@ public class WebACService implements AccessControlService {
         return join("||", identifier.getIRIString(), agent.getIRIString());
     }
 
+    private Boolean supportsMembershipTypes() {
+        return resourceService.supportedInteractionModels().contains(LDP.IndirectContainer)
+            || resourceService.supportedInteractionModels().contains(LDP.DirectContainer);
+    }
+
+    private Boolean hasWritableMode(final Set<IRI> modes) {
+        return modes.contains(ACL.Write) || modes.contains(ACL.Append);
+    }
+
     private Set<IRI> getAuthz(final IRI identifier, final IRI agent) {
         final Set<IRI> modes = getModesFor(identifier, agent);
-        // check that the modes are ok with any associated member resource
-        if (modes.contains(ACL.Write) || modes.contains(ACL.Append)) {
+        // consider membership resources, if relevant
+        if (supportsMembershipTypes() && hasWritableMode(modes)) {
             resourceService.getContainer(identifier).flatMap(resourceService::get)
                 .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
-                .map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
+                .ifPresent(member -> {
+                    final Set<IRI> memberModes = getModesFor(member, agent);
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
                         modes.remove(ACL.Append);
