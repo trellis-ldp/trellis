@@ -178,7 +178,7 @@ public class HtmlSerializerTest {
     }
 
     private static Stream<Triple> getTriples() {
-        final Node sub = createURI("trellis:repository/resource");
+        final Node sub = createURI("trellis:data/resource");
         final Node bn = createBlankNode();
         return of(
                 create(sub, title.asNode(), createLiteral("A title")),
@@ -193,7 +193,7 @@ public class HtmlSerializerTest {
     }
 
     private static Stream<Triple> getTriples2() {
-        final Node sub = createURI("trellis:repository/resource");
+        final Node sub = createURI("trellis:data/resource");
         final Node other = createURI("mailto:user@host.com");
         final Node bn = createBlankNode();
         return of(

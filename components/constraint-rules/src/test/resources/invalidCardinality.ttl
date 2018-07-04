@@ -1,6 +1,6 @@
 @prefix ldp: <http://www.w3.org/ns/ldp#>
 @prefix dc: <http://purl.org/dc/terms/>
 
-<> ldp:inbox <trellis:repository/some-resource> , <info:foo/bar> .
+<> ldp:inbox <trellis:data/some-resource> , <info:foo/bar> .
 <#hash> dc:title "Some Title"@en .
 

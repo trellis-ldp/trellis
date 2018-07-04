@@ -54,7 +54,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class ResourceServiceTest {
 
     private static final RDF rdf = new JenaRDF();
-    private static final IRI existing = rdf.createIRI("trellis:repository/existing");
+    private static final IRI existing = rdf.createIRI("trellis:data/existing");
 
     @Mock
     private ResourceService mockResourceService;
@@ -114,7 +114,7 @@ public class ResourceServiceTest {
     public void testSkolemization() {
         final BlankNode bnode = rdf.createBlankNode("testing");
         final IRI iri = rdf.createIRI("trellis:bnode/testing");
-        final IRI resource = rdf.createIRI("trellis:repository/resource");
+        final IRI resource = rdf.createIRI("trellis:data/resource");
 
         assertTrue(mockResourceService.skolemize(bnode) instanceof IRI);
         assertTrue(((IRI) mockResourceService.skolemize(bnode)).getIRIString().startsWith("trellis:bnode/"));
@@ -159,9 +159,9 @@ public class ResourceServiceTest {
     @Test
     public void testInternalExternal() {
         final String baseUrl = "http://example.com/";
-        final IRI external = rdf.createIRI(baseUrl + "repository/resource");
-        final IRI internal = rdf.createIRI("trellis:data/repository/resource");
-        final IRI other = rdf.createIRI("http://example.org/repository/resource");
+        final IRI external = rdf.createIRI(baseUrl + "resource");
+        final IRI internal = rdf.createIRI("trellis:data/resource");
+        final IRI other = rdf.createIRI("http://example.org/resource");
         assertEquals(internal, mockResourceService.toInternal(external, baseUrl));
         assertEquals(external, mockResourceService.toExternal(internal, baseUrl));
         assertEquals(other, mockResourceService.toInternal(other, baseUrl));

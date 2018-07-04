@@ -63,7 +63,7 @@ public class EventSerializerTest {
         initMocks(this);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("info:event/12345"));
         when(mockEvent.getAgents()).thenReturn(singleton(rdf.createIRI("info:user/test")));
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:repository/resource")));
+        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getTypes()).thenReturn(singleton(Create));
         when(mockEvent.getTargetTypes()).thenReturn(singleton(Container));
         when(mockEvent.getInbox()).thenReturn(of(rdf.createIRI("info:ldn/inbox")));

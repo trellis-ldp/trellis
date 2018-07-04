@@ -1,6 +1,6 @@
 @prefix acl: <http://www.w3.org/ns/auth/acl#>
 @prefix dc: <http://purl.org/dc/terms/>
 
-<> acl:accessControl <trellis:repository/bar> .
+<> acl:accessControl <trellis:data/bar> .
 <#hash> dc:title "some title" .
 

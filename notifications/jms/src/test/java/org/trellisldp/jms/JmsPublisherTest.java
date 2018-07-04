@@ -80,7 +80,7 @@ public class JmsPublisherTest {
     @BeforeEach
     public void setUp() throws JMSException {
         initMocks(this);
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:repository/resource")));
+        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));

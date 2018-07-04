@@ -3,5 +3,5 @@
 
 <> dc:title "Some Title"@en ;
     ldp:insertedContentRelation dc:subject ;
-    ldp:membershipResource <trellis:repository/test> ;
+    ldp:membershipResource <trellis:data/test> ;
     ldp:isMemberOfRelation ldp:contains .

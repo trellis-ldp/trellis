@@ -2,7 +2,7 @@
 @prefix dc: <http://purl.org/dc/terms/>
 
 <> dc:title "Some Title"@en ;
-    ldp:membershipResource <trellis:repository/test> ;
+    ldp:membershipResource <trellis:data/test> ;
     ldp:insertedContentRelation dc:subject ;
-    ldp:hasMemberRelation <trellis:repository/one> , <trellis:repository/two> .
+    ldp:hasMemberRelation <trellis:data/one> , <trellis:data/two> .
 

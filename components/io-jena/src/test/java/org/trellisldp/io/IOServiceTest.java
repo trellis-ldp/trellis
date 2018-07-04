@@ -385,7 +385,7 @@ public class IOServiceTest {
     @Test
     public void testTurtleReaderWithContext() {
         final Graph graph = rdf.createGraph();
-        service.read(getClass().getResourceAsStream("/testRdf.ttl"), TURTLE, "trellis:repository/resource")
+        service.read(getClass().getResourceAsStream("/testRdf.ttl"), TURTLE, "trellis:data/resource")
             .forEach(graph::add);
         assertTrue(validateGraph(graph));
     }
@@ -448,13 +448,13 @@ public class IOServiceTest {
         assertEquals(2L, graph.size());
         service.update(graph, "INSERT { " +
                 "<> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", SPARQL_UPDATE,
-                "trellis:repository/resource");
+                "trellis:data/resource");
         assertEquals(3L, graph.size());
         service.update(graph, "DELETE WHERE { ?s ?p ?o };" +
                 "INSERT { <> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}", SPARQL_UPDATE,
-                "trellis:repository");
+                "trellis:data/");
         assertEquals(1L, graph.size());
-        assertEquals("<trellis:repository>", graph.stream().findFirst().map(Triple::getSubject)
+        assertEquals("<trellis:data/>", graph.stream().findFirst().map(Triple::getSubject)
                 .map(RDFTerm::ntriplesString).get());
     }
 
@@ -510,7 +510,7 @@ public class IOServiceTest {
     }
 
     private static Stream<Triple> getTriples() {
-        final Node sub = createURI("trellis:repository/resource");
+        final Node sub = createURI("trellis:data/resource");
         return of(
                 create(sub, title.asNode(), createLiteral("A title")),
                 create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
@@ -519,7 +519,7 @@ public class IOServiceTest {
     }
 
     private static Stream<Triple> getComplexTriples() {
-        final Node sub = createURI("trellis:repository/resource");
+        final Node sub = createURI("trellis:data/resource");
         final Node bn = createBlankNode();
         return of(
                 create(sub, title.asNode(), createLiteral("A title")),

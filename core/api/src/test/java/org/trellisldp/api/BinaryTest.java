@@ -35,7 +35,7 @@ public class BinaryTest {
     private final Long size = 10L;
     private final String mimeType = "text/plain";
     private final Instant modified = parse("2015-09-15T06:14:00.00Z");
-    private final IRI identifier = rdf.createIRI("trellis:repository/resource");
+    private final IRI identifier = rdf.createIRI("trellis:data/resource");
 
     @Test
     public void testBinary() {

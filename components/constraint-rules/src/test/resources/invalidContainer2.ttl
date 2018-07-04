@@ -2,4 +2,4 @@
 @prefix dc: <http://purl.org/dc/terms/>
 
 <> dc:title "A title"@en ;
-   ldp:insertedContentRelation <trellis:repository/resource> .
+   ldp:insertedContentRelation <trellis:data/resource> .

@@ -44,7 +44,7 @@ public class TriplestoreEventTest {
 
     private static final RDF rdf = new JenaRDF();
 
-    private final String identifier = "trellis:repository/resource";
+    private final String identifier = "trellis:data/resource";
     private final IRI inbox = rdf.createIRI("http://example.org/resource");
     private final IRI agent = rdf.createIRI("http://example.org/agent");
 

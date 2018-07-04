@@ -105,7 +105,7 @@ public class DeleteHandlerTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        final IRI iri = rdf.createIRI("trellis:repo");
+        final IRI iri = rdf.createIRI("trellis:data/");
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getIdentifier()).thenReturn(iri);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Resource));
