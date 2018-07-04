@@ -129,6 +129,22 @@ public class WebACService implements AccessControlService {
     }
 
     private Set<IRI> getAuthz(final IRI identifier, final IRI agent) {
+        final Set<IRI> modes = getModesFor(identifier, agent);
+        // check that the modes are ok with any associated member resource
+        if (modes.contains(ACL.Write) || modes.contains(ACL.Append)) {
+            resourceService.getContainer(identifier).flatMap(resourceService::get)
+                .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
+                .map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
+                    if (!memberModes.contains(ACL.Write)) {
+                        modes.remove(ACL.Write);
+                        modes.remove(ACL.Append);
+                    }
+                });
+        }
+        return modes;
+    }
+
+    private Set<IRI> getModesFor(final IRI identifier, final IRI agent) {
         return getNearestResource(identifier).map(resource -> getAllAuthorizationsFor(resource, true)
                 .filter(agentFilter(agent)))
             .orElseGet(Stream::empty)
@@ -180,7 +196,6 @@ public class WebACService implements AccessControlService {
 
     private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final Boolean top) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
-        final Optional<IRI> parent = resourceService.getContainer(resource.getIdentifier());
         if (resource.hasAcl()) {
             try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).collect(toGraph()))) {
                 final List<Authorization> authorizations = getAuthorizationFromGraph(graph.getGraph());
@@ -193,6 +208,7 @@ public class WebACService implements AccessControlService {
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
+        final Optional<IRI> parent = resourceService.getContainer(resource.getIdentifier());
         return parent.flatMap(resourceService::get).map(res -> getAllAuthorizationsFor(res, false))
             .orElseGet(Stream::empty);
     }

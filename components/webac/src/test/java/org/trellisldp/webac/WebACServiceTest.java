@@ -44,12 +44,13 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
+import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.VCARD;
 
 /**
- * @author acoburn
+ * Tests to verify the correctness of WebAC authorization decisions.
  */
 public class WebACServiceTest {
 
@@ -65,7 +66,8 @@ public class WebACServiceTest {
     private CacheService<String, Set<IRI>> mockCache;
 
     @Mock
-    private Resource mockResource, mockChildResource, mockParentResource, mockRootResource, mockGroupResource;
+    private Resource mockResource, mockChildResource, mockParentResource, mockRootResource, mockGroupResource,
+            mockMemberResource;
 
     private AccessControlService testService;
 
@@ -77,7 +79,7 @@ public class WebACServiceTest {
 
     private static final IRI parentIRI = rdf.createIRI("trellis:data/parent");
 
-    private static final IRI rootIRI = rdf.createIRI("trellis:data");
+    private static final IRI rootIRI = rdf.createIRI("trellis:data/");
 
     private static final IRI authIRI1 = rdf.createIRI("trellis:data/acl/public/auth1");
 
@@ -92,6 +94,8 @@ public class WebACServiceTest {
     private static final IRI authIRI6 = rdf.createIRI("trellis:data/acl/private/auth6");
 
     private static final IRI authIRI8 = rdf.createIRI("trellis:data/acl/private/auth8");
+
+    private static final IRI memberIRI = rdf.createIRI("trellis:data/member");
 
     private static final IRI addisonIRI = rdf.createIRI("info:user/addison");
 
@@ -165,21 +169,51 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
 
+        when(mockMemberResource.hasAcl()).thenReturn(true);
+        when(mockMemberResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createTriple(authIRI5, ACL.accessTo, memberIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
+                rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
+
+                rdf.createTriple(authIRI6, type, ACL.Authorization),
+                rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
+                rdf.createTriple(authIRI6, ACL.accessTo, memberIRI),
+                rdf.createTriple(authIRI6, ACL.mode, ACL.Write),
+
+                rdf.createTriple(authIRI8, type, ACL.Authorization),
+                rdf.createTriple(authIRI8, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI8, ACL.accessTo, memberIRI),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
+
         when(mockResourceService.get(eq(nonexistentIRI))).thenReturn(empty());
         whenResource(mockResourceService.get(eq(resourceIRI))).thenReturn(of(mockResource));
         whenResource(mockResourceService.get(eq(childIRI))).thenReturn(of(mockChildResource));
         whenResource(mockResourceService.get(eq(parentIRI))).thenReturn(of(mockParentResource));
         whenResource(mockResourceService.get(eq(rootIRI))).thenReturn(of(mockRootResource));
         whenResource(mockResourceService.get(eq(groupIRI))).thenReturn(of(mockGroupResource));
+        whenResource(mockResourceService.get(eq(memberIRI))).thenReturn(of(mockMemberResource));
         when(mockResourceService.getContainer(nonexistentIRI)).thenReturn(of(resourceIRI));
         when(mockResourceService.getContainer(resourceIRI)).thenReturn(of(childIRI));
         when(mockResourceService.getContainer(childIRI)).thenReturn(of(parentIRI));
         when(mockResourceService.getContainer(parentIRI)).thenReturn(of(rootIRI));
 
         when(mockResource.getIdentifier()).thenReturn(resourceIRI);
+        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockResource.getMembershipResource()).thenReturn(empty());
         when(mockChildResource.getIdentifier()).thenReturn(childIRI);
+        when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockChildResource.getMembershipResource()).thenReturn(empty());
         when(mockParentResource.getIdentifier()).thenReturn(parentIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockParentResource.getMembershipResource()).thenReturn(empty());
         when(mockRootResource.getIdentifier()).thenReturn(rootIRI);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(empty());
+        when(mockMemberResource.getIdentifier()).thenReturn(memberIRI);
+        when(mockMemberResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockMemberResource.getMembershipResource()).thenReturn(empty());
         when(mockResource.hasAcl()).thenReturn(false);
         when(mockParentResource.hasAcl()).thenReturn(false);
 
@@ -218,6 +252,30 @@ public class WebACServiceTest {
     }
 
     @Test
+    public void testCanRead4() {
+        when(mockSession.getAgent()).thenReturn(agentIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
+        assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Read));
+    }
+
+    @Test
+    public void testCanRead5() {
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
+        assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Read));
+        assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Read));
+    }
+
+    @Test
     public void testCanWrite1() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
@@ -240,11 +298,37 @@ public class WebACServiceTest {
     @Test
     public void testCanWrite3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
+        assertTrue(testService.getAccessModes(memberIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
+    }
+
+    @Test
+    public void testCanWrite4() {
+        when(mockSession.getAgent()).thenReturn(agentIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
+        assertTrue(testService.getAccessModes(memberIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
+    }
+
+    @Test
+    public void testCanWrite5() {
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
+        assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
+        assertFalse(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write));
+        assertFalse(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
+        assertFalse(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
     }
 
     @Test
@@ -300,6 +384,31 @@ public class WebACServiceTest {
     @Test
     public void testCanAppend3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
+        assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Append));
+        assertFalse(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Append));
+        assertFalse(testService.getAccessModes(childIRI, mockSession).contains(ACL.Append));
+        assertFalse(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Append));
+        assertFalse(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Append));
+    }
+
+    @Test
+    public void testCanAppend4() {
+        when(mockSession.getAgent()).thenReturn(acoburnIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
+        assertTrue(testService.getAccessModes(memberIRI, mockSession).contains(ACL.Write));
+        assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Append));
+        assertFalse(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Append));
+        assertFalse(testService.getAccessModes(childIRI, mockSession).contains(ACL.Append));
+        assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Append));
+        assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Append));
+    }
+
+    @Test
+    public void testCanAppend5() {
+        when(mockSession.getAgent()).thenReturn(agentIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
         assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Append));
         assertFalse(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Append));
         assertFalse(testService.getAccessModes(childIRI, mockSession).contains(ACL.Append));
