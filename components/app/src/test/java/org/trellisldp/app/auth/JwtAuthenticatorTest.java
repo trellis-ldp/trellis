@@ -140,6 +140,26 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
+    public void testAuthenticateKeystoreECWebsite() throws Exception {
+        final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
+
+        final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
+        final String token = Jwts.builder().setSubject("acoburn")
+             .claim("website", "https://people.apache.org/~acoburn/#i")
+             .signWith(SignatureAlgorithm.ES256, privateKey).compact();
+
+        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+                ks.getCertificate("trellis-ec").getPublicKey());
+
+        final Optional<Principal> result = authenticator.authenticate(token);
+        assertTrue(result.isPresent());
+        result.ifPresent(p -> {
+            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
+        });
+    }
+
+    @Test
     public void testAuthenticateNoSub() throws AuthenticationException {
          final String key = "c2VjcmV0";
          final String token = Jwts.builder().setIssuer("http://localhost")

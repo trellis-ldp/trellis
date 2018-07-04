@@ -40,6 +40,8 @@ public abstract class AbstractJwtAuthenticator implements Authenticator<String, 
 
     public static final String WEBID = "webid";
 
+    public static final String WEBSITE = "website";
+
     protected abstract Claims parse(String credentials);
 
     @Override
@@ -49,8 +51,9 @@ public abstract class AbstractJwtAuthenticator implements Authenticator<String, 
 
             // Use a webid claim, if one exists
             if (claims.containsKey(WEBID)) {
-                LOGGER.debug("Using JWT claim with webid: {}", claims.get(WEBID, String.class));
-                return ofNullable(claims.get(WEBID, String.class)).map(PrincipalImpl::new);
+                final String webid = claims.get(WEBID, String.class);
+                LOGGER.debug("Using JWT claim with webid: {}", webid);
+                return ofNullable(webid).map(PrincipalImpl::new);
             }
 
             // Try generating a webid from other elements
@@ -61,12 +64,20 @@ public abstract class AbstractJwtAuthenticator implements Authenticator<String, 
                     LOGGER.debug("Using JWT claim with sub: {}", sub);
                     return of(new PrincipalImpl(sub));
                 }
+
                 final String iss = claims.getIssuer();
                 // combine the iss and sub fields if that appears possible
                 if (nonNull(iss) && isUrl(iss)) {
                     final String webid = iss.endsWith("/") ? iss + sub : iss + "/" + sub;
                     LOGGER.debug("Using JWT claim with generated webid: {}", webid);
                     return of(new PrincipalImpl(webid));
+                }
+
+                // Use an OIDC website claim, if one exists
+                if (claims.containsKey(WEBSITE)) {
+                    final String website = claims.get(WEBSITE, String.class);
+                    LOGGER.debug("Using JWT claim with website: {}", website);
+                    return ofNullable(website).map(PrincipalImpl::new);
                 }
             }
         } catch (final SignatureException ex) {
