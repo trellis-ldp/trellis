@@ -46,7 +46,7 @@ public class DefaultAuditServiceTest {
 
     private final Instant created = now();
 
-    private final IRI subject = rdf.createIRI("trellis:repository/resource");
+    private final IRI subject = rdf.createIRI("trellis:data/resource");
 
     @Mock
     private Session mockSession;

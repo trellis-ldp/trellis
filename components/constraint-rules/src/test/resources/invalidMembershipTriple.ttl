@@ -2,5 +2,5 @@
 @prefix dc: <http://purl.org/dc/terms/>
 
 <> dc:title "Some Title"@en ;
-    ldp:membershipResource <trellis:repository/test> ;
+    ldp:membershipResource <trellis:data/test> ;
     ldp:hasMemberRelation ldp:contains .

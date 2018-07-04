@@ -45,8 +45,8 @@ public class BinaryServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
 
-    private final IRI identifier = rdf.createIRI("trellis:repository/resource");
-    private final IRI other = rdf.createIRI("trellis:repository/other");
+    private final IRI identifier = rdf.createIRI("trellis:data/resource");
+    private final IRI other = rdf.createIRI("trellis:data/other");
     private final String checksum = "blahblahblah";
 
     @Mock

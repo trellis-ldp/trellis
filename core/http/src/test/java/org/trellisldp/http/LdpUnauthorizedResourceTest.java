@@ -85,7 +85,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
 
     private static final RDF rdf = getInstance();
 
-    private static final IRI identifier = rdf.createIRI("trellis:repo1/resource");
+    private static final IRI identifier = rdf.createIRI("trellis:data/resource");
 
     private static final BlankNode bnode = rdf.createBlankNode();
 

@@ -2,6 +2,6 @@
 @prefix dc: <http://purl.org/dc/terms/>
 
 <> ldp:insertedContentRelation dc:subject ;
-    ldp:membershipResource <trellis:repository/test> ;
+    ldp:membershipResource <trellis:data/test> ;
     ldp:hasMemberRelation dc:isPartOf .
 <#hash> dc:title "Some Title"@en .

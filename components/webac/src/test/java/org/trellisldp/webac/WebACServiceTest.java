@@ -69,39 +69,39 @@ public class WebACServiceTest {
 
     private AccessControlService testService;
 
-    private static final IRI nonexistentIRI = rdf.createIRI("trellis:repository/parent/child/nonexistent");
+    private static final IRI nonexistentIRI = rdf.createIRI("trellis:data/parent/child/nonexistent");
 
-    private static final IRI resourceIRI = rdf.createIRI("trellis:repository/parent/child/resource");
+    private static final IRI resourceIRI = rdf.createIRI("trellis:data/parent/child/resource");
 
-    private static final IRI childIRI = rdf.createIRI("trellis:repository/parent/child");
+    private static final IRI childIRI = rdf.createIRI("trellis:data/parent/child");
 
-    private static final IRI parentIRI = rdf.createIRI("trellis:repository/parent");
+    private static final IRI parentIRI = rdf.createIRI("trellis:data/parent");
 
-    private static final IRI rootIRI = rdf.createIRI("trellis:repository");
+    private static final IRI rootIRI = rdf.createIRI("trellis:data");
 
-    private static final IRI authIRI1 = rdf.createIRI("trellis:repository/acl/public/auth1");
+    private static final IRI authIRI1 = rdf.createIRI("trellis:data/acl/public/auth1");
 
-    private static final IRI authIRI2 = rdf.createIRI("trellis:repository/acl/public/auth2");
+    private static final IRI authIRI2 = rdf.createIRI("trellis:data/acl/public/auth2");
 
-    private static final IRI authIRI3 = rdf.createIRI("trellis:repository/acl/public/auth3");
+    private static final IRI authIRI3 = rdf.createIRI("trellis:data/acl/public/auth3");
 
-    private static final IRI authIRI4 = rdf.createIRI("trellis:repository/acl/public/auth4");
+    private static final IRI authIRI4 = rdf.createIRI("trellis:data/acl/public/auth4");
 
-    private static final IRI authIRI5 = rdf.createIRI("trellis:repository/acl/private/auth5");
+    private static final IRI authIRI5 = rdf.createIRI("trellis:data/acl/private/auth5");
 
-    private static final IRI authIRI6 = rdf.createIRI("trellis:repository/acl/private/auth6");
+    private static final IRI authIRI6 = rdf.createIRI("trellis:data/acl/private/auth6");
 
-    private static final IRI authIRI8 = rdf.createIRI("trellis:repository/acl/private/auth8");
+    private static final IRI authIRI8 = rdf.createIRI("trellis:data/acl/private/auth8");
 
-    private static final IRI bseegerIRI = rdf.createIRI("info:user/bseeger");
+    private static final IRI addisonIRI = rdf.createIRI("info:user/addison");
 
     private static final IRI acoburnIRI = rdf.createIRI("info:user/acoburn");
 
     private static final IRI agentIRI = rdf.createIRI("info:user/agent");
 
-    private static final IRI groupIRI = rdf.createIRI("trellis:repository/group/test");
+    private static final IRI groupIRI = rdf.createIRI("trellis:data/group/test");
 
-    private static final IRI groupIRI2 = rdf.createIRI("trellis:repository/group/test/");
+    private static final IRI groupIRI2 = rdf.createIRI("trellis:data/group/test/");
 
 
     private static OngoingStubbing<Optional<? extends Resource>> whenResource(
@@ -126,13 +126,13 @@ public class WebACServiceTest {
         when(mockChildResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI1, type, ACL.Authorization),
                 rdf.createTriple(authIRI1, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI1, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI1, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI1, ACL.accessTo, childIRI),
 
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
-                rdf.createTriple(authIRI2, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI2, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI2, ACL.agent, agentIRI),
                 rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
 
@@ -140,7 +140,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Control),
-                rdf.createTriple(authIRI3, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI3, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI3, ACL.agent, agentIRI),
                 rdf.createTriple(authIRI3, ACL.accessTo, childIRI),
 
@@ -150,7 +150,7 @@ public class WebACServiceTest {
         when(mockRootResource.hasAcl()).thenReturn(true);
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
 
@@ -199,7 +199,7 @@ public class WebACServiceTest {
 
     @Test
     public void testCanRead2() {
-        when(mockSession.getAgent()).thenReturn(bseegerIRI);
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read));
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read));
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Read));
@@ -229,7 +229,7 @@ public class WebACServiceTest {
 
     @Test
     public void testCanWrite2() {
-        when(mockSession.getAgent()).thenReturn(bseegerIRI);
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write));
@@ -259,7 +259,7 @@ public class WebACServiceTest {
 
     @Test
     public void testCanControl2() {
-        when(mockSession.getAgent()).thenReturn(bseegerIRI);
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Control));
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Control));
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Control));
@@ -289,7 +289,7 @@ public class WebACServiceTest {
 
     @Test
     public void testCanAppend2() {
-        when(mockSession.getAgent()).thenReturn(bseegerIRI);
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Append));
         assertFalse(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Append));
         assertFalse(testService.getAccessModes(childIRI, mockSession).contains(ACL.Append));
@@ -367,7 +367,7 @@ public class WebACServiceTest {
     @Test
     public void testDelegate3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
-        when(mockSession.getDelegatedBy()).thenReturn(of(bseegerIRI));
+        when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));
 
         assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write));
@@ -385,7 +385,7 @@ public class WebACServiceTest {
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI5, type, ACL.Authorization),
                 rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
 
@@ -422,7 +422,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
-                rdf.createTriple(authIRI2, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI2, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI2, ACL.agent, agentIRI),
                 rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
 
@@ -472,7 +472,7 @@ public class WebACServiceTest {
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI5, type, ACL.Authorization),
                 rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
 
@@ -501,7 +501,7 @@ public class WebACServiceTest {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         when(mockGroupResource.stream(eq(Trellis.PreferUserManaged))).thenAnswer(inv -> Stream.of(
                     rdf.createTriple(authIRI1, VCARD.hasMember, acoburnIRI),
-                    rdf.createTriple(groupIRI, VCARD.hasMember, bseegerIRI),
+                    rdf.createTriple(groupIRI, VCARD.hasMember, addisonIRI),
                     rdf.createTriple(groupIRI, type, VCARD.Group),
                     rdf.createTriple(groupIRI, VCARD.hasMember, acoburnIRI)));
 
@@ -525,7 +525,7 @@ public class WebACServiceTest {
 
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
 
@@ -545,7 +545,7 @@ public class WebACServiceTest {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         when(mockGroupResource.stream(eq(Trellis.PreferUserManaged))).thenAnswer(inv -> Stream.of(
                     rdf.createTriple(authIRI1, VCARD.hasMember, acoburnIRI),
-                    rdf.createTriple(groupIRI2, VCARD.hasMember, bseegerIRI),
+                    rdf.createTriple(groupIRI2, VCARD.hasMember, addisonIRI),
                     rdf.createTriple(groupIRI2, type, VCARD.Group),
                     rdf.createTriple(groupIRI2, VCARD.hasMember, acoburnIRI)));
 
@@ -570,7 +570,7 @@ public class WebACServiceTest {
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI5, type, ACL.Authorization),
                 rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.agent, bseegerIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
 
@@ -630,7 +630,7 @@ public class WebACServiceTest {
     @Test
     public void testCacheCanWrite2() {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
-        when(mockSession.getAgent()).thenReturn(bseegerIRI);
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertTrue(testCacheService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
         assertTrue(testCacheService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
         assertTrue(testCacheService.getAccessModes(childIRI, mockSession).contains(ACL.Write));
@@ -642,7 +642,7 @@ public class WebACServiceTest {
     public void testCacheCanWrite3() {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(agentIRI);
-        when(mockSession.getDelegatedBy()).thenReturn(of(bseegerIRI));
+        when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));
 
         assertTrue(testCacheService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
         assertTrue(testCacheService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));

@@ -34,12 +34,12 @@ public class AuthorizationTest {
 
     private final Graph graph = rdf.createGraph();
 
-    private final IRI subject = rdf.createIRI("trellis:repository/resource");
+    private final IRI subject = rdf.createIRI("trellis:data/resource");
 
     @BeforeEach
     public void setUp() {
 
-        final IRI other = rdf.createIRI("trellis:repository/other");
+        final IRI other = rdf.createIRI("trellis:data/other");
 
         graph.clear();
 
@@ -57,16 +57,16 @@ public class AuthorizationTest {
 
         graph.add(rdf.createTriple(subject, ACL.mode, ACL.Read));
 
-        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:repository/resource2")));
-        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:repository/resource3")));
-        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:repository/resource4")));
-        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:repository/resource4")));
-        graph.add(rdf.createTriple(other, ACL.accessTo, rdf.createIRI("trellis:repository/resource5")));
+        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:data/resource2")));
+        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:data/resource3")));
+        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:data/resource4")));
+        graph.add(rdf.createTriple(subject, ACL.accessTo, rdf.createIRI("trellis:data/resource4")));
+        graph.add(rdf.createTriple(other, ACL.accessTo, rdf.createIRI("trellis:data/resource5")));
 
         graph.add(rdf.createTriple(subject, ACL.accessToClass, PROV.Activity));
         graph.add(rdf.createTriple(other, ACL.accessToClass, PROV.Entity));
 
-        graph.add(rdf.createTriple(subject, ACL.default_, rdf.createIRI("trellis:repository/container")));
+        graph.add(rdf.createTriple(subject, ACL.default_, rdf.createIRI("trellis:data/container")));
     }
 
     @Test
@@ -89,11 +89,11 @@ public class AuthorizationTest {
         assertTrue(auth.getMode().contains(ACL.Read));
 
         assertEquals(3, auth.getAccessTo().size());
-        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:repository/resource2")));
-        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:repository/resource3")));
-        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:repository/resource4")));
+        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource2")));
+        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource3")));
+        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource4")));
 
         assertEquals(1, auth.getDefault().size());
-        assertTrue(auth.getDefault().contains(rdf.createIRI("trellis:repository/container")));
+        assertTrue(auth.getDefault().contains(rdf.createIRI("trellis:data/container")));
     }
 }
