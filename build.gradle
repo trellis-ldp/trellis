@@ -30,7 +30,7 @@ ext {
     jerseyVersion = '2.27'
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.0'
-    jwtVersion = '0.9.0'
+    jwtVersion = '0.9.1'
     kafkaVersion = '1.1.0'
     metricsVersion = '4.0.2'
     mustacheVersion = '0.9.5'
@@ -41,7 +41,7 @@ ext {
     /* Testing */
     apiguardianVersion = '1.0.0'
     awaitilityVersion = '3.1.1'
-    bouncycastleVersion = '1.59'
+    bouncycastleVersion = '1.60'
     commonsTextVersion = '1.4'
     guavaVersion = '25.1-jre'
     jsonVersion = '1.1.2'
@@ -57,7 +57,7 @@ ext {
     karafVersion = '4.2.0'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
-    paxExamVersion = '4.11.0'
+    paxExamVersion = '4.12.0'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
     spiflyVersion = '1.0.10'
     // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
