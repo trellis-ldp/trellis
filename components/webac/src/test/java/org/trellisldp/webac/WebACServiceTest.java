@@ -345,6 +345,33 @@ public class WebACServiceTest {
     }
 
     @Test
+    public void testCanWrite6() {
+        final AccessControlService testService2 = new WebACService(mockResourceService, null, false);
+        when(mockSession.getAgent()).thenReturn(agentIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
+        assertTrue(testService2.getAccessModes(memberIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(childIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
+    }
+
+    @Test
+    public void testCanWrite7() {
+        final AccessControlService testService2 = new WebACService(mockResourceService, null, false);
+        when(mockSession.getAgent()).thenReturn(addisonIRI);
+        when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
+        assertTrue(testService2.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(childIRI, mockSession).contains(ACL.Write));
+        assertFalse(testService2.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
+        assertFalse(testService2.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
+    }
+
+    @Test
     public void testCanControl1() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));

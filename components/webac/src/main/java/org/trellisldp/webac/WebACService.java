@@ -19,6 +19,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toGraph;
@@ -47,7 +48,6 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
-import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.VCARD;
 
@@ -59,6 +59,8 @@ import org.trellisldp.vocabulary.VCARD;
  * @author acoburn
  */
 public class WebACService implements AccessControlService {
+
+    public static final String WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
     private static final Logger LOGGER = getLogger(WebACService.class);
 
@@ -75,6 +77,7 @@ public class WebACService implements AccessControlService {
 
     private final ResourceService resourceService;
     private final CacheService<String, Set<IRI>> cache;
+    private final Boolean checkMembershipResources;
 
     /**
      * Create a WebAC-based authorization service.
@@ -94,9 +97,22 @@ public class WebACService implements AccessControlService {
     @Inject
     public WebACService(final ResourceService resourceService,
             @Named("TrellisAuthorizationCache") final CacheService<String, Set<IRI>> cache) {
+        this(resourceService, cache, getConfiguration().getOrDefault(WEBAC_MEMBERSHIP_CHECK, Boolean.class, false));
+    }
+
+    /**
+     * Create a WebAC-based authorization service.
+     *
+     * @param resourceService the resource service
+     * @param cache a cache (may be null if caching is not desired)
+     * @param checkMembershipResources whether to check membership resource permissions (default=false)
+     */
+    public WebACService(final ResourceService resourceService,
+            final CacheService<String, Set<IRI>> cache, final Boolean checkMembershipResources) {
         requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.resourceService = resourceService;
         this.cache = cache;
+        this.checkMembershipResources = checkMembershipResources;
     }
 
     @Override
@@ -129,11 +145,6 @@ public class WebACService implements AccessControlService {
         return join("||", identifier.getIRIString(), agent.getIRIString());
     }
 
-    private Boolean supportsMembershipTypes() {
-        return resourceService.supportedInteractionModels().contains(LDP.IndirectContainer)
-            || resourceService.supportedInteractionModels().contains(LDP.DirectContainer);
-    }
-
     private Boolean hasWritableMode(final Set<IRI> modes) {
         return modes.contains(ACL.Write) || modes.contains(ACL.Append);
     }
@@ -141,7 +152,7 @@ public class WebACService implements AccessControlService {
     private Set<IRI> getAuthz(final IRI identifier, final IRI agent) {
         final Set<IRI> modes = getModesFor(identifier, agent);
         // consider membership resources, if relevant
-        if (supportsMembershipTypes() && hasWritableMode(modes)) {
+        if (checkMembershipResources && hasWritableMode(modes)) {
             resourceService.getContainer(identifier).flatMap(resourceService::get)
                 .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
                 .ifPresent(member -> {
