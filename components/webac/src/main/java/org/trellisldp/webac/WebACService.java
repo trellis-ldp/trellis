@@ -159,6 +159,8 @@ public class WebACService implements AccessControlService {
                     final Set<IRI> memberModes = getModesFor(member, agent);
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
+                    }
+                    if (!memberModes.contains(ACL.Append)) {
                         modes.remove(ACL.Append);
                     }
                 });
