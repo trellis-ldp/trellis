@@ -663,11 +663,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Stream<IRI> compact(final IRI identifier, final Instant from, final Instant until) {
-        throw new UnsupportedOperationException("compact is not supported");
-    }
-
-    @Override
     public Stream<IRI> purge(final IRI identifier) {
         throw new UnsupportedOperationException("purge is not supported");
     }

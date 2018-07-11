@@ -138,11 +138,6 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
-        public Stream<IRI> compact(final IRI identifier, final Instant from, final Instant until) {
-            return Stream.empty();
-        }
-
-        @Override
         public Stream<IRI> purge(final IRI identifier) {
             return Stream.empty();
         }
