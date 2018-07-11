@@ -76,14 +76,6 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
     Stream<IRI> compact(IRI identifier, Instant from, Instant until);
 
     /**
-     * Purge a resource from the server.
-     *
-     * @param identifier the identifier
-     * @return a stream of binary IRIs that can be safely purged
-     */
-    Stream<IRI> purge(IRI identifier);
-
-    /**
      * Scan the resources.
      *
      * @return a stream of RDF Triples, containing the resource and its LDP type

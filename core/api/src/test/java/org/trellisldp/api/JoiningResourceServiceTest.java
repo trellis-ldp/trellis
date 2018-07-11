@@ -143,11 +143,6 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
-        public Stream<IRI> purge(final IRI identifier) {
-            return Stream.empty();
-        }
-
-        @Override
         public Stream<? extends Triple> scan() {
             return Stream.empty();
         }

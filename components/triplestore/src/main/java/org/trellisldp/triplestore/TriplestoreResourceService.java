@@ -668,11 +668,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Stream<IRI> purge(final IRI identifier) {
-        throw new UnsupportedOperationException("purge is not supported");
-    }
-
-    @Override
     public Future<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
         return supplyAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
