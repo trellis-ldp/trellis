@@ -642,11 +642,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Optional<Resource> get(final IRI identifier, final Instant time) {
-        return mementoService.isPresent() ? mementoService.flatMap(svc -> svc.get(identifier, time)) : get(identifier);
-    }
-
-    @Override
     public Optional<Resource> get(final IRI identifier) {
         return TriplestoreResource.findResource(rdfConnection, identifier);
     }

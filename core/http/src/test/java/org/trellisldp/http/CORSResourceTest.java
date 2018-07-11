@@ -170,10 +170,8 @@ public class CORSResourceTest extends JerseyTest {
         whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
         whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
-        when(mockResourceService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
         whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
         when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
-        when(mockResourceService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);

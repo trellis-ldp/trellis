@@ -285,7 +285,7 @@ public class LdpResource implements ContainerRequestFilter {
         // Fetch a versioned resource
         if (nonNull(req.getVersion())) {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
-            return resourceService.get(identifier, req.getVersion().getInstant())
+            return mementoService.get(identifier, req.getVersion().getInstant())
                 .map(getHandler::getRepresentation).orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timemap
@@ -298,7 +298,7 @@ public class LdpResource implements ContainerRequestFilter {
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
             LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
-            return resourceService.get(identifier, req.getDatetime().getInstant())
+            return mementoService.get(identifier, req.getDatetime().getInstant())
                 .map(res -> new MementoResource(mementoService).getTimeGateBuilder(req, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
@@ -325,7 +325,7 @@ public class LdpResource implements ContainerRequestFilter {
                 urlBase);
 
         if (nonNull(req.getVersion())) {
-            return resourceService.get(identifier, req.getVersion().getInstant()).map(optionsHandler::ldpOptions)
+            return mementoService.get(identifier, req.getVersion().getInstant()).map(optionsHandler::ldpOptions)
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 

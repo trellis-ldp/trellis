@@ -14,7 +14,6 @@
 
 package org.trellisldp.api;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -22,7 +21,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * A service that can retrieve resources of some type, featuring optional
  * retrieval by time.
- * 
+ *
  * @author ajs6f
  * @param <T> the type of resource available from this service
  */
@@ -35,15 +34,4 @@ public interface RetrievalService<T> {
      * @return the resource
      */
     Optional<? extends T> get(IRI identifier);
-
-    /**
-     * Get a resource by the given identifier and time.
-     *
-     * @param identifier the resource identifier
-     * @param time the time
-     * @return the resource
-     */
-    default Optional<? extends T> get(IRI identifier, Instant time) {
-        return get(identifier);
-    }
 }
