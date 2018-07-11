@@ -216,6 +216,9 @@ public class PatchHandler extends BaseLdpHandler {
                         }
                 }
 
+                // Update the memento
+                resourceService.get(res.getIdentifier()).ifPresent(mementoService::put);
+
                 final ResponseBuilder builder = ok();
 
                 getLinkTypes(res.getInteractionModel()).forEach(type -> builder.link(type, "type"));

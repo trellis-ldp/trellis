@@ -17,12 +17,10 @@
     <!--<reference id="eventService" interface="org.trellisldp.api.EventService"/>-->
 
     <reference id="idService" interface="org.trellisldp.api.IdentifierService"/>
-    <reference id="mementoService" interface="org.trellisldp.api.MementoService"/>
 
     <bean id="resourceService" class="org.trellisldp.triplestore.TriplestoreResourceService">
       <argument ref="rdfConnection"/>
       <argument ref="idService"/>
-      <argument ref="mementoService"/>
       <argument ref="eventService"/>
     </bean>
 

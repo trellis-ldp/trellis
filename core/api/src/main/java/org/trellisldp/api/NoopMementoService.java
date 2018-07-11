@@ -36,6 +36,11 @@ public class NoopMementoService implements MementoService {
     }
 
     @Override
+    public void put(final Resource resource) {
+        // no-op
+    }
+
+    @Override
     public Optional<Resource> get(final IRI identifier, final Instant time) {
         return empty();
     }

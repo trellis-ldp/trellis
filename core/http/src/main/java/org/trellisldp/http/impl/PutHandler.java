@@ -240,6 +240,9 @@ public class PutHandler extends ContentBearingHandler {
                     }
                 }
 
+                // Create a memento
+                resourceService.get(internalId).ifPresent(mementoService::put);
+
                 final ResponseBuilder builder = buildResponse(res, identifier);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
                     .forEach(type -> builder.link(type, "type"));

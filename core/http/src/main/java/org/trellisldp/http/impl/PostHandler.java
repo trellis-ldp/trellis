@@ -172,6 +172,9 @@ public class PostHandler extends ContentBearingHandler {
                         }
                 }
 
+                // Add memento data
+                resourceService.get(internalId).ifPresent(mementoService::put);
+
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
 
                 // Add LDP types

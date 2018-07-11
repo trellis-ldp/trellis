@@ -90,7 +90,6 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -123,25 +122,22 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
     private final Optional<EventService> eventService;
-    private final Optional<MementoService> mementoService;
     private final Set<IRI> supportedIxnModels;
 
     /**
      * Create a triplestore-backed resource service.
      * @param rdfConnection the connection to an RDF datastore
      * @param identifierService an ID supplier service
-     * @param mementoService a service for memento resources
      * @param eventService an event service
      */
     @Inject
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService,
-            final MementoService mementoService, final EventService eventService) {
+            final EventService eventService) {
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
         this.rdfConnection = rdfConnection;
         this.supplier = identifierService.getSupplier();
         this.eventService = ofNullable(eventService);
-        this.mementoService = ofNullable(mementoService);
         this.supportedIxnModels = unmodifiableSet(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                 LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer).stream().collect(toSet()));
         init();
@@ -223,10 +219,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
         try {
             rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
-            if (type != OperationType.DELETE) {
-                mementoService.ifPresent(svc -> get(identifier).ifPresent(res ->
-                            svc.put(identifier, eventTime, res.stream())));
-            }
             emitEvents(identifier, session, type, time, dataset);
         } catch (final Exception ex) {
             LOGGER.error("Could not update data: {}", ex.getMessage());

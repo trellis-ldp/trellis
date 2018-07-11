@@ -112,7 +112,7 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
-        return new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
+        return new TriplestoreResourceService(rdfConnection, idService, notificationService);
     }
 
     private IOService buildIoService(final AppConfiguration config) {

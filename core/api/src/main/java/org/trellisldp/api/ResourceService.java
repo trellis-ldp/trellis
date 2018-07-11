@@ -18,7 +18,6 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
