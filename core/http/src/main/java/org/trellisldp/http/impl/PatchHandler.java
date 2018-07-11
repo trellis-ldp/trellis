@@ -65,6 +65,7 @@ import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -96,12 +97,13 @@ public class PatchHandler extends BaseLdpHandler {
      * @param resourceService the resource service
      * @param ioService the serialization service
      * @param agentService the agent service
+     * @param mementoService the memento service
      * @param baseUrl the base URL
      */
     public PatchHandler(final LdpRequest req, final String updateBody, final ResourceService resourceService,
             final AuditService auditService, final IOService ioService, final AgentService agentService,
-            final String baseUrl) {
-        super(req, resourceService, auditService, baseUrl);
+            final MementoService mementoService, final String baseUrl) {
+        super(req, resourceService, mementoService, auditService, baseUrl);
         this.ioService = ioService;
         this.agentService = agentService;
         this.updateBody = updateBody;

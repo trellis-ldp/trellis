@@ -129,6 +129,7 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
@@ -196,6 +197,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     protected static final String HUB = "http://hub.example.org/";
 
     protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
+
+    @Mock
+    protected MementoService mockMementoService;
 
     @Mock
     protected ResourceService mockResourceService;
@@ -272,7 +276,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
 
-        when(mockResourceService.getMementos(eq(identifier)))
+        when(mockMementoService.list(eq(identifier)))
                 .thenReturn(asList(between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                     between(ofEpochSecond(timestamp - 1000), time),
                     between(time, ofEpochSecond(timestamp + 1000))));
@@ -283,7 +287,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
-        when(mockResourceService.getMementos(eq(binaryIdentifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(binaryIdentifier))).thenReturn(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
                 between(time, ofEpochSecond(timestamp + 1000))));
@@ -322,7 +326,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
-        when(mockResourceService.getMementos(eq(deletedIdentifier))).thenReturn(emptyList());
+        when(mockMementoService.list(eq(deletedIdentifier))).thenReturn(emptyList());
         when(mockDeletedResource.isDeleted()).thenReturn(true);
         when(mockDeletedResource.getInteractionModel()).thenReturn(LDP.Resource);
         when(mockDeletedResource.getModified()).thenReturn(time);
@@ -331,7 +335,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockDeletedResource.getIdentifier()).thenReturn(identifier);
         when(mockDeletedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
-        when(mockResourceService.getMementos(eq(userDeletedIdentifier))).thenReturn(emptyList());
+        when(mockMementoService.list(eq(userDeletedIdentifier))).thenReturn(emptyList());
         when(mockUserDeletedResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockUserDeletedResource.getModified()).thenReturn(time);
         when(mockUserDeletedResource.getBinary()).thenReturn(empty());
@@ -1219,7 +1223,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testGetTimeMapLink() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.getMementos(eq(identifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(identifier))).thenReturn(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
                 between(time, ofEpochSecond(timestamp + 1000))));
@@ -1278,7 +1282,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetTimeMapJsonCompact() throws IOException {
-        when(mockResourceService.getMementos(eq(identifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(identifier))).thenReturn(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
                 between(time, ofEpochSecond(timestamp + 1000))));
@@ -1359,7 +1363,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetTimeMapJson() throws IOException {
-        when(mockResourceService.getMementos(eq(identifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(identifier))).thenReturn(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
                 between(time, ofEpochSecond(timestamp + 1000))));
@@ -1931,7 +1935,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testOptionsTimemap() {
-        when(mockResourceService.getMementos(identifier)).thenReturn(asList(
+        when(mockMementoService.list(identifier)).thenReturn(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
                 between(time, ofEpochSecond(timestamp + 1000))));

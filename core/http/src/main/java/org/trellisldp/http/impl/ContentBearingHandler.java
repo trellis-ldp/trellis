@@ -45,6 +45,7 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.domain.Digest;
@@ -75,12 +76,13 @@ class ContentBearingHandler extends BaseLdpHandler {
      * @param resourceService the resource service
      * @param auditService an audit service
      * @param ioService the serialization service
+     * @param mementoService the memento service
      * @param binaryService the binary service
      */
     protected ContentBearingHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
                     final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final AgentService agentService, final String baseUrl) {
-        super(req, resourceService, auditService, baseUrl);
+                    final AgentService agentService, final MementoService mementoService, final String baseUrl) {
+        super(req, resourceService, mementoService, auditService, baseUrl);
         this.binaryService = binaryService;
         this.ioService = ioService;
         this.agentService = agentService;

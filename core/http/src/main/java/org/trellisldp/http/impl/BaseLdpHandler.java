@@ -40,6 +40,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
@@ -66,20 +67,23 @@ public class BaseLdpHandler {
     private final String baseUrl;
     protected final LdpRequest req;
     protected final ResourceService resourceService;
+    protected final MementoService mementoService;
 
     /**
      * A base class for response handling.
      *
      * @param req the LDP request
      * @param resourceService the resource service
+     * @param mementoService the memento service
      * @param auditService an audit service
      * @param baseUrl the base URL
      */
-    public BaseLdpHandler(final LdpRequest req, final ResourceService resourceService, final AuditService auditService,
-                    final String baseUrl) {
+    public BaseLdpHandler(final LdpRequest req, final ResourceService resourceService,
+            final MementoService mementoService, final AuditService auditService, final String baseUrl) {
         this.baseUrl = baseUrl;
         this.req = req;
         this.resourceService = resourceService;
+        this.mementoService = mementoService;
         this.audit = auditService;
     }
 
@@ -93,7 +97,7 @@ public class BaseLdpHandler {
     protected void checkDeleted(final Resource res, final String identifier) {
         if (res.isDeleted()) {
             throw new WebApplicationException(status(GONE)
-                    .links(MementoResource.getMementoLinks(identifier, resourceService.getMementos(res.getIdentifier()))
+                    .links(MementoResource.getMementoLinks(identifier, mementoService.list(res.getIdentifier()))
                     .toArray(Link[]::new)).build());
         }
     }

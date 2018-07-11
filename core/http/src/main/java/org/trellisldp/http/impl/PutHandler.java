@@ -66,6 +66,7 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
@@ -91,12 +92,14 @@ public class PutHandler extends ContentBearingHandler {
      * @param ioService the serialization service
      * @param binaryService the binary service
      * @param agentService the agent service
+     * @param mementoService the memento service
      * @param baseUrl the base URL
      */
     public PutHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
                     final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final AgentService agentService, final String baseUrl) {
-        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, baseUrl);
+                    final AgentService agentService, final MementoService mementoService, final String baseUrl) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, mementoService,
+                baseUrl);
     }
 
     private void checkResourceCache(final String identifier, final Resource res) {

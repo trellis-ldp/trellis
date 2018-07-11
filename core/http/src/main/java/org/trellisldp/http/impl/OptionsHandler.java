@@ -43,6 +43,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
@@ -64,11 +65,12 @@ public class OptionsHandler extends BaseLdpHandler {
      * @param req the LDP request
      * @param resourceService the resource service
      * @param ioService the I/O service
+     * @param mementoService the memento service
      * @param baseUrl the base URL
      */
     public OptionsHandler(final LdpRequest req, final ResourceService resourceService, final IOService ioService,
-            final String baseUrl) {
-        super(req, resourceService, null, baseUrl);
+            final MementoService mementoService, final String baseUrl) {
+        super(req, resourceService, mementoService, null, baseUrl);
         this.ioService = ioService;
     }
 

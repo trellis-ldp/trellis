@@ -26,9 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -37,7 +35,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -130,11 +127,6 @@ public class JoiningResourceServiceTest {
         public TestableJoiningResourceService(final ImmutableDataService<Resource> immutableData,
                         final MutableDataService<Resource> mutableData) {
             super(mutableData, immutableData);
-        }
-
-        @Override
-        public List<Range<Instant>> getMementos(final IRI identifier) {
-            return Collections.emptyList();
         }
 
         @Override

@@ -143,7 +143,6 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
                         .thenReturn(of(mockVersionedResource));
         Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class)))
                         .thenReturn(of(mockResource));
-        when(mockResourceService.getMementos(any())).thenReturn(emptyList());
 
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 

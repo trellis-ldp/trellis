@@ -18,7 +18,6 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
@@ -100,6 +99,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
@@ -144,7 +144,6 @@ public class GetHandlerTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockResourceService.getMementos(any())).thenReturn(emptyList());
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinary()).thenReturn(empty());
@@ -164,7 +163,7 @@ public class GetHandlerTest {
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(OK, res.getStatusInfo());
@@ -207,7 +206,7 @@ public class GetHandlerTest {
             .thenReturn(Prefer.valueOf("return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment"));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(OK, res.getStatusInfo());
@@ -229,7 +228,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(OK, res.getStatusInfo());
@@ -272,7 +271,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, baseUrl);
+                mockIoService, mockBinaryService, new NoopMementoService(), baseUrl);
 
         assertThrows(WebApplicationException.class, () -> getHandler.getRepresentation(mockResource));
     }
@@ -286,7 +285,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, baseUrl);
+                mockIoService, mockBinaryService, new NoopMementoService(), baseUrl);
 
         assertThrows(WebApplicationException.class, () -> getHandler.getRepresentation(mockResource));
     }
@@ -303,7 +302,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, baseUrl);
+                mockIoService, mockBinaryService, new NoopMementoService(), baseUrl);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(OK, res.getStatusInfo());
@@ -318,7 +317,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, baseUrl);
+                mockIoService, mockBinaryService, new NoopMementoService(), baseUrl);
 
         assertThrows(NotAcceptableException.class, () -> getHandler.getRepresentation(mockResource));
     }
@@ -330,7 +329,7 @@ public class GetHandlerTest {
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, baseUrl);
+                mockIoService, mockBinaryService, new NoopMementoService(), baseUrl);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -376,7 +375,7 @@ public class GetHandlerTest {
                     MediaType.valueOf(APPLICATION_LD_JSON + "; profile=\"" + compacted.getIRIString() + "\"")));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(OK, res.getStatusInfo());
@@ -426,7 +425,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(OK, res.getStatusInfo());
@@ -447,7 +446,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
@@ -470,7 +469,7 @@ public class GetHandlerTest {
         when(mockLdpRequest.getExt()).thenReturn(DESCRIPTION);
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
@@ -492,7 +491,7 @@ public class GetHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, baseUrl);
+                mockIoService, mockBinaryService, new NoopMementoService(), baseUrl);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
@@ -516,7 +515,7 @@ public class GetHandlerTest {
         when(mockLdpRequest.getExt()).thenReturn("acl");
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, baseUrl);
+                mockIoService, mockBinaryService, new NoopMementoService(), baseUrl);
 
         final Response res = getHandler.getRepresentation(mockResource).build();
         assertEquals(OK, res.getStatusInfo());
@@ -536,7 +535,7 @@ public class GetHandlerTest {
         when(mockResource.isDeleted()).thenReturn(true);
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockResourceService,
-                mockIoService, mockBinaryService, null);
+                mockIoService, mockBinaryService, new NoopMementoService(), null);
 
         assertThrows(WebApplicationException.class, () -> getHandler.getRepresentation(mockResource));
     }

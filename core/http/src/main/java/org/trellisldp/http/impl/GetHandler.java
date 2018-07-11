@@ -91,6 +91,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.LdpRequest;
@@ -120,11 +121,12 @@ public class GetHandler extends BaseLdpHandler {
      * @param resourceService the resource service
      * @param ioService the serialization service
      * @param binaryService the binary service
+     * @param mementoService the memento service
      * @param baseUrl the base URL
      */
     public GetHandler(final LdpRequest req, final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final String baseUrl) {
-        super(req, resourceService, null, baseUrl);
+            final BinaryService binaryService, final MementoService mementoService, final String baseUrl) {
+        super(req, resourceService, mementoService, null, baseUrl);
         this.ioService = ioService;
         this.binaryService = binaryService;
     }
@@ -171,7 +173,7 @@ public class GetHandler extends BaseLdpHandler {
         // Only show memento links for the user-managed graph (not ACL)
         if (!ACL.equals(req.getExt())) {
             builder.link(identifier, "original timegate")
-                .links(MementoResource.getMementoLinks(identifier, resourceService.getMementos(res.getIdentifier()))
+                .links(MementoResource.getMementoLinks(identifier, mementoService.list(res.getIdentifier()))
                         .toArray(Link[]::new));
         }
 

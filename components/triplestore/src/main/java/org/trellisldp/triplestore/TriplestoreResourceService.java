@@ -61,7 +61,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -234,11 +233,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             throw new RuntimeTrellisException(ex);
         }
         return true;
-    }
-
-    @Override
-    public List<Range<Instant>> getMementos(final IRI identifier) {
-        return mementoService.map(svc -> svc.list(identifier)).orElse(emptyList());
     }
 
     private void emitEvents(final IRI identifier, final Session session, final OperationType opType,

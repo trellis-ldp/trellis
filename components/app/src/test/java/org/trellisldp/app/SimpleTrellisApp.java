@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.NoopNamespaceService;
@@ -62,6 +63,11 @@ public class SimpleTrellisApp extends AbstractTrellisApplication<TrellisConfigur
 
     @Override
     protected Optional<AuditService> getAuditService() {
+        return empty();
+    }
+
+    @Override
+    protected Optional<MementoService> getMementoService() {
         return empty();
     }
 

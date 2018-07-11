@@ -20,12 +20,10 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -54,16 +52,6 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
         return of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
                     .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(getInstance()::createIRI);
     }
-
-    /**
-     * Retrieve a list of Mementos for this resource.
-     *
-     * @param identifier the resource identifier
-     * @return a {@link List} of {@link Range}s of {@link Instant}s.
-     * Each element of the list can be used to build a link header for a single Memento
-     * (i.e. for the {@code from} and {@code until} parameters)
-     */
-    List<Range<Instant>> getMementos(IRI identifier);
 
     /**
      * Scan the resources.
