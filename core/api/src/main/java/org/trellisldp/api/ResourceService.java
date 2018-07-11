@@ -66,16 +66,6 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
     List<Range<Instant>> getMementos(IRI identifier);
 
     /**
-     * Compact (rewrite the history) of a resource.
-     *
-     * @param identifier the identifier
-     * @param from a time after which a resource is to be compacted
-     * @param until a time before which a resource is to be compacted
-     * @return a stream of binary IRIs that can be safely purged
-     */
-    Stream<IRI> compact(IRI identifier, Instant from, Instant until);
-
-    /**
      * Scan the resources.
      *
      * @return a stream of RDF Triples, containing the resource and its LDP type

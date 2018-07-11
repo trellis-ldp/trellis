@@ -164,16 +164,6 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testCompact() {
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
-        assertThrows(UnsupportedOperationException.class, () ->
-                svc.compact(rdf.createIRI(TRELLIS_DATA_PREFIX + "identifier"), now(), now()));
-    }
-
-    @Test
     public void testScan() {
         final IRI one = rdf.createIRI(TRELLIS_DATA_PREFIX + "1");
         final IRI two = rdf.createIRI(TRELLIS_DATA_PREFIX + "2");

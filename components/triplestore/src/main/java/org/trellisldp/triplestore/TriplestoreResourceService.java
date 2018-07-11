@@ -663,11 +663,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Stream<IRI> compact(final IRI identifier, final Instant from, final Instant until) {
-        throw new UnsupportedOperationException("compact is not supported");
-    }
-
-    @Override
     public Future<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
         return supplyAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
