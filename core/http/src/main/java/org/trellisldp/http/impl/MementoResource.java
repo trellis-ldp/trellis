@@ -66,7 +66,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.trellisldp.api.IOService;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.Memento;
 import org.trellisldp.vocabulary.Time;
@@ -127,15 +127,15 @@ public final class MementoResource {
         return buffer.stream();
     };
 
-    private final ResourceService resourceService;
+    private final MementoService mementoService;
 
     /**
      * Wrap a resource in some Memento-specific response builders.
      *
-     * @param resourceService the resource service
+     * @param mementoService the memento service
      */
-    public MementoResource(final ResourceService resourceService) {
-        this.resourceService = resourceService;
+    public MementoResource(final MementoService mementoService) {
+        this.mementoService = mementoService;
     }
 
     /**
@@ -152,7 +152,7 @@ public final class MementoResource {
         final List<MediaType> acceptableTypes = req.getHeaders().getAcceptableMediaTypes();
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         final IRI internalIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final List<Link> links = getMementoLinks(identifier, resourceService.getMementos(internalIdentifier))
+        final List<Link> links = getMementoLinks(identifier, mementoService.list(internalIdentifier))
             .collect(toList());
 
         final Response.ResponseBuilder builder = Response.ok().link(identifier, ORIGINAL + " " + TIMEGATE);
@@ -212,7 +212,7 @@ public final class MementoResource {
         return Response.status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().toEpochMilli()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
-            .links(getMementoLinks(identifier, resourceService.getMementos(internalIdentifier)).toArray(Link[]::new))
+            .links(getMementoLinks(identifier, mementoService.list(internalIdentifier)).toArray(Link[]::new))
             .header(VARY, ACCEPT_DATETIME);
     }
 

@@ -59,9 +59,10 @@ public class TrellisApplication extends ResourceConfig {
         final IOService ioService = new JenaIOService(namespaceService);
 
         final TriplestoreResourceService resourceService = new TriplestoreResourceService(
-                rdfConnection, idService, mementoService, eventService);
+                rdfConnection, idService, eventService);
 
-        register(new LdpResource(resourceService, ioService, binaryService, agentService, resourceService));
+        register(new LdpResource(resourceService, ioService, binaryService, agentService, mementoService,
+                    resourceService));
         register(new AgentAuthorizationFilter(agentService));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);

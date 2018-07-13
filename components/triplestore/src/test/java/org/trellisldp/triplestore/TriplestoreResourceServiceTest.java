@@ -14,12 +14,9 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
-import static java.time.Instant.parse;
-import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.commons.lang3.Range.between;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.awaitility.Awaitility.await;
@@ -30,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -56,7 +52,6 @@ import org.mockito.Mock;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.id.UUIDGenerator;
@@ -96,9 +91,6 @@ public class TriplestoreResourceServiceTest {
     @Mock
     private RDFConnection mockRdfConnection;
 
-    @Mock
-    private MementoService mockMementoService;
-
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -112,55 +104,17 @@ public class TriplestoreResourceServiceTest {
     public void testIdentifierService() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier());
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier());
-    }
-
-    @Test
-    public void testMementoService() {
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final Instant time1 = parse("2014-10-14T12:00:00Z");
-        final Instant time2 = parse("2018-01-03T12:00:00Z");
-        final Instant time3 = parse("2018-01-03T14:30:00Z");
-        final Instant time4 = now().minusSeconds(10L);
-        when(mockMementoService.list(eq(identifier))).thenReturn(asList(between(time1, time2),
-                    between(time3, time4), between(time2, time3), between(time4, now())));
-        assertTrue(svc.getMementos(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).isEmpty());
-        assertEquals(4L, svc.getMementos(identifier).size());
-        assertTrue(svc.getMementos(identifier).contains(between(time1, time2)));
-        assertTrue(svc.getMementos(identifier).contains(between(time2, time3)));
-        assertTrue(svc.getMementos(identifier).contains(between(time3, time4)));
-        assertTrue(svc.getMementos(identifier).stream().filter(range -> range.getMinimum().equals(time4))
-                .findFirst().isPresent());
-    }
-
-    @Test
-    public void testNoMementoService() {
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                null, mockEventService);
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final Instant time = now();
-        assertTrue(svc.getMementos(identifier).isEmpty());
-        svc.get(identifier, time).ifPresent(res -> assertFalse(res.isMemento()));
-        assertEquals(svc.get(identifier), svc.get(identifier, time));
     }
 
     @Test
     public void testResourceNotFound() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
         assertFalse(svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).isPresent());
-        assertFalse(svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing"), now()).isPresent());
     }
 
     @Test
@@ -174,8 +128,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferServerManaged, three, RDF.type, LDP.RDFSource);
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
         assertEquals(4L, svc.scan().count());
         assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(root) && t.getObject().equals(LDP.BasicContainer)));
         assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(one) && t.getObject().equals(LDP.Container)));
@@ -188,8 +141,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         assertTrue(svc.get(root).isPresent());
         svc.get(root).ifPresent(res -> {
@@ -212,8 +164,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferServerManaged, root, DC.modified, rdf.createLiteral(early.toString(), XSD.dateTime));
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         assertTrue(svc.get(root).isPresent());
         svc.get(root).ifPresent(res -> {
@@ -234,8 +185,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         assertTrue(svc.get(root).isPresent());
         svc.get(root).ifPresent(res -> {
@@ -280,8 +230,7 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testRDFConnectionError() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService, mockEventService);
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection).update(any(UpdateRequest.class));
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection)
             .loadDataset(any(org.apache.jena.query.Dataset.class));
@@ -295,8 +244,7 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testGetContainer() {
         final RDFConnection rdfConnection = connect(wrap(rdf.createDataset().asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
@@ -312,8 +260,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final BlankNode acl = rdf.createBlankNode();
@@ -352,8 +299,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
@@ -389,8 +335,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI binaryIdentifier = rdf.createIRI("foo:binary");
@@ -472,8 +417,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
@@ -594,8 +538,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset1 = rdf.createDataset();
@@ -639,8 +582,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
@@ -762,8 +704,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
@@ -886,8 +827,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
@@ -977,8 +917,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
@@ -1115,8 +1054,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
@@ -1350,8 +1288,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
@@ -1582,8 +1519,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
@@ -1722,8 +1658,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
@@ -1862,8 +1797,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
@@ -2008,8 +1942,7 @@ public class TriplestoreResourceServiceTest {
         final Instant early = now();
         final JenaDataset d = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockMementoService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");

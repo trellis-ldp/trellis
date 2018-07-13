@@ -25,12 +25,14 @@
     <reference id="ioService" interface="org.trellisldp.api.IOService"/>
     <reference id="binaryService" interface="org.trellisldp.api.BinaryService"/>
     <reference id="agentService" interface="org.trellisldp.api.AgentService"/>
+    <reference id="mementoService" interface="org.trellisldp.api.MementoService"/>
 
     <bean id="ldpResource" class="org.trellisldp.http.LdpResource">
       <argument ref="triplestoreService"/>
       <argument ref="ioService"/>
       <argument ref="binaryService"/>
       <argument ref="agentService"/>
+      <argument ref="mementoService"/>
       <argument ref="triplestoreService"/>
       <argument value="${http.baseUrl}"/>
     </bean>

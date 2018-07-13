@@ -23,7 +23,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.commons.lang3.Range.between;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -135,7 +134,7 @@ public class CORSResourceTest extends JerseyTest {
     protected AgentService mockAgentService;
 
     @Mock
-    private Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource;
+    private Resource mockResource, mockBinaryResource;
 
     @Override
     public Application configure() {
@@ -168,33 +167,16 @@ public class CORSResourceTest extends JerseyTest {
 
     @BeforeEach
     public void setUpMocks() {
-        whenResource(mockResourceService.get(any(IRI.class), any(Instant.class)))
-            .thenReturn(of(mockVersionedResource));
         whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
         whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
-        when(mockResourceService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
         whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
-        whenResource(mockResourceService.get(eq(binaryIdentifier), any(Instant.class)))
-            .thenReturn(of(mockBinaryVersionedResource));
         when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
-        when(mockResourceService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
 
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
-
-        when(mockResourceService.getMementos(eq(identifier))).thenReturn(asList(
-                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000))));
-        when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockVersionedResource.getModified()).thenReturn(time);
-        when(mockVersionedResource.getBinary()).thenReturn(empty());
-        when(mockVersionedResource.isMemento()).thenReturn(true);
-        when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
-        when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);

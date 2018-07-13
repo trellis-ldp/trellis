@@ -80,7 +80,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         final ResourceConfig config = new ResourceConfig();
 
         config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService,
-                    mockAuditService, null));
+                    mockMementoService, mockAuditService, null));
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400, true, false));
@@ -99,7 +99,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
 
         final LdpResource filter = new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService,
-                    mockAuditService);
+                    mockMementoService, mockAuditService);
 
         filter.filter(mockContext);
         verify(mockContext, never()).abortWith(any());
@@ -108,7 +108,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
     @Test
     public void testNoBaseURL() throws Exception {
         final LdpResource matcher = new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService,
-                    mockAuditService, null);
+                    mockMementoService, mockAuditService, null);
 
         when(mockLdpRequest.getPath()).thenReturn("repo1/resource");
         when(mockLdpRequest.getBaseUrl()).thenReturn("http://my.example.com/");

@@ -35,7 +35,9 @@ import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopAuditService;
+import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.app.config.BasicAuthConfiguration;
 import org.trellisldp.app.config.JwtAuthConfiguration;
@@ -83,6 +85,15 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     protected abstract BinaryService getBinaryService();
 
     /**
+     * Get an optional {@link MementoService}. There should be at most one
+     * {@code MementoService} in a deployed Trellis instance. If there is one, this
+     * method should return the same {@code MementosService} every time it is called.
+     *
+     * @return an {@code MementoService}, if one exists
+     */
+    protected abstract Optional<MementoService> getMementoService();
+
+    /**
      * Get an optional {@link AuditService}. There should be at most one
      * {@code AuditService} in a deployed Trellis instance. If there is one, this
      * method should return the same {@code AuditService} every time it is called.
@@ -128,7 +139,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Resource matchers
         environment.jersey().register(new LdpResource(getResourceService(), getIOService(), getBinaryService(),
-                    agentService, getAuditService().orElseGet(NoopAuditService::new), config.getBaseUrl()));
+                    agentService, getMementoService().orElseGet(NoopMementoService::new),
+                    getAuditService().orElseGet(NoopAuditService::new), config.getBaseUrl()));
 
         // Authentication
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(agentService);

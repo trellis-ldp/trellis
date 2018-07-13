@@ -55,6 +55,8 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
 
     private IOService ioService;
 
+    private MementoService mementoService;
+
     /**
      * The main entry point.
      *
@@ -81,6 +83,11 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
     }
 
     @Override
+    protected Optional<MementoService> getMementoService() {
+        return of(mementoService);
+    }
+
+    @Override
     protected Optional<AuditService> getAuditService() {
         return of(resourceService);
     }
@@ -91,6 +98,7 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
 
         final IdentifierService idService = new UUIDGenerator();
 
+        this.mementoService = new FileMementoService(config.getMementos());
         this.resourceService = buildResourceService(idService, config, environment);
         this.binaryService = buildBinaryService(idService, config);
         this.ioService = buildIoService(config);
@@ -98,14 +106,13 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
 
     private TriplestoreResourceService buildResourceService(final IdentifierService idService,
             final AppConfiguration config, final Environment environment) {
-        final MementoService mementoService = new FileMementoService(config.getMementos());
         final RDFConnection rdfConnection = AppUtils.getRDFConnection(config);
         final EventService notificationService = AppUtils.getNotificationService(config.getNotifications(),
                 environment);
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
-        return new TriplestoreResourceService(rdfConnection, idService, mementoService, notificationService);
+        return new TriplestoreResourceService(rdfConnection, idService, notificationService);
     }
 
     private IOService buildIoService(final AppConfiguration config) {

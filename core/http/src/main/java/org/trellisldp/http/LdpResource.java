@@ -70,6 +70,8 @@ import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.domain.AcceptDatetime;
@@ -118,6 +120,8 @@ public class LdpResource implements ContainerRequestFilter {
 
     protected final AgentService agentService;
 
+    protected final MementoService mementoService;
+
     protected final String baseUrl;
 
     /**
@@ -130,7 +134,9 @@ public class LdpResource implements ContainerRequestFilter {
      */
     public LdpResource(final ResourceService resourceService, final IOService ioService,
             final BinaryService binaryService, final AgentService agentService) {
-        this(resourceService, ioService, binaryService, agentService, loadFirst(AuditService.class).orElse(none()));
+        this(resourceService, ioService, binaryService, agentService,
+                loadFirst(MementoService.class).orElseGet(NoopMementoService::new),
+                loadFirst(AuditService.class).orElse(none()));
     }
 
     /**
@@ -140,12 +146,14 @@ public class LdpResource implements ContainerRequestFilter {
      * @param ioService the i/o service
      * @param binaryService the datastream service
      * @param agentService the user agent service
+     * @param mementoService the memento service
      * @param auditService an audit service
      */
     @Inject
     public LdpResource(final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final AgentService agentService, final AuditService auditService) {
-        this(resourceService, ioService, binaryService, agentService, auditService,
+            final BinaryService binaryService, final AgentService agentService,
+            final MementoService mementoService, final AuditService auditService) {
+        this(resourceService, ioService, binaryService, agentService, mementoService, auditService,
                 ConfigurationProvider.getConfiguration().get(CONFIGURATION_BASE_URL));
     }
 
@@ -157,17 +165,19 @@ public class LdpResource implements ContainerRequestFilter {
      * @param binaryService the datastream service
      * @param agentService the user agent service
      * @param auditService an audit service
+     * @param mementoService the memento service
      * @param baseUrl a base URL
      */
     public LdpResource(final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final AgentService agentService, final AuditService auditService,
-            final String baseUrl) {
+            final BinaryService binaryService, final AgentService agentService, final MementoService mementoService,
+            final AuditService auditService, final String baseUrl) {
         this.baseUrl = baseUrl;
         this.resourceService = resourceService;
         this.ioService = ioService;
         this.binaryService = binaryService;
         this.agentService = agentService;
         this.auditService = auditService;
+        this.mementoService = mementoService;
     }
 
 
@@ -269,26 +279,27 @@ public class LdpResource implements ContainerRequestFilter {
     private Response fetchResource(final LdpRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, resourceService, ioService, binaryService, urlBase);
+        final GetHandler getHandler = new GetHandler(req, resourceService, ioService, binaryService, mementoService,
+                urlBase);
 
         // Fetch a versioned resource
         if (nonNull(req.getVersion())) {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
-            return resourceService.get(identifier, req.getVersion().getInstant())
+            return mementoService.get(identifier, req.getVersion().getInstant())
                 .map(getHandler::getRepresentation).orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.debug("Getting timemap resource: {}", req.getPath());
             return resourceService.get(identifier)
-                .map(res -> new MementoResource(resourceService).getTimeMapBuilder(req, ioService, urlBase))
+                .map(res -> new MementoResource(mementoService).getTimeMapBuilder(req, ioService, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
             LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
-            return resourceService.get(identifier, req.getDatetime().getInstant())
-                .map(res -> new MementoResource(resourceService).getTimeGateBuilder(req, urlBase))
+            return mementoService.get(identifier, req.getDatetime().getInstant())
+                .map(res -> new MementoResource(mementoService).getTimeGateBuilder(req, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 
@@ -310,10 +321,11 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final OptionsHandler optionsHandler = new OptionsHandler(req, resourceService, ioService, urlBase);
+        final OptionsHandler optionsHandler = new OptionsHandler(req, resourceService, ioService, mementoService,
+                urlBase);
 
         if (nonNull(req.getVersion())) {
-            return resourceService.get(identifier, req.getVersion().getInstant()).map(optionsHandler::ldpOptions)
+            return mementoService.get(identifier, req.getVersion().getInstant()).map(optionsHandler::ldpOptions)
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 
@@ -336,7 +348,7 @@ public class LdpResource implements ContainerRequestFilter {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, resourceService, auditService, ioService,
-                        agentService, urlBase);
+                        agentService, mementoService, urlBase);
 
         return resourceService.get(identifier).map(patchHandler::updateResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
@@ -355,7 +367,7 @@ public class LdpResource implements ContainerRequestFilter {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, resourceService, auditService,
-                        agentService, urlBase);
+                        agentService, mementoService, urlBase);
 
         return resourceService.get(identifier).map(deleteHandler::deleteResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
@@ -378,7 +390,7 @@ public class LdpResource implements ContainerRequestFilter {
             .orElseGet(resourceService::generateIdentifier);
 
         final PostHandler postHandler = new PostHandler(req, identifier, body, resourceService, auditService,
-                        ioService, binaryService, agentService, urlBase);
+                        ioService, binaryService, agentService, mementoService, urlBase);
         final String separator = path.isEmpty() ? "" : "/";
 
         // First check if this is a container
@@ -410,7 +422,7 @@ public class LdpResource implements ContainerRequestFilter {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, resourceService, auditService, ioService, binaryService,
-                        agentService, urlBase);
+                        agentService, mementoService, urlBase);
 
         return resourceService.get(identifier).filter(res -> !res.isDeleted())
             .map(putHandler::setResource).orElseGet(putHandler::createResource).build();

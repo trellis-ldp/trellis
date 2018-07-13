@@ -14,7 +14,6 @@
 package org.trellisldp.http;
 
 import static java.time.Instant.ofEpochSecond;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
@@ -63,6 +62,8 @@ import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
@@ -79,6 +80,8 @@ import org.trellisldp.vocabulary.Trellis;
 public class LdpForbiddenResourceTest extends JerseyTest {
 
     private static final IOService ioService = new JenaIOService(null);
+
+    private static final MementoService mementoService = new NoopMementoService();
 
     private static final Instant time = ofEpochSecond(1496262729);
 
@@ -98,9 +101,6 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
     @Mock
     private Resource mockResource;
-
-    @Mock
-    private Resource mockVersionedResource;
 
     @Mock
     private AgentService mockAgentService;
@@ -123,7 +123,8 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new WebAcFilter(mockAccessControlService));
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService));
+        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService,
+                    mockAgentService, mementoService, null));
         System.getProperties().remove(CONFIGURATION_BASE_URL);
 
         return config;
@@ -141,20 +142,10 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
     @BeforeEach
     public void setUpMocks() {
-        Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class), any(Instant.class)))
-                        .thenReturn(of(mockVersionedResource));
         Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class)))
                         .thenReturn(of(mockResource));
-        when(mockResourceService.getMementos(any())).thenReturn(emptyList());
 
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
-
-        when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockVersionedResource.getModified()).thenReturn(time);
-        when(mockVersionedResource.getBinary()).thenReturn(empty());
-        when(mockVersionedResource.isMemento()).thenReturn(true);
-        when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
-        when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockAgentService.asAgent("testUser")).thenReturn(agent);
 

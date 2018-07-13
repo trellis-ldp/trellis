@@ -26,8 +26,8 @@ import java.util.Optional;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopEventService;
-import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.app.config.TrellisConfiguration;
@@ -66,11 +66,16 @@ public class SimpleTrellisApp extends AbstractTrellisApplication<TrellisConfigur
     }
 
     @Override
+    protected Optional<MementoService> getMementoService() {
+        return empty();
+    }
+
+    @Override
     protected void initialize(final TrellisConfiguration config, final Environment env) {
         super.initialize(config, env);
         ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(), emptySet());
         binaryService = new FileBinaryService(new UUIDGenerator(), resourceFilePath("data") + "/binaries", 2, 2);
         resourceService = new TriplestoreResourceService(connect(createTxnMem()), new UUIDGenerator(),
-                new NoopMementoService(), new NoopEventService());
+                new NoopEventService());
     }
 }

@@ -36,6 +36,14 @@ public interface MementoService {
     void put(IRI identifier, Instant time, Stream<? extends Quad> data);
 
     /**
+     * Create a new Memento for a resource.
+     * @param resource the resource
+     */
+    default void put(Resource resource) {
+        put(resource.getIdentifier(), resource.getModified(), resource.stream());
+    }
+
+    /**
      * Fetch a Memento resource for the given time.
      * @param identifier the resource identifier
      * @param time the requested time

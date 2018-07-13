@@ -54,6 +54,7 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
@@ -81,12 +82,14 @@ public class PostHandler extends ContentBearingHandler {
      * @param binaryService the datastream service
      * @param auditService and audit service
      * @param agentService the agent service
+     * @param mementoService the memento service
      * @param baseUrl the base URL
      */
     public PostHandler(final LdpRequest req, final String id, final File entity, final ResourceService resourceService,
                     final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final AgentService agentService, final String baseUrl) {
-        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, baseUrl);
+                    final AgentService agentService, final MementoService mementoService, final String baseUrl) {
+        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, mementoService,
+                baseUrl);
         this.id = id;
     }
 
@@ -168,6 +171,9 @@ public class PostHandler extends ContentBearingHandler {
                                 + "the logs for more information.");
                         }
                 }
+
+                // Add memento data
+                resourceService.get(internalId).ifPresent(mementoService::put);
 
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
 
