@@ -28,7 +28,6 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
-import static org.apache.commons.collections4.IteratorUtils.asEnumeration;
 import static org.apache.commons.lang3.StringUtils.stripStart;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -36,12 +35,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -52,7 +48,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BoundedInputStream;
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
@@ -129,21 +124,16 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public Optional<InputStream> getContent(final IRI identifier, final List<Range<Integer>> ranges) {
-        requireNonNull(ranges, "Byte ranges may not be null");
+    public Optional<InputStream> getContent(final IRI identifier, final Integer from, final Integer to) {
         return getFileFromIdentifier(identifier).map(file -> {
             try {
-                if (ranges.isEmpty()) {
+                if (ofNullable(from).orElse(0) > ofNullable(to).orElse(-1)) {
                     return new FileInputStream(file);
                 } else {
-                    final List<InputStream> iss = new ArrayList<>();
-                    for (final Range<Integer> r : ranges) {
-                        final InputStream input = new FileInputStream(file);
-                        final long skipped = input.skip(r.getMinimum());
-                        LOGGER.debug("Skipped {} bytes", skipped);
-                        iss.add(new BoundedInputStream(input, r.getMaximum() - r.getMinimum()));
-                    }
-                    return new SequenceInputStream(asEnumeration(iss.iterator()));
+                    final InputStream input = new FileInputStream(file);
+                    final long skipped = input.skip(from);
+                    LOGGER.debug("Skipped {} bytes", skipped);
+                    return new BoundedInputStream(input, to - from);
                 }
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);

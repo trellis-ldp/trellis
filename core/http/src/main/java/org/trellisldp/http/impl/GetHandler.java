@@ -35,7 +35,6 @@ import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
-import static org.apache.commons.lang3.Range.between;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
@@ -319,7 +318,7 @@ public class GetHandler extends BaseLdpHandler {
     private InputStream getBinaryStream(final IRI dsid, final Range range) throws IOException {
         final Optional<InputStream> content = isNull(range)
             ? binaryService.getContent(dsid)
-            : binaryService.getContent(dsid, singletonList(between(range.getFrom(), range.getTo())));
+            : binaryService.getContent(dsid, range.getFrom(), range.getTo());
         return content.orElseThrow(() -> new IOException("Could not retrieve content from: " + dsid));
     }
 

@@ -83,7 +83,7 @@ public class BinaryServiceTest {
     @Test
     public void testGetContent() throws IOException {
         doCallRealMethod().when(mockBinaryService).getContent(eq(identifier));
-        when(mockBinaryService.getContent(eq(identifier), any()))
+        when(mockBinaryService.getContent(eq(identifier), any(), any()))
             .thenReturn(of(new ByteArrayInputStream("FooBar".getBytes(UTF_8))));
         final Optional<InputStream> content = mockBinaryService.getContent(identifier);
         assertTrue(content.isPresent());
