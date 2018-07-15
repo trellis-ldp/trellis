@@ -117,15 +117,21 @@ public class HttpBasedBinaryService implements BinaryService {
     }
 
     @Override
+    public Optional<InputStream> getContent(final IRI identifier) {
+        requireNonNull(identifier,  NON_NULL_IDENTIFIER);
+        return getBinaryContent(identifier, httpClient.target(identifier.getIRIString()).request().get());
+    }
+
+    @Override
     public Optional<InputStream> getContent(final IRI identifier, final Integer from, final Integer to) {
         requireNonNull(identifier,  NON_NULL_IDENTIFIER);
-        final Response res;
-        if (ofNullable(from).orElse(0) > ofNullable(to).orElse(-1)) {
-            res = httpClient.target(identifier.getIRIString()).request().get();
-        } else {
-            res = httpClient.target(identifier.getIRIString()).request()
-                .header("Range", "bytes=" + from + "-" + to).get();
-        }
+        requireNonNull(from, "From value cannot be null!");
+        requireNonNull(to, "To value cannot be null!");
+        return getBinaryContent(identifier, httpClient.target(identifier.getIRIString()).request()
+            .header("Range", "bytes=" + from + "-" + to).get());
+    }
+
+    private Optional<InputStream> getBinaryContent(final IRI identifier, final Response res) {
         LOGGER.debug("HTTP GET request to {} returned status {}", identifier, res.getStatus());
         if (res.hasEntity()) {
             return of(res.getEntity()).map(x -> (InputStream) x);

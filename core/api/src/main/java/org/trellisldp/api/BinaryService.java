@@ -164,9 +164,7 @@ public interface BinaryService {
      * @param identifier an identifier used for locating the binary object
      * @return the content
      */
-    default Optional<InputStream> getContent(IRI identifier) {
-        return getContent(identifier, 0, -1);
-    }
+    Optional<InputStream> getContent(IRI identifier);
 
     /**
      * Test whether a binary object exists at the given URI.

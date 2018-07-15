@@ -124,17 +124,26 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public Optional<InputStream> getContent(final IRI identifier, final Integer from, final Integer to) {
+    public Optional<InputStream> getContent(final IRI identifier) {
         return getFileFromIdentifier(identifier).map(file -> {
             try {
-                if (ofNullable(from).orElse(0) > ofNullable(to).orElse(-1)) {
-                    return new FileInputStream(file);
-                } else {
-                    final InputStream input = new FileInputStream(file);
-                    final long skipped = input.skip(from);
-                    LOGGER.debug("Skipped {} bytes", skipped);
-                    return new BoundedInputStream(input, to - from);
-                }
+                return new FileInputStream(file);
+            } catch (final IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
+        });
+    }
+
+    @Override
+    public Optional<InputStream> getContent(final IRI identifier, final Integer from, final Integer to) {
+        requireNonNull(from, "From value cannot be null!");
+        requireNonNull(to, "To value cannot be null!");
+        return getFileFromIdentifier(identifier).map(file -> {
+            try {
+                final InputStream input = new FileInputStream(file);
+                final long skipped = input.skip(from);
+                LOGGER.debug("Skipped {} bytes", skipped);
+                return new BoundedInputStream(input, to - from);
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
