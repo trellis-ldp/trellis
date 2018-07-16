@@ -42,10 +42,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
 
 /**
@@ -57,21 +55,15 @@ public class OptionsHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(OptionsHandler.class);
 
-    private final IOService ioService;
-
     /**
      * An OPTIONS response builder.
      *
      * @param req the LDP request
-     * @param resourceService the resource service
-     * @param ioService the I/O service
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public OptionsHandler(final LdpRequest req, final ResourceService resourceService, final IOService ioService,
-            final MementoService mementoService, final String baseUrl) {
-        super(req, resourceService, mementoService, null, baseUrl);
-        this.ioService = ioService;
+    public OptionsHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
+        super(req, trellis, baseUrl);
     }
 
     /**
@@ -107,8 +99,8 @@ public class OptionsHandler extends BaseLdpHandler {
             } else {
                 // Containers and binaries support POST
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
-                builder.header(ACCEPT_POST, ioService.supportedWriteSyntaxes().stream().map(RDFSyntax::mediaType)
-                        .collect(joining(",")));
+                builder.header(ACCEPT_POST, trellis.getIOService().supportedWriteSyntaxes().stream()
+                        .map(RDFSyntax::mediaType).collect(joining(",")));
             }
         }
 

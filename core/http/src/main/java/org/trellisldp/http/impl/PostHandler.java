@@ -49,13 +49,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
@@ -77,19 +72,12 @@ public class PostHandler extends ContentBearingHandler {
      * @param req the LDP request
      * @param id the new resource's identifier
      * @param entity the entity
-     * @param resourceService the resource service
-     * @param ioService the serialization service
-     * @param binaryService the datastream service
-     * @param auditService and audit service
-     * @param agentService the agent service
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PostHandler(final LdpRequest req, final String id, final File entity, final ResourceService resourceService,
-                    final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final AgentService agentService, final MementoService mementoService, final String baseUrl) {
-        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, mementoService,
-                baseUrl);
+    public PostHandler(final LdpRequest req, final String id, final File entity, final ServiceBundler trellis,
+            final String baseUrl) {
+        super(req, entity, trellis, baseUrl);
         this.id = id;
     }
 
@@ -104,13 +92,13 @@ public class PostHandler extends ContentBearingHandler {
         final String identifier = baseUrl + req.getPath() + separator + id;
         final String contentType = req.getContentType();
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
+            .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         LOGGER.debug("Creating resource as {}", identifier);
 
         final Optional<RDFSyntax> rdfSyntax = ofNullable(contentType).map(MediaType::valueOf).flatMap(ct ->
-                ioService.supportedWriteSyntaxes().stream().filter(s ->
+                trellis.getIOService().supportedWriteSyntaxes().stream().filter(s ->
                     ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst());
 
         final IRI defaultType = nonNull(contentType) && !rdfSyntax.isPresent() ? LDP.NonRDFSource : LDP.RDFSource;
@@ -139,7 +127,7 @@ public class PostHandler extends ContentBearingHandler {
                 checkForBadDigest(req.getDigest());
 
                 final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
-                final IRI binaryLocation = rdf.createIRI(binaryService.generateIdentifier());
+                final IRI binaryLocation = rdf.createIRI(trellis.getBinaryService().generateIdentifier());
 
                 // Persist the content
                 persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
@@ -154,16 +142,16 @@ public class PostHandler extends ContentBearingHandler {
                 binary = null;
             }
             final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-            final Future<Boolean> success = resourceService.create(internalId, session, ldpType, dataset.asDataset(),
-                    container, binary);
+            final Future<Boolean> success = trellis.getResourceService().create(internalId, session, ldpType,
+                    dataset.asDataset(), container, binary);
             if (success.get()) {
 
                 // Add Audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    audit.creation(internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                                    .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(internalId, session, auditDataset.asDataset()).get()) {
-                        LOGGER.error("Using AuditService {}", audit);
+                    trellis.getAuditService().creation(internalId, session).stream()
+                        .map(skolemizeQuads(trellis.getResourceService(), baseUrl)).forEachOrdered(auditDataset::add);
+                    if (!trellis.getResourceService().add(internalId, session, auditDataset.asDataset()).get()) {
+                        LOGGER.error("Using AuditService {}", trellis.getAuditService());
                         LOGGER.error("Unable to act against resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
@@ -173,7 +161,7 @@ public class PostHandler extends ContentBearingHandler {
                 }
 
                 // Add memento data
-                resourceService.get(internalId).ifPresent(mementoService::put);
+                trellis.getResourceService().get(internalId).ifPresent(trellis.getMementoService()::put);
 
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
 

@@ -37,8 +37,7 @@ public class LdpAdminResourceTest extends AbstractLdpResourceTest {
         agentFilter.setAdminUsers(asList("testUser"));
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService,
-                    mockAgentService, mockMementoService, mockAuditService));
+        config.register(new LdpResource(mockBundler));
         config.register(new TestAuthenticationFilter("testUser", ""));
         config.register(new WebAcFilter(mockAccessControlService));
         config.register(agentFilter);

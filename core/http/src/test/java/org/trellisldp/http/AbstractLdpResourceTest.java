@@ -80,6 +80,11 @@ import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.RDF.type;
+import static org.trellisldp.vocabulary.Trellis.InvalidCardinality;
+import static org.trellisldp.vocabulary.Trellis.InvalidRange;
+import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
+import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
+import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -127,13 +132,13 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
-import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.XSD;
 
 /**
@@ -144,7 +149,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static final IOService ioService = new JenaIOService();
 
-    protected static final AuditService mockAuditService = none();
+    protected static final AuditService auditService = none();
 
     private static final int timestamp = 1496262729;
 
@@ -191,6 +196,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     protected static final String HUB = "http://hub.example.org/";
 
     protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
+
+    @Mock
+    protected ServiceBundler mockBundler;
 
     @Mock
     protected MementoService mockMementoService;
@@ -241,6 +249,12 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @BeforeEach
     public void setUpMocks() {
+        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
+        when(mockBundler.getIOService()).thenReturn(ioService);
+        when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
+        when(mockBundler.getMementoService()).thenReturn(mockMementoService);
+        when(mockBundler.getAgentService()).thenReturn(mockAgentService);
+        when(mockBundler.getAuditService()).thenReturn(auditService);
         whenResource(mockMementoService.get(any(IRI.class), any(Instant.class)))
             .thenReturn(of(mockVersionedResource));
         whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
@@ -379,11 +393,11 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferServerManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
     }
 
     /* ****************************** *
@@ -553,8 +567,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertFalse(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH), "self")));
         assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
                     l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertFalse(links.stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH + "?ext=upload"),
-                        Trellis.multipartUploadService.getIRIString())));
         assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(links.stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(links.stream().anyMatch(hasType(LDP.Container)));
@@ -621,8 +633,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
-        assertFalse(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH + "?ext=upload"),
-                        Trellis.multipartUploadService.getIRIString())));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
@@ -855,7 +865,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPrefer() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
-            .header("Prefer", "return=representation; include=\"" + Trellis.PreferServerManaged.getIRIString() + "\"")
+            .header("Prefer", "return=representation; include=\"" + PreferServerManaged.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(OK, res.getStatusInfo());
@@ -875,8 +885,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPrefer2() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferServerManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
                 rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
                     rdf.createIRI("trellis:data/resource/child1")),
@@ -886,9 +896,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
                     rdf.createIRI("trellis:data/resource/child3")),
                 rdf.createQuad(LDP.PreferMembership, identifier, LDP.member,
                     rdf.createIRI("trellis:data/resource/other")),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
@@ -913,8 +923,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPrefer3() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferServerManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
                 rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
                     rdf.createIRI("trellis:data/resource/child1")),
@@ -924,8 +934,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
                     rdf.createIRI("trellis:data/resource/child3")),
                 rdf.createQuad(LDP.PreferMembership, identifier, LDP.member,
                     rdf.createIRI("trellis:data/resource/other")),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
@@ -993,15 +1003,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testGetJsonCompactLDF1() throws IOException {
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
-                rdf.createQuad(Trellis.PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
+                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
+                rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
+                rdf.createQuad(PreferServerManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
 
         final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
             .queryParam("predicate", "http://purl.org/dc/terms/title").request()
@@ -1057,17 +1067,17 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testGetJsonCompactLDF2() throws IOException {
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
-                rdf.createQuad(Trellis.PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(Trellis.PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(Trellis.PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
-                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
+                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
+                rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
+                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
+                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
+                rdf.createQuad(PreferServerManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
 
         final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
             .queryParam("object", "ex:Type").queryParam("predicate", "").request()
@@ -1120,17 +1130,17 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testGetJsonCompactLDF3() throws IOException {
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
-                rdf.createQuad(Trellis.PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(Trellis.PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(Trellis.PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
-                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
+                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
+                rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
+                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
+                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
+                rdf.createQuad(PreferServerManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
 
         final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
             .queryParam("object", "A title").queryParam("predicate", DC.title.getIRIString()).request()
@@ -2161,7 +2171,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(Trellis.InvalidRange, LDP.constrainedBy.getIRIString())));
+                .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
 
     @Test
@@ -2400,7 +2410,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(Trellis.InvalidRange, LDP.constrainedBy.getIRIString())));
+                .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
 
     @Test
@@ -2492,7 +2502,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+                .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
 
     @Test
@@ -2503,7 +2513,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+                .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
 
     @Test
@@ -2819,7 +2829,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(Trellis.InvalidRange, LDP.constrainedBy.getIRIString())));
+                .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
 
     @Test
@@ -2865,7 +2875,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+                .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
 
     @Test
@@ -2877,7 +2887,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(CONFLICT, res.getStatusInfo());
         assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(Trellis.InvalidCardinality, LDP.constrainedBy.getIRIString())));
+                .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
 
     @Test

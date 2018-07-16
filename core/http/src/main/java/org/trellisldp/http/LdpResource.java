@@ -16,7 +16,6 @@ package org.trellisldp.http;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -28,7 +27,6 @@ import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
@@ -39,10 +37,8 @@ import com.codahale.metrics.annotation.Timed;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.ServiceLoader;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -66,14 +62,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.AcceptDatetime;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
@@ -110,74 +100,29 @@ public class LdpResource implements ContainerRequestFilter {
 
     protected static final RDF rdf = getInstance();
 
-    protected final ResourceService resourceService;
-
-    protected final AuditService auditService;
-
-    protected final IOService ioService;
-
-    protected final BinaryService binaryService;
-
-    protected final AgentService agentService;
-
-    protected final MementoService mementoService;
+    protected final ServiceBundler trellis;
 
     protected final String baseUrl;
 
     /**
      * Create an LdpResource.
      *
-     * @param resourceService the resource service
-     * @param ioService the i/o service
-     * @param binaryService the datastream service
-     * @param agentService the user agent service
-     */
-    public LdpResource(final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final AgentService agentService) {
-        this(resourceService, ioService, binaryService, agentService,
-                loadFirst(MementoService.class).orElseGet(NoopMementoService::new),
-                loadFirst(AuditService.class).orElse(none()));
-    }
-
-    /**
-     * Create an LdpResource.
-     *
-     * @param resourceService the resource service
-     * @param ioService the i/o service
-     * @param binaryService the datastream service
-     * @param agentService the user agent service
-     * @param mementoService the memento service
-     * @param auditService an audit service
+     * @param trellis the Trellis application bundle
      */
     @Inject
-    public LdpResource(final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final AgentService agentService,
-            final MementoService mementoService, final AuditService auditService) {
-        this(resourceService, ioService, binaryService, agentService, mementoService, auditService,
-                ConfigurationProvider.getConfiguration().get(CONFIGURATION_BASE_URL));
+    public LdpResource(final ServiceBundler trellis) {
+        this(trellis, ConfigurationProvider.getConfiguration().get(CONFIGURATION_BASE_URL));
     }
 
     /**
      * Create an LdpResource.
      *
-     * @param resourceService the resource service
-     * @param ioService the i/o service
-     * @param binaryService the datastream service
-     * @param agentService the user agent service
-     * @param auditService an audit service
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      * @param baseUrl a base URL
      */
-    public LdpResource(final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final AgentService agentService, final MementoService mementoService,
-            final AuditService auditService, final String baseUrl) {
+    public LdpResource(final ServiceBundler trellis, final String baseUrl) {
         this.baseUrl = baseUrl;
-        this.resourceService = resourceService;
-        this.ioService = ioService;
-        this.binaryService = binaryService;
-        this.agentService = agentService;
-        this.auditService = auditService;
-        this.mementoService = mementoService;
+        this.trellis = trellis;
     }
 
 
@@ -279,33 +224,32 @@ public class LdpResource implements ContainerRequestFilter {
     private Response fetchResource(final LdpRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, resourceService, ioService, binaryService, mementoService,
-                urlBase);
+        final GetHandler getHandler = new GetHandler(req, trellis, urlBase);
 
         // Fetch a versioned resource
         if (nonNull(req.getVersion())) {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
-            return mementoService.get(identifier, req.getVersion().getInstant())
+            return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
                 .map(getHandler::getRepresentation).orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.debug("Getting timemap resource: {}", req.getPath());
-            return resourceService.get(identifier)
-                .map(res -> new MementoResource(mementoService).getTimeMapBuilder(req, ioService, urlBase))
+            return trellis.getResourceService().get(identifier)
+                .map(res -> new MementoResource(trellis).getTimeMapBuilder(req, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
             LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
-            return mementoService.get(identifier, req.getDatetime().getInstant())
-                .map(res -> new MementoResource(mementoService).getTimeGateBuilder(req, urlBase))
+            return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
+                .map(res -> new MementoResource(trellis).getTimeGateBuilder(req, urlBase))
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 
         // Fetch the current state of the resource
         LOGGER.debug("Getting resource at: {}", identifier);
-        return resourceService.get(identifier).map(getHandler::getRepresentation)
+        return trellis.getResourceService().get(identifier).map(getHandler::getRepresentation)
             .orElseGet(() -> status(NOT_FOUND)).build();
     }
 
@@ -321,15 +265,15 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final OptionsHandler optionsHandler = new OptionsHandler(req, resourceService, ioService, mementoService,
-                urlBase);
+        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, urlBase);
 
         if (nonNull(req.getVersion())) {
-            return mementoService.get(identifier, req.getVersion().getInstant()).map(optionsHandler::ldpOptions)
+            return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
+                .map(optionsHandler::ldpOptions)
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 
-        return resourceService.get(identifier).map(optionsHandler::ldpOptions)
+        return trellis.getResourceService().get(identifier).map(optionsHandler::ldpOptions)
             .orElseGet(() -> status(NOT_FOUND)).build();
     }
 
@@ -347,10 +291,9 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PatchHandler patchHandler = new PatchHandler(req, body, resourceService, auditService, ioService,
-                        agentService, mementoService, urlBase);
+        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase);
 
-        return resourceService.get(identifier).map(patchHandler::updateResource)
+        return trellis.getResourceService().get(identifier).map(patchHandler::updateResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
     }
 
@@ -366,10 +309,9 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final DeleteHandler deleteHandler = new DeleteHandler(req, resourceService, auditService,
-                        agentService, mementoService, urlBase);
+        final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, urlBase);
 
-        return resourceService.get(identifier).map(deleteHandler::deleteResource)
+        return trellis.getResourceService().get(identifier).map(deleteHandler::deleteResource)
             .orElseGet(() -> status(NOT_FOUND)).build();
     }
 
@@ -387,18 +329,19 @@ public class LdpResource implements ContainerRequestFilter {
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
         final String identifier = ofNullable(req.getSlug())
-            .orElseGet(resourceService::generateIdentifier);
+            .orElseGet(trellis.getResourceService()::generateIdentifier);
 
-        final PostHandler postHandler = new PostHandler(req, identifier, body, resourceService, auditService,
-                        ioService, binaryService, agentService, mementoService, urlBase);
+        final PostHandler postHandler = new PostHandler(req, identifier, body, trellis, urlBase);
         final String separator = path.isEmpty() ? "" : "/";
 
         // First check if this is a container
-        final Optional<? extends Resource> parent = resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
+        final Optional<? extends Resource> parent = trellis.getResourceService()
+            .get(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
         if (parent.isPresent()) {
             final Optional<IRI> ixModel = parent.map(Resource::getInteractionModel);
             if (ixModel.filter(type -> ldpResourceTypes(type).anyMatch(LDP.Container::equals)).isPresent()) {
-                return resourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier))
+                return trellis.getResourceService()
+                    .get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier))
                     .map(x -> status(CONFLICT)).orElseGet(postHandler::createResource).build();
             } else if (parent.filter(Resource::isDeleted).isPresent()) {
                 return status(GONE).build();
@@ -421,15 +364,9 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PutHandler putHandler = new PutHandler(req, body, resourceService, auditService, ioService, binaryService,
-                        agentService, mementoService, urlBase);
+        final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);
 
-        return resourceService.get(identifier).filter(res -> !res.isDeleted())
+        return trellis.getResourceService().get(identifier).filter(res -> !res.isDeleted())
             .map(putHandler::setResource).orElseGet(putHandler::createResource).build();
-    }
-
-    // TODO - JDK9 replace with ServiceLoader::loadFirst
-    private static <T> Optional<T> loadFirst(final Class<T> service) {
-        return of(ServiceLoader.load(service).iterator()).filter(Iterator::hasNext).map(Iterator::next);
     }
 }

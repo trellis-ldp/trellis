@@ -38,6 +38,8 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
+import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
+import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -66,12 +68,12 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -88,6 +90,9 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
 
     private static final BlankNode bnode = rdf.createBlankNode();
+
+    @Mock
+    private ServiceBundler mockBundler;
 
     @Mock
     private ResourceService mockResourceService;
@@ -114,7 +119,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         webacFilter.setChallenges(asList(BASIC_AUTH, DIGEST_AUTH));
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, new SimpleAgentService()));
+        config.register(new LdpResource(mockBundler));
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(webacFilter);
         config.register(new CrossOriginResourceSharingFilter(asList(origin),
@@ -138,6 +143,11 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
     public void setUpMocks() {
         Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class)))
                         .thenReturn(of(mockResource));
+
+        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
+        when(mockBundler.getIOService()).thenReturn(ioService);
+        when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
+        when(mockBundler.getAgentService()).thenReturn(new SimpleAgentService());
 
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
@@ -165,8 +175,8 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
     }
 
     @Test

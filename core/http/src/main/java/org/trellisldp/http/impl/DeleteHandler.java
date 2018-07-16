@@ -37,11 +37,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
@@ -55,22 +52,15 @@ public class DeleteHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(DeleteHandler.class);
 
-    private final AgentService agentService;
-
     /**
      * Create a builder for an LDP DELETE response.
      *
      * @param req the LDP request
-     * @param resourceService the resource service
-     * @param auditService an audit service
-     * @param agentService the agent service
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public DeleteHandler(final LdpRequest req, final ResourceService resourceService, final AuditService auditService,
-                    final AgentService agentService, final MementoService mementoService, final String baseUrl) {
-        super(req, resourceService, mementoService, auditService, baseUrl);
-        this.agentService = agentService;
+    public DeleteHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
+        super(req, trellis, baseUrl);
     }
 
     /**
@@ -84,7 +74,7 @@ public class DeleteHandler extends BaseLdpHandler {
         final String identifier = baseUrl + req.getPath();
 
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
+            .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted
@@ -114,17 +104,18 @@ public class DeleteHandler extends BaseLdpHandler {
                 // is generated.
 
                 // update the resource
-                final IRI container = resourceService.getContainer(resId).orElse(null);
-                final Boolean success = resourceService.replace(resId, session, LDP.Resource, dataset.asDataset(),
-                        container, res.getBinary().orElse(null)).get();
+                final IRI container = trellis.getResourceService().getContainer(resId).orElse(null);
+                final Boolean success = trellis.getResourceService().replace(resId, session, LDP.Resource,
+                        dataset.asDataset(), container, res.getBinary().orElse(null)).get();
 
                 if (success) {
 
                     // Add the audit quads
                     try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        audit.update(resId, session).stream()
-                            .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
-                        if (!resourceService.add(resId, session, auditDataset.asDataset()).get()) {
+                        trellis.getAuditService().update(resId, session).stream()
+                            .map(skolemizeQuads(trellis.getResourceService(), baseUrl))
+                            .forEachOrdered(auditDataset::add);
+                        if (!trellis.getResourceService().add(resId, session, auditDataset.asDataset()).get()) {
                             LOGGER.error("Unable to delete ACL resource at {}", resId);
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
@@ -137,13 +128,14 @@ public class DeleteHandler extends BaseLdpHandler {
 
             } else {
                 // delete the resource
-                if (resourceService.delete(resId, session, LDP.Resource, dataset.asDataset()).get()) {
+                if (trellis.getResourceService().delete(resId, session, LDP.Resource, dataset.asDataset()).get()) {
 
                     // Add the audit quads
                     try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                        audit.deletion(resId, session).stream()
-                            .map(skolemizeQuads(resourceService, baseUrl)).forEachOrdered(auditDataset::add);
-                        if (!resourceService.add(resId, session, auditDataset.asDataset()).get()) {
+                        trellis.getAuditService().deletion(resId, session).stream()
+                            .map(skolemizeQuads(trellis.getResourceService(), baseUrl))
+                            .forEachOrdered(auditDataset::add);
+                        if (!trellis.getResourceService().add(resId, session, auditDataset.asDataset()).get()) {
                             LOGGER.error("Unable to delete resource at {}", resId);
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));

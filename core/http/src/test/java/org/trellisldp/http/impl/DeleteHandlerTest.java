@@ -38,6 +38,7 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.time.Instant;
 import java.util.concurrent.Future;
@@ -62,14 +63,15 @@ import org.mockito.Mock;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -80,9 +82,14 @@ public class DeleteHandlerTest {
     private static final Instant time = ofEpochSecond(1496262729);
     private static final String baseUrl = "http://localhost:8080/repo";
 
-    private final AuditService mockAuditService = none();
+    private final AuditService auditService = none();
 
     private final AgentService agentService = new SimpleAgentService();
+
+    private final MementoService mementoService = new NoopMementoService();
+
+    @Mock
+    private ServiceBundler mockBundler;
 
     @Mock
     private ResourceService mockResourceService;
@@ -106,6 +113,10 @@ public class DeleteHandlerTest {
     public void setUp() {
         initMocks(this);
         final IRI iri = rdf.createIRI("trellis:data/");
+        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
+        when(mockBundler.getAuditService()).thenReturn(auditService);
+        when(mockBundler.getMementoService()).thenReturn(mementoService);
+        when(mockBundler.getAgentService()).thenReturn(agentService);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getIdentifier()).thenReturn(iri);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Resource));
@@ -140,8 +151,7 @@ public class DeleteHandlerTest {
 
     @Test
     public void testDelete() {
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), null);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
 
         final Response res = handler.deleteResource(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -156,8 +166,8 @@ public class DeleteHandlerTest {
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, badAuditService,
-                    agentService, new NoopMementoService(), null);
+        when(mockBundler.getAuditService()).thenReturn(badAuditService);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
 
         assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
     }
@@ -166,8 +176,7 @@ public class DeleteHandlerTest {
     public void testDeleteError() {
         when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
     }
@@ -177,8 +186,7 @@ public class DeleteHandlerTest {
         when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
         when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(mockFuture);
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         final Response res = handler.deleteResource(mockResource).build();
         assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
@@ -187,13 +195,12 @@ public class DeleteHandlerTest {
     @Test
     public void testDeletePersistenceSupport() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         final BadRequestException ex = assertThrows(BadRequestException.class, () ->
                 handler.deleteResource(mockResource));
         assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
+                link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
         assertEquals(TEXT_PLAIN_TYPE, ex.getResponse().getMediaType());
     }
@@ -203,8 +210,7 @@ public class DeleteHandlerTest {
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class), any(),
                         any())).thenReturn(completedFuture(false));
         when(mockLdpRequest.getExt()).thenReturn(ACL);
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
     }
@@ -216,8 +222,7 @@ public class DeleteHandlerTest {
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
         when(mockLdpRequest.getExt()).thenReturn(ACL);
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
     }
@@ -227,8 +232,7 @@ public class DeleteHandlerTest {
     public void testCache() {
         when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
                 .thenReturn(status(PRECONDITION_FAILED));
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         assertThrows(WebApplicationException.class, () -> handler.deleteResource(mockResource));
     }
@@ -237,8 +241,7 @@ public class DeleteHandlerTest {
     public void testGetDeleted() {
         when(mockResource.isDeleted()).thenReturn(true);
 
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockResourceService, mockAuditService,
-                    agentService, new NoopMementoService(), baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         assertThrows(WebApplicationException.class, () -> handler.deleteResource(mockResource));
     }
