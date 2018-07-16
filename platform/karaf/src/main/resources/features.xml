@@ -42,7 +42,6 @@
     <feature>trellis-vocabulary</feature>
     <feature>aries-blueprint</feature>
 
-    <bundle dependency="true">mvn:org.apache.commons/commons-collections4/${commonsCollectionsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>

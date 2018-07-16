@@ -14,11 +14,9 @@
 package org.trellisldp.http;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static org.apache.commons.lang3.Range.between;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -135,7 +133,7 @@ public class HttpBasedBinaryServiceTest {
     public void testGetContentSegment() {
         final BinaryService resolver = new HttpBasedBinaryService(idService);
 
-        final Optional<InputStream> res = resolver.getContent(resource, singletonList(between(5, 20)));
+        final Optional<InputStream> res = resolver.getContent(resource, 5, 20);
         assertTrue(res.isPresent());
         final String str = res.map(this::uncheckedToString).get();
 

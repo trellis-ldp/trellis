@@ -14,9 +14,7 @@
 package org.trellisldp.file;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
-import static org.apache.commons.lang3.Range.between;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -35,11 +33,8 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
@@ -114,28 +109,23 @@ public class FileBinaryServiceTest {
     @Test
     public void testFileContentSegment() {
         final BinaryService resolver = new FileBinaryService(idService);
-        final List<Range<Integer>> range = singletonList(between(1, 5));
-        assertTrue(resolver.getContent(file, range).isPresent());
-        assertEquals(" tes", resolver.getContent(file, range).map(this::uncheckedToString).get());
+        assertTrue(resolver.getContent(file, 1, 5).isPresent());
+        assertEquals(" tes", resolver.getContent(file, 1, 5).map(this::uncheckedToString).get());
     }
 
     @Test
     public void testFileContentSegments() {
         final BinaryService resolver = new FileBinaryService(idService);
-        final List<Range<Integer>> ranges = new ArrayList<>();
-        ranges.add(between(1, 5));
-        ranges.add(between(8, 10));
 
-        assertTrue(resolver.getContent(file, ranges).isPresent());
-        assertEquals(" tesoc", resolver.getContent(file, ranges).map(this::uncheckedToString).get());
+        assertTrue(resolver.getContent(file, 8, 10).isPresent());
+        assertEquals("oc", resolver.getContent(file, 8, 10).map(this::uncheckedToString).get());
     }
 
     @Test
     public void testFileContentSegmentBeyond() {
         final BinaryService resolver = new FileBinaryService(idService);
-        final List<Range<Integer>> range = singletonList(between(1000, 1005));
-        assertTrue(resolver.getContent(file, range).isPresent());
-        assertEquals("", resolver.getContent(file, range).map(this::uncheckedToString).get());
+        assertTrue(resolver.getContent(file, 1000, 1005).isPresent());
+        assertEquals("", resolver.getContent(file, 1000, 1005).map(this::uncheckedToString).get());
     }
 
     @Test
@@ -154,6 +144,7 @@ public class FileBinaryServiceTest {
         final BinaryService resolver = new FileBinaryService(idService);
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         assertThrows(UncheckedIOException.class, () -> resolver.getContent(fileIRI));
+        assertThrows(UncheckedIOException.class, () -> resolver.getContent(fileIRI, 0, 4));
     }
 
     @Test
