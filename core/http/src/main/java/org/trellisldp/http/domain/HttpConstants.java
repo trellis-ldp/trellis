@@ -67,10 +67,6 @@ public final class HttpConstants {
 
     public static final String TIMEMAP = "timemap";
 
-    public static final String UPLOADS = "uploads";
-
-    public static final String UPLOAD_PREFIX = "upload/";
-
     public static final String WANT_DIGEST = "Want-Digest";
 
     public static final Set<String> DEFAULT_REPRESENTATION = unmodifiableSet(asList(PreferContainment, PreferMembership,

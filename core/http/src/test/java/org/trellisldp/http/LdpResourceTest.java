@@ -14,7 +14,6 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,15 +22,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.net.URI;
-
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -82,7 +77,6 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService,
                     mockMementoService, mockAuditService, null));
         config.register(new AgentAuthorizationFilter(mockAgentService));
-        config.register(new MultipartUploader(mockResourceService, mockBinaryResolver));
         config.register(new CacheControlFilter(86400, true, false));
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
@@ -119,42 +113,5 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         final Response res = matcher.getResourceHeaders(mockLdpRequest);
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")));
-    }
-
-    @Test
-    public void testMultipartFilter() throws Exception {
-        final MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
-        params.add("ext", "uploads");
-        when(mockContext.getMethod()).thenReturn("POST");
-        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
-        when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
-        when(mockUriInfo.getPath()).thenReturn("uploads");
-        when(mockUriInfo.getQueryParameters()).thenReturn(params);
-        when(mockBinaryResolver.initiateUpload(any(), any())).thenReturn("upload-id");
-
-        final MultipartUploader filter = new MultipartUploader(mockResourceService, mockBinaryResolver, null);
-        filter.filter(mockContext);
-        verify(mockContext).abortWith(any());
-    }
-
-    @Test
-    public void testMultipartPostFilter() throws Exception {
-        final MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
-        params.add("ext", "uploads");
-        when(mockResponseContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
-        when(mockResponseContext.getLinks()).thenReturn(singleton(Link.fromUri("http://www.w3.org/ns/ldp#NonRDFSource")
-                    .rel("type").build()));
-        when(mockContext.getMethod()).thenReturn("GET");
-        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
-        when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
-        when(mockUriInfo.getPath()).thenReturn("uploads/upload-id");
-
-        when(mockUriInfo.getQueryParameters()).thenReturn(params);
-        when(mockBinaryResolver.initiateUpload(any(), any())).thenReturn("upload-id");
-
-        final MultipartUploader filter = new MultipartUploader(mockResourceService, mockBinaryResolver, null);
-        filter.filter(mockContext, mockResponseContext);
-
-        verify(mockContext, never()).abortWith(any());
     }
 }

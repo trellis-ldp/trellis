@@ -25,11 +25,11 @@ import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.BinaryService.MultipartCapable;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.file.FileMementoService;
+import org.trellisldp.http.LdpResource;
 
 public class AppUtilsTest {
 
@@ -37,7 +37,7 @@ public class AppUtilsTest {
 
     @Test
     public void testLoaderError() {
-        assertThrows(RuntimeTrellisException.class, () -> AppUtils.loadFirst(MultipartCapable.class));
+        assertThrows(RuntimeTrellisException.class, () -> AppUtils.loadFirst(LdpResource.class));
     }
 
     @Test

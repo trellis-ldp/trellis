@@ -33,7 +33,6 @@ import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_LOCATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
@@ -74,8 +73,6 @@ import static org.trellisldp.http.domain.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.domain.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.PREFER;
 import static org.trellisldp.http.domain.HttpConstants.RANGE;
-import static org.trellisldp.http.domain.HttpConstants.UPLOADS;
-import static org.trellisldp.http.domain.HttpConstants.UPLOAD_PREFIX;
 import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON_TYPE;
@@ -91,7 +88,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +128,6 @@ import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.impl.HttpSession;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -205,9 +200,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Mock
     protected BinaryService mockBinaryService;
-
-    @Mock
-    protected BinaryService.MultipartCapable mockBinaryResolver;
 
     @Mock
     protected AccessControlService mockAccessControlService;
@@ -2515,14 +2507,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testPutUploads() {
-        final Response res = target(RESOURCE_PATH).queryParam("ext", UPLOADS).request()
-            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
-
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
-    }
-
-    @Test
     public void testPutBinary() {
         final Response res = target(BINARY_PATH).request().put(entity("some data.", TEXT_PLAIN_TYPE));
 
@@ -2731,13 +2715,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().delete();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-    }
-
-    @Test
-    public void testDeleteUploads() {
-        final Response res = target(RESOURCE_PATH).queryParam("ext", UPLOADS).request().delete();
-
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
     }
 
     @Test
@@ -2974,15 +2951,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
 
-    @Test
-    public void testPatchUpload() {
-        final Response res = target(RESOURCE_PATH).queryParam("ext", UPLOADS).request()
-            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
-                        APPLICATION_SPARQL_UPDATE));
-
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
-    }
-
     /**
      * Some other method
      */
@@ -2998,195 +2966,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testOtherParition() {
         final Response res = target("other/object").request().get();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
-    }
-
-    /**
-     * Multipart upload tests
-     */
-    @Test
-    public void testMultipartExtLinkHeaderLDPRS() {
-        final Response res = target(RESOURCE_PATH).request().get();
-
-        assertEquals(OK, res.getStatusInfo());
-        assertFalse(getLinks(res).stream().anyMatch(
-                    hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH + "?ext=" + UPLOADS),
-                            Trellis.multipartUploadService.getIRIString())));
-    }
-
-    @Test
-    public void testMultipartOptions() {
-        final Response res = target(BINARY_PATH).queryParam("ext", UPLOADS).request().options();
-
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertFalse(res.getAllowedMethods().contains("GET"));
-        assertFalse(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertTrue(res.getAllowedMethods().contains("POST"));
-    }
-
-    @Test
-    public void testMultipartStart() {
-        when(mockBinaryResolver.initiateUpload(any(), any())).thenReturn(RANDOM_VALUE);
-        final Response res = target(BINARY_PATH).queryParam("ext", UPLOADS).request()
-            .post(entity("", TEXT_PLAIN_TYPE));
-
-        assertEquals(CREATED, res.getStatusInfo());
-        assertEquals(BASE_URL + UPLOAD_PREFIX + RANDOM_VALUE, res.getLocation().toString());
-    }
-
-    @Test
-    public void testMultipartStartError() {
-        final Response res = target(BINARY_PATH).queryParam("ext", UPLOADS).request()
-            .post(entity("", TEXT_PLAIN_TYPE));
-
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartExtLinkHeaderContainer() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        final Response res = target(RESOURCE_PATH).request().get();
-
-        assertEquals(OK, res.getStatusInfo());
-        assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(rdf.createIRI(BASE_URL + RESOURCE_PATH + "?ext=" + UPLOADS),
-                            Trellis.multipartUploadService.getIRIString())));
-    }
-
-    @Test
-    public void testMultipartExtLinkHeader() {
-        final Response res = target(BINARY_PATH).request().get();
-
-        assertEquals(OK, res.getStatusInfo());
-        assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(rdf.createIRI(BASE_URL + BINARY_PATH + "?ext=" + UPLOADS),
-                            Trellis.multipartUploadService.getIRIString())));
-    }
-
-    @Test
-    public void testMultipartGet() {
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
-        when(mockBinaryResolver.listParts(eq(UPLOAD_SESSION_ID))).thenAnswer(x -> Stream.of(
-                new SimpleEntry<>(1, "digest1"),
-                new SimpleEntry<>(2, "digest2")));
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request().get();
-        assertEquals(OK, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartGetNotFound() {
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request().get();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartPut() throws IOException {
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
-        when(mockBinaryResolver.uploadPart(eq(UPLOAD_SESSION_ID), eq(15), any(InputStream.class)))
-            .thenReturn("digest1");
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID + "/15").request()
-            .put(entity("blah blah blah", TEXT_PLAIN_TYPE));
-        assertEquals(OK, res.getStatusInfo());
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("{\"digest\":\"digest1\"}", entity);
-    }
-
-    @Test
-    public void testMultipartPutNotFound() throws IOException {
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID + "/15").request()
-            .put(entity("blah blah blah", TEXT_PLAIN_TYPE));
-        assertEquals(NOT_FOUND, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartPost() {
-        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(getBaseUrl(), BINARY_PATH,
-                new HttpSession(), mockBinary);
-
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
-        when(mockBinaryResolver.completeUpload(eq(UPLOAD_SESSION_ID), any())).thenReturn(upload);
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
-            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
-        assertEquals(CREATED, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartPostNotFound() {
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(false);
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
-            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
-        assertEquals(NOT_FOUND, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartPostError() {
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(false));
-        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(getBaseUrl(), BINARY_PATH,
-                new HttpSession(), mockBinary);
-
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
-        when(mockBinaryResolver.completeUpload(eq(UPLOAD_SESSION_ID), any())).thenReturn(upload);
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
-            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartPostExecutionError() throws Exception {
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(mockFuture);
-        doThrow(ExecutionException.class).when(mockFuture).get();
-        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(getBaseUrl(), BINARY_PATH,
-                new HttpSession(), mockBinary);
-
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
-        when(mockBinaryResolver.completeUpload(eq(UPLOAD_SESSION_ID), any())).thenReturn(upload);
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
-            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartPostInterruptedExecutionError() throws Exception {
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(mockFuture);
-        doThrow(InterruptedException.class).when(mockFuture).get();
-        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(getBaseUrl(), BINARY_PATH,
-                new HttpSession(), mockBinary);
-
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
-        when(mockBinaryResolver.completeUpload(eq(UPLOAD_SESSION_ID), any())).thenReturn(upload);
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request()
-            .post(entity("{\"20\": \"value\"}", APPLICATION_JSON_TYPE));
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartDelete() {
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(true);
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request().delete();
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMultipartDeleteNotFound() {
-        when(mockBinaryResolver.uploadSessionExists(eq(UPLOAD_SESSION_ID))).thenReturn(false);
-
-        final Response res = target("upload/" + UPLOAD_SESSION_ID).request().delete();
         assertEquals(NOT_FOUND, res.getStatusInfo());
     }
 

@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -30,123 +29,6 @@ import org.apache.commons.rdf.api.IRI;
  * @author acoburn
  */
 public interface BinaryService {
-
-    /**
-     * A multipart upload container.
-     */
-    class MultipartUpload {
-        private final Binary binary;
-        private final String baseUrl;
-        private final String path;
-        private final Session session;
-
-        /**
-         * Create a Multipart Upload object.
-         *
-         * @param baseUrl the base URL
-         * @param path the path
-         * @param session the session
-         * @param binary the binary
-         */
-        public MultipartUpload(final String baseUrl, final String path, final Session session, final Binary binary) {
-            this.baseUrl = baseUrl;
-            this.path = path;
-            this.session = session;
-            this.binary = binary;
-        }
-
-        /**
-         * The binary object.
-         *
-         * @return the binary
-         */
-        public Binary getBinary() {
-            return binary;
-        }
-
-        /**
-         * The path.
-         *
-         * @return the path
-         */
-        public String getPath() {
-            return path;
-        }
-
-        /**
-         * The base URL.
-         *
-         * @return the base URL
-         */
-        public String getBaseUrl() {
-            return baseUrl;
-        }
-
-        /**
-         * The Session.
-         *
-         * @return the session
-         */
-        public Session getSession() {
-            return session;
-        }
-    }
-
-    /**
-     * A multipart upload-capable interface.
-     */
-    interface MultipartCapable {
-        /**
-         * Initiate a multi-part upload.
-         *
-         * @param identifier the object identifier
-         * @param mimeType the mimeType of the object
-         * @return an upload session identifier
-         */
-        String initiateUpload(IRI identifier, String mimeType);
-
-        /**
-         * Upload a part.
-         *
-         * @param identifier the upload identifier
-         * @param partNumber the part number
-         * @param content the content to upload
-         * @return a digest value returned for each part; this value is used later wich completeUpload()
-         */
-        String uploadPart(String identifier, Integer partNumber, InputStream content);
-
-        /**
-         * Complete a multi-part upload.
-         *
-         * @param identifier the upload identifier
-         * @param partDigests digest values for each part
-         * @return a multipart upload object
-         */
-        MultipartUpload completeUpload(String identifier, Map<Integer, String> partDigests);
-
-        /**
-         * Abort the upload for the given identifier.
-         *
-         * @param identifier the upload identifier
-         */
-        void abortUpload(String identifier);
-
-        /**
-         * Test whether the provided identifier exists.
-         *
-         * @param identifier the upload identifier
-         * @return true if the session exists; false otherwise
-         */
-        Boolean uploadSessionExists(String identifier);
-
-        /**
-         * List the uploaded parts.
-         *
-         * @param identifier the upload identifier
-         * @return a list of uploaded parts and their digests
-         */
-        Stream<Map.Entry<Integer, String>> listParts(String identifier);
-    }
 
     /**
      * Get the content of the binary object.

@@ -56,9 +56,6 @@ public class BinaryServiceTest {
     private InputStream mockInputStream;
 
     @Mock
-    private Session mockSession;
-
-    @Mock
     private Binary mockBinary;
 
     @BeforeEach
@@ -87,17 +84,5 @@ public class BinaryServiceTest {
         final Optional<InputStream> content = mockBinaryService.getContent(identifier, 0, 6);
         assertTrue(content.isPresent());
         assertEquals("FooBar", IOUtils.toString(content.get(), UTF_8));
-    }
-
-    @Test
-    public void testMultipartUpload() {
-        final String baseUrl = "baseurl";
-        final String path = "path";
-        final BinaryService.MultipartUpload upload = new BinaryService.MultipartUpload(baseUrl, path, mockSession,
-                mockBinary);
-        assertEquals(baseUrl, upload.getBaseUrl());
-        assertEquals(path, upload.getPath());
-        assertEquals(mockSession, upload.getSession());
-        assertEquals(mockBinary, upload.getBinary());
     }
 }
