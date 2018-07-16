@@ -144,6 +144,7 @@ public class FileBinaryServiceTest {
         final BinaryService resolver = new FileBinaryService(idService);
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         assertThrows(UncheckedIOException.class, () -> resolver.getContent(fileIRI));
+        assertThrows(UncheckedIOException.class, () -> resolver.getContent(fileIRI, 0, 4));
     }
 
     @Test
