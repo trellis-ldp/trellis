@@ -30,7 +30,7 @@ matrix:
     - jdk: oraclejdk9
 
     # JDK 10
-    - jdk: oraclejdk10
+    - jdk: openjdk10
 
     # JDK 11
     - jdk: oraclejdk11
