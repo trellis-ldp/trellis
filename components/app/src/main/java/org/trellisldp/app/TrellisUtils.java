@@ -90,6 +90,16 @@ final class TrellisUtils {
             .map(key -> new JwtAuthenticator(key, config.getBase64Encoded()));
     }
 
+    public static Optional<CacheService<String, Set<IRI>>> getWebacCache(final TrellisConfiguration config) {
+        if (config.getAuth().getWebac().getEnabled()) {
+            final Cache<String, Set<IRI>> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
+                    .getCacheSize()).expireAfterWrite(config.getAuth().getWebac()
+                    .getCacheExpireSeconds(), SECONDS).build();
+            return of(new TrellisCache<>(authCache));
+        }
+        return empty();
+    }
+
     public static Optional<List<AuthFilter>> getAuthFilters(final TrellisConfiguration config) {
         // Authentication
         final List<AuthFilter> filters = new ArrayList<>();
@@ -120,16 +130,6 @@ final class TrellisUtils {
             return empty();
         }
         return of(filters);
-    }
-
-    public static Optional<CacheService<String, Set<IRI>>> getWebacConfiguration(final TrellisConfiguration config) {
-        if (config.getAuth().getWebac().getEnabled()) {
-            final Cache<String, Set<IRI>> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
-                    .getCacheSize()).expireAfterWrite(config.getAuth().getWebac()
-                    .getCacheExpireSeconds(), SECONDS).build();
-            return of(new TrellisCache<>(authCache));
-        }
-        return empty();
     }
 
     public static Optional<CORSConfiguration> getCorsConfiguration(final TrellisConfiguration config) {

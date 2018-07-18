@@ -22,6 +22,7 @@ import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -38,14 +39,11 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -56,8 +54,6 @@ public class BaseLdpHandler {
 
     protected static final RDF rdf = getInstance();
 
-    protected AuditService audit;
-
     protected static final List<ConstraintService> constraintServices = new ArrayList<>();
 
     static {
@@ -65,26 +61,22 @@ public class BaseLdpHandler {
     }
 
     private final String baseUrl;
+
+    protected final ServiceBundler trellis;
+
     protected final LdpRequest req;
-    protected final ResourceService resourceService;
-    protected final MementoService mementoService;
 
     /**
      * A base class for response handling.
      *
      * @param req the LDP request
-     * @param resourceService the resource service
-     * @param mementoService the memento service
-     * @param auditService an audit service
+     * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public BaseLdpHandler(final LdpRequest req, final ResourceService resourceService,
-            final MementoService mementoService, final AuditService auditService, final String baseUrl) {
+    public BaseLdpHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
         this.baseUrl = baseUrl;
         this.req = req;
-        this.resourceService = resourceService;
-        this.mementoService = mementoService;
-        this.audit = auditService;
+        this.trellis = trellis;
     }
 
     /**
@@ -96,8 +88,8 @@ public class BaseLdpHandler {
      */
     protected void checkDeleted(final Resource res, final String identifier) {
         if (res.isDeleted()) {
-            throw new WebApplicationException(status(GONE)
-                    .links(MementoResource.getMementoLinks(identifier, mementoService.list(res.getIdentifier()))
+            throw new WebApplicationException(status(GONE).links(MementoResource.getMementoLinks(identifier,
+                            trellis.getMementoService().list(res.getIdentifier()))
                     .toArray(Link[]::new)).build());
         }
     }
@@ -138,11 +130,11 @@ public class BaseLdpHandler {
      * @throws BadRequestException if the interaction model is not supported
      */
     protected void checkInteractionModel(final IRI interactionModel) {
-        if (!resourceService.supportedInteractionModels().contains(interactionModel)) {
+        if (!trellis.getResourceService().supportedInteractionModels().contains(interactionModel)) {
             LOGGER.error("Interaction model not supported: {}", interactionModel);
             throw new BadRequestException("Unsupported interaction model provided: " + interactionModel,
                     status(BAD_REQUEST)
-                        .link(Trellis.UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
+                        .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
                         .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
         }
     }

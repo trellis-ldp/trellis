@@ -61,14 +61,10 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.ConstraintViolation;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
@@ -84,8 +80,6 @@ public class PatchHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(PatchHandler.class);
 
-    private final IOService ioService;
-    private final AgentService agentService;
     private final String updateBody;
 
     /**
@@ -93,26 +87,19 @@ public class PatchHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param updateBody the sparql update body
-     * @param auditService an audit service
-     * @param resourceService the resource service
-     * @param ioService the serialization service
-     * @param agentService the agent service
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PatchHandler(final LdpRequest req, final String updateBody, final ResourceService resourceService,
-            final AuditService auditService, final IOService ioService, final AgentService agentService,
-            final MementoService mementoService, final String baseUrl) {
-        super(req, resourceService, mementoService, auditService, baseUrl);
-        this.ioService = ioService;
-        this.agentService = agentService;
+    public PatchHandler(final LdpRequest req, final String updateBody, final ServiceBundler trellis,
+            final String baseUrl) {
+        super(req, trellis, baseUrl);
         this.updateBody = updateBody;
     }
 
     private List<Triple> updateGraph(final Resource res, final IRI graphName) {
         final List<Triple> triples;
         // Get the incoming syntax and check that the underlying I/O service supports it
-        final RDFSyntax syntax = ioService.supportedUpdateSyntaxes().stream()
+        final RDFSyntax syntax = trellis.getIOService().supportedUpdateSyntaxes().stream()
             .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst()
             .orElseThrow(() -> new NotSupportedException("Content-Type: " + req.getContentType() + " not supported"));
 
@@ -121,7 +108,7 @@ public class PatchHandler extends BaseLdpHandler {
             try (final Stream<? extends Triple> stream = res.stream(graphName)) {
                 stream.forEachOrdered(graph::add);
             }
-            ioService.update(graph.asGraph(), updateBody, syntax, TRELLIS_DATA_PREFIX + req.getPath() +
+            trellis.getIOService().update(graph.asGraph(), updateBody, syntax, TRELLIS_DATA_PREFIX + req.getPath() +
                     (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                     || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
@@ -147,7 +134,7 @@ public class PatchHandler extends BaseLdpHandler {
             throw new BadRequestException("Missing body for update");
         }
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
+            .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         // Check if this is already deleted
@@ -170,7 +157,7 @@ public class PatchHandler extends BaseLdpHandler {
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
-            triples.stream().map(skolemizeTriples(resourceService, baseUrl))
+            triples.stream().map(skolemizeTriples(trellis.getResourceService(), baseUrl))
                 .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
                 .forEachOrdered(dataset::add);
 
@@ -199,15 +186,16 @@ public class PatchHandler extends BaseLdpHandler {
 
             // Save new dataset
             final IRI resId = res.getIdentifier();
-            final IRI container = resourceService.getContainer(resId).orElse(null);
-            if (resourceService.replace(res.getIdentifier(), session, res.getInteractionModel(), dataset.asDataset(),
-                        container, res.getBinary().orElse(null)).get()) {
+            final IRI container = trellis.getResourceService().getContainer(resId).orElse(null);
+            if (trellis.getResourceService().replace(res.getIdentifier(), session, res.getInteractionModel(),
+                        dataset.asDataset(), container, res.getBinary().orElse(null)).get()) {
 
                 // Add audit-related triples
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    audit.update(resId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                                    .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(resId, session, auditDataset.asDataset()).get()) {
+                    trellis.getAuditService().update(resId, session).stream()
+                        .map(skolemizeQuads(trellis.getResourceService(), baseUrl))
+                        .forEachOrdered(auditDataset::add);
+                    if (!trellis.getResourceService().add(resId, session, auditDataset.asDataset()).get()) {
                         LOGGER.error("Unable to update resource at {}", resId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
@@ -217,7 +205,7 @@ public class PatchHandler extends BaseLdpHandler {
                 }
 
                 // Update the memento
-                resourceService.get(res.getIdentifier()).ifPresent(mementoService::put);
+                trellis.getResourceService().get(res.getIdentifier()).ifPresent(trellis.getMementoService()::put);
 
                 final ResponseBuilder builder = ok();
 
@@ -225,15 +213,17 @@ public class PatchHandler extends BaseLdpHandler {
 
                 return ofNullable(req.getPrefer()).flatMap(Prefer::getPreference).filter(PREFER_REPRESENTATION::equals)
                     .map(prefer -> {
-                        final RDFSyntax outputSyntax = getSyntax(ioService, req.getHeaders().getAcceptableMediaTypes(),
-                                empty()).orElseThrow(NotAcceptableException::new);
+                        final RDFSyntax outputSyntax = getSyntax(trellis.getIOService(),
+                                req.getHeaders().getAcceptableMediaTypes(), empty())
+                            .orElseThrow(NotAcceptableException::new);
                         final IRI profile = ofNullable(getProfile(req.getHeaders().getAcceptableMediaTypes(),
                                     outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, identifier));
 
                         final StreamingOutput stream = new StreamingOutput() {
                             @Override
                             public void write(final OutputStream out) throws IOException {
-                                ioService.write(triples.stream().map(unskolemizeTriples(resourceService, baseUrl)),
+                                trellis.getIOService().write(triples.stream()
+                                            .map(unskolemizeTriples(trellis.getResourceService(), baseUrl)),
                                         out, outputSyntax, profile);
                             }
                         };

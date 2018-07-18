@@ -65,8 +65,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.Memento;
 import org.trellisldp.vocabulary.Time;
@@ -127,15 +126,15 @@ public final class MementoResource {
         return buffer.stream();
     };
 
-    private final MementoService mementoService;
+    private final ServiceBundler trellis;
 
     /**
      * Wrap a resource in some Memento-specific response builders.
      *
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      */
-    public MementoResource(final MementoService mementoService) {
-        this.mementoService = mementoService;
+    public MementoResource(final ServiceBundler trellis) {
+        this.trellis = trellis;
     }
 
     /**
@@ -143,23 +142,22 @@ public final class MementoResource {
      *
      * @param baseUrl the base URL
      * @param req the LDP request
-     * @param serializer the serializer to use
      * @return a response builder object
      */
-    public Response.ResponseBuilder getTimeMapBuilder(final LdpRequest req,
-            final IOService serializer, final String baseUrl) {
+    public Response.ResponseBuilder getTimeMapBuilder(final LdpRequest req, final String baseUrl) {
 
         final List<MediaType> acceptableTypes = req.getHeaders().getAcceptableMediaTypes();
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         final IRI internalIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final List<Link> links = getMementoLinks(identifier, mementoService.list(internalIdentifier))
+        final List<Link> links = getMementoLinks(identifier, trellis.getMementoService().list(internalIdentifier))
             .collect(toList());
 
         final Response.ResponseBuilder builder = Response.ok().link(identifier, ORIGINAL + " " + TIMEGATE);
         builder.links(links.toArray(new Link[0])).link(Resource.getIRIString(), "type")
             .link(RDFSource.getIRIString(), "type").header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
-        final RDFSyntax syntax = getSyntax(serializer, acceptableTypes, of(APPLICATION_LINK_FORMAT)).orElse(null);
+        final RDFSyntax syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT))
+            .orElse(null);
         if (nonNull(syntax)) {
             final IRI profile = ofNullable(getProfile(acceptableTypes, syntax)).orElse(expanded);
 
@@ -174,8 +172,8 @@ public final class MementoResource {
             final StreamingOutput stream = new StreamingOutput() {
                 @Override
                 public void write(final OutputStream out) throws IOException {
-                    serializer.write(concat(links.stream().flatMap(linkToTriples), extraData.stream()), out, syntax,
-                            profile);
+                    trellis.getIOService().write(concat(links.stream().flatMap(linkToTriples), extraData.stream()),
+                            out, syntax, profile);
                 }
             };
 
@@ -212,7 +210,8 @@ public final class MementoResource {
         return Response.status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().toEpochMilli()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
-            .links(getMementoLinks(identifier, mementoService.list(internalIdentifier)).toArray(Link[]::new))
+            .links(getMementoLinks(identifier, trellis.getMementoService().list(internalIdentifier))
+                    .toArray(Link[]::new))
             .header(VARY, ACCEPT_DATETIME);
     }
 

@@ -88,11 +88,8 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.http.domain.Range;
@@ -110,24 +107,15 @@ public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
 
-    private final IOService ioService;
-    private final BinaryService binaryService;
-
     /**
      * A GET response builder.
      *
      * @param req the LDP request
-     * @param resourceService the resource service
-     * @param ioService the serialization service
-     * @param binaryService the binary service
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public GetHandler(final LdpRequest req, final ResourceService resourceService, final IOService ioService,
-            final BinaryService binaryService, final MementoService mementoService, final String baseUrl) {
-        super(req, resourceService, mementoService, null, baseUrl);
-        this.ioService = ioService;
-        this.binaryService = binaryService;
+    public GetHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
+        super(req, trellis, baseUrl);
     }
 
     /**
@@ -143,7 +131,7 @@ public class GetHandler extends BaseLdpHandler {
         checkDeleted(res, identifier);
 
         LOGGER.debug("Acceptable media types: {}", req.getHeaders().getAcceptableMediaTypes());
-        final Optional<RDFSyntax> syntax = getSyntax(ioService, req.getHeaders().getAcceptableMediaTypes(),
+        final Optional<RDFSyntax> syntax = getSyntax(trellis.getIOService(), req.getHeaders().getAcceptableMediaTypes(),
                 res.getBinary().filter(b -> !DESCRIPTION.equals(req.getExt()))
                                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)));
 
@@ -172,8 +160,8 @@ public class GetHandler extends BaseLdpHandler {
         // Only show memento links for the user-managed graph (not ACL)
         if (!ACL.equals(req.getExt())) {
             builder.link(identifier, "original timegate")
-                .links(MementoResource.getMementoLinks(identifier, mementoService.list(res.getIdentifier()))
-                        .toArray(Link[]::new));
+                .links(MementoResource.getMementoLinks(identifier, trellis.getMementoService()
+                            .list(res.getIdentifier())).toArray(Link[]::new));
         }
 
         // URI Template
@@ -259,8 +247,8 @@ public class GetHandler extends BaseLdpHandler {
             @Override
             public void write(final OutputStream out) throws IOException {
                 try (final Stream<? extends Quad> stream = res.stream()) {
-                    ioService.write(stream.filter(filterWithPrefer(prefer))
-                        .map(unskolemizeQuads(resourceService, getBaseUrl()))
+                    trellis.getIOService().write(stream.filter(filterWithPrefer(prefer))
+                        .map(unskolemizeQuads(trellis.getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(req.getSubject(), req.getPredicate(), req.getObject()))
                         .map(Quad::asTriple), out, syntax,
                             ofNullable(profile).orElseGet(() -> getDefaultProfile(syntax, identifier)));
@@ -293,8 +281,8 @@ public class GetHandler extends BaseLdpHandler {
 
         // Add instance digests, if Requested and supported
         ofNullable(req.getWantDigest()).map(WantDigest::getAlgorithms).ifPresent(algs ->
-                algs.stream().filter(binaryService.supportedAlgorithms()::contains).findFirst().ifPresent(alg ->
-                    getBinaryDigest(dsid, alg).ifPresent(digest ->
+                algs.stream().filter(trellis.getBinaryService().supportedAlgorithms()::contains).findFirst()
+                .ifPresent(alg -> getBinaryDigest(dsid, alg).ifPresent(digest ->
                         builder.header(DIGEST, alg.toLowerCase() + "=" + digest))));
 
         // Stream the binary content
@@ -317,15 +305,15 @@ public class GetHandler extends BaseLdpHandler {
 
     private InputStream getBinaryStream(final IRI dsid, final Range range) throws IOException {
         final Optional<InputStream> content = isNull(range)
-            ? binaryService.getContent(dsid)
-            : binaryService.getContent(dsid, range.getFrom(), range.getTo());
+            ? trellis.getBinaryService().getContent(dsid)
+            : trellis.getBinaryService().getContent(dsid, range.getFrom(), range.getTo());
         return content.orElseThrow(() -> new IOException("Could not retrieve content from: " + dsid));
     }
 
     private Optional<String> getBinaryDigest(final IRI dsid, final String algorithm) {
-        final Optional<InputStream> b = binaryService.getContent(dsid);
+        final Optional<InputStream> b = trellis.getBinaryService().getContent(dsid);
         try (final InputStream is = b.orElseThrow(() -> new WebApplicationException("Couldn't fetch binary content"))) {
-            return binaryService.digest(algorithm, is);
+            return trellis.getBinaryService().digest(algorithm, is);
         } catch (final IOException ex) {
             LOGGER.error("Error computing digest on content", ex);
             throw new WebApplicationException("Error handling binary content: " + ex.getMessage());
@@ -359,10 +347,10 @@ public class GetHandler extends BaseLdpHandler {
             builder.link(type.getIRIString(), "type");
             // Mementos don't accept POST or PATCH
             if (LDP.Container.equals(type) && !res.isMemento()) {
-                builder.header(ACCEPT_POST, ioService.supportedWriteSyntaxes().stream()
+                builder.header(ACCEPT_POST, trellis.getIOService().supportedWriteSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             } else if (LDP.RDFSource.equals(type) && !res.isMemento()) {
-                builder.header(ACCEPT_PATCH, ioService.supportedUpdateSyntaxes().stream()
+                builder.header(ACCEPT_PATCH, trellis.getIOService().supportedUpdateSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             }
         });

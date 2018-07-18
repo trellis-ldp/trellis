@@ -55,20 +55,6 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetWebacConfig() throws Exception {
-        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
-
-        assertTrue(TrellisUtils.getWebacConfiguration(config).isPresent());
-
-        config.getAuth().getWebac().setEnabled(false);
-
-        assertFalse(TrellisUtils.getWebacConfiguration(config).isPresent());
-    }
-
-    @Test
     public void testGetCORSConfig() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
@@ -80,6 +66,19 @@ public class TrellisUtilsTest {
         config.getCors().setEnabled(false);
 
         assertFalse(TrellisUtils.getCorsConfiguration(config).isPresent());
+    }
+
+    @Test
+    public void testGetWebacCache() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+
+        assertTrue(TrellisUtils.getWebacCache(config).isPresent());
+
+        config.getAuth().getWebac().setEnabled(false);
+
+        assertFalse(TrellisUtils.getWebacCache(config).isPresent());
     }
 
     @Test

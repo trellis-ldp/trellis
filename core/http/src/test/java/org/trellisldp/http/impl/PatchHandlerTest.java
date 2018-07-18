@@ -52,6 +52,8 @@ import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
+import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.time.Instant;
 import java.util.Date;
@@ -83,17 +85,18 @@ import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDFS;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -109,9 +112,11 @@ public class PatchHandlerTest {
     @Mock
     private ResourceService mockResourceService;
 
-    private AuditService mockAuditService = none();
+    private AuditService auditService = none();
 
     private final AgentService agentService = new SimpleAgentService();
+
+    private final MementoService mementoService = new NoopMementoService();
 
     @Mock
     private IOService mockIoService;
@@ -121,6 +126,9 @@ public class PatchHandlerTest {
 
     @Mock
     private Request mockRequest;
+
+    @Mock
+    private ServiceBundler mockBundler;
 
     @Mock
     private LdpRequest mockLdpRequest;
@@ -137,6 +145,11 @@ public class PatchHandlerTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
+        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
+        when(mockBundler.getIOService()).thenReturn(mockIoService);
+        when(mockBundler.getAuditService()).thenReturn(auditService);
+        when(mockBundler.getMementoService()).thenReturn(mementoService);
+        when(mockBundler.getAgentService()).thenReturn(agentService);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getIdentifier()).thenReturn(identifier);
@@ -173,8 +186,7 @@ public class PatchHandlerTest {
 
     @Test
     public void testPatchNoSparql() {
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null,
-                mockResourceService, mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null, mockBundler, null);
         assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource));
     }
 
@@ -187,15 +199,14 @@ public class PatchHandlerTest {
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
-        final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockResourceService, badAuditService,
-                        mockIoService, agentService, new NoopMementoService(), null);
+        when(mockBundler.getAuditService()).thenReturn(badAuditService);
+        final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
         assertThrows(BadRequestException.class, () -> handler.updateResource(mockResource));
     }
 
     @Test
     public void testPatchLdprs() {
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), baseUrl);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
         final Response res = patchHandler.updateResource(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -205,11 +216,10 @@ public class PatchHandlerTest {
     public void testEntity() {
         final Triple triple = rdf.createTriple(identifier, RDFS.label, rdf.createLiteral("A label"));
 
-        when(mockResource.stream(eq(Trellis.PreferUserManaged))).thenAnswer(x -> of(triple));
+        when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(triple));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         final Response res = patchHandler.updateResource(mockResource).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
@@ -225,8 +235,7 @@ public class PatchHandlerTest {
         when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         final Response res = patchHandler.updateResource(mockResource).build();
 
@@ -248,8 +257,7 @@ public class PatchHandlerTest {
         when(mockLdpRequest.getHeaders().getAcceptableMediaTypes())
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         final Response res = patchHandler.updateResource(mockResource).build();
 
@@ -269,8 +277,7 @@ public class PatchHandlerTest {
         when(mockResource.isDeleted()).thenReturn(true);
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource));
     }
@@ -281,8 +288,7 @@ public class PatchHandlerTest {
             .thenReturn(status(CONFLICT));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource));
     }
@@ -293,8 +299,7 @@ public class PatchHandlerTest {
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         assertThrows(BadRequestException.class, () -> patchHandler.updateResource(mockResource));
     }
@@ -303,13 +308,12 @@ public class PatchHandlerTest {
     public void testNoLdpRsSupport() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         final BadRequestException ex = assertThrows(BadRequestException.class, () ->
                 patchHandler.updateResource(mockResource));
         assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(Trellis.UnsupportedInteractionModel.getIRIString()) &&
+                link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
         assertEquals(TEXT_PLAIN_TYPE, ex.getResponse().getMediaType());
     }
@@ -321,8 +325,7 @@ public class PatchHandlerTest {
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(mockFuture);
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), null);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
         final Response res = patchHandler.updateResource(mockResource).build();
         assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
@@ -334,8 +337,7 @@ public class PatchHandlerTest {
             .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockResourceService,
-                        mockAuditService, mockIoService, agentService, new NoopMementoService(), baseUrl);
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
         assertThrows(BadRequestException.class, () -> patchHandler.updateResource(mockResource));
     }

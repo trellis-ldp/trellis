@@ -11,28 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app;
+package org.trellisldp.webapp;
 
-import io.dropwizard.setup.Environment;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.Test;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.app.config.TrellisConfiguration;
 
-/**
- * A simple test app.
- */
-public class SimpleTrellisApp extends AbstractTrellisApplication<TrellisConfiguration> {
+public class ServiceBundlerTest {
 
-    private ServiceBundler serviceBundler;
+    @Test
+    public void testServiceBundler() {
+        final ServiceBundler bundler = new WebappServiceBundler();
 
-    @Override
-    protected ServiceBundler getServiceBundler() {
-        return serviceBundler;
-    }
-
-    @Override
-    protected void initialize(final TrellisConfiguration config, final Environment env) {
-        super.initialize(config, env);
-        this.serviceBundler = new SimpleServiceBundler();
+        assertEquals(bundler.getResourceService(), bundler.getAuditService());
+        assertNotNull(bundler.getBinaryService());
     }
 }

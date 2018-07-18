@@ -61,14 +61,9 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
@@ -87,19 +82,11 @@ public class PutHandler extends ContentBearingHandler {
      *
      * @param req the LDP request
      * @param entity the entity
-     * @param resourceService the resource service
-     * @param auditService an audit service
-     * @param ioService the serialization service
-     * @param binaryService the binary service
-     * @param agentService the agent service
-     * @param mementoService the memento service
+     * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PutHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
-                    final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final AgentService agentService, final MementoService mementoService, final String baseUrl) {
-        super(req, entity, resourceService, auditService, ioService, binaryService, agentService, mementoService,
-                baseUrl);
+    public PutHandler(final LdpRequest req, final File entity, final ServiceBundler trellis, final String baseUrl) {
+        super(req, entity, trellis, baseUrl);
     }
 
     private void checkResourceCache(final String identifier, final Resource res) {
@@ -154,11 +141,11 @@ public class PutHandler extends ContentBearingHandler {
         ofNullable(res).ifPresent(r -> checkResourceCache(identifier, r));
 
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .map(agentService::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
+            .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
         final Optional<RDFSyntax> rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->
-                ioService.supportedWriteSyntaxes().stream().filter(s ->
+                trellis.getIOService().supportedWriteSyntaxes().stream().filter(s ->
                     ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst());
 
         // One cannot put binaries into the ACL graph
@@ -200,7 +187,7 @@ public class PutHandler extends ContentBearingHandler {
                 checkForBadDigest(req.getDigest());
 
                 final String mimeType = ofNullable(req.getContentType()).orElse(APPLICATION_OCTET_STREAM);
-                final IRI binaryLocation = rdf.createIRI(binaryService.generateIdentifier());
+                final IRI binaryLocation = rdf.createIRI(trellis.getBinaryService().generateIdentifier());
 
                 // Persist the content
                 persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
@@ -229,9 +216,9 @@ public class PutHandler extends ContentBearingHandler {
             if (success.get()) {
                 // Add audit quads
                 try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    auditQuads(res, internalId, session).stream().map(skolemizeQuads(resourceService, baseUrl))
-                                    .forEachOrdered(auditDataset::add);
-                    if (!resourceService.add(internalId, session, auditDataset.asDataset()).get()) {
+                    auditQuads(res, internalId, session).stream().map(skolemizeQuads(trellis.getResourceService(),
+                                baseUrl)).forEachOrdered(auditDataset::add);
+                    if (!trellis.getResourceService().add(internalId, session, auditDataset.asDataset()).get()) {
                         LOGGER.error("Unable to place or replace resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
@@ -241,7 +228,7 @@ public class PutHandler extends ContentBearingHandler {
                 }
 
                 // Create a memento
-                resourceService.get(internalId).ifPresent(mementoService::put);
+                trellis.getResourceService().get(internalId).ifPresent(trellis.getMementoService()::put);
 
                 final ResponseBuilder builder = buildResponse(res, identifier);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
@@ -263,10 +250,10 @@ public class PutHandler extends ContentBearingHandler {
 
     private Future<Boolean> createOrReplace(final Resource res, final IRI internalId, final Session session,
             final IRI ldpType, final TrellisDataset dataset, final Binary binary) {
-        final IRI container = resourceService.getContainer(internalId).orElse(null);
+        final IRI container = trellis.getResourceService().getContainer(internalId).orElse(null);
         return nonNull(res)
-            ? resourceService.replace(internalId, session, ldpType, dataset.asDataset(), container, binary)
-            : resourceService.create(internalId, session, ldpType, dataset.asDataset(), container, binary);
+            ? trellis.getResourceService().replace(internalId, session, ldpType, dataset.asDataset(), container, binary)
+            : trellis.getResourceService().create(internalId, session, ldpType, dataset.asDataset(), container, binary);
     }
 
     private void checkInteractionModelChange(final Resource res, final IRI ldpType, final Boolean isBinaryDescription) {
@@ -303,6 +290,9 @@ public class PutHandler extends ContentBearingHandler {
     }
 
     private List<Quad> auditQuads(final Resource res, final IRI internalId, final Session session) {
-        return nonNull(res) ? audit.update(internalId, session) : audit.creation(internalId, session);
+        if (nonNull(res)) {
+            return trellis.getAuditService().update(internalId, session);
+        }
+        return trellis.getAuditService().creation(internalId, session);
     }
 }

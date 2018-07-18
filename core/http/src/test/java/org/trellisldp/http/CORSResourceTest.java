@@ -36,6 +36,9 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
+import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
+import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
+import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -67,14 +70,16 @@ import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.XSD;
 
 /**
@@ -121,6 +126,8 @@ public class CORSResourceTest extends JerseyTest {
         allModes.add(ACL.Control);
     }
 
+    private final MementoService mementoService = new NoopMementoService();
+
     @Mock
     protected ResourceService mockResourceService;
 
@@ -136,13 +143,16 @@ public class CORSResourceTest extends JerseyTest {
     @Mock
     private Resource mockResource, mockBinaryResource;
 
+    @Mock
+    private ServiceBundler mockBundler;
+
     @Override
     public Application configure() {
 
         initMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService, mockAgentService));
+        config.register(new LdpResource(mockBundler));
         config.register(new CrossOriginResourceSharingFilter(asList("*"),
                     asList("GET", "HEAD", "PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Datetime"),
@@ -167,6 +177,12 @@ public class CORSResourceTest extends JerseyTest {
 
     @BeforeEach
     public void setUpMocks() {
+        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
+        when(mockBundler.getIOService()).thenReturn(ioService);
+        when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
+        when(mockBundler.getAgentService()).thenReturn(mockAgentService);
+        when(mockBundler.getMementoService()).thenReturn(mementoService);
+
         whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
         whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
@@ -223,11 +239,11 @@ public class CORSResourceTest extends JerseyTest {
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+                rdf.createQuad(PreferServerManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
     }
 
     @Test

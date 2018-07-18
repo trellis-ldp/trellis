@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -31,13 +32,13 @@ public class LdpResourceNoAgentTest extends AbstractLdpResourceTest {
 
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
+        when(mockBundler.getAgentService()).thenReturn(new SimpleAgentService());
 
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockResourceService, ioService, mockBinaryService,
-                    new SimpleAgentService(), mockMementoService, mockAuditService));
+        config.register(new LdpResource(mockBundler));
         config.register(new CacheControlFilter(86400, true, false));
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),

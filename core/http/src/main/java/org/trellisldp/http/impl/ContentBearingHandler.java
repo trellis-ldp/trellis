@@ -40,14 +40,9 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
-import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintViolation;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
@@ -62,38 +57,27 @@ class ContentBearingHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(ContentBearingHandler.class);
 
-    protected final BinaryService binaryService;
-    protected final IOService ioService;
-    protected final AgentService agentService;
     protected final File entity;
 
     /**
      * Create a builder for an LDP POST response.
      *
-     * @param baseUrl the base URL
      * @param req the LDP request
      * @param entity the entity
-     * @param resourceService the resource service
-     * @param auditService an audit service
-     * @param ioService the serialization service
-     * @param mementoService the memento service
-     * @param binaryService the binary service
+     * @param trellis the Trellis application bundle
+     * @param baseUrl the base URL
      */
-    protected ContentBearingHandler(final LdpRequest req, final File entity, final ResourceService resourceService,
-                    final AuditService auditService, final IOService ioService, final BinaryService binaryService,
-                    final AgentService agentService, final MementoService mementoService, final String baseUrl) {
-        super(req, resourceService, mementoService, auditService, baseUrl);
-        this.binaryService = binaryService;
-        this.ioService = ioService;
-        this.agentService = agentService;
+    protected ContentBearingHandler(final LdpRequest req, final File entity, final ServiceBundler trellis,
+            final String baseUrl) {
+        super(req, trellis, baseUrl);
         this.entity = entity;
     }
 
     protected void readEntityIntoDataset(final String identifier, final String baseUrl, final IRI graphName,
             final RDFSyntax syntax, final TrellisDataset dataset) {
         try (final InputStream input = new FileInputStream(entity)) {
-            ioService.read(input, syntax, identifier)
-                .map(skolemizeTriples(resourceService, baseUrl))
+            trellis.getIOService().read(input, syntax, identifier)
+                .map(skolemizeTriples(trellis.getResourceService(), baseUrl))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
                         || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace()))
                 .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
@@ -121,7 +105,8 @@ class ContentBearingHandler extends BaseLdpHandler {
             final StreamingOutput stream = new StreamingOutput() {
                 @Override
                 public void write(final OutputStream out) throws IOException {
-                    ioService.write(violations.stream().flatMap(v2 -> v2.getTriples().stream()), out, syntax);
+                    trellis.getIOService().write(violations.stream().flatMap(v2 -> v2.getTriples().stream()), out,
+                            syntax);
                 }
             };
             throw new WebApplicationException(err.entity(stream).build());
@@ -149,7 +134,7 @@ class ContentBearingHandler extends BaseLdpHandler {
 
     protected void persistContent(final IRI contentLocation, final Map<String, String> metadata) {
         try (final InputStream input = new FileInputStream(entity)) {
-            binaryService.setContent(contentLocation, input, metadata);
+            trellis.getBinaryService().setContent(contentLocation, input, metadata);
         } catch (final IOException ex) {
             LOGGER.error("Error saving binary content", ex);
             throw new WebApplicationException("Error saving binary content: " + ex.getMessage());
