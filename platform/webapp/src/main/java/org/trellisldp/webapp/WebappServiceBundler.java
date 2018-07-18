@@ -55,19 +55,14 @@ public class WebappServiceBundler implements ServiceBundler {
      */
     public WebappServiceBundler() {
         final IdentifierService idService = AppUtils.loadFirst(IdentifierService.class);
+        final RDFConnection rdfConnection = AppUtils.getRDFConnection(config.get("trellis.rdf.location"));
+        final EventService eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);
+
         agentService = AppUtils.loadFirst(AgentService.class);
         binaryService = new FileBinaryService(idService);
         mementoService = new FileMementoService();
         ioService = new JenaIOService(new NamespacesJsonContext());
-
-        final RDFConnection rdfConnection = AppUtils.getRDFConnection(config.get("trellis.rdf.location"));
-        final EventService eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);
         auditService = resourceService = new TriplestoreResourceService(rdfConnection, idService, eventService);
-    }
-
-    @Override
-    public ResourceService getResourceService() {
-        return resourceService;
     }
 
     @Override
@@ -76,13 +71,13 @@ public class WebappServiceBundler implements ServiceBundler {
     }
 
     @Override
-    public BinaryService getBinaryService() {
-        return binaryService;
+    public ResourceService getResourceService() {
+        return resourceService;
     }
 
     @Override
-    public MementoService getMementoService() {
-        return mementoService;
+    public BinaryService getBinaryService() {
+        return binaryService;
     }
 
     @Override
@@ -93,5 +88,10 @@ public class WebappServiceBundler implements ServiceBundler {
     @Override
     public AuditService getAuditService() {
         return auditService;
+    }
+
+    @Override
+    public MementoService getMementoService() {
+        return mementoService;
     }
 }
