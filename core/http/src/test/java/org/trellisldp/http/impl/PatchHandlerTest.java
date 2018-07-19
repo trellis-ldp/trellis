@@ -57,7 +57,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import javax.ws.rs.BadRequestException;
@@ -140,7 +140,7 @@ public class PatchHandlerTest {
     private SecurityContext mockSecurityContext;
 
     @Mock
-    private Future<Boolean> mockFuture;
+    private CompletableFuture<Boolean> mockFuture;
 
     @BeforeEach
     public void setUp() {

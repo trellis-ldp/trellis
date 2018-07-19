@@ -18,7 +18,7 @@ import static java.util.stream.Stream.concat;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -61,24 +61,24 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public Future<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
+    public CompletableFuture<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
         return immutableData.add(id, session, dataset);
     }
 
     @Override
-    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
-            final IRI container, final Binary binary) {
+    public CompletableFuture<Boolean> create(final IRI id, final Session session, final IRI ixnModel,
+            final Dataset dataset, final IRI container, final Binary binary) {
         return mutableData.create(id, session, ixnModel, dataset, container, binary);
     }
 
     @Override
-    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
-            final IRI container, final Binary binary) {
+    public CompletableFuture<Boolean> replace(final IRI id, final Session session, final IRI ixnModel,
+            final Dataset dataset, final IRI container, final Binary binary) {
         return mutableData.replace(id, session, ixnModel, dataset, container, binary);
     }
 
     @Override
-    public Future<Boolean> delete(final IRI id, final Session session, final IRI ixnModel,
+    public CompletableFuture<Boolean> delete(final IRI id, final Session session, final IRI ixnModel,
             final Dataset dataset) {
         return mutableData.delete(id, session, ixnModel, dataset);
     }

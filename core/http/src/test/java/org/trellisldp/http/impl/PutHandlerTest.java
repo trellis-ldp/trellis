@@ -53,7 +53,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Set;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import javax.ws.rs.BadRequestException;
@@ -137,7 +137,7 @@ public class PutHandlerTest {
     private SecurityContext mockSecurityContext;
 
     @Mock
-    private Future<Boolean> mockFuture;
+    private CompletableFuture<Boolean> mockFuture;
 
     @BeforeEach
     public void setUp() {
