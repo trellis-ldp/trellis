@@ -16,10 +16,10 @@ package org.trellisldp.file;
 import static java.io.File.separator;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
+import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.of;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.jena.riot.tokens.TokenizerFactory.makeTokenizerString;
 import static org.apache.jena.sparql.core.Quad.create;
@@ -30,8 +30,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.stream.Stream;
 import java.util.zip.CRC32;
 
 import org.apache.commons.rdf.api.IRI;
@@ -77,11 +77,11 @@ public final class FileUtils {
     }
 
     /**
-     * Parse a string into a Quad.
+     * Parse a string into a stream of Quads.
      * @param line the line of text
      * @return the Quad
      */
-    public static Optional<Quad> parseQuad(final String line) {
+    public static Stream<Quad> parseQuad(final String line) {
         final List<Token> tokens = new ArrayList<>();
         makeTokenizerString(line).forEachRemaining(tokens::add);
 

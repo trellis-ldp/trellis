@@ -133,9 +133,7 @@ public class FileResource implements Resource {
     public Stream<Quad> stream() {
         LOGGER.trace("Streaming quads for {}", identifier);
         try {
-            // TODO -- JDK9 shortcut Optional::stream and flatMap
-            return lines(file.toPath()).map(FileUtils::parseQuad).filter(Optional::isPresent)
-                .map(Optional::get);
+            return lines(file.toPath()).flatMap(FileUtils::parseQuad);
         } catch (final IOException ex) {
             LOGGER.warn("Could not read file at {}: {}", file, ex.getMessage());
         }
