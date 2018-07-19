@@ -14,15 +14,18 @@
 package org.trellisldp.api;
 
 import static java.util.Collections.singleton;
-import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import org.apache.commons.rdf.api.IRI;
@@ -59,8 +62,6 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).isDeleted();
         doCallRealMethod().when(mockResource).hasAcl();
         doCallRealMethod().when(mockResource).getExtraLinkRelations();
-
-        when(mockResource.stream()).thenAnswer((x) -> empty());
     }
 
     @Test
@@ -98,5 +99,28 @@ public class ResourceTest {
         assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent());
         assertFalse(mockResource.isDeleted());
         assertFalse(mockResource.hasAcl());
+    }
+
+    @Test
+    public void testSingletons() {
+        assertEquals(MISSING_RESOURCE, MISSING_RESOURCE);
+        assertEquals(DELETED_RESOURCE, DELETED_RESOURCE);
+        assertNotEquals(MISSING_RESOURCE, DELETED_RESOURCE);
+    }
+
+    @Test
+    public void testMissingResource() {
+        assertNull(MISSING_RESOURCE.getIdentifier());
+        assertNull(MISSING_RESOURCE.getInteractionModel());
+        assertNull(MISSING_RESOURCE.getModified());
+        assertEquals("A non-existent resource", MISSING_RESOURCE.toString());
+    }
+
+    @Test
+    public void testDeletedResource() {
+        assertNull(DELETED_RESOURCE.getIdentifier());
+        assertNull(DELETED_RESOURCE.getInteractionModel());
+        assertNull(DELETED_RESOURCE.getModified());
+        assertEquals("A deleted resource", DELETED_RESOURCE.toString());
     }
 }

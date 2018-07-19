@@ -36,6 +36,60 @@ import org.apache.commons.rdf.api.Triple;
  */
 public interface Resource {
 
+    enum SpecialResources implements Resource {
+        /**
+         * A non-existent resource: one that does not
+         * exist at a given IRI.
+         */
+        MISSING_RESOURCE {
+            @Override
+            public IRI getIdentifier() {
+                return null;
+            }
+
+            @Override
+            public IRI getInteractionModel() {
+                return null;
+            }
+
+            @Override
+            public Instant getModified() {
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "A non-existent resource";
+            }
+        },
+
+        /**
+         * A resource that previously existed but which
+         * no longer exists.
+         */
+        DELETED_RESOURCE {
+            @Override
+            public IRI getIdentifier() {
+                return null;
+            }
+
+            @Override
+            public IRI getInteractionModel() {
+                return null;
+            }
+
+            @Override
+            public Instant getModified() {
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "A deleted resource";
+            }
+        }
+    }
+
     /**
      * Get an identifier for this resource.
      *
@@ -106,7 +160,9 @@ public interface Resource {
      *
      * @return the RDF quads
      */
-    Stream<? extends Quad> stream();
+    default Stream<? extends Quad> stream() {
+        return Stream.empty();
+    }
 
     /**
      * Retrieve the RDF Quads for a resource.
