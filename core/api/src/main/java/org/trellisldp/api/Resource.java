@@ -79,12 +79,12 @@ public interface Resource {
             }
 
             @Override
-            public IRI getInteractionModel() {
+            public Instant getModified() {
                 return null;
             }
 
             @Override
-            public Instant getModified() {
+            public IRI getInteractionModel() {
                 return null;
             }
 
