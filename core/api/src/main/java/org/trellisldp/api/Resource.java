@@ -36,6 +36,70 @@ import org.apache.commons.rdf.api.Triple;
  */
 public interface Resource {
 
+    enum SpecialResources implements Resource {
+        /**
+         * A non-existent resource: one that does not
+         * exist at a given IRI.
+         */
+        MISSING_RESOURCE {
+            @Override
+            public IRI getIdentifier() {
+                return null;
+            }
+
+            @Override
+            public IRI getInteractionModel() {
+                return null;
+            }
+
+            @Override
+            public Instant getModified() {
+                return null;
+            }
+
+            @Override
+            public Stream<? extends Quad> stream() {
+                return Stream.empty();
+            }
+
+            @Override
+            public String toString() {
+                return "A non-existent resource";
+            }
+        },
+
+        /**
+         * A resource that previously existed but which
+         * no longer exists.
+         */
+        DELETED_RESOURCE {
+            @Override
+            public IRI getIdentifier() {
+                return null;
+            }
+
+            @Override
+            public IRI getInteractionModel() {
+                return null;
+            }
+
+            @Override
+            public Instant getModified() {
+                return null;
+            }
+
+            @Override
+            public Stream<? extends Quad> stream() {
+                return Stream.empty();
+            }
+
+            @Override
+            public String toString() {
+                return "A deleted resource";
+            }
+        }
+    }
+
     /**
      * Get an identifier for this resource.
      *
@@ -49,6 +113,13 @@ public interface Resource {
      * @return the interaction model
      */
     IRI getInteractionModel();
+
+    /**
+     * Get the last modified date.
+     *
+     * @return the last-modified date
+     */
+    Instant getModified();
 
     /**
      * Retrieve the membership resource if this is an LDP Direct or Indirect container.
@@ -158,18 +229,13 @@ public interface Resource {
     }
 
     /**
-     * Get the last modified date.
-     *
-     * @return the last-modified date
-     */
-    Instant getModified();
-
-    /**
      * Test whether this resource has an ACL resource.
      *
      * @return true if this resource has and ACL resource; false otherwise
      */
-    Boolean hasAcl();
+    default Boolean hasAcl() {
+        return false;
+    }
 
     /**
      * Get any extra implementation-defined link relations for this resource.
