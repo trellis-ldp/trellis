@@ -55,6 +55,7 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).getMemberRelation();
         doCallRealMethod().when(mockResource).getMemberOfRelation();
         doCallRealMethod().when(mockResource).getInsertedContentRelation();
+        doCallRealMethod().when(mockResource).stream();
         doCallRealMethod().when(mockResource).stream(any(IRI.class));
         doCallRealMethod().when(mockResource).stream(anyCollection());
         doCallRealMethod().when(mockResource).getBinary();
