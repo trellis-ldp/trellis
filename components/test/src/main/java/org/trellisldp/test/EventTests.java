@@ -283,7 +283,6 @@ public interface EventTests extends CommonTests {
     default void testReceiveCreateMessageDC() {
         final String resource;
         final RDF rdf = getInstance();
-        final String parent = getDirectContainerLocation();
         final String agent = "http://example.com/pat#i";
         final String jwt1 = buildJwt(agent, getJwtSecret());
 
@@ -392,7 +391,6 @@ public interface EventTests extends CommonTests {
     default void testReceiveCreateMessageIC() {
         final String resource;
         final RDF rdf = getInstance();
-        final String parent = getIndirectContainerLocation();
         final String agent = "http://example.com/sam#i";
         final String jwt1 = buildJwt(agent, getJwtSecret());
         final String childContent = getResourceAsString("/childResource.ttl");

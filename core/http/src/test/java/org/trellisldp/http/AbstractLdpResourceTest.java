@@ -161,8 +161,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     private static final IRI agent = rdf.createIRI("user:agent");
 
-    private static final String UPLOAD_SESSION_ID = "upload-session-id";
-
     private static final BlankNode bnode = rdf.createBlankNode();
 
     private static final String BINARY_MIME_TYPE = "text/plain";

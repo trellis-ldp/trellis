@@ -15,7 +15,6 @@ package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.synchronizedList;
 import static java.util.Collections.unmodifiableSet;

@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -55,9 +54,6 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
     @Mock
     private Request mockRequest;
-
-    @Mock
-    private ContainerResponseContext mockResponseContext;
 
     @Override
     protected String getBaseUrl() {
