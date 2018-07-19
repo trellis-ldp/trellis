@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
@@ -88,7 +87,7 @@ public class JoiningResourceServiceTest {
                     implements ImmutableDataService<Resource> {
 
         @Override
-        public Future<Boolean> add(final IRI identifier, final Session session, final Dataset dataset) {
+        public CompletableFuture<Boolean> add(final IRI identifier, final Session session, final Dataset dataset) {
             resources.compute(identifier, (id, old) -> {
                 final TestResource newRes = new TestResource(id, dataset);
                 return old == null ? newRes : new RetrievableResource(old, newRes);
@@ -101,21 +100,21 @@ public class JoiningResourceServiceTest {
                     implements MutableDataService<Resource> {
 
         @Override
-        public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
-                        final IRI container, final Binary binary) {
+        public CompletableFuture<Boolean> create(final IRI id, final Session session, final IRI ixnModel,
+                final Dataset dataset, final IRI container, final Binary binary) {
             resources.put(id, new TestResource(id, dataset));
             return isntBadId(id);
         }
 
         @Override
-        public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
-                        final IRI container, final Binary binary) {
+        public CompletableFuture<Boolean> replace(final IRI id, final Session session, final IRI ixnModel,
+                final Dataset dataset, final IRI container, final Binary binary) {
             resources.replace(id, new TestResource(id, dataset));
             return isntBadId(id);
         }
 
         @Override
-        public Future<Boolean> delete(final IRI identifier, final Session session, final IRI ixnModel,
+        public CompletableFuture<Boolean> delete(final IRI identifier, final Session session, final IRI ixnModel,
                         final Dataset dataset) {
             resources.remove(identifier);
             return isntBadId(identifier);

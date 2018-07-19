@@ -54,7 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -144,15 +144,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
-                    final IRI container, final Binary binary) {
+    public CompletableFuture<Boolean> create(final IRI id, final Session session, final IRI ixnModel,
+            final Dataset dataset, final IRI container, final Binary binary) {
         LOGGER.debug("Creating: {}", id);
         return supplyAsync(() ->
                 createOrReplace(id, session, ixnModel, dataset, OperationType.CREATE, container, binary));
     }
 
     @Override
-    public Future<Boolean> delete(final IRI identifier, final Session session, final IRI ixnModel,
+    public CompletableFuture<Boolean> delete(final IRI identifier, final Session session, final IRI ixnModel,
             final Dataset dataset) {
         LOGGER.debug("Deleting: {}", identifier);
         return supplyAsync(() -> {
@@ -164,8 +164,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset,
-                    final IRI container, final Binary binary) {
+    public CompletableFuture<Boolean> replace(final IRI id, final Session session, final IRI ixnModel,
+            final Dataset dataset, final IRI container, final Binary binary) {
         LOGGER.debug("Updating: {}", id);
         return supplyAsync(() ->
                 createOrReplace(id, session, ixnModel, dataset, OperationType.REPLACE, container, binary));
@@ -644,7 +644,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Future<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
+    public CompletableFuture<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
         return supplyAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
             try (final Dataset data = rdf.createDataset()) {

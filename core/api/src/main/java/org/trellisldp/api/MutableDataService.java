@@ -14,7 +14,7 @@
 
 package org.trellisldp.api;
 
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -38,7 +38,7 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
      * @return whether the resource was added
      */
-    Future<Boolean> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
+    CompletableFuture<Boolean> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
             Binary binary);
 
     /**
@@ -52,7 +52,7 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
      * @return whether the resource was replaced
      */
-    Future<Boolean> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
+    CompletableFuture<Boolean> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
             Binary binary);
 
     /**
@@ -64,6 +64,6 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param dataset the dataset
      * @return whether the resource was deleted
      */
-    Future<Boolean> delete(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
+    CompletableFuture<Boolean> delete(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
 
 }

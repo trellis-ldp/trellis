@@ -41,7 +41,7 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.time.Instant;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -107,7 +107,7 @@ public class DeleteHandlerTest {
     private LdpRequest mockLdpRequest;
 
     @Mock
-    private Future<Boolean> mockFuture;
+    private CompletableFuture<Boolean> mockFuture;
 
     @BeforeEach
     public void setUp() {

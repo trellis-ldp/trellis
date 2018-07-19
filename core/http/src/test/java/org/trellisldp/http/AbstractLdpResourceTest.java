@@ -98,8 +98,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -226,7 +226,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     private InputStream mockInputStream;
 
     @Mock
-    private Future<Boolean> mockFuture;
+    private CompletableFuture<Boolean> mockFuture;
 
     @BeforeAll
     public void before() throws Exception {

@@ -14,7 +14,7 @@
 
 package org.trellisldp.api;
 
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -36,6 +36,6 @@ public interface ImmutableDataService<T> extends RetrievalService<T> {
      * @param dataset a dataset to persist
      * @return whether the resource was successfully persisted
      */
-    Future<Boolean> add(IRI identifier, Session session, Dataset dataset);
+    CompletableFuture<Boolean> add(IRI identifier, Session session, Dataset dataset);
 
 }

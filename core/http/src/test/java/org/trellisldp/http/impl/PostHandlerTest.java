@@ -49,7 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -123,7 +123,7 @@ public class PostHandlerTest {
     private LdpRequest mockRequest;
 
     @Mock
-    private Future<Boolean> mockFuture;
+    private CompletableFuture<Boolean> mockFuture;
 
     @Mock
     private SecurityContext mockSecurityContext;
