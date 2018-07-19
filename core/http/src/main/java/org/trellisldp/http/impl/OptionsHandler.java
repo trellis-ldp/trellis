@@ -79,9 +79,6 @@ public class OptionsHandler extends BaseLdpHandler {
 
         final IRI graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
 
-        // Check if this is already deleted
-        checkDeleted(res, identifier);
-
         final ResponseBuilder builder = status(NO_CONTENT);
 
         ldpResourceTypes(res.getInteractionModel()).forEach(type -> builder.link(type.getIRIString(), "type"));

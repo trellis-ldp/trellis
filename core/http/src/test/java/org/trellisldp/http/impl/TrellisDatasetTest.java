@@ -19,12 +19,11 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
 
-import javax.ws.rs.WebApplicationException;
-
 import org.apache.commons.rdf.api.Dataset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
@@ -42,7 +41,7 @@ public class TrellisDatasetTest {
 
     @Test
     public void testCloseDatasetError() {
-        assertThrows(WebApplicationException.class, () -> {
+        assertThrows(RuntimeTrellisException.class, () -> {
             try (final TrellisDataset dataset = new TrellisDataset(mockDataset)) {
                 // nothing here
             }

@@ -40,7 +40,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
@@ -215,7 +214,7 @@ public final class RdfUtils {
      * @param ioService the I/O service
      * @param acceptableTypes the types from HTTP headers
      * @param mimeType an additional "default" mimeType to match
-     * @return an RDFSyntax
+     * @return an RDFSyntax or null if there was an error
      */
     public static Optional<RDFSyntax> getSyntax(final IOService ioService, final List<MediaType> acceptableTypes,
             final Optional<String> mimeType) {
@@ -238,7 +237,7 @@ public final class RdfUtils {
             }
         }
         LOGGER.debug("Valid syntax not found among {} or {}", acceptableTypes, mimeType);
-        throw new NotAcceptableException();
+        return null;
     }
 
     /**

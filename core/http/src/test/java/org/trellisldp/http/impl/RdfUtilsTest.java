@@ -24,7 +24,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +37,6 @@ import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.util.List;
 
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNode;
@@ -108,7 +106,7 @@ public class RdfUtilsTest {
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"));
 
-        assertThrows(NotAcceptableException.class, () -> RdfUtils.getSyntax(ioService, types, empty()));
+        assertNull(RdfUtils.getSyntax(ioService, types, empty()));
     }
 
     @Test

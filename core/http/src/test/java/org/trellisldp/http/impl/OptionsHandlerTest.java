@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -43,7 +42,6 @@ import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -204,14 +202,5 @@ public class OptionsHandlerTest {
         assertFalse(allow.contains(DELETE));
         assertFalse(allow.contains(PATCH));
         assertFalse(allow.contains(POST));
-    }
-
-    @Test
-    public void testOptionsDeleted() {
-        when(mockResource.isDeleted()).thenReturn(true);
-
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, baseUrl);
-
-        assertThrows(WebApplicationException.class, () -> optionsHandler.ldpOptions(mockResource));
     }
 }

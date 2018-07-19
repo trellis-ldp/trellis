@@ -13,8 +13,11 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.util.Date.from;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
@@ -29,7 +32,6 @@ import java.security.Principal;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -77,15 +79,18 @@ public class DeleteHandler extends BaseLdpHandler {
             .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
-        // Check if this is already deleted
-        checkDeleted(res, identifier);
-
         // Check the cache
         final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), null));
-        checkCache(req.getRequest(), res.getModified(), etag);
+        final ResponseBuilder cache = req.getRequest().evaluatePreconditions(from(res.getModified()), etag);
+        if (nonNull(cache)) {
+            return cache;
+        }
 
         // Check that the persistence layer supports LDP-R
-        checkInteractionModel(LDP.Resource);
+        final ResponseBuilder model = checkInteractionModel(LDP.Resource);
+        if (nonNull(model)) {
+            return model;
+        }
 
         LOGGER.debug("Deleting {}", identifier);
 
@@ -119,8 +124,7 @@ public class DeleteHandler extends BaseLdpHandler {
                             LOGGER.error("Unable to delete ACL resource at {}", resId);
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                            throw new BadRequestException("Unable to write audit information. "
-                                    + "Please consult the logs for more information.");
+                            return status(BAD_REQUEST);
                         }
                     }
                     return status(NO_CONTENT);
@@ -139,17 +143,15 @@ public class DeleteHandler extends BaseLdpHandler {
                             LOGGER.error("Unable to delete resource at {}", resId);
                             LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                            throw new BadRequestException("Unable to write audit information. Please consult the logs "
-                                    + "for more information.");
+                            return status(BAD_REQUEST);
                         }
                     }
                     return status(NO_CONTENT);
                 }
             }
 
-            throw new BadRequestException("Unable to save resource to persistence layer. Please consult the logs for "
-                    + "more information.");
-
+            LOGGER.error("Unable to save resource {} to persistence layer!", resId);
+            return status(BAD_REQUEST);
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error deleting resource", ex);
         }

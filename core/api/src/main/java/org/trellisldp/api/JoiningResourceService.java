@@ -15,9 +15,9 @@
 package org.trellisldp.api;
 
 import static java.util.stream.Stream.concat;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -50,14 +50,18 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public Optional<? extends Resource> get(final IRI identifier) {
-        final Optional<Resource> mutableFirst = mutableData.get(identifier).map(mutable -> {
-            // perhaps only some resources possess immutable metadata
-            final Optional<? extends Resource> immutable = immutableData.get(identifier);
-            return immutable.isPresent() ? new RetrievableResource(mutable, immutable.get()) : mutable;
+    public CompletableFuture<? extends Resource> get(final IRI identifier) {
+        return mutableData.get(identifier).thenCombine(immutableData.get(identifier), (mutable, immutable) -> {
+            if (MISSING_RESOURCE.equals(mutable) && MISSING_RESOURCE.equals(immutable)) {
+                return MISSING_RESOURCE;
+            } else if (MISSING_RESOURCE.equals(mutable)) {
+                return immutable;
+            } else if (MISSING_RESOURCE.equals(immutable)) {
+                return mutable;
+            } else {
+                return new RetrievableResource(mutable, immutable);
+            }
         });
-        // fall through to immutable-only data
-        return mutableFirst.isPresent() ? mutableFirst : immutableData.get(identifier);
     }
 
     @Override

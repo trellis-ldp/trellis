@@ -52,6 +52,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     /**
      * Get the Trellis {@link ServiceBundler}. This object collects the various
      * Trellis services used in an application.
+     * @return the ServiceBundler
      */
     protected abstract ServiceBundler getServiceBundler();
 

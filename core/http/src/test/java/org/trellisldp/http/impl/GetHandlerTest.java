@@ -35,6 +35,8 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
+import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
+import static javax.ws.rs.core.Response.Status.NOT_MODIFIED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.notModified;
@@ -47,7 +49,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -82,8 +83,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
@@ -281,7 +280,7 @@ public class GetHandlerTest {
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertThrows(WebApplicationException.class, () -> getHandler.getRepresentation(mockResource));
+        assertEquals(NOT_MODIFIED, getHandler.getRepresentation(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -294,7 +293,7 @@ public class GetHandlerTest {
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertThrows(WebApplicationException.class, () -> getHandler.getRepresentation(mockResource));
+        assertEquals(NOT_MODIFIED, getHandler.getRepresentation(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -324,7 +323,7 @@ public class GetHandlerTest {
 
         final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertThrows(NotAcceptableException.class, () -> getHandler.getRepresentation(mockResource));
+        assertEquals(NOT_ACCEPTABLE, getHandler.getRepresentation(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -526,15 +525,6 @@ public class GetHandlerTest {
         assertFalse(allow.contains(DELETE));
         assertTrue(allow.contains(PATCH));
         assertFalse(allow.contains(POST));
-    }
-
-    @Test
-    public void testGetDeleted() {
-        when(mockResource.isDeleted()).thenReturn(true);
-
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
-
-        assertThrows(WebApplicationException.class, () -> getHandler.getRepresentation(mockResource));
     }
 
     private static Predicate<Link> hasLink(final IRI iri, final String rel) {

@@ -18,13 +18,12 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.util.Optional;
 
-import javax.ws.rs.WebApplicationException;
-
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.slf4j.Logger;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
@@ -50,7 +49,7 @@ public class TrellisDataset implements AutoCloseable {
             dataset.close();
         } catch (final Exception ex) {
             LOGGER.error("Error closing graph: {}", ex.getMessage());
-            throw new WebApplicationException("Error closing dataset", ex);
+            throw new RuntimeTrellisException("Error closing dataset", ex);
         }
     }
 

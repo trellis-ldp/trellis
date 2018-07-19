@@ -16,6 +16,7 @@ package org.trellisldp.triplestore;
 import static java.time.Instant.now;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
@@ -34,6 +35,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
 import java.util.concurrent.ExecutionException;
@@ -114,7 +117,7 @@ public class TriplestoreResourceServiceTest {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
-        assertFalse(svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).isPresent());
+        assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).join());
     }
 
     @Test
@@ -143,8 +146,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
+        svc.get(root).thenAccept(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
@@ -153,7 +155,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(7L, res.stream().count());
-        });
+        }).join();
     }
 
     @Test
@@ -166,8 +168,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
+        svc.get(root).thenAccept(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertEquals(early, res.getModified());
@@ -177,7 +178,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(0L, res.stream(Trellis.PreferAudit).count());
             assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(2L, res.stream().count());
-        });
+        }).join();
     }
 
     @Test
@@ -187,8 +188,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
+        svc.get(root).thenAccept(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertFalse(res.getModified().isBefore(early));
@@ -197,12 +197,12 @@ public class TriplestoreResourceServiceTest {
             assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(7L, res.stream().count());
-        });
+        }).join();
 
         final Dataset data = rdf.createDataset();
-        svc.get(root).ifPresent(res ->
+        svc.get(root).thenAccept(res ->
                 res.stream().filter(q -> !q.getGraphName().filter(Trellis.PreferServerManaged::equals).isPresent())
-                            .forEach(data::add));
+                            .forEach(data::add)).join();
         data.add(Trellis.PreferUserManaged, root, RDFS.label, rdf.createLiteral("Resource Label"));
         data.add(Trellis.PreferUserManaged, root, RDFS.seeAlso, rdf.createIRI("http://example.com"));
         data.add(Trellis.PreferUserManaged, root, LDP.inbox, rdf.createIRI("http://ldn.example.com/"));
@@ -212,8 +212,7 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.replace(root, mockSession, LDP.BasicContainer, data, null, null).get());
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
+        svc.get(root).thenAccept(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
             assertFalse(res.getModified().isBefore(later));
@@ -224,7 +223,7 @@ public class TriplestoreResourceServiceTest {
             assertEquals(1L, res.stream(Trellis.PreferAudit).count());
             assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
             assertEquals(12L, res.stream().count());
-        });
+        }).join();
     }
 
 
@@ -272,25 +271,24 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(1L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(6L, res.stream().count());
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(1L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(6L, res.stream().count());
+            }),
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
     }
 
     @Test
@@ -309,25 +307,25 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
     }
 
     @Test
@@ -348,30 +346,30 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.NonRDFSource, dataset, root, binary).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.NonRDFSource, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertTrue(res.getBinary().isPresent());
-            res.getBinary().ifPresent(b -> {
-                assertEquals(binaryIdentifier, b.getIdentifier());
-                assertEquals(of("text/plain"), b.getMimeType());
-                assertEquals(of(10L), b.getSize());
-                assertEquals(binaryTime, b.getModified());
-            });
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(9L, res.stream().count());
-        });
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.NonRDFSource, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertTrue(res.getBinary().isPresent());
+                res.getBinary().ifPresent(b -> {
+                    assertEquals(binaryIdentifier, b.getIdentifier());
+                    assertEquals(of("text/plain"), b.getMimeType());
+                    assertEquals(of(10L), b.getSize());
+                    assertEquals(binaryTime, b.getModified());
+                });
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(9L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
+
         verify(mockEventService, times(2)).emit(any());
 
         final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
@@ -382,32 +380,30 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(resource2, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(resource2, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
+        allOf(
+            svc.get(resource2).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(resource2, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater));
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-        });
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater));
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            }),
 
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-        });
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+            })).join();
 
         verify(mockEventService, times(3)).emit(any());
     }
@@ -427,29 +423,28 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.Container, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.Container, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+                assertFalse(res.getModified().isBefore(later));
+            }),
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -462,33 +457,32 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater));
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater));
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
 
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -501,34 +495,30 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(2L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(7L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater2));
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater2));
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(2L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(7L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater2));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater2));
+            })).join();
 
         verify(mockEventService, times(5)).emit(any());
     }
@@ -550,29 +540,27 @@ public class TriplestoreResourceServiceTest {
 
         assertTrue(svc.create(resource, mockSession, LDP.Container, dataset1, root, null).get());
         assertTrue(svc.add(resource, mockSession, dataset2).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.Container, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-            assertFalse(res.getModified().isBefore(later));
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.Container, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+                assertFalse(res.getModified().isBefore(later));
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
     }
@@ -592,32 +580,30 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.Container, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
 
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.Container, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -630,33 +616,31 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater));
-        });
 
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(evenLater));
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(evenLater));
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -672,30 +656,24 @@ public class TriplestoreResourceServiceTest {
         final Instant preDelete = meanwhile();
 
         assertTrue(svc.delete(child, mockSession, LDP.Resource, dataset).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertTrue(res.isDeleted());
-            assertEquals(child, res.getIdentifier());
-            assertEquals(LDP.Resource, res.getInteractionModel());
-            assertFalse(res.getModified().isBefore(preDelete));
-        });
 
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(preDelete));
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(DELETED_RESOURCE, res);
+            }),
 
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(preDelete));
-        });
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(preDelete));
+            }),
 
-        // TODO -- verify that this is correct (should it be 6?)
-        // yes it should --ajs6f
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(preDelete));
+            })).join();
+
         verify(mockEventService, times(6)).emit(any());
     }
 
@@ -714,32 +692,30 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.BasicContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.BasicContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
 
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.BasicContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -752,33 +728,30 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater));
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(evenLater));
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(evenLater));
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -791,33 +764,30 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(2L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(7L, res.stream().count());
-        });
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater));
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater2));
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(2L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(7L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater2));
+            })).join();
 
         verify(mockEventService, times(5)).emit(any());
     }
@@ -839,29 +809,27 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.DirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.DirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(11L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -874,40 +842,36 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater2));
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(DC.relation)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater2));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(DC.relation)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
     }
@@ -930,29 +894,27 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.DirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(later));
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.DirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(11L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(later));
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -964,34 +926,31 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(members, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-        });
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertFalse(res.getModified().isBefore(evenLater));
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater));
-        });
+        allOf(
+            svc.get(members).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(members, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertFalse(res.getModified().isBefore(evenLater));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater));
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -1004,47 +963,41 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.getModified().isBefore(evenLater2));
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(DC.relation)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.getModified().isBefore(evenLater2));
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(DC.relation)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(7)).emit(any());
     }
@@ -1067,29 +1020,27 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.DirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(later));
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.DirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(11L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(later));
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -1103,29 +1054,27 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertEquals(LDP.DirectContainer, res.getInteractionModel());
-            assertEquals(resource2, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource2).thenAccept(res -> {
+                assertEquals(LDP.DirectContainer, res.getInteractionModel());
+                assertEquals(resource2, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(11L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -1137,42 +1086,36 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(members, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(members).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(members, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource2).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(6)).emit(any());
 
@@ -1185,47 +1128,41 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater3 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater3));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(DC.relation)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater3));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(DC.relation)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(9)).emit(any());
 
@@ -1238,47 +1175,41 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater4 = meanwhile();
 
         assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).get());
-        assertTrue(svc.get(child2).isPresent());
-        svc.get(child2).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child2, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater4));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child2)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(2L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(DC.subject)
-                        && t.getObject().equals(child2)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child2).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child2, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater4));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource2).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child2)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(2L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(DC.subject)
+                            && t.getObject().equals(child2)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(12)).emit(any());
     }
@@ -1301,30 +1232,28 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.DirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(of(DC.relation), res.getMemberOfRelation());
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(later));
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.DirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(of(DC.relation), res.getMemberOfRelation());
+                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(11L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(later));
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -1338,29 +1267,27 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertEquals(LDP.DirectContainer, res.getInteractionModel());
-            assertEquals(resource2, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(11L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource2).thenAccept(res -> {
+                assertEquals(LDP.DirectContainer, res.getInteractionModel());
+                assertEquals(resource2, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(11L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -1372,42 +1299,36 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(members, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(members).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(members, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource2).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(6)).emit(any());
 
@@ -1420,45 +1341,39 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater3 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertEquals(6L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater3));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater3));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertEquals(6L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater3));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater3));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(8)).emit(any());
 
@@ -1471,45 +1386,39 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater4 = meanwhile();
 
         assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).get());
-        assertTrue(svc.get(child2).isPresent());
-        svc.get(child2).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child2, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertEquals(6L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater4));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child2)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater4));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(child2).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child2, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertEquals(6L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater4));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource2).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child2)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater4));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(10)).emit(any());
     }
@@ -1533,28 +1442,26 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(12L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(12L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -1566,35 +1473,31 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(members, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(members).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(members, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -1608,47 +1511,41 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                        && t.getObject().equals(label)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
+                            && t.getObject().equals(label)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(7)).emit(any());
     }
@@ -1672,28 +1569,26 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(12L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(12L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -1705,35 +1600,31 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(members, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(members).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(members, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -1747,47 +1638,41 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(7)).emit(any());
     }
@@ -1811,29 +1696,27 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(12L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(later));
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(12L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(later));
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -1845,35 +1728,31 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(members, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(members).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(members, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -1889,50 +1768,44 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(6L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(2L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                        && t.getObject().equals(label2)).findFirst().isPresent());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                        && t.getObject().equals(label1)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(6L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(2L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
+                            && t.getObject().equals(label2)).findFirst().isPresent());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
+                            && t.getObject().equals(label1)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(7)).emit(any());
     }
@@ -1956,29 +1829,27 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-            assertEquals(resource, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(12L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(later));
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource).thenAccept(res -> {
+                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
+                assertEquals(resource, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(later));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(12L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(later));
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
@@ -1993,29 +1864,27 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(resource2, mockSession, LDP.IndirectContainer, dataset, root, null).get());
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-            assertEquals(resource2, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(12L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater));
-            assertEquals(2L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(resource2).thenAccept(res -> {
+                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
+                assertEquals(resource2, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(12L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater));
+                assertEquals(2L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -2027,42 +1896,36 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(members, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater2));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater2));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
+        allOf(
+            svc.get(members).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(members, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater2));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource2).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater2));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            })).join();
 
         verify(mockEventService, times(6)).emit(any());
 
@@ -2076,47 +1939,41 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater3 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
-        assertTrue(svc.get(child).isPresent());
-        svc.get(child).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater3));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater3));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(1L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                        && t.getObject().equals(label)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater3));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater3));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(1L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
+                            && t.getObject().equals(label)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(9)).emit(any());
 
@@ -2130,60 +1987,52 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater4 = meanwhile();
 
         assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).get());
-        assertTrue(svc.get(child2).isPresent());
-        svc.get(child2).ifPresent(res -> {
-            assertEquals(LDP.RDFSource, res.getInteractionModel());
-            assertEquals(child2, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(5L, res.stream().count());
-        });
-
-        assertTrue(svc.get(root).isPresent());
-        svc.get(root).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater4));
-            assertEquals(3L, res.stream(LDP.PreferContainment).count());
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-        });
-
-        assertTrue(svc.get(resource).isPresent());
-        svc.get(resource).ifPresent(res -> {
-            assertTrue(res.getModified().isBefore(evenLater4));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(resource2).isPresent());
-        svc.get(resource2).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertEquals(0L, res.stream(LDP.PreferMembership).count());
-            assertEquals(1L, res.stream(LDP.PreferContainment).count());
-            assertTrue(res.stream(LDP.PreferContainment).filter(t ->
-                        t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
-                        && t.getObject().equals(child2)).findFirst().isPresent());
-        });
-
-        assertTrue(svc.get(members).isPresent());
-        svc.get(members).ifPresent(res -> {
-            assertFalse(res.getModified().isBefore(evenLater4));
-            assertEquals(0L, res.stream(LDP.PreferContainment).count());
-            assertEquals(2L, res.stream(LDP.PreferMembership).count());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                        && t.getObject().equals(label)).findFirst().isPresent());
-            assertTrue(res.stream(LDP.PreferMembership).filter(t ->
-                        t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                        && t.getObject().equals(label2)).findFirst().isPresent());
-        });
+        allOf(
+            svc.get(child2).thenAccept(res -> {
+                assertEquals(LDP.RDFSource, res.getInteractionModel());
+                assertEquals(child2, res.getIdentifier());
+                assertFalse(res.getModified().isBefore(early));
+                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertFalse(res.getBinary().isPresent());
+                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
+                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
+                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
+                assertEquals(5L, res.stream().count());
+            }),
+            svc.get(root).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater4));
+                assertEquals(3L, res.stream(LDP.PreferContainment).count());
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+            }),
+            svc.get(resource).thenAccept(res -> {
+                assertTrue(res.getModified().isBefore(evenLater4));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child)).findFirst().isPresent());
+            }),
+            svc.get(resource2).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                            t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
+                            && t.getObject().equals(child2)).findFirst().isPresent());
+            }),
+            svc.get(members).thenAccept(res -> {
+                assertFalse(res.getModified().isBefore(evenLater4));
+                assertEquals(0L, res.stream(LDP.PreferContainment).count());
+                assertEquals(2L, res.stream(LDP.PreferMembership).count());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
+                            && t.getObject().equals(label)).findFirst().isPresent());
+                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
+                            && t.getObject().equals(label2)).findFirst().isPresent());
+            })).join();
 
         verify(mockEventService, times(12)).emit(any());
     }

@@ -63,6 +63,8 @@ import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
@@ -96,7 +98,6 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -121,8 +122,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
@@ -177,12 +176,14 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     private static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
     private static final String DELETED_PATH = REPO1 + "/deleted";
     private static final String USER_DELETED_PATH = REPO1 + "/userdeleted";
+    private static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
 
     private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
     private static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
     private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
+    private static final IRI newresourceIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE);
     private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
     private static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
     private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
@@ -240,11 +241,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         return BASE_URL;
     }
 
-    private static OngoingStubbing<Optional<? extends Resource>> whenResource(
-                    final Optional<? extends Resource> methodCall) {
-        return Mockito.<Optional<? extends Resource>>when(methodCall);
-    }
-
     @BeforeEach
     public void setUpMocks() {
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
@@ -253,28 +249,29 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
         when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
-        whenResource(mockMementoService.get(any(IRI.class), any(Instant.class)))
-            .thenReturn(of(mockVersionedResource));
-        whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
-        whenResource(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
-            .thenReturn(of(mockResource));
-        whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
-        when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
+        when(mockMementoService.get(any(IRI.class), any(Instant.class)))
+            .thenAnswer(inv -> of(mockVersionedResource));
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
+            .thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
-        whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
-        whenResource(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
+        when(mockResourceService.get(eq(newresourceIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(eq(binaryIdentifier))).thenAnswer(inv -> completedFuture(mockBinaryResource));
+        when(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(of(mockBinaryVersionedResource));
-        when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
+        when(mockResourceService.get(eq(nonexistentIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());
-        whenResource(mockResourceService.get(eq(deletedIdentifier))).thenReturn(of(mockDeletedResource));
-        whenResource(mockMementoService.get(eq(deletedIdentifier), any(Instant.class)))
+        when(mockResourceService.get(eq(deletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockMementoService.get(eq(deletedIdentifier), any(Instant.class)))
             .thenReturn(of(mockDeletedResource));
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
-        whenResource(mockResourceService.get(eq(userDeletedIdentifier))).thenReturn(of(mockUserDeletedResource));
-        whenResource(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
-            .thenReturn(of(mockUserDeletedResource));
+        when(mockResourceService.get(eq(userDeletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
+            .thenAnswer(inv -> of(mockUserDeletedResource));
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
@@ -1634,7 +1631,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testGetLdpResource() {
         when(mockDeletedResource.isDeleted()).thenReturn(false);
-        final Response res = target(DELETED_PATH).request().get();
+        final Response res = target(RESOURCE_PATH).request().get();
 
         assertEquals(OK, res.getStatusInfo());
     }
@@ -1996,6 +1993,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostRoot() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
             .thenReturn(empty());
 
@@ -2029,7 +2028,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostTypeMismatch() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
@@ -2042,7 +2041,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostConflict() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenAnswer(inv -> of(mockResource));
+            .thenAnswer(inv -> completedFuture(mockResource));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
@@ -2055,7 +2054,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostUnknownLinkType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
@@ -2072,7 +2071,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBadContent() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> A title\" .", TEXT_TURTLE_TYPE));
@@ -2083,7 +2082,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostToLdpRs() {
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-                .thenReturn(empty());
+                .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2161,7 +2160,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostConstraint() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://www.w3.org/ns/ldp#inbox> \"Some literal\" .",
@@ -2176,7 +2175,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostIgnoreContains() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
@@ -2422,8 +2421,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutNew() {
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test")), eq(MAX)))
-            .thenReturn(empty());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH + "/test").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2663,8 +2663,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testDeleteNonExistant() {
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test")), eq(MAX)))
-            .thenReturn(empty());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH + "/test").request().delete();
 
@@ -2840,8 +2841,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPatchNew() {
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test")), eq(MAX)))
-            .thenReturn(empty());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH + "/test").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2966,15 +2968,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOtherMethod() {
         final Response res = target(RESOURCE_PATH).request().method("FOO");
         assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
-    }
-
-    /**
-     * An other location
-     */
-    @Test
-    public void testOtherParition() {
-        final Response res = target("other/object").request().get();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
     }
 
     /* ************************************ *

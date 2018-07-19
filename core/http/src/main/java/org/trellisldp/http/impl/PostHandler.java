@@ -22,6 +22,7 @@ import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
@@ -40,7 +41,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -111,10 +111,14 @@ public class PostHandler extends ContentBearingHandler {
             .filter(l -> !LDP.Resource.equals(l)).orElse(defaultType);
 
         // Verify that the persistence layer supports the specified IXN model
-        checkInteractionModel(ldpType);
+        final ResponseBuilder model = checkInteractionModel(ldpType);
+        if (nonNull(model)) {
+            return model;
+        }
 
         if (ldpType.equals(LDP.NonRDFSource) && rdfSyntax.isPresent()) {
-            throw new BadRequestException("Cannot save a NonRDFSource with RDF syntax");
+            LOGGER.error("Cannot save {} as a NonRDFSource with RDF syntax", identifier);
+            return status(BAD_REQUEST);
         }
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
@@ -124,20 +128,34 @@ public class PostHandler extends ContentBearingHandler {
             // Add user-supplied data
             if (ldpType.equals(LDP.NonRDFSource)) {
                 // Check the expected digest value
-                checkForBadDigest(req.getDigest());
+                final ResponseBuilder digestCheck = checkForBadDigest(req.getDigest());
+                if (nonNull(digestCheck)) {
+                    return digestCheck;
+                }
 
                 final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
                 final IRI binaryLocation = rdf.createIRI(trellis.getBinaryService().generateIdentifier());
 
                 // Persist the content
-                persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+                final ResponseBuilder persist = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+                if (nonNull(persist)) {
+                    return persist;
+                }
 
                 binary = new Binary(binaryLocation, now(), mimeType, entity.length());
             } else {
-                readEntityIntoDataset(identifier, baseUrl, PreferUserManaged, rdfSyntax.orElse(TURTLE), dataset);
+                final ResponseBuilder err = readEntityIntoDataset(identifier, baseUrl, PreferUserManaged,
+                        rdfSyntax.orElse(TURTLE), dataset);
+                if (nonNull(err)) {
+                    return err;
+                }
 
                 // Check for any constraints
-                checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
+                final ResponseBuilder constraints = checkConstraint(dataset, PreferUserManaged, ldpType,
+                        rdfSyntax.orElse(TURTLE));
+                if (nonNull(constraints)) {
+                    return constraints;
+                }
 
                 binary = null;
             }
@@ -155,13 +173,16 @@ public class PostHandler extends ContentBearingHandler {
                         LOGGER.error("Unable to act against resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        throw new BadRequestException("Unable to write audit information. Please consult "
-                                + "the logs for more information.");
-                        }
+                        return status(BAD_REQUEST);
+                    }
                 }
 
                 // Add memento data
-                trellis.getResourceService().get(internalId).ifPresent(trellis.getMementoService()::put);
+                trellis.getResourceService().get(internalId).thenAccept(trellis.getMementoService()::put)
+                    .exceptionally(ex -> {
+                        LOGGER.warn("Unable to store memento: {}", ex.getMessage());
+                        return null;
+                    }).join();
 
                 final ResponseBuilder builder = status(CREATED).location(create(identifier));
 
@@ -170,8 +191,7 @@ public class PostHandler extends ContentBearingHandler {
 
                 return builder;
             }
-            throw new BadRequestException("Unable to save resource to persistence layer. Please consult the logs "
-                    + "for more information.");
+            return status(BAD_REQUEST);
 
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error persisting data", ex);

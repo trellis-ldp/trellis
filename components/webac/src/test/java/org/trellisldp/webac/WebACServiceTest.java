@@ -16,6 +16,7 @@ package org.trellisldp.webac;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,10 +24,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -37,8 +38,6 @@ import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;
@@ -109,11 +108,6 @@ public class WebACServiceTest {
 
     private static final IRI groupIRI2 = rdf.createIRI("trellis:data/group/test/");
 
-
-    private static OngoingStubbing<Optional<? extends Resource>> whenResource(
-                    final Optional<? extends Resource> methodCall) {
-        return Mockito.<Optional<? extends Resource>>when(methodCall);
-    }
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -196,14 +190,14 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
 
-        when(mockResourceService.get(eq(nonexistentIRI))).thenReturn(empty());
+        when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.supportedInteractionModels()).thenReturn(allModels);
-        whenResource(mockResourceService.get(eq(resourceIRI))).thenReturn(of(mockResource));
-        whenResource(mockResourceService.get(eq(childIRI))).thenReturn(of(mockChildResource));
-        whenResource(mockResourceService.get(eq(parentIRI))).thenReturn(of(mockParentResource));
-        whenResource(mockResourceService.get(eq(rootIRI))).thenReturn(of(mockRootResource));
-        whenResource(mockResourceService.get(eq(groupIRI))).thenReturn(of(mockGroupResource));
-        whenResource(mockResourceService.get(eq(memberIRI))).thenReturn(of(mockMemberResource));
+        when(mockResourceService.get(eq(resourceIRI))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(childIRI))).thenAnswer(inv -> completedFuture(mockChildResource));
+        when(mockResourceService.get(eq(parentIRI))).thenAnswer(inv -> completedFuture(mockParentResource));
+        when(mockResourceService.get(eq(rootIRI))).thenAnswer(inv -> completedFuture(mockRootResource));
+        when(mockResourceService.get(eq(groupIRI))).thenAnswer(inv -> completedFuture(mockGroupResource));
+        when(mockResourceService.get(eq(memberIRI))).thenAnswer(inv -> completedFuture(mockMemberResource));
         when(mockResourceService.getContainer(nonexistentIRI)).thenReturn(of(resourceIRI));
         when(mockResourceService.getContainer(resourceIRI)).thenReturn(of(childIRI));
         when(mockResourceService.getContainer(childIRI)).thenReturn(of(parentIRI));

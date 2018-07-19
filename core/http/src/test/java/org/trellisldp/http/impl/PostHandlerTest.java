@@ -21,6 +21,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Link.fromUri;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
@@ -28,7 +29,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,8 +53,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -145,6 +143,7 @@ public class PostHandlerTest {
         when(mockBundler.getAgentService()).thenReturn(agentService);
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
+        when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
@@ -199,7 +198,7 @@ public class PostHandlerTest {
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final PostHandler handler = new PostHandler(mockRequest, null, entity, mockBundler, null);
 
-        assertThrows(BadRequestException.class, handler::createResource);
+        assertEquals(BAD_REQUEST, handler.createResource().build().getStatusInfo());
     }
 
     @Test
@@ -289,8 +288,9 @@ public class PostHandlerTest {
         final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
         final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockBundler, null);
 
-        final BadRequestException ex = assertThrows(BadRequestException.class, postHandler::createResource);
-        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+        final Response res = postHandler.createResource().build();
+        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
     }
@@ -388,7 +388,7 @@ public class PostHandlerTest {
 
         final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockBundler, null);
 
-        assertThrows(BadRequestException.class, postHandler::createResource);
+        assertEquals(BAD_REQUEST, postHandler.createResource().build().getStatusInfo());
     }
 
     @Test
@@ -399,7 +399,7 @@ public class PostHandlerTest {
 
         final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockBundler, null);
 
-        assertThrows(BadRequestException.class, postHandler::createResource);
+        assertEquals(BAD_REQUEST, postHandler.createResource().build().getStatusInfo());
     }
 
     @Test
@@ -410,7 +410,7 @@ public class PostHandlerTest {
 
         final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockBundler, null);
 
-        assertThrows(WebApplicationException.class, postHandler::createResource);
+        assertEquals(INTERNAL_SERVER_ERROR, postHandler.createResource().build().getStatusInfo());
     }
 
     @Test
@@ -420,7 +420,7 @@ public class PostHandlerTest {
 
         final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockBundler, baseUrl);
 
-        assertThrows(WebApplicationException.class, postHandler::createResource);
+        assertEquals(INTERNAL_SERVER_ERROR, postHandler.createResource().build().getStatusInfo());
     }
 
     @Test
@@ -432,7 +432,7 @@ public class PostHandlerTest {
         final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
         final PostHandler postHandler = new PostHandler(mockRequest, "newresource", entity, mockBundler, baseUrl);
 
-        assertThrows(BadRequestException.class, postHandler::createResource);
+        assertEquals(BAD_REQUEST, postHandler.createResource().build().getStatusInfo());
     }
 
     @Test

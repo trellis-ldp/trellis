@@ -13,14 +13,19 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.util.Date.from;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
@@ -45,13 +50,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -96,13 +98,8 @@ public class PatchHandler extends BaseLdpHandler {
         this.updateBody = updateBody;
     }
 
-    private List<Triple> updateGraph(final Resource res, final IRI graphName) {
+    private List<Triple> updateGraph(final Resource res, final RDFSyntax syntax, final IRI graphName) {
         final List<Triple> triples;
-        // Get the incoming syntax and check that the underlying I/O service supports it
-        final RDFSyntax syntax = trellis.getIOService().supportedUpdateSyntaxes().stream()
-            .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst()
-            .orElseThrow(() -> new NotSupportedException("Content-Type: " + req.getContentType() + " not supported"));
-
         // Update existing graph
         try (final TrellisGraph graph = TrellisGraph.createGraph()) {
             try (final Stream<? extends Triple> stream = res.stream(graphName)) {
@@ -114,7 +111,7 @@ public class PatchHandler extends BaseLdpHandler {
                     || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         } catch (final RuntimeTrellisException ex) {
             LOGGER.warn("Invalid RDF: {}", ex.getMessage());
-            throw new BadRequestException("Invalid RDF: " + ex.getMessage());
+            return null;
         }
 
         return triples;
@@ -131,29 +128,44 @@ public class PatchHandler extends BaseLdpHandler {
         final String identifier = baseUrl + req.getPath() + (ACL.equals(req.getExt()) ? "?ext=acl" : "");
 
         if (isNull(updateBody)) {
-            throw new BadRequestException("Missing body for update");
+            LOGGER.error("Missing body for update: {}", res.getIdentifier());
+            return status(BAD_REQUEST);
         }
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
             .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
 
-        // Check if this is already deleted
-        checkDeleted(res, identifier);
-
         // Check the cache
         final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), req.getPrefer()));
-        checkCache(req.getRequest(), res.getModified(), etag);
+        final ResponseBuilder cache = req.getRequest().evaluatePreconditions(from(res.getModified()), etag);
+        if (nonNull(cache)) {
+            return cache;
+        }
 
         // Check that the persistence layer supports LDP-RS
-        checkInteractionModel(LDP.RDFSource);
+        final ResponseBuilder model = checkInteractionModel(LDP.RDFSource);
+        if (nonNull(model)) {
+            return model;
+        }
 
         LOGGER.debug("Updating {} via PATCH", identifier);
 
         final IRI graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
         final IRI otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
 
+        // Get the incoming syntax and check that the underlying I/O service supports it
+        final RDFSyntax syntax = trellis.getIOService().supportedUpdateSyntaxes().stream()
+            .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
+        if (isNull(syntax)) {
+            LOGGER.warn("Content-Type: " + req.getContentType() + " not supported");
+            return status(UNSUPPORTED_MEDIA_TYPE);
+        }
+
         // Put triples in buffer
-        final List<Triple> triples = updateGraph(res, graphName);
+        final List<Triple> triples = updateGraph(res, syntax, graphName);
+        if (isNull(triples)) {
+            return status(BAD_REQUEST);
+        }
 
         try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
 
@@ -175,7 +187,7 @@ public class PatchHandler extends BaseLdpHandler {
             if (!violations.isEmpty()) {
                 final ResponseBuilder err = status(CONFLICT);
                 violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
-                throw new WebApplicationException(err.build());
+                return err;
             }
 
             // When updating User or ACL triples, be sure to add the other category to the dataset
@@ -199,41 +211,47 @@ public class PatchHandler extends BaseLdpHandler {
                         LOGGER.error("Unable to update resource at {}", resId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        throw new BadRequestException("Unable to write audit information. "
-                                + "Please consult the logs for more information");
-                        }
+                        return status(BAD_REQUEST);
+                    }
                 }
 
                 // Update the memento
-                trellis.getResourceService().get(res.getIdentifier()).ifPresent(trellis.getMementoService()::put);
+                trellis.getResourceService().get(res.getIdentifier()).thenAccept(trellis.getMementoService()::put)
+                    .exceptionally(ex -> {
+                        LOGGER.warn("Unable to store memento: {}", ex.getMessage());
+                        return null;
+                    }).join();
 
                 final ResponseBuilder builder = ok();
 
                 getLinkTypes(res.getInteractionModel()).forEach(type -> builder.link(type, "type"));
+                final Optional<RDFSyntax> outputSyntax = getSyntax(trellis.getIOService(),
+                                req.getHeaders().getAcceptableMediaTypes(), empty());
+                if (!outputSyntax.isPresent()) {
+                    return status(NOT_ACCEPTABLE);
+                }
+
 
                 return ofNullable(req.getPrefer()).flatMap(Prefer::getPreference).filter(PREFER_REPRESENTATION::equals)
                     .map(prefer -> {
-                        final RDFSyntax outputSyntax = getSyntax(trellis.getIOService(),
-                                req.getHeaders().getAcceptableMediaTypes(), empty())
-                            .orElseThrow(NotAcceptableException::new);
                         final IRI profile = ofNullable(getProfile(req.getHeaders().getAcceptableMediaTypes(),
-                                    outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, identifier));
+                                    outputSyntax.get())).orElseGet(() -> getDefaultProfile(outputSyntax.get(),
+                                    identifier));
 
                         final StreamingOutput stream = new StreamingOutput() {
                             @Override
                             public void write(final OutputStream out) throws IOException {
                                 trellis.getIOService().write(triples.stream()
                                             .map(unskolemizeTriples(trellis.getResourceService(), baseUrl)),
-                                        out, outputSyntax, profile);
+                                        out, outputSyntax.get(), profile);
                             }
                         };
 
                         return builder.header(PREFERENCE_APPLIED, "return=representation")
-                            .type(outputSyntax.mediaType()).entity(stream);
+                            .type(outputSyntax.get().mediaType()).entity(stream);
                     }).orElseGet(() -> builder.status(NO_CONTENT));
             }
-            throw new BadRequestException("Unable to save resource to persistence layer. "
-                    + "Please consult the logs for more information.");
+            return status(BAD_REQUEST);
 
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error persisting data", ex);

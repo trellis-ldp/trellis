@@ -633,7 +633,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public Optional<Resource> get(final IRI identifier) {
+    public CompletableFuture<Resource> get(final IRI identifier) {
         return TriplestoreResource.findResource(rdfConnection, identifier);
     }
 

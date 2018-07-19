@@ -17,6 +17,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
@@ -29,6 +30,8 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
@@ -38,7 +41,7 @@ import com.codahale.metrics.annotation.Timed;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Function;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -56,6 +59,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -236,8 +240,9 @@ public class LdpResource implements ContainerRequestFilter {
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.debug("Getting timemap resource: {}", req.getPath());
             return trellis.getResourceService().get(identifier)
-                .map(res -> new MementoResource(trellis).getTimeMapBuilder(req, urlBase))
-                .orElseGet(() -> status(NOT_FOUND)).build();
+                .thenApply(res -> MISSING_RESOURCE.equals(res)
+                        ? status(NOT_FOUND) : new MementoResource(trellis).getTimeMapBuilder(req, urlBase))
+                .join().build();
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
@@ -249,8 +254,8 @@ public class LdpResource implements ContainerRequestFilter {
 
         // Fetch the current state of the resource
         LOGGER.debug("Getting resource at: {}", identifier);
-        return trellis.getResourceService().get(identifier).map(getHandler::getRepresentation)
-            .orElseGet(() -> status(NOT_FOUND)).build();
+        return trellis.getResourceService().get(identifier)
+            .thenApply(handleSpecialResources(getHandler::getRepresentation)).join().build();
     }
 
     /**
@@ -273,8 +278,9 @@ public class LdpResource implements ContainerRequestFilter {
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 
-        return trellis.getResourceService().get(identifier).map(optionsHandler::ldpOptions)
-            .orElseGet(() -> status(NOT_FOUND)).build();
+        return trellis.getResourceService().get(identifier)
+            .thenApply(handleSpecialResources(optionsHandler::ldpOptions))
+            .join().build();
     }
 
 
@@ -293,8 +299,9 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase);
 
-        return trellis.getResourceService().get(identifier).map(patchHandler::updateResource)
-            .orElseGet(() -> status(NOT_FOUND)).build();
+        return trellis.getResourceService().get(identifier)
+            .thenApply(handleSpecialResources(patchHandler::updateResource))
+            .join().build();
     }
 
     /**
@@ -311,8 +318,9 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, urlBase);
 
-        return trellis.getResourceService().get(identifier).map(deleteHandler::deleteResource)
-            .orElseGet(() -> status(NOT_FOUND)).build();
+        return trellis.getResourceService().get(identifier)
+            .thenApply(handleSpecialResources(deleteHandler::deleteResource))
+            .join().build();
     }
 
     /**
@@ -335,20 +343,19 @@ public class LdpResource implements ContainerRequestFilter {
         final String separator = path.isEmpty() ? "" : "/";
 
         // First check if this is a container
-        final Optional<? extends Resource> parent = trellis.getResourceService()
-            .get(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
-        if (parent.isPresent()) {
-            final Optional<IRI> ixModel = parent.map(Resource::getInteractionModel);
-            if (ixModel.filter(type -> ldpResourceTypes(type).anyMatch(LDP.Container::equals)).isPresent()) {
-                return trellis.getResourceService()
-                    .get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier))
-                    .map(x -> status(CONFLICT)).orElseGet(postHandler::createResource).build();
-            } else if (parent.filter(Resource::isDeleted).isPresent()) {
-                return status(GONE).build();
-            }
-            return status(METHOD_NOT_ALLOWED).build();
-        }
-        return status(NOT_FOUND).build();
+        return trellis.getResourceService().get(rdf.createIRI(TRELLIS_DATA_PREFIX + path))
+            .thenCompose(parent -> {
+                if (DELETED_RESOURCE.equals(parent)) {
+                    return completedFuture(status(GONE));
+                } else if (MISSING_RESOURCE.equals(parent)) {
+                    return completedFuture(status(NOT_FOUND));
+                } else if (ldpResourceTypes(parent.getInteractionModel()).anyMatch(LDP.Container::equals)) {
+                    return trellis.getResourceService()
+                        .get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier))
+                        .thenApply(res -> exists(res) ? status(CONFLICT) : postHandler.createResource());
+                }
+                return completedFuture(status(METHOD_NOT_ALLOWED));
+            }).join().build();
     }
 
     /**
@@ -366,7 +373,24 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);
 
-        return trellis.getResourceService().get(identifier).filter(res -> !res.isDeleted())
-            .map(putHandler::setResource).orElseGet(putHandler::createResource).build();
+        return trellis.getResourceService().get(identifier)
+            .thenApply(res -> exists(res) ? putHandler.setResource(res) : putHandler.createResource())
+            .join().build();
+    }
+
+    private static Function<Resource, ResponseBuilder> handleSpecialResources(
+            final Function<Resource, ResponseBuilder> fn) {
+        return res -> {
+            if (DELETED_RESOURCE.equals(res)) {
+                return status(GONE);
+            } else if (MISSING_RESOURCE.equals(res)) {
+                return status(NOT_FOUND);
+            }
+            return fn.apply(res);
+        };
+    }
+
+    private static Boolean exists(final Resource res) {
+        return !DELETED_RESOURCE.equals(res) && !MISSING_RESOURCE.equals(res);
     }
 }

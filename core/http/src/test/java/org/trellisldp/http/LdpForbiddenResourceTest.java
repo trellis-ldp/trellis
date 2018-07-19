@@ -17,8 +17,8 @@ import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
@@ -39,7 +39,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
@@ -59,7 +58,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
@@ -146,8 +144,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
     @BeforeEach
     public void setUpMocks() {
-        Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class)))
-                        .thenReturn(of(mockResource));
+        when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
 
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
         when(mockBundler.getIOService()).thenReturn(ioService);
@@ -203,7 +200,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
+        when(mockResource.stream()).thenAnswer(inv -> of(
                 rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
                 rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
     }

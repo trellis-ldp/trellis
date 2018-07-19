@@ -33,8 +33,12 @@ import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
@@ -75,7 +79,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
@@ -94,7 +97,6 @@ import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.Version;
-import org.trellisldp.http.domain.WantDigest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
 
@@ -127,16 +129,16 @@ public class GetHandler extends BaseLdpHandler {
     public ResponseBuilder getRepresentation(final Resource res) {
         final String identifier = getBaseUrl() + req.getPath();
 
-        // Check if this is already deleted
-        checkDeleted(res, identifier);
-
         LOGGER.debug("Acceptable media types: {}", req.getHeaders().getAcceptableMediaTypes());
         final Optional<RDFSyntax> syntax = getSyntax(trellis.getIOService(), req.getHeaders().getAcceptableMediaTypes(),
                 res.getBinary().filter(b -> !DESCRIPTION.equals(req.getExt()))
                                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)));
+        if (isNull(syntax)) {
+            return status(NOT_ACCEPTABLE);
+        }
 
         if (ACL.equals(req.getExt()) && !res.hasAcl()) {
-            throw new NotFoundException();
+            return status(NOT_FOUND);
         }
 
         final ResponseBuilder builder = basicGetResponseBuilder(res, syntax);
@@ -212,7 +214,10 @@ public class GetHandler extends BaseLdpHandler {
 
         // Check for a cache hit
         final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), prefer), true);
-        checkCache(req.getRequest(), res.getModified(), etag);
+        final ResponseBuilder cache = req.getRequest().evaluatePreconditions(from(res.getModified()), etag);
+        if (nonNull(cache)) {
+            return cache;
+        }
 
         builder.tag(etag);
         if (res.isMemento()) {
@@ -260,16 +265,26 @@ public class GetHandler extends BaseLdpHandler {
 
     private ResponseBuilder getLdpNr(final String identifier, final Resource res, final ResponseBuilder builder) {
 
-        final Instant mod = res.getBinary().map(Binary::getModified).orElseThrow(() ->
-                new WebApplicationException("Could not access binary metadata for " + res.getIdentifier()));
+        final Instant mod = res.getBinary().map(Binary::getModified).orElse(null);
+        if (isNull(mod)) {
+            LOGGER.error("Could not access binary metadata for {}", res.getIdentifier());
+            return status(INTERNAL_SERVER_ERROR);
+        }
+
         final EntityTag etag = new EntityTag(buildEtagHash(identifier + "BINARY", mod, null));
-        checkCache(req.getRequest(), mod, etag);
+        final ResponseBuilder cache = req.getRequest().evaluatePreconditions(from(mod), etag);
+        if (nonNull(cache)) {
+            return cache;
+        }
 
         // Set last-modified to be the binary's last-modified value
         builder.lastModified(from(mod));
 
-        final IRI dsid = res.getBinary().map(Binary::getIdentifier).orElseThrow(() ->
-                new WebApplicationException("Could not access binary metadata for " + res.getIdentifier()));
+        final IRI dsid = res.getBinary().map(Binary::getIdentifier).orElse(null);
+        if (isNull(dsid)) {
+            LOGGER.error("Could not access binary metadata for {}", res.getIdentifier());
+            return status(INTERNAL_SERVER_ERROR);
+        }
 
         builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag);
 
@@ -280,10 +295,19 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         // Add instance digests, if Requested and supported
-        ofNullable(req.getWantDigest()).map(WantDigest::getAlgorithms).ifPresent(algs ->
-                algs.stream().filter(trellis.getBinaryService().supportedAlgorithms()::contains).findFirst()
-                .ifPresent(alg -> getBinaryDigest(dsid, alg).ifPresent(digest ->
-                        builder.header(DIGEST, alg.toLowerCase() + "=" + digest))));
+        if (nonNull(req.getWantDigest())) {
+            final Optional<String> algorithm = req.getWantDigest().getAlgorithms().stream()
+                .filter(trellis.getBinaryService().supportedAlgorithms()::contains).findFirst();
+            if (algorithm.isPresent()) {
+                try {
+                    getBinaryDigest(dsid, algorithm.get()).ifPresent(digest ->
+                            builder.header(DIGEST, algorithm.get().toLowerCase() + "=" + digest));
+                } catch (final IOException ex) {
+                    LOGGER.error("Error computing digest on content", ex);
+                    return status(INTERNAL_SERVER_ERROR);
+                }
+            }
+        }
 
         // Stream the binary content
         final StreamingOutput stream = new StreamingOutput() {
@@ -310,13 +334,10 @@ public class GetHandler extends BaseLdpHandler {
         return content.orElseThrow(() -> new IOException("Could not retrieve content from: " + dsid));
     }
 
-    private Optional<String> getBinaryDigest(final IRI dsid, final String algorithm) {
+    private Optional<String> getBinaryDigest(final IRI dsid, final String algorithm) throws IOException {
         final Optional<InputStream> b = trellis.getBinaryService().getContent(dsid);
         try (final InputStream is = b.orElseThrow(() -> new WebApplicationException("Couldn't fetch binary content"))) {
             return trellis.getBinaryService().digest(algorithm, is);
-        } catch (final IOException ex) {
-            LOGGER.error("Error computing digest on content", ex);
-            throw new WebApplicationException("Error handling binary content: " + ex.getMessage());
         }
     }
 

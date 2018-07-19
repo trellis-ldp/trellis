@@ -16,7 +16,9 @@ package org.trellisldp.http.impl;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
@@ -32,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -73,7 +73,7 @@ class ContentBearingHandler extends BaseLdpHandler {
         this.entity = entity;
     }
 
-    protected void readEntityIntoDataset(final String identifier, final String baseUrl, final IRI graphName,
+    protected ResponseBuilder readEntityIntoDataset(final String identifier, final String baseUrl, final IRI graphName,
             final RDFSyntax syntax, final TrellisDataset dataset) {
         try (final InputStream input = new FileInputStream(entity)) {
             trellis.getIOService().read(input, syntax, identifier)
@@ -86,14 +86,15 @@ class ContentBearingHandler extends BaseLdpHandler {
                 .forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
             LOGGER.error("Invalid RDF content: {}", ex.getMessage());
-            throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
+            return status(BAD_REQUEST);
         } catch (final IOException ex) {
             LOGGER.error("Error processing input", ex);
-            throw new WebApplicationException("Error processing input: " + ex.getMessage());
+            return status(INTERNAL_SERVER_ERROR);
         }
+        return null;
     }
 
-    protected void checkConstraint(final TrellisDataset dataset, final IRI graphName, final IRI type,
+    protected ResponseBuilder checkConstraint(final TrellisDataset dataset, final IRI graphName, final IRI type,
             final RDFSyntax syntax) {
         final List<ConstraintViolation> violations = constraintServices.stream().parallel().flatMap(svc ->
                 dataset.getGraph(graphName).map(g -> svc.constrainedBy(type, g)).orElseGet(Stream::empty))
@@ -109,35 +110,39 @@ class ContentBearingHandler extends BaseLdpHandler {
                             syntax);
                 }
             };
-            throw new WebApplicationException(err.entity(stream).build());
+            return err.entity(stream);
         }
+        return null;
     }
 
-    protected void checkForBadDigest(final Digest digest) {
-        if (nonNull(digest) && !getDigestForEntity(digest).equals(digest.getDigest())) {
-            throw new BadRequestException("Supplied digest value does not match the server-computed digest.");
+    protected ResponseBuilder checkForBadDigest(final Digest digest) {
+        if (nonNull(digest)) {
+            try (final InputStream input = new FileInputStream(entity)) {
+                final String d = getEncoder().encodeToString(updateDigest(getDigest(digest.getAlgorithm()), input)
+                        .digest());
+                if (!d.equals(digest.getDigest())) {
+                    LOGGER.error("Supplied digest value does not match the server-computed digest");
+                    return status(BAD_REQUEST);
+                }
+            } catch (final IllegalArgumentException ex) {
+                LOGGER.error("Invalid algorithm provided for digest. {} is not supported {}",
+                        digest.getAlgorithm(), ex.getMessage());
+                return status(BAD_REQUEST);
+            } catch (final IOException ex) {
+                LOGGER.error("Error computing checksum on input", ex);
+                return status(INTERNAL_SERVER_ERROR);
+            }
         }
+        return null;
     }
 
-    protected String getDigestForEntity(final Digest digest) {
-        try (final InputStream input = new FileInputStream(entity)) {
-            return getEncoder().encodeToString(updateDigest(getDigest(digest.getAlgorithm()), input).digest());
-        } catch (final IllegalArgumentException ex) {
-            LOGGER.error("Invalid algorithm provided for digest: {}", ex.getMessage());
-            throw new BadRequestException("Invalid algorithm provided for digest. " + digest.getAlgorithm() +
-                    " is not supported: " + ex.getMessage());
-        } catch (final IOException ex) {
-            LOGGER.error("Error computing checksum", ex);
-            throw new WebApplicationException("Error computing checksum on input: " + ex.getMessage());
-        }
-    }
-
-    protected void persistContent(final IRI contentLocation, final Map<String, String> metadata) {
+    protected ResponseBuilder persistContent(final IRI contentLocation, final Map<String, String> metadata) {
         try (final InputStream input = new FileInputStream(entity)) {
             trellis.getBinaryService().setContent(contentLocation, input, metadata);
         } catch (final IOException ex) {
             LOGGER.error("Error saving binary content", ex);
-            throw new WebApplicationException("Error saving binary content: " + ex.getMessage());
+            return status(INTERNAL_SERVER_ERROR);
         }
+        return null;
     }
 }

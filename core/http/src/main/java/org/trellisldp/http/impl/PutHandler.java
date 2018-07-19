@@ -16,12 +16,14 @@ package org.trellisldp.http.impl;
 import static java.net.URI.create;
 import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
+import static java.util.Date.from;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
@@ -49,8 +51,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
@@ -89,23 +89,6 @@ public class PutHandler extends ContentBearingHandler {
         super(req, entity, trellis, baseUrl);
     }
 
-    private void checkResourceCache(final String identifier, final Resource res) {
-        final EntityTag etag;
-        final Instant modified;
-        final Optional<Instant> binaryModification = res.getBinary().map(Binary::getModified);
-
-        if (binaryModification.isPresent() &&
-                !ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType).isPresent()) {
-            modified = binaryModification.get();
-            etag = new EntityTag(buildEtagHash(identifier + "BINARY", modified, null));
-        } else {
-            modified = res.getModified();
-            etag = new EntityTag(buildEtagHash(identifier, modified, req.getPrefer()), true);
-        }
-        // Check the cache
-        checkCache(req.getRequest(), modified, etag);
-    }
-
     private IRI getActiveGraphName() {
         return ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
     }
@@ -138,7 +121,30 @@ public class PutHandler extends ContentBearingHandler {
         final String identifier = buildIdentifier(baseUrl);
 
         // Check the cache
-        ofNullable(res).ifPresent(r -> checkResourceCache(identifier, r));
+        if (nonNull(res)) {
+            final EntityTag etag;
+            final Instant modified;
+            final Optional<Instant> binaryModification = res.getBinary().map(Binary::getModified);
+
+            if (binaryModification.isPresent() &&
+                    !ofNullable(req.getContentType()).flatMap(RDFSyntax::byMediaType).isPresent()) {
+                modified = binaryModification.get();
+                etag = new EntityTag(buildEtagHash(identifier + "BINARY", modified, null));
+            } else {
+                modified = res.getModified();
+                etag = new EntityTag(buildEtagHash(identifier, modified, req.getPrefer()), true);
+            }
+            // Check the cache
+            try {
+                final ResponseBuilder cache = req.getRequest().evaluatePreconditions(from(modified), etag);
+                if (nonNull(cache)) {
+                    return cache;
+                }
+            } catch (final Exception ex) {
+                LOGGER.warn("Error parsing request: {}", ex.getMessage());
+                return status(BAD_REQUEST);
+            }
+        }
 
         final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
             .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
@@ -168,11 +174,17 @@ public class PutHandler extends ContentBearingHandler {
             .orElse(defaultType);
 
         // Verify that the persistence layer supports the given interaction model
-        checkInteractionModel(ldpType);
+        ResponseBuilder error = checkInteractionModel(LDP.RDFSource);
+        if (nonNull(error)) {
+            return error;
+        }
 
         LOGGER.debug("Using LDP Type: {}", ldpType);
         // It is not possible to change the LDP type to a type that is not a subclass
-        checkInteractionModelChange(res, ldpType, isBinaryDescription);
+        error = checkInteractionModelChange(res, ldpType, isBinaryDescription);
+        if (nonNull(error)) {
+            return error;
+        }
 
         final IRI internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
 
@@ -184,23 +196,38 @@ public class PutHandler extends ContentBearingHandler {
             // Add user-supplied data
             if (isBinaryRequest(ldpType, rdfSyntax)) {
                 // Check the expected digest value
-                checkForBadDigest(req.getDigest());
+                final ResponseBuilder digest = checkForBadDigest(req.getDigest());
+                if (nonNull(digest)) {
+                    return digest;
+                }
 
                 final String mimeType = ofNullable(req.getContentType()).orElse(APPLICATION_OCTET_STREAM);
                 final IRI binaryLocation = rdf.createIRI(trellis.getBinaryService().generateIdentifier());
 
                 // Persist the content
-                persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+                final ResponseBuilder persist = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+                if (nonNull(persist)) {
+                    return persist;
+                }
 
                 binary = new Binary(binaryLocation, now(), mimeType, entity.length());
             } else {
-                readEntityIntoDataset(identifier, baseUrl, graphName, rdfSyntax.orElse(TURTLE), dataset);
+                error = readEntityIntoDataset(identifier, baseUrl, graphName,
+                        rdfSyntax.orElse(TURTLE), dataset);
+                if (nonNull(error)) {
+                    return error;
+                }
 
                 // Check for any constraints
+                final ResponseBuilder constraints;
                 if (ACL.equals(req.getExt())) {
-                    checkConstraint(dataset, PreferAccessControl, LDP.RDFSource, rdfSyntax.orElse(TURTLE));
+                    constraints = checkConstraint(dataset, PreferAccessControl, LDP.RDFSource,
+                            rdfSyntax.orElse(TURTLE));
                 } else {
-                    checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
+                    constraints = checkConstraint(dataset, PreferUserManaged, ldpType, rdfSyntax.orElse(TURTLE));
+                }
+                if (nonNull(constraints)) {
+                    return constraints;
                 }
                 binary = ofNullable(res).flatMap(Resource::getBinary).orElse(null);
             }
@@ -222,22 +249,23 @@ public class PutHandler extends ContentBearingHandler {
                         LOGGER.error("Unable to place or replace resource at {}", internalId);
                         LOGGER.error("because unable to write audit quads: \n{}",
                                         auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        throw new BadRequestException("Unable to write audit information. Please consult the logs for "
-                                + "more information");
+                        return status(BAD_REQUEST);
                     }
                 }
 
                 // Create a memento
-                trellis.getResourceService().get(internalId).ifPresent(trellis.getMementoService()::put);
+                trellis.getResourceService().get(internalId).thenAccept(trellis.getMementoService()::put)
+                    .exceptionally(ex -> {
+                        LOGGER.warn("Unable to store memento: {}", ex.getMessage());
+                        return null;
+                    }).join();
 
                 final ResponseBuilder builder = buildResponse(res, identifier);
                 getLdpLinkTypes(ldpType, isBinaryDescription).map(IRI::getIRIString)
                     .forEach(type -> builder.link(type, "type"));
                 return builder;
             }
-
-            throw new BadRequestException("Unable to save resource to persistence layer. Please consult the logs for "
-                    + "more information.");
+            return status(BAD_REQUEST);
 
         } catch (final InterruptedException | ExecutionException ex) {
             LOGGER.error("Error persisting data", ex);
@@ -256,11 +284,14 @@ public class PutHandler extends ContentBearingHandler {
             : trellis.getResourceService().create(internalId, session, ldpType, dataset.asDataset(), container, binary);
     }
 
-    private void checkInteractionModelChange(final Resource res, final IRI ldpType, final Boolean isBinaryDescription) {
+    private ResponseBuilder checkInteractionModelChange(final Resource res, final IRI ldpType,
+            final Boolean isBinaryDescription) {
         if (nonNull(res) && !isBinaryDescription && ldpResourceTypes(ldpType)
                 .noneMatch(res.getInteractionModel()::equals)) {
-            throw new WebApplicationException("Cannot change the LDP type to " + ldpType, CONFLICT);
+            LOGGER.error("Cannot change the LDP type to {} for {}", ldpType, res.getIdentifier());
+            return status(CONFLICT);
         }
+        return null;
     }
 
     private ResponseBuilder buildResponse(final Resource res, final String identifier) {

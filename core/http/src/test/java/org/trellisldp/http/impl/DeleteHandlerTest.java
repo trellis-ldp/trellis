@@ -20,12 +20,12 @@ import static java.util.Date.from;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,8 +44,6 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -169,7 +167,7 @@ public class DeleteHandlerTest {
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
 
-        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
+        assertEquals(BAD_REQUEST, handler.deleteResource(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -178,7 +176,7 @@ public class DeleteHandlerTest {
             .thenReturn(completedFuture(false));
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
+        assertEquals(BAD_REQUEST, handler.deleteResource(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -197,12 +195,11 @@ public class DeleteHandlerTest {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        final BadRequestException ex = assertThrows(BadRequestException.class, () ->
-                handler.deleteResource(mockResource));
-        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+        final Response res = handler.deleteResource(mockResource).build();
+        assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
-        assertEquals(TEXT_PLAIN_TYPE, ex.getResponse().getMediaType());
+        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType());
     }
 
     @Test
@@ -212,7 +209,7 @@ public class DeleteHandlerTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
+        assertEquals(BAD_REQUEST, handler.deleteResource(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -224,9 +221,8 @@ public class DeleteHandlerTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertThrows(BadRequestException.class, () -> handler.deleteResource(mockResource));
+        assertEquals(BAD_REQUEST, handler.deleteResource(mockResource).build().getStatusInfo());
     }
-
 
     @Test
     public void testCache() {
@@ -234,15 +230,6 @@ public class DeleteHandlerTest {
                 .thenReturn(status(PRECONDITION_FAILED));
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertThrows(WebApplicationException.class, () -> handler.deleteResource(mockResource));
-    }
-
-    @Test
-    public void testGetDeleted() {
-        when(mockResource.isDeleted()).thenReturn(true);
-
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
-
-        assertThrows(WebApplicationException.class, () -> handler.deleteResource(mockResource));
+        assertEquals(PRECONDITION_FAILED, handler.deleteResource(mockResource).build().getStatusInfo());
     }
 }
