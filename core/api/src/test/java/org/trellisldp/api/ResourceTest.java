@@ -14,6 +14,7 @@
 package org.trellisldp.api;
 
 import static java.util.Collections.singleton;
+import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -55,7 +56,6 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).getMemberRelation();
         doCallRealMethod().when(mockResource).getMemberOfRelation();
         doCallRealMethod().when(mockResource).getInsertedContentRelation();
-        doCallRealMethod().when(mockResource).stream();
         doCallRealMethod().when(mockResource).stream(any(IRI.class));
         doCallRealMethod().when(mockResource).stream(anyCollection());
         doCallRealMethod().when(mockResource).getBinary();
@@ -63,6 +63,8 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).isDeleted();
         doCallRealMethod().when(mockResource).hasAcl();
         doCallRealMethod().when(mockResource).getExtraLinkRelations();
+
+        when(mockResource.stream()).thenAnswer((x) -> empty());
     }
 
     @Test
@@ -114,6 +116,7 @@ public class ResourceTest {
         assertNull(MISSING_RESOURCE.getIdentifier());
         assertNull(MISSING_RESOURCE.getInteractionModel());
         assertNull(MISSING_RESOURCE.getModified());
+        assertEquals(0L, MISSING_RESOURCE.stream().count());
         assertEquals("A non-existent resource", MISSING_RESOURCE.toString());
     }
 
@@ -122,6 +125,7 @@ public class ResourceTest {
         assertNull(DELETED_RESOURCE.getIdentifier());
         assertNull(DELETED_RESOURCE.getInteractionModel());
         assertNull(DELETED_RESOURCE.getModified());
+        assertEquals(0L, DELETED_RESOURCE.stream().count());
         assertEquals("A deleted resource", DELETED_RESOURCE.toString());
     }
 }

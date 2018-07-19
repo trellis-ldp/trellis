@@ -58,6 +58,11 @@ public interface Resource {
             }
 
             @Override
+            public Stream<? extends Quad> stream() {
+                return Stream.empty();
+            }
+
+            @Override
             public String toString() {
                 return "A non-existent resource";
             }
@@ -81,6 +86,11 @@ public interface Resource {
             @Override
             public Instant getModified() {
                 return null;
+            }
+
+            @Override
+            public Stream<? extends Quad> stream() {
+                return Stream.empty();
             }
 
             @Override
@@ -160,9 +170,7 @@ public interface Resource {
      *
      * @return the RDF quads
      */
-    default Stream<? extends Quad> stream() {
-        return Stream.empty();
-    }
+    Stream<? extends Quad> stream();
 
     /**
      * Retrieve the RDF Quads for a resource.
