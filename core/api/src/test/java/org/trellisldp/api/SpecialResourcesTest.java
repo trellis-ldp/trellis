@@ -35,6 +35,7 @@ public class SpecialResourcesTest {
         assertNull(SpecialResources.MISSING_RESOURCE.getInteractionModel());
         assertEquals(EPOCH, SpecialResources.MISSING_RESOURCE.getModified());
         assertEquals(0L, SpecialResources.MISSING_RESOURCE.stream().count());
+        assertEquals("A non-existent resource", SpecialResources.MISSING_RESOURCE.toString());
     }
 
     @Test
@@ -43,5 +44,6 @@ public class SpecialResourcesTest {
         assertNull(SpecialResources.DELETED_RESOURCE.getInteractionModel());
         assertEquals(EPOCH, SpecialResources.DELETED_RESOURCE.getModified());
         assertEquals(0L, SpecialResources.DELETED_RESOURCE.stream().count());
+        assertEquals("A deleted resource", SpecialResources.DELETED_RESOURCE.toString());
     }
 }
