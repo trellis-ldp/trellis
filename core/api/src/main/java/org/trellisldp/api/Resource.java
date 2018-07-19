@@ -51,6 +51,13 @@ public interface Resource {
     IRI getInteractionModel();
 
     /**
+     * Get the last modified date.
+     *
+     * @return the last-modified date
+     */
+    Instant getModified();
+
+    /**
      * Retrieve the membership resource if this is an LDP Direct or Indirect container.
      *
      * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
@@ -158,18 +165,13 @@ public interface Resource {
     }
 
     /**
-     * Get the last modified date.
-     *
-     * @return the last-modified date
-     */
-    Instant getModified();
-
-    /**
      * Test whether this resource has an ACL resource.
      *
      * @return true if this resource has and ACL resource; false otherwise
      */
-    Boolean hasAcl();
+    default Boolean hasAcl() {
+        return false;
+    }
 
     /**
      * Get any extra implementation-defined link relations for this resource.
