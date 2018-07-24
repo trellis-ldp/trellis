@@ -18,7 +18,6 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static java.util.Objects.isNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -159,11 +158,15 @@ public final class MementoResource {
         builder.links(links.toArray(new Link[0])).link(Resource.getIRIString(), "type")
             .link(RDFSource.getIRIString(), "type").header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
-        final Optional<RDFSyntax> syntax = getSyntax(trellis.getIOService(), acceptableTypes,
-                of(APPLICATION_LINK_FORMAT));
-        if (isNull(syntax)) {
+        final Optional<RDFSyntax> syntax;
+        try {
+            syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT));
+        } catch (final InvalidSyntaxException ex) {
             return status(NOT_ACCEPTABLE);
-        } else if (syntax.isPresent()) {
+        }
+
+        if (syntax.isPresent()) {
+            final RDFSyntax rdfSyntax = syntax.get();
             final IRI profile = ofNullable(getProfile(acceptableTypes, syntax.get())).orElse(expanded);
 
             final List<Triple> extraData = getExtraTriples(identifier);
@@ -178,7 +181,7 @@ public final class MementoResource {
                 @Override
                 public void write(final OutputStream out) throws IOException {
                     trellis.getIOService().write(concat(links.stream().flatMap(linkToTriples), extraData.stream()),
-                            out, syntax.get(), profile);
+                            out, rdfSyntax, profile);
                 }
             };
 
@@ -212,7 +215,7 @@ public final class MementoResource {
     public Response.ResponseBuilder getTimeGateBuilder(final LdpRequest req, final String baseUrl) {
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         final IRI internalIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        return Response.status(FOUND)
+        return status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().toEpochMilli()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
             .links(getMementoLinks(identifier, trellis.getMementoService().list(internalIdentifier))

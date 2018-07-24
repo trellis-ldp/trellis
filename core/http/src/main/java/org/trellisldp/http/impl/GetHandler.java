@@ -33,6 +33,7 @@ import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
+import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -41,6 +42,8 @@ import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
@@ -109,6 +112,8 @@ public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
 
+    private RDFSyntax syntax;
+
     /**
      * A GET response builder.
      *
@@ -121,33 +126,94 @@ public class GetHandler extends BaseLdpHandler {
     }
 
     /**
-     * Build the representation for the given resource.
-     *
-     * @param res the resource
+     * Initialize the get handler.
+     * @param resource the Trellis resource
      * @return the response builder
      */
-    public ResponseBuilder getRepresentation(final Resource res) {
-        final String identifier = getBaseUrl() + req.getPath();
+    public ResponseBuilder initialize(final Resource resource) {
 
-        LOGGER.debug("Acceptable media types: {}", req.getHeaders().getAcceptableMediaTypes());
-        final Optional<RDFSyntax> syntax = getSyntax(trellis.getIOService(), req.getHeaders().getAcceptableMediaTypes(),
-                res.getBinary().filter(b -> !DESCRIPTION.equals(req.getExt()))
-                               .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)));
-        if (isNull(syntax)) {
+        if (MISSING_RESOURCE.equals(resource)) {
+            return status(NOT_FOUND);
+        } else if (DELETED_RESOURCE.equals(resource)) {
+            return status(GONE);
+        }
+
+        LOGGER.debug("Acceptable media types: {}", getRequest().getHeaders().getAcceptableMediaTypes());
+
+        try {
+            this.syntax = getSyntax(getServices().getIOService(),
+                getRequest().getHeaders().getAcceptableMediaTypes(), resource.getBinary()
+                    .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
+                    .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM))).orElse(null);
+        } catch (final InvalidSyntaxException ex) {
+            LOGGER.debug("No acceptable syntax found: {}", ex.getMessage());
             return status(NOT_ACCEPTABLE);
         }
 
-        if (ACL.equals(req.getExt()) && !res.hasAcl()) {
+        if (ACL.equals(getRequest().getExt()) && !resource.hasAcl()) {
             return status(NOT_FOUND);
         }
 
-        final ResponseBuilder builder = basicGetResponseBuilder(res, syntax);
+        mayContinue(true);
+        setResource(resource);
+        return ok();
+    }
+
+    /**
+     * Get the standard headers.
+     * @param builder the response builder
+     * @return the response builder
+     */
+    public ResponseBuilder standardHeaders(final ResponseBuilder builder) {
+        if (!mayContinue()) {
+            return builder;
+        }
+
+        // Standard HTTP Headers
+        builder.lastModified(from(getResource().getModified())).header(VARY, ACCEPT);
+
+        final IRI model;
+
+        if (isNull(getRequest().getExt()) || DESCRIPTION.equals(getRequest().getExt())) {
+            if (nonNull(syntax)) {
+                builder.header(VARY, PREFER);
+                builder.type(syntax.mediaType());
+            }
+
+            model = getResource().getBinary().isPresent() && nonNull(syntax)
+                ? LDP.RDFSource : getResource().getInteractionModel();
+            // Link headers from User data
+            getResource().getExtraLinkRelations().collect(toMap(Entry::getKey, Entry::getValue))
+                .entrySet().forEach(entry -> builder.link(entry.getKey(), join(" ", entry.getValue())));
+        } else {
+            model = LDP.RDFSource;
+        }
+
+        // Add LDP-required headers
+        addLdpHeaders(builder, model);
+
+        // Memento-related headers
+        addMementoHeaders(builder);
+
+        return builder;
+    }
+
+    /**
+     * Build the representation for the given resource.
+     *
+     * @param builder the response builder
+     * @return the response builder
+     */
+    public ResponseBuilder getRepresentation(final ResponseBuilder builder) {
+        if (!mayContinue()) {
+            return builder;
+        }
 
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
-        res.getBinary().filter(ds -> !ACL.equals(req.getExt())).ifPresent(ds -> {
-            final String base = getBaseBinaryIdentifier(identifier);
+        getResource().getBinary().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
+            final String base = getBaseBinaryIdentifier();
             final String description = base + (base.contains("?") ? "&" : "?") + "ext=description";
-            if (syntax.isPresent()) {
+            if (nonNull(syntax)) {
                 builder.link(description, "canonical").link(base, "describes")
                     .link(base + "#description", "alternate");
             } else {
@@ -157,81 +223,85 @@ public class GetHandler extends BaseLdpHandler {
         });
 
         // Add a "self" link header
-        builder.link(getSelfIdentifier(identifier), "self");
+        builder.link(getSelfIdentifier(), "self");
 
         // Only show memento links for the user-managed graph (not ACL)
-        if (!ACL.equals(req.getExt())) {
-            builder.link(identifier, "original timegate")
-                .links(MementoResource.getMementoLinks(identifier, trellis.getMementoService()
-                            .list(res.getIdentifier())).toArray(Link[]::new));
+        if (!ACL.equals(getRequest().getExt())) {
+            builder.link(getIdentifier(), "original timegate")
+                .links(MementoResource.getMementoLinks(getIdentifier(), getServices().getMementoService()
+                            .list(getResource().getIdentifier())).toArray(Link[]::new));
         }
 
         // URI Template
-        builder.header(LINK_TEMPLATE, "<" + identifier + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"");
+        builder.header(LINK_TEMPLATE,
+                "<" + getIdentifier() + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"");
 
         // NonRDFSources responses (strong ETags, etc)
-        if (res.getBinary().isPresent() && !syntax.isPresent()) {
-            return getLdpNr(identifier, res, builder);
+        if (getResource().getBinary().isPresent() && isNull(syntax)) {
+            return getLdpNr(builder);
         }
 
         // RDFSource responses (weak ETags, etc)
-        final RDFSyntax s = syntax.orElse(TURTLE);
-        final IRI profile = getProfile(req.getHeaders().getAcceptableMediaTypes(), s);
-        return getLdpRs(identifier, res, builder, s, profile);
+        final RDFSyntax rdfSyntax = ofNullable(syntax).orElse(TURTLE);
+        final IRI profile = getProfile(getRequest().getHeaders().getAcceptableMediaTypes(), rdfSyntax);
+        return getLdpRs(builder, rdfSyntax, profile);
     }
 
-    private String getSelfIdentifier(final String identifier) {
+    private String getSelfIdentifier() {
         // Add any version or ext parameters
-        if (nonNull(req.getVersion()) || nonNull(req.getExt())) {
+        if (nonNull(getRequest().getVersion()) || nonNull(getRequest().getExt())) {
             final List<String> query = new ArrayList<>();
 
-            ofNullable(req.getVersion()).map(Version::getInstant).map(Instant::toEpochMilli).map(x -> "version=" + x)
-                .ifPresent(query::add);
+            ofNullable(getRequest().getVersion()).map(Version::getInstant).map(Instant::toEpochMilli)
+                .map(x -> "version=" + x).ifPresent(query::add);
 
-            if (ACL.equals(req.getExt())) {
+            if (ACL.equals(getRequest().getExt())) {
                 query.add("ext=acl");
-            } else if (DESCRIPTION.equals(req.getExt())) {
+            } else if (DESCRIPTION.equals(getRequest().getExt())) {
                 query.add("ext=description");
             }
-            return identifier + "?" + join("&", query);
+            return getIdentifier() + "?" + join("&", query);
         }
-        return identifier;
+        return getIdentifier();
     }
 
-    private String getBaseBinaryIdentifier(final String identifier) {
+    private String getBaseBinaryIdentifier() {
         // Add the version parameter, if present
-        return identifier + ofNullable(req.getVersion()).map(Version::getInstant).map(Instant::toEpochMilli)
-                .map(x -> "?version=" + x).orElse("");
+        return getIdentifier() + ofNullable(getRequest().getVersion()).map(Version::getInstant)
+            .map(Instant::toEpochMilli).map(x -> "?version=" + x).orElse("");
     }
 
-    private ResponseBuilder getLdpRs(final String identifier, final Resource res, final ResponseBuilder builder,
-            final RDFSyntax syntax, final IRI profile) {
+    private void addAllowHeaders(final ResponseBuilder builder) {
+        if (getResource().isMemento()) {
+            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
+        } else if (ACL.equals(getRequest().getExt())) {
+            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH));
+        } else if (getResource().getInteractionModel().equals(LDP.RDFSource)) {
+            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
+        } else {
+            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
+        }
+    }
 
-        final Prefer prefer = ACL.equals(req.getExt()) ?
+    private ResponseBuilder getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax, final IRI profile) {
+
+        final Prefer prefer = ACL.equals(getRequest().getExt()) ?
             new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
                     of(PreferUserManaged, LDP.PreferContainment, LDP.PreferMembership).map(IRI::getIRIString)
-                        .collect(toList()), null, null, null) : req.getPrefer();
+                        .collect(toList()), null, null, null) : getRequest().getPrefer();
 
         // Check for a cache hit
-        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), prefer), true);
-        final ResponseBuilder cache = req.getRequest().evaluatePreconditions(from(res.getModified()), etag);
+        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer), true);
+        final ResponseBuilder cache = checkCache(getResource().getModified(), etag);
         if (nonNull(cache)) {
             return cache;
         }
 
         builder.tag(etag);
-        if (res.isMemento()) {
-            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
-        } else if (ACL.equals(req.getExt())) {
-            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH));
-        } else if (res.getInteractionModel().equals(LDP.RDFSource)) {
-            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
-        } else {
-            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
-        }
+        addAllowHeaders(builder);
 
         // URI Templates
-        builder.header(LINK_TEMPLATE, "<" + identifier + "{?subject,predicate,object}>; rel=\""
+        builder.header(LINK_TEMPLATE, "<" + getIdentifier() + "{?subject,predicate,object}>; rel=\""
                 + LDP.RDFSource.getIRIString() + "\"");
 
         ofNullable(prefer).ifPresent(p -> builder.header(PREFERENCE_APPLIED, PREFER_RETURN + "=" + p.getPreference()
@@ -243,7 +313,7 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         // Short circuit HEAD requests
-        if (HEAD.equals(req.getRequest().getMethod())) {
+        if (HEAD.equals(getRequest().getRequest().getMethod())) {
             return builder;
         }
 
@@ -251,28 +321,29 @@ public class GetHandler extends BaseLdpHandler {
         final StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(final OutputStream out) throws IOException {
-                try (final Stream<? extends Quad> stream = res.stream()) {
-                    trellis.getIOService().write(stream.filter(filterWithPrefer(prefer))
-                        .map(unskolemizeQuads(trellis.getResourceService(), getBaseUrl()))
-                        .filter(filterWithLDF(req.getSubject(), req.getPredicate(), req.getObject()))
+                try (final Stream<? extends Quad> stream = getResource().stream()) {
+                    getServices().getIOService().write(stream.filter(filterWithPrefer(prefer))
+                        .map(unskolemizeQuads(getServices().getResourceService(), getBaseUrl()))
+                        .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
+                                getRequest().getObject()))
                         .map(Quad::asTriple), out, syntax,
-                            ofNullable(profile).orElseGet(() -> getDefaultProfile(syntax, identifier)));
+                            ofNullable(profile).orElseGet(() -> getDefaultProfile(syntax, getIdentifier())));
                 }
             }
         };
         return builder.entity(stream);
     }
 
-    private ResponseBuilder getLdpNr(final String identifier, final Resource res, final ResponseBuilder builder) {
+    private ResponseBuilder getLdpNr(final ResponseBuilder builder) {
 
-        final Instant mod = res.getBinary().map(Binary::getModified).orElse(null);
+        final Instant mod = getResource().getBinary().map(Binary::getModified).orElse(null);
         if (isNull(mod)) {
-            LOGGER.error("Could not access binary metadata for {}", res.getIdentifier());
+            LOGGER.error("Could not access binary metadata for {}", getResource().getIdentifier());
             return status(INTERNAL_SERVER_ERROR);
         }
 
-        final EntityTag etag = new EntityTag(buildEtagHash(identifier + "BINARY", mod, null));
-        final ResponseBuilder cache = req.getRequest().evaluatePreconditions(from(mod), etag);
+        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", mod, null));
+        final ResponseBuilder cache = checkCache(mod, etag);
         if (nonNull(cache)) {
             return cache;
         }
@@ -280,24 +351,24 @@ public class GetHandler extends BaseLdpHandler {
         // Set last-modified to be the binary's last-modified value
         builder.lastModified(from(mod));
 
-        final IRI dsid = res.getBinary().map(Binary::getIdentifier).orElse(null);
+        final IRI dsid = getResource().getBinary().map(Binary::getIdentifier).orElse(null);
         if (isNull(dsid)) {
-            LOGGER.error("Could not access binary metadata for {}", res.getIdentifier());
+            LOGGER.error("Could not access binary metadata for {}", getResource().getIdentifier());
             return status(INTERNAL_SERVER_ERROR);
         }
 
         builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag);
 
-        if (res.isMemento()) {
+        if (getResource().isMemento()) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
         } else {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PUT, DELETE));
         }
 
         // Add instance digests, if Requested and supported
-        if (nonNull(req.getWantDigest())) {
-            final Optional<String> algorithm = req.getWantDigest().getAlgorithms().stream()
-                .filter(trellis.getBinaryService().supportedAlgorithms()::contains).findFirst();
+        if (nonNull(getRequest().getWantDigest())) {
+            final Optional<String> algorithm = getRequest().getWantDigest().getAlgorithms().stream()
+                .filter(getServices().getBinaryService().supportedAlgorithms()::contains).findFirst();
             if (algorithm.isPresent()) {
                 try {
                     getBinaryDigest(dsid, algorithm.get()).ifPresent(digest ->
@@ -314,7 +385,7 @@ public class GetHandler extends BaseLdpHandler {
             @Override
             public void write(final OutputStream out) throws IOException {
                 // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
-                try (final InputStream binary = getBinaryStream(dsid, req.getRange())) {
+                try (final InputStream binary = getBinaryStream(dsid, getRequest().getRange())) {
                     IOUtils.copy(binary, out);
                 } catch (final IOException ex) {
                     LOGGER.error("Error writing binary content", ex);
@@ -329,60 +400,37 @@ public class GetHandler extends BaseLdpHandler {
 
     private InputStream getBinaryStream(final IRI dsid, final Range range) throws IOException {
         final Optional<InputStream> content = isNull(range)
-            ? trellis.getBinaryService().getContent(dsid)
-            : trellis.getBinaryService().getContent(dsid, range.getFrom(), range.getTo());
+            ? getServices().getBinaryService().getContent(dsid)
+            : getServices().getBinaryService().getContent(dsid, range.getFrom(), range.getTo());
         return content.orElseThrow(() -> new IOException("Could not retrieve content from: " + dsid));
     }
 
     private Optional<String> getBinaryDigest(final IRI dsid, final String algorithm) throws IOException {
-        final Optional<InputStream> b = trellis.getBinaryService().getContent(dsid);
+        final Optional<InputStream> b = getServices().getBinaryService().getContent(dsid);
         try (final InputStream is = b.orElseThrow(() -> new WebApplicationException("Couldn't fetch binary content"))) {
-            return trellis.getBinaryService().digest(algorithm, is);
+            return getServices().getBinaryService().digest(algorithm, is);
         }
     }
 
-    private ResponseBuilder basicGetResponseBuilder(final Resource res, final Optional<RDFSyntax> syntax) {
-        final ResponseBuilder builder = ok();
-
-        // Standard HTTP Headers
-        builder.lastModified(from(res.getModified())).header(VARY, ACCEPT);
-
-        final IRI model;
-
-        if (isNull(req.getExt()) || DESCRIPTION.equals(req.getExt())) {
-            syntax.ifPresent(s -> {
-                builder.header(VARY, PREFER);
-                builder.type(s.mediaType());
-            });
-
-            model = res.getBinary().isPresent() && syntax.isPresent() ? LDP.RDFSource : res.getInteractionModel();
-            // Link headers from User data
-            res.getExtraLinkRelations().collect(toMap(Entry::getKey, Entry::getValue))
-                .entrySet().forEach(entry -> builder.link(entry.getKey(), join(" ", entry.getValue())));
-        } else {
-            model = LDP.RDFSource;
-        }
-
-        // Add LDP-required headers
+    private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {
         ldpResourceTypes(model).forEach(type -> {
             builder.link(type.getIRIString(), "type");
             // Mementos don't accept POST or PATCH
-            if (LDP.Container.equals(type) && !res.isMemento()) {
-                builder.header(ACCEPT_POST, trellis.getIOService().supportedWriteSyntaxes().stream()
+            if (LDP.Container.equals(type) && !getResource().isMemento()) {
+                builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
-            } else if (LDP.RDFSource.equals(type) && !res.isMemento()) {
-                builder.header(ACCEPT_PATCH, trellis.getIOService().supportedUpdateSyntaxes().stream()
+            } else if (LDP.RDFSource.equals(type) && !getResource().isMemento()) {
+                builder.header(ACCEPT_PATCH, getServices().getIOService().supportedUpdateSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             }
         });
+    }
 
-        // Memento-related headers
-        if (res.isMemento()) {
-            builder.header(MEMENTO_DATETIME, from(res.getModified()));
+    private void addMementoHeaders(final ResponseBuilder builder) {
+        if (getResource().isMemento()) {
+            builder.header(MEMENTO_DATETIME, from(getResource().getModified()));
         } else {
             builder.header(VARY, ACCEPT_DATETIME);
         }
-
-        return builder;
     }
 }

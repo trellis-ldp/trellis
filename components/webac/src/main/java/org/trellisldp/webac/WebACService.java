@@ -160,8 +160,8 @@ public class WebACService implements AccessControlService {
             resourceService.getContainer(identifier).map(resourceService::get)
                 .map(CompletableFuture::join)
                 .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
-                .ifPresent(member -> {
-                    final Set<IRI> memberModes = getModesFor(member, agent);
+                .map(member -> getModesFor(member, agent))
+                .ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
                     }

@@ -28,7 +28,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 /**
  * @author acoburn
  */
-public class TrellisDataset implements AutoCloseable {
+class TrellisDataset implements AutoCloseable {
 
     private static final Logger LOGGER = getLogger(TrellisDataset.class);
 

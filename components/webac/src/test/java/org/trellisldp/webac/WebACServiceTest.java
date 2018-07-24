@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.RDF.type;
 
@@ -227,6 +228,7 @@ public class WebACServiceTest {
 
     @Test
     public void testCanRead1() {
+        when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read));
         assertFalse(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read));

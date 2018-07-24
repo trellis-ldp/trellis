@@ -173,9 +173,10 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -215,9 +216,10 @@ public class GetHandlerTest {
         when(mockLdpRequest.getPrefer())
             .thenReturn(Prefer.valueOf("return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment"));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -236,9 +238,10 @@ public class GetHandlerTest {
         when(mockResource.isMemento()).thenReturn(true);
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -278,9 +281,10 @@ public class GetHandlerTest {
                 .thenReturn(notModified());
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertEquals(NOT_MODIFIED, getHandler.getRepresentation(mockResource).build().getStatusInfo());
+        assertEquals(NOT_MODIFIED, handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+                .build().getStatusInfo());
     }
 
     @Test
@@ -291,9 +295,10 @@ public class GetHandlerTest {
                 .thenReturn(notModified());
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertEquals(NOT_MODIFIED, getHandler.getRepresentation(mockResource).build().getStatusInfo());
+        assertEquals(NOT_MODIFIED, handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+                .build().getStatusInfo());
     }
 
     @Test
@@ -307,9 +312,10 @@ public class GetHandlerTest {
                 new SimpleEntry<>(inbox, "inbox")));
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(SKOS.Concept)));
         assertTrue(res.getLinks().stream().anyMatch(hasLink(rdf.createIRI(inbox), "inbox")));
@@ -321,9 +327,10 @@ public class GetHandlerTest {
     public void testNotAcceptableLdprs() {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertEquals(NOT_ACCEPTABLE, getHandler.getRepresentation(mockResource).build().getStatusInfo());
+        assertEquals(NOT_ACCEPTABLE, handler.getRepresentation(handler.standardHeaders(handler.initialize(
+                            mockResource))).build().getStatusInfo());
     }
 
     @Test
@@ -332,9 +339,10 @@ public class GetHandlerTest {
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -377,9 +385,10 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(
                     MediaType.valueOf(APPLICATION_LD_JSON + "; profile=\"" + compacted.getIRIString() + "\"")));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -426,9 +435,10 @@ public class GetHandlerTest {
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -446,9 +456,10 @@ public class GetHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
         assertEquals(-1, res.getLength());
         assertEquals(from(time), res.getLastModified());
@@ -468,9 +479,10 @@ public class GetHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockLdpRequest.getExt()).thenReturn(DESCRIPTION);
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
         assertEquals(-1, res.getLength());
         assertEquals(from(time), res.getLastModified());
@@ -489,9 +501,10 @@ public class GetHandlerTest {
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertEquals(-1, res.getLength());
         assertEquals(from(binaryTime), res.getLastModified());
@@ -512,9 +525,10 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
         when(mockLdpRequest.getExt()).thenReturn("acl");
 
-        final GetHandler getHandler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        final Response res = getHandler.getRepresentation(mockResource).build();
+        final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
+            .build();
         assertEquals(OK, res.getStatusInfo());
 
         final String allow = res.getHeaderString(ALLOW);

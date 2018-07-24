@@ -57,7 +57,6 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import javax.ws.rs.core.EntityTag;
@@ -137,9 +136,6 @@ public class PatchHandlerTest {
     @Mock
     private SecurityContext mockSecurityContext;
 
-    @Mock
-    private CompletableFuture<Boolean> mockFuture;
-
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -186,7 +182,7 @@ public class PatchHandlerTest {
     @Test
     public void testPatchNoSparql() {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null, mockBundler, null);
-        assertEquals(BAD_REQUEST, patchHandler.updateResource(mockResource).build().getStatusInfo());
+        assertEquals(BAD_REQUEST, patchHandler.initialize(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -200,14 +196,15 @@ public class PatchHandlerTest {
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
-        assertEquals(BAD_REQUEST, handler.updateResource(mockResource).build().getStatusInfo());
+        assertEquals(INTERNAL_SERVER_ERROR, handler.updateResource(handler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     @Test
     public void testPatchLdprs() {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
     }
 
@@ -220,7 +217,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
 
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
@@ -236,7 +233,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
@@ -258,7 +255,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
@@ -279,7 +276,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        assertEquals(CONFLICT, patchHandler.updateResource(mockResource).build().getStatusInfo());
+        assertEquals(CONFLICT, patchHandler.initialize(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -290,7 +287,8 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        assertEquals(BAD_REQUEST, patchHandler.updateResource(mockResource).build().getStatusInfo());
+        assertEquals(INTERNAL_SERVER_ERROR, patchHandler.updateResource(patchHandler.initialize(mockResource)).join()
+                .build().getStatusInfo());
     }
 
     @Test
@@ -299,25 +297,12 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.initialize(mockResource).build();
         assertEquals(BAD_REQUEST, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
         assertEquals(TEXT_PLAIN_TYPE, res.getMediaType());
-    }
-
-    @Test
-    public void testException() throws Exception {
-        when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
-
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
-        final Response res = patchHandler.updateResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -328,7 +313,8 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
-        assertEquals(BAD_REQUEST, patchHandler.updateResource(mockResource).build().getStatusInfo());
+        assertEquals(BAD_REQUEST, patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     private static Predicate<Link> hasLink(final IRI iri, final String rel) {

@@ -99,7 +99,7 @@ public class OptionsHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, null);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
@@ -119,7 +119,7 @@ public class OptionsHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, baseUrl);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
 
         final String acceptPost = res.getHeaderString(ACCEPT_POST);
@@ -147,7 +147,7 @@ public class OptionsHandlerTest {
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, null);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
 
@@ -167,7 +167,7 @@ public class OptionsHandlerTest {
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, baseUrl);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
 
@@ -189,7 +189,7 @@ public class OptionsHandlerTest {
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, null);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_PATCH));

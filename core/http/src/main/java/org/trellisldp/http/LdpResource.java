@@ -17,11 +17,8 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.seeOther;
@@ -30,18 +27,15 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
-import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 
 import com.codahale.metrics.annotation.Timed;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -66,7 +60,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
-import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.AcceptDatetime;
 import org.trellisldp.http.domain.Digest;
@@ -82,7 +75,6 @@ import org.trellisldp.http.impl.OptionsHandler;
 import org.trellisldp.http.impl.PatchHandler;
 import org.trellisldp.http.impl.PostHandler;
 import org.trellisldp.http.impl.PutHandler;
-import org.trellisldp.vocabulary.LDP;
 
 /**
  * A {@link ContainerRequestFilter} that also matches path-based HTTP resource operations.
@@ -234,6 +226,8 @@ public class LdpResource implements ContainerRequestFilter {
         if (nonNull(req.getVersion())) {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
+                .map(getHandler::initialize)
+                .map(getHandler::standardHeaders)
                 .map(getHandler::getRepresentation).orElseGet(() -> status(NOT_FOUND)).build();
 
         // Fetch a timemap
@@ -242,7 +236,7 @@ public class LdpResource implements ContainerRequestFilter {
             return trellis.getResourceService().get(identifier)
                 .thenApply(res -> MISSING_RESOURCE.equals(res)
                         ? status(NOT_FOUND) : new MementoResource(trellis).getTimeMapBuilder(req, urlBase))
-                .join().build();
+                .thenApply(ResponseBuilder::build).join();
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
@@ -255,7 +249,10 @@ public class LdpResource implements ContainerRequestFilter {
         // Fetch the current state of the resource
         LOGGER.debug("Getting resource at: {}", identifier);
         return trellis.getResourceService().get(identifier)
-            .thenApply(handleSpecialResources(getHandler::getRepresentation)).join().build();
+            .thenApply(getHandler::initialize)
+            .thenApply(getHandler::standardHeaders)
+            .thenApply(getHandler::getRepresentation)
+            .thenApply(ResponseBuilder::build).join();
     }
 
     /**
@@ -274,13 +271,15 @@ public class LdpResource implements ContainerRequestFilter {
 
         if (nonNull(req.getVersion())) {
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
+                .map(optionsHandler::initialize)
                 .map(optionsHandler::ldpOptions)
                 .orElseGet(() -> status(NOT_FOUND)).build();
         }
 
         return trellis.getResourceService().get(identifier)
-            .thenApply(handleSpecialResources(optionsHandler::ldpOptions))
-            .join().build();
+            .thenApply(optionsHandler::initialize)
+            .thenApply(optionsHandler::ldpOptions)
+            .thenApply(ResponseBuilder::build).join();
     }
 
 
@@ -300,8 +299,10 @@ public class LdpResource implements ContainerRequestFilter {
         final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase);
 
         return trellis.getResourceService().get(identifier)
-            .thenApply(handleSpecialResources(patchHandler::updateResource))
-            .join().build();
+            .thenApply(patchHandler::initialize)
+            .thenCompose(patchHandler::updateResource)
+            .thenCompose(patchHandler::updateMemento)
+            .thenApply(ResponseBuilder::build).join();
     }
 
     /**
@@ -319,8 +320,9 @@ public class LdpResource implements ContainerRequestFilter {
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, urlBase);
 
         return trellis.getResourceService().get(identifier)
-            .thenApply(handleSpecialResources(deleteHandler::deleteResource))
-            .join().build();
+            .thenApply(deleteHandler::initialize)
+            .thenCompose(deleteHandler::deleteResource)
+            .thenApply(ResponseBuilder::build).join();
     }
 
     /**
@@ -339,23 +341,18 @@ public class LdpResource implements ContainerRequestFilter {
         final String identifier = ofNullable(req.getSlug())
             .orElseGet(trellis.getResourceService()::generateIdentifier);
 
-        final PostHandler postHandler = new PostHandler(req, identifier, body, trellis, urlBase);
         final String separator = path.isEmpty() ? "" : "/";
 
-        // First check if this is a container
-        return trellis.getResourceService().get(rdf.createIRI(TRELLIS_DATA_PREFIX + path))
-            .thenCompose(parent -> {
-                if (DELETED_RESOURCE.equals(parent)) {
-                    return completedFuture(status(GONE));
-                } else if (MISSING_RESOURCE.equals(parent)) {
-                    return completedFuture(status(NOT_FOUND));
-                } else if (ldpResourceTypes(parent.getInteractionModel()).anyMatch(LDP.Container::equals)) {
-                    return trellis.getResourceService()
-                        .get(rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier))
-                        .thenApply(res -> exists(res) ? status(CONFLICT) : postHandler.createResource());
-                }
-                return completedFuture(status(METHOD_NOT_ALLOWED));
-            }).join().build();
+        final IRI parent = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier);
+        final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, urlBase);
+
+        // First try to fetch the parent and child resources, and then create a new child resource
+        return trellis.getResourceService().get(parent)
+            .thenCombine(trellis.getResourceService().get(child), postHandler::initialize)
+            .thenCompose(postHandler::createResource)
+            .thenCompose(postHandler::updateMemento)
+            .thenApply(ResponseBuilder::build).join();
     }
 
     /**
@@ -374,23 +371,9 @@ public class LdpResource implements ContainerRequestFilter {
         final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);
 
         return trellis.getResourceService().get(identifier)
-            .thenApply(res -> exists(res) ? putHandler.setResource(res) : putHandler.createResource())
-            .join().build();
-    }
-
-    private static Function<Resource, ResponseBuilder> handleSpecialResources(
-            final Function<Resource, ResponseBuilder> fn) {
-        return res -> {
-            if (DELETED_RESOURCE.equals(res)) {
-                return status(GONE);
-            } else if (MISSING_RESOURCE.equals(res)) {
-                return status(NOT_FOUND);
-            }
-            return fn.apply(res);
-        };
-    }
-
-    private static Boolean exists(final Resource res) {
-        return !DELETED_RESOURCE.equals(res) && !MISSING_RESOURCE.equals(res);
+            .thenApply(putHandler::initialize)
+            .thenCompose(putHandler::setResource)
+            .thenCompose(putHandler::updateMemento)
+            .thenApply(ResponseBuilder::build).join();
     }
 }

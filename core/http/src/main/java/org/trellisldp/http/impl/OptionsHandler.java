@@ -22,9 +22,13 @@ import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
+import static javax.ws.rs.core.Response.Status.GONE;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
@@ -55,6 +59,8 @@ public class OptionsHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(OptionsHandler.class);
 
+    private final IRI graphName;
+
     /**
      * An OPTIONS response builder.
      *
@@ -64,39 +70,57 @@ public class OptionsHandler extends BaseLdpHandler {
      */
     public OptionsHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
         super(req, trellis, baseUrl);
+        this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
+    }
+
+    /**
+     * Initialize the request handler.
+     * @param resource the Trellis resource
+     * @return a response builder
+     */
+    public ResponseBuilder initialize(final Resource resource) {
+
+        if (MISSING_RESOURCE.equals(resource)) {
+            return status(NOT_FOUND);
+        } else if (DELETED_RESOURCE.equals(resource)) {
+            return status(GONE);
+        }
+
+        mayContinue(true);
+        setResource(resource);
+        return status(NO_CONTENT);
     }
 
     /**
      * Build the representation for the given resource.
      *
-     * @param res the resource
+     * @param builder a response builder
      * @return the response builder
      */
-    public ResponseBuilder ldpOptions(final Resource res) {
-        final String identifier = getBaseUrl() + req.getPath();
+    public ResponseBuilder ldpOptions(final ResponseBuilder builder) {
+        if (!mayContinue()) {
+            return builder;
+        }
 
-        LOGGER.debug("OPTIONS request for {}", identifier);
+        LOGGER.debug("OPTIONS request for {}", getIdentifier());
 
-        final IRI graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
+        ldpResourceTypes(getResource().getInteractionModel())
+            .forEach(type -> builder.link(type.getIRIString(), "type"));
 
-        final ResponseBuilder builder = status(NO_CONTENT);
-
-        ldpResourceTypes(res.getInteractionModel()).forEach(type -> builder.link(type.getIRIString(), "type"));
-
-        if (res.isMemento() || TIMEMAP.equals(req.getExt())) {
+        if (getResource().isMemento() || TIMEMAP.equals(getRequest().getExt())) {
             // Mementos and TimeMaps are read-only
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
         } else {
             builder.header(ACCEPT_PATCH, APPLICATION_SPARQL_UPDATE);
             // ACL resources allow a limited set of methods (no DELETE or POST)
             // If it's not a container, POST isn't allowed
-            if (PreferAccessControl.equals(graphName) || res.getInteractionModel().equals(RDFSource) ||
-                    res.getInteractionModel().equals(NonRDFSource)) {
+            if (PreferAccessControl.equals(graphName) || getResource().getInteractionModel().equals(RDFSource) ||
+                    getResource().getInteractionModel().equals(NonRDFSource)) {
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
             } else {
                 // Containers and binaries support POST
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
-                builder.header(ACCEPT_POST, trellis.getIOService().supportedWriteSyntaxes().stream()
+                builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             }
         }

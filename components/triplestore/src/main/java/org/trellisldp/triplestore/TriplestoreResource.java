@@ -118,6 +118,10 @@ public class TriplestoreResource implements Resource {
         return nonNull(getModified()) && nonNull(getInteractionModel());
     }
 
+    protected Boolean isDeleted() {
+        return graph.contains(identifier, DC.type, Trellis.DeletedResource);
+    }
+
     /**
      * Fetch data for this resource.
      *
@@ -236,11 +240,6 @@ public class TriplestoreResource implements Resource {
     @Override
     public Boolean hasAcl() {
         return fetchAclQuads().findAny().isPresent();
-    }
-
-    @Override
-    public Boolean isDeleted() {
-        return graph.contains(identifier, DC.type, Trellis.DeletedResource);
     }
 
     private Stream<Quad> fetchServerQuads() {

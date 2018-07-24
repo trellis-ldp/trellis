@@ -25,6 +25,7 @@ import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -146,6 +147,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
+        assertNotNull(svc.get(root).join());
         svc.get(root).thenAccept(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());
@@ -168,6 +170,7 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
+        assertNotNull(svc.get(root).join());
         svc.get(root).thenAccept(res -> {
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertEquals(root, res.getIdentifier());

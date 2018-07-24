@@ -137,7 +137,7 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
      */
     default Stream<? extends Quad> export(final Collection<IRI> graphNames) {
         return scan().map(Triple::getSubject).filter(x -> x instanceof IRI).map(x -> (IRI) x)
-            .parallel().map(id -> get(id)).map(CompletableFuture::join)
+            .parallel().map(this::get).map(CompletableFuture::join)
             .flatMap(resource -> resource.stream(graphNames).map(q ->
                 getInstance().createQuad(resource.getIdentifier(), q.getSubject(), q.getPredicate(), q.getObject())));
     }

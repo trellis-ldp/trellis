@@ -123,7 +123,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(2L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(4L, res.stream().count());
@@ -153,7 +152,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(2L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(5L, res.stream(singleton(Trellis.PreferAudit)).count());
@@ -187,7 +185,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertTrue(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(2L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(5L, res.stream(singleton(Trellis.PreferAudit)).count());
@@ -235,7 +232,6 @@ public class TriplestoreResourceTest {
             assertEquals(of(mimeType), b.getMimeType());
         });
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(6L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(5L, res.stream(singleton(Trellis.PreferAudit)).count());
@@ -270,7 +266,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(3L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(4L, res.stream(singleton(LDP.PreferContainment)).count());
@@ -305,7 +300,6 @@ public class TriplestoreResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(3L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(0L, res.stream(singleton(LDP.PreferContainment)).count());
@@ -347,7 +341,6 @@ public class TriplestoreResourceTest {
         assertTrue(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(7L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(4L, res.stream(singleton(LDP.PreferContainment)).count());
@@ -365,7 +358,6 @@ public class TriplestoreResourceTest {
         assertFalse(res2.getInsertedContentRelation().isPresent());
         assertFalse(res2.getBinary().isPresent());
         assertFalse(res2.hasAcl());
-        assertFalse(res2.isDeleted());
         assertEquals(3L, res2.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(1L, res2.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(0L, res2.stream(singleton(LDP.PreferContainment)).count());
@@ -414,7 +406,6 @@ public class TriplestoreResourceTest {
         assertTrue(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(7L, res.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(4L, res.stream(singleton(LDP.PreferContainment)).count());
@@ -432,7 +423,6 @@ public class TriplestoreResourceTest {
         assertFalse(res2.getInsertedContentRelation().isPresent());
         assertFalse(res2.getBinary().isPresent());
         assertFalse(res2.hasAcl());
-        assertFalse(res2.isDeleted());
         assertEquals(3L, res2.stream(singleton(Trellis.PreferServerManaged)).count());
         assertEquals(1L, res2.stream(singleton(Trellis.PreferUserManaged)).count());
         assertEquals(0L, res2.stream(singleton(LDP.PreferContainment)).count());

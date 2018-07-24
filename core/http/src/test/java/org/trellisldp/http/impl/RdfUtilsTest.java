@@ -24,6 +24,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,7 +76,7 @@ public class RdfUtilsTest {
     }
 
     @Test
-    public void testGetSyntax() {
+    public void testGetSyntax() throws InvalidSyntaxException {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -85,13 +86,13 @@ public class RdfUtilsTest {
     }
 
     @Test
-    public void testGetSyntaxEmpty() {
+    public void testGetSyntaxEmpty() throws InvalidSyntaxException {
         assertFalse(RdfUtils.getSyntax(ioService, emptyList(), of("some/type")).isPresent());
         assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, emptyList(), empty()));
     }
 
     @Test
-    public void testGetSyntaxFallback() {
+    public void testGetSyntaxFallback() throws InvalidSyntaxException {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -101,12 +102,12 @@ public class RdfUtilsTest {
     }
 
     @Test
-    public void testGetSyntaxError() {
+    public void testGetSyntaxError() throws InvalidSyntaxException {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"));
 
-        assertNull(RdfUtils.getSyntax(ioService, types, empty()));
+        assertThrows(InvalidSyntaxException.class, () -> RdfUtils.getSyntax(ioService, types, empty()));
     }
 
     @Test

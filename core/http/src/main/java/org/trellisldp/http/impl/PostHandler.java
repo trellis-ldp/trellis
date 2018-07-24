@@ -16,42 +16,47 @@ package org.trellisldp.http.impl;
 import static java.net.URI.create;
 import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.joining;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.GONE;
+import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
+import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.File;
 import java.net.URI;
-import java.security.Principal;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 
@@ -60,145 +65,176 @@ import org.trellisldp.vocabulary.LDP;
  *
  * @author acoburn
  */
-public class PostHandler extends ContentBearingHandler {
+public class PostHandler extends MutatingLdpHandler {
 
     private static final Logger LOGGER = getLogger(PostHandler.class);
 
-    private final String id;
+    private final String idPath;
+    private final IRI internalId;
+    private final String contentType;
+    private final RDFSyntax rdfSyntax;
+    private final IRI ldpType;
+    private final IRI parentIdentifier;
 
     /**
      * Create a builder for an LDP POST response.
      *
      * @param req the LDP request
+     * @param parentIdentifier the parent IRI
      * @param id the new resource's identifier
      * @param entity the entity
      * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PostHandler(final LdpRequest req, final String id, final File entity, final ServiceBundler trellis,
-            final String baseUrl) {
-        super(req, entity, trellis, baseUrl);
-        this.id = id;
+    public PostHandler(final LdpRequest req, final IRI parentIdentifier, final String id, final File entity,
+            final ServiceBundler trellis, final String baseUrl) {
+        super(req, trellis, baseUrl, entity);
+
+        final String separator = req.getPath().isEmpty() ? "" : "/";
+
+        this.idPath = separator + id;
+        this.contentType = req.getContentType();
+        this.parentIdentifier = parentIdentifier;
+        this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath() + idPath);
+        this.rdfSyntax = ofNullable(contentType).map(MediaType::valueOf).flatMap(ct ->
+                getServices().getIOService().supportedWriteSyntaxes().stream().filter(s ->
+                    ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst()).orElse(null);
+
+        // Add LDP type (ldp:Resource results in the defaultType)
+        this.ldpType = ofNullable(req.getLink())
+            .filter(l -> "type".equals(l.getRel())).map(Link::getUri).map(URI::toString)
+            .filter(l -> l.startsWith(LDP.getNamespace())).map(rdf::createIRI)
+            .filter(l -> !LDP.Resource.equals(l))
+            .orElseGet(() -> nonNull(contentType) && isNull(rdfSyntax) ? LDP.NonRDFSource : LDP.RDFSource);
+    }
+
+    /**
+     * Initialize the response.
+     * @param parent the parent resource
+     * @param child the child resource
+     * @return a response builder
+     */
+    public ResponseBuilder initialize(final Resource parent, final Resource child) {
+        if (MISSING_RESOURCE.equals(parent)) {
+            // Can't POST to a missing resource
+            return status(NOT_FOUND);
+        } else if (DELETED_RESOURCE.equals(parent)) {
+            // Can't POST to a deleted resource
+            return status(GONE);
+        } else if (ACL.equals(getRequest().getExt())
+                || ldpResourceTypes(parent.getInteractionModel()).noneMatch(LDP.Container::equals)) {
+            // Can't POST to an ACL resource or non-Container
+            return status(METHOD_NOT_ALLOWED);
+        } else if (!MISSING_RESOURCE.equals(child) && !DELETED_RESOURCE.equals(child)) {
+            return status(CONFLICT);
+        } else if (!supportsInteractionModel(ldpType)) {
+            return status(BAD_REQUEST)
+                .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
+                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE);
+        } else if (ldpType.equals(LDP.NonRDFSource) && nonNull(rdfSyntax)) {
+            LOGGER.error("Cannot save {} as a NonRDFSource with RDF syntax", getIdentifier());
+            return status(BAD_REQUEST);
+        }
+
+        mayContinue(true);
+        return status(CREATED);
     }
 
     /**
      * Create a new resource.
-     *
+     * @param builder the response builder
      * @return the response builder
      */
-    public ResponseBuilder createResource() {
-        final String baseUrl = getBaseUrl();
-        final String separator = req.getPath().isEmpty() ? "" : "/";
-        final String identifier = baseUrl + req.getPath() + separator + id;
-        final String contentType = req.getContentType();
-        final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
-        session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
-
-        LOGGER.debug("Creating resource as {}", identifier);
-
-        final Optional<RDFSyntax> rdfSyntax = ofNullable(contentType).map(MediaType::valueOf).flatMap(ct ->
-                trellis.getIOService().supportedWriteSyntaxes().stream().filter(s ->
-                    ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst());
-
-        final IRI defaultType = nonNull(contentType) && !rdfSyntax.isPresent() ? LDP.NonRDFSource : LDP.RDFSource;
-        final IRI internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath() + separator + id);
-
-        // Add LDP type (ldp:Resource results in the defaultType)
-        final IRI ldpType = ofNullable(req.getLink())
-            .filter(l -> "type".equals(l.getRel())).map(Link::getUri).map(URI::toString)
-            .filter(l -> l.startsWith(LDP.getNamespace())).map(rdf::createIRI)
-            .filter(l -> !LDP.Resource.equals(l)).orElse(defaultType);
-
-        // Verify that the persistence layer supports the specified IXN model
-        final ResponseBuilder model = checkInteractionModel(ldpType);
-        if (nonNull(model)) {
-            return model;
+    public CompletableFuture<ResponseBuilder> createResource(final ResponseBuilder builder) {
+        if (!mayContinue()) {
+            return completedFuture(builder);
         }
 
-        if (ldpType.equals(LDP.NonRDFSource) && rdfSyntax.isPresent()) {
-            LOGGER.error("Cannot save {} as a NonRDFSource with RDF syntax", identifier);
-            return status(BAD_REQUEST);
-        }
+        LOGGER.debug("Creating resource as {}", getIdentifier());
 
-        try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
+        final TrellisDataset mutable = TrellisDataset.createDataset();
+        final TrellisDataset immutable = TrellisDataset.createDataset();
 
-            final Binary binary;
+        return handleResourceCreation(mutable, immutable, builder)
+            .whenComplete((a, b) -> mutable.close())
+            .whenComplete((a, b) -> immutable.close());
+    }
 
-            // Add user-supplied data
-            if (ldpType.equals(LDP.NonRDFSource)) {
-                // Check the expected digest value
-                final ResponseBuilder digestCheck = checkForBadDigest(req.getDigest());
-                if (nonNull(digestCheck)) {
-                    return digestCheck;
-                }
+    private CompletableFuture<ResponseBuilder> handleResourceCreation(final TrellisDataset mutable,
+            final TrellisDataset immutable, final ResponseBuilder builder) {
 
-                final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
-                final IRI binaryLocation = rdf.createIRI(trellis.getBinaryService().generateIdentifier());
+        final Binary binary;
 
-                // Persist the content
-                final ResponseBuilder persist = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
-                if (nonNull(persist)) {
-                    return persist;
-                }
-
-                binary = new Binary(binaryLocation, now(), mimeType, entity.length());
-            } else {
-                final ResponseBuilder err = readEntityIntoDataset(identifier, baseUrl, PreferUserManaged,
-                        rdfSyntax.orElse(TURTLE), dataset);
-                if (nonNull(err)) {
-                    return err;
-                }
-
-                // Check for any constraints
-                final ResponseBuilder constraints = checkConstraint(dataset, PreferUserManaged, ldpType,
-                        rdfSyntax.orElse(TURTLE));
-                if (nonNull(constraints)) {
-                    return constraints;
-                }
-
-                binary = null;
+        // Add user-supplied data
+        if (ldpType.equals(LDP.NonRDFSource)) {
+            // Check the expected digest value
+            final ResponseBuilder digestCheck = checkForBadDigest(getRequest().getDigest());
+            if (nonNull(digestCheck)) {
+                mayContinue(false);
+                return completedFuture(digestCheck);
             }
-            final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-            final Future<Boolean> success = trellis.getResourceService().create(internalId, session, ldpType,
-                    dataset.asDataset(), container, binary);
-            if (success.get()) {
 
-                // Add Audit quads
-                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    trellis.getAuditService().creation(internalId, session).stream()
-                        .map(skolemizeQuads(trellis.getResourceService(), baseUrl)).forEachOrdered(auditDataset::add);
-                    if (!trellis.getResourceService().add(internalId, session, auditDataset.asDataset()).get()) {
-                        LOGGER.error("Using AuditService {}", trellis.getAuditService());
-                        LOGGER.error("Unable to act against resource at {}", internalId);
-                        LOGGER.error("because unable to write audit quads: \n{}",
-                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        return status(BAD_REQUEST);
-                    }
-                }
+            final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
+            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
-                // Add memento data
-                trellis.getResourceService().get(internalId).thenAccept(trellis.getMementoService()::put)
-                    .exceptionally(ex -> {
-                        LOGGER.warn("Unable to store memento: {}", ex.getMessage());
-                        return null;
-                    }).join();
-
-                final ResponseBuilder builder = status(CREATED).location(create(identifier));
-
-                // Add LDP types
-                ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
-
-                return builder;
+            // Persist the content
+            final ResponseBuilder persist = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+            if (nonNull(persist)) {
+                mayContinue(false);
+                return completedFuture(persist);
             }
-            return status(BAD_REQUEST);
 
-        } catch (final InterruptedException | ExecutionException ex) {
-            LOGGER.error("Error persisting data", ex);
+            binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
+        } else {
+            final ResponseBuilder err = readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE),
+                    mutable);
+            if (nonNull(err)) {
+                mayContinue(false);
+                return completedFuture(err);
+            }
+
+            // Check for any constraints
+            final ResponseBuilder constraints = checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null),
+                    ldpType, ofNullable(rdfSyntax).orElse(TURTLE));
+            if (nonNull(constraints)) {
+                mayContinue(false);
+                return completedFuture(constraints);
+            }
+
+            binary = null;
         }
 
-        LOGGER.error("Unable to persist data to location at {}", internalId.getIRIString());
-        return serverError().type(TEXT_PLAIN_TYPE)
-            .entity("Unable to persist data. Please consult the logs for more information");
+        // Should this come from the parent resource data?
+        getServices().getAuditService().creation(internalId, getSession()).stream()
+            .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
+
+        return getServices().getResourceService().create(internalId, getSession(), ldpType, mutable.asDataset(),
+                parentIdentifier, binary)
+            .thenCombine(getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()),
+                    this::handleWriteResults)
+            .thenApply(handleResult(builder));
+    }
+
+    @Override
+    protected String getIdentifier() {
+        return super.getIdentifier() + idPath;
+    }
+
+    @Override
+    protected IRI getInternalId() {
+        return internalId;
+    }
+
+    private Function<Boolean, ResponseBuilder> handleResult(final ResponseBuilder builder) {
+        return success -> {
+            if (!success) {
+                return serverError().type(TEXT_PLAIN_TYPE)
+                    .entity("Unable to persist data. Please consult the logs for more information");
+            }
+
+            // Add LDP types
+            ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+            return builder.location(create(getIdentifier()));
+        };
     }
 }

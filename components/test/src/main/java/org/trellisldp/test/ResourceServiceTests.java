@@ -236,7 +236,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
         res.stream(Trellis.PreferUserManaged).forEach(t ->
                 assertTrue(dataset.contains(of(Trellis.PreferUserManaged), t.getSubject(), t.getPredicate(),
@@ -276,7 +275,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
         res.stream(Trellis.PreferUserManaged).forEach(t ->
                 assertTrue(dataset.contains(of(Trellis.PreferUserManaged), t.getSubject(), t.getPredicate(),
@@ -338,7 +336,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(2L, res.stream(LDP.PreferContainment).count());
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
@@ -398,7 +395,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(2L, res.stream(LDP.PreferContainment).count());
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
@@ -464,7 +460,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(2L, res.stream(LDP.PreferContainment).count());
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
@@ -531,7 +526,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
-        assertFalse(res.isDeleted());
         assertEquals(2L, res.stream(LDP.PreferContainment).count());
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
