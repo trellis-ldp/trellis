@@ -111,6 +111,7 @@ public class DeleteHandlerTest {
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Resource));
         when(mockResourceService.getMementos(any())).thenReturn(emptyList());
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
 
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
