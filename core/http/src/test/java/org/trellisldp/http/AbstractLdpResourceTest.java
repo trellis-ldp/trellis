@@ -23,10 +23,9 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Date.from;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -64,7 +63,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -115,6 +113,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -348,7 +347,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
     @Test
     public void testGetBinaryErrorSkip() throws IOException {
-        when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(of(mockInputStream));
+        when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(completedFuture(mockInputStream));
         when(mockInputStream.skip(anyLong())).thenThrow(new IOException());
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=300-400").get();
         assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
@@ -356,16 +355,11 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
     @Test
     public void testGetBinaryDigestError() throws IOException {
-        when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(of(mockInputStream));
-        doThrow(new IOException()).when(mockInputStream).close();
+        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("MD5"))).thenAnswer(inv ->
+                supplyAsync(() -> {
+                    throw new RuntimeTrellisException("Expected exception");
+                }));
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
-    }
-
-    @Test
-    public void testGetBinaryError() {
-        when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(empty());
-        final Response res = target(BINARY_PATH).request().get();
         assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 

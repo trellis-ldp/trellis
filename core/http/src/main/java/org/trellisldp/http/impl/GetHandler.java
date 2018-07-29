@@ -82,7 +82,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -386,11 +385,14 @@ public class GetHandler extends BaseLdpHandler {
             final Optional<String> algorithm = getRequest().getWantDigest().getAlgorithms().stream()
                 .filter(getServices().getBinaryService().supportedAlgorithms()::contains).findFirst();
             if (algorithm.isPresent()) {
-                try {
-                    getBinaryDigest(dsid, algorithm.get()).ifPresent(digest ->
-                            builder.header(DIGEST, algorithm.get().toLowerCase() + "=" + digest));
-                } catch (final IOException ex) {
-                    LOGGER.error("Error computing digest on content", ex);
+                final String digest = getServices().getBinaryService().calculateDigest(dsid, algorithm.get())
+                    .exceptionally(err -> {
+                        LOGGER.error("Error computing digest on content", err);
+                        return null;
+                    }).join();
+                if (nonNull(digest)) {
+                    builder.header(DIGEST, algorithm.get().toLowerCase() + "=" + digest);
+                } else {
                     return status(INTERNAL_SERVER_ERROR);
                 }
             }
@@ -403,10 +405,6 @@ public class GetHandler extends BaseLdpHandler {
                 // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
                 try (final InputStream binary = getBinaryStream(dsid, getRequest())) {
                     IOUtils.copy(binary, out);
-                } catch (final IOException ex) {
-                    LOGGER.error("Error writing binary content", ex);
-                    throw new WebApplicationException("Error processing binary content: " +
-                            ex.getMessage());
                 }
             }
         };
@@ -414,18 +412,12 @@ public class GetHandler extends BaseLdpHandler {
         return builder.entity(stream);
     }
 
-    private InputStream getBinaryStream(final IRI dsid, final LdpRequest req) throws IOException {
-        final Optional<InputStream> content = isNull(req.getRange())
-            ? getServices().getBinaryService().getContent(dsid)
-            : getServices().getBinaryService().getContent(dsid, req.getRange().getFrom(), req.getRange().getTo());
-        return content.orElseThrow(() -> new IOException("Could not retrieve content from: " + dsid));
-    }
-
-    private Optional<String> getBinaryDigest(final IRI dsid, final String algorithm) throws IOException {
-        final Optional<InputStream> b = getServices().getBinaryService().getContent(dsid);
-        try (final InputStream is = b.orElseThrow(() -> new WebApplicationException("Couldn't fetch binary content"))) {
-            return getServices().getBinaryService().digest(algorithm, is);
+    private InputStream getBinaryStream(final IRI dsid, final LdpRequest req) {
+        if (isNull(req.getRange())) {
+            return getServices().getBinaryService().getContent(dsid).join();
         }
+        return getServices().getBinaryService().getContent(dsid, req.getRange().getFrom(),
+                req.getRange().getTo()).join();
     }
 
     private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {

@@ -220,7 +220,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
 
     protected ResponseBuilder persistContent(final IRI contentLocation, final Map<String, String> metadata) {
         try (final InputStream input = new FileInputStream(entity)) {
-            getServices().getBinaryService().setContent(contentLocation, input, metadata);
+            getServices().getBinaryService().setContent(contentLocation, input, metadata).join();
         } catch (final IOException ex) {
             LOGGER.error("Error saving binary content", ex);
             return status(INTERNAL_SERVER_ERROR);

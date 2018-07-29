@@ -290,12 +290,16 @@ abstract class BaseLdpResourceTest extends JerseyTest {
 
     private void setUpBinaryService() {
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
-        when(mockBinaryService.digest(eq("MD5"), any(InputStream.class))).thenReturn(of("md5-digest"));
-        when(mockBinaryService.digest(eq("SHA"), any(InputStream.class))).thenReturn(of("sha1-digest"));
+        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("MD5")))
+            .thenReturn(completedFuture("md5-digest"));
+        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("SHA")))
+            .thenReturn(completedFuture("sha1-digest"));
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier), eq(3), eq(10)))
-            .thenAnswer(x -> of(new ByteArrayInputStream("e input".getBytes(UTF_8))));
+            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier)))
-            .thenAnswer(x -> of(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
+            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
+        when(mockBinaryService.setContent(any(IRI.class), any(InputStream.class), any()))
+            .thenAnswer(x -> completedFuture(null));
         when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
     }
 
