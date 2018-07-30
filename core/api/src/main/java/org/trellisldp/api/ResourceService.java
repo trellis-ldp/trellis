@@ -18,17 +18,12 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.api.Triple;
 
 /**
  * The ResourceService provides methods for creating, retrieving and manipulating
@@ -52,13 +47,6 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
         return of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
                     .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(getInstance()::createIRI);
     }
-
-    /**
-     * Scan the resources.
-     *
-     * @return a stream of RDF Triples, containing the resource and its LDP type
-     */
-    Stream<? extends Triple> scan();
 
     /**
      * Skolemize a blank node.
@@ -127,19 +115,6 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
             }
         }
         return term;
-    }
-
-    /**
-     * Export the server's resources as a stream of {@link Quad}s.
-     *
-     * @param graphNames the graph names to export
-     * @return a stream of quads, where each named graph refers to the resource identifier
-     */
-    default Stream<? extends Quad> export(final Collection<IRI> graphNames) {
-        return scan().map(Triple::getSubject).filter(x -> x instanceof IRI).map(x -> (IRI) x)
-            .parallel().map(this::get).map(CompletableFuture::join)
-            .flatMap(resource -> resource.stream(graphNames).map(q ->
-                getInstance().createQuad(resource.getIdentifier(), q.getSubject(), q.getPredicate(), q.getObject())));
     }
 
     /**

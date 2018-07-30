@@ -122,25 +122,6 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testScan() {
-        final IRI one = rdf.createIRI(TRELLIS_DATA_PREFIX + "1");
-        final IRI two = rdf.createIRI(TRELLIS_DATA_PREFIX + "2");
-        final IRI three = rdf.createIRI(TRELLIS_DATA_PREFIX + "3");
-        final JenaDataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferServerManaged, one, RDF.type, LDP.Container);
-        dataset.add(Trellis.PreferServerManaged, two, RDF.type, LDP.NonRDFSource);
-        dataset.add(Trellis.PreferServerManaged, three, RDF.type, LDP.RDFSource);
-
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
-        assertEquals(4L, svc.scan().count());
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(root) && t.getObject().equals(LDP.BasicContainer)));
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(one) && t.getObject().equals(LDP.Container)));
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(two) && t.getObject().equals(LDP.NonRDFSource)));
-        assertTrue(svc.scan().anyMatch(t -> t.getSubject().equals(three) && t.getObject().equals(LDP.RDFSource)));
-    }
-
-    @Test
     public void testInitializeRoot() {
         final Instant early = now();
         final JenaDataset dataset = rdf.createDataset();
