@@ -39,7 +39,6 @@ import static org.trellisldp.triplestore.TriplestoreUtils.getBaseIRI;
 import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
-import static org.trellisldp.triplestore.TriplestoreUtils.getSubject;
 import static org.trellisldp.vocabulary.Trellis.DeletedResource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferAudit;
@@ -530,34 +529,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         }
         LOGGER.warn("No baseURL defined. Emitting message with resource's internal IRI: {}", identifier);
         return identifier.getIRIString();
-    }
-
-    @Override
-    public Stream<Triple> scan() {
-        /*
-         * SELECT ?subject ?object
-         * WHERE {
-         *   GRAPH trellis:PreferServerManaged { ?subject rdf:type ?object }
-         * }
-         */
-        final Query q = new Query();
-        q.setQuerySelectType();
-        q.addResultVar(SUBJECT);
-        q.addResultVar(OBJECT);
-
-        final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(triple(SUBJECT, rdf.asJenaNode(RDF.type), OBJECT));
-
-        final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(PreferServerManaged), epb);
-
-        final ElementGroup elg = new ElementGroup();
-        elg.addElement(ng);
-
-        q.setQueryPattern(elg);
-
-        final Stream.Builder<Triple> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createTriple(getSubject(qs), RDF.type, getObject(qs))));
-        return builder.build();
     }
 
     /**

@@ -39,7 +39,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.JoiningResourceService.RetrievableResource;
 import org.trellisldp.vocabulary.LDP;
@@ -126,11 +125,6 @@ public class JoiningResourceServiceTest {
         public TestableJoiningResourceService(final ImmutableDataService<Resource> immutableData,
                         final MutableDataService<Resource> mutableData) {
             super(mutableData, immutableData);
-        }
-
-        @Override
-        public Stream<? extends Triple> scan() {
-            return Stream.empty();
         }
 
         @Override
