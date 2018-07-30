@@ -24,6 +24,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -32,7 +34,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,11 +54,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Request;
@@ -136,9 +134,6 @@ public class PutHandlerTest {
     @Mock
     private SecurityContext mockSecurityContext;
 
-    @Mock
-    private CompletableFuture<Boolean> mockFuture;
-
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -155,6 +150,7 @@ public class PutHandlerTest {
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
 
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
+        when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
@@ -190,9 +186,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        assertThrows(WebApplicationException.class, () -> putHandler.setResource(mockResource));
+        assertEquals(CONFLICT, handler.setResource(handler.initialize(mockResource)).join().build().getStatusInfo());
     }
 
     @Test
@@ -206,9 +202,10 @@ public class PutHandlerTest {
             .thenReturn(completedFuture(false));
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        assertThrows(BadRequestException.class, () -> putHandler.setResource(mockResource));
+        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     @Test
@@ -217,9 +214,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -236,9 +233,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -255,9 +252,10 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile() + ".non-existent-file");
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        assertThrows(WebApplicationException.class, () -> putHandler.setResource(mockResource));
+        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     @Test
@@ -267,9 +265,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -288,9 +286,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -309,9 +307,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.RDFSource.getIRIString()).rel("type").build());
 
         final File entity = new File(getClass().getResource("/simpleLiteral.ttl").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -329,9 +327,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final File entity = new File(getClass().getResource("/simpleLiteral.ttl").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -345,9 +343,9 @@ public class PutHandlerTest {
     @Test
     public void testPutLdpResourceEmpty() {
         final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -365,9 +363,10 @@ public class PutHandlerTest {
         when(mockResource.getBinary()).thenReturn(of(testBinary));
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        assertThrows(WebApplicationException.class, () -> putHandler.setResource(mockResource));
+        assertEquals(PRECONDITION_FAILED, handler.setResource(handler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     @Test
@@ -377,9 +376,9 @@ public class PutHandlerTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
@@ -394,11 +393,11 @@ public class PutHandlerTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final BadRequestException ex = assertThrows(BadRequestException.class, () ->
-                putHandler.setResource(mockResource));
-        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
+        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
     }
@@ -412,25 +411,25 @@ public class PutHandlerTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        assertThrows(BadRequestException.class, () -> putHandler.setResource(mockResource));
+        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     @Test
-    public void testException() throws Exception {
-        when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
+    public void testBinaryError() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(mockFuture);
+                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
-        final PutHandler putHandler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
+        final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
+        final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = putHandler.setResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     private static Predicate<Link> hasLink(final IRI iri, final String rel) {

@@ -40,7 +40,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
@@ -63,7 +62,7 @@ import org.trellisldp.vocabulary.Trellis;
  *
  * @author acoburn
  */
-public final class RdfUtils {
+final class RdfUtils {
 
     private static final Logger LOGGER = getLogger(RdfUtils.class);
 
@@ -215,16 +214,13 @@ public final class RdfUtils {
      * @param ioService the I/O service
      * @param acceptableTypes the types from HTTP headers
      * @param mimeType an additional "default" mimeType to match
-     * @return an RDFSyntax
+     * @return an RDFSyntax or null if there was an error
+     * @throws InvalidSyntaxException if neither a valid RDF syntax nor a fallback content-type is found
      */
     public static Optional<RDFSyntax> getSyntax(final IOService ioService, final List<MediaType> acceptableTypes,
-            final Optional<String> mimeType) {
+            final Optional<String> mimeType) throws InvalidSyntaxException {
         if (acceptableTypes.isEmpty()) {
-            // TODO -- JDK9 refactor with Optional::or
-            if (mimeType.isPresent()) {
-                return empty();
-            }
-            return of(TURTLE);
+            return mimeType.isPresent() ? empty() : of(TURTLE);
         }
         final Optional<MediaType> mt = mimeType.map(MediaType::valueOf);
         for (final MediaType type : acceptableTypes) {
@@ -238,7 +234,7 @@ public final class RdfUtils {
             }
         }
         LOGGER.debug("Valid syntax not found among {} or {}", acceptableTypes, mimeType);
-        throw new NotAcceptableException();
+        throw new InvalidSyntaxException("Valid syntax not found among " + acceptableTypes);
     }
 
     /**
@@ -251,7 +247,7 @@ public final class RdfUtils {
      */
     public static IRI getProfile(final List<MediaType> acceptableTypes, final RDFSyntax syntax) {
         for (final MediaType type : acceptableTypes) {
-            if (RDFSyntax.byMediaType(type.toString()).filter(syntax::equals).isPresent() &&
+            if (RDFSyntax.byMediaType(type.toString()).filter(s -> s.equals(syntax)).isPresent() &&
                     type.getParameters().containsKey("profile")) {
                 return rdf.createIRI(type.getParameters().get("profile").split(" ")[0].trim());
             }

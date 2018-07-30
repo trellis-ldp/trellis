@@ -18,7 +18,6 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -30,6 +29,8 @@ import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.Response.Status.FOUND;
+import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
+import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.Range.between;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
@@ -52,6 +53,7 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -156,10 +158,16 @@ public final class MementoResource {
         builder.links(links.toArray(new Link[0])).link(Resource.getIRIString(), "type")
             .link(RDFSource.getIRIString(), "type").header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
-        final RDFSyntax syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT))
-            .orElse(null);
-        if (nonNull(syntax)) {
-            final IRI profile = ofNullable(getProfile(acceptableTypes, syntax)).orElse(expanded);
+        final Optional<RDFSyntax> syntax;
+        try {
+            syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT));
+        } catch (final InvalidSyntaxException ex) {
+            return status(NOT_ACCEPTABLE);
+        }
+
+        if (syntax.isPresent()) {
+            final RDFSyntax rdfSyntax = syntax.get();
+            final IRI profile = ofNullable(getProfile(acceptableTypes, syntax.get())).orElse(expanded);
 
             final List<Triple> extraData = getExtraTriples(identifier);
             for (final Link l : links) {
@@ -173,11 +181,11 @@ public final class MementoResource {
                 @Override
                 public void write(final OutputStream out) throws IOException {
                     trellis.getIOService().write(concat(links.stream().flatMap(linkToTriples), extraData.stream()),
-                            out, syntax, profile);
+                            out, rdfSyntax, profile);
                 }
             };
 
-            return builder.type(syntax.mediaType()).entity(stream);
+            return builder.type(syntax.get().mediaType()).entity(stream);
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)
@@ -207,7 +215,7 @@ public final class MementoResource {
     public Response.ResponseBuilder getTimeGateBuilder(final LdpRequest req, final String baseUrl) {
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         final IRI internalIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        return Response.status(FOUND)
+        return status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().toEpochMilli()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
             .links(getMementoLinks(identifier, trellis.getMementoService().list(internalIdentifier))

@@ -63,6 +63,8 @@ import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
@@ -96,10 +98,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -121,8 +120,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
@@ -132,6 +129,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.io.JenaIOService;
@@ -177,12 +175,14 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     private static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
     private static final String DELETED_PATH = REPO1 + "/deleted";
     private static final String USER_DELETED_PATH = REPO1 + "/userdeleted";
+    private static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
 
     private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
     private static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
     private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
+    private static final IRI newresourceIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE);
     private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
     private static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
     private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
@@ -214,17 +214,13 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     protected AgentService mockAgentService;
 
     @Mock
-    private Resource mockResource, mockVersionedResource, mockBinaryResource, mockDeletedResource,
-            mockUserDeletedResource, mockBinaryVersionedResource;
+    private Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource;
 
     @Mock
     private Binary mockBinary;
 
     @Mock
     private InputStream mockInputStream;
-
-    @Mock
-    private CompletableFuture<Boolean> mockFuture;
 
     @BeforeAll
     public void before() throws Exception {
@@ -240,11 +236,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         return BASE_URL;
     }
 
-    private static OngoingStubbing<Optional<? extends Resource>> whenResource(
-                    final Optional<? extends Resource> methodCall) {
-        return Mockito.<Optional<? extends Resource>>when(methodCall);
-    }
-
     @BeforeEach
     public void setUpMocks() {
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
@@ -253,28 +244,29 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
         when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
-        whenResource(mockMementoService.get(any(IRI.class), any(Instant.class)))
-            .thenReturn(of(mockVersionedResource));
-        whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
-        whenResource(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
-            .thenReturn(of(mockResource));
-        whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
-        when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
+        when(mockMementoService.get(any(IRI.class), any(Instant.class)))
+            .thenAnswer(inv -> of(mockVersionedResource));
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
+            .thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
-        whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
-        whenResource(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
+        when(mockResourceService.get(eq(newresourceIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(eq(binaryIdentifier))).thenAnswer(inv -> completedFuture(mockBinaryResource));
+        when(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(of(mockBinaryVersionedResource));
-        when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
+        when(mockResourceService.get(eq(nonexistentIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());
-        whenResource(mockResourceService.get(eq(deletedIdentifier))).thenReturn(of(mockDeletedResource));
-        whenResource(mockMementoService.get(eq(deletedIdentifier), any(Instant.class)))
-            .thenReturn(of(mockDeletedResource));
+        when(mockResourceService.get(eq(deletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockMementoService.get(eq(deletedIdentifier), any(Instant.class)))
+            .thenReturn(of(DELETED_RESOURCE));
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
-        whenResource(mockResourceService.get(eq(userDeletedIdentifier))).thenReturn(of(mockUserDeletedResource));
-        whenResource(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
-            .thenReturn(of(mockUserDeletedResource));
+        when(mockResourceService.get(eq(userDeletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
+            .thenAnswer(inv -> of(DELETED_RESOURCE));
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
@@ -330,22 +322,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockMementoService.list(eq(deletedIdentifier))).thenReturn(emptyList());
-        when(mockDeletedResource.isDeleted()).thenReturn(true);
-        when(mockDeletedResource.getInteractionModel()).thenReturn(LDP.Resource);
-        when(mockDeletedResource.getModified()).thenReturn(time);
-        when(mockDeletedResource.getBinary()).thenReturn(empty());
-        when(mockDeletedResource.isMemento()).thenReturn(false);
-        when(mockDeletedResource.getIdentifier()).thenReturn(identifier);
-        when(mockDeletedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockMementoService.list(eq(userDeletedIdentifier))).thenReturn(emptyList());
-        when(mockUserDeletedResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockUserDeletedResource.getModified()).thenReturn(time);
-        when(mockUserDeletedResource.getBinary()).thenReturn(empty());
-        when(mockUserDeletedResource.isMemento()).thenReturn(false);
-        when(mockUserDeletedResource.isDeleted()).thenReturn(true);
-        when(mockUserDeletedResource.getIdentifier()).thenReturn(identifier);
-        when(mockUserDeletedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockResourceService.unskolemize(any(IRI.class)))
             .thenAnswer(inv -> {
@@ -663,6 +641,38 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testGetBinaryDigestInvalid() throws IOException {
+        final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
+
+        assertEquals(OK, res.getStatusInfo());
+        assertFalse(res.getAllowedMethods().contains("PATCH"));
+        assertTrue(res.getAllowedMethods().contains("PUT"));
+        assertTrue(res.getAllowedMethods().contains("DELETE"));
+        assertTrue(res.getAllowedMethods().contains("GET"));
+        assertTrue(res.getAllowedMethods().contains("HEAD"));
+        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
+        assertFalse(res.getAllowedMethods().contains("POST"));
+
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+
+        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
+        assertNotNull(res.getHeaderString(ACCEPT_RANGES));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertNull(res.getHeaderString(DIGEST));
+
+        final List<String> varies = res.getStringHeaders().get(VARY);
+        assertTrue(varies.contains(RANGE));
+        assertTrue(varies.contains(WANT_DIGEST));
+        assertTrue(varies.contains(ACCEPT_DATETIME));
+        assertFalse(varies.contains(PREFER));
+
+        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
+        assertEquals("Some input stream", entity);
+    }
+
+    @Test
     public void testGetBinaryDigestMd5() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
 
@@ -774,32 +784,32 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetBinaryError() throws IOException {
+    public void testGetBinaryError() {
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(empty());
         final Response res = target(BINARY_PATH).request().get();
         assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
-    public void testGetVersionError() throws IOException {
+    public void testGetVersionError() {
         final Response res = target(BINARY_PATH).queryParam("version", "looking at my history").request().get();
         assertEquals(BAD_REQUEST, res.getStatusInfo());
     }
 
     @Test
-    public void testGetVersionNotFound() throws IOException {
+    public void testGetVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().get();
         assertEquals(NOT_FOUND, res.getStatusInfo());
     }
 
     @Test
-    public void testGetTimemapNotFound() throws IOException {
+    public void testGetTimemapNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("ext", "timemap").request().get();
         assertEquals(NOT_FOUND, res.getStatusInfo());
     }
 
     @Test
-    public void testGetTimegateNotFound() throws IOException {
+    public void testGetTimegateNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .header(ACCEPT_DATETIME, "Wed, 16 May 2018 13:18:57 GMT").get();
         assertEquals(NOT_FOUND, res.getStatusInfo());
@@ -1190,7 +1200,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
 
     @Test
-    public void testGetTimeMapLinkDefaultFormat() throws IOException {
+    public void testGetTimeMapLinkDefaultFormat() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().get();
@@ -1200,7 +1210,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetTimeMapLinkDefaultFormat2() throws IOException {
+    public void testGetTimeMapLinkDefaultFormat2() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target("repository/resource").queryParam("ext", "timemap").request().get();
@@ -1210,7 +1220,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetTimeMapLinkInvalidFormat() throws IOException {
+    public void testGetTimeMapLinkInvalidFormat() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
@@ -1441,7 +1451,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetVersionJson() throws IOException {
+    public void testGetVersionJson() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
@@ -1492,7 +1502,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetVersionContainerJson() throws IOException {
+    public void testGetVersionContainerJson() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
@@ -1551,7 +1561,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetBinaryAcl() throws IOException {
+    public void testGetBinaryAcl() {
         when(mockBinaryResource.hasAcl()).thenReturn(true);
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request().get();
 
@@ -1563,7 +1573,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetBinaryLinks() throws IOException {
+    public void testGetBinaryLinks() {
         final Response res = target(BINARY_PATH).request().get();
 
         assertEquals(OK, res.getStatusInfo());
@@ -1574,7 +1584,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetBinaryDescriptionLinks() throws IOException {
+    public void testGetBinaryDescriptionLinks() {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
         assertEquals(OK, res.getStatusInfo());
@@ -1583,7 +1593,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("alternate")));
     }
-
 
     @Test
     public void testGetAclJsonCompact() throws IOException {
@@ -1633,8 +1642,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetLdpResource() {
-        when(mockDeletedResource.isDeleted()).thenReturn(false);
-        final Response res = target(DELETED_PATH).request().get();
+        final Response res = target(RESOURCE_PATH).request().get();
 
         assertEquals(OK, res.getStatusInfo());
     }
@@ -1901,7 +1909,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testOptionsVersionNotFound() throws IOException {
+    public void testOptionsVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().options();
         assertEquals(NOT_FOUND, res.getStatusInfo());
     }
@@ -1996,6 +2004,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostRoot() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
             .thenReturn(empty());
 
@@ -2029,7 +2039,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostTypeMismatch() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
@@ -2042,7 +2052,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostConflict() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenAnswer(inv -> of(mockResource));
+            .thenAnswer(inv -> completedFuture(mockResource));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
@@ -2055,7 +2065,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostUnknownLinkType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
@@ -2072,7 +2082,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBadContent() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> A title\" .", TEXT_TURTLE_TYPE));
@@ -2083,7 +2093,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testPostToLdpRs() {
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-                .thenReturn(empty());
+                .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2116,32 +2126,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testPostInterrupted() throws Exception {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH)), any(Session.class),
-                        eq(LDP.RDFSource), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
-    public void testPostFutureException() throws Exception {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH)), any(Session.class),
-                        eq(LDP.RDFSource), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        doThrow(ExecutionException.class).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
     public void testPostVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2161,7 +2145,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostConstraint() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://www.w3.org/ns/ldp#inbox> \"Some literal\" .",
@@ -2176,7 +2160,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostIgnoreContains() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
@@ -2187,6 +2171,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPostNonexistent() {
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(NON_EXISTENT_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -2195,6 +2181,8 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPostGone() {
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         final Response res = target(DELETED_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -2289,11 +2277,36 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPostTimeMap() {
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+    }
+
+    @Test
     public void testPostSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(OK, res.getStatusInfo());
+    }
+
+    @Test
+    public void testMementoError() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
+                    eq(MAX))).thenReturn(empty());
+        doThrow(new RuntimeTrellisException("Expected Error")).when(mockMementoService).put(any());
+
+        final Response res = target(RESOURCE_PATH).request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
     }
 
     /* ******************************* *
@@ -2354,32 +2367,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testPutInterrupted() throws Exception {
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), any(Session.class),
-                        eq(LDP.Container), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request()
-            .header("Link", LDP.Container + "; rel=\"type\"")
-            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
-    public void testPutFutureException() throws Exception {
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), any(Session.class),
-                        eq(LDP.Container), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        doThrow(ExecutionException.class).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request()
-            .header("Link", LDP.Container + "; rel=\"type\"")
-            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
     public void testPutExistingSubclassLink() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", LDP.Container + "; rel=\"type\"")
@@ -2422,8 +2409,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPutNew() {
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test")), eq(MAX)))
-            .thenReturn(empty());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH + "/test").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2627,6 +2615,13 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
+    @Test
+    public void testPutTimeMap() {
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+    }
 
     /* ******************************* *
      *            DELETE Tests
@@ -2663,8 +2658,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testDeleteNonExistant() {
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test")), eq(MAX)))
-            .thenReturn(empty());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH + "/test").request().delete();
 
@@ -2694,28 +2690,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testDeleteInterrupted() throws Exception {
-        when(mockResourceService.delete(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)),
-                    any(Session.class), eq(LDP.Resource), any(Dataset.class))).thenReturn(mockFuture);
-        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request().delete();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
-    public void testDeleteFutureException() throws Exception {
-        when(mockResourceService.delete(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)),
-                    any(Session.class), eq(LDP.Resource), any(Dataset.class))).thenReturn(mockFuture);
-        doThrow(ExecutionException.class).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request().delete();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
-    @Test
     public void testDeleteNoChildren2() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.empty());
@@ -2731,6 +2705,12 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
+    @Test
+    public void testDeleteTimeMap() {
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().delete();
+        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
     }
 
     @Test
@@ -2757,6 +2737,15 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
+    public void testPatchTimeMap() {
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+    }
+
+    @Test
     public void testPatchExisting() {
         final Response res = target(RESOURCE_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2767,6 +2756,22 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
+    @Test
+    public void testPatchMissing() {
+        final Response res = target(NON_EXISTENT_PATH).request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+        assertEquals(NOT_FOUND, res.getStatusInfo());
+    }
+
+    @Test
+    public void testPatchGone() {
+        final Response res = target(DELETED_PATH).request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+        assertEquals(GONE, res.getStatusInfo());
     }
 
     @Test
@@ -2840,8 +2845,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testPatchNew() {
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test")), eq(MAX)))
-            .thenReturn(empty());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
 
         final Response res = target(RESOURCE_PATH + "/test").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2933,31 +2939,13 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testPatchInterrupted() throws Exception {
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), any(Session.class),
-                        eq(LDP.RDFSource), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        doThrow(new InterruptedException("Expected InterruptedException")).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request()
+    public void testPatchNotAcceptable() {
+        final Response res = target(RESOURCE_PATH).request().accept("text/foo")
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(NOT_ACCEPTABLE, res.getStatusInfo());
     }
-
-    @Test
-    public void testPatchFutureException() throws Exception {
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH)), any(Session.class),
-                        eq(LDP.RDFSource), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        doThrow(ExecutionException.class).when(mockFuture).get();
-
-        final Response res = target(RESOURCE_PATH).request()
-            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
-                        APPLICATION_SPARQL_UPDATE));
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
-    }
-
 
     /**
      * Some other method
@@ -2966,15 +2954,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOtherMethod() {
         final Response res = target(RESOURCE_PATH).request().method("FOO");
         assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
-    }
-
-    /**
-     * An other location
-     */
-    @Test
-    public void testOtherParition() {
-        final Response res = target("other/object").request().get();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
     }
 
     /* ************************************ *

@@ -84,7 +84,6 @@ public class FileResourceTest {
         });
         assertFalse(res.hasAcl());
         assertFalse(res.isMemento());
-        assertFalse(res.isDeleted());
         assertEquals(0L, res.stream(LDP.PreferContainment).count());
         assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
@@ -123,7 +122,6 @@ public class FileResourceTest {
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isMemento());
-        assertFalse(res.isDeleted());
         assertEquals(3L, res.stream(LDP.PreferContainment).count());
         assertEquals(6L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(5L, res.stream(Trellis.PreferServerManaged).count());
@@ -149,7 +147,6 @@ public class FileResourceTest {
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertFalse(res.isMemento());
-        assertFalse(res.isDeleted());
         assertEquals(3L, res.stream(LDP.PreferContainment).count());
         assertEquals(5L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(4L, res.stream(Trellis.PreferServerManaged).count());
@@ -173,7 +170,6 @@ public class FileResourceTest {
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
         assertTrue(res.isMemento());
-        assertFalse(res.isDeleted());
         assertEquals(3L, res.stream(LDP.PreferContainment).count());
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());

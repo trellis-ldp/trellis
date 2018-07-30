@@ -14,13 +14,14 @@
 package org.trellisldp.triplestore;
 
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
@@ -35,6 +36,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -95,10 +97,17 @@ public class TriplestoreResource implements Resource {
      * @param identifier the identifier
      * @return a Resource, if one exists
      */
-    public static Optional<Resource> findResource(final RDFConnection rdfConnection, final IRI identifier) {
-        final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier);
-        res.fetchData();
-        return res.exists() ? of(res) : empty();
+    public static CompletableFuture<Resource> findResource(final RDFConnection rdfConnection, final IRI identifier) {
+        return supplyAsync(() -> {
+            final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier);
+            res.fetchData();
+            if (!res.exists()) {
+                return MISSING_RESOURCE;
+            } else if (res.isDeleted()) {
+                return DELETED_RESOURCE;
+            }
+            return res;
+        });
     }
 
     /**
@@ -107,6 +116,10 @@ public class TriplestoreResource implements Resource {
      */
     protected Boolean exists() {
         return nonNull(getModified()) && nonNull(getInteractionModel());
+    }
+
+    protected Boolean isDeleted() {
+        return graph.contains(identifier, DC.type, Trellis.DeletedResource);
     }
 
     /**
@@ -227,11 +240,6 @@ public class TriplestoreResource implements Resource {
     @Override
     public Boolean hasAcl() {
         return fetchAclQuads().findAny().isPresent();
-    }
-
-    @Override
-    public Boolean isDeleted() {
-        return graph.contains(identifier, DC.type, Trellis.DeletedResource);
     }
 
     private Stream<Quad> fetchServerQuads() {

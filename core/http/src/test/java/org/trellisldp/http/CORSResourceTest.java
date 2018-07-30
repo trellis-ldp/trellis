@@ -18,7 +18,6 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -35,6 +34,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
@@ -43,7 +43,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -64,8 +63,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.stubbing.OngoingStubbing;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
@@ -170,11 +167,6 @@ public class CORSResourceTest extends JerseyTest {
         super.tearDown();
     }
 
-    private static OngoingStubbing<Optional<? extends Resource>> whenResource(
-                    final Optional<? extends Resource> methodCall) {
-        return Mockito.<Optional<? extends Resource>>when(methodCall);
-    }
-
     @BeforeEach
     public void setUpMocks() {
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
@@ -183,11 +175,11 @@ public class CORSResourceTest extends JerseyTest {
         when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getMementoService()).thenReturn(mementoService);
 
-        whenResource(mockResourceService.get(eq(identifier))).thenReturn(of(mockResource));
-        whenResource(mockResourceService.get(eq(root))).thenReturn(of(mockResource));
-        when(mockResourceService.get(eq(childIdentifier))).thenReturn(empty());
-        whenResource(mockResourceService.get(eq(binaryIdentifier))).thenReturn(of(mockBinaryResource));
-        when(mockResourceService.get(eq(nonexistentIdentifier))).thenReturn(empty());
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(eq(binaryIdentifier))).thenAnswer(inv -> completedFuture(mockBinaryResource));
+        when(mockResourceService.get(eq(nonexistentIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);

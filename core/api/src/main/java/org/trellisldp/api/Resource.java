@@ -250,19 +250,4 @@ public interface Resource {
     default Stream<Entry<String, String>> getExtraLinkRelations() {
         return Stream.empty();
     }
-
-    /**
-     * Test whether this resource has been marked as deleted.
-     *
-     * <p>By default this method returns false.
-     *
-     * <p>Note: this can be used to distinguish between resources that don't exist (e.g. HTTP 404)
-     * and resources that are no longer available (e.g. HTTP 410) but which still have historical
-     * versions available.
-     *
-     * @return true if this resource has been deleted; false otherwise
-     */
-    default Boolean isDeleted() {
-        return false;
-    }
 }

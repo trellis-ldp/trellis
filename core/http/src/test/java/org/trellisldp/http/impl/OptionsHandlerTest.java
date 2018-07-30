@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -43,7 +42,6 @@ import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -101,7 +99,7 @@ public class OptionsHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, null);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
@@ -121,7 +119,7 @@ public class OptionsHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, baseUrl);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
 
         final String acceptPost = res.getHeaderString(ACCEPT_POST);
@@ -149,7 +147,7 @@ public class OptionsHandlerTest {
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, null);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
 
@@ -169,7 +167,7 @@ public class OptionsHandlerTest {
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, baseUrl);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
 
@@ -191,7 +189,7 @@ public class OptionsHandlerTest {
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, null);
 
-        final Response res = optionsHandler.ldpOptions(mockResource).build();
+        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_PATCH));
@@ -204,14 +202,5 @@ public class OptionsHandlerTest {
         assertFalse(allow.contains(DELETE));
         assertFalse(allow.contains(PATCH));
         assertFalse(allow.contains(POST));
-    }
-
-    @Test
-    public void testOptionsDeleted() {
-        when(mockResource.isDeleted()).thenReturn(true);
-
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, baseUrl);
-
-        assertThrows(WebApplicationException.class, () -> optionsHandler.ldpOptions(mockResource));
     }
 }

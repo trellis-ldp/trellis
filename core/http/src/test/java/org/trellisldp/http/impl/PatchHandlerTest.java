@@ -23,6 +23,7 @@ import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -33,7 +34,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,11 +57,8 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
@@ -139,9 +136,6 @@ public class PatchHandlerTest {
     @Mock
     private SecurityContext mockSecurityContext;
 
-    @Mock
-    private CompletableFuture<Boolean> mockFuture;
-
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -154,6 +148,7 @@ public class PatchHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.RDFSource));
+        when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
@@ -187,7 +182,7 @@ public class PatchHandlerTest {
     @Test
     public void testPatchNoSparql() {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null, mockBundler, null);
-        assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource));
+        assertEquals(BAD_REQUEST, patchHandler.initialize(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -201,14 +196,15 @@ public class PatchHandlerTest {
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
-        assertThrows(BadRequestException.class, () -> handler.updateResource(mockResource));
+        assertEquals(INTERNAL_SERVER_ERROR, handler.updateResource(handler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     @Test
     public void testPatchLdprs() {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
     }
 
@@ -221,7 +217,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
 
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
@@ -237,7 +233,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
@@ -259,7 +255,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = patchHandler.updateResource(mockResource).build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
@@ -273,16 +269,6 @@ public class PatchHandlerTest {
     }
 
     @Test
-    public void testDeleted() {
-        when(mockResource.isDeleted()).thenReturn(true);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
-
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
-        assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource));
-    }
-
-    @Test
     public void testConflict() {
         when(mockRequest.evaluatePreconditions(any(Date.class), any(EntityTag.class)))
             .thenReturn(status(CONFLICT));
@@ -290,7 +276,7 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        assertThrows(WebApplicationException.class, () -> patchHandler.updateResource(mockResource));
+        assertEquals(CONFLICT, patchHandler.initialize(mockResource).build().getStatusInfo());
     }
 
     @Test
@@ -301,7 +287,8 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        assertThrows(BadRequestException.class, () -> patchHandler.updateResource(mockResource));
+        assertEquals(INTERNAL_SERVER_ERROR, patchHandler.updateResource(patchHandler.initialize(mockResource)).join()
+                .build().getStatusInfo());
     }
 
     @Test
@@ -310,25 +297,12 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final BadRequestException ex = assertThrows(BadRequestException.class, () ->
-                patchHandler.updateResource(mockResource));
-        assertTrue(ex.getResponse().getLinks().stream().anyMatch(link ->
+        final Response res = patchHandler.initialize(mockResource).build();
+        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
-        assertEquals(TEXT_PLAIN_TYPE, ex.getResponse().getMediaType());
-    }
-
-    @Test
-    public void testException() throws Exception {
-        when(mockFuture.get()).thenThrow(new InterruptedException("Expected"));
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(mockFuture);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
-
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
-        final Response res = patchHandler.updateResource(mockResource).build();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType());
     }
 
     @Test
@@ -339,7 +313,8 @@ public class PatchHandlerTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
-        assertThrows(BadRequestException.class, () -> patchHandler.updateResource(mockResource));
+        assertEquals(BAD_REQUEST, patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build()
+                .getStatusInfo());
     }
 
     private static Predicate<Link> hasLink(final IRI iri, final String rel) {

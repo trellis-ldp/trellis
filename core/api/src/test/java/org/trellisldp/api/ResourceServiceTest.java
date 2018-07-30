@@ -15,6 +15,7 @@ package org.trellisldp.api;
 
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,8 +29,8 @@ import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNode;
@@ -65,8 +66,8 @@ public class ResourceServiceTest {
 
     private static class MyRetrievalService implements RetrievalService<Resource> {
         @Override
-        public Optional<Resource> get(final IRI id) {
-            return of(mockResource);
+        public CompletableFuture<Resource> get(final IRI id) {
+            return completedFuture(mockResource);
         }
     }
 
@@ -80,7 +81,7 @@ public class ResourceServiceTest {
         doCallRealMethod().when(mockResourceService).toInternal(any(), any());
         doCallRealMethod().when(mockResourceService).toExternal(any(), any());
 
-        when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> of(mockResource));
+        when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> completedFuture(mockResource));
 
         when(mockResourceService.scan()).thenAnswer(inv ->
             asList(rdf.createTriple(existing, type, LDP.Container)).stream());
@@ -89,16 +90,14 @@ public class ResourceServiceTest {
     @Test
     public void testRetrievalService2() {
         final RetrievalService<Resource> svc = new MyRetrievalService();
-        final Optional<? extends Resource> res = svc.get(existing);
-        assertTrue(res.isPresent());
-        assertEquals(mockResource, res.get());
+        final CompletableFuture<? extends Resource> res = svc.get(existing);
+        assertEquals(mockResource, res.join());
     }
 
     @Test
     public void testRetrievalService() {
-        final Optional<? extends Resource> res = mockRetrievalService.get(existing);
-        assertTrue(res.isPresent());
-        assertEquals(mockResource, res.get());
+        final CompletableFuture<? extends Resource> res = mockRetrievalService.get(existing);
+        assertEquals(mockResource, res.join());
     }
 
     @Test
@@ -127,7 +126,8 @@ public class ResourceServiceTest {
         when(mockResource.getIdentifier()).thenReturn(existing);
         when(mockResource.stream(eq(graphs))).thenAnswer(inv ->
                 Stream.of(rdf.createTriple(existing, DC.title, rdf.createLiteral("A title"))));
-        Mockito.<Optional<? extends Resource>>when(mockResourceService.get(eq(existing))).thenReturn(of(mockResource));
+        Mockito.<CompletableFuture<? extends Resource>>when(mockResourceService.get(eq(existing)))
+            .thenReturn(completedFuture(mockResource));
 
         final List<Quad> export = mockResourceService.export(graphs).collect(toList());
         assertEquals(1L, export.size());

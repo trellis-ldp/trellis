@@ -24,11 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -73,8 +73,8 @@ public class JoiningResourceServiceTest {
         protected final Map<IRI, Resource> resources = synchronizedMap(new HashMap<>());
 
         @Override
-        public Optional<? extends Resource> get(final IRI identifier) {
-            return Optional.ofNullable(resources.get(identifier));
+        public CompletableFuture<? extends Resource> get(final IRI identifier) {
+            return completedFuture(resources.getOrDefault(identifier, MISSING_RESOURCE));
         }
 
         protected CompletableFuture<Boolean> isntBadId(final IRI identifier) {
@@ -195,7 +195,7 @@ public class JoiningResourceServiceTest {
         final Resource testResource = new TestResource(testResourceId1, testQuad);
         assertTrue(testable.create(testResourceId1, mockSession, testResource.getInteractionModel(),
                     testResource.dataset(), null, null).get(), "Couldn't create a resource!");
-        Resource retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
+        Resource retrieved = testable.get(testResourceId1).join();
         assertEquals(testResource.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
@@ -204,14 +204,14 @@ public class JoiningResourceServiceTest {
         final Resource testResource2 = new TestResource(testResourceId1, testQuad2);
         assertTrue(testable.replace(testResourceId1, mockSession, testResource2.getInteractionModel(),
                         testResource2.dataset(), null, null).get(), "Couldn't replace resource!");
-        retrieved = testable.get(testResourceId1).orElseThrow(AssertionError::new);
+        retrieved = testable.get(testResourceId1).join();
         assertEquals(testResource2.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource2.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
         assertTrue(testable.delete(testResourceId1, mockSession, testResource2.getInteractionModel(),
                         testResource2.dataset()).get(), "Couldn't delete resource!");
-        assertFalse(testable.get(testResourceId1).isPresent(), "Found resource after deleting it!");
+        assertTrue(MISSING_RESOURCE.equals(testable.get(testResourceId1).join()), "Found resource after deleting it!");
     }
 
     @Test
@@ -227,7 +227,7 @@ public class JoiningResourceServiceTest {
         assertTrue(testable.add(testResourceId2, mockSession, testImmutableResource.dataset()).get(),
                         "Couldn't create an immutable resource!");
 
-        final Resource retrieved = testable.get(testResourceId2).orElseThrow(AssertionError::new);
+        final Resource retrieved = testable.get(testResourceId2).join();
         assertEquals(testMutableResource.getIdentifier(), retrieved.getIdentifier(),
                         "Resource was retrieved with wrong ID!");
         final Dataset quads = retrieved.dataset();
@@ -259,7 +259,7 @@ public class JoiningResourceServiceTest {
         assertTrue(testable.add(testResourceId3, mockSession, testSecondResource.dataset()).get(),
                         "Couldn't add to an immutable resource!");
 
-        final Resource retrieved = testable.get(testResourceId3).orElseThrow(AssertionError::new);
+        final Resource retrieved = testable.get(testResourceId3).join();
         assertEquals(testResourceId3, retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         final Dataset quads = retrieved.dataset();
         assertTrue(quads.contains(testFirstQuad), "Resource was retrieved without its immutable data!");

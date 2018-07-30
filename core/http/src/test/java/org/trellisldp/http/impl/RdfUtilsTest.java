@@ -38,7 +38,6 @@ import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.util.List;
 
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNode;
@@ -77,7 +76,7 @@ public class RdfUtilsTest {
     }
 
     @Test
-    public void testGetSyntax() {
+    public void testGetSyntax() throws InvalidSyntaxException {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -87,13 +86,13 @@ public class RdfUtilsTest {
     }
 
     @Test
-    public void testGetSyntaxEmpty() {
+    public void testGetSyntaxEmpty() throws InvalidSyntaxException {
         assertFalse(RdfUtils.getSyntax(ioService, emptyList(), of("some/type")).isPresent());
         assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, emptyList(), empty()));
     }
 
     @Test
-    public void testGetSyntaxFallback() {
+    public void testGetSyntaxFallback() throws InvalidSyntaxException {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -103,12 +102,12 @@ public class RdfUtilsTest {
     }
 
     @Test
-    public void testGetSyntaxError() {
+    public void testGetSyntaxError() throws InvalidSyntaxException {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"));
 
-        assertThrows(NotAcceptableException.class, () -> RdfUtils.getSyntax(ioService, types, empty()));
+        assertThrows(InvalidSyntaxException.class, () -> RdfUtils.getSyntax(ioService, types, empty()));
     }
 
     @Test

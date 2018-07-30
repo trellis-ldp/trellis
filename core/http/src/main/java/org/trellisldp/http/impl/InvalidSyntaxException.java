@@ -11,27 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.trellisldp.api;
-
-import java.util.concurrent.CompletableFuture;
-
-import org.apache.commons.rdf.api.IRI;
+package org.trellisldp.http.impl;
 
 /**
- * A service that can retrieve resources of some type, featuring optional
- * retrieval by time.
- *
- * @author ajs6f
- * @param <T> the type of resource available from this service
+ * Exception marker for an invalid syntax exception.
  */
-public interface RetrievalService<T> {
+class InvalidSyntaxException extends Exception {
+
+    private static final long serialVersionUID = 4148783553611284606L;
 
     /**
-     * Get a resource by the given identifier.
-     *
-     * @param identifier the resource identifier
-     * @return the resource
+     * Create a new invalid syntax exception.
      */
-    CompletableFuture<? extends T> get(IRI identifier);
+    public InvalidSyntaxException(final String message) {
+        super(message);
+    }
 }

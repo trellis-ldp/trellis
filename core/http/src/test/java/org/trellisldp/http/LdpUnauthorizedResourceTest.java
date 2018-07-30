@@ -42,7 +42,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
@@ -61,7 +60,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.BinaryService;
@@ -141,8 +139,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
 
     @BeforeEach
     public void setUpMocks() {
-        Mockito.<Optional<? extends Resource>>when(mockResourceService.get(any(IRI.class)))
-                        .thenReturn(of(mockResource));
+        when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> of(mockResource));
 
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
         when(mockBundler.getIOService()).thenReturn(ioService);

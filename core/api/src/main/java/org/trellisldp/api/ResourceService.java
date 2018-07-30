@@ -21,6 +21,7 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNode;
@@ -136,8 +137,7 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
      */
     default Stream<? extends Quad> export(final Collection<IRI> graphNames) {
         return scan().map(Triple::getSubject).filter(x -> x instanceof IRI).map(x -> (IRI) x)
-            // TODO - JDK9 optional to stream
-            .flatMap(id -> get(id).map(Stream::of).orElseGet(Stream::empty))
+            .parallel().map(this::get).map(CompletableFuture::join)
             .flatMap(resource -> resource.stream(graphNames).map(q ->
                 getInstance().createQuad(resource.getIdentifier(), q.getSubject(), q.getPredicate(), q.getObject())));
     }

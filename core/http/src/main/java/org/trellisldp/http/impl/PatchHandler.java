@@ -14,19 +14,26 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.joining;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.GONE;
+import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.domain.Prefer.PREFER_REPRESENTATION;
@@ -40,32 +47,29 @@ import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
 import static org.trellisldp.http.impl.RdfUtils.unskolemizeTriples;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
+import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.Principal;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -76,11 +80,17 @@ import org.trellisldp.vocabulary.RDF;
  *
  * @author acoburn
  */
-public class PatchHandler extends BaseLdpHandler {
+public class PatchHandler extends MutatingLdpHandler {
 
     private static final Logger LOGGER = getLogger(PatchHandler.class);
 
     private final String updateBody;
+    private final IRI graphName;
+    private final IRI otherGraph;
+    private final RDFSyntax syntax;
+    private final RDFSyntax outputSyntax;
+    private final String preference;
+    private final IRI profile;
 
     /**
      * Create a handler for PATCH operations.
@@ -93,155 +103,143 @@ public class PatchHandler extends BaseLdpHandler {
     public PatchHandler(final LdpRequest req, final String updateBody, final ServiceBundler trellis,
             final String baseUrl) {
         super(req, trellis, baseUrl);
+
         this.updateBody = updateBody;
+        this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
+        this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
+        this.syntax = getServices().getIOService().supportedUpdateSyntaxes().stream()
+            .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
+        Optional<RDFSyntax> outSyntax;
+        try {
+            outSyntax = getSyntax(getServices().getIOService(),
+                req.getHeaders().getAcceptableMediaTypes(), empty());
+        } catch (final InvalidSyntaxException ex) {
+            outSyntax = empty();
+        }
+        this.outputSyntax = outSyntax.orElse(null);
+        this.preference = ofNullable(req.getPrefer()).flatMap(Prefer::getPreference)
+            .filter(PREFER_REPRESENTATION::equals).orElse(null);
+        this.profile = ofNullable(getProfile(req.getHeaders().getAcceptableMediaTypes(), outputSyntax)).orElseGet(() ->
+                getDefaultProfile(outputSyntax, getIdentifier()));
     }
 
-    private List<Triple> updateGraph(final Resource res, final IRI graphName) {
-        final List<Triple> triples;
-        // Get the incoming syntax and check that the underlying I/O service supports it
-        final RDFSyntax syntax = trellis.getIOService().supportedUpdateSyntaxes().stream()
-            .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst()
-            .orElseThrow(() -> new NotSupportedException("Content-Type: " + req.getContentType() + " not supported"));
+    /**
+     * Initialze the handler with a Trellis resource.
+     *
+     * @param resource the Trellis resource
+     * @return a response builder
+     */
+    public ResponseBuilder initialize(final Resource resource) {
 
+        if (MISSING_RESOURCE.equals(resource)) {
+            // Can't patch non-existent resources
+            return status(NOT_FOUND);
+        } else if (DELETED_RESOURCE.equals(resource)) {
+            // Can't patch non-existent resources
+            return status(GONE);
+        } else if (isNull(updateBody)) {
+            LOGGER.error("Missing body for update: {}", resource.getIdentifier());
+            return status(BAD_REQUEST);
+        } else if (!supportsInteractionModel(LDP.RDFSource)) {
+            return status(BAD_REQUEST)
+                .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
+                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE);
+        } else if (isNull(syntax)) {
+            // Get the incoming syntax and check that the underlying I/O service supports it
+            LOGGER.warn("Content-Type: {} not supported", getRequest().getContentType());
+            return status(UNSUPPORTED_MEDIA_TYPE);
+        } else if (isNull(outputSyntax)) {
+            return status(NOT_ACCEPTABLE);
+        }
+        // Check the cache headers
+        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), resource.getModified(),
+                    getRequest().getPrefer()));
+        final ResponseBuilder cache = checkCache(resource.getModified(), etag);
+        if (nonNull(cache)) {
+            return cache;
+        }
+
+        mayContinue(true);
+        setResource(resource);
+        return ok();
+    }
+
+    /**
+     * Update the resource in the persistence layer.
+     *
+     * @param builder the Trellis response builder
+     * @return a response builder promise
+     */
+    public CompletableFuture<ResponseBuilder> updateResource(final ResponseBuilder builder) {
+        if (!mayContinue()) {
+            return completedFuture(builder);
+        }
+
+        LOGGER.debug("Updating {} via PATCH", getIdentifier());
+
+        // Add the LDP link types
+        getLinkTypes(getResource().getInteractionModel()).forEach(type -> builder.link(type, "type"));
+
+        final TrellisDataset mutable = TrellisDataset.createDataset();
+        final TrellisDataset immutable = TrellisDataset.createDataset();
+
+        return assembleResponse(mutable, immutable, builder)
+            .whenComplete((a, b) -> mutable.close())
+            .whenComplete((a, b) -> immutable.close());
+    }
+
+    @Override
+    protected String getIdentifier() {
+        return super.getIdentifier() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : "");
+    }
+
+    private Function<Boolean, ResponseBuilder> handleResponse(final ResponseBuilder builder,
+            final List<Triple> triples) {
+        return success -> {
+            if (success) {
+                if (nonNull(preference)) {
+                    final StreamingOutput stream = new StreamingOutput() {
+                        @Override
+                        public void write(final OutputStream out) throws IOException {
+                            getServices().getIOService().write(triples.stream()
+                                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
+                                        out, outputSyntax, profile);
+                        }
+                    };
+                    builder.header(PREFERENCE_APPLIED, "return=representation")
+                        .type(outputSyntax.mediaType()).entity(stream);
+                } else {
+                    builder.status(NO_CONTENT);
+                }
+                return builder;
+            }
+            mayContinue(false);
+            return serverError().type(TEXT_PLAIN_TYPE)
+                    .entity("Unable to persist data. Please consult the logs for more information");
+        };
+    }
+
+    private List<Triple> updateGraph(final RDFSyntax syntax, final IRI graphName) {
+        final List<Triple> triples;
         // Update existing graph
         try (final TrellisGraph graph = TrellisGraph.createGraph()) {
-            try (final Stream<? extends Triple> stream = res.stream(graphName)) {
+            try (final Stream<? extends Triple> stream = getResource().stream(graphName)) {
                 stream.forEachOrdered(graph::add);
             }
-            trellis.getIOService().update(graph.asGraph(), updateBody, syntax, TRELLIS_DATA_PREFIX + req.getPath() +
-                    (ACL.equals(req.getExt()) ? "?ext=acl" : ""));
+            getServices().getIOService().update(graph.asGraph(), updateBody, syntax,
+                TRELLIS_DATA_PREFIX + getRequest().getPath() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
-                    || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
-        } catch (final RuntimeTrellisException ex) {
-            LOGGER.warn("Invalid RDF: {}", ex.getMessage());
-            throw new BadRequestException("Invalid RDF: " + ex.getMessage());
+                || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         }
 
         return triples;
     }
 
-    /**
-     * Update a resource with Sparql-Update and build an HTTP response.
-     *
-     * @param res the resource
-     * @return the Response builder
-     */
-    public ResponseBuilder updateResource(final Resource res) {
-        final String baseUrl = getBaseUrl();
-        final String identifier = baseUrl + req.getPath() + (ACL.equals(req.getExt()) ? "?ext=acl" : "");
-
-        if (isNull(updateBody)) {
-            throw new BadRequestException("Missing body for update");
-        }
-        final Session session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .map(trellis.getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
-        session.setProperty(TRELLIS_SESSION_BASE_URL, baseUrl);
-
-        // Check if this is already deleted
-        checkDeleted(res, identifier);
-
-        // Check the cache
-        final EntityTag etag = new EntityTag(buildEtagHash(identifier, res.getModified(), req.getPrefer()));
-        checkCache(req.getRequest(), res.getModified(), etag);
-
-        // Check that the persistence layer supports LDP-RS
-        checkInteractionModel(LDP.RDFSource);
-
-        LOGGER.debug("Updating {} via PATCH", identifier);
-
-        final IRI graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
-        final IRI otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
-
-        // Put triples in buffer
-        final List<Triple> triples = updateGraph(res, graphName);
-
-        try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
-
-            triples.stream().map(skolemizeTriples(trellis.getResourceService(), baseUrl))
-                .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
-                .forEachOrdered(dataset::add);
-
-            // Check any constraints
-            final List<ConstraintViolation> violations = constraintServices.stream()
-                .flatMap(svc -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
-                    .flatMap(g -> {
-                        if (PreferAccessControl.equals(graphName)) {
-                            return svc.constrainedBy(LDP.RDFSource, g);
-                        }
-                        return svc.constrainedBy(res.getInteractionModel(), g);
-                    }))
-                .collect(toList());
-
-            if (!violations.isEmpty()) {
-                final ResponseBuilder err = status(CONFLICT);
-                violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
-                throw new WebApplicationException(err.build());
-            }
-
-            // When updating User or ACL triples, be sure to add the other category to the dataset
-            try (final Stream<? extends Triple> remaining = res.stream(otherGraph)) {
-                remaining.map(t -> rdf.createQuad(otherGraph, t.getSubject(), t.getPredicate(), t.getObject()))
-                    .forEachOrdered(dataset::add);
-            }
-
-            // Save new dataset
-            final IRI resId = res.getIdentifier();
-            final IRI container = trellis.getResourceService().getContainer(resId).orElse(null);
-            if (trellis.getResourceService().replace(res.getIdentifier(), session, res.getInteractionModel(),
-                        dataset.asDataset(), container, res.getBinary().orElse(null)).get()) {
-
-                // Add audit-related triples
-                try (final TrellisDataset auditDataset = TrellisDataset.createDataset()) {
-                    trellis.getAuditService().update(resId, session).stream()
-                        .map(skolemizeQuads(trellis.getResourceService(), baseUrl))
-                        .forEachOrdered(auditDataset::add);
-                    if (!trellis.getResourceService().add(resId, session, auditDataset.asDataset()).get()) {
-                        LOGGER.error("Unable to update resource at {}", resId);
-                        LOGGER.error("because unable to write audit quads: \n{}",
-                                        auditDataset.asDataset().stream().map(Quad::toString).collect(joining("\n")));
-                        throw new BadRequestException("Unable to write audit information. "
-                                + "Please consult the logs for more information");
-                        }
-                }
-
-                // Update the memento
-                trellis.getResourceService().get(res.getIdentifier()).ifPresent(trellis.getMementoService()::put);
-
-                final ResponseBuilder builder = ok();
-
-                getLinkTypes(res.getInteractionModel()).forEach(type -> builder.link(type, "type"));
-
-                return ofNullable(req.getPrefer()).flatMap(Prefer::getPreference).filter(PREFER_REPRESENTATION::equals)
-                    .map(prefer -> {
-                        final RDFSyntax outputSyntax = getSyntax(trellis.getIOService(),
-                                req.getHeaders().getAcceptableMediaTypes(), empty())
-                            .orElseThrow(NotAcceptableException::new);
-                        final IRI profile = ofNullable(getProfile(req.getHeaders().getAcceptableMediaTypes(),
-                                    outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, identifier));
-
-                        final StreamingOutput stream = new StreamingOutput() {
-                            @Override
-                            public void write(final OutputStream out) throws IOException {
-                                trellis.getIOService().write(triples.stream()
-                                            .map(unskolemizeTriples(trellis.getResourceService(), baseUrl)),
-                                        out, outputSyntax, profile);
-                            }
-                        };
-
-                        return builder.header(PREFERENCE_APPLIED, "return=representation")
-                            .type(outputSyntax.mediaType()).entity(stream);
-                    }).orElseGet(() -> builder.status(NO_CONTENT));
-            }
-            throw new BadRequestException("Unable to save resource to persistence layer. "
-                    + "Please consult the logs for more information.");
-
-        } catch (final InterruptedException | ExecutionException ex) {
-            LOGGER.error("Error persisting data", ex);
-        }
-
-        LOGGER.error("Unable to persist data to location at {}", res.getIdentifier());
-        return serverError().type(TEXT_PLAIN_TYPE)
-            .entity("Unable to persist data. Please consult the logs for more information");
+    private static Function<ConstraintService, Stream<ConstraintViolation>> handleConstraintViolations(
+            final TrellisDataset dataset, final IRI graphName, final IRI interactionModel) {
+        final IRI model = PreferAccessControl.equals(graphName) ? LDP.RDFSource : interactionModel;
+        return service -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
+                .flatMap(g -> service.constrainedBy(model, g));
     }
 
     private static Stream<String> getLinkTypes(final IRI ldpType) {
@@ -250,4 +248,55 @@ public class PatchHandler extends BaseLdpHandler {
         }
         return ldpResourceTypes(ldpType).map(IRI::getIRIString);
     }
+
+    private CompletableFuture<ResponseBuilder> assembleResponse(final TrellisDataset mutable,
+            final TrellisDataset immutable, final ResponseBuilder builder) {
+
+        // Put triples in buffer, short-circuit on exception
+        final List<Triple> triples;
+        try {
+            triples = updateGraph(syntax, graphName);
+        } catch (final RuntimeTrellisException ex) {
+            LOGGER.warn("Invalid RDF: {}", ex.getMessage());
+            mayContinue(false);
+            return completedFuture(status(BAD_REQUEST));
+        }
+
+        triples.stream().map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
+            .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
+            .forEachOrdered(mutable::add);
+
+        // Check any constraints on the resulting dataset
+        final List<ConstraintViolation> violations = constraintServices.stream()
+            .flatMap(handleConstraintViolations(mutable, graphName, getResource().getInteractionModel()))
+            .collect(toList());
+
+        // Short-ciruit if there is a constraint violation
+        if (!violations.isEmpty()) {
+            final ResponseBuilder err = status(CONFLICT);
+            violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
+            mayContinue(false);
+            return completedFuture(err);
+        }
+
+        // When updating User or ACL triples, be sure to add the other category to the dataset
+        try (final Stream<? extends Triple> remaining = getResource().stream(otherGraph)) {
+            remaining.map(t -> rdf.createQuad(otherGraph, t.getSubject(), t.getPredicate(), t.getObject()))
+                .forEachOrdered(mutable::add);
+        }
+
+        // Collect the audit data
+        getServices().getAuditService().update(getResource().getIdentifier(), getSession()).stream()
+            .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
+
+        // Save resource data
+        final IRI parent = getServices().getResourceService().getContainer(getResource().getIdentifier()).orElse(null);
+        return getServices().getResourceService()
+            .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
+                     mutable.asDataset(), parent, getResource().getBinary().orElse(null))
+            .thenCombine(getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
+                        immutable.asDataset()), this::handleWriteResults)
+            .thenApply(handleResponse(builder, triples));
+    }
+
 }

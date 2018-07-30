@@ -18,16 +18,15 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.util.stream.Stream;
 
-import javax.ws.rs.WebApplicationException;
-
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
  */
-public class TrellisGraph implements AutoCloseable {
+class TrellisGraph implements AutoCloseable {
 
     private static final Logger LOGGER = getLogger(TrellisGraph.class);
 
@@ -48,7 +47,7 @@ public class TrellisGraph implements AutoCloseable {
             graph.close();
         } catch (final Exception ex) {
             LOGGER.error("Error closing graph: {}", ex.getMessage());
-            throw new WebApplicationException("Error closing graph", ex);
+            throw new RuntimeTrellisException("Error closing graph", ex);
         }
     }
 
