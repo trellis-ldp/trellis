@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Principal;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -45,7 +44,6 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
@@ -175,11 +173,10 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @return a response builder if an error occurred
      */
     protected ResponseBuilder checkConstraint(final Graph graph, final IRI type, final RDFSyntax syntax) {
-        if (nonNull(graph)) {
-            final List<ConstraintViolation> violations = constraintServices.stream().parallel()
-                .flatMap(svc -> svc.constrainedBy(type, graph)).collect(toList());
-
-            if (!violations.isEmpty()) {
+        return ofNullable(graph).map(g ->
+                constraintServices.stream().parallel().flatMap(svc -> svc.constrainedBy(type, g)).collect(toList()))
+            .filter(violations -> !violations.isEmpty())
+            .map(violations -> {
                 final ResponseBuilder err = status(CONFLICT);
                 violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
                 final StreamingOutput stream = new StreamingOutput() {
@@ -190,9 +187,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                     }
                 };
                 return err.entity(stream);
-            }
-        }
-        return null;
+            }).orElse(null);
     }
 
     /**
