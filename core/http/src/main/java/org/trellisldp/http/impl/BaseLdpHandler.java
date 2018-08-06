@@ -105,6 +105,8 @@ class BaseLdpHandler {
 
     /**
      * Check the cache.
+     * @param modified the modification date
+     * @param etag the resource's etag
      * @return a response builder if there is an error; otherwise return null
      */
     protected ResponseBuilder checkCache(final Instant modified, final EntityTag etag) {

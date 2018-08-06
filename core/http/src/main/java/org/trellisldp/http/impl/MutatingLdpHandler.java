@@ -144,6 +144,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param graphName the target graph
      * @param syntax the entity syntax
      * @param dataset the dataset
+     * @return a response builder if there was an error; otherwise return null
      */
     protected ResponseBuilder readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax,
             final TrellisDataset dataset) {
