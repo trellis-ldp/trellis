@@ -16,12 +16,12 @@ package org.trellisldp.amqp;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.RDFUtils.findFirst;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 
 import java.io.IOException;
-import java.util.ServiceLoader;
 
 import javax.inject.Inject;
 
@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * An AMQP message producer capable of publishing messages to an AMQP broker such as
@@ -48,8 +49,8 @@ public class AmqpPublisher implements EventService {
 
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
 
-    // TODO - JDK9 ServiceLoader::findFirst
-    private static ActivityStreamService service = ServiceLoader.load(ActivityStreamService.class).iterator().next();
+    private static ActivityStreamService service = findFirst(ActivityStreamService.class)
+        .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     private final Channel channel;
 

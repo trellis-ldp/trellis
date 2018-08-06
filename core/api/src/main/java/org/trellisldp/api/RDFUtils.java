@@ -20,6 +20,8 @@ import static java.util.stream.Collector.Characteristics.CONCURRENT;
 import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
 import static java.util.stream.Collector.Characteristics.UNORDERED;
 
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,8 +46,8 @@ import org.apache.commons.rdf.api.Triple;
  */
 public final class RDFUtils {
 
-    // TODO - JDK9 ServiceLoader::findFirst
-    private static RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
+    private static RDF rdf = findFirst(RDF.class)
+        .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
 
     /**
      * The internal trellis scheme.
@@ -79,6 +81,18 @@ public final class RDFUtils {
      */
     public static RDF getInstance() {
         return rdf;
+    }
+
+    /**
+     * Get a service.
+     * @param service the interface or abstract class representing the service
+     * @param <T> the class of the service type
+     * @return the first service provider or empty Optional if no service providers are located
+     */
+    public static <T> Optional<T> findFirst(final Class<T> service) {
+        // TODO - JDK9 replace with ServiceLoader::findFirst
+        return Optional.of(ServiceLoader.load(service)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
+            .map(Iterator::next);
     }
 
     /**
