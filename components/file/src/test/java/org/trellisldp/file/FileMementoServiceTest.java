@@ -16,12 +16,16 @@ package org.trellisldp.file;
 import static java.time.Instant.MAX;
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
+import static java.util.Collections.emptyList;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,16 +76,12 @@ public class FileMementoServiceTest {
 
         final MementoService svc = new FileMementoService();
 
-        assertEquals(2L, svc.list(identifier).size());
-        assertTrue(svc.get(identifier, now()).isPresent());
-        svc.get(identifier, now()).ifPresent(res -> assertEquals(time2, res.getModified()));
-        assertTrue(svc.get(identifier, time).isPresent());
-        svc.get(identifier, time).ifPresent(res -> assertEquals(time, res.getModified()));
-        assertFalse(svc.get(identifier, parse("2015-02-16T10:00:00Z")).isPresent());
-        assertTrue(svc.get(identifier, time2).isPresent());
-        svc.get(identifier, time2).ifPresent(res -> assertEquals(time2, res.getModified()));
-        assertTrue(svc.get(identifier, MAX).isPresent());
-        svc.get(identifier, MAX).ifPresent(res -> assertEquals(time2, res.getModified()));
+        assertEquals(2L, svc.list(identifier).join().size());
+        svc.get(identifier, now()).thenAccept(res -> assertEquals(time2, res.getModified())).join();
+        svc.get(identifier, time).thenAccept(res -> assertEquals(time, res.getModified())).join();
+        assertEquals(MISSING_RESOURCE, svc.get(identifier, parse("2015-02-16T10:00:00Z")).join());
+        svc.get(identifier, time2).thenAccept(res -> assertEquals(time2, res.getModified())).join();
+        svc.get(identifier, MAX).thenAccept(res -> assertEquals(time2, res.getModified())).join();
     }
 
     @Test
@@ -95,8 +95,23 @@ public class FileMementoServiceTest {
 
         final MementoService svc = new FileMementoService();
 
-        assertTrue(svc.list(identifier).isEmpty());
-        assertFalse(svc.get(identifier, now()).isPresent());
+        assertTrue(svc.list(identifier).join().isEmpty());
+        assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join());
+    }
+
+    @Test
+    public void testListNone() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "empty");
+        final File dir = new File(getClass().getResource("/versions").getFile());
+        assertTrue(dir.exists());
+        assertTrue(dir.isDirectory());
+
+        System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+
+        final MementoService svc = new FileMementoService();
+
+        assertTrue(svc.list(identifier).join().isEmpty());
+        assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join());
     }
 
     @Test
@@ -112,20 +127,19 @@ public class FileMementoServiceTest {
 
         final MementoService svc = new FileMementoService();
 
-        assertTrue(svc.list(identifier).isEmpty());
+        assertTrue(svc.list(identifier).join().isEmpty());
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         assertTrue(file.exists());
         final Resource res = new FileResource(identifier, file);
         final Instant time = now();
-        svc.put(identifier, time, res.stream());
+        svc.put(identifier, time, res.stream()).join();
 
-        assertEquals(1L, svc.list(identifier).size());
-        svc.put(identifier, time.plusSeconds(10), res.stream());
-        assertEquals(2L, svc.list(identifier).size());
-        assertFalse(svc.delete(identifier, time.plusSeconds(15)));
-        assertTrue(svc.delete(identifier, time.plusSeconds(10)));
-        assertEquals(1L, svc.list(identifier).size());
-
+        assertEquals(1L, svc.list(identifier).join().size());
+        svc.put(identifier, time.plusSeconds(10), res.stream()).join();
+        assertEquals(2L, svc.list(identifier).join().size());
+        assertNull(svc.delete(identifier, time.plusSeconds(15)).join());
+        assertNull(svc.delete(identifier, time.plusSeconds(10)).join());
+        assertEquals(1L, svc.list(identifier).join().size());
     }
 
     @Test
@@ -140,18 +154,18 @@ public class FileMementoServiceTest {
         System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
         final MementoService svc = new FileMementoService();
-        assertEquals(2L, svc.list(identifier).size());
+        assertEquals(2L, svc.list(identifier).join().size());
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         assertTrue(file.exists());
         final Resource res = new FileResource(identifier, file);
 
         final Instant time = parse("2017-02-16T11:15:01Z");
-        svc.put(identifier, time.plusSeconds(10), res.stream());
+        svc.put(identifier, time.plusSeconds(10), res.stream()).handle(this::assertError).join();
 
-        assertEquals(2L, svc.list(identifier).size());
-        assertFalse(svc.delete(identifier, time));
-        assertFalse(svc.delete(identifier, time.plusSeconds(10)));
-        assertEquals(2L, svc.list(identifier).size());
+        assertEquals(2L, svc.list(identifier).join().size());
+        assertNull(svc.delete(identifier, time).handle(this::assertError).join());
+        assertNull(svc.delete(identifier, time.plusSeconds(10)).join());
+        assertEquals(2L, svc.list(identifier).join().size());
     }
 
     @Test
@@ -168,6 +182,16 @@ public class FileMementoServiceTest {
 
         final MementoService svc = new FileMementoService();
 
-        assertTrue(svc.list(identifier).isEmpty());
+        assertTrue(svc.list(identifier).handle((m, err) -> {
+            assertNull(m);
+            assertNotNull(err);
+            return emptyList();
+        }).join().isEmpty());
+    }
+
+    private Void assertError(final Object o, final Throwable err) {
+        assertNull(o);
+        assertNotNull(err);
+        return null;
     }
 }

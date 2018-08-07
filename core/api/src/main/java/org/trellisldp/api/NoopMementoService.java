@@ -14,11 +14,12 @@
 package org.trellisldp.api;
 
 import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Range;
@@ -31,27 +32,27 @@ import org.apache.commons.rdf.api.Quad;
 public class NoopMementoService implements MementoService {
 
     @Override
-    public void put(final IRI identifier, final Instant time, final Stream<? extends Quad> data) {
-        // no-op
+    public CompletableFuture<Void> put(final IRI identifier, final Instant time, final Stream<? extends Quad> data) {
+        return completedFuture(null);
     }
 
     @Override
-    public void put(final Resource resource) {
-        // no-op
+    public CompletableFuture<Void> put(final Resource resource) {
+        return completedFuture(null);
     }
 
     @Override
-    public Optional<Resource> get(final IRI identifier, final Instant time) {
-        return empty();
+    public CompletableFuture<Resource> get(final IRI identifier, final Instant time) {
+        return completedFuture(MISSING_RESOURCE);
     }
 
     @Override
-    public List<Range<Instant>> list(final IRI identifier) {
-        return emptyList();
+    public CompletableFuture<List<Range<Instant>>> list(final IRI identifier) {
+        return completedFuture(emptyList());
     }
 
     @Override
-    public Boolean delete(final IRI identifier, final Instant time) {
-        return true;
+    public CompletableFuture<Void> delete(final IRI identifier, final Instant time) {
+        return completedFuture(null);
     }
 }

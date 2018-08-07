@@ -129,7 +129,6 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.io.JenaIOService;
@@ -245,36 +244,40 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockMementoService.get(any(IRI.class), any(Instant.class)))
-            .thenAnswer(inv -> of(mockVersionedResource));
+            .thenAnswer(inv -> completedFuture(mockVersionedResource));
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
             .thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(childIdentifier), any(Instant.class))).thenReturn(empty());
+        when(mockMementoService.get(eq(childIdentifier), any(Instant.class)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.get(eq(newresourceIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.get(eq(binaryIdentifier))).thenAnswer(inv -> completedFuture(mockBinaryResource));
         when(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
-            .thenReturn(of(mockBinaryVersionedResource));
+            .thenReturn(completedFuture(mockBinaryVersionedResource));
         when(mockResourceService.get(eq(nonexistentIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(nonexistentIdentifier), any(Instant.class))).thenReturn(empty());
+        when(mockMementoService.get(eq(nonexistentIdentifier), any(Instant.class)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.get(eq(deletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockMementoService.get(eq(deletedIdentifier), any(Instant.class)))
-            .thenReturn(of(DELETED_RESOURCE));
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
 
         when(mockResourceService.get(eq(userDeletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
-            .thenAnswer(inv -> of(DELETED_RESOURCE));
+            .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
 
+        when(mockMementoService.list(any(IRI.class))).thenReturn(completedFuture(emptyList()));
         when(mockMementoService.list(eq(identifier)))
-                .thenReturn(asList(between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
+                .thenReturn(completedFuture(asList(
+                    between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                     between(ofEpochSecond(timestamp - 1000), time),
-                    between(time, ofEpochSecond(timestamp + 1000))));
+                    between(time, ofEpochSecond(timestamp + 1000)))));
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockVersionedResource.getModified()).thenReturn(time);
         when(mockVersionedResource.getBinary()).thenReturn(empty());
@@ -282,10 +285,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
-        when(mockMementoService.list(eq(binaryIdentifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(binaryIdentifier))).thenReturn(completedFuture(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000))));
+                between(time, ofEpochSecond(timestamp + 1000)))));
         when(mockBinaryVersionedResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryVersionedResource.getModified()).thenReturn(time);
         when(mockBinaryVersionedResource.getBinary()).thenReturn(of(mockBinary));
@@ -321,9 +324,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
-        when(mockMementoService.list(eq(deletedIdentifier))).thenReturn(emptyList());
+        when(mockMementoService.list(eq(deletedIdentifier))).thenReturn(completedFuture(emptyList()));
 
-        when(mockMementoService.list(eq(userDeletedIdentifier))).thenReturn(emptyList());
+        when(mockMementoService.list(eq(userDeletedIdentifier))).thenReturn(completedFuture(emptyList()));
 
         when(mockResourceService.unskolemize(any(IRI.class)))
             .thenAnswer(inv -> {
@@ -1232,10 +1235,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testGetTimeMapLink() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.list(eq(identifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(identifier))).thenReturn(completedFuture(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000))));
+                between(time, ofEpochSecond(timestamp + 1000)))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
@@ -1291,10 +1294,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetTimeMapJsonCompact() throws IOException {
-        when(mockMementoService.list(eq(identifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(identifier))).thenReturn(completedFuture(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000))));
+                between(time, ofEpochSecond(timestamp + 1000)))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
@@ -1372,10 +1375,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testGetTimeMapJson() throws IOException {
-        when(mockMementoService.list(eq(identifier))).thenReturn(asList(
+        when(mockMementoService.list(eq(identifier))).thenReturn(completedFuture(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000))));
+                between(time, ofEpochSecond(timestamp + 1000)))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get();
@@ -1942,10 +1945,10 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     @Test
     public void testOptionsTimemap() {
-        when(mockMementoService.list(identifier)).thenReturn(asList(
+        when(mockMementoService.list(identifier)).thenReturn(completedFuture(asList(
                 between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
                 between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000))));
+                between(time, ofEpochSecond(timestamp + 1000)))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().options();
 
@@ -1989,7 +1992,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPost() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
+                    eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2007,7 +2010,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
-            .thenReturn(empty());
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target("").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2193,7 +2196,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBinary() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenReturn(empty());
+                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .post(entity("some data.", TEXT_PLAIN_TYPE));
 
@@ -2207,7 +2210,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBinaryWithInvalidDigest() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenReturn(empty());
+                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .header("Digest", "md5=blahblah").post(entity("some data.", TEXT_PLAIN_TYPE));
 
@@ -2226,7 +2229,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBinaryWithInvalidDigestType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenReturn(empty());
+                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .header("Digest", "uh=huh").post(entity("some data.", TEXT_PLAIN_TYPE));
 
@@ -2237,7 +2240,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBinaryWithMd5Digest() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenReturn(empty());
+                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request().header("Digest", "md5=BJozgIQwPzzVzSxvjQsWkA==")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
@@ -2251,7 +2254,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBinaryWithSha1Digest() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenReturn(empty());
+                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request().header("Digest", "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
@@ -2265,7 +2268,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPostBinaryWithSha256Digest() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenReturn(empty());
+                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request()
             .header("Digest", "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
@@ -2290,23 +2293,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(OK, res.getStatusInfo());
-    }
-
-    @Test
-    public void testMementoError() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenReturn(empty());
-        doThrow(new RuntimeTrellisException("Expected Error")).when(mockMementoService).put(any());
-
-        final Response res = target(RESOURCE_PATH).request()
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
-
-        assertEquals(CREATED, res.getStatusInfo());
-        assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
     }
 
     /* ******************************* *
@@ -2411,7 +2397,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPutNew() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH + "/test").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -2660,7 +2646,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testDeleteNonExistant() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH + "/test").request().delete();
 
@@ -2847,7 +2833,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPatchNew() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(identifier), eq(MAX))).thenReturn(empty());
+        when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH + "/test").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",

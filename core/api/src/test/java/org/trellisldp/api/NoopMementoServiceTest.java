@@ -16,7 +16,8 @@ package org.trellisldp.api;
 
 import static java.time.Instant.now;
 import static java.util.stream.Stream.of;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
@@ -66,9 +68,9 @@ public class NoopMementoServiceTest {
     public void noAction() {
         testService.put(identifier, time, of(quad));
 
-        assertFalse(testService.get(identifier, time).isPresent());
-        assertTrue(testService.list(identifier).isEmpty());
-        assertTrue(testService.delete(identifier, time));
+        assertEquals(MISSING_RESOURCE, testService.get(identifier, time).join());
+        assertTrue(testService.list(identifier).join().isEmpty());
+        assertNull(testService.delete(identifier, time).join());
     }
 
     @Test

@@ -104,8 +104,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
             return completedFuture(builder);
         }
 
-        return getServices().getResourceService()
-            .get(getInternalId()).thenAccept(getServices().getMementoService()::put)
+        return getServices().getResourceService().get(getInternalId())
+            .thenCompose(getServices().getMementoService()::put)
             .exceptionally(ex -> {
                     LOGGER.warn("Unable to store memento for {}: {}", getInternalId(), ex.getMessage());
                     return null;

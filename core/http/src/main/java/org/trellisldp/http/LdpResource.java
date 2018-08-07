@@ -226,24 +226,29 @@ public class LdpResource implements ContainerRequestFilter {
         if (nonNull(req.getVersion())) {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
-                .map(getHandler::initialize)
-                .map(getHandler::standardHeaders)
-                .map(getHandler::getRepresentation).orElseGet(() -> status(NOT_FOUND)).build();
+                .thenApply(getHandler::initialize)
+                .thenApply(getHandler::standardHeaders)
+                .thenCombine(trellis.getMementoService().list(identifier), getHandler::addMementoHeaders)
+                .thenApply(getHandler::getRepresentation)
+                .thenApply(ResponseBuilder::build).join();
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.debug("Getting timemap resource: {}", req.getPath());
             return trellis.getResourceService().get(identifier)
-                .thenApply(res -> MISSING_RESOURCE.equals(res)
-                        ? status(NOT_FOUND) : new MementoResource(trellis).getTimeMapBuilder(req, urlBase))
+                .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) ->
+                        MISSING_RESOURCE.equals(res) ? status(NOT_FOUND)
+                            : new MementoResource(trellis).getTimeMapBuilder(mementos, req, urlBase))
                 .thenApply(ResponseBuilder::build).join();
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
             LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
             return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
-                .map(res -> new MementoResource(trellis).getTimeGateBuilder(req, urlBase))
-                .orElseGet(() -> status(NOT_FOUND)).build();
+                .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) ->
+                        MISSING_RESOURCE.equals(res) ? status(NOT_FOUND)
+                            : new MementoResource(trellis).getTimeGateBuilder(mementos, req, urlBase))
+                .thenApply(ResponseBuilder::build).join();
         }
 
         // Fetch the current state of the resource
@@ -251,6 +256,7 @@ public class LdpResource implements ContainerRequestFilter {
         return trellis.getResourceService().get(identifier)
             .thenApply(getHandler::initialize)
             .thenApply(getHandler::standardHeaders)
+            .thenCombine(trellis.getMementoService().list(identifier), getHandler::addMementoHeaders)
             .thenApply(getHandler::getRepresentation)
             .thenApply(ResponseBuilder::build).join();
     }
@@ -271,9 +277,9 @@ public class LdpResource implements ContainerRequestFilter {
 
         if (nonNull(req.getVersion())) {
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
-                .map(optionsHandler::initialize)
-                .map(optionsHandler::ldpOptions)
-                .orElseGet(() -> status(NOT_FOUND)).build();
+                .thenApply(optionsHandler::initialize)
+                .thenApply(optionsHandler::ldpOptions)
+                .thenApply(ResponseBuilder::build).join();
         }
 
         return trellis.getResourceService().get(identifier)

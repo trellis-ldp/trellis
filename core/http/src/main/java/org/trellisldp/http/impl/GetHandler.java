@@ -89,6 +89,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -98,7 +99,6 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
-import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.Version;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
@@ -225,13 +225,6 @@ public class GetHandler extends BaseLdpHandler {
         // Add a "self" link header
         builder.link(getSelfIdentifier(), "self");
 
-        // Only show memento links for the user-managed graph (not ACL)
-        if (!ACL.equals(getRequest().getExt())) {
-            builder.link(getIdentifier(), "original timegate")
-                .links(MementoResource.getMementoLinks(getIdentifier(), getServices().getMementoService()
-                            .list(getResource().getIdentifier())).toArray(Link[]::new));
-        }
-
         // URI Template
         builder.header(LINK_TEMPLATE,
                 "<" + getIdentifier() + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"");
@@ -245,6 +238,24 @@ public class GetHandler extends BaseLdpHandler {
         final RDFSyntax rdfSyntax = ofNullable(syntax).orElse(TURTLE);
         final IRI profile = getProfile(getRequest().getHeaders().getAcceptableMediaTypes(), rdfSyntax);
         return getLdpRs(builder, rdfSyntax, profile);
+    }
+
+    /**
+     * Add the memento headers.
+     * @param builder the ResponseBuilder
+     * @param mementos the list of memento ranges
+     * @return the response builder
+     */
+    public ResponseBuilder addMementoHeaders(final ResponseBuilder builder, final List<Range<Instant>> mementos) {
+        if (!mayContinue()) {
+            return builder;
+        }
+        // Only show memento links for the user-managed graph (not ACL)
+        if (!ACL.equals(getRequest().getExt())) {
+            builder.link(getIdentifier(), "original timegate")
+                .links(MementoResource.getMementoLinks(getIdentifier(), mementos).toArray(Link[]::new));
+        }
+        return builder;
     }
 
     private String getSelfIdentifier() {
@@ -385,7 +396,7 @@ public class GetHandler extends BaseLdpHandler {
             @Override
             public void write(final OutputStream out) throws IOException {
                 // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
-                try (final InputStream binary = getBinaryStream(dsid, getRequest().getRange())) {
+                try (final InputStream binary = getBinaryStream(dsid, getRequest())) {
                     IOUtils.copy(binary, out);
                 } catch (final IOException ex) {
                     LOGGER.error("Error writing binary content", ex);
@@ -398,10 +409,10 @@ public class GetHandler extends BaseLdpHandler {
         return builder.entity(stream);
     }
 
-    private InputStream getBinaryStream(final IRI dsid, final Range range) throws IOException {
-        final Optional<InputStream> content = isNull(range)
+    private InputStream getBinaryStream(final IRI dsid, final LdpRequest req) throws IOException {
+        final Optional<InputStream> content = isNull(req.getRange())
             ? getServices().getBinaryService().getContent(dsid)
-            : getServices().getBinaryService().getContent(dsid, range.getFrom(), range.getTo());
+            : getServices().getBinaryService().getContent(dsid, req.getRange().getFrom(), req.getRange().getTo());
         return content.orElseThrow(() -> new IOException("Could not retrieve content from: " + dsid));
     }
 
