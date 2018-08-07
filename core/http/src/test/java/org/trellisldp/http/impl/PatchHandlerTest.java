@@ -42,7 +42,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -83,6 +82,7 @@ import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -109,7 +109,7 @@ public class PatchHandlerTest {
     @Mock
     private ResourceService mockResourceService;
 
-    private AuditService auditService = none();
+    private AuditService auditService = new NoopAuditService();
 
     private final AgentService agentService = new SimpleAgentService();
 

@@ -32,7 +32,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -61,6 +60,7 @@ import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -79,7 +79,7 @@ public class DeleteHandlerTest {
     private static final Instant time = ofEpochSecond(1496262729);
     private static final String baseUrl = "http://localhost:8080/repo";
 
-    private final AuditService auditService = none();
+    private final AuditService auditService = new NoopAuditService();
 
     private final AgentService agentService = new SimpleAgentService();
 

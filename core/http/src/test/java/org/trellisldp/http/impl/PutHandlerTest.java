@@ -43,7 +43,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -79,6 +78,7 @@ import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -108,7 +108,7 @@ public class PutHandlerTest {
 
     private final MementoService mementoService = new NoopMementoService();
 
-    private final AuditService auditService = none();
+    private final AuditService auditService = new NoopAuditService();
 
     @Mock
     private ServiceBundler mockBundler;

@@ -59,7 +59,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.api.AuditService.none;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -127,6 +126,7 @@ import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.ServiceBundler;
@@ -146,7 +146,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected static final IOService ioService = new JenaIOService();
 
-    protected static final AuditService auditService = none();
+    protected static final AuditService auditService = new NoopAuditService();
 
     private static final int timestamp = 1496262729;
 
