@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -41,6 +42,8 @@ import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnJre;
+import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.mockito.Mock;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
@@ -167,6 +170,29 @@ public class FileBinaryServiceTest {
         assertEquals(of("jXJFPxAHmvPfx/z8QQmx7VXhg58="), service.digest("SHA", new ByteArrayInputStream(data)));
         assertEquals(of("jXJFPxAHmvPfx/z8QQmx7VXhg58="), service.digest("SHA-1", new ByteArrayInputStream(data)));
         assertFalse(service.digest("MD5", mockInputStream).isPresent());
+    }
+
+    @Test
+    @DisabledOnJre(JAVA_8)
+    public void testJdk9Digests() throws IOException {
+        final byte[] data = "Some data".getBytes(UTF_8);
+        final BinaryService service = new FileBinaryService(idService);
+        assertEquals(of("hrhkhljRY6RyA8cQHDJ+uENNdBqksUsbP/nAi6cjvNE="),
+                service.digest("SHA3-256", new ByteArrayInputStream(data)));
+        assertEquals(of("Nn5wxem8PkrYujCxY3IJZQFqUNrMZRYh0J3gvePGOoWp3N95DPM8IfNTlBLStVyC"),
+                service.digest("SHA3-384", new ByteArrayInputStream(data)));
+        assertEquals(of("cSRKDMnTgyFVNoK2yc/PMNf+4tDkcQMmwvc5GJ12IqbMo/d2xTIAn9H+0WOnkWWtpDoaO0JAY+xPP8zG/RwfZg=="),
+                service.digest("SHA3-512", new ByteArrayInputStream(data)));
+    }
+
+    @Test
+    @EnabledOnJre(JAVA_8)
+    public void testJdk9DigestsOnJdk8() throws IOException {
+        final byte[] data = "Some data".getBytes(UTF_8);
+        final BinaryService service = new FileBinaryService(idService);
+        assertFalse(service.digest("SHA3-256", new ByteArrayInputStream(data)).isPresent());
+        assertFalse(service.digest("SHA3-384", new ByteArrayInputStream(data)).isPresent());
+        assertFalse(service.digest("SHA3-512", new ByteArrayInputStream(data)).isPresent());
     }
 
     private String uncheckedToString(final InputStream is) {

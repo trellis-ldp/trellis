@@ -22,8 +22,13 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.codec.digest.DigestUtils.getDigest;
+import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD2;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA3_256;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA3_384;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA3_512;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
@@ -68,6 +73,13 @@ import org.trellisldp.api.IdentifierService;
  * <li>SHA-384</li>
  * <li>SHA-512</li>
  * </ul>
+ *
+ * <p>When running under JDK 9+, the following additional digest algorithms are supported:
+ * <ul>
+ * <li>SHA3-256</li>
+ * <li>SHA3-384</li>
+ * <li>SHA3-512</li>
+ * </ul>
  */
 public class FileBinaryService implements BinaryService {
 
@@ -80,8 +92,8 @@ public class FileBinaryService implements BinaryService {
     private static final Integer DEFAULT_HIERARCHY = 3;
     private static final Integer DEFAULT_LENGTH = 2;
 
-    // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
-    private static final Set<String> algorithms = asList(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512).stream()
+    private static final Set<String> algorithms = asList(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512,
+            SHA3_256, SHA3_384, SHA3_512).stream()
         .collect(toSet());
 
     private final String basePath;
@@ -178,8 +190,14 @@ public class FileBinaryService implements BinaryService {
         if (SHA.equals(algorithm)) {
             return of(SHA_1).map(DigestUtils::getDigest).flatMap(digest(stream));
         }
-        return ofNullable(algorithm).filter(supportedAlgorithms()::contains).map(DigestUtils::getDigest)
-            .flatMap(digest(stream));
+        return ofNullable(algorithm).filter(supportedAlgorithms()::contains).flatMap(alg -> {
+            try {
+                return of(getDigest(alg));
+            } catch (final IllegalArgumentException ex) {
+                LOGGER.warn("Invalid algorithm: {}", ex.getMessage());
+            }
+            return empty();
+        }).flatMap(digest(stream));
     }
 
     @Override
@@ -200,7 +218,7 @@ public class FileBinaryService implements BinaryService {
     private Function<MessageDigest, Optional<String>> digest(final InputStream stream) {
         return algorithm -> {
             try {
-                final String digest = getEncoder().encodeToString(DigestUtils.updateDigest(algorithm, stream).digest());
+                final String digest = getEncoder().encodeToString(updateDigest(algorithm, stream).digest());
                 stream.close();
                 return of(digest);
             } catch (final IOException ex) {
