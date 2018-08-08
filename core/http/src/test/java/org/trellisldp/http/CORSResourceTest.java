@@ -20,8 +20,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -246,7 +246,7 @@ public class CORSResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -262,7 +262,7 @@ public class CORSResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Language, Content-Type, Link").options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -292,7 +292,7 @@ public class CORSResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Language").options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));

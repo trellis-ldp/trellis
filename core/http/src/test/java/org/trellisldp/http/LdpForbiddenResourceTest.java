@@ -19,10 +19,10 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Stream.of;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static javax.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -209,35 +209,35 @@ public class LdpForbiddenResourceTest extends JerseyTest {
     public void testGetJson() {
         final Response res = target("/repo1/resource").request().accept("application/ld+json").get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
     public void testForbiddenNoAcl() {
         final Response res = target("/repo1/resource").request().get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
     public void testDefaultType() {
         final Response res = target("repo1/resource").request().get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
     public void testTrailingSlash() {
         final Response res = target("repo1/resource/").request().get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
     public void testOptions1() {
         final Response res = target("repo1/resource").request().options();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -245,7 +245,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target("repo1/resource").request().options();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -253,7 +253,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -261,7 +261,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -269,7 +269,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -277,7 +277,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").queryParam("version", 1496262729).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -285,7 +285,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -294,7 +294,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -303,7 +303,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -311,7 +311,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -319,7 +319,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -327,7 +327,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -335,28 +335,28 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
     public void testDelete1() {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request().delete();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
     public void testDelete2() {
         final Response res = target("repo1/resource").request().delete();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
     public void testDelete3() {
         final Response res = target("repo1/resource/").request().delete();
 
-        assertEquals(FORBIDDEN, res.getStatusInfo());
+        assertEquals(SC_FORBIDDEN, res.getStatus());
     }
 
     @Test
@@ -366,7 +366,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
 
         final Response res = target("repo1/resource/").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
     }
 
     @Test
@@ -375,7 +375,7 @@ public class LdpForbiddenResourceTest extends JerseyTest {
             .method("FOO", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
 }

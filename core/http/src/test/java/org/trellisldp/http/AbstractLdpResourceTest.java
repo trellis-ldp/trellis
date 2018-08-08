@@ -28,24 +28,24 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
+import static javax.servlet.http.HttpServletResponse.SC_CREATED;
+import static javax.servlet.http.HttpServletResponse.SC_GONE;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_ACCEPTABLE;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_PRECONDITION_FAILED;
+import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_LOCATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.GONE;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
-import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
 import static org.apache.commons.lang3.Range.between;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -386,7 +386,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testHeadDefaultType() {
         final Response res = target(RESOURCE_PATH).request().head();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
     }
@@ -398,7 +398,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetJson() throws IOException {
         final Response res = target("/" + RESOURCE_PATH).request().accept("application/ld+json").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -451,7 +451,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetDefaultType() {
         final Response res = target(RESOURCE_PATH).request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
     }
@@ -460,7 +460,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetDefaultType2() {
         final Response res = target("repository/resource").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
     }
@@ -469,7 +469,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testScrewyPreferHeader() {
         final Response res = target(RESOURCE_PATH).request().header("Prefer", "wait=just one minute").get();
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -477,21 +477,21 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Accept-Datetime",
                 "it's pathetic how we both").get();
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
     public void testScrewyRange() {
         final Response res = target(BINARY_PATH).request().header("Range", "say it to my face, then").get();
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
     public void testGetRootSlash() {
         final Response res = target("/").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
     }
@@ -500,7 +500,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetRoot() {
         final Response res = target("").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
     }
@@ -515,7 +515,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
 
@@ -555,7 +555,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetTrailingSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertEquals(from(time), res.getLastModified());
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
@@ -567,7 +567,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetBinaryDescription() {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
         assertTrue(res.getAllowedMethods().contains("DELETE"));
@@ -598,7 +598,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetBinary() throws IOException {
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
         assertTrue(res.getAllowedMethods().contains("DELETE"));
@@ -632,7 +632,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBinary.getModified()).thenReturn(null);
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     @Test
@@ -640,14 +640,14 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBinary.getIdentifier()).thenReturn(null);
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     @Test
     public void testGetBinaryDigestInvalid() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
         assertTrue(res.getAllowedMethods().contains("DELETE"));
@@ -679,7 +679,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetBinaryDigestMd5() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
         assertTrue(res.getAllowedMethods().contains("DELETE"));
@@ -711,7 +711,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetBinaryDigestSha1() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "SHA").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
         assertTrue(res.getAllowedMethods().contains("DELETE"));
@@ -743,7 +743,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetBinaryRange() throws IOException {
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=3-10").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
         assertTrue(res.getAllowedMethods().contains("DELETE"));
@@ -775,7 +775,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(of(mockInputStream));
         when(mockInputStream.skip(anyLong())).thenThrow(new IOException());
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=300-400").get();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     @Test
@@ -783,46 +783,46 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(of(mockInputStream));
         doThrow(new IOException()).when(mockInputStream).close();
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     @Test
     public void testGetBinaryError() {
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(empty());
         final Response res = target(BINARY_PATH).request().get();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     @Test
     public void testGetVersionError() {
         final Response res = target(BINARY_PATH).queryParam("version", "looking at my history").request().get();
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
     public void testGetVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().get();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
     public void testGetTimemapNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("ext", "timemap").request().get();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
     public void testGetTimegateNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .header(ACCEPT_DATETIME, "Wed, 16 May 2018 13:18:57 GMT").get();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
     public void testGetBinaryVersion() throws IOException {
         final Response res = target(BINARY_PATH).queryParam("version", timestamp).request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertFalse(res.getAllowedMethods().contains("PUT"));
         assertFalse(res.getAllowedMethods().contains("DELETE"));
@@ -879,7 +879,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Prefer", "return=representation; include=\"" + PreferServerManaged.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
@@ -915,7 +915,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
@@ -952,7 +952,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Prefer", "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
@@ -970,7 +970,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -1028,7 +1028,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .queryParam("predicate", "http://purl.org/dc/terms/title").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -1094,7 +1094,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .queryParam("object", "ex:Type").queryParam("predicate", "").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -1157,7 +1157,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .queryParam("object", "A title").queryParam("predicate", DC.title.getIRIString()).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -1208,7 +1208,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
     }
 
@@ -1218,7 +1218,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final Response res = target("repository/resource").queryParam("ext", "timemap").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
     }
 
@@ -1229,7 +1229,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("some/made-up-format").get();
 
-        assertEquals(NOT_ACCEPTABLE, res.getStatusInfo());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
     }
 
     @Test
@@ -1243,7 +1243,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_PATCH));
@@ -1302,7 +1302,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
@@ -1383,7 +1383,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
@@ -1458,7 +1458,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
@@ -1510,7 +1510,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
@@ -1560,7 +1560,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetNoAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().get();
 
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
@@ -1568,7 +1568,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBinaryResource.hasAcl()).thenReturn(true);
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
@@ -1579,7 +1579,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetBinaryLinks() {
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
@@ -1590,7 +1590,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetBinaryDescriptionLinks() {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
@@ -1603,7 +1603,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
@@ -1647,21 +1647,21 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testGetLdpResource() {
         final Response res = target(RESOURCE_PATH).request().get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
     }
 
     @Test
     public void testGetNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request().get();
 
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
     public void testGetGone() {
         final Response res = target(DELETED_PATH).request().get();
 
-        assertEquals(GONE, res.getStatusInfo());
+        assertEquals(SC_GONE, res.getStatus());
     }
 
     @Test
@@ -1670,7 +1670,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -1687,7 +1687,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -1703,7 +1703,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").get();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -1719,7 +1719,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOptionsLDPRS() {
         final Response res = target(RESOURCE_PATH).request().options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
 
         assertTrue(res.getAllowedMethods().contains("PATCH"));
@@ -1741,7 +1741,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOptionsLDPNR() {
         final Response res = target(BINARY_PATH).request().options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
 
         assertTrue(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
@@ -1766,7 +1766,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target(RESOURCE_PATH).request().options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
 
         assertTrue(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
@@ -1795,7 +1795,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOptionsACL() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
 
         assertTrue(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
@@ -1816,7 +1816,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -1833,7 +1833,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link, Bar").options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -1850,7 +1850,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "FOO")
             .header("Access-Control-Request-Headers", "Content-Type, Link").options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
@@ -1867,7 +1867,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
         assertEquals("100", res.getHeaderString("Access-Control-Max-Age"));
@@ -1895,7 +1895,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
         assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
         assertEquals("100", res.getHeaderString("Access-Control-Max-Age"));
@@ -1908,27 +1908,27 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOptionsNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().options();
 
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
     public void testOptionsVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().options();
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
     public void testOptionsGone() {
         final Response res = target(DELETED_PATH).request().options();
 
-        assertEquals(GONE, res.getStatusInfo());
+        assertEquals(SC_GONE, res.getStatus());
     }
 
     @Test
     public void testOptionsSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().options();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
 
         assertTrue(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
@@ -1952,7 +1952,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
 
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertFalse(res.getAllowedMethods().contains("PUT"));
@@ -1971,7 +1971,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOptionsVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().options();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
 
         assertFalse(res.getAllowedMethods().contains("PATCH"));
         assertFalse(res.getAllowedMethods().contains("PUT"));
@@ -1997,7 +1997,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -2015,7 +2015,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target("").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RANDOM_VALUE, res.getLocation().toString());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -2027,7 +2027,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Link", "I never really liked his friends")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2035,7 +2035,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2048,7 +2048,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2061,7 +2061,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
     }
 
     @Test
@@ -2074,7 +2074,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -2090,7 +2090,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2101,7 +2101,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2111,7 +2111,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -2125,7 +2125,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "child/grandchild")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2133,7 +2133,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2141,7 +2141,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2154,7 +2154,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .post(entity("<> <http://www.w3.org/ns/ldp#inbox> \"Some literal\" .",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
@@ -2169,7 +2169,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
     }
 
     @Test
@@ -2179,7 +2179,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(NON_EXISTENT_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
@@ -2189,7 +2189,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(DELETED_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(GONE, res.getStatusInfo());
+        assertEquals(SC_GONE, res.getStatus());
     }
 
     @Test
@@ -2200,7 +2200,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2214,7 +2214,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .header("Digest", "md5=blahblah").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2222,7 +2222,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .header("Digest", "digest this, man!").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2233,7 +2233,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .header("Digest", "uh=huh").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2244,7 +2244,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Digest", "md5=BJozgIQwPzzVzSxvjQsWkA==")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2258,7 +2258,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request().header("Digest", "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2273,7 +2273,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Digest", "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2284,7 +2284,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2292,7 +2292,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH + "/").request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
     }
 
     /* ******************************* *
@@ -2303,7 +2303,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2315,7 +2315,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2329,7 +2329,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2345,7 +2345,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
                         + " a <http://example.com/Type1>, <http://www.w3.org/ns/ldp#BasicContainer> .",
                         TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2358,7 +2358,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Link", LDP.Container + "; rel=\"type\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2370,7 +2370,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2379,7 +2379,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .put(entity("<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"Some literal\" .",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
@@ -2390,7 +2390,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .put(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
     }
 
     @Test
@@ -2402,7 +2402,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH + "/test").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/test", res.getHeaderString(CONTENT_LOCATION));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -2415,7 +2415,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(DELETED_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CREATED, res.getStatusInfo());
+        assertEquals(SC_CREATED, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2428,7 +2428,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2436,7 +2436,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2448,7 +2448,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2460,7 +2460,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2472,7 +2472,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -2483,7 +2483,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -2492,7 +2492,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPutBinary() {
         final Response res = target(BINARY_PATH).request().put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2503,7 +2503,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).request().header("Digest", "md5=blahblah")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2511,7 +2511,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).request().header("Digest", "md5=BJozgIQwPzzVzSxvjQsWkA==")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2522,7 +2522,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).request().header("Digest", "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2533,7 +2533,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request()
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(NOT_ACCEPTABLE, res.getStatusInfo());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
     }
 
     @Test
@@ -2543,7 +2543,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"" + etag + "\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
     }
 
     @Test
@@ -2551,7 +2551,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).request().header("If-Match", "4db2c60044c906361ac212ae8684e8ad")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(SC_BAD_REQUEST, res.getStatus());
     }
 
     @Test
@@ -2560,7 +2560,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("If-Unmodified-Since", "Tue, 29 Aug 2017 07:14:52 GMT")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
     }
 
     @Test
@@ -2568,7 +2568,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"blahblahblah\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(PRECONDITION_FAILED, res.getStatusInfo());
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus());
     }
 
     @Test
@@ -2577,7 +2577,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("If-Unmodified-Since", "Wed, 19 Oct 2016 10:15:00 GMT")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(PRECONDITION_FAILED, res.getStatusInfo());
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus());
     }
 
     @Test
@@ -2586,7 +2586,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .header("Digest", "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2597,7 +2597,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH + "/").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2606,7 +2606,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     /* ******************************* *
@@ -2616,7 +2616,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testDeleteExisting() {
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2624,21 +2624,21 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testDeleteNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().delete();
 
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
     public void testDeleteDeleted() {
         final Response res = target(DELETED_PATH).request().delete();
 
-        assertEquals(GONE, res.getStatusInfo());
+        assertEquals(SC_GONE, res.getStatus());
     }
 
     @Test
     public void testDeleteVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().delete();
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2650,7 +2650,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final Response res = target(RESOURCE_PATH + "/test").request().delete();
 
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2662,7 +2662,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
     }
 
     @Test
@@ -2672,7 +2672,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
     }
 
     @Test
@@ -2682,28 +2682,28 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
     }
 
     @Test
     public void testDeleteAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().delete();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
     @Test
     public void testDeleteTimeMap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().delete();
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
     public void testDeleteSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().delete();
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2719,7 +2719,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2728,7 +2728,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2737,7 +2737,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2749,7 +2749,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(NON_EXISTENT_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
     }
 
     @Test
@@ -2757,7 +2757,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(DELETED_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
-        assertEquals(GONE, res.getStatusInfo());
+        assertEquals(SC_GONE, res.getStatus());
     }
 
     @Test
@@ -2769,7 +2769,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
                         + " a <http://example.com/Type1>, <http://www.w3.org/ns/ldp#BasicContainer> } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2786,7 +2786,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
@@ -2801,7 +2801,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2816,7 +2816,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> a \"Some literal\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
@@ -2826,7 +2826,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .method("PATCH", entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     @Test
@@ -2839,7 +2839,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(NOT_FOUND, res.getStatusInfo());
+        assertEquals(SC_NOT_FOUND, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2849,7 +2849,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -2863,7 +2863,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -2875,7 +2875,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(CONFLICT, res.getStatusInfo());
+        assertEquals(SC_CONFLICT, res.getStatus());
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -2887,7 +2887,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2900,7 +2900,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
@@ -2910,7 +2910,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testPatchInvalidContent() {
         final Response res = target(RESOURCE_PATH).request().method("PATCH", entity("blah blah blah", "invalid/type"));
 
-        assertEquals(UNSUPPORTED_MEDIA_TYPE, res.getStatusInfo());
+        assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2920,7 +2920,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2930,7 +2930,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(NOT_ACCEPTABLE, res.getStatusInfo());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
     }
 
     /**
@@ -2939,7 +2939,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testOtherMethod() {
         final Response res = target(RESOURCE_PATH).request().method("FOO");
-        assertEquals(METHOD_NOT_ALLOWED, res.getStatusInfo());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
     /* ************************************ *
@@ -2948,7 +2948,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testCacheControl() {
         final Response res = target(RESOURCE_PATH).request().get();
-        assertEquals(OK, res.getStatusInfo());
+        assertEquals(SC_OK, res.getStatus());
         assertNotNull(res.getHeaderString(CACHE_CONTROL));
         assertTrue(res.getHeaderString(CACHE_CONTROL).contains("max-age="));
     }
@@ -2956,7 +2956,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @Test
     public void testCacheControlOptions() {
         final Response res = target(RESOURCE_PATH).request().options();
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString(CACHE_CONTROL));
     }
 
