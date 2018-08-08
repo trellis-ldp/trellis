@@ -383,17 +383,17 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         final Var modified = Var.alloc(MODIFIED);
         final Var member = Var.alloc(MEMBER);
         final Var any = Var.alloc("any");
-        final UpdateDeleteInsert modify = new UpdateDeleteInsert();
-        modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-        modify.getDeleteAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
-        modify.getInsertAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
+        final UpdateDeleteInsert modification = new UpdateDeleteInsert();
+        modification.setWithIRI(rdf.asJenaNode(PreferServerManaged));
+        modification.getDeleteAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
+        modification.getInsertAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
         final ElementPathBlock epb = new ElementPathBlock();
         epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), parent));
         epb.addTriple(triple(parent, rdf.asJenaNode(LDP.membershipResource), member));
         epb.addTriple(triple(parent, rdf.asJenaNode(LDP.hasMemberRelation), any));
         epb.addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
-        modify.setElement(epb);
-        return modify;
+        modification.setElement(epb);
+        return modification;
     }
 
     private Node getAclIRI(final IRI identifier) {

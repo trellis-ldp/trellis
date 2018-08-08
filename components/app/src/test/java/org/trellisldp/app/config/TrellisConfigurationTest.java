@@ -52,22 +52,22 @@ public class TrellisConfigurationTest {
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.com/context.json"));
 
+        // Hub tests
+        assertEquals("http://hub.example.com/", config.getHubUrl());
+
         // Auth tests
         assertTrue(config.getAuth().getAdminUsers().contains("zoyd"));
         assertTrue(config.getAuth().getAdminUsers().contains("wheeler"));
 
-        // Hub tests
-        assertEquals("http://hub.example.com/", config.getHubUrl());
-
         // Other tests
-        assertEquals("my.cluster.node", config.any().get("cassandraAddress"));
-        assertEquals((Integer)245993, config.any().get("cassandraPort"));
+        assertEquals("my.cluster.address", config.any().get("cassandraAddress"));
+        assertEquals((Integer)245994, config.any().get("cassandraPort"));
         @SuppressWarnings("unchecked")
         final Map<String, Object> extraConfig = (Map<String, Object>) config.any().get("extraConfigValues");
-        assertTrue((Boolean) extraConfig.get("one"));
+        assertTrue((Boolean) extraConfig.get("first"));
         @SuppressWarnings("unchecked")
-        final List<String> list = (List<String>) extraConfig.get("two");
-        assertEquals(newArrayList("value1", "value2"), list);
+        final List<String> list = (List<String>) extraConfig.get("second");
+        assertEquals(newArrayList("val1", "val2"), list);
     }
 
 

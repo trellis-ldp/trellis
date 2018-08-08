@@ -85,12 +85,12 @@ cors:
     maxAge: 180
     allowCredentials: true
 
-cassandraAddress: my.cluster.node
-cassandraPort: 245993
+cassandraAddress: my.cluster.address
+cassandraPort: 245994
 
 extraConfigValues:
-    one: true
-    two:
-      - "value1"
-      - "value2"
+    first: true
+    second:
+      - "val1"
+      - "val2"
 
