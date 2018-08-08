@@ -50,6 +50,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
@@ -130,6 +132,11 @@ public class LdpForbiddenResourceTest extends JerseyTest {
         System.getProperties().remove(CONFIGURATION_BASE_URL);
 
         return config;
+    }
+
+    @Override
+    protected void configureClient(final ClientConfig config) {
+        config.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
     }
 
     @BeforeAll

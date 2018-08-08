@@ -26,6 +26,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -52,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -94,6 +96,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +115,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -224,6 +229,11 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     @BeforeAll
     public void before() throws Exception {
         super.setUp();
+    }
+
+    @Override
+    protected void configureClient(final ClientConfig config) {
+        config.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
     }
 
     @AfterAll
@@ -507,11 +517,13 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
 
     protected List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
-        return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        return ofNullable(res.getStringHeaders().get(LINK)).orElseGet(Collections::emptyList)
+            .stream().map(Link::valueOf).collect(toList());
     }
 
     @Test
     public void testGetDatetime() {
+        assumeTrue(getBaseUrl().startsWith("http://localhost"));
         final Response res = target(RESOURCE_PATH).request()
             .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get();
 
@@ -1679,39 +1691,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
     }
 
-    @Test
-    public void testGetCORS() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Type, Link").get();
-
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-    }
-
-    @Test
-    public void testGetCORSSimple() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "POST")
-            .header("Access-Control-Request-Headers", "Accept").get();
-
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-    }
-
-
     /* ******************************* *
      *            OPTIONS Tests
      * ******************************* */
@@ -1811,100 +1790,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testOptionsPreflightInvalid() {
-        final Response res = target(RESOURCE_PATH).request().header("Origin", "http://foo.com")
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Type, Link").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-    }
-
-    @Test
-    public void testOptionsPreflightInvalid2() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Type, Link, Bar").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-    }
-
-    @Test
-    public void testOptionsPreflightInvalid3() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "FOO")
-            .header("Access-Control-Request-Headers", "Content-Type, Link").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-    }
-
-    @Test
-    public void testOptionsPreflight() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Type, Link").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertEquals("100", res.getHeaderString("Access-Control-Max-Age"));
-
-        final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
-            .collect(toList());
-        assertEquals(4L, headers.size());
-        assertTrue(headers.contains("link"));
-        assertTrue(headers.contains("content-type"));
-        assertTrue(headers.contains("accept-datetime"));
-        assertTrue(headers.contains("accept"));
-
-        final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
-            .collect(toList());
-        assertEquals(2L, methods.size());
-        assertTrue(methods.contains("PUT"));
-        assertTrue(methods.contains("PATCH"));
-    }
-
-    @Test
-    public void testOptionsPreflightSimple() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "POST")
-            .header("Access-Control-Request-Headers", "Accept").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertEquals("100", res.getHeaderString("Access-Control-Max-Age"));
-        assertTrue(res.getHeaderString("Access-Control-Allow-Headers").contains("accept"));
-        assertFalse(res.getHeaderString("Access-Control-Allow-Methods").contains("POST"));
-        assertTrue(res.getHeaderString("Access-Control-Allow-Methods").contains("PATCH"));
-    }
-
-    @Test
     public void testOptionsNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().options();
 
@@ -1928,7 +1813,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testOptionsSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().options();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
 
         assertTrue(res.getAllowedMethods().contains("PATCH"));
         assertTrue(res.getAllowedMethods().contains("PUT"));
@@ -2597,7 +2482,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         final Response res = target(RESOURCE_PATH + "/").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2703,9 +2588,9 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
     public void testDeleteSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().delete();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
@@ -2920,7 +2805,7 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus());
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 

@@ -16,7 +16,6 @@ package org.trellisldp.http;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -88,7 +87,7 @@ import org.trellisldp.vocabulary.XSD;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class CORSResourceTest extends JerseyTest {
+public class CORSResource2Test extends JerseyTest {
 
     protected static final IOService ioService = new JenaIOService();
 
@@ -105,6 +104,8 @@ public class CORSResourceTest extends JerseyTest {
     private static final String REPO1 = "repo1";
 
     private static final String BASE_URL = "http://example.org/";
+
+    private static final String ORIGIN = "http://example.com";
 
     private static final String RANDOM_VALUE = "randomValue";
 
@@ -155,10 +156,10 @@ public class CORSResourceTest extends JerseyTest {
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new LdpResource(mockBundler));
-        config.register(new CrossOriginResourceSharingFilter(asList("*"),
+        config.register(new CrossOriginResourceSharingFilter(asList(ORIGIN),
                     asList("GET", "HEAD", "PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Datetime"),
-                    emptyList(), false, 0));
+                    asList("Accept-Patch"), true, 180));
         return config;
     }
 
@@ -251,7 +252,7 @@ public class CORSResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testGetCORS() {
+    public void testGetCORSInvalid() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
         final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
@@ -259,8 +260,25 @@ public class CORSResourceTest extends JerseyTest {
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
         assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertNull(res.getHeaderString("Access-Control-Max-Age"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
+    }
+
+    @Test
+    public void testGetCORS() {
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
+            .header("Access-Control-Request-Method", "PUT")
+            .header("Access-Control-Request-Headers", "Content-Type, Link").get();
+
+        assertEquals(SC_OK, res.getStatus());
+        assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"));
+        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertTrue(stream(res.getHeaderString("Access-Control-Expose-Headers").split(","))
+                .anyMatch("Accept-Patch"::equalsIgnoreCase));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
         assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
         assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
@@ -268,15 +286,15 @@ public class CORSResourceTest extends JerseyTest {
 
     @Test
     public void testGetCORSSimple() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"));
+        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertTrue(stream(res.getHeaderString("Access-Control-Expose-Headers").split(","))
+                .anyMatch("Accept-Patch"::equalsIgnoreCase));
         assertNull(res.getHeaderString("Access-Control-Max-Age"));
         assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
         assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
@@ -284,34 +302,31 @@ public class CORSResourceTest extends JerseyTest {
 
     @Test
     public void testOptionsPreflightSimple() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"));
+        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"));
+        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
         assertTrue(res.getHeaderString("Access-Control-Allow-Headers").contains("accept"));
         assertFalse(res.getHeaderString("Access-Control-Allow-Methods").contains("POST"));
         assertTrue(res.getHeaderString("Access-Control-Allow-Methods").contains("PATCH"));
     }
 
-
     @Test
     public void testCorsPreflight() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Language, Content-Type, Link").options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
+        assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"));
+        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
 
         final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
             .collect(toList());
@@ -331,19 +346,16 @@ public class CORSResourceTest extends JerseyTest {
     }
 
     @Test
-    public void testCorsPreflightNoMatch() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Language").options();
+    public void testCorsPreflightNoRequestHeaders() {
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
+            .header("Access-Control-Request-Method", "PUT").options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-
+        assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"));
+        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"));
         assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
 
         final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
@@ -352,6 +364,74 @@ public class CORSResourceTest extends JerseyTest {
         assertTrue(methods.contains("PATCH"));
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("HEAD"));
+    }
+
+    @Test
+    public void testCorsPreflightNoMatch() {
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
+            .header("Access-Control-Request-Method", "PUT")
+            .header("Access-Control-Request-Headers", "Content-Language").options();
+
+        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"));
+        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"));
+
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
+
+        final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
+            .collect(toList());
+        assertEquals(4L, methods.size());
+        assertTrue(methods.contains("PUT"));
+        assertTrue(methods.contains("PATCH"));
+        assertTrue(methods.contains("GET"));
+        assertTrue(methods.contains("HEAD"));
+    }
+
+    @Test
+    public void testOptionsPreflightInvalid() {
+        final Response res = target(RESOURCE_PATH).request().header("Origin", "http://foo.com")
+            .header("Access-Control-Request-Method", "PUT")
+            .header("Access-Control-Request-Headers", "Content-Type, Link").options();
+
+        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertNull(res.getHeaderString("Access-Control-Max-Age"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
+    }
+
+    @Test
+    public void testOptionsPreflightInvalid2() {
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
+            .header("Access-Control-Request-Method", "PUT")
+            .header("Access-Control-Request-Headers", "Content-Type, Link, Bar").options();
+
+        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertNull(res.getHeaderString("Access-Control-Max-Age"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
+    }
+
+    @Test
+    public void testOptionsPreflightInvalid3() {
+        final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
+            .header("Access-Control-Request-Method", "FOO")
+            .header("Access-Control-Request-Headers", "Content-Type, Link").options();
+
+        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
+        assertNull(res.getHeaderString("Access-Control-Max-Age"));
+        assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
     }
 
 }

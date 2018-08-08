@@ -28,6 +28,11 @@ import org.trellisldp.agent.SimpleAgentService;
 public class LdpResourceNoAgentTest extends AbstractLdpResourceTest {
 
     @Override
+    protected String getBaseUrl() {
+        return getBaseUri().toString();
+    }
+
+    @Override
     public Application configure() {
 
         // Junit runner doesn't seem to work very well with JerseyTest
@@ -38,7 +43,7 @@ public class LdpResourceNoAgentTest extends AbstractLdpResourceTest {
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockBundler));
+        config.register(new LdpResource(mockBundler, baseUri));
         config.register(new CacheControlFilter(86400, true, false));
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),

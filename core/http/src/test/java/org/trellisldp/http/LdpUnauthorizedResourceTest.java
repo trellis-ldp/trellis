@@ -52,6 +52,8 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
@@ -127,6 +129,11 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         return config;
     }
 
+    @Override
+    protected void configureClient(final ClientConfig config) {
+        config.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
+    }
+
     @BeforeAll
     public void before() throws Exception {
         super.setUp();
@@ -181,7 +188,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("/repo1/resource").request().accept("application/ld+json").get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -192,7 +199,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").request().get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -203,7 +210,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("repo1/resource/").request().get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -223,7 +230,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").request().options();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -235,7 +242,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").request().options();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -247,7 +254,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -259,7 +266,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .accept(APPLICATION_LINK_FORMAT).get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -271,7 +278,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -283,7 +290,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -295,7 +302,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -308,7 +315,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -321,7 +328,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -333,7 +340,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -345,7 +352,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -357,7 +364,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -369,7 +376,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -380,7 +387,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request().delete();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -391,7 +398,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("repo1/resource").request().delete();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
@@ -402,7 +409,7 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         final Response res = target("repo1/resource/").request().delete();
 
         assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", BASIC_AUTH, DIGEST_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
+        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
         assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
         assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
