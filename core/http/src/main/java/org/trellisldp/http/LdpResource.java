@@ -135,26 +135,17 @@ public class LdpResource implements ContainerRequestFilter {
         }
 
         // Validate header/query parameters
-        ofNullable(ctx.getHeaderString("Accept-Datetime")).ifPresent(x -> {
-            if (isNull(AcceptDatetime.valueOf(x))) {
-                ctx.abortWith(status(BAD_REQUEST).build());
-            }
-        });
+        ofNullable(ctx.getHeaderString("Accept-Datetime")).filter(x -> isNull(AcceptDatetime.valueOf(x)))
+            .ifPresent(x -> ctx.abortWith(status(BAD_REQUEST).build()));
 
         ofNullable(ctx.getHeaderString("Slug")).filter(s -> s.contains(slash)).ifPresent(x ->
             ctx.abortWith(status(BAD_REQUEST).build()));
 
-        ofNullable(ctx.getHeaderString("Prefer")).ifPresent(x -> {
-            if (isNull(Prefer.valueOf(x))) {
-                ctx.abortWith(status(BAD_REQUEST).build());
-            }
-        });
+        ofNullable(ctx.getHeaderString("Prefer")).filter(x -> isNull(Prefer.valueOf(x))).ifPresent(x ->
+            ctx.abortWith(status(BAD_REQUEST).build()));
 
-        ofNullable(ctx.getHeaderString("Range")).ifPresent(x -> {
-            if (isNull(Range.valueOf(x))) {
-                ctx.abortWith(status(BAD_REQUEST).build());
-            }
-        });
+        ofNullable(ctx.getHeaderString("Range")).filter(x -> isNull(Range.valueOf(x))).ifPresent(x ->
+            ctx.abortWith(status(BAD_REQUEST).build()));
 
         ofNullable(ctx.getHeaderString("Link")).ifPresent(x -> {
             try {
@@ -164,11 +155,8 @@ public class LdpResource implements ContainerRequestFilter {
             }
         });
 
-        ofNullable(ctx.getHeaderString("Digest")).ifPresent(x -> {
-            if (isNull(Digest.valueOf(x))) {
-                ctx.abortWith(status(BAD_REQUEST).build());
-            }
-        });
+        ofNullable(ctx.getHeaderString("Digest")).filter(x -> isNull(Digest.valueOf(x))).ifPresent(x ->
+            ctx.abortWith(status(BAD_REQUEST).build()));
 
         ofNullable(ctx.getUriInfo().getQueryParameters().getFirst("version")).ifPresent(x -> {
             // Check well-formedness
