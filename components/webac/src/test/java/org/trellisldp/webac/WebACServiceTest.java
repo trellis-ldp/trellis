@@ -321,7 +321,12 @@ public class WebACServiceTest {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
-        checkAllCanWrite();
+        assertTrue(testService2.getAccessModes(memberIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(childIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
+        assertTrue(testService2.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
     }
 
     @Test
@@ -704,7 +709,11 @@ public class WebACServiceTest {
     public void testCacheCanWrite1() {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
-        checkNoneCanWrite();
+        assertFalse(testCacheService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write));
+        assertFalse(testCacheService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write));
+        assertFalse(testCacheService.getAccessModes(childIRI, mockSession).contains(ACL.Write));
+        assertFalse(testCacheService.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
+        assertFalse(testCacheService.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
     }
 
     @Test
