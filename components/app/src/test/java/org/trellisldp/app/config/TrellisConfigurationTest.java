@@ -40,16 +40,26 @@ public class TrellisConfigurationTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertEquals("Trellis", config.getDefaultName());
+
+        // Cache tests
         assertEquals((Integer) 86400, config.getCache().getMaxAge());
-        assertTrue(config.getCache().getMustRevalidate());
         assertFalse(config.getCache().getNoCache());
-        assertEquals((Long) 10L, config.getJsonld().getCacheSize());
+        assertTrue(config.getCache().getMustRevalidate());
+
+        // JSON-LD tests
         assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours());
+        assertEquals((Long) 10L, config.getJsonld().getCacheSize());
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
-        assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
-        assertTrue(config.getAuth().getAdminUsers().contains("daiyu"));
-        assertTrue(config.getAuth().getAdminUsers().contains("baoyu"));
+        assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.com/context.json"));
+
+        // Auth tests
+        assertTrue(config.getAuth().getAdminUsers().contains("zoyd"));
+        assertTrue(config.getAuth().getAdminUsers().contains("wheeler"));
+
+        // Hub tests
         assertEquals("http://hub.example.com/", config.getHubUrl());
+
+        // Other tests
         assertEquals("my.cluster.node", config.any().get("cassandraAddress"));
         assertEquals((Integer)245993, config.any().get("cassandraPort"));
         @SuppressWarnings("unchecked")
@@ -67,9 +77,9 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         assertEquals("org/trellisldp/rdfa/resource.mustache", config.getAssets().getTemplate());
-        assertEquals("http://example.org/image.icon", config.getAssets().getIcon());
-        assertTrue(config.getAssets().getJs().contains("http://example.org/scripts1.js"));
-        assertTrue(config.getAssets().getCss().contains("http://example.org/styles1.css"));
+        assertEquals("http://example.com/image.icon", config.getAssets().getIcon());
+        assertTrue(config.getAssets().getJs().contains("http://example.com/scripts1.js"));
+        assertTrue(config.getAssets().getCss().contains("http://example.com/styles1.css"));
     }
 
     @Test
@@ -80,9 +90,9 @@ public class TrellisConfigurationTest {
 
         assertFalse(config.getNotifications().getEnabled());
         assertEquals(NotificationsConfiguration.Type.NONE, config.getNotifications().getType());
-        assertEquals("example.com:1234", config.getNotifications().getConnectionString());
+        assertEquals("example.com:12345", config.getNotifications().getConnectionString());
         assertEquals("foo", config.getNotifications().any().get("some.other.value"));
-        assertEquals("test", config.getNotifications().getTopicName());
+        assertEquals("test-topic", config.getNotifications().getTopicName());
 
     }
 
@@ -103,25 +113,25 @@ public class TrellisConfigurationTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertTrue(config.getAuth().getWebac().getEnabled());
-        assertEquals((Long) 100L, config.getAuth().getWebac().getCacheSize());
-        assertEquals((Long) 10L, config.getAuth().getWebac().getCacheExpireSeconds());
+        assertEquals((Long) 200L, config.getAuth().getWebac().getCacheSize());
+        assertEquals((Long) 15L, config.getAuth().getWebac().getCacheExpireSeconds());
         assertTrue(config.getAuth().getAnon().getEnabled());
         assertTrue(config.getAuth().getBasic().getEnabled());
         assertEquals("users.auth", config.getAuth().getBasic().getUsersFile());
         assertEquals("trellis", config.getAuth().getBasic().getRealm());
 
-        config.getAuth().getBasic().setRealm("foo");
-        assertEquals("foo", config.getAuth().getBasic().getRealm());
+        config.getAuth().getBasic().setRealm("foobar");
+        assertEquals("foobar", config.getAuth().getBasic().getRealm());
         assertTrue(config.getAuth().getJwt().getEnabled());
         assertEquals("secret", config.getAuth().getJwt().getKey());
         assertFalse(config.getAuth().getJwt().getBase64Encoded());
         assertEquals("trellis", config.getAuth().getJwt().getRealm());
-        config.getAuth().getJwt().setRealm("bar");
-        assertEquals("bar", config.getAuth().getJwt().getRealm());
+        config.getAuth().getJwt().setRealm("barbaz");
+        assertEquals("barbaz", config.getAuth().getJwt().getRealm());
 
         assertEquals("password", config.getAuth().getJwt().getKeyStorePassword());
         assertEquals("/tmp/trellisData/keystore.jks", config.getAuth().getJwt().getKeyStore());
-        assertTrue(config.getAuth().getJwt().getKeyIds().contains("foo"));
+        assertTrue(config.getAuth().getJwt().getKeyIds().contains("baz"));
         assertTrue(config.getAuth().getJwt().getKeyIds().contains("bar"));
         assertTrue(config.getAuth().getJwt().getKeyIds().contains("trellis"));
         assertEquals(3, config.getAuth().getJwt().getKeyIds().size());

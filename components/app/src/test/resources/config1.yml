@@ -15,12 +15,12 @@ hubUrl: http://hub.example.com/
 
 auth:
     adminUsers:
-        - baoyu
-        - daiyu
+        - zoyd
+        - wheeler
     webac:
         enabled: true
-        cacheSize: 100
-        cacheExpireSeconds: 10
+        cacheSize: 200
+        cacheExpireSeconds: 15
     anon:
         enabled: true
     basic:
@@ -34,7 +34,7 @@ auth:
         keyStorePassword: password
         keyIds:
             - trellis
-            - foo
+            - baz
             - bar
 
 defaultName: Trellis
@@ -46,19 +46,19 @@ cache:
 
 assets:
     template: org/trellisldp/rdfa/resource.mustache
-    icon: "http://example.org/image.icon"
+    icon: "http://example.com/image.icon"
     js:
-        - "http://example.org/scripts1.js"
-        - "http://example.org/scripts2.js"
+        - "http://example.com/scripts1.js"
+        - "http://example.com/scripts2.js"
     css:
-        - "http://example.org/styles1.css"
-        - "http://example.org/styles2.css"
+        - "http://example.com/styles1.css"
+        - "http://example.com/styles2.css"
 
 notifications:
     enabled: false
     type: NONE
-    topicName: "test"
-    connectionString: example.com:1234
+    topicName: "test-topic"
+    connectionString: example.com:12345
     some.other.value: foo
 
 jsonld:
@@ -66,7 +66,7 @@ jsonld:
     cacheExpireHours: 48
     contextDomainWhitelist: []
     contextWhitelist:
-        - "http://example.org/context.json"
+        - "http://example.com/context.json"
 
 cors:
     enabled: true
