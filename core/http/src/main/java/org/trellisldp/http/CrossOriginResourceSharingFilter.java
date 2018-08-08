@@ -161,13 +161,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         final String method = req.getHeaderString("Access-Control-Request-Method");
 
         // 6.2.4 Set field-names as the value of Access-Control-Request-Headers
-        final String requestHeaders = req.getHeaderString("Access-Control-Request-Headers");
-        final Set<String> fieldNames;
-        if (isNull(requestHeaders)) {
-            fieldNames = emptySet();
-        } else {
-            fieldNames = stream(requestHeaders.split(",")).map(String::trim).collect(toSet());
-        }
+        final Set<String> fieldNames = populateFieldNames(req.getHeaderString("Access-Control-Request-Headers"));
 
         // 6.2.5 If the method is not a case-sensitive match for the values
         // in the list of allowed methods, then terminate this set of steps.
@@ -207,5 +201,11 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         }
 
         return headers;
+    }
+
+    private Set<String> populateFieldNames(final String requestHeaders) {
+        return isNull(requestHeaders)
+            ? emptySet()
+            : stream(requestHeaders.split(",")).map(String::trim).collect(toSet());
     }
 }
