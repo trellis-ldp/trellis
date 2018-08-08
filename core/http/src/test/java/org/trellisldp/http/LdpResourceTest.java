@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
@@ -32,6 +33,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.trellisldp.http.domain.LdpRequest;
 
@@ -39,6 +42,9 @@ import org.trellisldp.http.domain.LdpRequest;
  * @author acoburn
  */
 public class LdpResourceTest extends AbstractLdpResourceTest {
+
+    @Mock
+    private AsyncResponse mockResponse;
 
     @Mock
     private ContainerRequestContext mockContext;
@@ -54,6 +60,9 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
     @Mock
     private Request mockRequest;
+
+    @Captor
+    private ArgumentCaptor<Response> captor;
 
     @Override
     protected String getBaseUrl() {
@@ -103,7 +112,10 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));
         when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
 
-        final Response res = matcher.getResourceHeaders(mockLdpRequest);
+        matcher.getResourceHeaders(mockResponse, mockLdpRequest);
+        verify(mockResponse).resume(captor.capture());
+
+        final Response res = captor.getValue();
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")));
     }
