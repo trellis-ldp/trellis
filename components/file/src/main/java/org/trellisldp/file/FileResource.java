@@ -73,28 +73,29 @@ public class FileResource implements Resource {
     }
 
     @Override
+    public IRI getInteractionModel() {
+        return getObjectForPredicate(type).orElse(null);
+    }
+
+    @Override
     public Instant getModified() {
         return graph.stream(identifier, DC.modified, null).map(triple -> (Literal) triple.getObject())
             .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
     }
 
     @Override
-    public IRI getInteractionModel() {
-        return getObjectForPredicate(type).orElse(null);
-    }
-
-    @Override
     public Optional<Binary> getBinary() {
         return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(t -> t instanceof IRI)
-                .map(t -> (IRI) t).findFirst().map(id -> {
-            final Instant date = graph.stream(id, DC.modified, null).map(Triple::getObject).map(t -> (Literal) t)
-                .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
-            final String mimeType = graph.stream(id, DC.format, null).map(Triple::getObject)
-                .map(t -> (Literal) t).map(Literal::getLexicalForm).findFirst().orElse(null);
-            final Long size = graph.stream(id, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
-                .map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null);
-            return new Binary((IRI) id, date, mimeType, size);
-        });
+                .map(t -> (IRI) t).findFirst().map(id -> new Binary((IRI) id,
+                        // Add a date
+                        graph.stream(id, DC.modified, null).map(Triple::getObject).map(t -> (Literal) t)
+                            .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null),
+                        // Add a MIMEtype
+                        graph.stream(id, DC.format, null).map(Triple::getObject)
+                            .map(t -> (Literal) t).map(Literal::getLexicalForm).findFirst().orElse(null),
+                        // Add a size value
+                        graph.stream(id, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
+                            .map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null)));
     }
 
     @Override
