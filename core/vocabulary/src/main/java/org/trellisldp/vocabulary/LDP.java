@@ -13,7 +13,11 @@
  */
 package org.trellisldp.vocabulary;
 
+import static java.util.Collections.unmodifiableMap;
 import static org.trellisldp.vocabulary.VocabUtils.createIRI;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -28,6 +32,9 @@ public final class LDP {
 
     /* Namespace */
     private static final String URI = "http://www.w3.org/ns/ldp#";
+
+    /* Superclass mapping */
+    private static final Map<IRI, IRI> superclassOf;
 
     /* Classes */
     public static final IRI BasicContainer = createIRI(getNamespace() + "BasicContainer");
@@ -69,6 +76,17 @@ public final class LDP {
     /* Other Classes */
     public static final IRI MemberSubject = createIRI(getNamespace() + "MemberSubject");
 
+    static {
+        final Map<IRI, IRI> data = new HashMap<>();
+        data.put(NonRDFSource, Resource);
+        data.put(RDFSource, Resource);
+        data.put(Container, RDFSource);
+        data.put(BasicContainer, Container);
+        data.put(DirectContainer, Container);
+        data.put(IndirectContainer, Container);
+        superclassOf = unmodifiableMap(data);
+    }
+
     /**
      * get the namespace.
      *
@@ -76,6 +94,15 @@ public final class LDP {
      */
     public static String getNamespace() {
         return URI;
+    }
+
+    /**
+     * Get the superclass of this LDP type.
+     * @param type the type
+     * @return the superclass or null if none exists.
+     */
+    public static IRI getSuperclassOf(final IRI type) {
+        return superclassOf.get(type);
     }
 
     private LDP() {

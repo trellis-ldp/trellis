@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
@@ -30,10 +29,8 @@ import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -70,21 +67,7 @@ final class RdfUtils {
 
     private static final Set<String> ignoredPreferences;
 
-    /**
-     * A mapping of LDP types to their supertype.
-     */
-    public static final Map<IRI, IRI> superClassOf;
-
     static {
-        final Map<IRI, IRI> data = new HashMap<>();
-        data.put(LDP.NonRDFSource, LDP.Resource);
-        data.put(LDP.RDFSource, LDP.Resource);
-        data.put(LDP.Container, LDP.RDFSource);
-        data.put(LDP.BasicContainer, LDP.Container);
-        data.put(LDP.DirectContainer, LDP.Container);
-        data.put(LDP.IndirectContainer, LDP.Container);
-        superClassOf = unmodifiableMap(data);
-
         final Set<String> ignore = new HashSet<>();
         ignore.add(Trellis.PreferUserManaged.getIRIString());
         ignore.add(Trellis.PreferServerManaged.getIRIString());
@@ -98,8 +81,9 @@ final class RdfUtils {
      * @return a stream of types
      */
     public static Stream<IRI> ldpResourceTypes(final IRI interactionModel) {
-        return Stream.of(interactionModel).filter(type -> superClassOf.containsKey(type) || LDP.Resource.equals(type))
-            .flatMap(type -> concat(ldpResourceTypes(superClassOf.get(type)), Stream.of(type)));
+        return Stream.of(interactionModel)
+            .filter(type -> nonNull(LDP.getSuperclassOf(type)) || LDP.Resource.equals(type))
+            .flatMap(type -> concat(ldpResourceTypes(LDP.getSuperclassOf(type)), Stream.of(type)));
     }
 
     /**

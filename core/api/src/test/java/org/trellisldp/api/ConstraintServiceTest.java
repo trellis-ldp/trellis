@@ -13,7 +13,7 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Collections.unmodifiableMap;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
@@ -25,8 +25,6 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -44,25 +42,9 @@ public class ConstraintServiceTest {
 
     private static final RDF rdf = RDFUtils.getInstance();
 
-    /**
-     * A mapping of LDP types to their supertype
-     */
-    private static final Map<IRI, IRI> superClassOf;
-
-    static {
-        final Map<IRI, IRI> data = new HashMap<>();
-        data.put(LDP.NonRDFSource, LDP.Resource);
-        data.put(LDP.RDFSource, LDP.Resource);
-        data.put(LDP.Container, LDP.RDFSource);
-        data.put(LDP.BasicContainer, LDP.Container);
-        data.put(LDP.DirectContainer, LDP.Container);
-        data.put(LDP.IndirectContainer, LDP.Container);
-        superClassOf = unmodifiableMap(data);
-    }
-
     private static Stream<IRI> ldpResourceTypes(final IRI interactionModel) {
-        return of(interactionModel).filter(type -> superClassOf.containsKey(type) || LDP.Resource.equals(type))
-            .flatMap(type -> concat(ldpResourceTypes(superClassOf.get(type)), of(type)));
+        return of(interactionModel).filter(type -> nonNull(LDP.getSuperclassOf(type)) || LDP.Resource.equals(type))
+            .flatMap(type -> concat(ldpResourceTypes(LDP.getSuperclassOf(type)), of(type)));
     }
 
     @Test
