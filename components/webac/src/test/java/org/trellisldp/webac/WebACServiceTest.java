@@ -479,15 +479,15 @@ public class WebACServiceTest {
     public void testDefaultForNew() {
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(authIRI5, type, ACL.Authorization),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
                 rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
                 rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
                 rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
 
                 rdf.createTriple(authIRI6, type, ACL.Authorization),
-                rdf.createTriple(authIRI6, ACL.mode, ACL.Append),
                 rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
                 rdf.createTriple(authIRI6, ACL.accessTo, rootIRI),
+                rdf.createTriple(authIRI6, ACL.mode, ACL.Append),
 
                 rdf.createTriple(authIRI8, type, ACL.Authorization),
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
