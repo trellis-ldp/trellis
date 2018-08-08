@@ -145,9 +145,9 @@ public class TrellisConfigurationTest {
 
         assertTrue(config.getCors().getEnabled());
         assertTrue(config.getCors().getAllowOrigin().contains("*"));
-        assertTrue(config.getCors().getAllowHeaders().contains("Link"));
-        assertTrue(config.getCors().getAllowMethods().contains("PATCH"));
-        assertTrue(config.getCors().getExposeHeaders().contains("Location"));
+        assertTrue(config.getCors().getAllowHeaders().contains("Want-Digest"));
+        assertTrue(config.getCors().getAllowMethods().contains("PUT"));
+        assertTrue(config.getCors().getExposeHeaders().contains("Memento-Datetime"));
         assertEquals((Integer) 180, config.getCors().getMaxAge());
         assertTrue(config.getCors().getAllowCredentials());
     }

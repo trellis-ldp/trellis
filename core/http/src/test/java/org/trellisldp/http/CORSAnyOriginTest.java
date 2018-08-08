@@ -153,5 +153,4 @@ public class CORSAnyOriginTest extends BaseCORSTest {
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("HEAD"));
     }
-
 }

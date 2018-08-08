@@ -75,12 +75,15 @@ cors:
     allowMethods:
         - "GET"
         - "POST"
+        - "PUT"
         - "PATCH"
     allowHeaders:
         - "Content-Type"
+        - "Want-Digest"
         - "Link"
     exposeHeaders:
         - "Link"
+        - "Memento-Datetime"
         - "Location"
     maxAge: 180
     allowCredentials: true

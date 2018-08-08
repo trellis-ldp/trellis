@@ -44,7 +44,7 @@ public class CORSSpecificOriginTest extends BaseCORSTest {
         config.register(new LdpResource(mockBundler));
         config.register(new CrossOriginResourceSharingFilter(asList(ORIGIN),
                     asList("GET", "HEAD", "PATCH", "POST", "PUT"),
-                    asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Datetime"),
+                    asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Patch"),
                     asList("Accept-Patch"), true, 180));
         return config;
     }
@@ -132,15 +132,15 @@ public class CORSSpecificOriginTest extends BaseCORSTest {
         assertTrue(headers.contains("accept"));
         assertTrue(headers.contains("link"));
         assertTrue(headers.contains("content-type"));
-        assertTrue(headers.contains("accept-datetime"));
+        assertTrue(headers.contains("accept-patch"));
 
         final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
         assertEquals(4L, methods.size());
-        assertTrue(methods.contains("PUT"));
-        assertTrue(methods.contains("PATCH"));
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("HEAD"));
+        assertTrue(methods.contains("PUT"));
+        assertTrue(methods.contains("PATCH"));
     }
 
     @Test
@@ -172,19 +172,18 @@ public class CORSSpecificOriginTest extends BaseCORSTest {
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
         assertEquals("180", res.getHeaderString("Access-Control-Max-Age"));
-
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"));
         assertNull(res.getHeaderString("Access-Control-Expose-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
 
         final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
         assertEquals(4L, methods.size());
-        assertTrue(methods.contains("PUT"));
-        assertTrue(methods.contains("PATCH"));
-        assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("HEAD"));
+        assertTrue(methods.contains("GET"));
+        assertTrue(methods.contains("PATCH"));
+        assertTrue(methods.contains("PUT"));
     }
 
     @Test
