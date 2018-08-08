@@ -14,18 +14,8 @@
 package org.trellisldp.http;
 
 import static java.time.Instant.ofEpochSecond;
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toList;
-import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -43,14 +33,11 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
@@ -60,12 +47,10 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 import org.trellisldp.api.AccessControlService;
@@ -88,47 +73,47 @@ import org.trellisldp.vocabulary.XSD;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class CORSResourceTest extends JerseyTest {
+abstract class BaseCORSTest extends JerseyTest {
 
     protected static final IOService ioService = new JenaIOService();
 
-    private static final int timestamp = 1496262729;
+    protected static final int timestamp = 1496262729;
 
-    private static final Instant time = ofEpochSecond(timestamp);
+    protected static final Instant time = ofEpochSecond(timestamp);
 
-    private static final RDF rdf = getInstance();
+    protected static final RDF rdf = getInstance();
 
-    private static final IRI agent = rdf.createIRI("user:agent");
+    protected static final IRI agent = rdf.createIRI("user:agent");
 
-    private static final BlankNode bnode = rdf.createBlankNode();
+    protected static final String ORIGIN = "http://example.com";
 
-    private static final String REPO1 = "repo1";
+    protected static final BlankNode bnode = rdf.createBlankNode();
 
-    private static final String BASE_URL = "http://example.org/";
+    protected static final String BASE_URL = "http://example.com/";
 
-    private static final String RANDOM_VALUE = "randomValue";
+    protected static final String RANDOM_VALUE = "aRandomValue";
 
-    private static final String RESOURCE_PATH = REPO1 + "/resource";
-    private static final String CHILD_PATH = RESOURCE_PATH + "/child";
-    private static final String BINARY_PATH = REPO1 + "/binary";
-    private static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
+    protected static final String RESOURCE_PATH = "resource";
+    protected static final String BINARY_PATH = "binary";
+    protected static final String NON_EXISTENT_PATH = "nonexistent";
+    protected static final String CHILD_PATH = RESOURCE_PATH + "/child";
 
-    private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
-    private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX + REPO1);
-    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
-    private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
-    private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
+    protected static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+    protected static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
+    protected static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
+    protected static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
+    protected static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
 
     protected static final Set<IRI> allModes = new HashSet<>();
 
     static {
-        allModes.add(ACL.Append);
         allModes.add(ACL.Read);
         allModes.add(ACL.Write);
         allModes.add(ACL.Control);
+        allModes.add(ACL.Append);
     }
 
-    private final MementoService mementoService = new NoopMementoService();
+    protected final MementoService mementoService = new NoopMementoService();
 
     @Mock
     protected ResourceService mockResourceService;
@@ -143,23 +128,13 @@ public class CORSResourceTest extends JerseyTest {
     protected AgentService mockAgentService;
 
     @Mock
-    private Resource mockResource, mockBinaryResource;
+    protected Resource mockResource, mockBinaryResource;
 
     @Mock
-    private ServiceBundler mockBundler;
+    protected ServiceBundler mockBundler;
 
-    @Override
-    public Application configure() {
-
+    protected void init() {
         initMocks(this);
-
-        final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockBundler));
-        config.register(new CrossOriginResourceSharingFilter(asList("*"),
-                    asList("GET", "HEAD", "PATCH", "POST", "PUT"),
-                    asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Datetime"),
-                    emptyList(), false, 0));
-        return config;
     }
 
     @Override
@@ -249,109 +224,4 @@ public class CORSResourceTest extends JerseyTest {
                 rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
     }
-
-    @Test
-    public void testGetCORS() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Type, Link").get();
-
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-    }
-
-    @Test
-    public void testGetCORSSimple() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "POST")
-            .header("Access-Control-Request-Headers", "Accept").get();
-
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-    }
-
-    @Test
-    public void testOptionsPreflightSimple() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "POST")
-            .header("Access-Control-Request-Headers", "Accept").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertTrue(res.getHeaderString("Access-Control-Allow-Headers").contains("accept"));
-        assertFalse(res.getHeaderString("Access-Control-Allow-Methods").contains("POST"));
-        assertTrue(res.getHeaderString("Access-Control-Allow-Methods").contains("PATCH"));
-    }
-
-
-    @Test
-    public void testCorsPreflight() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Language, Content-Type, Link").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-
-        final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
-            .collect(toList());
-        assertEquals(4L, headers.size());
-        assertTrue(headers.contains("accept"));
-        assertTrue(headers.contains("link"));
-        assertTrue(headers.contains("content-type"));
-        assertTrue(headers.contains("accept-datetime"));
-
-        final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
-            .collect(toList());
-        assertEquals(4L, methods.size());
-        assertTrue(methods.contains("PUT"));
-        assertTrue(methods.contains("PATCH"));
-        assertTrue(methods.contains("GET"));
-        assertTrue(methods.contains("HEAD"));
-    }
-
-    @Test
-    public void testCorsPreflightNoMatch() {
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-        final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Language").options();
-
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-
-        final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
-            .collect(toList());
-        assertEquals(4L, methods.size());
-        assertTrue(methods.contains("PUT"));
-        assertTrue(methods.contains("PATCH"));
-        assertTrue(methods.contains("GET"));
-        assertTrue(methods.contains("HEAD"));
-    }
-
 }
