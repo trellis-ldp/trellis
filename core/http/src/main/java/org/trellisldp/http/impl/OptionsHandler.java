@@ -60,17 +60,21 @@ public class OptionsHandler extends BaseLdpHandler {
     private static final Logger LOGGER = getLogger(OptionsHandler.class);
 
     private final IRI graphName;
+    private final Boolean isMemento;
 
     /**
      * An OPTIONS response builder.
      *
      * @param req the LDP request
      * @param trellis the Trellis application bundle
+     * @param isMemento true if the resource is a memento; false otherwise
      * @param baseUrl the base URL
      */
-    public OptionsHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
+    public OptionsHandler(final LdpRequest req, final ServiceBundler trellis, final Boolean isMemento,
+            final String baseUrl) {
         super(req, trellis, baseUrl);
         this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
+        this.isMemento = isMemento;
     }
 
     /**
@@ -107,7 +111,7 @@ public class OptionsHandler extends BaseLdpHandler {
         ldpResourceTypes(getResource().getInteractionModel())
             .forEach(type -> builder.link(type.getIRIString(), "type"));
 
-        if (getResource().isMemento() || TIMEMAP.equals(getRequest().getExt())) {
+        if (isMemento || TIMEMAP.equals(getRequest().getExt())) {
             // Mementos and TimeMaps are read-only
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
         } else {

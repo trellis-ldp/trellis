@@ -59,7 +59,6 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).stream(any(IRI.class));
         doCallRealMethod().when(mockResource).stream(anyCollection());
         doCallRealMethod().when(mockResource).getBinary();
-        doCallRealMethod().when(mockResource).isMemento();
         doCallRealMethod().when(mockResource).hasAcl();
         doCallRealMethod().when(mockResource).getExtraLinkRelations();
 
@@ -76,7 +75,6 @@ public class ResourceTest {
         assertFalse(mockResource.getInsertedContentRelation().isPresent());
         assertFalse(mockResource.getMemberRelation().isPresent());
         assertFalse(mockResource.getBinary().isPresent());
-        assertFalse(mockResource.isMemento());
         assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent());
         assertFalse(mockResource.hasAcl());
     }
@@ -96,7 +94,6 @@ public class ResourceTest {
         assertFalse(mockResource.getInsertedContentRelation().isPresent());
         assertFalse(mockResource.getMemberRelation().isPresent());
         assertFalse(mockResource.getBinary().isPresent());
-        assertFalse(mockResource.isMemento());
         assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent());
         assertFalse(mockResource.hasAcl());
     }

@@ -30,10 +30,4 @@ public class FileMementoResource extends FileResource {
     public FileMementoResource(final IRI identifier, final File file) {
         super(identifier, file);
     }
-
-    @Override
-    public Boolean isMemento() {
-        return true;
-    }
-
 }

@@ -291,7 +291,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockVersionedResource.getModified()).thenReturn(time);
         when(mockVersionedResource.getBinary()).thenReturn(empty());
-        when(mockVersionedResource.isMemento()).thenReturn(true);
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
@@ -302,14 +301,12 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockBinaryVersionedResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryVersionedResource.getModified()).thenReturn(time);
         when(mockBinaryVersionedResource.getBinary()).thenReturn(of(mockBinary));
-        when(mockBinaryVersionedResource.isMemento()).thenReturn(true);
         when(mockBinaryVersionedResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
         when(mockBinaryResource.getBinary()).thenReturn(of(mockBinary));
-        when(mockBinaryResource.isMemento()).thenReturn(false);
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
@@ -330,7 +327,6 @@ abstract class AbstractLdpResourceTest extends JerseyTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinary()).thenReturn(empty());
-        when(mockResource.isMemento()).thenReturn(false);
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 

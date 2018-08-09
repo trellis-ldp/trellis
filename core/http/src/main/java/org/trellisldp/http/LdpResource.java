@@ -216,7 +216,7 @@ public class LdpResource implements ContainerRequestFilter {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, urlBase);
+        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, nonNull(req.getVersion()), urlBase);
 
         fetchTrellisResource(identifier, req.getVersion()).thenApply(optionsHandler::initialize)
             .thenApply(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build).thenApply(response::resume);
@@ -318,7 +318,7 @@ public class LdpResource implements ContainerRequestFilter {
     private CompletableFuture<ResponseBuilder> fetchResource(final LdpRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, trellis, urlBase);
+        final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), urlBase);
 
         // Fetch a memento
         if (nonNull(req.getVersion())) {

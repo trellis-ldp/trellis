@@ -158,7 +158,6 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinary()).thenReturn(empty());
-        when(mockResource.isMemento()).thenReturn(false);
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 

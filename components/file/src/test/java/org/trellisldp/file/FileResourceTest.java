@@ -83,7 +83,6 @@ public class FileResourceTest {
             assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier());
         });
         assertFalse(res.hasAcl());
-        assertFalse(res.isMemento());
         assertEquals(0L, res.stream(LDP.PreferContainment).count());
         assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
@@ -121,7 +120,6 @@ public class FileResourceTest {
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isMemento());
         assertEquals(3L, res.stream(LDP.PreferContainment).count());
         assertEquals(6L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(5L, res.stream(Trellis.PreferServerManaged).count());
@@ -146,7 +144,6 @@ public class FileResourceTest {
         res.getMemberOfRelation().ifPresent(rel -> assertEquals(DC.isPartOf, rel));
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertFalse(res.isMemento());
         assertEquals(3L, res.stream(LDP.PreferContainment).count());
         assertEquals(5L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(4L, res.stream(Trellis.PreferServerManaged).count());
@@ -169,7 +166,6 @@ public class FileResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
         assertFalse(res.hasAcl());
-        assertTrue(res.isMemento());
         assertEquals(3L, res.stream(LDP.PreferContainment).count());
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());

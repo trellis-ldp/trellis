@@ -112,6 +112,8 @@ public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
 
+    private final Boolean isMemento;
+
     private RDFSyntax syntax;
 
     /**
@@ -119,10 +121,13 @@ public class GetHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param trellis the Trellis application bundle
+     * @param isMemento true if the resource is a memento; false otherwise
      * @param baseUrl the base URL
      */
-    public GetHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
+    public GetHandler(final LdpRequest req, final ServiceBundler trellis, final Boolean isMemento,
+            final String baseUrl) {
         super(req, trellis, baseUrl);
+        this.isMemento = isMemento;
     }
 
     /**
@@ -283,7 +288,7 @@ public class GetHandler extends BaseLdpHandler {
     }
 
     private void addAllowHeaders(final ResponseBuilder builder) {
-        if (getResource().isMemento()) {
+        if (isMemento) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
         } else if (ACL.equals(getRequest().getExt())) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH));
@@ -370,7 +375,7 @@ public class GetHandler extends BaseLdpHandler {
 
         builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag);
 
-        if (getResource().isMemento()) {
+        if (isMemento) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
         } else {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PUT, DELETE));
@@ -427,10 +432,10 @@ public class GetHandler extends BaseLdpHandler {
         ldpResourceTypes(model).forEach(type -> {
             builder.link(type.getIRIString(), "type");
             // Mementos don't accept POST or PATCH
-            if (LDP.Container.equals(type) && !getResource().isMemento()) {
+            if (LDP.Container.equals(type) && !isMemento) {
                 builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
-            } else if (LDP.RDFSource.equals(type) && !getResource().isMemento()) {
+            } else if (LDP.RDFSource.equals(type) && !isMemento) {
                 builder.header(ACCEPT_PATCH, getServices().getIOService().supportedUpdateSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             }
@@ -438,7 +443,7 @@ public class GetHandler extends BaseLdpHandler {
     }
 
     private void addMementoHeaders(final ResponseBuilder builder) {
-        if (getResource().isMemento()) {
+        if (isMemento) {
             builder.header(MEMENTO_DATETIME, from(getResource().getModified()));
         } else {
             builder.header(VARY, ACCEPT_DATETIME);

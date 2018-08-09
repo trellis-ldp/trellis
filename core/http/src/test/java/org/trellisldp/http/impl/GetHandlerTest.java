@@ -158,7 +158,6 @@ public class GetHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinary()).thenReturn(empty());
-        when(mockResource.isMemento()).thenReturn(false);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockIoService.supportedReadSyntaxes()).thenReturn(asList(TURTLE, JSONLD, RDFA));
 
@@ -173,7 +172,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -216,7 +215,7 @@ public class GetHandlerTest {
         when(mockLdpRequest.getPrefer())
             .thenReturn(Prefer.valueOf("return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment"));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -235,10 +234,9 @@ public class GetHandlerTest {
 
     @Test
     public void testGetVersionedLdprs() {
-        when(mockResource.isMemento()).thenReturn(true);
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, true, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -281,7 +279,7 @@ public class GetHandlerTest {
                 .thenReturn(notModified());
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         assertEquals(NOT_MODIFIED, handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                 .build().getStatusInfo());
@@ -295,7 +293,7 @@ public class GetHandlerTest {
                 .thenReturn(notModified());
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         assertEquals(NOT_MODIFIED, handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                 .build().getStatusInfo());
@@ -312,7 +310,7 @@ public class GetHandlerTest {
                 new SimpleEntry<>(inbox, "inbox")));
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -327,7 +325,7 @@ public class GetHandlerTest {
     public void testNotAcceptableLdprs() {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         assertEquals(NOT_ACCEPTABLE, handler.getRepresentation(handler.standardHeaders(handler.initialize(
                             mockResource))).build().getStatusInfo());
@@ -339,7 +337,7 @@ public class GetHandlerTest {
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -385,7 +383,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(
                     MediaType.valueOf(APPLICATION_LD_JSON + "; profile=\"" + compacted.getIRIString() + "\"")));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -435,7 +433,7 @@ public class GetHandlerTest {
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -456,7 +454,7 @@ public class GetHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -479,7 +477,7 @@ public class GetHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockLdpRequest.getExt()).thenReturn(DESCRIPTION);
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, null);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -501,7 +499,7 @@ public class GetHandlerTest {
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
@@ -525,7 +523,7 @@ public class GetHandlerTest {
         when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
         when(mockLdpRequest.getExt()).thenReturn("acl");
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, baseUrl);
+        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();

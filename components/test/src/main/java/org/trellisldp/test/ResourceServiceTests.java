@@ -232,7 +232,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
-        assertFalse(res.isMemento());
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
@@ -271,7 +270,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertTrue(res.getBinary().isPresent());
-        assertFalse(res.isMemento());
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
@@ -332,7 +330,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
-        assertFalse(res.isMemento());
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
@@ -391,7 +388,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
-        assertFalse(res.isMemento());
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
@@ -456,7 +452,6 @@ public interface ResourceServiceTests {
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().filter(x -> !LDP.MemberSubject.equals(x)).isPresent());
         assertFalse(res.getBinary().isPresent());
-        assertFalse(res.isMemento());
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
@@ -522,7 +517,6 @@ public interface ResourceServiceTests {
         assertEquals(of(FOAF.primaryTopic), res.getInsertedContentRelation());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getBinary().isPresent());
-        assertFalse(res.isMemento());
         assertFalse(res.getModified().isBefore(time));
         assertFalse(res.getModified().isAfter(now()));
         assertFalse(res.hasAcl());
