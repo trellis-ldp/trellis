@@ -13,11 +13,8 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static java.util.Date.from;
-import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
@@ -27,123 +24,28 @@ import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.time.Instant;
-import java.util.stream.Stream;
-
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
-import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Literal;
-import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.RDFTerm;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgentService;
-import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.NoopAuditService;
-import org.trellisldp.api.NoopMementoService;
-import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 
 /**
  * @author acoburn
  */
-public class DeleteHandlerTest {
-
-    private static final RDF rdf = getInstance();
-    private static final Instant time = ofEpochSecond(1496262729);
-    private static final String baseUrl = "http://localhost:8080/repo";
-
-    private final AuditService auditService = new NoopAuditService();
-
-    private final AgentService agentService = new SimpleAgentService();
-
-    private final MementoService mementoService = new NoopMementoService();
-
-    @Mock
-    private ServiceBundler mockBundler;
-
-    @Mock
-    private ResourceService mockResourceService;
-
-    @Mock
-    private Resource mockResource;
-
-    @Mock
-    private Request mockRequest;
-
-    @Mock
-    private SecurityContext mockSecurityContext;
-
-    @Mock
-    private LdpRequest mockLdpRequest;
-
-    @BeforeEach
-    public void setUp() {
-        initMocks(this);
-        final IRI iri = rdf.createIRI("trellis:data/");
-        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
-        when(mockBundler.getAuditService()).thenReturn(auditService);
-        when(mockBundler.getMementoService()).thenReturn(mementoService);
-        when(mockBundler.getAgentService()).thenReturn(agentService);
-        when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getIdentifier()).thenReturn(iri);
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockResource.getBinary()).thenReturn(empty());
-        when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Resource));
-        when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-
-        when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(BlankNode.class)))
-            .thenReturn(rdf.createIRI(TRELLIS_BNODE_PREFIX + "foo"));
-        when(mockResourceService.delete(eq(iri), any(Session.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
-        when(mockResourceService.add(eq(iri), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
-
-        when(mockLdpRequest.getSecurityContext()).thenReturn(mockSecurityContext);
-        when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);
-        when(mockLdpRequest.getPath()).thenReturn("/");
-        when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
-
-        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
-            final String base = (String) inv.getArgument(1);
-            if (term instanceof IRI) {
-                final String iriString = ((IRI) term).getIRIString();
-                if (iriString.startsWith(base)) {
-                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iriString.substring(base.length()));
-                }
-            }
-            return term;
-        });
-    }
+public class DeleteHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testDelete() {

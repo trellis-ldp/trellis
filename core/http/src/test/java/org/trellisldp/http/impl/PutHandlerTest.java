@@ -13,14 +13,10 @@
  */
 package org.trellisldp.http.impl;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.time.Instant.ofEpochSecond;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Date.from;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -30,154 +26,47 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
-import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Literal;
-import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.commons.rdf.api.RDFTerm;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgentService;
-import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.NoopAuditService;
-import org.trellisldp.api.NoopMementoService;
-import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 
 /**
  * @author acoburn
  */
-public class PutHandlerTest {
+public class PutHandlerTest extends HandlerBaseTest {
 
-    private static final Instant time = ofEpochSecond(1496262729);
     private static final Instant binaryTime = ofEpochSecond(1496262750);
 
-    private static final String baseUrl = "http://localhost:8080/repo/";
-    private static final RDF rdf = getInstance();
-    private static final IRI identifier = rdf.createIRI("trellis:data/resource");
-    private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
-            LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
-
     private final Binary testBinary = new Binary(rdf.createIRI("file:///binary.txt"), binaryTime, "text/plain", null);
-
-    private final AgentService agentService = new SimpleAgentService();
-
-    private final MementoService mementoService = new NoopMementoService();
-
-    private final AuditService auditService = new NoopAuditService();
-
-    @Mock
-    private ServiceBundler mockBundler;
-
-    @Mock
-    private ResourceService mockResourceService;
-
-    @Mock
-    private IOService mockIoService;
-
-    @Mock
-    private BinaryService mockBinaryService;
-
-    @Mock
-    private Resource mockResource;
-
-    @Mock
-    private Request mockRequest;
-
-    @Mock
-    private LdpRequest mockLdpRequest;
-
-    @Mock
-    private SecurityContext mockSecurityContext;
-
-    @BeforeEach
-    public void setUp() {
-        initMocks(this);
-        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
-        when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
-        when(mockBundler.getIOService()).thenReturn(mockIoService);
-        when(mockBundler.getAuditService()).thenReturn(auditService);
-        when(mockBundler.getMementoService()).thenReturn(mementoService);
-        when(mockBundler.getAgentService()).thenReturn(agentService);
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getBinary()).thenReturn(empty());
-        when(mockResource.getModified()).thenReturn(time);
-        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
-
-        when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
-        when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
-        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(true));
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(true));
-        when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
-                rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
-
-        when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD));
-        when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
-        when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);
-        when(mockLdpRequest.getSecurityContext()).thenReturn(mockSecurityContext);
-        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = inv.getArgument(0);
-            if (term instanceof IRI) {
-                final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(baseUrl)) {
-                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(baseUrl.length()));
-                }
-            }
-            return term;
-        });
-    }
 
     @Test
     public void testPutConflict() {
@@ -212,6 +101,7 @@ public class PutHandlerTest {
     public void testPutLdpResourceDefaultType() {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
@@ -231,6 +121,7 @@ public class PutHandlerTest {
     public void testPutLdpResourceContainer() {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
@@ -405,7 +296,8 @@ public class PutHandlerTest {
     @Test
     public void testError() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
+        when(mockLdpRequest.getPath()).thenReturn("resource");
+        when(mockResourceService.replace(eq(identifier), any(Session.class),
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());

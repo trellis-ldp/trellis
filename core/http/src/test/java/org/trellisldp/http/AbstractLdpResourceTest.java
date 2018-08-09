@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
@@ -22,7 +21,6 @@ import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Date.from;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -54,16 +52,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
@@ -90,17 +84,13 @@ import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -109,34 +99,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.rdf.api.BlankNode;
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Literal;
-import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.RDFTerm;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.HttpUrlConnectorProvider;
-import org.glassfish.jersey.test.JerseyTest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mock;
-import org.trellisldp.api.AccessControlService;
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
-import org.trellisldp.api.Binary;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.NoopAuditService;
-import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.api.Session;
-import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -147,243 +112,7 @@ import org.trellisldp.vocabulary.XSD;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class AbstractLdpResourceTest extends JerseyTest {
-
-    protected static final IOService ioService = new JenaIOService();
-
-    protected static final AuditService auditService = new NoopAuditService();
-
-    private static final int timestamp = 1496262729;
-
-    private static final Instant time = ofEpochSecond(timestamp);
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    private static final RDF rdf = getInstance();
-
-    private static final IRI agent = rdf.createIRI("user:agent");
-
-    private static final BlankNode bnode = rdf.createBlankNode();
-
-    private static final String BINARY_MIME_TYPE = "text/plain";
-
-    private static final Long BINARY_SIZE = 100L;
-
-    private static final String REPO1 = "repo1";
-
-    private static final String RANDOM_VALUE = "randomValue";
-
-    private static final String RESOURCE_PATH = REPO1 + "/resource";
-    private static final String CHILD_PATH = RESOURCE_PATH + "/child";
-    private static final String BINARY_PATH = REPO1 + "/binary";
-    private static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
-    private static final String DELETED_PATH = REPO1 + "/deleted";
-    private static final String USER_DELETED_PATH = REPO1 + "/userdeleted";
-    private static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
-
-    private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
-    private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
-    private static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
-    private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
-    private static final IRI newresourceIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE);
-    private static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
-    private static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
-    private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
-    private static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
-            LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
-
-    protected static final String BASE_URL = "http://example.org/";
-
-    protected static final String HUB = "http://hub.example.org/";
-
-    protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
-
-    @Mock
-    protected ServiceBundler mockBundler;
-
-    @Mock
-    protected MementoService mockMementoService;
-
-    @Mock
-    protected ResourceService mockResourceService;
-
-    @Mock
-    protected BinaryService mockBinaryService;
-
-    @Mock
-    protected AccessControlService mockAccessControlService;
-
-    @Mock
-    protected AgentService mockAgentService;
-
-    @Mock
-    private Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource;
-
-    @Mock
-    private Binary mockBinary;
-
-    @Mock
-    private InputStream mockInputStream;
-
-    @BeforeAll
-    public void before() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void configureClient(final ClientConfig config) {
-        config.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
-    }
-
-    @AfterAll
-    public void after() throws Exception {
-        super.tearDown();
-    }
-
-    protected String getBaseUrl() {
-        return BASE_URL;
-    }
-
-    @BeforeEach
-    public void setUpMocks() {
-        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
-        when(mockBundler.getIOService()).thenReturn(ioService);
-        when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
-        when(mockBundler.getMementoService()).thenReturn(mockMementoService);
-        when(mockBundler.getAgentService()).thenReturn(mockAgentService);
-        when(mockBundler.getAuditService()).thenReturn(auditService);
-        when(mockMementoService.get(any(IRI.class), any(Instant.class)))
-            .thenAnswer(inv -> completedFuture(mockVersionedResource));
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
-            .thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(childIdentifier), any(Instant.class)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
-        when(mockResourceService.get(eq(newresourceIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockResourceService.get(eq(binaryIdentifier))).thenAnswer(inv -> completedFuture(mockBinaryResource));
-        when(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
-            .thenReturn(completedFuture(mockBinaryVersionedResource));
-        when(mockResourceService.get(eq(nonexistentIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(nonexistentIdentifier), any(Instant.class)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockResourceService.get(eq(deletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
-        when(mockMementoService.get(eq(deletedIdentifier), any(Instant.class)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
-
-        when(mockResourceService.get(eq(userDeletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
-        when(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
-            .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
-
-        when(mockAgentService.asAgent(anyString())).thenReturn(agent);
-        when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
-
-        when(mockMementoService.list(any(IRI.class))).thenReturn(completedFuture(emptyList()));
-        when(mockMementoService.list(eq(identifier)))
-                .thenReturn(completedFuture(asList(
-                    between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                    between(ofEpochSecond(timestamp - 1000), time),
-                    between(time, ofEpochSecond(timestamp + 1000)))));
-        when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockVersionedResource.getModified()).thenReturn(time);
-        when(mockVersionedResource.getBinary()).thenReturn(empty());
-        when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
-        when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-
-        when(mockMementoService.list(eq(binaryIdentifier))).thenReturn(completedFuture(asList(
-                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000)))));
-        when(mockBinaryVersionedResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockBinaryVersionedResource.getModified()).thenReturn(time);
-        when(mockBinaryVersionedResource.getBinary()).thenReturn(of(mockBinary));
-        when(mockBinaryVersionedResource.getIdentifier()).thenReturn(binaryIdentifier);
-        when(mockBinaryVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-
-        when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockBinaryResource.getModified()).thenReturn(time);
-        when(mockBinaryResource.getBinary()).thenReturn(of(mockBinary));
-        when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
-        when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-
-        when(mockBinary.getModified()).thenReturn(time);
-        when(mockBinary.getIdentifier()).thenReturn(binaryInternalIdentifier);
-        when(mockBinary.getMimeType()).thenReturn(of(BINARY_MIME_TYPE));
-        when(mockBinary.getSize()).thenReturn(of(BINARY_SIZE));
-
-        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
-        when(mockBinaryService.digest(eq("MD5"), any(InputStream.class))).thenReturn(of("md5-digest"));
-        when(mockBinaryService.digest(eq("SHA"), any(InputStream.class))).thenReturn(of("sha1-digest"));
-        when(mockBinaryService.getContent(eq(binaryInternalIdentifier), eq(3), eq(10)))
-            .thenAnswer(x -> of(new ByteArrayInputStream("e input".getBytes(UTF_8))));
-        when(mockBinaryService.getContent(eq(binaryInternalIdentifier)))
-            .thenAnswer(x -> of(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
-        when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
-
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getBinary()).thenReturn(empty());
-        when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-
-        when(mockMementoService.list(eq(deletedIdentifier))).thenReturn(completedFuture(emptyList()));
-
-        when(mockMementoService.list(eq(userDeletedIdentifier))).thenReturn(completedFuture(emptyList()));
-
-        when(mockResourceService.unskolemize(any(IRI.class)))
-            .thenAnswer(inv -> {
-                final IRI iri = inv.getArgument(0);
-                final String uri = iri.getIRIString();
-                if (uri.startsWith(TRELLIS_BNODE_PREFIX)) {
-                    return bnode;
-                }
-                return iri;
-            });
-        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = inv.getArgument(0);
-            if (term instanceof IRI) {
-                final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(getBaseUrl())) {
-                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(getBaseUrl().length()));
-                }
-            }
-            return term;
-        });
-        when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = inv.getArgument(0);
-            if (term instanceof IRI) {
-                final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(TRELLIS_DATA_PREFIX)) {
-                    return rdf.createIRI(getBaseUrl() + iri.substring(TRELLIS_DATA_PREFIX.length()));
-                }
-            }
-            return term;
-        });
-
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
-        when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
-        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(true));
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(true));
-        when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
-                rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferServerManaged, identifier, DC.created,
-                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
-    }
+abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
     /* ****************************** *
      *           HEAD Tests

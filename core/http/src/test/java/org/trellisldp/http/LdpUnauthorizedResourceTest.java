@@ -14,13 +14,10 @@
 package org.trellisldp.http;
 
 import static java.lang.String.join;
-import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
@@ -29,82 +26,29 @@ import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
-import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
-
-import java.time.Instant;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.rdf.api.BlankNode;
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Literal;
-import org.apache.commons.rdf.api.RDF;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgentService;
-import org.trellisldp.api.AccessControlService;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
-import org.trellisldp.io.JenaIOService;
-import org.trellisldp.vocabulary.ACL;
-import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
 /**
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class LdpUnauthorizedResourceTest extends JerseyTest {
-
-    private static final IOService ioService = new JenaIOService(null);
-
-    private static final Instant time = ofEpochSecond(1496262729);
-
-    private static final RDF rdf = getInstance();
-
-    private static final IRI identifier = rdf.createIRI("trellis:data/resource");
-
-    private static final BlankNode bnode = rdf.createBlankNode();
-
-    @Mock
-    private ServiceBundler mockBundler;
-
-    @Mock
-    private ResourceService mockResourceService;
-
-    @Mock
-    private BinaryService mockBinaryService;
-
-    @Mock
-    private Resource mockResource;
-
-    @Mock
-    private AccessControlService mockAccessControlService;
+public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
 
     @Override
     public Application configure() {
@@ -129,57 +73,11 @@ public class LdpUnauthorizedResourceTest extends JerseyTest {
         return config;
     }
 
-    @Override
-    protected void configureClient(final ClientConfig config) {
-        config.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
-    }
-
-    @BeforeAll
-    public void before() throws Exception {
-        super.setUp();
-    }
-
-    @AfterAll
-    public void after() throws Exception {
-        super.tearDown();
-    }
-
     @BeforeEach
     public void setUpMocks() {
+        super.setUpMocks();
         when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> of(mockResource));
-
-        when(mockBundler.getResourceService()).thenReturn(mockResourceService);
-        when(mockBundler.getIOService()).thenReturn(ioService);
-        when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
-        when(mockBundler.getAgentService()).thenReturn(new SimpleAgentService());
-
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
-
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getBinary()).thenReturn(empty());
-        when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-
-        when(mockResourceService.unskolemize(any(IRI.class)))
-            .thenAnswer(inv -> {
-                final String uri = ((IRI) inv.getArgument(0)).getIRIString();
-                if (uri.startsWith(TRELLIS_BNODE_PREFIX)) {
-                    return bnode;
-                }
-                return (IRI) inv.getArgument(0);
-            });
-
-        when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(IRI.class), any())).thenReturn(completedFuture(true));
-        when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
-        when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
-                rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
     }
 
     @Test
