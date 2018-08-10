@@ -28,7 +28,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,10 +45,8 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.Date;
-import java.util.function.Predicate;
 
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -58,7 +55,6 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
@@ -84,12 +80,13 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         // will never store audit
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
-        final AuditService badAuditService = new DefaultAuditService() {};
-        when(mockBundler.getAuditService()).thenReturn(badAuditService);
+
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
+
         assertEquals(INTERNAL_SERVER_ERROR, handler.updateResource(handler.initialize(mockResource)).join().build()
                 .getStatusInfo());
     }
@@ -98,27 +95,27 @@ public class PatchHandlerTest extends HandlerBaseTest {
     public void testPatchLdprs() {
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockLdpRequest.getPath()).thenReturn("resource");
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
+        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
+
         assertEquals(NO_CONTENT, res.getStatusInfo());
     }
 
     @Test
     public void testEntity() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         final Triple triple = rdf.createTriple(identifier, RDFS.label, rdf.createLiteral("A label"));
 
+        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(triple));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
+
         assertEquals(NO_CONTENT, res.getStatusInfo());
 
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
-
         verify(mockResourceService).replace(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class),
                         any(), any());
     }
@@ -130,18 +127,15 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
         assertEquals(OK, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertNull(res.getHeaderString(ACCEPT_POST));
         assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+        assertNull(res.getHeaderString(ACCEPT_RANGES));
+        assertNull(res.getHeaderString(ACCEPT_POST));
+        assertType(res, LDP.RDFSource);
     }
 
     @Test
@@ -153,25 +147,21 @@ public class PatchHandlerTest extends HandlerBaseTest {
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
         assertEquals(OK, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertNull(res.getHeaderString(ACCEPT_POST));
         assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertTrue(TEXT_HTML_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(TEXT_HTML_TYPE));
+        assertNull(res.getHeaderString(ACCEPT_POST));
+        assertNull(res.getHeaderString(ACCEPT_RANGES));
+        assertType(res, LDP.RDFSource);
     }
 
     @Test
     public void testConflict() {
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockRequest.evaluatePreconditions(any(Date.class), any(EntityTag.class)))
-            .thenReturn(status(CONFLICT));
+        when(mockRequest.evaluatePreconditions(any(Date.class), any(EntityTag.class))).thenReturn(status(CONFLICT));
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
@@ -182,9 +172,9 @@ public class PatchHandlerTest extends HandlerBaseTest {
     @Test
     public void testError() {
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockResourceService.replace(eq(identifier), any(Session.class),
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
-        when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
@@ -198,33 +188,25 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
         final Response res = patchHandler.initialize(mockResource).build();
+
         assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType());
         assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
                 link.getRel().equals(LDP.constrainedBy.getIRIString())));
-        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType());
     }
 
     @Test
     public void testError2() {
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockLdpRequest.getPath()).thenReturn("resource");
         doThrow(RuntimeTrellisException.class).when(mockIoService)
             .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
-        when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
 
         assertEquals(BAD_REQUEST, patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build()
                 .getStatusInfo());
-    }
-
-    private static Predicate<Link> hasLink(final IRI iri, final String rel) {
-        return link -> rel.equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
-    }
-
-    private static Predicate<Link> hasType(final IRI iri) {
-        return hasLink(iri, "type");
     }
 }

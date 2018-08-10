@@ -20,9 +20,12 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -34,11 +37,15 @@ import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.rdf.api.BlankNode;
@@ -134,6 +141,23 @@ abstract class HandlerBaseTest {
         when(mockLdpRequest.getPath()).thenReturn("");
         when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);
         when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
+    }
+
+    protected void assertType(final Response res, final IRI type) {
+        final List<IRI> allTypes = asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
+                LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
+        final List<IRI> types = RdfUtils.ldpResourceTypes(type).collect(toList());
+        allTypes.stream().filter(t -> !types.contains(t)).forEach(t ->
+                assertFalse(res.getLinks().stream().anyMatch(hasType(t))));
+        types.forEach(t -> assertTrue(res.getLinks().stream().anyMatch(hasType(t))));
+    }
+
+    protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
+        return link -> rel.equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
+    }
+
+    protected static Predicate<Link> hasType(final IRI iri) {
+        return hasLink(iri, "type");
     }
 
     private void setUpResourceService() {

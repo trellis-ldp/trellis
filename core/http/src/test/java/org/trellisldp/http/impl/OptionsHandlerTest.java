@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
@@ -41,6 +42,8 @@ import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+
+import java.util.List;
 
 import javax.ws.rs.core.Response;
 
@@ -96,48 +99,32 @@ public class OptionsHandlerTest {
     @Test
     public void testOptionsLdprs() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, false, null);
-
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
 
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PUT));
-        assertTrue(allow.contains(DELETE));
-        assertTrue(allow.contains(PATCH));
-        assertFalse(allow.contains(POST));
+        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
+        assertNull(res.getHeaderString(ACCEPT_POST));
+        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH));
     }
 
     @Test
     public void testOptionsLdpc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
-        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, false, baseUrl);
 
+        final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, false, baseUrl);
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
+
         assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
 
         final String acceptPost = res.getHeaderString(ACCEPT_POST);
         assertNotNull(acceptPost);
         assertTrue(acceptPost.contains(APPLICATION_LD_JSON));
         assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES));
         assertTrue(acceptPost.contains(TEXT_TURTLE.split(";")[0]));
-
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertNotNull(allow);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PUT));
-        assertTrue(allow.contains(DELETE));
-        assertTrue(allow.contains(PATCH));
-        assertTrue(allow.contains(POST));
+        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST));
     }
 
     @Test
@@ -145,19 +132,11 @@ public class OptionsHandlerTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, false, null);
-
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
+
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PUT));
-        assertTrue(allow.contains(DELETE));
-        assertTrue(allow.contains(PATCH));
-        assertFalse(allow.contains(POST));
+        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH));
     }
 
     @Test
@@ -165,39 +144,30 @@ public class OptionsHandlerTest {
         when(mockRequest.getExt()).thenReturn("acl");
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, false, baseUrl);
-
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
+
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertNull(res.getHeaderString(ACCEPT_POST));
-
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PUT));
-        assertTrue(allow.contains(DELETE));
-        assertTrue(allow.contains(PATCH));
-        assertFalse(allow.contains(POST));
+        assertNull(res.getHeaderString(ACCEPT_POST));
+        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH));
     }
 
     @Test
     public void testOptionsMemento() {
         final OptionsHandler optionsHandler = new OptionsHandler(mockRequest, mockBundler, true, null);
-
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
+
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_PATCH));
+        assertAllow(res, asList(GET, HEAD, OPTIONS));
+    }
 
+    private void assertAllow(final Response res, final List<String> methods) {
+        final List<String> allMethods = asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST);
         final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertFalse(allow.contains(PUT));
-        assertFalse(allow.contains(DELETE));
-        assertFalse(allow.contains(PATCH));
-        assertFalse(allow.contains(POST));
+        assertNotNull(allow);
+        methods.forEach(m -> assertTrue(allow.contains(m)));
+        allMethods.stream().filter(m -> !methods.contains(m)).forEach(m -> assertFalse(allow.contains(m)));
     }
 }

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -51,9 +52,7 @@ public class AmqpPublisherTest {
     private static final RDF rdf = new SimpleRDF();
 
     private final String exchangeName = "exchange";
-
     private final String queueName = "queue";
-
     private final Instant time = now();
 
     @Mock
@@ -65,11 +64,11 @@ public class AmqpPublisherTest {
     @BeforeEach
     public void setUp() throws IOException {
         initMocks(this);
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getCreated()).thenReturn(time);
-        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:amqp:test"));
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
         when(mockEvent.getTargetTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
         doNothing().when(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),

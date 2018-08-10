@@ -27,6 +27,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 
 import java.time.Instant;
 
@@ -80,11 +81,11 @@ public class JmsPublisherTest {
     @BeforeEach
     public void setUp() throws JMSException {
         initMocks(this);
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getCreated()).thenReturn(time);
-        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:jms:test"));
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
         when(mockEvent.getTargetTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
 

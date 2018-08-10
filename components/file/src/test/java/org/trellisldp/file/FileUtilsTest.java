@@ -53,14 +53,14 @@ public class FileUtilsTest {
     @Test
     public void testParseQuadWithComment() {
         final Optional<Quad> quad = FileUtils.parseQuad(
-                "<trellis:data/resource> <http://purl.org/dc/terms/title> "
-                + "\"Some title\" <http://www.trellisldp.org/ns/trellis#PreferUserManaged> . # some comment")
+                "<trellis:data/resource> <http://purl.org/dc/terms/description> "
+                + "\"A description\" <http://www.trellisldp.org/ns/trellis#PreferUserManaged> . # some comment")
             .findFirst();
         assertTrue(quad.isPresent());
         quad.ifPresent(q -> {
             assertEquals("trellis:data/resource", ((IRI) q.getSubject()).getIRIString());
-            assertEquals(DC.title, q.getPredicate());
-            assertEquals("Some title", ((Literal) q.getObject()).getLexicalForm());
+            assertEquals(DC.description, q.getPredicate());
+            assertEquals("A description", ((Literal) q.getObject()).getLexicalForm());
             assertTrue(q.getGraphName().isPresent());
             q.getGraphName().ifPresent(g -> assertEquals(Trellis.PreferUserManaged, g));
         });
@@ -70,12 +70,12 @@ public class FileUtilsTest {
     public void testParseQuadNoGraph() {
         final Optional<Quad> quad = FileUtils.parseQuad(
                 "<trellis:data/resource> <http://purl.org/dc/terms/title> "
-                + "\"Some title\" .").findFirst();
+                + "\"A different title\" .").findFirst();
         assertTrue(quad.isPresent());
         quad.ifPresent(q -> {
             assertEquals("trellis:data/resource", ((IRI) q.getSubject()).getIRIString());
             assertEquals(DC.title, q.getPredicate());
-            assertEquals("Some title", ((Literal) q.getObject()).getLexicalForm());
+            assertEquals("A different title", ((Literal) q.getObject()).getLexicalForm());
             assertFalse(q.getGraphName().isPresent());
         });
     }

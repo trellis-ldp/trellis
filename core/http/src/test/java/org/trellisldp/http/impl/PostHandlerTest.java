@@ -26,7 +26,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,17 +41,14 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.Digest;
@@ -68,16 +64,12 @@ public class PostHandlerTest extends HandlerBaseTest {
     public void testPostLdprs() throws IOException {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
-        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertType(res, LDP.Container);
     }
 
     @Test
@@ -85,13 +77,11 @@ public class PostHandlerTest extends HandlerBaseTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
-        final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
-        // will never store audit
+        when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(false));
-        final AuditService badAuditService = new DefaultAuditService() {};
-        when(mockBundler.getAuditService()).thenReturn(badAuditService);
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, null, entity, mockBundler, null);
+
+        final PostHandler handler = buildPostHandler("/simpleTriple.ttl", null, null);
 
         assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
                 .join().build().getStatusInfo());
@@ -99,50 +89,36 @@ public class PostHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testDefaultType1() throws IOException {
-        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
+        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
 
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .join().build();
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertType(res, LDP.RDFSource);
     }
 
     @Test
     public void testDefaultType2() throws IOException {
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
 
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
+        final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
+        final Response res = handler.createResource(handler.initialize(mockParent, DELETED_RESOURCE)).join().build();
 
-        final Response res = handler.createResource(handler.initialize(mockParent, DELETED_RESOURCE))
-                .join().build();
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertType(res, LDP.NonRDFSource);
     }
 
     @Test
     public void testDefaultType3() throws IOException {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
-        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertType(res, LDP.RDFSource);
     }
 
     @Test
@@ -150,32 +126,24 @@ public class PostHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertType(res, LDP.NonRDFSource);
     }
 
     @Test
     public void testDefaultType5() throws IOException {
         when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
-        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
 
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertType(res, LDP.RDFSource);
     }
 
     @Test
@@ -183,10 +151,9 @@ public class PostHandlerTest extends HandlerBaseTest {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
-        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(BAD_REQUEST, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
@@ -199,92 +166,75 @@ public class PostHandlerTest extends HandlerBaseTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
         final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
                         rdf.createLiteral("A title"));
+
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
         when(mockIoService.read(any(), eq(TURTLE), any())).thenAnswer(x -> Stream.of(triple));
-        final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile());
-
         when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
 
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final PostHandler handler = buildPostHandler("/simpleTriple.ttl", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
         assertEquals(create(baseUrl + path), res.getLocation());
+        assertType(res, LDP.RDFSource);
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
-
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class),
                         any(), any());
     }
 
     @Test
     public void testEntity2() throws IOException {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource");
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
 
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "new-resource");
+        final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertEquals(create(baseUrl + "new-resource"), res.getLocation());
+        assertType(res, LDP.NonRDFSource);
 
         verify(mockIoService, never()).read(any(), any(), any());
-
+        verify(mockResourceService)
+            .create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(Dataset.class), any(), any());
         verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
                 metadataArgument.capture());
+
         assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"));
         assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
-
-        verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(Dataset.class),
-                        any(), any());
     }
 
     @Test
     public void testEntity3() throws IOException {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource");
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
         when(mockLdpRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
 
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
-
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource-with-entity");
+        final PostHandler handler = buildPostHandler("/simpleData.txt", "resource-with-entity", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+
         assertEquals(CREATED, res.getStatusInfo());
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(res.getLinks().stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(res.getLinks().stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertEquals(create(baseUrl + "newresource"), res.getLocation());
+        assertEquals(create(baseUrl + "resource-with-entity"), res.getLocation());
+        assertType(res, LDP.NonRDFSource);
 
         verify(mockIoService, never()).read(any(), any(), any());
-
-        verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
-                metadataArgument.capture());
-        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"));
-        assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
-
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(Dataset.class),
                         any(), any());
+        verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
+                metadataArgument.capture());
+
+        assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
+        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"));
     }
 
     @Test
     public void testEntityBadDigest() {
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
         when(mockLdpRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
 
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
+        final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
         assertEquals(BAD_REQUEST, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
                 .join().build().getStatusInfo());
@@ -292,11 +242,10 @@ public class PostHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testBadDigest2() {
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile());
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
-        when(mockLdpRequest.getDigest()).thenReturn(new Digest("foo", "blahblah"));
+        when(mockLdpRequest.getDigest()).thenReturn(new Digest("foo", "blahblahblah"));
 
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
+        final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
         assertEquals(BAD_REQUEST, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
                 .join().build().getStatusInfo());
@@ -306,8 +255,8 @@ public class PostHandlerTest extends HandlerBaseTest {
     public void testBadEntityDigest() {
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
         when(mockLdpRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
-        final File entity = new File(new File(getClass().getResource("/simpleData.txt").getFile()).getParent());
 
+        final File entity = new File(new File(getClass().getResource("/simpleData.txt").getFile()).getParent());
         final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
 
         assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
@@ -316,9 +265,9 @@ public class PostHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testEntityError() {
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
 
+        final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
         final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, baseUrl);
 
         assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
@@ -331,18 +280,14 @@ public class PostHandlerTest extends HandlerBaseTest {
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
         when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
 
-        final File entity = new File(getClass().getResource("/emptyData.txt").getFile());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, baseUrl);
+        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", baseUrl);
 
         assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
                 .join().build().getStatusInfo());
     }
 
-    private static Predicate<Link> hasLink(final IRI iri, final String rel) {
-        return link -> rel.equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
-    }
-
-    private static Predicate<Link> hasType(final IRI iri) {
-        return hasLink(iri, "type");
+    private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl) {
+        final File entity = new File(getClass().getResource(resourceName).getFile());
+        return new PostHandler(mockLdpRequest, root, id, entity, mockBundler, baseUrl);
     }
 }
