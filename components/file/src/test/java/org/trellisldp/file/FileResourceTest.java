@@ -152,23 +152,23 @@ public class FileResourceTest {
 
     @Test
     public void testMementoResource() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final File file = new File(getClass().getResource("/resource.nq").getFile());
+        final IRI memento = rdf.createIRI(TRELLIS_DATA_PREFIX + "memento");
+        final File file = new File(getClass().getResource("/memento.nq").getFile());
         assertTrue(file.exists());
-        final Resource res = new FileMementoResource(identifier, file);
+        final Resource res = new FileMementoResource(memento, file);
 
-        assertEquals(identifier, res.getIdentifier());
-        assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified());
-        assertEquals(LDP.BasicContainer, res.getInteractionModel());
-        assertFalse(res.getMembershipResource().isPresent());
+        assertEquals(memento, res.getIdentifier());
+        assertEquals(parse("2017-01-14T11:00:01Z"), res.getModified());
+        assertEquals(LDP.Container, res.getInteractionModel());
+        assertFalse(res.hasAcl());
+        assertFalse(res.getBinary().isPresent());
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getInsertedContentRelation().isPresent());
-        assertFalse(res.getBinary().isPresent());
-        assertFalse(res.hasAcl());
-        assertEquals(3L, res.stream(LDP.PreferContainment).count());
+        assertFalse(res.getMembershipResource().isPresent());
+        assertEquals(2L, res.stream(LDP.PreferContainment).count());
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
         assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
-        assertEquals(8L, res.stream().count());
+        assertEquals(7L, res.stream().count());
     }
 }

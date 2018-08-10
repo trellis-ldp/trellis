@@ -1,0 +1,8 @@
+<trellis:data/memento> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#Container> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
+<trellis:data/memento> <http://purl.org/dc/terms/modified> "2017-01-14T11:00:01Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> <http://www.trellisldp.org/ns/trellis#PreferServerManaged> .
+<trellis:data/memento> <http://www.w3.org/ns/ldp#inbox> <http://example.org/receiver/inbox> <http://www.trellisldp.org/ns/trellis#PreferUserManaged> .
+<trellis:data/memento> <http://www.w3.org/2000/01/rdf-schema#label> "A label"@eng <http://www.trellisldp.org/ns/trellis#PreferUserManaged> .
+<trellis:data/memento> <http://purl.org/dc/terms/subject> <http://example.org/subject> <http://www.trellisldp.org/ns/trellis#PreferUserManaged> .
+<trellis:data/memento> <http://www.w3.org/ns/ldp#contains> <trellis:data/memento/1> <http://www.w3.org/ns/ldp#PreferContainment> .
+<trellis:data/memento> <http://www.w3.org/ns/ldp#contains> <trellis:data/memento/2> <http://www.w3.org/ns/ldp#PreferContainment> .
+
