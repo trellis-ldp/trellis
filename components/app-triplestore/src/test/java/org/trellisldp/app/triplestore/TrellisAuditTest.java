@@ -13,10 +13,9 @@
  */
 package org.trellisldp.app.triplestore;
 
-import static io.dropwizard.testing.ConfigOverride.config;
-import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
+import static org.trellisldp.app.triplestore.TestUtils.buildApplication;
 
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -31,13 +30,7 @@ import org.trellisldp.test.AbstractApplicationAuditTests;
  */
 public class TrellisAuditTest extends AbstractApplicationAuditTests {
 
-    private static final DropwizardTestSupport<AppConfiguration> APP
-        = new DropwizardTestSupport<AppConfiguration>(TrellisApplication.class,
-                resourceFilePath("trellis-config.yml"),
-                config("binaries", resourceFilePath("data") + "/binaries"),
-                config("mementos", resourceFilePath("data") + "/mementos"),
-                config("namespaces", resourceFilePath("data/namespaces.json")));
-
+    private static final DropwizardTestSupport<AppConfiguration> APP = buildApplication();
     private static final Client CLIENT;
 
     static {
