@@ -86,32 +86,32 @@ public class FileMementoServiceTest {
 
     @Test
     public void testListNonExistent() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "nonexistent");
         final File dir = new File(getClass().getResource("/versions").getFile());
-        assertTrue(dir.exists());
-        assertTrue(dir.isDirectory());
 
         System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
         final MementoService svc = new FileMementoService();
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "nonexistent");
 
+        assertTrue(dir.exists());
+        assertTrue(dir.isDirectory());
         assertTrue(svc.list(identifier).join().isEmpty());
         assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join());
     }
 
     @Test
     public void testListNone() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "empty");
         final File dir = new File(getClass().getResource("/versions").getFile());
-        assertTrue(dir.exists());
-        assertTrue(dir.isDirectory());
 
         System.getProperties().setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
         final MementoService svc = new FileMementoService();
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "empty");
 
-        assertTrue(svc.list(identifier).join().isEmpty());
+        assertTrue(dir.exists());
+        assertTrue(dir.isDirectory());
         assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join());
+        assertTrue(svc.list(identifier).join().isEmpty());
     }
 
     @Test
