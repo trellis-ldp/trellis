@@ -58,21 +58,6 @@ public class WebACServiceTest {
 
     private static final RDF rdf = new JenaRDF();
 
-    @Mock
-    private ResourceService mockResourceService;
-
-    @Mock
-    private Session mockSession;
-
-    @Mock
-    private CacheService<String, Set<IRI>> mockCache;
-
-    @Mock
-    private Resource mockResource, mockChildResource, mockParentResource, mockRootResource, mockGroupResource,
-            mockMemberResource;
-
-    private AccessControlService testService;
-
     private static final IRI nonexistentIRI = rdf.createIRI("trellis:data/parent/child/nonexistent");
 
     private static final IRI resourceIRI = rdf.createIRI("trellis:data/parent/child/resource");
@@ -109,18 +94,36 @@ public class WebACServiceTest {
 
     private static final IRI groupIRI2 = rdf.createIRI("trellis:data/group/test/");
 
+    private static final Set<IRI> allModels = new HashSet<>();
 
-    @BeforeEach
-    @SuppressWarnings("unchecked")
-    public void setUp() {
-        initMocks(this);
-        final Set<IRI> allModels = new HashSet<>();
+    static {
         allModels.add(LDP.RDFSource);
         allModels.add(LDP.NonRDFSource);
         allModels.add(LDP.DirectContainer);
         allModels.add(LDP.IndirectContainer);
         allModels.add(LDP.BasicContainer);
         allModels.add(LDP.Container);
+    }
+
+    private AccessControlService testService;
+
+    @Mock
+    private ResourceService mockResourceService;
+
+    @Mock
+    private Session mockSession;
+
+    @Mock
+    private CacheService<String, Set<IRI>> mockCache;
+
+    @Mock
+    private Resource mockResource, mockChildResource, mockParentResource, mockRootResource, mockGroupResource,
+            mockMemberResource;
+
+    @BeforeEach
+    @SuppressWarnings("unchecked")
+    public void setUp() {
+        initMocks(this);
 
         testService = new WebACService(mockResourceService);
 
@@ -130,97 +133,21 @@ public class WebACServiceTest {
             return mapper.apply(key);
         });
 
-        when(mockChildResource.hasAcl()).thenReturn(true);
-        when(mockChildResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
-                rdf.createTriple(authIRI1, type, ACL.Authorization),
-                rdf.createTriple(authIRI1, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI1, ACL.agent, addisonIRI),
-                rdf.createTriple(authIRI1, ACL.accessTo, childIRI),
+        setUpResourceService();
 
-                rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
-                rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
-                rdf.createTriple(authIRI2, ACL.agent, addisonIRI),
-                rdf.createTriple(authIRI2, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
+        setUpChildResource();
+        setUpRootResource();
+        setUpMemberResource();
 
-                rdf.createTriple(authIRI3, type, PROV.Activity),
-                rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI3, ACL.mode, ACL.Write),
-                rdf.createTriple(authIRI3, ACL.mode, ACL.Control),
-                rdf.createTriple(authIRI3, ACL.agent, addisonIRI),
-                rdf.createTriple(authIRI3, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI3, ACL.accessTo, childIRI),
-
-                rdf.createTriple(authIRI4, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI4, type, ACL.Authorization)));
-
-        when(mockRootResource.hasAcl()).thenReturn(true);
-        when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
-                rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
-
-                rdf.createTriple(authIRI6, type, ACL.Authorization),
-                rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
-                rdf.createTriple(authIRI6, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI6, ACL.mode, ACL.Append),
-
-                rdf.createTriple(authIRI8, type, ACL.Authorization),
-                rdf.createTriple(authIRI8, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI8, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
-
-        when(mockMemberResource.hasAcl()).thenReturn(true);
-        when(mockMemberResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
-                rdf.createTriple(authIRI5, ACL.accessTo, memberIRI),
-                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
-
-                rdf.createTriple(authIRI6, type, ACL.Authorization),
-                rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
-                rdf.createTriple(authIRI6, ACL.accessTo, memberIRI),
-                rdf.createTriple(authIRI6, ACL.mode, ACL.Write),
-
-                rdf.createTriple(authIRI8, type, ACL.Authorization),
-                rdf.createTriple(authIRI8, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI8, ACL.accessTo, memberIRI),
-                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
-
-        when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockResourceService.supportedInteractionModels()).thenReturn(allModels);
-        when(mockResourceService.get(eq(resourceIRI))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(childIRI))).thenAnswer(inv -> completedFuture(mockChildResource));
-        when(mockResourceService.get(eq(parentIRI))).thenAnswer(inv -> completedFuture(mockParentResource));
-        when(mockResourceService.get(eq(rootIRI))).thenAnswer(inv -> completedFuture(mockRootResource));
-        when(mockResourceService.get(eq(groupIRI))).thenAnswer(inv -> completedFuture(mockGroupResource));
-        when(mockResourceService.get(eq(memberIRI))).thenAnswer(inv -> completedFuture(mockMemberResource));
-        when(mockResourceService.getContainer(nonexistentIRI)).thenReturn(of(resourceIRI));
-        when(mockResourceService.getContainer(resourceIRI)).thenReturn(of(childIRI));
-        when(mockResourceService.getContainer(childIRI)).thenReturn(of(parentIRI));
-        when(mockResourceService.getContainer(parentIRI)).thenReturn(of(rootIRI));
-
+        when(mockResource.hasAcl()).thenReturn(false);
         when(mockResource.getIdentifier()).thenReturn(resourceIRI);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getMembershipResource()).thenReturn(empty());
-        when(mockChildResource.getIdentifier()).thenReturn(childIRI);
-        when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockChildResource.getMembershipResource()).thenReturn(empty());
+
+        when(mockParentResource.hasAcl()).thenReturn(false);
         when(mockParentResource.getIdentifier()).thenReturn(parentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockParentResource.getMembershipResource()).thenReturn(empty());
-        when(mockRootResource.getIdentifier()).thenReturn(rootIRI);
-        when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockRootResource.getMembershipResource()).thenReturn(empty());
-        when(mockMemberResource.getIdentifier()).thenReturn(memberIRI);
-        when(mockMemberResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockMemberResource.getMembershipResource()).thenReturn(empty());
-        when(mockResource.hasAcl()).thenReturn(false);
-        when(mockParentResource.hasAcl()).thenReturn(false);
 
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(empty());
@@ -772,5 +699,96 @@ public class WebACServiceTest {
             && !testService.getAccessModes(childIRI, mockSession).contains(ACL.Write)
             && !testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write)
             && !testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write);
+    }
+
+    private void setUpChildResource() {
+        when(mockChildResource.hasAcl()).thenReturn(true);
+        when(mockChildResource.getIdentifier()).thenReturn(childIRI);
+        when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockChildResource.getMembershipResource()).thenReturn(empty());
+        when(mockChildResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createTriple(authIRI1, type, ACL.Authorization),
+                rdf.createTriple(authIRI1, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI1, ACL.agent, addisonIRI),
+                rdf.createTriple(authIRI1, ACL.accessTo, childIRI),
+
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
+                rdf.createTriple(authIRI2, ACL.agent, addisonIRI),
+                rdf.createTriple(authIRI2, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
+
+                rdf.createTriple(authIRI3, type, PROV.Activity),
+                rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI3, ACL.mode, ACL.Write),
+                rdf.createTriple(authIRI3, ACL.mode, ACL.Control),
+                rdf.createTriple(authIRI3, ACL.agent, addisonIRI),
+                rdf.createTriple(authIRI3, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI3, ACL.accessTo, childIRI),
+
+                rdf.createTriple(authIRI4, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI4, type, ACL.Authorization)));
+    }
+
+    private void setUpRootResource() {
+        when(mockRootResource.hasAcl()).thenReturn(true);
+        when(mockRootResource.getIdentifier()).thenReturn(rootIRI);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(empty());
+        when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
+                rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
+
+                rdf.createTriple(authIRI6, type, ACL.Authorization),
+                rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
+                rdf.createTriple(authIRI6, ACL.accessTo, rootIRI),
+                rdf.createTriple(authIRI6, ACL.mode, ACL.Append),
+
+                rdf.createTriple(authIRI8, type, ACL.Authorization),
+                rdf.createTriple(authIRI8, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI8, ACL.accessTo, rootIRI),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
+    }
+
+    private void setUpMemberResource() {
+        when(mockMemberResource.hasAcl()).thenReturn(true);
+        when(mockMemberResource.getIdentifier()).thenReturn(memberIRI);
+        when(mockMemberResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockMemberResource.getMembershipResource()).thenReturn(empty());
+        when(mockMemberResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createTriple(authIRI5, ACL.accessTo, memberIRI),
+                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
+                rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
+
+                rdf.createTriple(authIRI6, type, ACL.Authorization),
+                rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
+                rdf.createTriple(authIRI6, ACL.accessTo, memberIRI),
+                rdf.createTriple(authIRI6, ACL.mode, ACL.Write),
+
+                rdf.createTriple(authIRI8, type, ACL.Authorization),
+                rdf.createTriple(authIRI8, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI8, ACL.accessTo, memberIRI),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
+    }
+
+    private void setUpResourceService() {
+        when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.supportedInteractionModels()).thenReturn(allModels);
+        when(mockResourceService.get(eq(resourceIRI))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(childIRI))).thenAnswer(inv -> completedFuture(mockChildResource));
+        when(mockResourceService.get(eq(parentIRI))).thenAnswer(inv -> completedFuture(mockParentResource));
+        when(mockResourceService.get(eq(rootIRI))).thenAnswer(inv -> completedFuture(mockRootResource));
+        when(mockResourceService.get(eq(groupIRI))).thenAnswer(inv -> completedFuture(mockGroupResource));
+        when(mockResourceService.get(eq(memberIRI))).thenAnswer(inv -> completedFuture(mockMemberResource));
+        when(mockResourceService.getContainer(nonexistentIRI)).thenReturn(of(resourceIRI));
+        when(mockResourceService.getContainer(resourceIRI)).thenReturn(of(childIRI));
+        when(mockResourceService.getContainer(childIRI)).thenReturn(of(parentIRI));
+        when(mockResourceService.getContainer(parentIRI)).thenReturn(of(rootIRI));
     }
 }
