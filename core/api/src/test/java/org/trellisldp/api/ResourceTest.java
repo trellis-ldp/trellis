@@ -80,7 +80,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void testResource2() {
+    public void testResourceWithQuads() {
         final IRI subject = rdf.createIRI("ex:subject");
         when(mockResource.stream()).thenAnswer((x) -> of(
                     rdf.createQuad(prefer, subject, DC.title, rdf.createLiteral("A title")),
@@ -88,14 +88,6 @@ public class ResourceTest {
 
         assertEquals(1L, mockResource.stream(prefer).count());
         assertEquals(1L, mockResource.stream(singleton(prefer)).count());
-        assertFalse(mockResource.getMembershipResource().isPresent());
-        assertFalse(mockResource.getMemberRelation().isPresent());
-        assertFalse(mockResource.getMemberOfRelation().isPresent());
-        assertFalse(mockResource.getInsertedContentRelation().isPresent());
-        assertFalse(mockResource.getMemberRelation().isPresent());
-        assertFalse(mockResource.getBinary().isPresent());
-        assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent());
-        assertFalse(mockResource.hasAcl());
     }
 
     @Test

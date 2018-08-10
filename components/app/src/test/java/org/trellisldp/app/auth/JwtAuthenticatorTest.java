@@ -96,9 +96,7 @@ public class JwtAuthenticatorTest {
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent());
-        result.ifPresent(p -> {
-            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
-        });
+        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName()));
     }
 
     @Test

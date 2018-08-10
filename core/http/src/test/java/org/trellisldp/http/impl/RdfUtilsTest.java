@@ -64,8 +64,15 @@ import org.trellisldp.vocabulary.Trellis;
 public class RdfUtilsTest {
 
     private static final RDF rdf = getInstance();
-
     private static final IOService ioService = new JenaIOService();
+    private static final IRI identifier = rdf.createIRI("trellis:data/repository/resource");
+    private static final Quad QUAD1 = rdf.createQuad(Trellis.PreferAudit, identifier, DC.creator,
+            rdf.createLiteral("me"));
+    private static final Quad QUAD2 = rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.modified,
+            rdf.createLiteral("now"));
+    private static final Quad QUAD3 = rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.subject,
+            rdf.createLiteral("subj"));
+    private static final List<Quad> QUADS = asList(QUAD1, QUAD2, QUAD3);
 
     @Mock
     private ResourceService mockResourceService;
@@ -112,77 +119,50 @@ public class RdfUtilsTest {
 
     @Test
     public void testFilterPrefer1() {
-        final IRI iri = rdf.createIRI("trellis:data/repository/resource");
-        final Quad q1 = rdf.createQuad(Trellis.PreferAudit, iri, DC.creator, rdf.createLiteral("me"));
-        final Quad q2 = rdf.createQuad(Trellis.PreferServerManaged, iri, DC.modified, rdf.createLiteral("now"));
-        final Quad q3 = rdf.createQuad(Trellis.PreferUserManaged, iri, DC.subject, rdf.createLiteral("subj"));
-        final List<Quad> quads = asList(q1, q2, q3);
-
-        final List<Quad> filtered = quads.stream().filter(RdfUtils.filterWithPrefer(
+        final List<Quad> filtered = QUADS.stream().filter(RdfUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferServerManaged.getIRIString() + "\""))).collect(toList());
 
-        assertFalse(filtered.contains(q2));
-        assertTrue(filtered.contains(q3));
+        assertFalse(filtered.contains(QUAD2));
+        assertTrue(filtered.contains(QUAD3));
         assertEquals(1, filtered.size());
     }
 
     @Test
     public void testFilterPrefer2() {
-        final IRI iri = rdf.createIRI("trellis:data/repository/resource");
-        final Quad q1 = rdf.createQuad(Trellis.PreferAudit, iri, DC.creator, rdf.createLiteral("me"));
-        final Quad q2 = rdf.createQuad(Trellis.PreferServerManaged, iri, DC.modified, rdf.createLiteral("now"));
-        final Quad q3 = rdf.createQuad(Trellis.PreferUserManaged, iri, DC.subject, rdf.createLiteral("subj"));
-        final List<Quad> quads = asList(q1, q2, q3);
-
-        final List<Quad> filtered2 = quads.stream().filter(RdfUtils.filterWithPrefer(
+        final List<Quad> filtered2 = QUADS.stream().filter(RdfUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation"))).collect(toList());
 
-        assertTrue(filtered2.contains(q3));
+        assertTrue(filtered2.contains(QUAD3));
         assertEquals(1, filtered2.size());
     }
 
     @Test
     public void testFilterPrefer3() {
-        final IRI iri = rdf.createIRI("trellis:data/repository/resource");
-        final Quad q1 = rdf.createQuad(Trellis.PreferAudit, iri, DC.creator, rdf.createLiteral("me"));
-        final Quad q2 = rdf.createQuad(Trellis.PreferServerManaged, iri, DC.modified, rdf.createLiteral("now"));
-        final Quad q3 = rdf.createQuad(Trellis.PreferUserManaged, iri, DC.subject, rdf.createLiteral("subj"));
-        final List<Quad> quads = asList(q1, q2, q3);
-
-
-        final List<Quad> filtered3 = quads.stream().filter(RdfUtils.filterWithPrefer(
+        final List<Quad> filtered3 = QUADS.stream().filter(RdfUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferAudit.getIRIString() + "\""))).collect(toList());
 
-        assertTrue(filtered3.contains(q1));
-        assertFalse(filtered3.contains(q2));
-        assertTrue(filtered3.contains(q3));
+        assertTrue(filtered3.contains(QUAD1));
+        assertFalse(filtered3.contains(QUAD2));
+        assertTrue(filtered3.contains(QUAD3));
         assertEquals(2, filtered3.size());
     }
 
     @Test
     public void testFilterPrefer4() {
-        final IRI iri = rdf.createIRI("trellis:data/repository/resource");
-        final Quad q1 = rdf.createQuad(Trellis.PreferAudit, iri, DC.creator, rdf.createLiteral("me"));
-        final Quad q2 = rdf.createQuad(Trellis.PreferServerManaged, iri, DC.modified, rdf.createLiteral("now"));
-        final Quad q3 = rdf.createQuad(Trellis.PreferUserManaged, iri, DC.subject, rdf.createLiteral("subj"));
-        final List<Quad> quads = asList(q1, q2, q3);
-
-
-        final List<Quad> filtered4 = quads.stream().filter(RdfUtils.filterWithPrefer(
+        final List<Quad> filtered4 = QUADS.stream().filter(RdfUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferUserManaged.getIRIString() + "\""))).collect(toList());
 
-        assertFalse(filtered4.contains(q1));
-        assertFalse(filtered4.contains(q2));
-        assertTrue(filtered4.contains(q3));
+        assertFalse(filtered4.contains(QUAD1));
+        assertFalse(filtered4.contains(QUAD2));
+        assertTrue(filtered4.contains(QUAD3));
         assertEquals(1, filtered4.size());
     }
 
     @Test
     public void testSkolemize() {
-        final IRI iri = rdf.createIRI("trellis:data/repository/resource");
         final String baseUrl = "http://example.org/";
         final Literal literal = rdf.createLiteral("A title");
         final BlankNode bnode = rdf.createBlankNode("foo");
@@ -202,9 +182,9 @@ public class RdfUtilsTest {
         when(mockResourceService.toExternal(any(RDFTerm.class), eq(baseUrl))).thenAnswer(inv -> {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);
             if (term instanceof IRI) {
-                final String iriString = ((IRI) term).getIRIString();
-                if (iriString.startsWith(TRELLIS_DATA_PREFIX)) {
-                    return rdf.createIRI(baseUrl + iriString.substring(TRELLIS_DATA_PREFIX.length()));
+                final String identifierString = ((IRI) term).getIRIString();
+                if (identifierString.startsWith(TRELLIS_DATA_PREFIX)) {
+                    return rdf.createIRI(baseUrl + identifierString.substring(TRELLIS_DATA_PREFIX.length()));
                 }
             }
             return term;
@@ -212,9 +192,9 @@ public class RdfUtilsTest {
         when(mockResourceService.toInternal(any(RDFTerm.class), eq(baseUrl))).thenAnswer(inv -> {
             final RDFTerm term = (RDFTerm) inv.getArgument(0);
             if (term instanceof IRI) {
-                final String iriString = ((IRI) term).getIRIString();
-                if (iriString.startsWith(baseUrl)) {
-                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iriString.substring(baseUrl.length()));
+                final String identifierString = ((IRI) term).getIRIString();
+                if (identifierString.startsWith(baseUrl)) {
+                    return rdf.createIRI(TRELLIS_DATA_PREFIX + identifierString.substring(baseUrl.length()));
                 }
             }
             return term;
@@ -232,7 +212,7 @@ public class RdfUtilsTest {
             .map(RdfUtils.skolemizeTriples(mockResourceService, "http://example.org/"))
             .collect(toList());
 
-        assertTrue(triples.stream().anyMatch(t -> t.getSubject().equals(iri)));
+        assertTrue(triples.stream().anyMatch(t -> t.getSubject().equals(identifier)));
         assertTrue(triples.stream().anyMatch(t -> t.getObject().equals(literal)));
         assertTrue(triples.stream().anyMatch(t -> t.getSubject().ntriplesString()
                     .startsWith("<" + TRELLIS_BNODE_PREFIX)));

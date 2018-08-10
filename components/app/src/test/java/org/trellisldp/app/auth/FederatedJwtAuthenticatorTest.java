@@ -43,18 +43,30 @@ public class FederatedJwtAuthenticatorTest {
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
         final Key privateKey = ks.getKey("trellis", "password".toCharArray());
-        final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis")
-            .setSubject("https://people.apache.org/~acoburn/#i")
+        final String jwt = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis")
+            .setSubject("https://people.apache.org/~acoburn/#me")
             .signWith(SignatureAlgorithm.RS256, privateKey).compact();
 
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis", "foo"));
 
+        final Optional<Principal> result = authenticator.authenticate(jwt);
+        assertTrue(result.isPresent());
+        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#me", p.getName()));
+    }
+
+    @Test
+    public void testAuthenticateKeystoreEC() throws Exception {
+        final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
+
+        final String token = buildEcToken(ks.getKey("trellis-ec", "password".toCharArray()));
+        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+                asList("trellis-ec"));
+
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent());
-        result.ifPresent(p -> {
-            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
-        });
+        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName()));
     }
 
     @Test
@@ -72,29 +84,7 @@ public class FederatedJwtAuthenticatorTest {
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent());
-        result.ifPresent(p -> {
-            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
-        });
-    }
-
-    @Test
-    public void testAuthenticateKeystoreEC() throws Exception {
-        final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
-
-        final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
-        final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
-            .setSubject("https://people.apache.org/~acoburn/#i")
-            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
-
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
-                asList("trellis-ec"));
-
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent());
-        result.ifPresent(p -> {
-            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
-        });
+        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName()));
     }
 
     @Test
@@ -109,8 +99,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent());
     }
 
     @Test
@@ -128,9 +117,7 @@ public class FederatedJwtAuthenticatorTest {
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent());
-        result.ifPresent(p -> {
-            assertEquals("http://localhost/acoburn", p.getName());
-        });
+        result.ifPresent(p -> assertEquals("http://localhost/acoburn", p.getName()));
     }
 
     @Test
@@ -146,8 +133,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent());
     }
 
     @Test
@@ -158,12 +144,10 @@ public class FederatedJwtAuthenticatorTest {
         final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
             .signWith(SignatureAlgorithm.ES256, privateKey).compact();
-
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent());
     }
 
     @Test
@@ -171,16 +155,11 @@ public class FederatedJwtAuthenticatorTest {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
-        final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
-        final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
-            .setSubject("https://people.apache.org/~acoburn/#i")
-            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
-
+        final String token = buildEcToken(ks.getKey("trellis-ec", "password".toCharArray()));
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis", "foo"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent());
     }
 
     @Test
@@ -188,36 +167,32 @@ public class FederatedJwtAuthenticatorTest {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
-        final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
-        final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "foo")
-            .setSubject("https://people.apache.org/~acoburn/#i")
-            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
-
+        final String token = buildEcToken(ks.getKey("trellis-ec", "password".toCharArray()));
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("foo"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent());
     }
 
     @Test
     public void testKeyStoreException() throws Exception {
         final KeyStore mockKeyStore = mock(KeyStore.class, inv -> {
-                throw new KeyStoreException("Expected");
+            throw new KeyStoreException("Expected");
         });
 
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
-        final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
-        final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
-            .setSubject("https://people.apache.org/~acoburn/#i")
-            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
-
+        final String token = buildEcToken(ks.getKey("trellis-ec", "password".toCharArray()));
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(mockKeyStore,
                 asList("trellis-ec"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent());
+    }
+
+    private String buildEcToken(final Key key) {
+        return Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
+            .setSubject("https://people.apache.org/~acoburn/#i")
+            .signWith(SignatureAlgorithm.ES256, key).compact();
     }
 }
