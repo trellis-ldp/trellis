@@ -25,6 +25,7 @@ import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,6 +51,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
@@ -98,28 +100,14 @@ public class HtmlSerializerTest {
     public void testHtmlSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, null);
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
+        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
     public void testHtmlSerializer2() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, "http://example.org/");
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
+        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
@@ -129,14 +117,7 @@ public class HtmlSerializerTest {
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service4.write(getTriples(), out, "http://example.org/");
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
+        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
@@ -148,14 +129,7 @@ public class HtmlSerializerTest {
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service4.write(getTriples(), out, "http://example.org/");
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>A title</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
-        assertTrue(html.contains("<h1>A title</h1>"));
+        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
@@ -175,6 +149,18 @@ public class HtmlSerializerTest {
         assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">http://purl.org/dc/dcmitype/Text</a>"));
         assertTrue(html.contains("<a href=\"mailto:user@host.com\">mailto:user@host.com</a>"));
         assertTrue(html.contains("<h1>http://example.org/</h1>"));
+    }
+
+    private static Stream<Executable> checkHtmlFromTriples(final String html) {
+        return of(
+                () -> assertTrue(html.contains("<title>A title</title>")),
+                () -> assertTrue(html.contains("_:B")),
+                () -> assertTrue(
+                    html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>")),
+                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>")),
+                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>")),
+                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>")),
+                () -> assertTrue(html.contains("<h1>A title</h1>")));
     }
 
     private static Stream<Triple> getTriples() {

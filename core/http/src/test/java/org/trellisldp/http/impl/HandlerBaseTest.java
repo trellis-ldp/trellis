@@ -33,9 +33,8 @@ import static javax.ws.rs.core.Link.TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -160,45 +159,28 @@ abstract class HandlerBaseTest {
         final String allow = res.getHeaderString(ALLOW);
         return of(
                 () -> assertNotNull(allow),
-                () -> assertTrue(allow.contains(GET) || !methods.contains(GET)),
-                () -> assertTrue(allow.contains(HEAD) || !methods.contains(HEAD)),
-                () -> assertTrue(allow.contains(OPTIONS) || !methods.contains(OPTIONS)),
-                () -> assertTrue(allow.contains(PUT) || !methods.contains(PUT)),
-                () -> assertTrue(allow.contains(DELETE) || !methods.contains(DELETE)),
-                () -> assertTrue(allow.contains(POST) || !methods.contains(POST)),
-                () -> assertTrue(allow.contains(PATCH) || !methods.contains(PATCH)),
-
-                () -> assertFalse(methods.contains(GET) && !allow.contains(GET)),
-                () -> assertFalse(methods.contains(HEAD) && !allow.contains(HEAD)),
-                () -> assertFalse(methods.contains(OPTIONS) && !allow.contains(OPTIONS)),
-                () -> assertFalse(methods.contains(PUT) && !allow.contains(PUT)),
-                () -> assertFalse(methods.contains(DELETE) && !allow.contains(DELETE)),
-                () -> assertFalse(methods.contains(POST) && !allow.contains(POST)),
-                () -> assertFalse(methods.contains(PATCH) && !allow.contains(PATCH)));
+                () -> assertEquals(allow.contains(GET), methods.contains(GET)),
+                () -> assertEquals(allow.contains(HEAD), methods.contains(HEAD)),
+                () -> assertEquals(allow.contains(OPTIONS), methods.contains(OPTIONS)),
+                () -> assertEquals(allow.contains(PUT), methods.contains(PUT)),
+                () -> assertEquals(allow.contains(DELETE), methods.contains(DELETE)),
+                () -> assertEquals(allow.contains(POST), methods.contains(POST)),
+                () -> assertEquals(allow.contains(PATCH), methods.contains(PATCH)));
     }
 
     protected Stream<Executable> checkLdpType(final Response res, final IRI type) {
-        final Set<IRI> types = RdfUtils.ldpResourceTypes(type).collect(toSet());
-        final Set<IRI> responseTypes = res.getLinks().stream().filter(link -> TYPE.equals(link.getRel()))
-            .map(link -> rdf.createIRI(link.getUri().toString())).collect(toSet());
+        final Set<String> types = RdfUtils.ldpResourceTypes(type).map(IRI::getIRIString).collect(toSet());
+        final Set<String> responseTypes = res.getLinks().stream().filter(link -> TYPE.equals(link.getRel()))
+            .map(link -> link.getUri().toString()).collect(toSet());
         return of(
-                () -> assertTrue(responseTypes.contains(LDP.Resource) || !types.contains(LDP.Resource)),
-                () -> assertTrue(responseTypes.contains(LDP.RDFSource) || !types.contains(LDP.RDFSource)),
-                () -> assertTrue(responseTypes.contains(LDP.NonRDFSource) || !types.contains(LDP.NonRDFSource)),
-                () -> assertTrue(responseTypes.contains(LDP.Container) || !types.contains(LDP.Container)),
-                () -> assertTrue(responseTypes.contains(LDP.BasicContainer) || !types.contains(LDP.BasicContainer)),
-                () -> assertTrue(responseTypes.contains(LDP.DirectContainer) || !types.contains(LDP.DirectContainer)),
-                () -> assertTrue(responseTypes.contains(LDP.IndirectContainer)
-                                 || !types.contains(LDP.IndirectContainer)),
-
-                () -> assertFalse(types.contains(LDP.Resource) && !responseTypes.contains(LDP.Resource)),
-                () -> assertFalse(types.contains(LDP.RDFSource) && !responseTypes.contains(LDP.RDFSource)),
-                () -> assertFalse(types.contains(LDP.NonRDFSource) && !responseTypes.contains(LDP.NonRDFSource)),
-                () -> assertFalse(types.contains(LDP.Container) && !responseTypes.contains(LDP.Container)),
-                () -> assertFalse(types.contains(LDP.BasicContainer) && !responseTypes.contains(LDP.BasicContainer)),
-                () -> assertFalse(types.contains(LDP.DirectContainer) && !responseTypes.contains(LDP.DirectContainer)),
-                () -> assertFalse(types.contains(LDP.IndirectContainer)
-                                  && !responseTypes.contains(LDP.IndirectContainer)));
+                () -> assertEquals(responseTypes.contains(LDP.Resource), types.contains(LDP.Resource)),
+                () -> assertEquals(responseTypes.contains(LDP.RDFSource), types.contains(LDP.RDFSource)),
+                () -> assertEquals(responseTypes.contains(LDP.NonRDFSource), types.contains(LDP.NonRDFSource)),
+                () -> assertEquals(responseTypes.contains(LDP.Container), types.contains(LDP.Container)),
+                () -> assertEquals(responseTypes.contains(LDP.BasicContainer), types.contains(LDP.BasicContainer)),
+                () -> assertEquals(responseTypes.contains(LDP.DirectContainer), types.contains(LDP.DirectContainer)),
+                () -> assertEquals(responseTypes.contains(LDP.IndirectContainer),
+                                 types.contains(LDP.IndirectContainer)));
     }
 
     protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
@@ -214,10 +196,10 @@ abstract class HandlerBaseTest {
         when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
                         any(), any())).thenReturn(completedFuture(true));
-        when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
                         any(), any())).thenReturn(completedFuture(true));
+        when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
+            .thenReturn(completedFuture(true));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(true));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());

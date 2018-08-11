@@ -50,6 +50,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.Digest;
@@ -162,7 +163,7 @@ public class PostHandlerTest extends HandlerBaseTest {
     }
 
     @Test
-    public void testEntity() throws IOException {
+    public void testRdfEntity() throws IOException {
         final String path = "newresource";
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
         final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
@@ -186,7 +187,7 @@ public class PostHandlerTest extends HandlerBaseTest {
     }
 
     @Test
-    public void testEntity2() throws IOException {
+    public void testBinaryEntity() throws IOException {
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
 
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "new-resource");
@@ -196,19 +197,11 @@ public class PostHandlerTest extends HandlerBaseTest {
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "new-resource"), res.getLocation());
         assertAll(checkLdpType(res, LDP.NonRDFSource));
-
-        verify(mockIoService, never()).read(any(), any(), any());
-        verify(mockResourceService)
-            .create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(Dataset.class), any(), any());
-        verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
-                metadataArgument.capture());
-
-        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"));
-        assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
+        assertAll(checkBinaryEntityResponse(identifier));
     }
 
     @Test
-    public void testEntity3() throws IOException {
+    public void testEntityWithDigest() throws IOException {
         when(mockLdpRequest.getContentType()).thenReturn("text/plain");
         when(mockLdpRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
 
@@ -219,15 +212,7 @@ public class PostHandlerTest extends HandlerBaseTest {
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "resource-with-entity"), res.getLocation());
         assertAll(checkLdpType(res, LDP.NonRDFSource));
-
-        verify(mockIoService, never()).read(any(), any(), any());
-        verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(Dataset.class),
-                        any(), any());
-        verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
-                metadataArgument.capture());
-
-        assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE));
-        assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"));
+        assertAll(checkBinaryEntityResponse(identifier));
     }
 
     @Test
@@ -290,5 +275,16 @@ public class PostHandlerTest extends HandlerBaseTest {
     private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl) {
         final File entity = new File(getClass().getResource(resourceName).getFile());
         return new PostHandler(mockLdpRequest, root, id, entity, mockBundler, baseUrl);
+    }
+
+    private Stream<Executable> checkBinaryEntityResponse(final IRI identifier) {
+        return Stream.of(
+                () -> verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource),
+                            any(Dataset.class), any(), any()),
+                () -> verify(mockIoService, never()).read(any(), any(), any()),
+                () -> verify(mockBinaryService).setContent(iriArgument.capture(), any(InputStream.class),
+                            metadataArgument.capture()),
+                () -> assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE)),
+                () -> assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///")));
     }
 }

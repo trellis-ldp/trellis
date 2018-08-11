@@ -43,6 +43,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
@@ -51,6 +52,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
@@ -145,27 +147,21 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.NonRDFSource));
-
-        verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any());
-        verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString());
+        assertAll(checkBinaryPut(res));
     }
 
     @Test
     public void testPutLdpBinaryResource() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
+        when(mockResource.getBinary()).thenReturn(of(testBinary));
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.NonRDFSource));
-
-        verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any());
-        verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString());
+        assertAll(checkBinaryPut(res));
     }
 
     @Test
@@ -179,10 +175,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.RDFSource));
-
-        verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
+        assertAll(checkRdfPut(res));
     }
 
     @Test
@@ -195,10 +188,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.RDFSource));
-
-        verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
+        assertAll(checkRdfPut(res));
     }
 
     @Test
@@ -207,10 +197,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.RDFSource));
-
-        verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
+        assertAll(checkRdfPut(res));
     }
 
     @Test
@@ -235,7 +222,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.RDFSource));
+        assertAll(checkRdfPut(res));
     }
 
     @Test
@@ -286,5 +273,19 @@ public class PutHandlerTest extends HandlerBaseTest {
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
         return new PutHandler(mockLdpRequest, new File(getClass().getResource(resourceName).getFile()), mockBundler,
                 baseUrl);
+    }
+
+    private Stream<Executable> checkRdfPut(final Response res) {
+        return Stream.of(
+                () -> assertAll(checkLdpType(res, LDP.RDFSource)),
+                () -> verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class)),
+                () -> verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString()));
+    }
+
+    private Stream<Executable> checkBinaryPut(final Response res) {
+        return Stream.of(
+                () -> assertAll(checkLdpType(res, LDP.NonRDFSource)),
+                () -> verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any()),
+                () -> verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }
 }

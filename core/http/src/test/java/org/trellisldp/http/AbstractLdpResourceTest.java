@@ -22,11 +22,13 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Date.from;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
@@ -39,6 +41,12 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_PRECONDITION_FAILED;
 import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
+import static javax.ws.rs.HttpMethod.DELETE;
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.HEAD;
+import static javax.ws.rs.HttpMethod.OPTIONS;
+import static javax.ws.rs.HttpMethod.POST;
+import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_LOCATION;
@@ -46,6 +54,7 @@ import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.lang3.Range.between;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -68,6 +77,7 @@ import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.domain.HttpConstants.DIGEST;
 import static org.trellisldp.http.domain.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.domain.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.http.domain.HttpConstants.PATCH;
 import static org.trellisldp.http.domain.HttpConstants.PREFER;
 import static org.trellisldp.http.domain.HttpConstants.RANGE;
 import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
@@ -91,6 +101,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -102,6 +113,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -134,31 +146,11 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target("/" + RESOURCE_PATH).request().accept("application/ld+json").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
-        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
-        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH), "self")));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertTrue(res.hasEntity());
-
-        final List<String> templates = res.getStringHeaders().get(LINK_TEMPLATE);
-        assertEquals(2L, templates.size());
-        assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH + "{?subject,predicate,object}>; rel=\""
-                + LDP.RDFSource.getIRIString() + "\""));
-        assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH + "{?version}>; rel=\""
-                + Memento.Memento.getIRIString() + "\""));
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
+        assertAll(checkJsonLdResponse(res));
+        assertAll(checkLdTemplateHeaders(res));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
 
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -240,12 +232,6 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
     }
 
-    protected List<Link> getLinks(final Response res) {
-        // Jersey's client doesn't parse complex link headers correctly
-        return ofNullable(res.getStringHeaders().get(LINK)).orElseGet(Collections::emptyList)
-            .stream().map(Link::valueOf).collect(toList());
-    }
-
     @Test
     public void testGetDatetime() {
         assumeTrue(getBaseUrl().startsWith("http://localhost"));
@@ -253,39 +239,14 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
-
-        final List<Link> links = getLinks(res);
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
-                        .equals(l.getParams().get("until")) &&
-                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?ext=timemap")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
-        assertTrue(getLinks(res).stream()
-                .anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000"), "self")));
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH
+                                    + "?version=1496262729000"), "self")));
         assertFalse(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH), "self")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(links.stream().anyMatch(hasType(LDP.Container)));
+        assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -305,18 +266,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertTrue(res.getAllowedMethods().contains("POST"));
-
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), "self")));
 
@@ -336,19 +287,11 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
+        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
 
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), "self")));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
@@ -385,17 +328,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
@@ -417,17 +351,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
@@ -449,17 +374,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "SHA").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
@@ -481,17 +397,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=3-10").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertNotNull(res.getHeaderString(ACCEPT_RANGES));
@@ -560,40 +467,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).queryParam("version", timestamp).request().get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
-        final List<Link> links = getLinks(res);
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + BINARY_PATH + "?version=1496260729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + BINARY_PATH + "?version=1496261729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + BINARY_PATH + "?version=1496262729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
-                        .equals(l.getParams().get("until")) &&
-                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + BINARY_PATH + "?ext=timemap")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + BINARY_PATH)));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
-                    l.getUri().toString().equals(getBaseUrl() + BINARY_PATH)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(links.stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll(checkMementoHeaders(res, BINARY_PATH));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
 
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
         assertEquals("bytes", res.getHeaderString(ACCEPT_RANGES));
@@ -708,28 +584,16 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkJsonLdResponse(res));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(res.hasEntity());
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
 
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -766,28 +630,16 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
+        assertAll(checkJsonLdResponse(res));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertNull(res.getHeaderString(ACCEPT_POST));
+        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(res.hasEntity());
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
 
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -832,28 +684,17 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkJsonLdResponse(res));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(res.hasEntity());
 
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, GET, DELETE, HEAD, OPTIONS)));
 
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -895,28 +736,17 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkJsonLdResponse(res));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(res.hasEntity());
 
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
 
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
@@ -937,7 +767,6 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals("A title", obj.get("title"));
         assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"));
     }
-
 
     @Test
     public void testGetTimeMapLinkDefaultFormat() {
@@ -987,45 +816,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
 
-        final List<Link> links = getLinks(res);
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
-                        .equals(l.getParams().get("until")) &&
-                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?ext=timemap")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(links.stream().anyMatch(hasType(LDP.Container)));
-
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
+        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Link> entityLinks = stream(entity.split(",\n")).map(Link::valueOf).collect(toList());
         assertEquals(4L, entityLinks.size());
+        final List<Link> links = getLinks(res);
         entityLinks.forEach(l -> assertTrue(links.contains(l)));
     }
 
@@ -1046,42 +845,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertNull(res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
-
-        final List<Link> links = getLinks(res);
-
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
-                        .equals(l.getParams().get("until")) &&
-                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?ext=timemap")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(links.stream().anyMatch(hasType(LDP.Container)));
-
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
+        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
@@ -1127,43 +893,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertNull(res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
-
-        final List<Link> links = getLinks(res);
-
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
-                        .equals(l.getParams().get("until")) &&
-                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?ext=timemap")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(links.stream().anyMatch(hasType(LDP.Container)));
-
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Map<String, Object>> obj = MAPPER.readValue(entity,
@@ -1196,49 +929,16 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
+        assertEquals(from(time), res.getLastModified());
+        assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertEquals(from(time), res.getLastModified());
-
-        final List<Link> links = getLinks(res);
-
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
-                        .equals(l.getParams().get("until")) &&
-                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?ext=timemap")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(links.stream().anyMatch(hasType(LDP.Container)));
-
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-        assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
+        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
     }
 
     @Test
@@ -1248,49 +948,16 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
+        assertEquals(from(time), res.getLastModified());
+        assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertEquals(from(time), res.getLastModified());
-
-        final List<Link> links = getLinks(res);
-
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
-                        .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
-                        .equals(l.getParams().get("until")) &&
-                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH + "?ext=timemap")));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(l -> l.getRels().contains("original") &&
-                    l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(links.stream().anyMatch(hasType(LDP.Container)));
-
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-        assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
+        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll(checkLdpTypeHeaders(res, LDP.Container));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
     }
 
     @Test
@@ -1343,9 +1010,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_OK, res.getStatus());
         assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
@@ -1364,15 +1029,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertFalse(obj.containsKey("title"));
         assertTrue(obj.containsKey("mode"));
         assertEquals(ACL.Control.getIRIString(), (String) obj.get("mode"));
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
+        assertAll(checkAllowedMethods(res, asList(PATCH, GET, HEAD, OPTIONS)));
         final List<String> varies = res.getStringHeaders().get(VARY);
         assertFalse(varies.contains(RANGE));
         assertFalse(varies.contains(WANT_DIGEST));
@@ -1424,21 +1081,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
     }
 
     @Test
@@ -1446,23 +1092,13 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
-
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+        assertNull(res.getHeaderString(ACCEPT_POST));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
     }
 
     @Test
@@ -1471,16 +1107,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertTrue(res.getAllowedMethods().contains("POST"));
-
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
         assertNotNull(res.getHeaderString(ACCEPT_POST));
         final List<String> acceptPost = asList(res.getHeaderString(ACCEPT_POST).split(","));
         assertEquals(3L, acceptPost.size());
@@ -1489,10 +1117,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES));
 
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
-
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.Container));
     }
 
     @Test
@@ -1500,18 +1125,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
     }
 
     @Test
@@ -1539,18 +1156,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH + "/").request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-
-        assertTrue(res.getAllowedMethods().contains("PATCH"));
-        assertTrue(res.getAllowedMethods().contains("PUT"));
-        assertTrue(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
     }
 
     @Test
@@ -1563,18 +1172,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
         assertNull(res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
     }
 
     @Test
@@ -1582,17 +1183,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-
-        assertFalse(res.getAllowedMethods().contains("PATCH"));
-        assertFalse(res.getAllowedMethods().contains("PUT"));
-        assertFalse(res.getAllowedMethods().contains("DELETE"));
-        assertTrue(res.getAllowedMethods().contains("GET"));
-        assertTrue(res.getAllowedMethods().contains("HEAD"));
-        assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-        assertFalse(res.getAllowedMethods().contains("POST"));
-
         assertNull(res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_POST));
+        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
     }
 
     /* ******************************* *
@@ -1609,9 +1202,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1627,9 +1218,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RANDOM_VALUE, res.getLocation().toString());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1686,9 +1275,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1723,9 +1310,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1914,9 +1499,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1926,10 +1509,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1940,12 +1520,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
-
 
     @Test
     public void testPutExistingIgnoreProperties() {
@@ -1956,9 +1533,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1969,9 +1544,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.Container));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2014,9 +1587,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_CREATED, res.getStatus());
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/test", res.getHeaderString(CONTENT_LOCATION));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2026,9 +1597,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertEquals(getBaseUrl() + DELETED_PATH, res.getHeaderString(CONTENT_LOCATION));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
@@ -2348,9 +1917,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2380,15 +1947,12 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertFalse(entity.contains("BasicContainer"));
         assertTrue(entity.contains("Type1"));
     }
-
 
     @Test
     public void testPatchExistingBinary() {
@@ -2397,10 +1961,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2412,9 +1973,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertTrue(entity.contains("A title"));
@@ -2460,9 +2019,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -2570,11 +2127,96 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertNull(res.getHeaderString(CACHE_CONTROL));
     }
 
+    protected static List<Link> getLinks(final Response res) {
+        // Jersey's client doesn't parse complex link headers correctly
+        return ofNullable(res.getStringHeaders().get(LINK)).orElseGet(Collections::emptyList)
+            .stream().map(Link::valueOf).collect(toList());
+    }
+
     protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
         return link -> rel.equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
     }
 
     protected static Predicate<Link> hasType(final IRI iri) {
         return hasLink(iri, "type");
+    }
+
+    private Stream<Executable> checkLdTemplateHeaders(final Response res) {
+        final List<String> templates = res.getStringHeaders().get(LINK_TEMPLATE);
+        return Stream.of(
+            () -> assertEquals(2L, templates.size()),
+            () -> assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH
+                    + "{?subject,predicate,object}>; rel=\"" + LDP.RDFSource.getIRIString() + "\"")),
+            () -> assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH
+                    + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"")));
+    }
+
+    private static Stream<IRI> ldpResourceSupertypes(final IRI ldpType) {
+        return Stream.of(ldpType).filter(t -> nonNull(LDP.getSuperclassOf(t)) || LDP.Resource.equals(t))
+            .flatMap(t -> Stream.concat(ldpResourceSupertypes(LDP.getSuperclassOf(t)), Stream.of(t)));
+    }
+
+    private Stream<Executable> checkLdpTypeHeaders(final Response res, final IRI ldpType) {
+        final Set<String> subTypes = ldpResourceSupertypes(ldpType).map(IRI::getIRIString).collect(toSet());
+        final Set<String> responseTypes = getLinks(res).stream().filter(link -> "type".equals(link.getRel()))
+            .map(link -> link.getUri().toString()).collect(toSet());
+        return Stream.of(
+                () -> assertEquals(responseTypes.contains(LDP.Resource), subTypes.contains(LDP.Resource)),
+                () -> assertEquals(responseTypes.contains(LDP.RDFSource), subTypes.contains(LDP.RDFSource)),
+                () -> assertEquals(responseTypes.contains(LDP.NonRDFSource), subTypes.contains(LDP.NonRDFSource)),
+                () -> assertEquals(responseTypes.contains(LDP.Container), subTypes.contains(LDP.Container)),
+                () -> assertEquals(responseTypes.contains(LDP.BasicContainer), subTypes.contains(LDP.BasicContainer)),
+                () -> assertEquals(responseTypes.contains(LDP.DirectContainer), subTypes.contains(LDP.DirectContainer)),
+                () -> assertEquals(responseTypes.contains(LDP.IndirectContainer),
+                                 subTypes.contains(LDP.IndirectContainer)));
+    }
+
+    private Stream<Executable> checkMementoHeaders(final Response res, final String path) {
+        final List<Link> links = getLinks(res);
+        return Stream.of(
+                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
+                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
+                        .equals(l.getParams().get("datetime")) &&
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496260729000"))),
+                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
+                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
+                        .equals(l.getParams().get("datetime")) &&
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496261729000"))),
+                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
+                    RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496262729000"))),
+                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
+                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
+                        .equals(l.getParams().get("from")) &&
+                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
+                        .equals(l.getParams().get("until")) &&
+                    APPLICATION_LINK_FORMAT.equals(l.getType()) &&
+                    l.getUri().toString().equals(getBaseUrl() + path + "?ext=timemap"))),
+                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
+                    l.getUri().toString().equals(getBaseUrl() + path))),
+                () -> assertTrue(links.stream().anyMatch(l ->
+                            l.getRels().contains("original") && l.getUri().toString().equals(getBaseUrl() + path))));
+    }
+
+    private Stream<Executable> checkJsonLdResponse(final Response res) {
+        return Stream.of(
+                () -> assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType())),
+                () -> assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE)),
+                () -> assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub"))),
+                () -> assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH),
+                                                                         "self"))),
+                () -> assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH)),
+                () -> assertTrue(res.hasEntity()));
+    }
+
+    private Stream<Executable> checkAllowedMethods(final Response res, final List<String> methods) {
+        return Stream.of(
+                () -> assertEquals(res.getAllowedMethods().contains(HEAD), methods.contains(HEAD)),
+                () -> assertEquals(res.getAllowedMethods().contains(GET), methods.contains(GET)),
+                () -> assertEquals(res.getAllowedMethods().contains(OPTIONS), methods.contains(OPTIONS)),
+                () -> assertEquals(res.getAllowedMethods().contains(PATCH), methods.contains(PATCH)),
+                () -> assertEquals(res.getAllowedMethods().contains(POST), methods.contains(POST)),
+                () -> assertEquals(res.getAllowedMethods().contains(PUT), methods.contains(PUT)),
+                () -> assertEquals(res.getAllowedMethods().contains(DELETE), methods.contains(DELETE)));
     }
 }
