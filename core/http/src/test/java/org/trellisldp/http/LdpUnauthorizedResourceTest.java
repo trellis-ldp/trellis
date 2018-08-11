@@ -23,6 +23,7 @@ import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,6 +34,8 @@ import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
@@ -41,6 +44,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.LDP;
 
@@ -105,7 +109,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
     @Test
     public void testTrailingSlash() {
         final Response res = target("resource/").request().get();
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -121,7 +125,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
     public void testOptions1() {
         final Response res = target("resource").request().options();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -129,7 +133,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target("resource").request().options();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -137,7 +141,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -145,7 +149,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -153,7 +157,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -161,7 +165,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").queryParam("version", 1496262729).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -169,7 +173,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").queryParam("ext", "acl").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -178,7 +182,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -187,7 +191,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -195,7 +199,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").queryParam("ext", "acl").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -203,7 +207,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -211,7 +215,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
@@ -219,36 +223,36 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
     public void testDelete1() {
         final Response res = target("resource").queryParam("ext", "acl").request().delete();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
     public void testDelete2() {
         final Response res = target("resource").request().delete();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
     @Test
     public void testDelete3() {
         final Response res = target("resource/").request().delete();
 
-        assertTrue(assertStandardResponse(res));
+        assertAll(checkStandardResponse(res));
     }
 
-    private Boolean assertStandardResponse(final Response res) {
-        assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
-        assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
-        assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
-        assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
-        return true;
+    private Stream<Executable> checkStandardResponse(final Response res) {
+        return Stream.of(
+                () -> assertEquals(SC_UNAUTHORIZED, res.getStatus()),
+                () -> assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE)),
+                () -> assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size()),
+                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH)),
+                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH)));
     }
 }

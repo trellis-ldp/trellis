@@ -17,6 +17,7 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,6 +39,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.CacheService;
@@ -167,13 +169,13 @@ public class WebACServiceTest {
     @Test
     public void testCanRead2() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
-        assertTrue(checkAllCanRead());
+        assertAll(checkAllCanRead());
     }
 
     @Test
     public void testCanRead3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
-        assertTrue(checkAllCanRead());
+        assertAll(checkAllCanRead());
     }
 
     @Test
@@ -182,7 +184,7 @@ public class WebACServiceTest {
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.DirectContainer));
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
-        assertTrue(checkAllCanRead());
+        assertAll(checkAllCanRead());
     }
 
     @Test
@@ -191,7 +193,7 @@ public class WebACServiceTest {
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.IndirectContainer));
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
-        assertTrue(checkAllCanRead());
+        assertAll(checkAllCanRead());
     }
 
     @Test
@@ -218,7 +220,7 @@ public class WebACServiceTest {
     @Test
     public void testCanWrite3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
-        assertTrue(checkAllCanWrite());
+        assertAll(checkAllCanWrite());
     }
 
     @Test
@@ -227,7 +229,7 @@ public class WebACServiceTest {
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
         assertTrue(testService.getAccessModes(memberIRI, mockSession).contains(ACL.Write));
-        assertTrue(checkAllCanWrite());
+        assertAll(checkAllCanWrite());
     }
 
     @Test
@@ -367,8 +369,8 @@ public class WebACServiceTest {
         assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Control));
         assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Control));
         assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Control));
-        assertTrue(checkAllCanRead());
-        assertTrue(checkAllCanWrite());
+        assertAll(checkAllCanRead());
+        assertAll(checkAllCanWrite());
     }
 
     @Test
@@ -376,8 +378,8 @@ public class WebACServiceTest {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(acoburnIRI));
 
-        assertTrue(checkNoneCanRead());
-        assertTrue(checkNoneCanWrite());
+        assertAll("Test delegated read access 1", checkNoneCanRead());
+        assertAll("Test delegated write access 1", checkNoneCanWrite());
     }
 
     @Test
@@ -385,8 +387,8 @@ public class WebACServiceTest {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(agentIRI));
 
-        assertTrue(checkNoneCanRead());
-        assertTrue(checkNoneCanWrite());
+        assertAll("Test delegated read access 2", checkNoneCanRead());
+        assertAll("Test delegated write access 2", checkNoneCanWrite());
     }
 
     @Test
@@ -399,7 +401,7 @@ public class WebACServiceTest {
         assertFalse(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write));
         assertFalse(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
 
-        assertTrue(checkAllCanRead());
+        assertAll(checkAllCanRead());
     }
 
     @Test
@@ -556,7 +558,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
 
-        assertTrue(checkAllCanRead());
+        assertAll(checkAllCanRead());
     }
 
     @Test
@@ -599,7 +601,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Write)));
 
-        assertTrue(checkAllCanRead());
+        assertAll(checkAllCanRead());
     }
 
     @Test
@@ -667,38 +669,42 @@ public class WebACServiceTest {
         assertFalse(testCacheService.getAccessModes(rootIRI, mockSession).contains(ACL.Write));
     }
 
-    private Boolean checkAllCanRead() {
-        return testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read)
-            && testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read)
-            && testService.getAccessModes(childIRI, mockSession).contains(ACL.Read)
-            && testService.getAccessModes(parentIRI, mockSession).contains(ACL.Read)
-            && testService.getAccessModes(rootIRI, mockSession).contains(ACL.Read);
+    private Stream<Executable> checkAllCanRead() {
+        return Stream.of(
+                () -> assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read)),
+                () -> assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read)),
+                () -> assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Read)),
+                () -> assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Read)),
+                () -> assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Read)));
     }
 
-    private Boolean checkAllCanWrite() {
-        return testService.getAccessModes(memberIRI, mockSession).contains(ACL.Write)
-            && testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write)
-            && testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write)
-            && testService.getAccessModes(childIRI, mockSession).contains(ACL.Write)
-            && testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write)
-            && testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write);
+    private Stream<Executable> checkAllCanWrite() {
+        return Stream.of(
+                () -> assertTrue(testService.getAccessModes(memberIRI, mockSession).contains(ACL.Write)),
+                () -> assertTrue(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write)),
+                () -> assertTrue(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write)),
+                () -> assertTrue(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write)),
+                () -> assertTrue(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write)),
+                () -> assertTrue(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write)));
     }
 
-    private Boolean checkNoneCanRead() {
-        return !testService.getAccessModes(memberIRI, mockSession).contains(ACL.Read)
-            && !testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read)
-            && !testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read)
-            && !testService.getAccessModes(childIRI, mockSession).contains(ACL.Read)
-            && !testService.getAccessModes(parentIRI, mockSession).contains(ACL.Read)
-            && !testService.getAccessModes(rootIRI, mockSession).contains(ACL.Read);
+    private Stream<Executable> checkNoneCanRead() {
+        return Stream.of(
+                () -> assertFalse(testService.getAccessModes(memberIRI, mockSession).contains(ACL.Read)),
+                () -> assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Read)),
+                () -> assertFalse(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Read)),
+                () -> assertFalse(testService.getAccessModes(childIRI, mockSession).contains(ACL.Read)),
+                () -> assertFalse(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Read)),
+                () -> assertFalse(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Read)));
     }
 
-    private Boolean checkNoneCanWrite() {
-        return !testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write)
-            && !testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write)
-            && !testService.getAccessModes(childIRI, mockSession).contains(ACL.Write)
-            && !testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write)
-            && !testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write);
+    private Stream<Executable> checkNoneCanWrite() {
+        return Stream.of(
+                () -> assertFalse(testService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write)),
+                () -> assertFalse(testService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write)),
+                () -> assertFalse(testService.getAccessModes(childIRI, mockSession).contains(ACL.Write)),
+                () -> assertFalse(testService.getAccessModes(parentIRI, mockSession).contains(ACL.Write)),
+                () -> assertFalse(testService.getAccessModes(rootIRI, mockSession).contains(ACL.Write)));
     }
 
     private void setUpChildResource() {

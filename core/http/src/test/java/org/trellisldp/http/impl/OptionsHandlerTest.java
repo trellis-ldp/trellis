@@ -28,6 +28,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -44,11 +45,13 @@ import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
@@ -106,7 +109,7 @@ public class OptionsHandlerTest {
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
     }
 
     @Test
@@ -124,7 +127,7 @@ public class OptionsHandlerTest {
         assertTrue(acceptPost.contains(APPLICATION_LD_JSON));
         assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES));
         assertTrue(acceptPost.contains(TEXT_TURTLE.split(";")[0]));
-        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST)));
     }
 
     @Test
@@ -136,7 +139,7 @@ public class OptionsHandlerTest {
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
     }
 
     @Test
@@ -149,7 +152,7 @@ public class OptionsHandlerTest {
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertAllow(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
     }
 
     @Test
@@ -160,14 +163,27 @@ public class OptionsHandlerTest {
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertAllow(res, asList(GET, HEAD, OPTIONS));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS)));
     }
 
-    private void assertAllow(final Response res, final List<String> methods) {
-        final List<String> allMethods = asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST);
+    private Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {
         final String allow = res.getHeaderString(ALLOW);
-        assertNotNull(allow);
-        methods.forEach(m -> assertTrue(allow.contains(m)));
-        allMethods.stream().filter(m -> !methods.contains(m)).forEach(m -> assertFalse(allow.contains(m)));
+        return of(
+                () -> assertNotNull(allow),
+                () -> assertTrue(allow.contains(GET) || !methods.contains(GET)),
+                () -> assertTrue(allow.contains(HEAD) || !methods.contains(HEAD)),
+                () -> assertTrue(allow.contains(OPTIONS) || !methods.contains(OPTIONS)),
+                () -> assertTrue(allow.contains(PUT) || !methods.contains(PUT)),
+                () -> assertTrue(allow.contains(DELETE) || !methods.contains(DELETE)),
+                () -> assertTrue(allow.contains(POST) || !methods.contains(POST)),
+                () -> assertTrue(allow.contains(PATCH) || !methods.contains(PATCH)),
+
+                () -> assertFalse(methods.contains(GET) && !allow.contains(GET)),
+                () -> assertFalse(methods.contains(HEAD) && !allow.contains(HEAD)),
+                () -> assertFalse(methods.contains(OPTIONS) && !allow.contains(OPTIONS)),
+                () -> assertFalse(methods.contains(PUT) && !allow.contains(PUT)),
+                () -> assertFalse(methods.contains(DELETE) && !allow.contains(DELETE)),
+                () -> assertFalse(methods.contains(POST) && !allow.contains(POST)),
+                () -> assertFalse(methods.contains(PATCH) && !allow.contains(PATCH)));
     }
 }
