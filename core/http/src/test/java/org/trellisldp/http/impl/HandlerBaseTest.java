@@ -22,11 +22,19 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
+import static javax.ws.rs.HttpMethod.DELETE;
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.HEAD;
+import static javax.ws.rs.HttpMethod.OPTIONS;
+import static javax.ws.rs.HttpMethod.POST;
+import static javax.ws.rs.HttpMethod.PUT;
+import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.Link.TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,9 +44,11 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
+import static org.trellisldp.http.domain.HttpConstants.PATCH;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -146,6 +156,27 @@ abstract class HandlerBaseTest {
         when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
     }
 
+    protected Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {
+        final String allow = res.getHeaderString(ALLOW);
+        return of(
+                () -> assertNotNull(allow),
+                () -> assertTrue(allow.contains(GET) || !methods.contains(GET)),
+                () -> assertTrue(allow.contains(HEAD) || !methods.contains(HEAD)),
+                () -> assertTrue(allow.contains(OPTIONS) || !methods.contains(OPTIONS)),
+                () -> assertTrue(allow.contains(PUT) || !methods.contains(PUT)),
+                () -> assertTrue(allow.contains(DELETE) || !methods.contains(DELETE)),
+                () -> assertTrue(allow.contains(POST) || !methods.contains(POST)),
+                () -> assertTrue(allow.contains(PATCH) || !methods.contains(PATCH)),
+
+                () -> assertFalse(methods.contains(GET) && !allow.contains(GET)),
+                () -> assertFalse(methods.contains(HEAD) && !allow.contains(HEAD)),
+                () -> assertFalse(methods.contains(OPTIONS) && !allow.contains(OPTIONS)),
+                () -> assertFalse(methods.contains(PUT) && !allow.contains(PUT)),
+                () -> assertFalse(methods.contains(DELETE) && !allow.contains(DELETE)),
+                () -> assertFalse(methods.contains(POST) && !allow.contains(POST)),
+                () -> assertFalse(methods.contains(PATCH) && !allow.contains(PATCH)));
+    }
+
     protected Stream<Executable> checkLdpType(final Response res, final IRI type) {
         final Set<IRI> types = RdfUtils.ldpResourceTypes(type).collect(toSet());
         final Set<IRI> responseTypes = res.getLinks().stream().filter(link -> TYPE.equals(link.getRel()))
@@ -225,6 +256,7 @@ abstract class HandlerBaseTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
+        when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockParent.getInteractionModel()).thenReturn(LDP.Container);
     }

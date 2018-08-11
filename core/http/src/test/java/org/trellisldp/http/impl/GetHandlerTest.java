@@ -17,6 +17,7 @@ import static java.time.Instant.ofEpochSecond;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Optional.of;
@@ -27,7 +28,6 @@ import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
-import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
@@ -83,6 +83,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.Binary;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -113,15 +114,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertAll(checkLdpType(res, LDP.RDFSource));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PUT));
-        assertTrue(allow.contains(DELETE));
-        assertTrue(allow.contains(PATCH));
-        assertFalse(allow.contains(POST));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
@@ -171,15 +164,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertNull(res.getHeaderString(PREFERENCE_APPLIED));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertAll(checkLdpType(res, LDP.RDFSource));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertFalse(allow.contains(PUT));
-        assertFalse(allow.contains(DELETE));
-        assertFalse(allow.contains(PATCH));
-        assertFalse(allow.contains(POST));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS)));
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
@@ -266,15 +251,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertAll(checkLdpType(res, LDP.RDFSource));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PUT));
-        assertTrue(allow.contains(DELETE));
-        assertTrue(allow.contains(PATCH));
-        assertFalse(allow.contains(POST));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
@@ -311,21 +288,13 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertNull(res.getHeaderString(PREFERENCE_APPLIED));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertAll(checkLdpType(res, LDP.Container));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST)));
 
         final String acceptPost = res.getHeaderString(ACCEPT_POST);
         assertNotNull(acceptPost);
         assertTrue(acceptPost.contains("text/turtle"));
         assertTrue(acceptPost.contains(APPLICATION_LD_JSON));
         assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PUT));
-        assertTrue(allow.contains(DELETE));
-        assertTrue(allow.contains(PATCH));
-        assertTrue(allow.contains(POST));
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak());
@@ -365,17 +334,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
 
-        assertEquals(OK, res.getStatusInfo());
-        assertEquals(-1, res.getLength());
-        assertEquals(from(time), res.getLastModified());
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-        assertTrue(res.getLinks().stream()
-                .anyMatch(link -> link.getRel().equals("describes") &&
-                    !link.getUri().toString().endsWith("?ext=description")));
-        assertTrue(res.getLinks().stream()
-                .anyMatch(link -> link.getRel().equals("canonical") &&
-                    link.getUri().toString().endsWith("?ext=description")));
-        assertAll(checkLdpType(res, LDP.RDFSource));
+        assertAll(checkBinaryDescription(res));
     }
 
     @Test
@@ -388,17 +347,22 @@ public class GetHandlerTest extends HandlerBaseTest {
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();
 
-        assertEquals(OK, res.getStatusInfo());
-        assertEquals(-1, res.getLength());
-        assertEquals(from(time), res.getLastModified());
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-        assertTrue(res.getLinks().stream()
-                .anyMatch(link -> link.getRel().equals("describes") &&
-                    !link.getUri().toString().endsWith("?ext=description")));
-        assertTrue(res.getLinks().stream()
-                .anyMatch(link -> link.getRel().equals("canonical") &&
-                    link.getUri().toString().endsWith("?ext=description")));
-        assertAll(checkLdpType(res, LDP.RDFSource));
+        assertAll(checkBinaryDescription(res));
+    }
+
+    private Stream<Executable> checkBinaryDescription(final Response res) {
+        return Stream.of(
+                () -> assertEquals(OK, res.getStatusInfo()),
+                () -> assertEquals(-1, res.getLength()),
+                () -> assertEquals(from(time), res.getLastModified()),
+                () -> assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE)),
+                () -> assertTrue(res.getLinks().stream()
+                        .anyMatch(link -> link.getRel().equals("describes") &&
+                            !link.getUri().toString().endsWith("?ext=description"))),
+                () -> assertTrue(res.getLinks().stream()
+                        .anyMatch(link -> link.getRel().equals("canonical") &&
+                            link.getUri().toString().endsWith("?ext=description"))),
+                () -> assertAll(checkLdpType(res, LDP.RDFSource)));
     }
 
     @Test
@@ -436,15 +400,6 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         assertEquals(OK, res.getStatusInfo());
         assertAll(checkLdpType(res, LDP.RDFSource));
-
-        final String allow = res.getHeaderString(ALLOW);
-        assertTrue(allow.contains(GET));
-        assertTrue(allow.contains(HEAD));
-        assertTrue(allow.contains(OPTIONS));
-        assertTrue(allow.contains(PATCH));
-        assertFalse(allow.contains(PUT));
-        assertFalse(allow.contains(DELETE));
-        assertFalse(allow.contains(POST));
+        assertAll(checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PATCH)));
     }
-
 }
