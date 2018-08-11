@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -135,7 +136,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -155,7 +156,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_HTML_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test

@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -100,7 +101,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
@@ -116,7 +117,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.Container);
+        assertAll(checkLdpType(res, LDP.Container));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
@@ -144,7 +145,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.NonRDFSource);
+        assertAll(checkLdpType(res, LDP.NonRDFSource));
 
         verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any());
         verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString());
@@ -161,7 +162,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.NonRDFSource);
+        assertAll(checkLdpType(res, LDP.NonRDFSource));
 
         verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any());
         verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString());
@@ -178,7 +179,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
@@ -194,7 +195,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
@@ -206,7 +207,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString());
@@ -234,7 +235,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test

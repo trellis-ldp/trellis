@@ -43,6 +43,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -111,7 +112,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertNull(res.getHeaderString(PREFERENCE_APPLIED));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         final String allow = res.getHeaderString(ALLOW);
         assertTrue(allow.contains(GET));
@@ -151,7 +152,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getHeaderString(ACCEPT_POST));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -169,7 +170,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertNull(res.getHeaderString(ACCEPT_PATCH));
         assertNull(res.getHeaderString(PREFERENCE_APPLIED));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         final String allow = res.getHeaderString(ALLOW);
         assertTrue(allow.contains(GET));
@@ -264,7 +265,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
         assertNull(res.getHeaderString(ACCEPT_POST));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         final String allow = res.getHeaderString(ALLOW);
         assertTrue(allow.contains(GET));
@@ -309,7 +310,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertFalse(res.getLinks().stream().anyMatch(link -> link.getRel().equals("canonical")));
         assertNull(res.getHeaderString(PREFERENCE_APPLIED));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertType(res, LDP.Container);
+        assertAll(checkLdpType(res, LDP.Container));
 
         final String acceptPost = res.getHeaderString(ACCEPT_POST);
         assertNotNull(acceptPost);
@@ -352,7 +353,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertTrue(res.getMediaType().isCompatible(TEXT_HTML_TYPE));
         assertNull(res.getHeaderString(PREFERENCE_APPLIED));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertType(res, LDP.Container);
+        assertAll(checkLdpType(res, LDP.Container));
     }
 
     @Test
@@ -374,7 +375,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("canonical") &&
                     link.getUri().toString().endsWith("?ext=description")));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -397,7 +398,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("canonical") &&
                     link.getUri().toString().endsWith("?ext=description")));
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -420,7 +421,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("canonical") &&
                     !link.getUri().toString().endsWith("?ext=description")));
-        assertType(res, LDP.NonRDFSource);
+        assertAll(checkLdpType(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -434,7 +435,7 @@ public class GetHandlerTest extends HandlerBaseTest {
             .build();
 
         assertEquals(OK, res.getStatusInfo());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         final String allow = res.getHeaderString(ALLOW);
         assertTrue(allow.contains(GET));

@@ -25,6 +25,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -69,7 +70,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
-        assertType(res, LDP.Container);
+        assertAll(checkLdpType(res, LDP.Container));
     }
 
     @Test
@@ -94,7 +95,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -106,7 +107,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
-        assertType(res, LDP.NonRDFSource);
+        assertAll(checkLdpType(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -118,7 +119,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -131,7 +132,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
-        assertType(res, LDP.NonRDFSource);
+        assertAll(checkLdpType(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -143,7 +144,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "newresource"), res.getLocation());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -176,7 +177,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + path), res.getLocation());
-        assertType(res, LDP.RDFSource);
+        assertAll(checkLdpType(res, LDP.RDFSource));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
@@ -194,7 +195,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "new-resource"), res.getLocation());
-        assertType(res, LDP.NonRDFSource);
+        assertAll(checkLdpType(res, LDP.NonRDFSource));
 
         verify(mockIoService, never()).read(any(), any(), any());
         verify(mockResourceService)
@@ -217,7 +218,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         assertEquals(CREATED, res.getStatusInfo());
         assertEquals(create(baseUrl + "resource-with-entity"), res.getLocation());
-        assertType(res, LDP.NonRDFSource);
+        assertAll(checkLdpType(res, LDP.NonRDFSource));
 
         verify(mockIoService, never()).read(any(), any(), any());
         verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.NonRDFSource), any(Dataset.class),

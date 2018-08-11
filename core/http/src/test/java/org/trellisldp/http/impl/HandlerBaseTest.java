@@ -20,7 +20,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.of;
+import static javax.ws.rs.core.Link.TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -37,10 +39,10 @@ import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
@@ -55,6 +57,7 @@ import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -143,13 +146,28 @@ abstract class HandlerBaseTest {
         when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
     }
 
-    protected void assertType(final Response res, final IRI type) {
-        final List<IRI> allTypes = asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
-                LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
-        final List<IRI> types = RdfUtils.ldpResourceTypes(type).collect(toList());
-        allTypes.stream().filter(t -> !types.contains(t)).forEach(t ->
-                assertFalse(res.getLinks().stream().anyMatch(hasType(t))));
-        types.forEach(t -> assertTrue(res.getLinks().stream().anyMatch(hasType(t))));
+    protected Stream<Executable> checkLdpType(final Response res, final IRI type) {
+        final Set<IRI> types = RdfUtils.ldpResourceTypes(type).collect(toSet());
+        final Set<IRI> responseTypes = res.getLinks().stream().filter(link -> TYPE.equals(link.getRel()))
+            .map(link -> rdf.createIRI(link.getUri().toString())).collect(toSet());
+        return of(
+                () -> assertTrue(responseTypes.contains(LDP.Resource) || !types.contains(LDP.Resource)),
+                () -> assertTrue(responseTypes.contains(LDP.RDFSource) || !types.contains(LDP.RDFSource)),
+                () -> assertTrue(responseTypes.contains(LDP.NonRDFSource) || !types.contains(LDP.NonRDFSource)),
+                () -> assertTrue(responseTypes.contains(LDP.Container) || !types.contains(LDP.Container)),
+                () -> assertTrue(responseTypes.contains(LDP.BasicContainer) || !types.contains(LDP.BasicContainer)),
+                () -> assertTrue(responseTypes.contains(LDP.DirectContainer) || !types.contains(LDP.DirectContainer)),
+                () -> assertTrue(responseTypes.contains(LDP.IndirectContainer)
+                                 || !types.contains(LDP.IndirectContainer)),
+
+                () -> assertFalse(types.contains(LDP.Resource) && !responseTypes.contains(LDP.Resource)),
+                () -> assertFalse(types.contains(LDP.RDFSource) && !responseTypes.contains(LDP.RDFSource)),
+                () -> assertFalse(types.contains(LDP.NonRDFSource) && !responseTypes.contains(LDP.NonRDFSource)),
+                () -> assertFalse(types.contains(LDP.Container) && !responseTypes.contains(LDP.Container)),
+                () -> assertFalse(types.contains(LDP.BasicContainer) && !responseTypes.contains(LDP.BasicContainer)),
+                () -> assertFalse(types.contains(LDP.DirectContainer) && !responseTypes.contains(LDP.DirectContainer)),
+                () -> assertFalse(types.contains(LDP.IndirectContainer)
+                                  && !responseTypes.contains(LDP.IndirectContainer)));
     }
 
     protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
@@ -157,7 +175,7 @@ abstract class HandlerBaseTest {
     }
 
     protected static Predicate<Link> hasType(final IRI iri) {
-        return hasLink(iri, "type");
+        return hasLink(iri, TYPE);
     }
 
     private void setUpResourceService() {
