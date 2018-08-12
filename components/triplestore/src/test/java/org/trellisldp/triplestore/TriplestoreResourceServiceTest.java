@@ -22,6 +22,7 @@ import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.setDefaultPollInterval;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -41,6 +42,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
@@ -52,10 +54,12 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.id.UUIDGenerator;
@@ -77,8 +81,13 @@ public class TriplestoreResourceServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
     private static final IdentifierService idService = new UUIDGenerator();
-    private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final String baseUrl = "http://example.com/";
+    private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+    private static final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+    private static final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
+    private static final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
+    private static final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
+    private static final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
 
     private final Instant created = now();
 
@@ -106,39 +115,28 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testIdentifierService() {
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier());
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier());
     }
 
     @Test
     public void testResourceNotFound() {
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
         assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).join());
     }
 
     @Test
     public void testInitializeRoot() {
         final Instant early = now();
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        assertNotNull(svc.get(root).join());
-        svc.get(root).thenAccept(res -> {
-            assertEquals(LDP.BasicContainer, res.getInteractionModel());
-            assertEquals(root, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(7L, res.stream().count());
-        }).join();
+        final Resource res = svc.get(root).join();
+        assertAll(checkResource(res, root, LDP.BasicContainer, early));
+        assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 0L));
     }
 
     @Test
@@ -151,37 +149,20 @@ public class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
 
-        assertNotNull(svc.get(root).join());
-        svc.get(root).thenAccept(res -> {
-            assertEquals(LDP.BasicContainer, res.getInteractionModel());
-            assertEquals(root, res.getIdentifier());
-            assertEquals(early, res.getModified());
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(0L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(2L, res.stream().count());
-        }).join();
+        final Resource res = svc.get(root).join();
+        assertAll(checkResource(res, root, LDP.BasicContainer, early));
+        assertAll(checkResourceStream(res, 0L, 2L, 0L, 0L, 0L, 0L));
     }
 
     @Test
     public void testUpdateRoot() throws Exception {
         final Instant early = now();
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        svc.get(root).thenAccept(res -> {
-            assertEquals(LDP.BasicContainer, res.getInteractionModel());
-            assertEquals(root, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(early));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(7L, res.stream().count());
-        }).join();
+        final Resource res1 = svc.get(root).join();
+        assertAll(checkResource(res1, root, LDP.BasicContainer, early));
+        assertAll(checkResourceStream(res1, 0L, 2L, 5L, 0L, 0L, 0L));
 
         final Dataset data = rdf.createDataset();
         svc.get(root).thenAccept(res ->
@@ -195,21 +176,11 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.replace(root, mockSession, LDP.BasicContainer, data, null, null).get());
-        svc.get(root).thenAccept(res -> {
-            assertEquals(LDP.BasicContainer, res.getInteractionModel());
-            assertEquals(root, res.getIdentifier());
-            assertFalse(res.getModified().isBefore(later));
-            assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-            assertFalse(res.getBinary().isPresent());
-            assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-            assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
-            assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-            assertEquals(5L, res.stream(Trellis.PreferAccessControl).count());
-            assertEquals(12L, res.stream().count());
-        }).join();
+        assertTrue(svc.replace(root, mockSession, LDP.BasicContainer, data, null, null).join());
+        final Resource res2 = svc.get(root).join();
+        assertAll(checkResource(res2, root, LDP.BasicContainer, later));
+        assertAll(checkResourceStream(res2, 4L, 2L, 5L, 1L, 0L, 0L));
     }
-
 
     @Test
     public void testRDFConnectionError() throws Exception {
@@ -218,7 +189,6 @@ public class TriplestoreResourceServiceTest {
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection)
             .loadDataset(any(org.apache.jena.query.Dataset.class));
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         assertThrows(ExecutionException.class, () ->
                 svc.create(resource, mockSession, LDP.RDFSource, rdf.createDataset(), root, null).get());
         assertThrows(ExecutionException.class, () -> svc.add(resource, mockSession, rdf.createDataset()).get());
@@ -226,11 +196,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testGetContainer() {
-        final RDFConnection rdfConnection = connect(wrap(rdf.createDataset().asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         assertFalse(svc.getContainer(root).isPresent());
         assertTrue(svc.getContainer(resource).isPresent());
         assertEquals(root, svc.getContainer(resource).get());
@@ -240,12 +208,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpRs() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final BlankNode acl = rdf.createBlankNode();
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -254,72 +219,50 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).join());
+
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(1L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(6L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.RDFSource, later));
+                assertAll(checkResourceStream(res, 1L, 3L, 1L, 1L, 0L, 0L));
             }),
 
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
     }
 
     @Test
     public void testPutLdpRsWithoutBaseUrl() throws Exception {
         when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(empty());
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).join());
 
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.RDFSource, later));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
-
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
     }
 
     @Test
     public void testPutLdpNr() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI binaryIdentifier = rdf.createIRI("foo:binary");
         final Instant binaryTime = now();
         final Dataset dataset = rdf.createDataset();
@@ -329,64 +272,46 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.NonRDFSource, dataset, root, binary).get());
+        assertTrue(svc.create(resource, mockSession, LDP.NonRDFSource, dataset, root, binary).join());
+
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.NonRDFSource, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertTrue(res.getBinary().isPresent());
-                res.getBinary().ifPresent(b -> {
-                    assertEquals(binaryIdentifier, b.getIdentifier());
-                    assertEquals(of("text/plain"), b.getMimeType());
-                    assertEquals(of(10L), b.getSize());
-                    assertEquals(binaryTime, b.getModified());
-                });
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(9L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.NonRDFSource, later));
+                assertAll(checkBinary(res, binaryIdentifier, binaryTime, "text/plain", 10L));
+                assertAll(checkResourceStream(res, 1L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
+        final IRI resource3 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource3, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(resource3, mockSession, LDP.RDFSource, dataset, resource, null).join());
+
         allOf(
-            svc.get(resource2).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(resource2, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
+            svc.get(resource3).thenAccept(res -> {
+                assertAll(checkResource(res, resource3, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
                 assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
             }),
-
             svc.get(root).thenAccept(res -> {
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater));
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
+                assertFalse(res.getBinary().isPresent());
             }),
-
             svc.get(resource).thenAccept(res -> {
+                assertAll(checkResource(res, resource, LDP.NonRDFSource, later));
+                assertAll(checkResourceStream(res, 1L, 7L, 0L, 1L, 0L, 0L));
                 assertTrue(res.getModified().isBefore(evenLater));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
             })).join();
 
         verify(mockEventService, times(3)).emit(any());
@@ -394,78 +319,51 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpC() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.Container, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, resource, LDP.Container, later));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
 
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
-
             svc.get(root).thenAccept(res -> {
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater));
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             }),
 
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, resource, LDP.Container, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -478,29 +376,18 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(2L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(7L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 2L, 3L, 0L, 2L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater2));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater2));
             })).join();
 
@@ -509,12 +396,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testAddAuditTriples() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset1 = rdf.createDataset();
         final Dataset dataset2 = rdf.createDataset();
         dataset1.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -522,28 +406,16 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset1, root, null).get());
-        assertTrue(svc.add(resource, mockSession, dataset2).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset1, root, null).join());
+        assertTrue(svc.add(resource, mockSession, dataset2).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.Container, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, resource, LDP.Container, later));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
@@ -551,79 +423,50 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutDeleteLdpC() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).join());
 
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.Container, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.Container, later));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
-            }),
-            svc.get(resource).thenAccept(res -> {
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
 
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(evenLater));
+                assertAll(checkResource(res, resource, LDP.Container, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -639,7 +482,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant preDelete = meanwhile();
 
-        assertTrue(svc.delete(child, mockSession, LDP.Resource, dataset).get());
+        assertTrue(svc.delete(child, mockSession, LDP.Resource, dataset).join());
 
         allOf(
             svc.get(child).thenAccept(res -> {
@@ -647,15 +490,13 @@ public class TriplestoreResourceServiceTest {
             }),
 
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(preDelete));
             }),
 
             svc.get(resource).thenAccept(res -> {
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(preDelete));
+                assertAll(checkResource(res, resource, LDP.Container, preDelete));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             })).join();
 
         verify(mockEventService, times(6)).emit(any());
@@ -663,78 +504,49 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpBc() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.BasicContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.BasicContainer, dataset, root, null).join());
 
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.BasicContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
-            }),
-            svc.get(resource).thenAccept(res -> {
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(evenLater));
+                assertAll(checkResource(res, resource, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -747,29 +559,18 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(2L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(7L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 2L, 3L, 0L, 2L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater2));
             })).join();
 
@@ -778,12 +579,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDcSelf() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -792,69 +590,45 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.DirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(11L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.DirectContainer, later));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
                 assertTrue(res.getModified().isBefore(evenLater2));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.DirectContainer, evenLater2));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 1L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            && t.getObject().equals(child)));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(DC.relation)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -862,13 +636,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDc() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -877,27 +647,15 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.DirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(11L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.DirectContainer, later));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(later));
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
@@ -909,78 +667,54 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(members, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
                 assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertFalse(res.getModified().isBefore(evenLater));
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
                 assertTrue(res.getModified().isBefore(evenLater));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
                 assertTrue(res.getModified().isBefore(evenLater2));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.DirectContainer, evenLater2));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(DC.relation)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             })).join();
 
         verify(mockEventService, times(7)).emit(any());
@@ -988,13 +722,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDcMultiple() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -1003,32 +733,19 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.DirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(11L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.DirectContainer, later));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(later));
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
@@ -1037,27 +754,15 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource2).thenAccept(res -> {
-                assertEquals(LDP.DirectContainer, res.getInteractionModel());
-                assertEquals(resource2, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(11L, res.stream().count());
+                assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -1069,130 +774,91 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(members, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater2));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
             }),
             svc.get(resource).thenAccept(res -> {
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             }),
             svc.get(resource2).thenAccept(res -> {
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             })).join();
 
         verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater3));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
                 assertTrue(res.getModified().isBefore(evenLater3));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.DirectContainer, evenLater3));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater3));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(DC.relation)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             })).join();
 
         verify(mockEventService, times(9)).emit(any());
 
         // Now add a child resources to the other ldp-dc
-        final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
         allOf(
             svc.get(child2).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child2, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child2, LDP.RDFSource, evenLater4));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
                 assertTrue(res.getModified().isBefore(evenLater4));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             }),
             svc.get(resource2).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater4));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child2)).findFirst().isPresent());
+                            && t.getObject().equals(child2)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(2L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater4));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 2L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(DC.subject)
-                            && t.getObject().equals(child2)).findFirst().isPresent());
+                            && t.getObject().equals(child2)));
             })).join();
 
         verify(mockEventService, times(12)).emit(any());
@@ -1200,13 +866,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDcMultipleInverse() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
@@ -1215,33 +877,19 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.DirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(of(DC.relation), res.getMemberOfRelation());
-                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(11L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.DirectContainer, later));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(later));
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
@@ -1250,27 +898,15 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource2).thenAccept(res -> {
-                assertEquals(LDP.DirectContainer, res.getInteractionModel());
-                assertEquals(resource2, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(11L, res.stream().count());
+                assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -1282,126 +918,85 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(members, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater2));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
             }),
             svc.get(resource).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(resource2).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             })).join();
 
         verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertEquals(6L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater3));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater3));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.DirectContainer, evenLater3));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(members).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater3));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             })).join();
 
         verify(mockEventService, times(8)).emit(any());
 
         // Now add a child resources to the other ldp-dc
-        final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
         allOf(
             svc.get(child2).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child2, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertEquals(6L, res.stream().count());
+                assertAll(checkResource(res, child2, LDP.RDFSource, evenLater4));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater4));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
             }),
             svc.get(resource2).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater4));
+                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child2)).findFirst().isPresent());
+                            && t.getObject().equals(child2)));
             }),
             svc.get(members).thenAccept(res -> {
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
                 assertTrue(res.getModified().isBefore(evenLater4));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             })).join();
 
         verify(mockEventService, times(10)).emit(any());
@@ -1409,13 +1004,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIc() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
@@ -1425,26 +1016,15 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(12L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, later));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
@@ -1456,37 +1036,24 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(members, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             }),
             svc.get(resource).thenAccept(res -> {
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
                 assertTrue(res.getModified().isBefore(evenLater));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
@@ -1494,41 +1061,29 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, evenLater2));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                            && t.getObject().equals(label)).findFirst().isPresent());
+                            && t.getObject().equals(label)));
             })).join();
 
         verify(mockEventService, times(7)).emit(any());
@@ -1536,13 +1091,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIcDefaultContent() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
@@ -1552,26 +1103,15 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(12L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, later));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
@@ -1583,37 +1123,24 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(members, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             }),
             svc.get(resource).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
@@ -1621,41 +1148,29 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, evenLater2));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             })).join();
 
         verify(mockEventService, times(7)).emit(any());
@@ -1663,13 +1178,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIcMultipleStatements() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
@@ -1679,27 +1190,15 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(12L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, later));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(later));
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
@@ -1711,37 +1210,24 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(members, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             }),
             svc.get(resource).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label1 = rdf.createLiteral("Label", "en");
         final Literal label2 = rdf.createLiteral("Zeichnung", "de");
         dataset.clear();
@@ -1751,44 +1237,32 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(6L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 2L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, evenLater2));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(2L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 2L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                            && t.getObject().equals(label2)).findFirst().isPresent());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            && t.getObject().equals(label2)));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                            && t.getObject().equals(label1)).findFirst().isPresent());
+                            && t.getObject().equals(label1)));
             })).join();
 
         verify(mockEventService, times(7)).emit(any());
@@ -1796,13 +1270,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIcMultipleResources() throws Exception {
-        final Instant early = now();
-        final JenaDataset d = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(d.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final ResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
-        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final IRI members = rdf.createIRI(TRELLIS_DATA_PREFIX + "members");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
@@ -1812,32 +1282,19 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(res -> {
-                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-                assertEquals(resource, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(later));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(12L, res.stream().count());
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, later));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(later));
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, later));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 1L));
             })).join();
 
         verify(mockEventService, times(2)).emit(any());
 
-        final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
@@ -1847,27 +1304,15 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.IndirectContainer, dataset, root, null).get());
+        assertTrue(svc.create(resource2, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource2).thenAccept(res -> {
-                assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-                assertEquals(resource2, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(4L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(7L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(12L, res.stream().count());
+                assertAll(checkResource(res, resource2, LDP.IndirectContainer, evenLater));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater));
-                assertEquals(2L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 2L));
             })).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -1879,42 +1324,28 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).get());
+        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(members, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater2));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater2));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResource(res, root, LDP.BasicContainer, evenLater2));
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
             }),
             svc.get(resource).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(resource2).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L));
             })).join();
 
         verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-ic
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
@@ -1922,47 +1353,34 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).get());
+        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child, LDP.RDFSource, evenLater3));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater3));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
             }),
             svc.get(resource).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource, LDP.IndirectContainer, evenLater3));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater3));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(1L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater3));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                            && t.getObject().equals(label)).findFirst().isPresent());
+                            && t.getObject().equals(label)));
             })).join();
 
         verify(mockEventService, times(9)).emit(any());
 
         // Now add the child resources to the ldp-ic
-        final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
         final Literal label2 = rdf.createLiteral("label2");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child2, SKOS.prefLabel, label2);
@@ -1970,55 +1388,77 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).get());
+        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
         allOf(
             svc.get(child2).thenAccept(res -> {
-                assertEquals(LDP.RDFSource, res.getInteractionModel());
-                assertEquals(child2, res.getIdentifier());
-                assertFalse(res.getModified().isBefore(early));
-                assertFalse(res.getModified().isAfter(now().plusMillis(5L)));
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertFalse(res.getBinary().isPresent());
-                assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
-                assertEquals(3L, res.stream(Trellis.PreferServerManaged).count());
-                assertEquals(1L, res.stream(Trellis.PreferAudit).count());
-                assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
-                assertEquals(5L, res.stream().count());
+                assertAll(checkResource(res, child2, LDP.RDFSource, evenLater4));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater4));
-                assertEquals(3L, res.stream(LDP.PreferContainment).count());
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
+                assertAll(checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, 3L));
             }),
             svc.get(resource).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater4));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child)).findFirst().isPresent());
+                            && t.getObject().equals(child)));
             }),
             svc.get(resource2).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertEquals(0L, res.stream(LDP.PreferMembership).count());
-                assertEquals(1L, res.stream(LDP.PreferContainment).count());
-                assertTrue(res.stream(LDP.PreferContainment).filter(t ->
+                assertAll(checkResource(res, resource2, LDP.IndirectContainer, evenLater4));
+                assertAll(checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 1L));
+                assertTrue(res.stream(LDP.PreferContainment).anyMatch(t ->
                             t.getSubject().equals(resource2) && t.getPredicate().equals(LDP.contains)
-                            && t.getObject().equals(child2)).findFirst().isPresent());
+                            && t.getObject().equals(child2)));
             }),
             svc.get(members).thenAccept(res -> {
-                assertFalse(res.getModified().isBefore(evenLater4));
-                assertEquals(0L, res.stream(LDP.PreferContainment).count());
-                assertEquals(2L, res.stream(LDP.PreferMembership).count());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                assertAll(checkResource(res, members, LDP.RDFSource, evenLater4));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 2L, 0L));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                            && t.getObject().equals(label)).findFirst().isPresent());
-                assertTrue(res.stream(LDP.PreferMembership).filter(t ->
+                            && t.getObject().equals(label)));
+                assertTrue(res.stream(LDP.PreferMembership).anyMatch(t ->
                             t.getSubject().equals(members) && t.getPredicate().equals(RDFS.label)
-                            && t.getObject().equals(label2)).findFirst().isPresent());
+                            && t.getObject().equals(label2)));
             })).join();
 
         verify(mockEventService, times(12)).emit(any());
+    }
+
+    private static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
+            final Instant time) {
+        return Stream.of(
+                () -> assertNotNull(res),
+                () -> assertEquals(identifier, res.getIdentifier()),
+                () -> assertEquals(ldpType, res.getInteractionModel()),
+                () -> assertFalse(res.getModified().isBefore(time)),
+                () -> assertFalse(res.getModified().isAfter(now().plusMillis(5L))));
+    }
+
+    private static Stream<Executable> checkBinary(final Resource res, final IRI identifier, final Instant time,
+            final String mimeType, final Long size) {
+        return Stream.of(
+                () -> assertNotNull(res),
+                () -> assertTrue(res.getBinary().isPresent()),
+                () -> assertEquals(identifier, res.getBinary().get().getIdentifier()),
+                () -> assertEquals(mimeType, res.getBinary().flatMap(Binary::getMimeType).orElse(null)),
+                () -> assertEquals(size, res.getBinary().flatMap(Binary::getSize).orElse(null)),
+                () -> assertEquals(time, res.getBinary().get().getModified()));
+    }
+
+    private static Stream<Executable> checkResourceStream(final Resource res, final long userManaged,
+            final long serverManaged, final long accessControl, final long audit, final long membership,
+            final long containment) {
+        final long total = userManaged + serverManaged + accessControl + audit + membership + containment;
+        return Stream.of(
+                () -> assertEquals(userManaged, res.stream(Trellis.PreferUserManaged).count()),
+                () -> assertEquals(serverManaged, res.stream(Trellis.PreferServerManaged).count()),
+                () -> assertEquals(accessControl, res.stream(Trellis.PreferAccessControl).count()),
+                () -> assertEquals(audit, res.stream(Trellis.PreferAudit).count()),
+                () -> assertEquals(membership, res.stream(LDP.PreferMembership).count()),
+                () -> assertEquals(containment, res.stream(LDP.PreferContainment).count()),
+                () -> assertEquals(total, res.stream().count()));
     }
 
     private static Instant meanwhile() {

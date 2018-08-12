@@ -101,6 +101,8 @@ public class GetHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testGetLdprs() {
+        when(mockLdpRequest.getBaseUrl()).thenReturn("http://example.org");
+
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .build();

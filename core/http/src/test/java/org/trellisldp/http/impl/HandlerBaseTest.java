@@ -90,7 +90,7 @@ import org.trellisldp.vocabulary.LDP;
  */
 abstract class HandlerBaseTest {
 
-    protected static final String baseUrl = "http://example.org/repo/";
+    protected static final String baseUrl = "http://example.org/";
     protected static final RDF rdf = getInstance();
     protected static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     protected static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource,
