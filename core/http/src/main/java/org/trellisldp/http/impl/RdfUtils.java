@@ -269,8 +269,7 @@ final class RdfUtils {
      * @return the mapping function
      */
     public static Function<Triple, Quad> toQuad(final IRI graphName) {
-        return triple -> rdf.createQuad(graphName, triple.getSubject(),
-                triple.getPredicate(), triple.getObject());
+        return triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject());
     }
 
     private RdfUtils() {
