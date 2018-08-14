@@ -111,6 +111,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
@@ -151,12 +152,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertAll(checkLdTemplateHeaders(res));
         assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertFalse(varies.contains(RANGE));
-        assertFalse(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertTrue(varies.contains(PREFER));
+        assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Map<String, Object>> obj = MAPPER.readValue(entity,
@@ -255,10 +251,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_OK, res.getStatus());
         assertEquals(from(time), res.getLastModified());
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
+        assertTrue(hasTimeGateLink(res, RESOURCE_PATH));
+        assertTrue(hasOriginalLink(res, RESOURCE_PATH));
     }
 
     @Test
@@ -266,20 +260,14 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), "self")));
-
         assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
         assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertFalse(varies.contains(RANGE));
-        assertFalse(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertTrue(varies.contains(PREFER));
+        assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -287,21 +275,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
-
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), "self")));
-
-        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-        assertNotNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertTrue(varies.contains(RANGE));
-        assertTrue(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
+        assertAll(checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("Some input stream", entity);
@@ -328,19 +304,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
-
-        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-        assertNotNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertNull(res.getHeaderString(DIGEST));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertTrue(varies.contains(RANGE));
-        assertTrue(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
+        assertAll(checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("Some input stream", entity);
@@ -351,19 +316,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
-
-        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-        assertNotNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertEquals("md5=md5-digest", res.getHeaderString(DIGEST));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertTrue(varies.contains(RANGE));
-        assertTrue(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
+        assertAll(checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("Some input stream", entity);
@@ -374,19 +328,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "SHA").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
-
-        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-        assertNotNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertEquals("sha=sha1-digest", res.getHeaderString(DIGEST));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertTrue(varies.contains(RANGE));
-        assertTrue(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
+        assertAll(checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("Some input stream", entity);
@@ -397,18 +340,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=3-10").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
-
-        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-        assertNotNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertTrue(varies.contains(RANGE));
-        assertTrue(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
+        assertAll(checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("e input", entity);
@@ -475,12 +407,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals("bytes", res.getHeaderString(ACCEPT_RANGES));
         assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertTrue(varies.contains(RANGE));
-        assertTrue(varies.contains(WANT_DIGEST));
-        assertFalse(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
+        assertAll(checkVary(res, asList(RANGE, WANT_DIGEST)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("Some input stream", entity);
@@ -497,32 +424,14 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertTrue(obj.containsKey("@context"));
-        assertTrue(obj.containsKey("title"));
-        assertFalse(obj.containsKey("mode"));
-        assertFalse(obj.containsKey("created"));
-
+        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
         assertEquals("A title", (String) obj.get("title"));
     }
 
     @Test
     public void testPrefer2() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferServerManaged, identifier, DC.created,
-                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
-                    rdf.createIRI("trellis:data/resource/child1")),
-                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
-                    rdf.createIRI("trellis:data/resource/child2")),
-                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
-                    rdf.createIRI("trellis:data/resource/child3")),
-                rdf.createQuad(LDP.PreferMembership, identifier, LDP.member,
-                    rdf.createIRI("trellis:data/resource/other")),
-                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
@@ -533,33 +442,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertTrue(obj.containsKey("@context"));
-        assertTrue(obj.containsKey("title"));
-        assertFalse(obj.containsKey("mode"));
-        assertFalse(obj.containsKey("created"));
-        assertFalse(obj.containsKey("contains"));
-        assertFalse(obj.containsKey("member"));
-
+        assertAll(checkJsonStructure(obj, asList("@context", "title"),
+                    asList("mode", "created", "contains", "member")));
         assertEquals("A title", (String) obj.get("title"));
     }
 
     @Test
     public void testPrefer3() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferServerManaged, identifier, DC.created,
-                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
-                    rdf.createIRI("trellis:data/resource/child1")),
-                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
-                    rdf.createIRI("trellis:data/resource/child2")),
-                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
-                    rdf.createIRI("trellis:data/resource/child3")),
-                rdf.createQuad(LDP.PreferMembership, identifier, LDP.member,
-                    rdf.createIRI("trellis:data/resource/other")),
-                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
 
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
@@ -570,12 +461,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertTrue(obj.containsKey("@context"));
-        assertFalse(obj.containsKey("title"));
-        assertFalse(obj.containsKey("mode"));
-        assertFalse(obj.containsKey("created"));
-        assertTrue(obj.containsKey("contains"));
-        assertTrue(obj.containsKey("member"));
+        assertAll(checkJsonStructure(obj, asList("@context", "contains", "member"),
+                    asList("title", "mode", "created")));
     }
 
     @Test
@@ -584,77 +471,27 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkJsonLdResponse(res));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertEquals(from(time), res.getLastModified());
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertFalse(varies.contains(RANGE));
-        assertFalse(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertTrue(varies.contains(PREFER));
+        assertAll(checkLdfResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertTrue(obj.containsKey("@context"));
-        assertTrue(obj.containsKey("title"));
-        assertFalse(obj.containsKey("mode"));
-        assertFalse(obj.containsKey("created"));
-
         assertEquals("A title", (String) obj.get("title"));
+        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
     }
 
     @Test
     public void testGetJsonCompactLDF1() throws IOException {
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
-                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
-                rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(PreferServerManaged, identifier, DC.created,
-                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
-
+        when(mockResource.stream()).thenAnswer(inv -> getLdfQuads());
         final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
             .queryParam("predicate", "http://purl.org/dc/terms/title").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertEquals(from(time), res.getLastModified());
-        assertAll(checkJsonLdResponse(res));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertFalse(varies.contains(RANGE));
-        assertFalse(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertTrue(varies.contains(PREFER));
+        assertAll(checkLdfResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
-
-        assertTrue(obj.containsKey("@context"));
-        assertFalse(obj.containsKey("creator"));
-        assertTrue(obj.containsKey("title"));
-        assertFalse(obj.containsKey("mode"));
-        assertFalse(obj.containsKey("created"));
 
         assertTrue(obj.get("title") instanceof List);
         @SuppressWarnings("unchecked")
@@ -662,110 +499,53 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertTrue(titles.contains("A title"));
         assertEquals(2L, titles.size());
         assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"));
+        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("creator", "mode", "created")));
     }
 
     @Test
     public void testGetJsonCompactLDF2() throws IOException {
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
-                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
-                rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
-                rdf.createQuad(PreferServerManaged, identifier, DC.created,
-                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        when(mockResource.stream()).thenAnswer(inv -> getLdfQuads());
 
         final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
             .queryParam("object", "ex:Type").queryParam("predicate", "").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkJsonLdResponse(res));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertEquals(from(time), res.getLastModified());
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, GET, DELETE, HEAD, OPTIONS)));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertFalse(varies.contains(RANGE));
-        assertFalse(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertTrue(varies.contains(PREFER));
+        assertAll(checkLdfResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertTrue(obj.containsKey("@type"));
-        assertFalse(obj.containsKey("@context"));
-        assertFalse(obj.containsKey("creator"));
-        assertFalse(obj.containsKey("title"));
-        assertFalse(obj.containsKey("mode"));
-        assertFalse(obj.containsKey("created"));
-
         assertEquals("ex:Type", obj.get("@type"));
         assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"));
+        assertAll(checkJsonStructure(obj, asList("@type"), asList("@context", "creator", "title", "mode", "created")));
     }
 
     @Test
     public void testGetJsonCompactLDF3() throws IOException {
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
-                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
-                rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
-                rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
-                rdf.createQuad(PreferServerManaged, identifier, DC.created,
-                    rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-                rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        when(mockResource.stream()).thenAnswer(inv -> getLdfQuads());
 
         final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
             .queryParam("object", "A title").queryParam("predicate", DC.title.getIRIString()).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertAll(checkJsonLdResponse(res));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
+        assertTrue(hasTimeGateLink(res, RESOURCE_PATH));
+        assertTrue(hasOriginalLink(res, RESOURCE_PATH));
 
         assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertFalse(varies.contains(RANGE));
-        assertFalse(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertTrue(varies.contains(PREFER));
+        assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
+        assertAll(checkJsonLdResponse(res));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertFalse(obj.containsKey("@type"));
-        assertTrue(obj.containsKey("@context"));
-        assertFalse(obj.containsKey("creator"));
-        assertTrue(obj.containsKey("title"));
-        assertFalse(obj.containsKey("mode"));
-        assertFalse(obj.containsKey("created"));
-
         assertEquals("A title", obj.get("title"));
         assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"));
+        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("@type", "creator", "mode", "created")));
     }
 
     @Test
@@ -811,15 +591,11 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_OK, res.getStatus());
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
-
         assertAll(checkMementoHeaders(res, RESOURCE_PATH));
         assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Link> entityLinks = stream(entity.split(",\n")).map(Link::valueOf).collect(toList());
@@ -839,16 +615,11 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
+        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
         assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity,
@@ -887,16 +658,11 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertNull(res.getLastModified());
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
         assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Map<String, Object>> obj = MAPPER.readValue(entity,
@@ -931,14 +697,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_OK, res.getStatus());
         assertEquals(from(time), res.getLastModified());
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
+        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
         assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES)));
     }
 
     @Test
@@ -950,14 +712,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_OK, res.getStatus());
         assertEquals(from(time), res.getLastModified());
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
+        assertAll(checkSimpleJsonLdResponse(res, LDP.Container));
         assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkLdpTypeHeaders(res, LDP.Container));
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES)));
     }
 
     @Test
@@ -1008,33 +766,22 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertNull(res.getHeaderString(ACCEPT_POST));
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
         assertEquals(from(time), res.getLastModified());
         // The next two assertions may change at some point
-        assertFalse(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
-        assertFalse(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + RESOURCE_PATH)));
+        assertFalse(hasTimeGateLink(res, RESOURCE_PATH));
+        assertFalse(hasOriginalLink(res, RESOURCE_PATH));
 
         assertTrue(res.hasEntity());
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertTrue(obj.containsKey("@context"));
-        assertFalse(obj.containsKey("title"));
-        assertTrue(obj.containsKey("mode"));
         assertEquals(ACL.Control.getIRIString(), (String) obj.get("mode"));
+        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
         assertAll(checkAllowedMethods(res, asList(PATCH, GET, HEAD, OPTIONS)));
-        final List<String> varies = res.getStringHeaders().get(VARY);
-        assertFalse(varies.contains(RANGE));
-        assertFalse(varies.contains(WANT_DIGEST));
-        assertTrue(varies.contains(ACCEPT_DATETIME));
-        assertFalse(varies.contains(PREFER));
+        assertAll(checkVary(res, asList(ACCEPT_DATETIME)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
+        assertAll(checkJsonStructure(obj, asList("@context", "mode"), asList("title")));
     }
 
     @Test
@@ -1065,12 +812,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
 
         assertEquals(SC_OK, res.getStatus());
-        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
+        assertAll(checkNullHeaders(res, asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials",
+                        "Access-Control-Max-Age", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods")));
     }
 
     /* ******************************* *
@@ -1083,8 +826,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(MEMENTO_DATETIME)));
     }
 
     @Test
@@ -1093,12 +836,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
     }
 
     @Test
@@ -1108,16 +848,16 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
         assertNotNull(res.getHeaderString(ACCEPT_POST));
+        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+        assertAll(checkLdpTypeHeaders(res, LDP.Container));
+        assertAll(checkNullHeaders(res, asList(MEMENTO_DATETIME)));
+
         final List<String> acceptPost = asList(res.getHeaderString(ACCEPT_POST).split(","));
         assertEquals(3L, acceptPost.size());
         assertTrue(acceptPost.contains("text/turtle"));
         assertTrue(acceptPost.contains(APPLICATION_LD_JSON));
         assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES));
-
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
-        assertAll(checkLdpTypeHeaders(res, LDP.Container));
     }
 
     @Test
@@ -1126,9 +866,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
     }
 
     @Test
@@ -1157,9 +896,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
     }
 
     @Test
@@ -1172,10 +910,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, MEMENTO_DATETIME)));
     }
 
     @Test
@@ -1183,9 +919,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertNull(res.getHeaderString(ACCEPT_PATCH));
-        assertNull(res.getHeaderString(ACCEPT_POST));
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll(checkNullHeaders(res, asList(ACCEPT_PATCH, ACCEPT_POST)));
     }
 
     /* ******************************* *
@@ -1396,9 +1131,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1440,9 +1173,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1454,9 +1185,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1469,9 +1198,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1616,9 +1343,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1628,9 +1353,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1640,9 +1363,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1672,9 +1393,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1691,9 +1410,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1702,9 +1419,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1766,9 +1481,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -2055,9 +1768,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -2068,9 +1779,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-        assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-        assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -2133,12 +1842,64 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .stream().map(Link::valueOf).collect(toList());
     }
 
+    private Boolean hasTimeGateLink(final Response res, final String path) {
+        return getLinks(res).stream().anyMatch(l ->
+                l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + path));
+    }
+
+    private Boolean hasOriginalLink(final Response res, final String path) {
+        return getLinks(res).stream().anyMatch(l ->
+                l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + path));
+    }
+
     protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
         return link -> rel.equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
     }
 
     protected static Predicate<Link> hasType(final IRI iri) {
         return hasLink(iri, "type");
+    }
+
+    private Stream<Quad> getLdfQuads() {
+        return Stream.of(
+            rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
+            rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
+            rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+            rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
+            rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
+            rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
+            rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
+            rdf.createQuad(PreferServerManaged, identifier, DC.created,
+                rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
+            rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+            rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control));
+    }
+
+    private Stream<Quad> getPreferQuads() {
+        return Stream.of(
+            rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
+            rdf.createQuad(PreferServerManaged, identifier, DC.created,
+                rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
+            rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                rdf.createIRI("trellis:data/resource/child1")),
+            rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                rdf.createIRI("trellis:data/resource/child2")),
+            rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
+                rdf.createIRI("trellis:data/resource/child3")),
+            rdf.createQuad(LDP.PreferMembership, identifier, LDP.member,
+                rdf.createIRI("trellis:data/resource/other")),
+            rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+            rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
+            rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control));
+    }
+
+    private Stream<Executable> checkVary(final Response res, final List<String> vary) {
+        final List<String> vheaders = res.getStringHeaders().get(VARY);
+        return Stream.of(
+                () -> assertEquals(vary.contains(RANGE), vheaders.contains(RANGE)),
+                () -> assertEquals(vary.contains(WANT_DIGEST), vheaders.contains(WANT_DIGEST)),
+                () -> assertEquals(vary.contains(ACCEPT_DATETIME), vheaders.contains(ACCEPT_DATETIME)),
+                () -> assertEquals(vary.contains(PREFER), vheaders.contains(PREFER)));
     }
 
     private Stream<Executable> checkLdTemplateHeaders(final Response res) {
@@ -2192,10 +1953,18 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         .equals(l.getParams().get("until")) &&
                     APPLICATION_LINK_FORMAT.equals(l.getType()) &&
                     l.getUri().toString().equals(getBaseUrl() + path + "?ext=timemap"))),
-                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timegate") &&
-                    l.getUri().toString().equals(getBaseUrl() + path))),
-                () -> assertTrue(links.stream().anyMatch(l ->
-                            l.getRels().contains("original") && l.getUri().toString().equals(getBaseUrl() + path))));
+                () -> assertTrue(hasTimeGateLink(res, path)),
+                () -> assertTrue(hasOriginalLink(res, path)));
+    }
+
+    private Stream<Executable> checkBinaryResponse(final Response res) {
+        return Stream.of(
+                () -> assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE)),
+                () -> assertNotNull(res.getHeaderString(ACCEPT_RANGES)),
+                () -> assertNull(res.getHeaderString(MEMENTO_DATETIME)),
+                () -> assertAll(checkVary(res, asList(RANGE, WANT_DIGEST, ACCEPT_DATETIME))),
+                () -> assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS))),
+                () -> assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource)));
     }
 
     private Stream<Executable> checkJsonLdResponse(final Response res) {
@@ -2207,6 +1976,36 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                                                                          "self"))),
                 () -> assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH)),
                 () -> assertTrue(res.hasEntity()));
+    }
+
+    private Stream<Executable> checkNullHeaders(final Response res, final List<String> headers) {
+        return headers.stream().map(h -> () -> assertNull(res.getHeaderString(h)));
+    }
+
+    private Stream<Executable> checkJsonStructure(final Map<String, Object> obj, final List<String> include,
+            final List<String> omit) {
+        return Stream.concat(
+                include.stream().map(key -> () -> assertTrue(obj.containsKey(key))),
+                omit.stream().map(key -> () -> assertFalse(obj.containsKey(key))));
+    }
+
+    private Stream<Executable> checkSimpleJsonLdResponse(final Response res, final IRI ldpType) {
+        return Stream.of(
+                () -> assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType())),
+                () -> assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE)),
+                () -> assertAll(checkLdpTypeHeaders(res, ldpType)));
+    }
+
+    private Stream<Executable> checkLdfResponse(final Response res) {
+        return Stream.of(
+                () -> assertEquals(from(time), res.getLastModified()),
+                () -> assertTrue(hasTimeGateLink(res, RESOURCE_PATH)),
+                () -> assertTrue(hasOriginalLink(res, RESOURCE_PATH)),
+                () -> assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS))),
+                () -> assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER))),
+                () -> assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES))),
+                () -> assertAll(checkJsonLdResponse(res)),
+                () -> assertAll(checkLdpTypeHeaders(res, LDP.RDFSource)));
     }
 
     private Stream<Executable> checkAllowedMethods(final Response res, final List<String> methods) {
