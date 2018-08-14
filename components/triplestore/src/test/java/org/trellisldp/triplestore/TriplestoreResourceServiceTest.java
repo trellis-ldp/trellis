@@ -303,7 +303,7 @@ public class TriplestoreResourceServiceTest {
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("resource"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.alternative, rdf.createLiteral("alt title"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("description"));
         dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
@@ -321,7 +321,7 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a child resource
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("child"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
@@ -363,7 +363,7 @@ public class TriplestoreResourceServiceTest {
         final Dataset dataset1 = rdf.createDataset();
         final Dataset dataset2 = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
-        dataset1.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset1.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("resource"));
         dataset1.add(Trellis.PreferUserManaged, resource, DC.alternative, rdf.createLiteral("alt title"));
         dataset2.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
         dataset2.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
@@ -460,13 +460,14 @@ public class TriplestoreResourceServiceTest {
         // Now add a child resource
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("label"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater, 1L, 3L, 1L)),
+            svc.get(child).thenAccept(checkChild(evenLater, 2L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 3L, 0L, 1L)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater)))).join();
@@ -498,8 +499,9 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.alternative, rdf.createLiteral("alt title"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("LDP-DC pointing to self"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, resource);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
 
@@ -507,7 +509,7 @@ public class TriplestoreResourceServiceTest {
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 0L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 0L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
@@ -523,7 +525,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 0L)),
             svc.get(resource).thenAccept(res -> {
                 assertAll(checkResource(res, resource, LDP.DirectContainer, evenLater2));
-                assertAll(checkResourceStream(res, 4L, 7L, 0L, 0L, 1L, 1L));
+                assertAll(checkResourceStream(res, 5L, 7L, 0L, 0L, 1L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals));
                 assertTrue(res.stream(LDP.PreferMembership)
@@ -541,7 +543,8 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("LDP-DC test"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
 
@@ -549,7 +552,7 @@ public class TriplestoreResourceServiceTest {
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 3L, 7L, 0L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 0L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
@@ -564,7 +567,7 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 0L, 0L)),
             svc.get(members).thenAccept(res -> assertFalse(res.getBinary().isPresent())),
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 3L, 7L, 0L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 0L, 0L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater))),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
@@ -579,7 +582,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 0L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.DirectContainer, 3L, 7L, 0L, 1L)),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.DirectContainer, 4L, 7L, 0L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals))),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 0L, 1L)),
@@ -597,23 +600,27 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("multiple LDP-DC test"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 3L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
-        dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("second LDP-DC"));
+        dataset.add(Trellis.PreferUserManaged, resource2, DC.description, rdf.createLiteral("another LDP-DC"));
+        dataset.add(Trellis.PreferUserManaged, resource2, RDFS.label, rdf.createLiteral("test multple LDP-DCs"));
+        dataset.add(Trellis.PreferUserManaged, resource2, SKOS.prefLabel, rdf.createLiteral("test multple LDP-DCs"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, DC.subject);
 
@@ -623,7 +630,7 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(resource2).thenAccept(res -> {
                 assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater));
-                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
+                assertAll(checkResourceStream(res, 6L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
@@ -632,17 +639,18 @@ public class TriplestoreResourceServiceTest {
         // Now add a membership resource
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
-        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("member resource"));
+        dataset.add(Trellis.PreferUserManaged, members, DC.description, rdf.createLiteral("LDP-RS membership test"));
 
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 3L, 7L, 1L, 0L)),
+            svc.get(members).thenAccept(checkMember(evenLater2, 2L, 3L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 1L, 0L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater2))),
             svc.get(resource2).thenAccept(res -> {
-                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
+                assertAll(checkResourceStream(res, 6L, 7L, 0L, 1L, 0L, 0L));
                 assertTrue(res.getModified().isBefore(evenLater2));
             }),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L))).join();
@@ -659,10 +667,10 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater3, 1L, 3L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.DirectContainer, 3L, 7L, 1L, 1L)),
+            svc.get(resource).thenAccept(checkResource(evenLater, LDP.DirectContainer, 4L, 7L, 1L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals))),
-            svc.get(members).thenAccept(checkMember(evenLater3, 1L, 3L, 1L, 1L)),
+            svc.get(members).thenAccept(checkMember(evenLater3, 2L, 3L, 1L, 1L)),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(rdf.createTriple(members, DC.relation, child)::equals))),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
@@ -685,11 +693,11 @@ public class TriplestoreResourceServiceTest {
             }),
             svc.get(resource2).thenAccept(res -> {
                 assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater4));
-                assertAll(checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 1L));
+                assertAll(checkResourceStream(res, 6L, 7L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource2, LDP.contains, child2)::equals));
             }),
-            svc.get(members).thenAccept(checkMember(evenLater4, 1L, 3L, 1L, 2L)),
+            svc.get(members).thenAccept(checkMember(evenLater4, 2L, 3L, 1L, 2L)),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(rdf.createTriple(members, DC.subject, child2)::equals))),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
@@ -704,7 +712,9 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container inverse"));
+        dataset.add(Trellis.PreferUserManaged, resource, RDFS.label, rdf.createLiteral("LDP-DC test"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("LDP-DC inverse test"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.isMemberOfRelation, DC.relation);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -713,13 +723,13 @@ public class TriplestoreResourceServiceTest {
 
         assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 3L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-DC"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.isMemberOfRelation, DC.subject);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -738,7 +748,7 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Membership resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
@@ -746,7 +756,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 3L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater2))),
             svc.get(resource2).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
@@ -758,7 +768,7 @@ public class TriplestoreResourceServiceTest {
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("Child resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
@@ -769,7 +779,7 @@ public class TriplestoreResourceServiceTest {
                 assertAll(checkResource(res, child, LDP.RDFSource, evenLater3));
                 assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 1L, 0L));
             }),
-            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.DirectContainer, 3L, 7L, 1L, 1L)),
+            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.DirectContainer, 5L, 7L, 1L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals))),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
@@ -781,7 +791,7 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("Second child resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater4 = meanwhile();
@@ -812,52 +822,66 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        final BlankNode bnode0 = rdf.createBlankNode();
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("Indirect Container"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("Test LDP-IC"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.subject, rdf.createIRI("http://example.com/subject"));
+        dataset.add(Trellis.PreferUserManaged, resource, RDF.type, SKOS.Concept);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, SKOS.prefLabel);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode0);
+        dataset.add(Trellis.PreferAudit, bnode0, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
+        dataset.add(Trellis.PreferAudit, bnode0, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode0, RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 7L, 4L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a membership resource
+        final BlankNode bnode1 = rdf.createBlankNode();
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Membership resource"));
+        dataset.add(Trellis.PreferAudit, members, PROV.wasGeneratedBy, bnode1);
+        dataset.add(Trellis.PreferAudit, bnode1, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
+        dataset.add(Trellis.PreferAudit, bnode1, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode1, RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 4L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 7L, 4L, 0L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater))),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
         verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
-        final Literal label = rdf.createLiteral("label1");
+        final BlankNode bnode2 = rdf.createBlankNode();
+        final Literal label = rdf.createLiteral("label-1");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, child, PROV.wasGeneratedBy, bnode2);
+        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, PROV.Activity);
 
         final Instant evenLater2 = meanwhile();
 
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 7L, 1L, 1L)),
+            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 3L)),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 7L, 7L, 4L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals))),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 1L)),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 4L, 1L)),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(rdf.createTriple(members, RDFS.label, label)::equals))),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
@@ -872,7 +896,9 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("Indirect Container"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.description,
+                rdf.createLiteral("LDP-IC with default content"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, LDP.MemberSubject);
@@ -882,14 +908,14 @@ public class TriplestoreResourceServiceTest {
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Member resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
@@ -897,7 +923,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater))),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
@@ -914,7 +940,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 7L, 1L, 1L)),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 5L, 7L, 1L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals))),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 1L)),
@@ -932,24 +958,26 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        final BlankNode bnode = rdf.createBlankNode();
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("LDP-IC with multiple stmts"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, SKOS.prefLabel);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
+        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
 
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 2L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Membership LDP-RS"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
@@ -957,7 +985,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 2L, 0L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater))),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
@@ -976,7 +1004,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 2L, 3L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 7L, 1L, 1L)),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 7L, 2L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals))),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 2L)),
@@ -998,23 +1026,27 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
 
         final Dataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
+        final BlankNode bnode = rdf.createBlankNode();
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("First LDP-IC"));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("Test multiple LDP-ICs"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, SKOS.prefLabel);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
+        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
 
         final Instant later = meanwhile();
 
         assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 3L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         verify(mockEventService, times(2)).emit(any());
 
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-IC"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.insertedContentRelation, SKOS.prefLabel);
@@ -1034,7 +1066,7 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("title"));
+        dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Shared member resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
@@ -1042,7 +1074,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 3L, 0L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater2))),
             svc.get(resource2).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater2));
@@ -1053,7 +1085,7 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-ic
-        final Literal label = rdf.createLiteral("label1");
+        final Literal label = rdf.createLiteral("first label");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -1063,7 +1095,7 @@ public class TriplestoreResourceServiceTest {
         assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater3, 1L, 3L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 4L, 7L, 1L, 1L)),
+            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 7L, 3L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(rdf.createTriple(resource, LDP.contains, child)::equals))),
             svc.get(members).thenAccept(checkMember(evenLater3, 1L, 3L, 1L, 1L)),
@@ -1075,10 +1107,13 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(9)).emit(any());
 
         // Now add the child resources to the ldp-ic
-        final Literal label2 = rdf.createLiteral("label2");
+        final Literal label2 = rdf.createLiteral("second label");
+        final BlankNode bnode2 = rdf.createBlankNode();
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child2, SKOS.prefLabel, label2);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, child2, PROV.wasGeneratedBy, bnode2);
+        dataset.add(Trellis.PreferAudit, bnode2, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
+        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, AS.Create);
 
         final Instant evenLater4 = meanwhile();
 
@@ -1086,9 +1121,9 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(child2).thenAccept(res -> {
                 assertAll(checkResource(res, child2, LDP.RDFSource, evenLater4));
-                assertAll(checkResourceStream(res, 1L, 3L, 0L, 1L, 0L, 0L));
+                assertAll(checkResourceStream(res, 1L, 3L, 0L, 3L, 0L, 0L));
             }),
-            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 4L, 7L, 1L, 1L)),
+            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 7L, 3L, 1L)),
             svc.get(resource).thenAccept(res -> {
                 assertTrue(res.getModified().isBefore(evenLater4));
                 assertTrue(res.stream(LDP.PreferContainment)
