@@ -28,6 +28,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
+import static org.trellisldp.http.impl.RdfUtils.toQuad;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -38,7 +39,6 @@ import java.util.stream.Stream;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
@@ -139,8 +139,7 @@ public class DeleteHandler extends MutatingLdpHandler {
 
         // When deleting just the ACL graph, keep the user managed triples intact
         try (final Stream<? extends Triple> triples = getResource().stream(PreferUserManaged)) {
-            triples.map(t -> rdf.createQuad(PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
-                .forEachOrdered(mutable::add);
+            triples.map(toQuad(PreferUserManaged)).forEachOrdered(mutable::add);
         }
 
         // Note: when deleting ACL resources, the resource itself is not removed and so this is really
@@ -148,18 +147,8 @@ public class DeleteHandler extends MutatingLdpHandler {
         // is generated.
 
         // Collect the audit data
-        getServices().getAuditService().update(getResource().getIdentifier(), getSession()).stream()
-            .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))
-            .forEachOrdered(immutable::add);
-
-        // update the resource
-        final IRI parent = getServices().getResourceService().getContainer(getResource().getIdentifier())
-            .orElse(null);
-        return getServices().getResourceService()
-            .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
-                    mutable.asDataset(), parent, getResource().getBinary().orElse(null))
-            .thenCombine(getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
-                        immutable.asDataset()), this::handleWriteResults);
+        getAuditUpdateData().forEachOrdered(immutable::add);
+        return handleResourceReplacement(mutable, immutable);
     }
 
     private CompletableFuture<Boolean> handleResourceDeletion(final TrellisDataset mutable,

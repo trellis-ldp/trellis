@@ -26,6 +26,7 @@ import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
+import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
 
 import java.io.File;
@@ -36,12 +37,14 @@ import java.io.OutputStream;
 import java.security.Principal;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
@@ -224,5 +227,22 @@ class MutatingLdpHandler extends BaseLdpHandler {
             return status(INTERNAL_SERVER_ERROR);
         }
         return null;
+    }
+
+    protected CompletableFuture<Boolean> handleResourceReplacement(final TrellisDataset mutable,
+            final TrellisDataset immutable) {
+        // update the resource
+        final IRI parent = getServices().getResourceService().getContainer(getResource().getIdentifier())
+            .orElse(null);
+        return getServices().getResourceService()
+            .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
+                    mutable.asDataset(), parent, getResource().getBinary().orElse(null))
+            .thenCombine(getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
+                        immutable.asDataset()), this::handleWriteResults);
+    }
+
+    protected Stream<Quad> getAuditUpdateData() {
+        return getServices().getAuditService().update(getResource().getIdentifier(), getSession()).stream()
+            .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()));
     }
 }

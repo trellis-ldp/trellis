@@ -42,8 +42,8 @@ import static org.trellisldp.http.impl.RdfUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.RdfUtils.getProfile;
 import static org.trellisldp.http.impl.RdfUtils.getSyntax;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
-import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
+import static org.trellisldp.http.impl.RdfUtils.toQuad;
 import static org.trellisldp.http.impl.RdfUtils.unskolemizeTriples;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -281,22 +281,11 @@ public class PatchHandler extends MutatingLdpHandler {
 
         // When updating User or ACL triples, be sure to add the other category to the dataset
         try (final Stream<? extends Triple> remaining = getResource().stream(otherGraph)) {
-            remaining.map(t -> rdf.createQuad(otherGraph, t.getSubject(), t.getPredicate(), t.getObject()))
-                .forEachOrdered(mutable::add);
+            remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
         }
 
         // Collect the audit data
-        getServices().getAuditService().update(getResource().getIdentifier(), getSession()).stream()
-            .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
-
-        // Save resource data
-        final IRI parent = getServices().getResourceService().getContainer(getResource().getIdentifier()).orElse(null);
-        return getServices().getResourceService()
-            .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
-                     mutable.asDataset(), parent, getResource().getBinary().orElse(null))
-            .thenCombine(getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
-                        immutable.asDataset()), this::handleWriteResults)
-            .thenApply(handleResponse(builder, triples));
+        getAuditUpdateData().forEachOrdered(immutable::add);
+        return handleResourceReplacement(mutable, immutable).thenApply(handleResponse(builder, triples));
     }
-
 }
