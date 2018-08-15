@@ -41,7 +41,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -108,17 +107,12 @@ public class FileMementoService implements MementoService {
             final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
             final File file = getNquadsFile(resourceDir, time);
             if (file.exists()) {
-                return new FileMementoResource(identifier, file);
+                return new FileResource(identifier, file);
             }
-            final Optional<Resource> res = listMementos(identifier).stream()
-                    .filter(range -> !range.getMinimum().isAfter(time))
+            return listMementos(identifier).stream().filter(range -> !range.getMinimum().isAfter(time))
                     .max((t1, t2) -> t1.getMinimum().compareTo(t2.getMinimum()))
                     .map(t -> getNquadsFile(resourceDir, t.getMinimum()))
-                    .map(f -> new FileMementoResource(identifier, f));
-            if (res.isPresent()) {
-                return res.get();
-            }
-            return MISSING_RESOURCE;
+                    .map(f -> (Resource) new FileResource(identifier, f)).orElse(MISSING_RESOURCE);
         });
     }
 

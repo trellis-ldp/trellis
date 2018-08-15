@@ -149,26 +149,4 @@ public class FileResourceTest {
         assertEquals(4L, res.stream(Trellis.PreferServerManaged).count());
         assertEquals(12L, res.stream().count());
     }
-
-    @Test
-    public void testMementoResource() {
-        final IRI memento = rdf.createIRI(TRELLIS_DATA_PREFIX + "memento");
-        final File file = new File(getClass().getResource("/memento.nq").getFile());
-        assertTrue(file.exists());
-        final Resource res = new FileMementoResource(memento, file);
-
-        assertEquals(memento, res.getIdentifier());
-        assertEquals(parse("2017-01-14T11:00:01Z"), res.getModified());
-        assertEquals(LDP.Container, res.getInteractionModel());
-        assertFalse(res.hasAcl());
-        assertFalse(res.getBinary().isPresent());
-        assertFalse(res.getMemberRelation().isPresent());
-        assertFalse(res.getMemberOfRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().isPresent());
-        assertFalse(res.getMembershipResource().isPresent());
-        assertEquals(2L, res.stream(LDP.PreferContainment).count());
-        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-        assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
-        assertEquals(7L, res.stream().count());
-    }
 }
