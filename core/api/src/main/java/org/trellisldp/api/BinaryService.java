@@ -17,8 +17,8 @@ import static java.util.Collections.emptyMap;
 
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -36,34 +36,27 @@ public interface BinaryService {
      * @param identifier an identifier used for locating the binary object
      * @param from the starting point of a range request
      * @param to the ending point of a range request
-     * @return the content
+     * @return the new completion stage with the binary content
      */
-    Optional<InputStream> getContent(IRI identifier, Integer from, Integer to);
+    CompletableFuture<InputStream> getContent(IRI identifier, Integer from, Integer to);
 
     /**
      * Get the content of the binary object.
      *
      * @param identifier an identifier used for locating the binary object
-     * @return the content
+     * @return the new completion stage with the binary content
      */
-    Optional<InputStream> getContent(IRI identifier);
-
-    /**
-     * Test whether a binary object exists at the given URI.
-     *
-     * @param identifier the binary object identifier
-     * @return whether the binary object exists
-     */
-    Boolean exists(IRI identifier);
+    CompletableFuture<InputStream> getContent(IRI identifier);
 
     /**
      * Set the content for a binary object.
      *
      * @param identifier the binary object identifier
      * @param stream the content
+     * @return the new completion stage
      */
-    default void setContent(IRI identifier, InputStream stream) {
-        setContent(identifier, stream, emptyMap());
+    default CompletableFuture<Void> setContent(IRI identifier, InputStream stream) {
+        return setContent(identifier, stream, emptyMap());
     }
 
     /**
@@ -72,15 +65,17 @@ public interface BinaryService {
      * @param identifier the binary object identifier
      * @param stream the content
      * @param metadata any user metadata
+     * @return the new completion stage
      */
-    void setContent(IRI identifier, InputStream stream, Map<String, String> metadata);
+    CompletableFuture<Void> setContent(IRI identifier, InputStream stream, Map<String, String> metadata);
 
     /**
      * Purge the content from its corresponding datastore.
      *
      * @param identifier the binary object identifier
+     * @return the new completion stage
      */
-    void purgeContent(IRI identifier);
+    CompletableFuture<Void> purgeContent(IRI identifier);
 
     /**
      * Calculate the digest for a binary object.
@@ -90,11 +85,9 @@ public interface BinaryService {
      *
      * @param identifier the identifier
      * @param algorithm the algorithm
-     * @return the digest
+     * @return the new completion stage containing a computed digest for the binary resource
      */
-    default Optional<String> calculateDigest(IRI identifier, String algorithm) {
-        return getContent(identifier).flatMap(stream -> digest(algorithm, stream));
-    }
+    CompletableFuture<String> calculateDigest(IRI identifier, String algorithm);
 
     /**
      * Get a list of supported algorithms.
@@ -102,18 +95,6 @@ public interface BinaryService {
      * @return the supported digest algorithms
      */
     Set<String> supportedAlgorithms();
-
-    /**
-     * Get the digest for an input stream.
-     *
-     * <p>Note: the digest likely uses the base64 encoding, but the specific encoding is defined
-     * for each algorithm at https://www.iana.org/assignments/http-dig-alg/http-dig-alg.xhtml
-     *
-     * @param algorithm the algorithm to use
-     * @param stream the input stream
-     * @return a string representation of the digest
-     */
-    Optional<String> digest(String algorithm, InputStream stream);
 
     /**
      * Get a new identifier.

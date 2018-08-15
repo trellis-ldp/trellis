@@ -14,13 +14,13 @@
 package org.trellisldp.file;
 
 import static java.nio.file.Files.copy;
+import static java.nio.file.Files.delete;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Arrays.asList;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
@@ -44,14 +44,12 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.tamaya.Configuration;
@@ -131,15 +129,10 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public Boolean exists(final IRI identifier) {
-         return getFileFromIdentifier(identifier).filter(File::isFile).isPresent();
-    }
-
-    @Override
-    public Optional<InputStream> getContent(final IRI identifier) {
-        return getFileFromIdentifier(identifier).map(file -> {
+    public CompletableFuture<InputStream> getContent(final IRI identifier) {
+        return supplyAsync(() -> {
             try {
-                return new FileInputStream(file);
+                return new FileInputStream(getFileFromIdentifier(identifier));
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
@@ -147,12 +140,12 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public Optional<InputStream> getContent(final IRI identifier, final Integer from, final Integer to) {
+    public CompletableFuture<InputStream> getContent(final IRI identifier, final Integer from, final Integer to) {
         requireNonNull(from, "From value cannot be null!");
         requireNonNull(to, "To value cannot be null!");
-        return getFileFromIdentifier(identifier).map(file -> {
+        return supplyAsync(() -> {
             try {
-                final InputStream input = new FileInputStream(file);
+                final InputStream input = new FileInputStream(getFileFromIdentifier(identifier));
                 final long skipped = input.skip(from);
                 LOGGER.debug("Skipped {} bytes", skipped);
                 return new BoundedInputStream(input, to - from);
@@ -163,41 +156,48 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public void purgeContent(final IRI identifier) {
-        getFileFromIdentifier(identifier).ifPresent(File::delete);
-    }
-
-    @Override
-    public void setContent(final IRI identifier, final InputStream stream,
-            final Map<String, String> metadata) {
-        requireNonNull(stream, "InputStream may not be null!");
-        getFileFromIdentifier(identifier).ifPresent(file -> {
-            LOGGER.debug("Setting binary content for {} at {}", identifier.getIRIString(), file.getAbsolutePath());
+    public CompletableFuture<Void> purgeContent(final IRI identifier) {
+        return supplyAsync(() -> {
             try {
-                final File parent = file.getParentFile();
-                parent.mkdirs();
-                copy(stream, file.toPath(), REPLACE_EXISTING);
-                stream.close();
+                delete(getFileFromIdentifier(identifier).toPath());
             } catch (final IOException ex) {
-                LOGGER.error("Error while setting content: {}", ex.getMessage());
-                throw new UncheckedIOException(ex);
+                LOGGER.warn("File could not deleted {}: {}", identifier, ex.getMessage());
             }
+            return null;
         });
     }
 
     @Override
-    public Optional<String> digest(final String algorithm, final InputStream stream) {
-        if (SHA.equals(algorithm)) {
-            return of(SHA_1).map(DigestUtils::getDigest).flatMap(digest(stream));
-        }
-        return ofNullable(algorithm).filter(supportedAlgorithms()::contains).flatMap(alg -> {
-            try {
-                return of(getDigest(alg));
-            } catch (final IllegalArgumentException ex) {
-                LOGGER.warn("Invalid algorithm: {}", ex.getMessage());
+    public CompletableFuture<Void> setContent(final IRI identifier, final InputStream stream,
+            final Map<String, String> metadata) {
+        requireNonNull(stream, "InputStream may not be null!");
+        return supplyAsync(() -> {
+            final File file = getFileFromIdentifier(identifier);
+            LOGGER.debug("Setting binary content for {} at {}", identifier.getIRIString(), file.getAbsolutePath());
+            try (final InputStream input = stream) {
+                final File parent = file.getParentFile();
+                parent.mkdirs();
+                copy(stream, file.toPath(), REPLACE_EXISTING);
+            } catch (final IOException ex) {
+                LOGGER.error("Error while setting content: {}", ex.getMessage());
+                LOGGER.error("Error setting content", ex);
+                throw new UncheckedIOException(ex);
             }
-            return empty();
-        }).flatMap(digest(stream));
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<String> calculateDigest(final IRI identifier, final String algorithm) {
+        return supplyAsync(() -> {
+            if (SHA.equals(algorithm)) {
+                return computeDigest(identifier, getDigest(SHA_1));
+            } else if (supportedAlgorithms().contains(algorithm)) {
+                return computeDigest(identifier, getDigest(algorithm));
+            }
+            LOGGER.warn("Algorithm not supported: {}", algorithm);
+            return null;
+        });
     }
 
     @Override
@@ -210,21 +210,19 @@ public class FileBinaryService implements BinaryService {
         return idSupplier.get();
     }
 
-    private Optional<File> getFileFromIdentifier(final IRI identifier) {
-        return ofNullable(identifier).map(IRI::getIRIString).map(URI::create).map(URI::getSchemeSpecificPart)
-            .map(x -> stripStart(x, "/")).map(x -> new File(basePath, x));
+    private File getFileFromIdentifier(final IRI identifier) {
+        requireNonNull(identifier, "Identifier may not be null!");
+        return of(identifier).map(IRI::getIRIString).filter(x -> x.startsWith("file:")).map(URI::create)
+            .map(URI::getSchemeSpecificPart).map(x -> stripStart(x, "/")).map(x -> new File(basePath, x))
+            .orElseThrow(() -> new IllegalArgumentException("Could not create File object from IRI: " + identifier));
     }
 
-    private Function<MessageDigest, Optional<String>> digest(final InputStream stream) {
-        return algorithm -> {
-            try {
-                final String digest = getEncoder().encodeToString(updateDigest(algorithm, stream).digest());
-                stream.close();
-                return of(digest);
-            } catch (final IOException ex) {
-                LOGGER.error("Error computing digest", ex);
-            }
-            return empty();
-        };
+    private String computeDigest(final IRI identifier, final MessageDigest algorithm) {
+        try (final InputStream input = new FileInputStream(getFileFromIdentifier(identifier))) {
+            return getEncoder().encodeToString(updateDigest(algorithm, input).digest());
+        } catch (final IOException ex) {
+            LOGGER.error("Error computing digest", ex);
+            throw new UncheckedIOException(ex);
+        }
     }
 }

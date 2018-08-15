@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -37,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
@@ -46,7 +48,10 @@ import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.domain.HttpConstants.PATCH;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -141,10 +146,9 @@ abstract class HandlerBaseTest {
 
         setUpBundler();
         setUpResourceService();
+        setUpBinaryService();
         setUpIoService();
         setUpResources();
-
-        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
 
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
@@ -216,6 +220,21 @@ abstract class HandlerBaseTest {
             }
             return term;
         });
+    }
+
+    private void setUpBinaryService() {
+        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
+        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
+        when(mockBinaryService.calculateDigest(any(IRI.class), eq("MD5")))
+            .thenReturn(completedFuture("md5-digest"));
+        when(mockBinaryService.calculateDigest(any(IRI.class), eq("SHA")))
+            .thenReturn(completedFuture("sha1-digest"));
+        when(mockBinaryService.getContent(any(IRI.class), eq(3), eq(10)))
+            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
+        when(mockBinaryService.getContent(any(IRI.class)))
+            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
+        when(mockBinaryService.setContent(any(IRI.class), any(InputStream.class), any()))
+            .thenAnswer(x -> completedFuture(null));
     }
 
     private void setUpBundler() {
