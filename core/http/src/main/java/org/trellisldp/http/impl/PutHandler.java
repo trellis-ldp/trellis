@@ -39,6 +39,7 @@ import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
+import static org.trellisldp.http.impl.RdfUtils.toQuad;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
@@ -243,8 +244,7 @@ public class PutHandler extends MutatingLdpHandler {
 
         if (nonNull(getResource())) {
             try (final Stream<? extends Triple> remaining = getResource().stream(otherGraph)) {
-                remaining.map(t -> rdf.createQuad(otherGraph, t.getSubject(), t.getPredicate(), t.getObject()))
-                    .forEachOrdered(mutable::add);
+                remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
             }
         }
 

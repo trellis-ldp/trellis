@@ -263,8 +263,7 @@ public class PatchHandler extends MutatingLdpHandler {
         }
 
         triples.stream().map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
-            .map(t -> rdf.createQuad(graphName, t.getSubject(), t.getPredicate(), t.getObject()))
-            .forEachOrdered(mutable::add);
+            .map(toQuad(graphName)).forEachOrdered(mutable::add);
 
         // Check any constraints on the resulting dataset
         final List<ConstraintViolation> violations = constraintServices.stream()

@@ -28,6 +28,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
+import static org.trellisldp.http.impl.RdfUtils.toQuad;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -155,9 +156,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
                         || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace()))
                 .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
-                .map(triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(),
-                            triple.getObject()))
-                .forEachOrdered(dataset::add);
+                .map(toQuad(graphName)).forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
             LOGGER.error("Invalid RDF content: {}", ex.getMessage());
             return status(BAD_REQUEST);
