@@ -338,12 +338,10 @@ public class LdpResource implements ContainerRequestFilter {
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
-            LOGGER.info("Identifier: {}", identifier);
-            LOGGER.info("Getting timegate resource: {}", req.getDatetime().getInstant());
+            LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
             return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
                 .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) -> {
                     if (MISSING_RESOURCE.equals(res)) {
-                        LOGGER.info("Missing");
                         return status(NOT_FOUND);
                     }
                     return new MementoResource(trellis).getTimeGateBuilder(mementos, req, urlBase);
