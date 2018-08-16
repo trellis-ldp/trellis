@@ -14,7 +14,7 @@ ext {
     activationApiVersion = '1.2.0'
     activeMqVersion = '5.15.4'
     commonsCodecVersion = '1.11'
-    commonsCompressVersion = '1.17'
+    commonsCompressVersion = '1.18'
     commonsIoVersion = '2.6'
     commonsLangVersion = '3.7'
     commonsRdfVersion = '0.5.0'
