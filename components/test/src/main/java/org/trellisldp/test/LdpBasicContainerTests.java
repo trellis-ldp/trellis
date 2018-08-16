@@ -20,6 +20,7 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -29,7 +30,6 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.PREFER;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.hasType;
@@ -57,9 +57,7 @@ import org.trellisldp.vocabulary.SKOS;
 @DisplayName("Basic Container Tests")
 public interface LdpBasicContainerTests extends CommonTests {
 
-    String ENG = "eng";
     String BASIC_CONTAINER = "/basicContainer.ttl";
-    String BASIC_CONTAINER_LABEL = "Basic Container";
 
     /**
      * Set the location of the test container.
@@ -135,6 +133,20 @@ public interface LdpBasicContainerTests extends CommonTests {
     void setFourthETag(EntityTag etag);
 
     /**
+     * Check for a successful creation response.
+     * @param res the response
+     * @param ldpType the expected type
+     * @return the location of the new resource
+     */
+    default String checkCreateResponseAssumptions(final Response res, final IRI ldpType) {
+        assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                "Creation of " + ldpType + " appears not to be supported");
+        assumeTrue(getLinks(res).stream().anyMatch(hasType(ldpType)),
+                "New resource was not of the expected " + ldpType + " type");
+        return res.getLocation().toString();
+    }
+
+    /**
      * Initialize Basic Containment tests.
      */
     @BeforeAll
@@ -145,34 +157,21 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of BasicContainer appears not to be supported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)),
-                    "New resource was not of the expected BasicContainer type");
-
-            setContainerLocation(res.getLocation().toString());
+            setContainerLocation(checkCreateResponseAssumptions(res, LDP.BasicContainer));
         }
 
         // POST an LDP-BC
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of BasicContainer appears not to be supported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)),
-                    "New resource was not of the expected BasicContainer type");
-
-            setChildLocation(res.getLocation().toString());
+            setChildLocation(checkCreateResponseAssumptions(res, LDP.BasicContainer));
         }
 
         // POST an LDP-BC
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of BasicContainer appears not to be supported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)),
-                    "New resource was not of the expected BasicContainer type");
+            checkCreateResponseAssumptions(res, LDP.BasicContainer);
         }
     }
 
@@ -186,9 +185,9 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
                     "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral(BASIC_CONTAINER_LABEL, ENG)));
+            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+            assertAll(checkRdfGraph(g, identifier));
             assertFalse(g.contains(identifier, LDP.contains, null));
         }
     }
@@ -205,7 +204,8 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            assertFalse(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral(BASIC_CONTAINER_LABEL, ENG)));
+            assertFalse(g.contains(identifier, DC.description, null));
+            assertFalse(g.contains(identifier, SKOS.prefLabel, null));
             assertTrue(g.contains(identifier, LDP.contains, null));
         }
     }
@@ -218,17 +218,10 @@ public interface LdpBasicContainerTests extends CommonTests {
     default void testGetContainer() {
         final RDF rdf = getInstance();
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, true));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral(BASIC_CONTAINER_LABEL, ENG)));
-            assertTrue(g.contains(identifier, DC.description, null));
-            assertTrue(g.size() >= 2);
+            assertAll(checkRdfGraph(g, identifier));
             setFirstETag(res.getEntityTag());
             assertTrue(getFirstETag().isWeak());
             assertNotEquals(getFirstETag(), getSecondETag());
@@ -250,10 +243,7 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, false));
 
             child3 = res.getLocation().toString();
             assertTrue(child3.startsWith(getContainerLocation()));
@@ -262,18 +252,11 @@ public interface LdpBasicContainerTests extends CommonTests {
 
         // Now fetch the container
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, true));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral(BASIC_CONTAINER_LABEL, ENG)));
-            assertTrue(g.contains(identifier, DC.description, null));
+            assertAll(checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
-            assertTrue(g.size() >= 3);
             setSecondETag(res.getEntityTag());
             assertTrue(getSecondETag().isWeak());
             assertNotEquals(getFirstETag(), getSecondETag());
@@ -296,26 +279,16 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target(child4).request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, false));
         }
 
         // Now fetch the resource
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, true));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral(BASIC_CONTAINER_LABEL, ENG)));
-            assertTrue(g.contains(identifier, DC.description, null));
+            assertAll(checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child4)));
-            assertTrue(g.size() >= 3);
             setThirdETag(res.getEntityTag());
             assertTrue(getThirdETag().isWeak());
             assertNotEquals(getFirstETag(), getThirdETag());
@@ -337,28 +310,17 @@ public interface LdpBasicContainerTests extends CommonTests {
         try (final Response res = target(getContainerLocation()).request().header("Slug", "child5")
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, false));
             assertEquals(child5, res.getLocation().toString());
         }
 
         // Now fetch the resource
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, true));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral(BASIC_CONTAINER_LABEL, ENG)));
-            assertTrue(g.contains(identifier, DC.description, null));
+            assertAll(checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child5)));
-            assertTrue(g.size() >= 3);
             setFourthETag(res.getEntityTag());
             assertTrue(getFourthETag().isWeak());
             assertNotEquals(getFirstETag(), getFourthETag());
@@ -377,17 +339,11 @@ public interface LdpBasicContainerTests extends CommonTests {
         final EntityTag etag;
 
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, true));
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral(BASIC_CONTAINER_LABEL, ENG)));
-            assertTrue(g.contains(identifier, DC.description, null));
+            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+            assertAll(checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(getChildLocation())));
-            assertTrue(g.size() >= 3);
             etag = res.getEntityTag();
             assertTrue(etag.isWeak());
         }
@@ -405,11 +361,7 @@ public interface LdpBasicContainerTests extends CommonTests {
         }
 
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll(checkRdfResponse(res, LDP.BasicContainer, true));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertFalse(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
                         rdf.createIRI(getChildLocation())));

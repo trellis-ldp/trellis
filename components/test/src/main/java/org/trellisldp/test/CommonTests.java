@@ -13,13 +13,35 @@
  */
 package org.trellisldp.test;
 
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.test.TestUtils.getLinks;
+import static org.trellisldp.test.TestUtils.hasType;
+
+import java.util.stream.Stream;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.rdf.api.Graph;
+import org.apache.commons.rdf.api.IRI;
+import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.SKOS;
 
 /**
  * Common test interface.
  */
 public interface CommonTests {
+
+    String ENG = "eng";
+    String BASIC_CONTAINER_LABEL = "Basic Container";
 
     /**
      * Get the HTTP client.
@@ -48,5 +70,35 @@ public interface CommonTests {
      */
     default WebTarget target(final String url) {
         return getClient().target(url);
+    }
+
+    /**
+     * Check an RDF response.
+     * @param res the response
+     * @param ldpType the expected LDP type
+     * @param hasEntity whether the response has an RDF entity
+     * @return a stream of testable assertions
+     */
+    default Stream<Executable> checkRdfResponse(final Response res, final IRI ldpType, final Boolean hasEntity) {
+        return Stream.of(
+                () -> assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily()),
+                () -> assertTrue(!hasEntity || res.getMediaType().isCompatible(TEXT_TURTLE_TYPE)),
+                () -> assertTrue(!hasEntity || TEXT_TURTLE_TYPE.isCompatible(res.getMediaType())),
+                () -> assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource))),
+                () -> assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource))),
+                () -> assertTrue(getLinks(res).stream().anyMatch(hasType(ldpType))));
+    }
+
+    /**
+     * Check an RDF graph.
+     * @param graph the graph
+     * @param identifier the identifier
+     * @return a stream of testable assertions
+     */
+    default Stream<Executable> checkRdfGraph(final Graph graph, final IRI identifier) {
+        return Stream.of(
+                () -> assertTrue(graph.contains(identifier, SKOS.prefLabel,
+                                                getInstance().createLiteral(BASIC_CONTAINER_LABEL, ENG))),
+                () -> assertTrue(graph.contains(identifier, DC.description, null)));
     }
 }

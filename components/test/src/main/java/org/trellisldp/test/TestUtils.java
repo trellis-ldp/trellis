@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.awaitility.Awaitility.await;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,7 +46,9 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.io.JenaIOService;
+import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.PROV;
 
 /**
  * Common utility functions.
@@ -162,6 +165,38 @@ public final class TestUtils {
     public static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+    }
+
+    /**
+     * Check an event graph for required properties.
+     * @param resource the resource IRI
+     * @param agent the agent IRI
+     * @param activity the activity IRI
+     * @param ldpType the LDP type of the resource
+     * @return a predicate function
+     */
+    public static Predicate<Graph> checkEventGraph(final String resource, final IRI agent, final IRI activity,
+            final IRI ldpType) {
+        final IRI objectIRI = getInstance().createIRI(resource);
+        return g -> g.contains(null, AS.object, objectIRI)
+                        && g.contains(null, AS.actor, agent)
+                        && g.contains(null, type, PROV.Activity)
+                        && g.contains(null, type, activity)
+                        && g.contains(objectIRI, type, ldpType);
+
+    }
+
+    /**
+     * Check an event graph for required properties.
+     * @param resource the resource IRI
+     * @param agent the agent IRI
+     * @param activity the activity IRI
+     * @param ldpType the LDP type of the resource
+     * @return a predicate function
+     */
+    public static Predicate<Graph> checkEventGraph(final String resource, final String agent, final IRI activity,
+            final IRI ldpType) {
+        return checkEventGraph(resource, getInstance().createIRI(agent), activity, ldpType);
     }
 
     /**
