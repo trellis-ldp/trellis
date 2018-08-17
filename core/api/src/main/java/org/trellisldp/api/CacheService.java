@@ -13,6 +13,8 @@
  */
 package org.trellisldp.api;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.util.function.Function;
 
 /**
@@ -30,4 +32,14 @@ public interface CacheService<K, V> {
      * @return a value for that key or null
      */
     V get(K key, Function<? super K, ? extends V> mappingFunction);
+
+    /**
+     * A {@link CacheService} used for JSON-LD profiles.
+     *
+     */
+    @java.lang.annotation.Documented
+    @java.lang.annotation.Retention(RUNTIME)
+    @javax.inject.Qualifier
+    public @interface TrellisProfileCache { }
+
 }

@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
@@ -57,6 +58,7 @@ import org.trellisldp.api.Resource;
 /**
  * A file-based versioning system.
  */
+@Alternative
 public class FileMementoService implements MementoService {
 
     public static final String MEMENTO_BASE_PATH = "trellis.file.memento.basepath";

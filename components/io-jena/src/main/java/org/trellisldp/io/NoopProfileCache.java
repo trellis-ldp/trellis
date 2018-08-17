@@ -13,10 +13,12 @@
  */
 package org.trellisldp.io;
 
+import org.trellisldp.api.CacheService.TrellisProfileCache;
 import org.trellisldp.api.NoopCacheService;
 
 /**
  * A specialized no-op cache.
  */
+@TrellisProfileCache
 public class NoopProfileCache extends NoopCacheService<String, String> {
 }

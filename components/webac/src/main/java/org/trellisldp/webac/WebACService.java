@@ -14,6 +14,7 @@
 package org.trellisldp.webac;
 
 import static java.lang.String.join;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -33,11 +34,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -100,7 +101,7 @@ public class WebACService implements AccessControlService {
      */
     @Inject
     public WebACService(final ResourceService resourceService,
-            @Named("TrellisAuthorizationCache") final CacheService<String, Set<IRI>> cache) {
+            @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
         this(resourceService, cache, getConfiguration().getOrDefault(WEBAC_MEMBERSHIP_CHECK, Boolean.class, false));
     }
 
@@ -268,4 +269,24 @@ public class WebACService implements AccessControlService {
     private static IRI cleanIdentifier(final IRI identifier) {
         return rdf.createIRI(cleanIdentifier(identifier.getIRIString()));
     }
+
+    @TrellisAuthorizationCache
+    public static class NoopAuthorizationCache implements CacheService<String, Set<IRI>> {
+
+        @Override
+        public Set<IRI> get(final String key, final Function<? super String, ? extends Set<IRI>> f) {
+            return f.apply(key);
+        }
+    }
+
+    /**
+     * A {@link CacheService} that can be used for authorization information.
+     * 
+     * @author ajs6f
+     *
+     */
+    @java.lang.annotation.Documented
+    @java.lang.annotation.Retention(RUNTIME)
+    @javax.inject.Qualifier
+    public @interface TrellisAuthorizationCache { }
 }

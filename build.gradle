@@ -37,6 +37,9 @@ ext {
     slf4jVersion = '1.7.25'
     tamayaVersion = '0.3-incubating'
 
+    /* Wiring */
+    cdiApiVersion = '2.0.SP1'
+
     /* Testing */
     apiguardianVersion = '1.0.0'
     awaitilityVersion = '3.1.2'

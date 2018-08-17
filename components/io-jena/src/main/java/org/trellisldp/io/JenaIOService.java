@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package org.trellisldp.io;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -56,7 +55,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Graph;
@@ -85,6 +83,7 @@ import org.apache.jena.update.UpdateException;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.CacheService.TrellisProfileCache;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
@@ -157,7 +156,7 @@ public class JenaIOService implements IOService {
     @Inject
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
-            @Named("TrellisProfileCache") final CacheService<String, String> cache) {
+            @TrellisProfileCache final CacheService<String, String> cache) {
         this(namespaceService, htmlSerializer, cache,
                 ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_PROFILES, ""),
                 ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_DOMAINS, ""));
