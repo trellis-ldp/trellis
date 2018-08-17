@@ -13,6 +13,7 @@
  */
 package org.trellisldp.io;
 
+import org.trellisldp.api.CacheService.TrellisProfileCache;
 import org.trellisldp.api.NoopCacheService;
 
 /**

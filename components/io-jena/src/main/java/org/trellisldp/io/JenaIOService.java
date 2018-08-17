@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package org.trellisldp.io;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -84,6 +83,7 @@ import org.apache.jena.update.UpdateException;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.CacheService.TrellisProfileCache;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
