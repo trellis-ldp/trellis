@@ -11,13 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.trellisldp.io;
 
-import org.trellisldp.api.NoopCacheService;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import org.trellisldp.api.CacheService;
 
 /**
- * A specialized no-op cache.
+ * A {@link CacheService} used for JSON-LD profiles.
+ *
  */
-@TrellisProfileCache
-public class NoopProfileCache extends NoopCacheService<String, String> {
+@java.lang.annotation.Documented
+@java.lang.annotation.Retention(RUNTIME)
+@javax.inject.Qualifier
+public @interface TrellisProfileCache {
+
 }

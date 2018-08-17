@@ -56,7 +56,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Graph;
@@ -157,7 +156,7 @@ public class JenaIOService implements IOService {
     @Inject
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
-            @Named("TrellisProfileCache") final CacheService<String, String> cache) {
+            @TrellisProfileCache final CacheService<String, String> cache) {
         this(namespaceService, htmlSerializer, cache,
                 ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_PROFILES, ""),
                 ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_DOMAINS, ""));
