@@ -48,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -78,6 +79,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -186,8 +189,9 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
-        assertEquals(NOT_MODIFIED, handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-                .build().getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))).getResponse();
+        assertEquals(NOT_MODIFIED, res.getStatusInfo());
     }
 
     @Test
@@ -200,8 +204,9 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
-        assertEquals(NOT_MODIFIED, handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-                .build().getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))).getResponse();
+        assertEquals(NOT_MODIFIED, res.getStatusInfo());
     }
 
     @Test
@@ -231,8 +236,9 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
-        assertEquals(NOT_ACCEPTABLE, handler.getRepresentation(handler.standardHeaders(handler.initialize(
-                            mockResource))).build().getStatusInfo());
+        final Response res = assertThrows(NotAcceptableException.class, () ->
+                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))).getResponse();
+        assertEquals(NOT_ACCEPTABLE, res.getStatusInfo());
     }
 
     @Test

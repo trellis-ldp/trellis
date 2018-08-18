@@ -810,6 +810,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         "Access-Control-Max-Age", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods")));
     }
 
+    @Test
+    public void testGetException() {
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        }));
+        final Response res = target(RESOURCE_PATH).request().get();
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+    }
+
     /* ******************************* *
      *            OPTIONS Tests
      * ******************************* */
@@ -915,6 +924,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_NO_CONTENT, res.getStatus());
         assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
         assertAll(checkNullHeaders(res, asList(ACCEPT_PATCH, ACCEPT_POST)));
+    }
+
+    @Test
+    public void testOptionsException() {
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        }));
+        final Response res = target(RESOURCE_PATH).request().options();
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     /* ******************************* *
@@ -1211,6 +1229,16 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_OK, res.getStatus());
     }
 
+    @Test
+    public void testPostException() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        }));
+        final Response res = target(RESOURCE_PATH).request().post(entity("", TEXT_TURTLE_TYPE));
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+    }
+
     /* ******************************* *
      *            PUT Tests
      * ******************************* */
@@ -1495,6 +1523,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
     }
 
+    @Test
+    public void testPutException() {
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        }));
+        final Response res = target(RESOURCE_PATH).request().put(entity("", TEXT_TURTLE_TYPE));
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+    }
+
     /* ******************************* *
      *            DELETE Tests
      * ******************************* */
@@ -1594,6 +1631,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
+    }
+
+    @Test
+    public void testDeleteException() {
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        }));
+        final Response res = target(RESOURCE_PATH).request().delete();
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     /* ********************* *
@@ -1801,6 +1847,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         APPLICATION_SPARQL_UPDATE));
 
         assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
+    }
+
+    @Test
+    public void testPatchException() {
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        }));
+        final Response res = target(RESOURCE_PATH).request().method("PATCH", entity("", APPLICATION_SPARQL_UPDATE));
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
     }
 
     /**

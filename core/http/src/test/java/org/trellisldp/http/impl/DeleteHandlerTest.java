@@ -18,11 +18,13 @@ import static java.util.Date.from;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,6 +33,7 @@ import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
@@ -67,8 +70,11 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.deleteResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        assertAll(() ->
+                handler.deleteResource(handler.initialize(mockResource)).handle((val, err) -> {
+                    assertTrue(err.getCause() instanceof WebApplicationException);
+                    return null;
+                }).join());
     }
 
     @Test
@@ -77,8 +83,11 @@ public class DeleteHandlerTest extends HandlerBaseTest {
             .thenReturn(completedFuture(false));
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.deleteResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        assertAll(() ->
+                handler.deleteResource(handler.initialize(mockResource)).handle((val, err) -> {
+                    assertTrue(err.getCause() instanceof WebApplicationException);
+                    return null;
+                }).join());
     }
 
     @Test
@@ -86,11 +95,12 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        final Response res = handler.deleteResource(handler.initialize(mockResource)).join().build();
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.initialize(mockResource)).getResponse();
         assertTrue(res.getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
-                link.getRel().equals(LDP.constrainedBy.getIRIString())));
-        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType());
+            link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
+            link.getRel().equals(LDP.constrainedBy.getIRIString())), "Check links");
+        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType(), "Check media type");
     }
 
     @Test
@@ -100,8 +110,12 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.deleteResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        assertAll(() ->
+                    handler.deleteResource(handler.initialize(mockResource)).handle((val, err) -> {
+                        assertNotNull(err);
+                        assertTrue(err.getCause() instanceof WebApplicationException);
+                        return null;
+                    }).join());
     }
 
     @Test
@@ -113,8 +127,11 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.deleteResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        assertAll(() -> handler.deleteResource(handler.initialize(mockResource)).handle((val, err) -> {
+                assertNotNull(err);
+                assertTrue(err.getCause() instanceof WebApplicationException);
+                return null;
+            }).join());
     }
 
     @Test
@@ -123,7 +140,8 @@ public class DeleteHandlerTest extends HandlerBaseTest {
                 .thenReturn(status(PRECONDITION_FAILED));
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
-        assertEquals(PRECONDITION_FAILED, handler.deleteResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.initialize(mockResource)).getResponse();
+        assertEquals(PRECONDITION_FAILED, res.getStatusInfo());
     }
 }

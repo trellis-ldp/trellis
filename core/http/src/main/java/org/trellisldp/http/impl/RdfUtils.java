@@ -37,6 +37,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
@@ -199,10 +200,9 @@ final class RdfUtils {
      * @param acceptableTypes the types from HTTP headers
      * @param mimeType an additional "default" mimeType to match
      * @return an RDFSyntax or null if there was an error
-     * @throws InvalidSyntaxException if neither a valid RDF syntax nor a fallback content-type is found
      */
     public static Optional<RDFSyntax> getSyntax(final IOService ioService, final List<MediaType> acceptableTypes,
-            final Optional<String> mimeType) throws InvalidSyntaxException {
+            final Optional<String> mimeType) {
         if (acceptableTypes.isEmpty()) {
             return mimeType.isPresent() ? empty() : of(TURTLE);
         }
@@ -218,7 +218,7 @@ final class RdfUtils {
             }
         }
         LOGGER.debug("Valid syntax not found among {} or {}", acceptableTypes, mimeType);
-        throw new InvalidSyntaxException("Valid syntax not found among " + acceptableTypes);
+        throw new NotAcceptableException();
     }
 
     /**

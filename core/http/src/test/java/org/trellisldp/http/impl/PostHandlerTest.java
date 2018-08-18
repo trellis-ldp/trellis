@@ -27,6 +27,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -44,6 +45,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -154,7 +157,8 @@ public class PostHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = assertThrows(BadRequestException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
 
         assertEquals(BAD_REQUEST, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -222,8 +226,9 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        assertEquals(BAD_REQUEST, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .join().build().getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
+        assertEquals(BAD_REQUEST, res.getStatusInfo());
     }
 
     @Test
@@ -233,8 +238,9 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        assertEquals(BAD_REQUEST, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .join().build().getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
+        assertEquals(BAD_REQUEST, res.getStatusInfo());
     }
 
     @Test
@@ -245,8 +251,9 @@ public class PostHandlerTest extends HandlerBaseTest {
         final File entity = new File(new File(getClass().getResource("/simpleData.txt").getFile()).getParent());
         final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .join().build().getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -256,8 +263,9 @@ public class PostHandlerTest extends HandlerBaseTest {
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
         final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, baseUrl);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .join().build().getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test

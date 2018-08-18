@@ -23,7 +23,6 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.Response.Status.GONE;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -41,6 +40,8 @@ import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
@@ -85,12 +86,11 @@ public class OptionsHandler extends BaseLdpHandler {
     public ResponseBuilder initialize(final Resource resource) {
 
         if (MISSING_RESOURCE.equals(resource)) {
-            return status(NOT_FOUND);
+            throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
-            return status(GONE);
+            throw new WebApplicationException(GONE);
         }
 
-        mayContinue(true);
         setResource(resource);
         return status(NO_CONTENT);
     }
@@ -102,10 +102,6 @@ public class OptionsHandler extends BaseLdpHandler {
      * @return the response builder
      */
     public ResponseBuilder ldpOptions(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return builder;
-        }
-
         LOGGER.debug("OPTIONS request for {}", getIdentifier());
 
         ldpResourceTypes(getResource().getInteractionModel())

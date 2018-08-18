@@ -19,7 +19,11 @@ import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import static javax.ws.rs.HttpMethod.DELETE;
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.HEAD;
+import static javax.ws.rs.HttpMethod.OPTIONS;
+import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
@@ -27,8 +31,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.GONE;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -37,6 +39,7 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
+import static org.trellisldp.http.domain.HttpConstants.PATCH;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -46,7 +49,12 @@ import java.io.File;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -117,26 +125,24 @@ public class PostHandler extends MutatingLdpHandler {
     public ResponseBuilder initialize(final Resource parent, final Resource child) {
         if (MISSING_RESOURCE.equals(parent)) {
             // Can't POST to a missing resource
-            return status(NOT_FOUND);
+            throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(parent)) {
             // Can't POST to a deleted resource
-            return status(GONE);
+            throw new WebApplicationException(GONE);
         } else if (ACL.equals(getRequest().getExt())
                 || ldpResourceTypes(parent.getInteractionModel()).noneMatch(LDP.Container::equals)) {
             // Can't POST to an ACL resource or non-Container
-            return status(METHOD_NOT_ALLOWED);
+            throw new NotAllowedException(GET, Stream.of(HEAD, OPTIONS, PATCH, PUT, DELETE).toArray(String[]::new));
         } else if (!MISSING_RESOURCE.equals(child) && !DELETED_RESOURCE.equals(child)) {
-            return status(CONFLICT);
+            throw new WebApplicationException(CONFLICT);
         } else if (!supportsInteractionModel(ldpType)) {
-            return status(BAD_REQUEST)
-                .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
-                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE);
+            throw new BadRequestException("Unsupported interaction model provided", status(BAD_REQUEST)
+                .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString()).build());
         } else if (ldpType.equals(LDP.NonRDFSource) && nonNull(rdfSyntax)) {
             LOGGER.error("Cannot save {} as a NonRDFSource with RDF syntax", getIdentifier());
-            return status(BAD_REQUEST);
+            throw new BadRequestException("Cannot save resource as a NonRDFSource with RDF syntax");
         }
 
-        mayContinue(true);
         return status(CREATED);
     }
 
@@ -146,10 +152,6 @@ public class PostHandler extends MutatingLdpHandler {
      * @return the response builder
      */
     public CompletableFuture<ResponseBuilder> createResource(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return completedFuture(builder);
-        }
-
         LOGGER.debug("Creating resource as {}", getIdentifier());
 
         final TrellisDataset mutable = TrellisDataset.createDataset();
@@ -168,38 +170,21 @@ public class PostHandler extends MutatingLdpHandler {
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
             // Check the expected digest value
-            final ResponseBuilder digestCheck = checkForBadDigest(getRequest().getDigest());
-            if (nonNull(digestCheck)) {
-                mayContinue(false);
-                return completedFuture(digestCheck);
-            }
+            checkForBadDigest(getRequest().getDigest());
 
             final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
-            final ResponseBuilder persist = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
-            if (nonNull(persist)) {
-                mayContinue(false);
-                return completedFuture(persist);
-            }
+            persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
 
             binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
         } else {
-            final ResponseBuilder err = readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE),
-                    mutable);
-            if (nonNull(err)) {
-                mayContinue(false);
-                return completedFuture(err);
-            }
+            readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
 
             // Check for any constraints
-            final ResponseBuilder constraints = checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null),
-                    ldpType, ofNullable(rdfSyntax).orElse(TURTLE));
-            if (nonNull(constraints)) {
-                mayContinue(false);
-                return completedFuture(constraints);
-            }
+            checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null), ldpType,
+                    ofNullable(rdfSyntax).orElse(TURTLE));
 
             binary = null;
         }

@@ -34,12 +34,8 @@ import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.Status.GONE;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
-import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -82,6 +78,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -137,28 +135,22 @@ public class GetHandler extends BaseLdpHandler {
     public ResponseBuilder initialize(final Resource resource) {
 
         if (MISSING_RESOURCE.equals(resource)) {
-            return status(NOT_FOUND);
+            throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
-            return status(GONE);
+            throw new WebApplicationException(GONE);
         }
 
         LOGGER.debug("Acceptable media types: {}", getRequest().getHeaders().getAcceptableMediaTypes());
 
-        try {
-            this.syntax = getSyntax(getServices().getIOService(),
-                getRequest().getHeaders().getAcceptableMediaTypes(), resource.getBinary()
-                    .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
-                    .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM))).orElse(null);
-        } catch (final InvalidSyntaxException ex) {
-            LOGGER.debug("No acceptable syntax found: {}", ex.getMessage());
-            return status(NOT_ACCEPTABLE);
-        }
+        this.syntax = getSyntax(getServices().getIOService(),
+            getRequest().getHeaders().getAcceptableMediaTypes(), resource.getBinary()
+                .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
+                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM))).orElse(null);
 
         if (ACL.equals(getRequest().getExt()) && !resource.hasAcl()) {
-            return status(NOT_FOUND);
+            throw new NotFoundException();
         }
 
-        mayContinue(true);
         setResource(resource);
         return ok();
     }
@@ -169,9 +161,6 @@ public class GetHandler extends BaseLdpHandler {
      * @return the response builder
      */
     public ResponseBuilder standardHeaders(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return builder;
-        }
 
         // Standard HTTP Headers
         builder.lastModified(from(getResource().getModified())).header(VARY, ACCEPT);
@@ -209,10 +198,6 @@ public class GetHandler extends BaseLdpHandler {
      * @return the response builder
      */
     public ResponseBuilder getRepresentation(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return builder;
-        }
-
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
         getResource().getBinary().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
@@ -251,9 +236,6 @@ public class GetHandler extends BaseLdpHandler {
      * @return the response builder
      */
     public ResponseBuilder addMementoHeaders(final ResponseBuilder builder, final List<Range<Instant>> mementos) {
-        if (!mayContinue()) {
-            return builder;
-        }
         // Only show memento links for the user-managed graph (not ACL)
         if (!ACL.equals(getRequest().getExt())) {
             builder.link(getIdentifier(), "original timegate")
@@ -307,10 +289,7 @@ public class GetHandler extends BaseLdpHandler {
 
         // Check for a cache hit
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer), true);
-        final ResponseBuilder cache = checkCache(getResource().getModified(), etag);
-        if (nonNull(cache)) {
-            return cache;
-        }
+        checkCache(getResource().getModified(), etag);
 
         builder.tag(etag);
         addAllowHeaders(builder);
@@ -354,14 +333,11 @@ public class GetHandler extends BaseLdpHandler {
         final Instant mod = getResource().getBinary().map(Binary::getModified).orElse(null);
         if (isNull(mod)) {
             LOGGER.error("Could not access binary metadata for {}", getResource().getIdentifier());
-            return status(INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Could not access binary metadata");
         }
 
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", mod, null));
-        final ResponseBuilder cache = checkCache(mod, etag);
-        if (nonNull(cache)) {
-            return cache;
-        }
+        checkCache(mod, etag);
 
         // Set last-modified to be the binary's last-modified value
         builder.lastModified(from(mod));
@@ -369,7 +345,7 @@ public class GetHandler extends BaseLdpHandler {
         final IRI dsid = getResource().getBinary().map(Binary::getIdentifier).orElse(null);
         if (isNull(dsid)) {
             LOGGER.error("Could not access binary metadata for {}", getResource().getIdentifier());
-            return status(INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Could not access binary metadata");
         }
 
         builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag);
@@ -390,11 +366,10 @@ public class GetHandler extends BaseLdpHandler {
                         LOGGER.error("Error computing digest on content", err);
                         return null;
                     }).join();
-                if (nonNull(digest)) {
-                    builder.header(DIGEST, algorithm.get().toLowerCase() + "=" + digest);
-                } else {
-                    return status(INTERNAL_SERVER_ERROR);
+                if (isNull(digest)) {
+                    throw new WebApplicationException("Error computing digest");
                 }
+                builder.header(DIGEST, algorithm.get().toLowerCase() + "=" + digest);
             }
         }
 
