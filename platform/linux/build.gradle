@@ -82,3 +82,11 @@ assembleDist {
     dependsOn signBuildDeb
 }
 
+gradle.taskGraph.whenReady({ graph ->
+    tasks.withType(AbstractArchiveTask).each { archive ->
+        archive.doLast {
+            ant.checksum file: archive.archivePath, algorithm: 'sha-256', format: 'MD5SUM', fileext: '.sha256'
+        }
+    }
+})
+
