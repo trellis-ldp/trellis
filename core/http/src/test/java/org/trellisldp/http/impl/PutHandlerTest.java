@@ -29,7 +29,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,12 +94,10 @@ public class PutHandlerTest extends HandlerBaseTest {
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
-        assertAll(() ->
-                handler.setResource(handler.initialize(mockResource)).handle((val, err) -> {
-                    assertNotNull(err);
-                    assertTrue(err.getCause() instanceof WebApplicationException);
-                    return null;
-                }).join());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource)))).getResponse();
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -264,12 +261,9 @@ public class PutHandlerTest extends HandlerBaseTest {
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
-        assertAll(() ->
-                handler.setResource(handler.initialize(mockResource)).handle((val, err) -> {
-                    assertNotNull(err);
-                    assertTrue(err.getCause() instanceof WebApplicationException);
-                    return null;
-                }).join());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource)))).getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test

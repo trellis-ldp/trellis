@@ -21,13 +21,13 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -92,12 +92,10 @@ public class PatchHandlerTest extends HandlerBaseTest {
 
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
 
-        assertAll(() ->
-                handler.updateResource(handler.initialize(mockResource)).handle((val, err) -> {
-                    assertNotNull(err);
-                    assertTrue(err.getCause() instanceof WebApplicationException);
-                    return null;
-                }).join());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                unwrapAsyncError(handler.updateResource(handler.initialize(mockResource)))).getResponse();
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -189,12 +187,10 @@ public class PatchHandlerTest extends HandlerBaseTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        assertAll(() ->
-                patchHandler.updateResource(patchHandler.initialize(mockResource)).handle((val, err) -> {
-                    assertNotNull(err);
-                    assertTrue(err.getCause() instanceof WebApplicationException);
-                    return null;
-                }).join());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockResource)))).getResponse();
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test

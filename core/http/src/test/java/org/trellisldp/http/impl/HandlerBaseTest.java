@@ -55,9 +55,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Request;
@@ -185,6 +188,17 @@ abstract class HandlerBaseTest {
                 () -> assertEquals(responseTypes.contains(LDP.DirectContainer), types.contains(LDP.DirectContainer)),
                 () -> assertEquals(responseTypes.contains(LDP.IndirectContainer),
                                  types.contains(LDP.IndirectContainer)));
+    }
+
+    protected void unwrapAsyncError(final CompletableFuture async) {
+        try {
+            async.join();
+        } catch (final CompletionException ex) {
+            if (ex.getCause() instanceof WebApplicationException) {
+                throw (WebApplicationException) ex.getCause();
+            }
+            throw ex;
+        }
     }
 
     protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
