@@ -17,18 +17,13 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.GONE;
-import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
 import static javax.ws.rs.core.Response.ok;
-import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
@@ -52,11 +47,14 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.NotSupportedException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -88,9 +86,7 @@ public class PatchHandler extends MutatingLdpHandler {
     private final IRI graphName;
     private final IRI otherGraph;
     private final RDFSyntax syntax;
-    private final RDFSyntax outputSyntax;
     private final String preference;
-    private final IRI profile;
 
     /**
      * Create a handler for PATCH operations.
@@ -109,18 +105,8 @@ public class PatchHandler extends MutatingLdpHandler {
         this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
         this.syntax = getServices().getIOService().supportedUpdateSyntaxes().stream()
             .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
-        Optional<RDFSyntax> outSyntax;
-        try {
-            outSyntax = getSyntax(getServices().getIOService(),
-                req.getHeaders().getAcceptableMediaTypes(), empty());
-        } catch (final InvalidSyntaxException ex) {
-            outSyntax = empty();
-        }
-        this.outputSyntax = outSyntax.orElse(null);
         this.preference = ofNullable(req.getPrefer()).flatMap(Prefer::getPreference)
             .filter(PREFER_REPRESENTATION::equals).orElse(null);
-        this.profile = ofNullable(getProfile(req.getHeaders().getAcceptableMediaTypes(), outputSyntax)).orElseGet(() ->
-                getDefaultProfile(outputSyntax, getIdentifier()));
     }
 
     /**
@@ -133,33 +119,27 @@ public class PatchHandler extends MutatingLdpHandler {
 
         if (MISSING_RESOURCE.equals(resource)) {
             // Can't patch non-existent resources
-            return status(NOT_FOUND);
+            throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
             // Can't patch non-existent resources
-            return status(GONE);
+            throw new WebApplicationException(GONE);
         } else if (isNull(updateBody)) {
             LOGGER.error("Missing body for update: {}", resource.getIdentifier());
-            return status(BAD_REQUEST);
+            throw new BadRequestException("Missing body for update");
         } else if (!supportsInteractionModel(LDP.RDFSource)) {
-            return status(BAD_REQUEST)
+            throw new BadRequestException(status(BAD_REQUEST)
                 .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
-                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE);
+                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
         } else if (isNull(syntax)) {
             // Get the incoming syntax and check that the underlying I/O service supports it
             LOGGER.warn("Content-Type: {} not supported", getRequest().getContentType());
-            return status(UNSUPPORTED_MEDIA_TYPE);
-        } else if (isNull(outputSyntax)) {
-            return status(NOT_ACCEPTABLE);
+            throw new NotSupportedException();
         }
         // Check the cache headers
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), resource.getModified(),
                     getRequest().getPrefer()));
-        final ResponseBuilder cache = checkCache(resource.getModified(), etag);
-        if (nonNull(cache)) {
-            return cache;
-        }
+        checkCache(resource.getModified(), etag);
 
-        mayContinue(true);
         setResource(resource);
         return ok();
     }
@@ -171,10 +151,6 @@ public class PatchHandler extends MutatingLdpHandler {
      * @return a response builder promise
      */
     public CompletableFuture<ResponseBuilder> updateResource(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return completedFuture(builder);
-        }
-
         LOGGER.debug("Updating {} via PATCH", getIdentifier());
 
         // Add the LDP link types
@@ -195,6 +171,10 @@ public class PatchHandler extends MutatingLdpHandler {
 
     private Function<Boolean, ResponseBuilder> handleResponse(final ResponseBuilder builder,
             final List<Triple> triples) {
+        final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
+                getRequest().getHeaders().getAcceptableMediaTypes(), empty()).orElse(null);
+        final IRI profile = ofNullable(getProfile(getRequest().getHeaders().getAcceptableMediaTypes(), outputSyntax))
+            .orElseGet(() -> getDefaultProfile(outputSyntax, getIdentifier()));
         return success -> {
             if (success) {
                 if (nonNull(preference)) {
@@ -213,9 +193,7 @@ public class PatchHandler extends MutatingLdpHandler {
                 }
                 return builder;
             }
-            mayContinue(false);
-            return serverError().type(TEXT_PLAIN_TYPE)
-                    .entity("Unable to persist data. Please consult the logs for more information");
+            throw new WebApplicationException("Unable to persist data. Please consult the logs for more information");
         };
     }
 
@@ -258,8 +236,7 @@ public class PatchHandler extends MutatingLdpHandler {
             triples = updateGraph(syntax, graphName);
         } catch (final RuntimeTrellisException ex) {
             LOGGER.warn("Invalid RDF: {}", ex.getMessage());
-            mayContinue(false);
-            return completedFuture(status(BAD_REQUEST));
+            throw new BadRequestException("Invalid RDF: " + ex.getMessage());
         }
 
         triples.stream().map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
@@ -274,8 +251,7 @@ public class PatchHandler extends MutatingLdpHandler {
         if (!violations.isEmpty()) {
             final ResponseBuilder err = status(CONFLICT);
             violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
-            mayContinue(false);
-            return completedFuture(err);
+            throw new WebApplicationException(err.build());
         }
 
         // When updating User or ACL triples, be sure to add the other category to the dataset

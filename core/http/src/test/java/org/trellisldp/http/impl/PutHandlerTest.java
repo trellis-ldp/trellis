@@ -29,6 +29,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,6 +46,8 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
@@ -75,7 +78,9 @@ public class PutHandlerTest extends HandlerBaseTest {
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
-        assertEquals(CONFLICT, handler.setResource(handler.initialize(mockResource)).join().build().getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
+        assertEquals(CONFLICT, res.getStatusInfo());
     }
 
     @Test
@@ -89,8 +94,10 @@ public class PutHandlerTest extends HandlerBaseTest {
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource)))).getResponse();
+
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -133,8 +140,9 @@ public class PutHandlerTest extends HandlerBaseTest {
         final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile() + ".non-existent-file");
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -208,8 +216,9 @@ public class PutHandlerTest extends HandlerBaseTest {
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
-        assertEquals(PRECONDITION_FAILED, handler.setResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
+        assertEquals(PRECONDITION_FAILED, res.getStatusInfo());
     }
 
     @Test
@@ -232,7 +241,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
-        final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
+        final Response res = assertThrows(BadRequestException.class, () ->
+                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
 
         assertEquals(BAD_REQUEST, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -251,8 +261,9 @@ public class PutHandlerTest extends HandlerBaseTest {
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource)))).getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     @Test
@@ -266,8 +277,9 @@ public class PutHandlerTest extends HandlerBaseTest {
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.setResource(handler.initialize(mockResource)).join().build()
-                .getStatusInfo());
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
     }
 
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {

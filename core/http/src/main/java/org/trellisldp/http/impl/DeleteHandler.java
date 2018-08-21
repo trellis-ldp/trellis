@@ -13,14 +13,10 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.util.Objects.nonNull;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.GONE;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.serverError;
+import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -36,6 +32,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -82,26 +80,22 @@ public class DeleteHandler extends MutatingLdpHandler {
         // Check that the persistence layer supports LDP-R
         if (MISSING_RESOURCE.equals(resource)) {
             // Can't delete a non-existent resources
-            return status(NOT_FOUND);
+            throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
             // Can't delete a non-existent resources
-            return status(GONE);
+            throw new WebApplicationException(GONE);
         } else if (!supportsInteractionModel(LDP.Resource)) {
-            return status(BAD_REQUEST)
+            throw new WebApplicationException(status(BAD_REQUEST)
                 .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
-                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE);
+                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
         }
 
         // Check the cache
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), resource.getModified(), null));
-        final ResponseBuilder cache = checkCache(resource.getModified(), etag);
-        if (nonNull(cache)) {
-            return cache;
-        }
+        checkCache(resource.getModified(), etag);
 
-        mayContinue(true);
         setResource(resource);
-        return status(NO_CONTENT);
+        return noContent();
     }
 
     /**
@@ -111,9 +105,6 @@ public class DeleteHandler extends MutatingLdpHandler {
      * @return a response builder promise
      */
     public CompletableFuture<ResponseBuilder> deleteResource(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return completedFuture(builder);
-        }
 
         LOGGER.debug("Deleting {}", getIdentifier());
 
@@ -170,9 +161,7 @@ public class DeleteHandler extends MutatingLdpHandler {
             if (success) {
                 return builder;
             }
-            mayContinue(false);
-            return serverError().type(TEXT_PLAIN_TYPE)
-                .entity("Unable to persist data. Please consult the logs for more information");
+            throw new WebApplicationException("Unable to persist data. Please consult the logs for more information");
         };
     }
 }

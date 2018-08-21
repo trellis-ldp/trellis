@@ -14,9 +14,8 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Date.from;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
@@ -25,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -55,7 +56,6 @@ class BaseLdpHandler {
     private final LdpRequest request;
     private final ServiceBundler services;
 
-    private Boolean continuable = false;
     private Resource resource;
 
     /**
@@ -69,22 +69,6 @@ class BaseLdpHandler {
         this.requestBaseUrl = getRequestBaseUrl(request, baseUrl);
         this.request = request;
         this.services = services;
-    }
-
-    /**
-     * Get the continuability of the handler.
-     * @return true if subsequent hander functions may proceed.
-     */
-    protected Boolean mayContinue() {
-        return continuable;
-    }
-
-    /**
-     * Set the continuability of the handler.
-     * @param continuable when set to false, subsequent handler functions will be skipped
-     */
-    protected void mayContinue(final Boolean continuable) {
-        this.continuable = continuable;
     }
 
     /**
@@ -107,15 +91,18 @@ class BaseLdpHandler {
      * Check the cache.
      * @param modified the modification date
      * @param etag the resource's etag
-     * @return a response builder if there is an error; otherwise return null
      */
-    protected ResponseBuilder checkCache(final Instant modified, final EntityTag etag) {
+    protected void checkCache(final Instant modified, final EntityTag etag) {
+        ResponseBuilder builder = null;
         try {
-            return getRequest().getRequest().evaluatePreconditions(from(modified), etag);
+            builder = getRequest().getRequest().evaluatePreconditions(from(modified), etag);
         } catch (final Exception ex) {
-            LOGGER.warn("Error parsing request: {}", ex.getMessage());
+            LOGGER.warn("Error processing cache request: {}", ex.getMessage());
+            throw new BadRequestException();
         }
-        return status(BAD_REQUEST);
+        if (nonNull(builder)) {
+            throw new WebApplicationException(builder.build());
+        }
     }
 
     /**

@@ -16,11 +16,8 @@ package org.trellisldp.http.impl;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
@@ -40,6 +37,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -104,10 +103,6 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @return a response builder promise
      */
     public CompletableFuture<ResponseBuilder> updateMemento(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return completedFuture(builder);
-        }
-
         return getServices().getResourceService().get(getInternalId())
             .thenCompose(getServices().getMementoService()::put)
             .exceptionally(ex -> {
@@ -146,9 +141,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param graphName the target graph
      * @param syntax the entity syntax
      * @param dataset the dataset
-     * @return a response builder if there was an error; otherwise return null
      */
-    protected ResponseBuilder readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax,
+    protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax,
             final TrellisDataset dataset) {
         try (final InputStream input = new FileInputStream(entity)) {
             getServices().getIOService().read(input, syntax, getIdentifier())
@@ -159,12 +153,11 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .map(toQuad(graphName)).forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
             LOGGER.error("Invalid RDF content: {}", ex.getMessage());
-            return status(BAD_REQUEST);
+            throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
         } catch (final IOException ex) {
             LOGGER.error("Error processing input", ex);
-            return status(INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Error processing input");
         }
-        return null;
     }
 
     /**
@@ -172,10 +165,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param graph the graph
      * @param type the LDP interaction model
      * @param syntax the output syntax
-     * @return a response builder if an error occurred
      */
-    protected ResponseBuilder checkConstraint(final Graph graph, final IRI type, final RDFSyntax syntax) {
-        return ofNullable(graph).map(g ->
+    protected void checkConstraint(final Graph graph, final IRI type, final RDFSyntax syntax) {
+        ofNullable(graph).map(g ->
                 constraintServices.stream().parallel().flatMap(svc -> svc.constrainedBy(type, g)).collect(toList()))
             .filter(violations -> !violations.isEmpty())
             .map(violations -> {
@@ -189,43 +181,42 @@ class MutatingLdpHandler extends BaseLdpHandler {
                     }
                 };
                 return err.entity(stream);
-            }).orElse(null);
+            }).ifPresent(err -> {
+                throw new WebApplicationException(err.build());
+            });
     }
 
     /**
      * Check for a bad digest value.
      * @param digest the digest header, if present
-     * @return a response builder if there was an error; otherwise null
      */
-    protected ResponseBuilder checkForBadDigest(final Digest digest) {
+    protected void checkForBadDigest(final Digest digest) {
         if (nonNull(digest)) {
             try (final InputStream input = new FileInputStream(entity)) {
                 final String d = getEncoder().encodeToString(updateDigest(getDigest(digest.getAlgorithm()), input)
                         .digest());
                 if (!d.equals(digest.getDigest())) {
                     LOGGER.error("Supplied digest value does not match the server-computed digest");
-                    return status(BAD_REQUEST);
+                    throw new BadRequestException("Supplied digest value does not match the server-computed digest.");
                 }
             } catch (final IllegalArgumentException ex) {
                 LOGGER.error("Invalid algorithm provided for digest. {} is not supported {}",
                         digest.getAlgorithm(), ex.getMessage());
-                return status(BAD_REQUEST);
+                throw new BadRequestException("Invalid/unsupported algorithm provided for digest.");
             } catch (final IOException ex) {
                 LOGGER.error("Error computing checksum on input", ex);
-                return status(INTERNAL_SERVER_ERROR);
+                throw new WebApplicationException("Error computing checksum on input.");
             }
         }
-        return null;
     }
 
-    protected ResponseBuilder persistContent(final IRI contentLocation, final Map<String, String> metadata) {
+    protected void persistContent(final IRI contentLocation, final Map<String, String> metadata) {
         try (final InputStream input = new FileInputStream(entity)) {
             getServices().getBinaryService().setContent(contentLocation, input, metadata).join();
         } catch (final IOException ex) {
             LOGGER.error("Error saving binary content", ex);
-            return status(INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Error saving binary content");
         }
-        return null;
     }
 
     protected CompletableFuture<Boolean> handleResourceReplacement(final TrellisDataset mutable,

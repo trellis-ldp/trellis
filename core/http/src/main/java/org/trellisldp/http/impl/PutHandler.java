@@ -19,16 +19,12 @@ import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -53,6 +49,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
@@ -128,18 +127,14 @@ public class PutHandler extends MutatingLdpHandler {
                 etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()), true);
             }
             // Check the cache
-            final ResponseBuilder cache = checkCache(modified, etag);
-            if (nonNull(cache)) {
-                return cache;
-            }
+            checkCache(modified, etag);
         }
 
         // One cannot put binaries into the ACL graph
         if (ACL.equals(getRequest().getExt()) && isNull(rdfSyntax)) {
-            return status(NOT_ACCEPTABLE);
+            throw new NotAcceptableException();
         }
 
-        mayContinue(true);
         return status(NO_CONTENT);
     }
 
@@ -149,10 +144,6 @@ public class PutHandler extends MutatingLdpHandler {
      * @return the response builder
      */
     public CompletableFuture<ResponseBuilder> setResource(final ResponseBuilder builder) {
-        if (!mayContinue()) {
-            return completedFuture(builder);
-        }
-
         LOGGER.debug("Setting resource as {}", getIdentifier());
 
         final IRI ldpType = isBinaryDescription() ? LDP.NonRDFSource : ofNullable(getRequest().getLink())
@@ -162,18 +153,16 @@ public class PutHandler extends MutatingLdpHandler {
 
         // Verify that the persistence layer supports the given interaction model
         if (!supportsInteractionModel(ldpType)) {
-            mayContinue(false);
-            return completedFuture(status(BAD_REQUEST)
-                .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
-                .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE));
+            throw new BadRequestException("Unsupported interaction model provided",
+                    status(BAD_REQUEST).link(UnsupportedInteractionModel.getIRIString(),
+                        LDP.constrainedBy.getIRIString()).build());
         }
 
         // It is not possible to change the LDP type to a type that is not a subclass
         if (nonNull(getResource()) && !isBinaryDescription()
                 && ldpResourceTypes(ldpType).noneMatch(getResource().getInteractionModel()::equals)) {
             LOGGER.error("Cannot change the LDP type to {} for {}", ldpType, getIdentifier());
-            mayContinue(false);
-            return completedFuture(status(CONFLICT));
+            throw new WebApplicationException("Cannot change the LDP type to " + ldpType, status(CONFLICT).build());
         }
 
         LOGGER.debug("Using LDP Type: {}", ldpType);
@@ -203,42 +192,27 @@ public class PutHandler extends MutatingLdpHandler {
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
             // Check the expected digest value
-            final ResponseBuilder digest = checkForBadDigest(getRequest().getDigest());
-            if (nonNull(digest)) {
-                mayContinue(false);
-                return completedFuture(digest);
-            }
+            checkForBadDigest(getRequest().getDigest());
 
             final String mimeType = ofNullable(getRequest().getContentType()).orElse(APPLICATION_OCTET_STREAM);
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
-            final ResponseBuilder persist = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
-            if (nonNull(persist)) {
-                mayContinue(false);
-                return completedFuture(persist);
-            }
+            persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
 
             binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
         } else {
-            final ResponseBuilder readError = readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE),
-                    mutable);
-            if (nonNull(readError)) {
-                mayContinue(false);
-                return completedFuture(readError);
-            }
+            readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
 
             // Check for any constraints
-            final ResponseBuilder constraintError = ACL.equals(getRequest().getExt())
-                ? checkConstraint(mutable.getGraph(PreferAccessControl).orElse(null), LDP.RDFSource,
-                        ofNullable(rdfSyntax).orElse(TURTLE))
-                : checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null), ldpType,
+            if (ACL.equals(getRequest().getExt())) {
+                checkConstraint(mutable.getGraph(PreferAccessControl).orElse(null), LDP.RDFSource,
                         ofNullable(rdfSyntax).orElse(TURTLE));
-
-            if (nonNull(constraintError)) {
-                mayContinue(false);
-                return completedFuture(constraintError);
+            } else {
+                checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null), ldpType,
+                        ofNullable(rdfSyntax).orElse(TURTLE));
             }
+
             binary = ofNullable(getResource()).flatMap(Resource::getBinary).orElse(null);
         }
 
@@ -271,9 +245,7 @@ public class PutHandler extends MutatingLdpHandler {
                 }
                 return builder;
             }
-            mayContinue(false);
-            return serverError().type(TEXT_PLAIN_TYPE)
-                    .entity("Unable to persist data. Please consult the logs for more information");
+            throw new WebApplicationException("Unable to persist data. Please consult the logs for more information");
         };
     }
 

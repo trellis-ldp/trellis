@@ -29,7 +29,6 @@ import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.Response.Status.FOUND;
-import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
@@ -159,11 +158,7 @@ public final class MementoResource {
             .link(RDFSource.getIRIString(), "type").header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
         final Optional<RDFSyntax> syntax;
-        try {
-            syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT));
-        } catch (final InvalidSyntaxException ex) {
-            return status(NOT_ACCEPTABLE);
-        }
+        syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT));
 
         if (syntax.isPresent()) {
             final RDFSyntax rdfSyntax = syntax.get();

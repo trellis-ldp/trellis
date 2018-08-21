@@ -16,11 +16,11 @@ package org.trellisldp.http;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
@@ -45,16 +45,19 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.Provider;
 
@@ -186,7 +189,8 @@ public class LdpResource implements ContainerRequestFilter {
     @GET
     @Timed
     public void getResource(@Suspended final AsyncResponse response, @BeanParam final LdpRequest request) {
-        fetchResource(request).thenApply(ResponseBuilder::build).thenApply(response::resume);
+        fetchResource(request).thenApply(ResponseBuilder::build).exceptionally(this::handleException)
+            .thenApply(response::resume);
     }
 
     /**
@@ -201,7 +205,8 @@ public class LdpResource implements ContainerRequestFilter {
     @HEAD
     @Timed
     public void getResourceHeaders(@Suspended final AsyncResponse response, @BeanParam final LdpRequest request) {
-        fetchResource(request).thenApply(ResponseBuilder::build).thenApply(response::resume);
+        fetchResource(request).thenApply(ResponseBuilder::build).exceptionally(this::handleException)
+            .thenApply(response::resume);
     }
 
     /**
@@ -219,7 +224,8 @@ public class LdpResource implements ContainerRequestFilter {
         final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, nonNull(req.getVersion()), urlBase);
 
         fetchTrellisResource(identifier, req.getVersion()).thenApply(optionsHandler::initialize)
-            .thenApply(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build).thenApply(response::resume);
+            .thenApply(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
+            .exceptionally(this::handleException).thenApply(response::resume);
     }
 
     /**
@@ -240,7 +246,7 @@ public class LdpResource implements ContainerRequestFilter {
 
         trellis.getResourceService().get(identifier).thenApply(patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)
-            .thenApply(ResponseBuilder::build).thenApply(response::resume);
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
     /**
@@ -258,7 +264,8 @@ public class LdpResource implements ContainerRequestFilter {
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, urlBase);
 
         trellis.getResourceService().get(identifier).thenApply(deleteHandler::initialize)
-            .thenCompose(deleteHandler::deleteResource).thenApply(ResponseBuilder::build).thenApply(response::resume);
+            .thenCompose(deleteHandler::deleteResource).thenApply(ResponseBuilder::build)
+            .exceptionally(this::handleException).thenApply(response::resume);
     }
 
     /**
@@ -288,7 +295,7 @@ public class LdpResource implements ContainerRequestFilter {
         trellis.getResourceService().get(parent)
             .thenCombine(trellis.getResourceService().get(child), postHandler::initialize)
             .thenCompose(postHandler::createResource).thenCompose(postHandler::updateMemento)
-            .thenApply(ResponseBuilder::build).thenApply(response::resume);
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
     /**
@@ -308,7 +315,7 @@ public class LdpResource implements ContainerRequestFilter {
 
         trellis.getResourceService().get(identifier).thenApply(putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)
-            .thenApply(ResponseBuilder::build).thenApply(response::resume);
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
     private String getBaseUrl(final LdpRequest req) {
@@ -332,9 +339,12 @@ public class LdpResource implements ContainerRequestFilter {
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.debug("Getting timemap resource: {}", req.getPath());
             return trellis.getResourceService().get(identifier)
-                .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) ->
-                        MISSING_RESOURCE.equals(res) ? status(NOT_FOUND)
-                            : new MementoResource(trellis).getTimeMapBuilder(mementos, req, urlBase));
+                .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) -> {
+                    if (MISSING_RESOURCE.equals(res)) {
+                        throw new NotFoundException();
+                    }
+                    return new MementoResource(trellis).getTimeMapBuilder(mementos, req, urlBase);
+                });
 
         // Fetch a timegate
         } else if (nonNull(req.getDatetime())) {
@@ -342,7 +352,7 @@ public class LdpResource implements ContainerRequestFilter {
             return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
                 .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) -> {
                     if (MISSING_RESOURCE.equals(res)) {
-                        return status(NOT_FOUND);
+                        throw new NotFoundException();
                     }
                     return new MementoResource(trellis).getTimeGateBuilder(mementos, req, urlBase);
                 });
@@ -361,5 +371,10 @@ public class LdpResource implements ContainerRequestFilter {
             return trellis.getMementoService().get(identifier, version.getInstant());
         }
         return trellis.getResourceService().get(identifier);
+    }
+
+    private Response handleException(final Throwable err) {
+        return of(err).map(Throwable::getCause).filter(ex -> ex instanceof WebApplicationException)
+            .map(ex -> (WebApplicationException) ex).orElseGet(() -> new WebApplicationException(err)).getResponse();
     }
 }
