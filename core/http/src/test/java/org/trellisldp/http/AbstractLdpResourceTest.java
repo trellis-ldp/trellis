@@ -385,7 +385,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testGetTimegateNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .header(ACCEPT_DATETIME, "Wed, 16 May 2018 13:18:57 GMT").get();
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
     }
 
     @Test
