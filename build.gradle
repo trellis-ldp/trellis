@@ -126,11 +126,10 @@ allprojects { subproj ->
     }
 
     dependencies {
-        testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitVersion}"
-        testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version: "${junitLauncherVersion}"
         testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
         testImplementation("org.apiguardian:apiguardian-api:${apiguardianVersion}")
         testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+        testRuntime("org.junit.platform:junit-platform-launcher:${junitLauncherVersion}")
     }
 
     gradle.projectsEvaluated {
