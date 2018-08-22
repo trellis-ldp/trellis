@@ -13,11 +13,14 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.util.Optional;
 
+import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -88,5 +91,16 @@ class TrellisDataset implements AutoCloseable {
      */
     public static TrellisDataset createDataset() {
         return new TrellisDataset(getInstance().createDataset());
+    }
+
+    @Override
+    public String toString() {
+        return asDataset().stream()
+                        .map(q -> format("%1$s %2$s %3$s %4$s",
+                                        q.getSubject().ntriplesString(),
+                                        q.getPredicate().ntriplesString(),
+                                        q.getObject().ntriplesString(),
+                                        q.getGraphName().map(BlankNodeOrIRI::ntriplesString).orElse("")))
+                        .collect(joining("\n"));
     }
 }

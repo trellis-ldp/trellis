@@ -18,7 +18,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Stream.concat;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -78,13 +77,19 @@ final class RdfUtils {
     /**
      * Get all of the LDP resource (super) types for the given LDP interaction model.
      *
-     * @param interactionModel the interaction model
+     * @param ixnModel the interaction model
      * @return a stream of types
      */
-    public static Stream<IRI> ldpResourceTypes(final IRI interactionModel) {
-        return Stream.of(interactionModel)
-            .filter(type -> nonNull(LDP.getSuperclassOf(type)) || LDP.Resource.equals(type))
-            .flatMap(type -> concat(ldpResourceTypes(LDP.getSuperclassOf(type)), Stream.of(type)));
+    public static Stream<IRI> ldpResourceTypes(final IRI ixnModel) {
+        final Stream.Builder<IRI> supertypes = Stream.builder();
+        if (ixnModel != null) {
+            LOGGER.debug("Finding types that subsume {}", ixnModel.getIRIString());
+            supertypes.add(ixnModel);
+            final IRI superClass = LDP.getSuperclassOf(ixnModel);
+            LOGGER.debug("... including {}", superClass);
+            ldpResourceTypes(superClass).flatMap(RdfUtils::ldpResourceTypes).forEach(supertypes::add);
+        }
+        return supertypes.build();
     }
 
     /**

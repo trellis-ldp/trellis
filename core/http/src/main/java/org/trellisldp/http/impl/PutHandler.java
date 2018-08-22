@@ -169,7 +169,8 @@ public class PutHandler extends MutatingLdpHandler {
 
         final TrellisDataset mutable = TrellisDataset.createDataset();
         final TrellisDataset immutable = TrellisDataset.createDataset();
-
+        LOGGER.debug("Persisting {} with mutable data:\n{}\n and immutable data:\n{}", getIdentifier(), mutable,
+                        immutable);
         return handleResourceUpdate(mutable, immutable, builder, ldpType)
             .whenComplete((a, b) -> mutable.close())
             .whenComplete((a, b) -> immutable.close());
@@ -193,12 +194,13 @@ public class PutHandler extends MutatingLdpHandler {
         if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
             // Check the expected digest value
             checkForBadDigest(getRequest().getDigest());
-
+            LOGGER.trace("Successfully checked for bad digest value");
             final String mimeType = ofNullable(getRequest().getContentType()).orElse(APPLICATION_OCTET_STREAM);
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
             persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+            LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation);
 
             binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
         } else {
@@ -212,11 +214,12 @@ public class PutHandler extends MutatingLdpHandler {
                 checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null), ldpType,
                         ofNullable(rdfSyntax).orElse(TURTLE));
             }
-
+            LOGGER.trace("Successfully checked for constraint violations");
             binary = ofNullable(getResource()).flatMap(Resource::getBinary).orElse(null);
         }
 
         if (nonNull(getResource())) {
+            LOGGER.debug("Resource {} found in persistence", getIdentifier());
             try (final Stream<? extends Triple> remaining = getResource().stream(otherGraph)) {
                 remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
             }
@@ -224,8 +227,12 @@ public class PutHandler extends MutatingLdpHandler {
 
         auditQuads().stream().map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))
             .forEachOrdered(immutable::add);
+        LOGGER.trace("Successfully calculated and skolemized immutable data");
 
-        ldpResourceTypes(effectiveLdpType(ldpType)).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+        ldpResourceTypes(effectiveLdpType(ldpType)).map(IRI::getIRIString)
+            .peek(type -> LOGGER.debug("Adding link for type {}", type))
+            .forEach(type -> builder.link(type, "type"));
+        LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
         return createOrReplace(ldpType, mutable, binary)
             .thenCombine(getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()),
@@ -234,6 +241,7 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {
+        LOGGER.trace("Determining effective LDP type from offered type {}", ldpType.getIRIString());
         return LDP.NonRDFSource.equals(ldpType) && isBinaryDescription() ? LDP.RDFSource : ldpType;
     }
 
@@ -251,9 +259,14 @@ public class PutHandler extends MutatingLdpHandler {
 
     private CompletableFuture<Boolean> createOrReplace(final IRI ldpType, final TrellisDataset ds, final Binary b) {
         final IRI c = getServices().getResourceService().getContainer(internalId).orElse(null);
-        return nonNull(getResource())
-            ? getServices().getResourceService().replace(internalId, getSession(), ldpType, ds.asDataset(), c, b)
-            : getServices().getResourceService().create(internalId, getSession(), ldpType, ds.asDataset(), c, b);
+        final Resource resource = getResource();
+        if (resource == null) {
+            LOGGER.debug("Creating new resource {}", internalId);
+            return getServices().getResourceService().create(internalId, getSession(), ldpType, ds.asDataset(), c, b);
+        } else {
+            LOGGER.debug("Replacing old resource {}", internalId);
+            return getServices().getResourceService().replace(internalId, getSession(), ldpType, ds.asDataset(), c, b);
+        }
     }
 
     private List<Quad> auditQuads() {
