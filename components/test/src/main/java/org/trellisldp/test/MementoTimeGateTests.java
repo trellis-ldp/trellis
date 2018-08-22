@@ -20,7 +20,7 @@ import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -134,7 +134,7 @@ public interface MementoTimeGateTests extends MementoCommonTests {
         try (final Response res = target(getResourceLocation()).request()
                 .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get()) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            assertEquals(NOT_ACCEPTABLE, fromStatusCode(res.getStatus()));
         }
     }
 }

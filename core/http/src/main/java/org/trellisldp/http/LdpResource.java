@@ -45,6 +45,7 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -352,7 +353,7 @@ public class LdpResource implements ContainerRequestFilter {
             return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
                 .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) -> {
                     if (MISSING_RESOURCE.equals(res)) {
-                        throw new NotFoundException();
+                        throw new NotAcceptableException();
                     }
                     return new MementoResource(trellis).getTimeGateBuilder(mementos, req, urlBase);
                 });
