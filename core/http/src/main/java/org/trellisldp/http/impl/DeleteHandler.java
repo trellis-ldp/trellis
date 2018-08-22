@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.util.concurrent.CompletableFuture.allOf;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.GONE;
@@ -29,7 +30,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.NotFoundException;
@@ -112,12 +112,12 @@ public class DeleteHandler extends MutatingLdpHandler {
         final TrellisDataset immutable = TrellisDataset.createDataset();
 
         return handleDeletion(mutable, immutable)
-            .thenApply(handleResponse(builder))
+            .thenApply(future -> builder)
             .whenComplete((a, b) -> immutable.close())
             .whenComplete((a, b) -> mutable.close());
     }
 
-    private CompletableFuture<Boolean> handleDeletion(final TrellisDataset mutable,
+    private CompletableFuture<Void> handleDeletion(final TrellisDataset mutable,
             final TrellisDataset immutable) {
         if (ACL.equals(getRequest().getExt())) {
             return handleAclDeletion(mutable, immutable);
@@ -125,7 +125,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         return handleResourceDeletion(mutable, immutable);
     }
 
-    private CompletableFuture<Boolean> handleAclDeletion(final TrellisDataset mutable,
+    private CompletableFuture<Void> handleAclDeletion(final TrellisDataset mutable,
             final TrellisDataset immutable) {
 
         // When deleting just the ACL graph, keep the user managed triples intact
@@ -142,7 +142,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         return handleResourceReplacement(mutable, immutable);
     }
 
-    private CompletableFuture<Boolean> handleResourceDeletion(final TrellisDataset mutable,
+    private CompletableFuture<Void> handleResourceDeletion(final TrellisDataset mutable,
             final TrellisDataset immutable) {
         // Collect the audit data
         getServices().getAuditService().deletion(getResource().getIdentifier(), getSession()).stream()
@@ -150,18 +150,10 @@ public class DeleteHandler extends MutatingLdpHandler {
             .forEachOrdered(immutable::add);
 
         // delete the resource
-        return getServices().getResourceService().delete(getResource().getIdentifier(), getSession(), LDP.Resource,
-                mutable.asDataset())
-            .thenCombine(getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
-                        immutable.asDataset()), this::handleWriteResults);
-    }
-
-    private Function<Boolean, ResponseBuilder> handleResponse(final ResponseBuilder builder) {
-        return success -> {
-            if (success) {
-                return builder;
-            }
-            throw new WebApplicationException("Unable to persist data. Please consult the logs for more information");
-        };
+        return allOf(
+                getServices().getResourceService().delete(getResource().getIdentifier(), getSession(), LDP.Resource,
+                    mutable.asDataset()),
+                getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
+                        immutable.asDataset()));
     }
 }

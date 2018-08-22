@@ -21,7 +21,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
@@ -142,34 +142,34 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Boolean> create(final IRI id, final Session session, final IRI ixnModel,
+    public CompletableFuture<Void> create(final IRI id, final Session session, final IRI ixnModel,
             final Dataset dataset, final IRI container, final Binary binary) {
         LOGGER.debug("Creating: {}", id);
-        return supplyAsync(() ->
+        return runAsync(() ->
                 createOrReplace(id, session, ixnModel, dataset, OperationType.CREATE, container, binary));
     }
 
     @Override
-    public CompletableFuture<Boolean> delete(final IRI identifier, final Session session, final IRI ixnModel,
+    public CompletableFuture<Void> delete(final IRI identifier, final Session session, final IRI ixnModel,
             final Dataset dataset) {
         LOGGER.debug("Deleting: {}", identifier);
-        return supplyAsync(() -> {
+        return runAsync(() -> {
             final Instant eventTime = now();
             dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
             dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
-            return storeAndNotify(identifier, session, dataset, eventTime, OperationType.DELETE);
+            storeAndNotify(identifier, session, dataset, eventTime, OperationType.DELETE);
         });
     }
 
     @Override
-    public CompletableFuture<Boolean> replace(final IRI id, final Session session, final IRI ixnModel,
+    public CompletableFuture<Void> replace(final IRI id, final Session session, final IRI ixnModel,
             final Dataset dataset, final IRI container, final Binary binary) {
         LOGGER.debug("Updating: {}", id);
-        return supplyAsync(() ->
+        return runAsync(() ->
                 createOrReplace(id, session, ixnModel, dataset, OperationType.REPLACE, container, binary));
     }
 
-    private Boolean createOrReplace(final IRI identifier, final Session session, final IRI ixnModel,
+    private void createOrReplace(final IRI identifier, final Session session, final IRI ixnModel,
                     final Dataset dataset, final OperationType type, final IRI container, final Binary binary) {
         final Instant eventTime = now();
 
@@ -209,10 +209,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.extent, size));
         }
 
-        return storeAndNotify(identifier, session, dataset, eventTime, type);
+        storeAndNotify(identifier, session, dataset, eventTime, type);
     }
 
-    private Boolean storeAndNotify(final IRI identifier, final Session session, final Dataset dataset,
+    private void storeAndNotify(final IRI identifier, final Session session, final Dataset dataset,
             final Instant eventTime, final OperationType type) {
         final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
         try {
@@ -222,7 +222,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             LOGGER.error("Could not update data: {}", ex.getMessage());
             throw new RuntimeTrellisException(ex);
         }
-        return true;
     }
 
     private void emitEvents(final IRI identifier, final Session session, final OperationType opType,
@@ -614,14 +613,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Boolean> add(final IRI id, final Session session, final Dataset dataset) {
-        return supplyAsync(() -> {
+    public CompletableFuture<Void> add(final IRI id, final Session session, final Dataset dataset) {
+        return runAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
             try (final Dataset data = rdf.createDataset()) {
                 dataset.getGraph(PreferAudit).ifPresent(g ->
                         g.stream().forEach(t -> data.add(graphName, t.getSubject(), t.getPredicate(), t.getObject())));
                 executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(data)));
-                return true;
             } catch (final Exception ex) {
                 LOGGER.error("Error storing audit dataset: {}", ex.getMessage());
                 throw new RuntimeTrellisException(ex);

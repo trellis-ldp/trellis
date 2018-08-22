@@ -18,7 +18,6 @@ import static java.util.Date.from;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
@@ -31,6 +30,8 @@ import static org.mockito.Mockito.when;
 import static org.trellisldp.http.domain.HttpConstants.ACL;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
+
+import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
@@ -52,7 +53,6 @@ public class DeleteHandlerTest extends HandlerBaseTest {
     @Test
     public void testDelete() {
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
-
         final Response res = handler.deleteResource(handler.initialize(mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo());
     }
@@ -64,34 +64,27 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         // will never store audit
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(false));
+            .thenReturn(asyncException());
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource)))).getResponse();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
     }
 
     @Test
     public void testDeleteError() {
         when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(completedFuture(false));
+            .thenReturn(asyncException());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource)))).getResponse();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
     }
 
     @Test
     public void testDeletePersistenceSupport() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
-
         final Response res = assertThrows(WebApplicationException.class, () ->
                 handler.initialize(mockResource)).getResponse();
         assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -103,28 +96,23 @@ public class DeleteHandlerTest extends HandlerBaseTest {
     @Test
     public void testDeleteACLError() {
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class), any(),
-                        any())).thenReturn(completedFuture(false));
+                        any())).thenReturn(asyncException());
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource)))).getResponse();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
     }
 
     @Test
     public void testDeleteACLAuditError() {
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class), any(),
-                        any())).thenReturn(completedFuture(true));
+                        any())).thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(false));
+            .thenReturn(asyncException());
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource)))).getResponse();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
     }
 
     @Test

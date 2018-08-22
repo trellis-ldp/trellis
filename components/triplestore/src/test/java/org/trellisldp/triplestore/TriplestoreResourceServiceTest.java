@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -176,7 +177,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.replace(root, mockSession, LDP.BasicContainer, data, null, null).join());
+        assertNull(svc.replace(root, mockSession, LDP.BasicContainer, data, null, null).join());
         final Resource res2 = svc.get(root).join();
         assertAll(checkResource(res2, root, LDP.BasicContainer, later));
         assertAll(checkResourceStream(res2, 4L, 2L, 5L, 1L, 0L, 0L));
@@ -220,7 +221,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).join());
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.RDFSource, 1L, 3L, 3L, 0L)),
@@ -239,7 +240,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.RDFSource, dataset, root, null).join());
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.RDFSource, 1L, 3L, 1L, 0L)),
@@ -260,7 +261,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.NonRDFSource, dataset, root, binary).join());
+        assertNull(svc.create(resource, mockSession, LDP.NonRDFSource, dataset, root, binary).join());
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 7L, 1L, 0L)),
@@ -277,7 +278,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource3, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(resource3, mockSession, LDP.RDFSource, dataset, resource, null).join());
 
         allOf(
             svc.get(resource3).thenAccept(res -> {
@@ -312,7 +313,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.Container, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.Container, 3L, 3L, 3L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -326,7 +327,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater, 1L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 3L, 1L)),
@@ -344,7 +345,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 3L, 3L, 2L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 3L, 1L)),
@@ -370,8 +371,8 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset1, root, null).join());
-        assertTrue(svc.add(resource, mockSession, dataset2).join());
+        assertNull(svc.create(resource, mockSession, LDP.Container, dataset1, root, null).join());
+        assertNull(svc.add(resource, mockSession, dataset2).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 3L, 2L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -391,7 +392,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.Container, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.Container, dataset, root, null).join());
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 3L, 1L, 0L)),
@@ -407,7 +408,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
 
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater, 2L, 3L, 1L)),
@@ -426,7 +427,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant preDelete = meanwhile();
 
-        assertTrue(svc.delete(child, mockSession, LDP.Resource, dataset).join());
+        assertNull(svc.delete(child, mockSession, LDP.Resource, dataset).join());
 
         allOf(
             svc.get(child).thenAccept(res -> assertEquals(DELETED_RESOURCE, res)),
@@ -449,7 +450,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.BasicContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.BasicContainer, dataset, root, null).join());
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.BasicContainer, 3L, 3L, 0L, 0L)),
@@ -465,7 +466,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater, 2L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 3L, 0L, 1L)),
@@ -482,7 +483,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.replace(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 2L, 3L, 2L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 3L, 0L, 1L)),
@@ -507,7 +508,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 0L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -520,7 +521,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 0L)),
             svc.get(resource).thenAccept(res -> {
@@ -550,7 +551,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 0L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -563,7 +564,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 0L, 0L)),
             svc.get(members).thenAccept(res -> assertFalse(res.getBinary().isPresent())),
@@ -579,7 +580,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 0L)),
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.DirectContainer, 4L, 7L, 0L, 1L)),
@@ -608,7 +609,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -626,7 +627,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource2).thenAccept(res -> {
                 assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater));
@@ -644,7 +645,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 2L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 1L, 0L)),
@@ -664,7 +665,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater3, 1L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.DirectContainer, 4L, 7L, 1L, 1L)),
@@ -685,7 +686,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
+        assertNull(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
         allOf(
             svc.get(child2).thenAccept(res -> {
                 assertAll(checkResource(res, child2, LDP.RDFSource, evenLater4));
@@ -721,7 +722,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -736,7 +737,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource2, mockSession, LDP.DirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource2).thenAccept(res -> {
                 assertAll(checkResource(res, resource2, LDP.DirectContainer, evenLater));
@@ -753,7 +754,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 1L, 0L)),
@@ -773,7 +774,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(res -> {
                 assertAll(checkResource(res, child, LDP.RDFSource, evenLater3));
@@ -796,7 +797,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
+        assertNull(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
         allOf(
             svc.get(child2).thenAccept(res -> {
                 assertAll(checkResource(res, child2, LDP.RDFSource, evenLater4));
@@ -837,7 +838,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 7L, 4L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -855,7 +856,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 4L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 7L, 4L, 0L)),
@@ -875,7 +876,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 3L)),
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 7L, 7L, 4L, 1L)),
@@ -906,7 +907,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -920,7 +921,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 1L, 0L)),
@@ -937,7 +938,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 5L, 7L, 1L, 1L)),
@@ -968,7 +969,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 2L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -982,7 +983,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 2L, 0L)),
@@ -1001,7 +1002,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 2L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 7L, 2L, 1L)),
@@ -1038,7 +1039,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertTrue(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 3L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
@@ -1054,7 +1055,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater = meanwhile();
 
-        assertTrue(svc.create(resource2, mockSession, LDP.IndirectContainer, dataset, root, null).join());
+        assertNull(svc.create(resource2, mockSession, LDP.IndirectContainer, dataset, root, null).join());
         allOf(
             svc.get(resource2).thenAccept(res -> {
                 assertAll(checkResource(res, resource2, LDP.IndirectContainer, evenLater));
@@ -1071,7 +1072,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertTrue(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
+        assertNull(svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join());
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 3L, 0L)),
@@ -1092,7 +1093,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater3 = meanwhile();
 
-        assertTrue(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
+        assertNull(svc.create(child, mockSession, LDP.RDFSource, dataset, resource, null).join());
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater3, 1L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 7L, 3L, 1L)),
@@ -1117,7 +1118,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater4 = meanwhile();
 
-        assertTrue(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
+        assertNull(svc.create(child2, mockSession, LDP.RDFSource, dataset, resource2, null).join());
         allOf(
             svc.get(child2).thenAccept(res -> {
                 assertAll(checkResource(res, child2, LDP.RDFSource, evenLater4));

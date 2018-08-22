@@ -34,8 +34,8 @@ public interface ImmutableDataService<T> extends RetrievalService<T> {
      * @param identifier the identifier under which to persist a dataset
      * @param session the session context for this operation
      * @param dataset a dataset to persist
-     * @return whether the resource was successfully persisted
+     * @return the new completion stage
      */
-    CompletableFuture<Boolean> add(IRI identifier, Session session, Dataset dataset);
+    CompletableFuture<Void> add(IRI identifier, Session session, Dataset dataset);
 
 }

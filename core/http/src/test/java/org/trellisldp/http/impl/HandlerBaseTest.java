@@ -21,6 +21,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.HttpMethod.DELETE;
@@ -88,6 +89,7 @@ import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
@@ -209,17 +211,23 @@ abstract class HandlerBaseTest {
         return hasLink(iri, TYPE);
     }
 
+    protected static CompletableFuture<Void> asyncException() {
+        return runAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        });
+    }
+
     private void setUpResourceService() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(true));
+                        any(), any())).thenReturn(completedFuture(null));
         when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(true));
+                        any(), any())).thenReturn(completedFuture(null));
         when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
+            .thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(true));
+            .thenReturn(completedFuture(null));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->

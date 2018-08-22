@@ -148,26 +148,6 @@ class BaseLdpHandler {
         return services;
     }
 
-    /**
-     * Handle the results of a pair of writes of resource and audit triples.
-     * @param mutable the mutable data
-     * @param immutable the immutable data
-     * @return true if the writes both succeeded; false otherwise
-     */
-    protected Boolean handleWriteResults(final Boolean mutable, final Boolean immutable) {
-        if (!mutable) {
-            LOGGER.error("Error adding mutable/managed RDF data to {}", getIdentifier());
-        }
-        if (!immutable) {
-            LOGGER.error("Error adding immutable/audit data to {}", getIdentifier());
-        }
-        final boolean result = mutable && immutable;
-        if (result) {
-            LOGGER.debug("Successfully persisted data for {}", getIdentifier());
-        }
-        return result;
-    }
-
     private static String getRequestBaseUrl(final LdpRequest req, final String baseUrl) {
         final String base = ofNullable(baseUrl).orElseGet(req::getBaseUrl);
         if (base.endsWith("/")) {

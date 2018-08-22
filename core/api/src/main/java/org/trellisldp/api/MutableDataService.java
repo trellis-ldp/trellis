@@ -36,9 +36,9 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
-     * @return whether the resource was added
+     * @return the new completion stage
      */
-    CompletableFuture<Boolean> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
+    CompletableFuture<Void> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
             Binary binary);
 
     /**
@@ -50,9 +50,9 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
-     * @return whether the resource was replaced
+     * @return the new completion stage
      */
-    CompletableFuture<Boolean> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
+    CompletableFuture<Void> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
             Binary binary);
 
     /**
@@ -62,8 +62,8 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param session the session context for this operation
      * @param ixnModel the new LDP interaction model for this resource
      * @param dataset the dataset
-     * @return whether the resource was deleted
+     * @return the new completion stage
      */
-    CompletableFuture<Boolean> delete(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
+    CompletableFuture<Void> delete(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
 
 }
