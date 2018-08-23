@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
@@ -59,16 +58,6 @@ class HtmlData {
     private final List<String> js;
     private final String icon;
 
-    private Function<Triple, LabelledTriple> labelTriple = triple -> {
-        final String pred = triple.getPredicate().getIRIString();
-        if (triple.getObject() instanceof IRI) {
-            return new LabelledTriple(triple, getLabel(pred), getLabel(((IRI) triple.getObject()).getIRIString()));
-        } else if (triple.getObject() instanceof Literal) {
-            return new LabelledTriple(triple, getLabel(pred), ((Literal) triple.getObject()).getLexicalForm());
-        }
-        return new LabelledTriple(triple, getLabel(pred), triple.getObject().ntriplesString());
-    };
-
     /**
      * Create an HTML Data object.
      *
@@ -97,7 +86,7 @@ class HtmlData {
      * @return the labelled triples
      */
     public List<LabelledTriple> getTriples() {
-        return triples.stream().map(labelTriple)
+        return triples.stream().map(this::labelTriple)
             .sorted(sortSubjects.thenComparing(sortPredicates).thenComparing(sortObjects)).collect(toList());
     }
 
@@ -170,4 +159,14 @@ class HtmlData {
         }
         return iri;
     }
+
+    private LabelledTriple labelTriple(final Triple triple) {
+        final String pred = triple.getPredicate().getIRIString();
+        if (triple.getObject() instanceof IRI) {
+            return new LabelledTriple(triple, getLabel(pred), getLabel(((IRI) triple.getObject()).getIRIString()));
+        } else if (triple.getObject() instanceof Literal) {
+            return new LabelledTriple(triple, getLabel(pred), ((Literal) triple.getObject()).getLexicalForm());
+        }
+        return new LabelledTriple(triple, getLabel(pred), triple.getObject().ntriplesString());
+    };
 }

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 
@@ -63,10 +62,6 @@ public class Prefer {
     public static final String PREFER_HANDLING = "handling";
 
     public static final String PREFER_WAIT = "wait";
-
-    private static Function<String, String> trimQuotes = param ->
-        param.startsWith("\"") && param.endsWith("\"") && param.length() > 1 ?
-            param.substring(1, param.length() - 1) : param;
 
     private final Optional<String> preference;
 
@@ -218,6 +213,14 @@ public class Prefer {
     }
 
     private static List<String> parseParameter(final String param) {
-        return ofNullable(param).map(trimQuotes).map(x -> asList(x.split("\\s+"))).orElseGet(Collections::emptyList);
+        return ofNullable(param).map(Prefer::trimQuotes).map(x -> asList(x.split("\\s+")))
+            .orElseGet(Collections::emptyList);
+    }
+
+    private static String trimQuotes(final String param) {
+        if (param.startsWith("\"") && param.endsWith("\"") && param.length() > 1) {
+            return param.substring(1, param.length() - 1);
+        }
+        return param;
     }
 }

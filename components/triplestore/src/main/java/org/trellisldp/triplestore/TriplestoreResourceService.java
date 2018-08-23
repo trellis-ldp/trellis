@@ -22,6 +22,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
@@ -53,13 +54,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
@@ -113,9 +112,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
-
-    private static final Predicate<BlankNodeOrIRI> isUserGraph = PreferUserManaged::equals;
-    private static final Predicate<BlankNodeOrIRI> isServerGraph = PreferServerManaged::equals;
 
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
@@ -234,7 +230,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                     .filter(term -> term instanceof IRI).map(term -> (IRI) term).findFirst())
             .orElse(null);
         final List<IRI> targetTypes = dataset.stream()
-            .filter(quad -> quad.getGraphName().filter(isUserGraph.or(isServerGraph)).isPresent())
+            .filter(quad -> quad.getGraphName().filter(isEqual(PreferUserManaged).or(PreferServerManaged::equals))
+                    .isPresent())
             .filter(quad -> quad.getPredicate().equals(RDF.type))
             .flatMap(quad -> quad.getObject() instanceof IRI ? Stream.of((IRI) quad.getObject()) : empty())
             .distinct().collect(toList());
