@@ -48,6 +48,7 @@ ext {
     guavaVersion = '26.0-jre'
     jsonVersion = '1.1.2'
     junitVersion = '5.2.0'
+    junitLauncherVersion = '1.2.0'
     logbackVersion = '1.2.3'
     mockitoVersion = '2.21.0'
 
@@ -128,6 +129,7 @@ allprojects { subproj ->
         testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
         testImplementation("org.apiguardian:apiguardian-api:${apiguardianVersion}")
         testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+        testRuntime("org.junit.platform:junit-platform-launcher:${junitLauncherVersion}")
     }
 
     gradle.projectsEvaluated {

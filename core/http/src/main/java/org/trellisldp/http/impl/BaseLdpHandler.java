@@ -161,7 +161,11 @@ class BaseLdpHandler {
         if (!immutable) {
             LOGGER.error("Error adding immutable/audit data to {}", getIdentifier());
         }
-        return mutable && immutable;
+        final boolean result = mutable && immutable;
+        if (result) {
+            LOGGER.debug("Successfully persisted data for {}", getIdentifier());
+        }
+        return result;
     }
 
     private static String getRequestBaseUrl(final LdpRequest req, final String baseUrl) {
