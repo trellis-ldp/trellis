@@ -256,5 +256,5 @@ public final class MementoResource {
                                 link.getParams().get(DATETIME), RFC_1123_DATE_TIME).toString(), dateTime)));
         }
         return buffer.stream();
-    };
+    }
 }

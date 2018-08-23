@@ -168,5 +168,5 @@ class HtmlData {
             return new LabelledTriple(triple, getLabel(pred), ((Literal) triple.getObject()).getLexicalForm());
         }
         return new LabelledTriple(triple, getLabel(pred), triple.getObject().ntriplesString());
-    };
+    }
 }
