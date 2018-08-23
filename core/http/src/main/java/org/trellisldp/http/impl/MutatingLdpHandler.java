@@ -16,6 +16,7 @@ package org.trellisldp.http.impl;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
@@ -219,16 +220,17 @@ class MutatingLdpHandler extends BaseLdpHandler {
         }
     }
 
-    protected CompletableFuture<Boolean> handleResourceReplacement(final TrellisDataset mutable,
+    protected CompletableFuture<Void> handleResourceReplacement(final TrellisDataset mutable,
             final TrellisDataset immutable) {
         // update the resource
         final IRI parent = getServices().getResourceService().getContainer(getResource().getIdentifier())
             .orElse(null);
-        return getServices().getResourceService()
-            .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
-                    mutable.asDataset(), parent, getResource().getBinary().orElse(null))
-            .thenCombine(getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
-                        immutable.asDataset()), this::handleWriteResults);
+        return allOf(
+                getServices().getResourceService()
+                    .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
+                        mutable.asDataset(), parent, getResource().getBinary().orElse(null)),
+                getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
+                        immutable.asDataset()));
     }
 
     protected Stream<Quad> getAuditUpdateData() {

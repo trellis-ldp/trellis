@@ -32,14 +32,20 @@ public interface MementoService {
      * @param identifier the resource identifier
      * @param time the time of the Memento
      * @param data the data to save
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
+     * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> put(IRI identifier, Instant time, Stream<? extends Quad> data);
 
     /**
      * Create a new Memento for a resource.
      * @param resource the resource
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
+     * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     default CompletableFuture<Void> put(Resource resource) {
         return put(resource.getIdentifier(), resource.getModified(), resource.stream());
@@ -64,7 +70,10 @@ public interface MementoService {
      * Delete a Memento resource.
      * @param identifier the resource identifier
      * @param time the version at the given time
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
+     * successfully deleted from the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> delete(IRI identifier, Instant time);
 }

@@ -19,6 +19,7 @@ import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -26,12 +27,10 @@ import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.GONE;
-import static javax.ws.rs.core.Response.serverError;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -48,7 +47,6 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.File;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -193,11 +191,14 @@ public class PostHandler extends MutatingLdpHandler {
         getServices().getAuditService().creation(internalId, getSession()).stream()
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
 
-        return getServices().getResourceService().create(internalId, getSession(), ldpType, mutable.asDataset(),
-                parentIdentifier, binary)
-            .thenCombine(getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()),
-                    this::handleWriteResults)
-            .thenApply(handleResult(builder));
+        return allOf(
+                getServices().getResourceService().create(internalId, getSession(), ldpType, mutable.asDataset(),
+                    parentIdentifier, binary),
+                getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
+            .thenApply(future -> {
+                ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+                return builder.location(create(getIdentifier()));
+            });
     }
 
     @Override
@@ -208,18 +209,5 @@ public class PostHandler extends MutatingLdpHandler {
     @Override
     protected IRI getInternalId() {
         return internalId;
-    }
-
-    private Function<Boolean, ResponseBuilder> handleResult(final ResponseBuilder builder) {
-        return success -> {
-            if (!success) {
-                return serverError().type(TEXT_PLAIN_TYPE)
-                    .entity("Unable to persist data. Please consult the logs for more information");
-            }
-
-            // Add LDP types
-            ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
-            return builder.location(create(getIdentifier()));
-        };
     }
 }

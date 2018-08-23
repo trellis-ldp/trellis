@@ -16,7 +16,6 @@ package org.trellisldp.http.impl;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -43,6 +42,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -84,12 +84,12 @@ public class PostHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(false));
+            .thenReturn(asyncException());
 
         final PostHandler handler = buildPostHandler("/simpleTriple.ttl", null, null);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .join().build().getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))));
     }
 
     @Test
@@ -271,13 +271,13 @@ public class PostHandlerTest extends HandlerBaseTest {
     @Test
     public void testError() throws IOException {
         when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
+                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
         when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", baseUrl);
 
-        assertEquals(INTERNAL_SERVER_ERROR, handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .join().build().getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))));
     }
 
     private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl) {

@@ -15,13 +15,11 @@ package org.trellisldp.http.impl;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
@@ -46,6 +44,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.Date;
+import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
@@ -88,14 +87,12 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         // will never store audit
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(false));
+            .thenReturn(asyncException());
 
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.updateResource(handler.initialize(mockResource)))).getResponse();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.updateResource(handler.initialize(mockResource))));
     }
 
     @Test
@@ -183,14 +180,12 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockResourceService.replace(eq(identifier), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
+                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockResource)))).getResponse();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockResource))));
     }
 
     @Test

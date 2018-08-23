@@ -169,34 +169,6 @@ public class PatchHandler extends MutatingLdpHandler {
         return super.getIdentifier() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : "");
     }
 
-    private Function<Boolean, ResponseBuilder> handleResponse(final ResponseBuilder builder,
-            final List<Triple> triples) {
-        final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
-                getRequest().getHeaders().getAcceptableMediaTypes(), empty()).orElse(null);
-        final IRI profile = ofNullable(getProfile(getRequest().getHeaders().getAcceptableMediaTypes(), outputSyntax))
-            .orElseGet(() -> getDefaultProfile(outputSyntax, getIdentifier()));
-        return success -> {
-            if (success) {
-                if (nonNull(preference)) {
-                    final StreamingOutput stream = new StreamingOutput() {
-                        @Override
-                        public void write(final OutputStream out) throws IOException {
-                            getServices().getIOService().write(triples.stream()
-                                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
-                                        out, outputSyntax, profile);
-                        }
-                    };
-                    builder.header(PREFERENCE_APPLIED, "return=representation")
-                        .type(outputSyntax.mediaType()).entity(stream);
-                } else {
-                    builder.status(NO_CONTENT);
-                }
-                return builder;
-            }
-            throw new WebApplicationException("Unable to persist data. Please consult the logs for more information");
-        };
-    }
-
     private List<Triple> updateGraph(final RDFSyntax syntax, final IRI graphName) {
         final List<Triple> triples;
         // Update existing graph
@@ -261,6 +233,24 @@ public class PatchHandler extends MutatingLdpHandler {
 
         // Collect the audit data
         getAuditUpdateData().forEachOrdered(immutable::add);
-        return handleResourceReplacement(mutable, immutable).thenApply(handleResponse(builder, triples));
+        return handleResourceReplacement(mutable, immutable).thenApply(future -> {
+            final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
+                    getRequest().getHeaders().getAcceptableMediaTypes(), empty()).orElse(null);
+            final IRI profile = ofNullable(getProfile(getRequest().getHeaders().getAcceptableMediaTypes(),
+                        outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, getIdentifier()));
+            if (nonNull(preference)) {
+                final StreamingOutput stream = new StreamingOutput() {
+                    @Override
+                    public void write(final OutputStream out) throws IOException {
+                        getServices().getIOService().write(triples.stream()
+                                    .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
+                                    out, outputSyntax, profile);
+                    }
+                };
+                return builder.header(PREFERENCE_APPLIED, "return=representation")
+                    .type(outputSyntax.mediaType()).entity(stream);
+            }
+            return builder.status(NO_CONTENT);
+        });
     }
 }

@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -96,7 +97,7 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Creation Test", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
                 .join());
         final Resource res = getResourceService().get(identifier).join();
         res.stream(Trellis.PreferUserManaged)
@@ -116,7 +117,7 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Replacement Test", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
                 .join());
 
         dataset.clear();
@@ -124,7 +125,7 @@ public interface ResourceServiceTests {
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.altLabel, rdf.createLiteral("alternate label"));
         dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
 
-        assertTrue(getResourceService().replace(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+        assertNull(getResourceService().replace(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
                     .join());
         final Resource res = getResourceService().get(identifier).join();
         res.stream(Trellis.PreferUserManaged).forEach(t ->
@@ -146,11 +147,11 @@ public interface ResourceServiceTests {
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
 
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
                 .join());
         assertNotEquals(DELETED_RESOURCE, getResourceService().get(identifier).join());
 
-        assertTrue(getResourceService().delete(identifier, getSession(), LDP.Resource, rdf.createDataset()).join());
+        assertNull(getResourceService().delete(identifier, getSession(), LDP.Resource, rdf.createDataset()).join());
         assertEquals(DELETED_RESOURCE, getResourceService().get(identifier).join());
     }
 
@@ -165,7 +166,7 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset0 = buildDataset(identifier, "Immutable Resource Test", SUBJECT2);
 
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset0, ROOT_CONTAINER, null)
+        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset0, ROOT_CONTAINER, null)
                 .join());
 
         final IRI audit1 = rdf.createIRI(TRELLIS_BNODE_PREFIX + getResourceService().generateIdentifier());
@@ -175,7 +176,7 @@ public interface ResourceServiceTests {
         dataset1.add(Trellis.PreferAudit, audit1, type, AS.Create);
         dataset1.add(Trellis.PreferAudit, audit1, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
 
-        assertTrue(getResourceService().add(identifier, getSession(), dataset1).join());
+        assertNull(getResourceService().add(identifier, getSession(), dataset1).join());
 
         final Resource res = getResourceService().get(identifier).join();
         res.stream(Trellis.PreferAudit).forEach(t ->
@@ -190,7 +191,7 @@ public interface ResourceServiceTests {
         dataset2.add(Trellis.PreferAudit, audit2, type, AS.Update);
         dataset2.add(Trellis.PreferAudit, audit2, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
 
-        assertTrue(getResourceService().add(identifier, getSession(), dataset2).join());
+        assertNull(getResourceService().add(identifier, getSession(), dataset2).join());
 
         final Resource res2 = getResourceService().get(identifier).join();
 
@@ -216,7 +217,7 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Create LDP-RS Test", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
+        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
                 .join());
         final Resource res = getResourceService().get(identifier).join();
         assertAll(checkResource(res, identifier, LDP.RDFSource, time, dataset));
@@ -240,7 +241,7 @@ public interface ResourceServiceTests {
         final Binary binary = new Binary(binaryLocation, binaryTime, "text/plain", 150L);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.NonRDFSource, dataset, ROOT_CONTAINER,
+        assertNull(getResourceService().create(identifier, getSession(), LDP.NonRDFSource, dataset, ROOT_CONTAINER,
                     binary).join());
         final Resource res = getResourceService().get(identifier).join();
         assertAll(checkResource(res, identifier, LDP.NonRDFSource, time, dataset));
@@ -268,20 +269,20 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = buildDataset(identifier, "Container Test", SUBJECT0);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.Container, dataset0, ROOT_CONTAINER, null)
+        assertNull(getResourceService().create(identifier, getSession(), LDP.Container, dataset0, ROOT_CONTAINER, null)
                 .join());
 
         final IRI child1 = rdf.createIRI(base + "/child01");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
 
         final IRI child2 = rdf.createIRI(base + "/child02");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll(checkResource(res, identifier, LDP.Container, time, dataset0));
@@ -307,20 +308,20 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = buildDataset(identifier, "Basic Container Test", SUBJECT0);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.BasicContainer, dataset0, ROOT_CONTAINER,
+        assertNull(getResourceService().create(identifier, getSession(), LDP.BasicContainer, dataset0, ROOT_CONTAINER,
                     null).join());
 
         final IRI child1 = rdf.createIRI(base + "/child11");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
 
         final IRI child2 = rdf.createIRI(base + "/child12");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll(checkResource(res, identifier, LDP.BasicContainer, time, dataset0));
@@ -352,20 +353,20 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.isMemberOfRelation, DC.isPartOf);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.DirectContainer, dataset0, ROOT_CONTAINER,
-                    null).get());
+        assertNull(getResourceService().create(identifier, getSession(), LDP.DirectContainer, dataset0, ROOT_CONTAINER,
+                    null).join());
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = buildDataset(child1, "Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).get());
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Child 2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll(checkResource(res, identifier, LDP.DirectContainer, time, dataset0));
@@ -402,20 +403,20 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.insertedContentRelation, FOAF.primaryTopic);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
-        assertTrue(getResourceService().create(identifier, getSession(), LDP.IndirectContainer, dataset0,
+        assertNull(getResourceService().create(identifier, getSession(), LDP.IndirectContainer, dataset0,
                     ROOT_CONTAINER, null).join());
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = buildDataset(child1, "Indirect Container Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertTrue(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Indirect Container Child 2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertTrue(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll(checkResource(res, identifier, LDP.IndirectContainer, time, dataset0));

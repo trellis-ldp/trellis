@@ -19,6 +19,7 @@ import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -46,7 +47,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -234,10 +234,11 @@ public class PutHandler extends MutatingLdpHandler {
             .forEach(type -> builder.link(type, "type"));
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
-        return createOrReplace(ldpType, mutable, binary)
-            .thenCombine(getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()),
-                    this::handleWriteResults)
-            .thenApply(handleResponse(builder));
+        return allOf(
+                createOrReplace(ldpType, mutable, binary),
+                getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
+            .thenApply(future ->
+                isNull(getResource()) ? builder.status(CREATED).contentLocation(create(getIdentifier())) : builder);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {
@@ -245,19 +246,7 @@ public class PutHandler extends MutatingLdpHandler {
         return LDP.NonRDFSource.equals(ldpType) && isBinaryDescription() ? LDP.RDFSource : ldpType;
     }
 
-    private Function<Boolean, ResponseBuilder> handleResponse(final ResponseBuilder builder) {
-        return success -> {
-            if (success) {
-                if (isNull(getResource())) {
-                    builder.status(CREATED).contentLocation(create(getIdentifier()));
-                }
-                return builder;
-            }
-            throw new WebApplicationException("Unable to persist data. Please consult the logs for more information");
-        };
-    }
-
-    private CompletableFuture<Boolean> createOrReplace(final IRI ldpType, final TrellisDataset ds, final Binary b) {
+    private CompletableFuture<Void> createOrReplace(final IRI ldpType, final TrellisDataset ds, final Binary b) {
         final IRI c = getServices().getResourceService().getContainer(internalId).orElse(null);
         final Resource resource = getResource();
         if (resource == null) {

@@ -17,7 +17,6 @@ import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
 import static java.util.Date.from;
 import static java.util.Optional.of;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -44,6 +43,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.File;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -90,14 +90,12 @@ public class PutHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(completedFuture(false));
+            .thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.setResource(handler.initialize(mockResource)))).getResponse();
-
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource))));
     }
 
     @Test
@@ -257,13 +255,12 @@ public class PutHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
         when(mockResourceService.replace(eq(identifier), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
+                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.setResource(handler.initialize(mockResource)))).getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource))));
     }
 
     @Test
@@ -272,14 +269,13 @@ public class PutHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
         when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(completedFuture(false));
+                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+        assertThrows(WebApplicationException.class, () ->
+                handler.setResource(handler.initialize(mockResource)).join());
     }
 
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
