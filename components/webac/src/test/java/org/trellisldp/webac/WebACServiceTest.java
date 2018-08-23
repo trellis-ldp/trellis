@@ -246,7 +246,8 @@ public class WebACServiceTest {
 
     @Test
     public void testCanWrite6() {
-        final AccessControlService testService2 = new WebACService(mockResourceService, null, false);
+        final AccessControlService testService2 = new WebACService(mockResourceService,
+                new WebACService.NoopAuthorizationCache(), false);
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -260,7 +261,8 @@ public class WebACServiceTest {
 
     @Test
     public void testCanWrite7() {
-        final AccessControlService testService2 = new WebACService(mockResourceService, null, false);
+        final AccessControlService testService2 = new WebACService(mockResourceService,
+                new WebACService.NoopAuthorizationCache(), false);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));

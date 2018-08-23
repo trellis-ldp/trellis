@@ -16,7 +16,6 @@ package org.trellisldp.webac;
 import static java.lang.String.join;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
@@ -90,14 +89,14 @@ public class WebACService implements AccessControlService {
      * @param resourceService the resource service
      */
     public WebACService(final ResourceService resourceService) {
-        this(resourceService, null);
+        this(resourceService, new NoopAuthorizationCache());
     }
 
     /**
      * Create a WebAC-based authorization service.
      *
      * @param resourceService the resource service
-     * @param cache a cache (may be null if caching is not desired)
+     * @param cache a cache
      */
     @Inject
     public WebACService(final ResourceService resourceService,
@@ -109,12 +108,13 @@ public class WebACService implements AccessControlService {
      * Create a WebAC-based authorization service.
      *
      * @param resourceService the resource service
-     * @param cache a cache (may be null if caching is not desired)
+     * @param cache a cache
      * @param checkMembershipResources whether to check membership resource permissions (default=false)
      */
     public WebACService(final ResourceService resourceService,
             final CacheService<String, Set<IRI>> cache, final Boolean checkMembershipResources) {
         requireNonNull(resourceService, "A non-null ResourceService must be provided!");
+        requireNonNull(cache, "A non-null Cache must be provided!");
         this.resourceService = resourceService;
         this.cache = cache;
         this.checkMembershipResources = checkMembershipResources;
@@ -128,22 +128,16 @@ public class WebACService implements AccessControlService {
             return unmodifiableSet(allModes);
         }
 
-        if (nonNull(cache)) {
-            final Set<IRI> cachedModes = cache.get(getCacheKey(identifier, session.getAgent()), k ->
-                    getAuthz(identifier, session.getAgent()));
-            final Optional<IRI> delegate = session.getDelegatedBy();
-            if (delegate.isPresent()) {
-                final Set<IRI> delegatedModes = new HashSet<>(cache.get(getCacheKey(identifier, delegate.get()), k ->
-                            getAuthz(identifier, delegate.get())));
-                delegatedModes.retainAll(cachedModes);
-                return unmodifiableSet(delegatedModes);
-            }
-            return unmodifiableSet(cachedModes);
+        final Set<IRI> cachedModes = cache.get(getCacheKey(identifier, session.getAgent()), k ->
+                getAuthz(identifier, session.getAgent()));
+        final Optional<IRI> delegate = session.getDelegatedBy();
+        if (delegate.isPresent()) {
+            final Set<IRI> delegatedModes = new HashSet<>(cache.get(getCacheKey(identifier, delegate.get()), k ->
+                        getAuthz(identifier, delegate.get())));
+            delegatedModes.retainAll(cachedModes);
+            return unmodifiableSet(delegatedModes);
         }
-
-        final Set<IRI> modes = getAuthz(identifier, session.getAgent());
-        session.getDelegatedBy().ifPresent(delegate -> modes.retainAll(getAuthz(identifier, delegate)));
-        return unmodifiableSet(modes);
+        return unmodifiableSet(cachedModes);
     }
 
     private String getCacheKey(final IRI identifier, final IRI agent) {
