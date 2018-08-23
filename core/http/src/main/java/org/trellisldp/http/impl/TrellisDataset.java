@@ -96,7 +96,7 @@ class TrellisDataset implements AutoCloseable {
     @Override
     public String toString() {
         return asDataset().stream()
-                        .map(q -> format("%1$s %2$s %3$s %4$s",
+                        .map(q -> format("%1$s %2$s %3$s %4$s .",
                                         q.getSubject().ntriplesString(),
                                         q.getPredicate().ntriplesString(),
                                         q.getObject().ntriplesString(),

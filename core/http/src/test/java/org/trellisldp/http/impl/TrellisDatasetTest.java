@@ -13,22 +13,33 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.io.IOException;
 
 import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Literal;
+import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.SKOS;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
  */
 public class TrellisDatasetTest {
+
+    private static final RDF rdf = getInstance();
 
     @Mock
     private Dataset mockDataset;
@@ -46,5 +57,25 @@ public class TrellisDatasetTest {
                 // nothing here
             }
         });
+    }
+
+    @Test
+    public void testToString() {
+        final TrellisDataset dataset = TrellisDataset.createDataset();
+        final Literal title = rdf.createLiteral("The title");
+        final Literal label = rdf.createLiteral("A preferred label", "eng");
+        final Literal subject = rdf.createLiteral("http://example.com/subject");
+        final IRI identifier = rdf.createIRI("http://example.com/resource");
+
+        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, title));
+        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, identifier, SKOS.prefLabel, label));
+        dataset.add(rdf.createQuad(null, identifier, DC.subject, subject));
+
+        final String asString = dataset.toString();
+        assertTrue(asString.contains(format("%1$s %2$s %3$s %4$s .", identifier, DC.title, title,
+                        Trellis.PreferUserManaged)));
+        assertTrue(asString.contains(format("%1$s %2$s %3$s %4$s .", identifier, SKOS.prefLabel, label,
+                        Trellis.PreferUserManaged)));
+        assertTrue(asString.contains(format("%1$s %2$s %3$s  .", identifier, DC.subject, subject)));
     }
 }
