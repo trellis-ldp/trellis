@@ -65,7 +65,10 @@ public interface BinaryService {
      * @param identifier the binary object identifier
      * @param stream the content
      * @param metadata any user metadata
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that the binary
+     * data were successfully stored in the corresponding persistence layer. In the case of an unsuccessful
+     * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> setContent(IRI identifier, InputStream stream, Map<String, String> metadata);
 
@@ -73,7 +76,10 @@ public interface BinaryService {
      * Purge the content from its corresponding datastore.
      *
      * @param identifier the binary object identifier
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that the binary
+     * data were successfully deleted from the corresponding persistence layer. In the case of an unsuccessful
+     * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> purgeContent(IRI identifier);
 

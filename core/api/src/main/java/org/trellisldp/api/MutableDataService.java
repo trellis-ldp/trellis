@@ -28,7 +28,7 @@ import org.apache.commons.rdf.api.IRI;
 public interface MutableDataService<U> extends RetrievalService<U> {
 
     /**
-     * Put a resource into the server.
+     * Create a resource in the server.
      *
      * @param identifier the identifier for the new resource
      * @param session the session context for this operation
@@ -36,7 +36,10 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that the supplied data were
+     * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
             Binary binary);
@@ -50,7 +53,10 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
      * @param binary a binary resource, relevant only for ldp:NonRDFSource items: {@code null} for none
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that the supplied data
+     * were successfully stored in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
             Binary binary);
@@ -62,7 +68,10 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param session the session context for this operation
      * @param ixnModel the new LDP interaction model for this resource
      * @param dataset the dataset
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that the resource
+     * was successfully deleted from the corresponding persistence layer. In the case of an unsuccessful delete
+     * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> delete(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
 

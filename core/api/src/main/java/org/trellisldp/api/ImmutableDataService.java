@@ -34,7 +34,10 @@ public interface ImmutableDataService<T> extends RetrievalService<T> {
      * @param identifier the identifier under which to persist a dataset
      * @param session the session context for this operation
      * @param dataset a dataset to persist
-     * @return the new completion stage
+     * @return a new completion stage that, when the stage completes normally, indicates that the supplied data
+     * were successfully stored in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletableFuture} will complete exceptionally and can be handled with
+     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> add(IRI identifier, Session session, Dataset dataset);
 
