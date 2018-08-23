@@ -211,12 +211,13 @@ class MutatingLdpHandler extends BaseLdpHandler {
         }
     }
 
-    protected void persistContent(final IRI contentLocation, final Map<String, String> metadata) {
-        try (final InputStream input = new FileInputStream(entity)) {
-            getServices().getBinaryService().setContent(contentLocation, input, metadata).join();
+    protected CompletableFuture<Void> persistContent(final IRI contentLocation, final Map<String, String> metadata) {
+        try {
+            final InputStream input = new FileInputStream(entity);
+            return getServices().getBinaryService().setContent(contentLocation, input, metadata)
+                .whenComplete(RdfUtils.closeInputStreamAsync(input));
         } catch (final IOException ex) {
-            LOGGER.error("Error saving binary content", ex);
-            throw new WebApplicationException("Error saving binary content");
+            throw new WebApplicationException("Error saving binary content: " + ex.getMessage());
         }
     }
 

@@ -28,11 +28,15 @@ import static org.trellisldp.http.domain.HttpConstants.DEFAULT_REPRESENTATION;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -225,6 +229,22 @@ final class RdfUtils {
         }
         LOGGER.debug("Valid syntax not found among {} or {}", acceptableTypes, mimeType);
         throw new NotAcceptableException();
+    }
+
+    /**
+     * Close an input stream in an async chain.
+     * @param input the input stream
+     * @return a bifunction that closes the stream
+     */
+    public static BiConsumer<Object, Throwable> closeInputStreamAsync(final InputStream input) {
+        return (val, err) -> {
+            try {
+                input.close();
+            } catch (final IOException ex) {
+                LOGGER.error("Error closing input stream: {}", ex.getMessage());
+                throw new UncheckedIOException(ex);
+            }
+        };
     }
 
     /**
