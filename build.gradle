@@ -333,7 +333,6 @@ subprojects { subproj ->
     }
 
     test {
-        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
         useJUnitPlatform()
     }
 

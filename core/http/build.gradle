@@ -45,10 +45,6 @@ dependencies {
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
-test {
-    maxParallelForks = 1
-}
-
 jar {
     manifest {
         description project.description
