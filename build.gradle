@@ -111,7 +111,7 @@ allprojects { subproj ->
         docURL = 'https://trellis-ldp.github.io/trellis/apidocs/'
         license = 'Apache 2'
 
-        jacocoVersion = '0.8.1'
+        jacocoVersion = '0.8.2'
         checkstyleVersion = '8.11'
     }
 
@@ -334,9 +334,6 @@ subprojects { subproj ->
 
     test {
         useJUnitPlatform()
-        jacoco {
-            enabled = ! JavaVersion.current().isJava11Compatible()
-        }
     }
 
     afterReleaseBuild.dependsOn docs
