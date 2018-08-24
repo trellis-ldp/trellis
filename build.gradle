@@ -57,7 +57,7 @@ ext {
     mustacheOsgiVersion = '0.9.5_3'
     jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = "${kafkaVersion}_1"
-    karafVersion = '4.2.0'
+    karafVersion = '4.2.1'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
     paxExamVersion = '4.11.0'
