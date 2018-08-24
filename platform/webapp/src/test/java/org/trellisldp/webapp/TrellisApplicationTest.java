@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.text.RandomStringGenerator;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,6 +30,9 @@ import org.junit.jupiter.api.TestInstance;
 @TestInstance(PER_CLASS)
 public class TrellisApplicationTest extends JerseyTest {
 
+    private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+        .withinRange('a', 'z').build();
+
     @Override
     protected Application configure() {
         return new TrellisApplication();
@@ -37,6 +41,8 @@ public class TrellisApplicationTest extends JerseyTest {
     @BeforeAll
     public void before() throws Exception {
         super.setUp();
+        final String id = "-" + generator.generate(5);
+        System.setProperty("trellis.rdf.location", System.getProperty("trellis.rdf.location") + id);
     }
 
     @AfterAll

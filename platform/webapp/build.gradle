@@ -24,6 +24,7 @@ dependencies {
     runtime("javax.activation:javax.activation-api:$activationApiVersion")
     runtime("ch.qos.logback:logback-classic:$logbackVersion")
 
+    testImplementation("org.apache.commons:commons-text:$commonsTextVersion")
     testImplementation("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
     testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jetty:$jerseyVersion")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
@@ -36,7 +37,6 @@ dependencies {
 }
 
 test {
-    maxParallelForks = 1
     systemProperty 'trellis.file.memento.basepath', "$buildDir/data/mementos"
     systemProperty 'trellis.file.binary.basepath', "$buildDir/data/binaries"
     systemProperty 'trellis.rdf.location', "$buildDir/data/rdf"

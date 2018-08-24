@@ -16,10 +16,21 @@ package org.trellisldp.webapp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.apache.commons.text.RandomStringGenerator;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.ServiceBundler;
 
 public class ServiceBundlerTest {
+
+    private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+        .withinRange('a', 'z').build();
+
+    @BeforeAll
+    public static void setUp() {
+        final String id = "-" + generator.generate(5);
+        System.setProperty("trellis.rdf.location", System.getProperty("trellis.rdf.location") + id);
+    }
 
     @Test
     public void testServiceBundler() {
