@@ -297,7 +297,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         rdfConnection.querySelect(q, qs -> {
             final IRI type = getPredicate(qs);
             final Optional<IRI> member = ofNullable(qs.get("subject")).map(RDFNode::asNode)
-                .map(rdf::asRDFTerm).map(t -> (IRI) t).filter(t -> !t.equals(parent));
+                .map(rdf::asRDFTerm).map(t -> (IRI) t).filter(isEqual(parent).negate());
             final Optional<IRI> memberRdfType = ofNullable(qs.get("memberType")).map(RDFNode::asNode)
                 .map(rdf::asRDFTerm).map(t -> (IRI) t);
             final Boolean memberIsModified = ofNullable(qs.get("memberDate"))

@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -373,7 +374,7 @@ public interface ResourceServiceTests {
         assertEquals(of(member), res.getMembershipResource());
         assertEquals(of(DC.isPartOf), res.getMemberOfRelation());
         assertFalse(res.getMemberRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().filter(x -> !LDP.MemberSubject.equals(x)).isPresent());
+        assertFalse(res.getInsertedContentRelation().filter(isEqual(LDP.MemberSubject).negate()).isPresent());
         assertEquals(2L, res.stream(LDP.PreferContainment).count());
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);

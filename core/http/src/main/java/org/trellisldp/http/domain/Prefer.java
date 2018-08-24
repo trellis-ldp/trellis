@@ -20,6 +20,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -88,10 +89,10 @@ public class Prefer {
     public Prefer(final String preference, final List<String> include, final List<String> omit,
             final Set<String> params, final String handling, final Integer wait) {
         this.preference = ofNullable(preference)
-            .filter(x -> x.equals(PREFER_MINIMAL) || x.equals(PREFER_REPRESENTATION));
+            .filter(isEqual(PREFER_MINIMAL).or(PREFER_REPRESENTATION::equals));
         this.include = ofNullable(include).orElseGet(Collections::emptyList);
         this.omit = ofNullable(omit).orElseGet(Collections::emptyList);
-        this.handling = ofNullable(handling).filter(x -> x.equals(PREFER_LENIENT) || x.equals(PREFER_STRICT));
+        this.handling = ofNullable(handling).filter(isEqual(PREFER_LENIENT).or(PREFER_STRICT::equals));
         this.wait = ofNullable(wait);
         this.params = ofNullable(params).orElseGet(Collections::emptySet);
     }

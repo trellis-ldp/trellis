@@ -18,6 +18,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.function.Predicate.isEqual;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -236,7 +237,7 @@ final class RdfUtils {
      */
     public static IRI getProfile(final List<MediaType> acceptableTypes, final RDFSyntax syntax) {
         for (final MediaType type : acceptableTypes) {
-            if (RDFSyntax.byMediaType(type.toString()).filter(s -> s.equals(syntax)).isPresent() &&
+            if (RDFSyntax.byMediaType(type.toString()).filter(isEqual(syntax)).isPresent() &&
                     type.getParameters().containsKey("profile")) {
                 return rdf.createIRI(type.getParameters().get("profile").split(" ")[0].trim());
             }

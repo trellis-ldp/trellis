@@ -20,6 +20,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.function.Predicate.isEqual;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -110,7 +111,7 @@ public class PostHandler extends MutatingLdpHandler {
         this.ldpType = ofNullable(req.getLink())
             .filter(l -> "type".equals(l.getRel())).map(Link::getUri).map(URI::toString)
             .filter(l -> l.startsWith(LDP.getNamespace())).map(rdf::createIRI)
-            .filter(l -> !LDP.Resource.equals(l))
+            .filter(isEqual(LDP.Resource).negate())
             .orElseGet(() -> nonNull(contentType) && isNull(rdfSyntax) ? LDP.NonRDFSource : LDP.RDFSource);
     }
 
