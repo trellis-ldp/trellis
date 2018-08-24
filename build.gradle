@@ -322,6 +322,12 @@ subprojects { subproj ->
         }
     }
 
+    javadoc {
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
+    }
+
     sonarqube {
         skipProject = JavaVersion.current().isJava10Compatible()
     }
