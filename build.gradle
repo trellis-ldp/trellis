@@ -53,16 +53,16 @@ ext {
     mockitoVersion = '2.21.0'
 
     /* OSGi */
-    asmVersion = '6.1.1'
+    asmVersion = '6.2.1'
     mustacheOsgiVersion = '0.9.5_3'
     jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = "${kafkaVersion}_1"
     karafVersion = '4.2.1'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
-    paxExamVersion = '4.11.0'
+    paxExamVersion = '4.12.0'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
-    spiflyVersion = '1.0.10'
+    spiflyVersion = '1.0.12'
     // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = '4.1.0'
 
