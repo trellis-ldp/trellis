@@ -189,6 +189,7 @@
   <feature name="commons-rdf-jena" version="${project.version}">
     <feature version="${jenaVersionRange}">jena</feature>
 
+    <bundle dependency="true">mvn:javax.annotation/javax.annotation-api/${javaxAnnotationsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <!-- commons-rdf-jena depends on commons-rdf-simple -->
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-simple/${commonsRdfVersion}</bundle>
