@@ -63,7 +63,8 @@ public class BinaryServiceTest {
         mockBinaryService.setContent(identifier, mockInputStream);
         verify(mockBinaryService).setContent(eq(identifier), eq(mockInputStream),
                 eq(emptyMap()));
-        assertEquals(mockInputStream, mockBinaryService.getContent(identifier).join());
+        assertEquals(mockInputStream, mockBinaryService.getContent(identifier).join(),
+                "getContent returns wrong input stream");
     }
 
     @Test
@@ -71,6 +72,6 @@ public class BinaryServiceTest {
         when(mockBinaryService.getContent(eq(identifier), any(), any()))
             .thenReturn(completedFuture(new ByteArrayInputStream("FooBar".getBytes(UTF_8))));
         final InputStream content = mockBinaryService.getContent(identifier, 0, 6).join();
-        assertEquals("FooBar", IOUtils.toString(content, UTF_8));
+        assertEquals("FooBar", IOUtils.toString(content, UTF_8), "Binary content did not match");
     }
 }

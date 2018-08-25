@@ -40,19 +40,19 @@ public class BinaryTest {
     @Test
     public void testBinary() {
         final Binary binary = new Binary(identifier, modified, mimeType, size);
-        assertEquals(identifier, binary.getIdentifier());
-        assertEquals(of(mimeType), binary.getMimeType());
-        assertEquals(of(size), binary.getSize());
-        assertEquals(modified, binary.getModified());
+        assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
+        assertEquals(of(mimeType), binary.getMimeType(), "MimeType did not match");
+        assertEquals(of(size), binary.getSize(), "Size did not match");
+        assertEquals(modified, binary.getModified(), "Modification date did not match");
     }
 
     @Test
     public void testBinaryWithOptionalArgs() {
         final Binary binary = new Binary(identifier, modified, null, null);
-        assertEquals(identifier, binary.getIdentifier());
-        assertFalse(binary.getMimeType().isPresent());
-        assertFalse(binary.getSize().isPresent());
-        assertEquals(modified, binary.getModified());
+        assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
+        assertFalse(binary.getMimeType().isPresent(), "MimeType was not absent");
+        assertFalse(binary.getSize().isPresent(), "Size was not absent");
+        assertEquals(modified, binary.getModified(), "Modification date did not match");
     }
 
 }

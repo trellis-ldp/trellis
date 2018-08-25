@@ -22,8 +22,8 @@ public class AuditServiceTest {
     @Test
     public void testNullAuditService() {
         final AuditService svc = new NoopAuditService();
-        assertTrue(svc.creation(null, null).isEmpty());
-        assertTrue(svc.deletion(null, null).isEmpty());
-        assertTrue(svc.update(null, null).isEmpty());
+        assertTrue(svc.creation(null, null).isEmpty(), "Audit triples were generated for a create event");
+        assertTrue(svc.deletion(null, null).isEmpty(), "Audit triples were generated for a delete event");
+        assertTrue(svc.update(null, null).isEmpty(), "Audit triples were generated for an update event");
     }
 }
