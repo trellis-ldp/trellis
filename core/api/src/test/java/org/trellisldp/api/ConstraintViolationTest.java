@@ -39,25 +39,26 @@ public class ConstraintViolationTest {
     public void testSingleConstraint() {
         final ConstraintViolation violation = new ConstraintViolation(InvalidProperty, triple);
 
-        assertEquals(InvalidProperty, violation.getConstraint());
-        assertTrue(violation.getTriples().contains(triple));
-        assertEquals(1L, violation.getTriples().size());
+        assertEquals(InvalidProperty, violation.getConstraint(), "Incorrect constraint IRI");
+        assertTrue(violation.getTriples().contains(triple), "Problematic triple not found");
+        assertEquals(1L, violation.getTriples().size(), "Incorrect triple count");
     }
 
     @Test
     public void testMultipleConstraint() {
         final ConstraintViolation violation = new ConstraintViolation(InvalidProperty, asList(triple, triple2));
 
-        assertEquals(InvalidProperty, violation.getConstraint());
-        assertTrue(violation.getTriples().contains(triple));
-        assertTrue(violation.getTriples().contains(triple2));
-        assertEquals(2L, violation.getTriples().size());
+        assertEquals(InvalidProperty, violation.getConstraint(), "Incorrect constraint IRI");
+        assertTrue(violation.getTriples().contains(triple), "Problematic triple (1) not found");
+        assertTrue(violation.getTriples().contains(triple2), "Problematic triple (2) not found");
+        assertEquals(2L, violation.getTriples().size(), "Incorrect triple count");
     }
 
     @Test
     public void testToString() {
         final ConstraintViolation violation = new ConstraintViolation(InvalidProperty, triple);
         assertEquals("http://www.trellisldp.org/ns/trellis#InvalidProperty: " +
-                "[<ex:subject> <http://www.w3.org/ns/ldp#contains> <ex:object> .]", violation.toString());
+                "[<ex:subject> <http://www.w3.org/ns/ldp#contains> <ex:object> .]", violation.toString(),
+                "Unexpected serialization of constraint violation");
     }
 }

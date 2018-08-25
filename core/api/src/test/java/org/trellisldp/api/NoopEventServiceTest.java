@@ -39,7 +39,7 @@ public class NoopEventServiceTest {
             final EventService svc = new NoopEventService();
             svc.emit(mockEvent);
         } catch (final Exception ex) {
-            fail();
+            fail("Event serialization failed! " + ex.getMessage());
         }
     }
 }

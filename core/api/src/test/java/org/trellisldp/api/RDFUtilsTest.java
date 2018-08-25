@@ -45,7 +45,7 @@ public class RDFUtilsTest {
 
     @Test
     public void testGetInstance() {
-        assertNotNull(rdf);
+        assertNotNull(rdf, "RDF instance is null!");
     }
 
     @Test
@@ -53,7 +53,7 @@ public class RDFUtilsTest {
         final Graph graph = generate(() -> rdf.createTriple(getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toGraph());
 
-        assertTrue(size >= graph.size());
+        assertTrue(size >= graph.size(), "Generated graph has too many triples!");
     }
 
     @Test
@@ -61,7 +61,7 @@ public class RDFUtilsTest {
         final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toDataset().concurrent());
 
-        assertTrue(size >= dataset.size());
+        assertTrue(size >= dataset.size(), "Generated dataset has too many triples!");
     }
 
     @Test
@@ -69,7 +69,7 @@ public class RDFUtilsTest {
         final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toDataset());
 
-        assertTrue(size >= dataset.size());
+        assertTrue(size >= dataset.size(), "Generated dataset has too many triples!");
     }
 
     @Test
@@ -78,7 +78,7 @@ public class RDFUtilsTest {
             .parallel().limit(size).collect(toDataset());
 
         final RDFUtils.DatasetCollector collector = toDataset();
-        assertEquals(dataset, collector.finisher().apply(dataset));
+        assertEquals(dataset, collector.finisher().apply(dataset), "Dataset finisher returns the wrong object!");
     }
 
     @Test
@@ -89,7 +89,8 @@ public class RDFUtilsTest {
             .parallel().limit(size).collect(toSet());
 
         final Collector<Quad, Set<Quad>, Dataset> collector = toDataset().concurrent();
-        assertEquals(quads1.size() + quads2.size(), collector.combiner().apply(quads1, quads2).size());
+        assertEquals(quads1.size() + quads2.size(), collector.combiner().apply(quads1, quads2).size(),
+                "Dataset combiner produces the wrong number of quads!");
     }
 
     private IRI getIRI() {

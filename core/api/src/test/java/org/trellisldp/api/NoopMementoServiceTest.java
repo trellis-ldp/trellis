@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.description;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -68,24 +69,24 @@ public class NoopMementoServiceTest {
     public void noAction() {
         testService.put(identifier, time, of(quad));
 
-        assertEquals(MISSING_RESOURCE, testService.get(identifier, time).join());
-        assertTrue(testService.list(identifier).join().isEmpty());
-        assertNull(testService.delete(identifier, time).join());
+        assertEquals(MISSING_RESOURCE, testService.get(identifier, time).join(), "No-op service found a Memento!");
+        assertTrue(testService.list(identifier).join().isEmpty(), "No-op service found a list of Mementos!");
+        assertNull(testService.delete(identifier, time).join(), "No-op service responded incorrectly to a delete!");
     }
 
     @Test
     public void testPutResourceNoop() {
         testService.put(mockResource);
-        verify(mockResource, never()).getIdentifier();
-        verify(mockResource, never()).getModified();
-        verify(mockResource, never()).stream();
+        verify(mockResource, never().description("getIdentifier was called in no-op service!")).getIdentifier();
+        verify(mockResource, never().description("getModified was called in no-op service!")).getModified();
+        verify(mockResource, never().description("stream was called in no-op service!")).stream();
     }
 
     @Test
     public void testPutResource() {
         mockMementoService.put(mockResource);
-        verify(mockResource).getIdentifier();
-        verify(mockResource).getModified();
-        verify(mockResource).stream();
+        verify(mockResource, description("getIdentifier was never called!")).getIdentifier();
+        verify(mockResource, description("getModified was never called!")).getModified();
+        verify(mockResource, description("stream was never called!")).stream();
     }
 }

@@ -25,31 +25,34 @@ public class SyntaxTest {
 
     @Test
     public void testSparqlUpdate() {
-        assertEquals("SPARQL-Update", SPARQL_UPDATE.name());
-        assertEquals("SPARQL 1.1 Update", SPARQL_UPDATE.title());
-        assertEquals("application/sparql-update", SPARQL_UPDATE.mediaType());
-        assertEquals(".ru", SPARQL_UPDATE.fileExtension());
-        assertEquals("http://www.w3.org/TR/sparql11-update/", SPARQL_UPDATE.iri().getIRIString());
-        assertFalse(SPARQL_UPDATE.supportsDataset());
-        assertEquals(SPARQL_UPDATE.title(), SPARQL_UPDATE.toString());
-        assertNotEquals(SPARQL_UPDATE, LD_PATCH);
-        assertNotEquals(SPARQL_UPDATE, "blah blah");
-        assertEquals(SPARQL_UPDATE, SPARQL_UPDATE);
-        assertEquals(SPARQL_UPDATE.mediaType().hashCode(), SPARQL_UPDATE.hashCode());
+        assertEquals("SPARQL-Update", SPARQL_UPDATE.name(), "Incorrect name for SPARQL-Update!");
+        assertEquals("SPARQL 1.1 Update", SPARQL_UPDATE.title(), "Incorrect title for SPARQL-Update!");
+        assertEquals("application/sparql-update", SPARQL_UPDATE.mediaType(), "Incorrect mediaType for SPARQL-Update!");
+        assertEquals(".ru", SPARQL_UPDATE.fileExtension(), "Incorrect file extension for SPARQL-Update!");
+        assertEquals("http://www.w3.org/TR/sparql11-update/", SPARQL_UPDATE.iri().getIRIString(),
+                "Incorrect IRI for SPARQL-Update!");
+        assertFalse(SPARQL_UPDATE.supportsDataset(), "SPARQL-Update shouldn't be supporting datasets!");
+        assertEquals(SPARQL_UPDATE.title(), SPARQL_UPDATE.toString(), "String version isn't the same as the title!");
+        assertNotEquals(SPARQL_UPDATE, LD_PATCH, "SPARQL-Update equals LD-PATCH???");
+        assertNotEquals(SPARQL_UPDATE, "blah blah", "SPARQL-Update equals blah blah???");
+        assertEquals(SPARQL_UPDATE, SPARQL_UPDATE, "SPARQL-Update doesn't act like a singleton!");
+        assertEquals(SPARQL_UPDATE.mediaType().hashCode(), SPARQL_UPDATE.hashCode(),
+                "SPARQL-Update has an unexpected hash code!");
     }
 
     @Test
     public void testLDPatch() {
-        assertEquals("LD-Patch", LD_PATCH.name());
-        assertEquals("Linked Data Patch Format", LD_PATCH.title());
-        assertEquals("text/ldpatch", LD_PATCH.mediaType());
-        assertEquals(".ldp", LD_PATCH.fileExtension());
-        assertEquals("http://www.w3.org/ns/formats/LD_Patch", LD_PATCH.iri().getIRIString());
-        assertFalse(LD_PATCH.supportsDataset());
-        assertEquals(LD_PATCH.title(), LD_PATCH.toString());
-        assertNotEquals(LD_PATCH, SPARQL_UPDATE);
-        assertNotEquals(LD_PATCH, "blah blah");
-        assertEquals(LD_PATCH, LD_PATCH);
-        assertEquals(LD_PATCH.mediaType().hashCode(), LD_PATCH.hashCode());
+        assertEquals("LD-Patch", LD_PATCH.name(), "Incorrect name for LD-Patch");
+        assertEquals("Linked Data Patch Format", LD_PATCH.title(), "Incorrect title for LD-Patch!");
+        assertEquals("text/ldpatch", LD_PATCH.mediaType(), "Incorrect mediaType for LD-Patch!");
+        assertEquals(".ldp", LD_PATCH.fileExtension(), "Incorrect extension for LD-Patch!");
+        assertEquals("http://www.w3.org/ns/formats/LD_Patch", LD_PATCH.iri().getIRIString(),
+                "Incorrect IRI for LD-Patch!");
+        assertFalse(LD_PATCH.supportsDataset(), "LD-Patch shouldn't be supporting datasets!");
+        assertEquals(LD_PATCH.title(), LD_PATCH.toString(), "LD-Patch string version isn't the same as the title");
+        assertNotEquals(LD_PATCH, SPARQL_UPDATE, "LD-Patch matches SPARQL-Update???");
+        assertNotEquals(LD_PATCH, "blah blah", "LD-Patch matches 'blah blah'???");
+        assertEquals(LD_PATCH, LD_PATCH, "LD-Patch doesn't act like a singleton!");
+        assertEquals(LD_PATCH.mediaType().hashCode(), LD_PATCH.hashCode(), "LD-Patch has unexpected hash code!");
     }
 }

@@ -67,16 +67,15 @@ public class ResourceTest {
 
     @Test
     public void testResource() {
-        assertEquals(0L, mockResource.stream(prefer).count());
-        assertEquals(0L, mockResource.stream(singleton(prefer)).count());
-        assertFalse(mockResource.getMembershipResource().isPresent());
-        assertFalse(mockResource.getMemberRelation().isPresent());
-        assertFalse(mockResource.getMemberOfRelation().isPresent());
-        assertFalse(mockResource.getInsertedContentRelation().isPresent());
-        assertFalse(mockResource.getMemberRelation().isPresent());
-        assertFalse(mockResource.getBinary().isPresent());
-        assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent());
-        assertFalse(mockResource.hasAcl());
+        assertEquals(0L, mockResource.stream(prefer).count(), "Resource stream has extra triples!");
+        assertEquals(0L, mockResource.stream(singleton(prefer)).count(), "Resource stream has extra triples!");
+        assertFalse(mockResource.getMembershipResource().isPresent(), "Membership resource unexpectedly present!");
+        assertFalse(mockResource.getMemberRelation().isPresent(), "Member relation unexpectedly present!");
+        assertFalse(mockResource.getMemberOfRelation().isPresent(), "Member of relation unexpectedly present!");
+        assertFalse(mockResource.getInsertedContentRelation().isPresent(), "Inserted content relation is present!");
+        assertFalse(mockResource.getBinary().isPresent(), "Binary is unexpectedly present!");
+        assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent(), "Extra links unexpectedly present!");
+        assertFalse(mockResource.hasAcl(), "ACL unexpectedly present!");
     }
 
     @Test
@@ -86,32 +85,32 @@ public class ResourceTest {
                     rdf.createQuad(prefer, subject, DC.title, rdf.createLiteral("A title")),
                     rdf.createQuad(PreferUserManaged, subject, DC.title, rdf.createLiteral("Other title"))));
 
-        assertEquals(1L, mockResource.stream(prefer).count());
-        assertEquals(1L, mockResource.stream(singleton(prefer)).count());
+        assertEquals(1L, mockResource.stream(prefer).count(), "Resource stream has wrong number of triples!");
+        assertEquals(1L, mockResource.stream(singleton(prefer)).count(), "Resource has wrong number of triples!");
     }
 
     @Test
     public void testSingletons() {
-        assertEquals(MISSING_RESOURCE, MISSING_RESOURCE);
-        assertEquals(DELETED_RESOURCE, DELETED_RESOURCE);
-        assertNotEquals(MISSING_RESOURCE, DELETED_RESOURCE);
+        assertEquals(MISSING_RESOURCE, MISSING_RESOURCE, "Missing resource singleton doesn't act like a singleton!");
+        assertEquals(DELETED_RESOURCE, DELETED_RESOURCE, "Deleted resource singleton doesn't act like a singleton!");
+        assertNotEquals(MISSING_RESOURCE, DELETED_RESOURCE, "Deleted and missing resources match each other!");
     }
 
     @Test
     public void testMissingResource() {
-        assertNull(MISSING_RESOURCE.getIdentifier());
-        assertNull(MISSING_RESOURCE.getInteractionModel());
-        assertNull(MISSING_RESOURCE.getModified());
-        assertEquals(0L, MISSING_RESOURCE.stream().count());
-        assertEquals("A non-existent resource", MISSING_RESOURCE.toString());
+        assertNull(MISSING_RESOURCE.getIdentifier(), "Missing resource has an identifier!");
+        assertNull(MISSING_RESOURCE.getInteractionModel(), "Missing resource has an interaction model!");
+        assertNull(MISSING_RESOURCE.getModified(), "Missing resource has a last modified date!");
+        assertEquals(0L, MISSING_RESOURCE.stream().count(), "Missing resource contains triples!");
+        assertEquals("A non-existent resource", MISSING_RESOURCE.toString(), "Missing resource has wrong string repr.");
     }
 
     @Test
     public void testDeletedResource() {
-        assertNull(DELETED_RESOURCE.getIdentifier());
-        assertNull(DELETED_RESOURCE.getInteractionModel());
-        assertNull(DELETED_RESOURCE.getModified());
-        assertEquals(0L, DELETED_RESOURCE.stream().count());
-        assertEquals("A deleted resource", DELETED_RESOURCE.toString());
+        assertNull(DELETED_RESOURCE.getIdentifier(), "Deleted resource has an identifier!");
+        assertNull(DELETED_RESOURCE.getInteractionModel(), "Deleted resource has an interaction model!");
+        assertNull(DELETED_RESOURCE.getModified(), "Deleted resource has a modification date!");
+        assertEquals(0L, DELETED_RESOURCE.stream().count(), "Deleted resource contains triples!");
+        assertEquals("A deleted resource", DELETED_RESOURCE.toString(), "Deleted resource has wrong string repr.");
     }
 }

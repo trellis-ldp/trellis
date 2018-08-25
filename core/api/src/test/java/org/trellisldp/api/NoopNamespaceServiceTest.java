@@ -25,8 +25,8 @@ public class NoopNamespaceServiceTest {
     public void noAction() {
         final NamespaceService testService = new NoopNamespaceService();
         testService.setPrefix("foo", "http://bar/");
-        assertFalse(testService.getNamespace("foo").isPresent());
-        assertTrue(testService.getNamespaces().isEmpty());
-        assertFalse(testService.getPrefix("http://bar/").isPresent());
+        assertFalse(testService.getNamespace("foo").isPresent(), "Prefix present in no-op namespace svc!");
+        assertTrue(testService.getNamespaces().isEmpty(), "Namespace list not empty in no-op service!");
+        assertFalse(testService.getPrefix("http://bar/").isPresent(), "Namespace present in no-op service!");
     }
 }

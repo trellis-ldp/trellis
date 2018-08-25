@@ -33,9 +33,9 @@ public class NoopCacheServiceTest {
         };
 
         final CacheService<String, String> cache = new NoopCacheService<>();
-        assertEquals("one-some-suffix", cache.get("one", mapper));
-        assertEquals("two-some-suffix", cache.get("two", mapper));
-        assertEquals("one-some-suffix", cache.get("one", mapper));
-        assertEquals(3L, list.size());
+        assertEquals("one-some-suffix", cache.get("one", mapper), "Cache mapper didn't handle 'one'");
+        assertEquals("two-some-suffix", cache.get("two", mapper), "Cache mapper didn't handle 'two'");
+        assertEquals("one-some-suffix", cache.get("one", mapper), "Cache mapper didn't handle 'one'");
+        assertEquals(3L, list.size(), "Cache calls didn't match the internal record-keeping!");
     }
 }

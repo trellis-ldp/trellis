@@ -282,10 +282,10 @@ public class JoiningResourceServiceTest {
         when(mockMutable.stream()).thenAnswer(inv -> Stream.of(quad));
 
         final Resource res = new RetrievableResource(mockMutable, null);
-        assertEquals(LDP.RDFSource, res.getInteractionModel());
-        assertEquals(time, res.getModified());
-        assertTrue(res.hasAcl());
-        assertTrue(res.stream().filter(quad::equals).findFirst().isPresent());
+        assertEquals(LDP.RDFSource, res.getInteractionModel(), "Resource retrieved with wrong interaction model!");
+        assertEquals(time, res.getModified(), "Resource has wrong modified date!");
+        assertTrue(res.hasAcl(), "Resource is missing ACL!");
+        assertTrue(res.stream().anyMatch(quad::equals), "Expected quad not present in resource stream!");
     }
 
     @Test
@@ -297,11 +297,11 @@ public class JoiningResourceServiceTest {
         dataset.add(quad);
 
         final Resource res = new JoiningResourceService.PersistableResource(identifier, LDP.Container, dataset);
-        assertEquals(identifier, res.getIdentifier());
-        assertEquals(LDP.Container, res.getInteractionModel());
-        assertFalse(res.getModified().isBefore(time));
-        assertFalse(res.getModified().isAfter(now()));
-        assertTrue(res.stream().filter(quad::equals).findFirst().isPresent());
-        assertThrows(UnsupportedOperationException.class, () -> res.hasAcl());
+        assertEquals(identifier, res.getIdentifier(), "Resource has wrong ID!");
+        assertEquals(LDP.Container, res.getInteractionModel(), "Resource has wrong LDP type!");
+        assertFalse(res.getModified().isBefore(time), "Resource modification date predates its creation!");
+        assertFalse(res.getModified().isAfter(now()), "Resource modification date is too late!");
+        assertTrue(res.stream().anyMatch(quad::equals), "Expected quad not present in resource stream");
+        assertThrows(UnsupportedOperationException.class, res::hasAcl, "ACL retrieval should throw an exception!");
     }
 }
