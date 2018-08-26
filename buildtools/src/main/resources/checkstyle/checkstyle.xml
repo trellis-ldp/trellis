@@ -28,6 +28,12 @@
     <!-- Check for invalid whitespace before commas, semicolons, etc -->
     <module name="NoWhitespaceBefore" />
 
+    <!-- Check for empty statements -->
+    <module name="EmptyStatement"/>
+
+    <!-- Check that any module that implements equals or hashCode also implements the other -->
+    <module name="EqualsHashCode"/>
+
     <!-- Checks for redundant import statements -->
     <module name="RedundantImport"/>
 
