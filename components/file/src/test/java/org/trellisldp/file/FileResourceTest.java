@@ -43,50 +43,50 @@ public class FileResourceTest {
     public void testResource() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/resource.nq").getFile());
-        assertTrue(file.exists());
+        assertTrue(file.exists(), "Resource file doesn't exist!");
         final Resource res = new FileResource(identifier, file);
 
-        assertEquals(identifier, res.getIdentifier());
-        assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified());
-        assertEquals(LDP.BasicContainer, res.getInteractionModel());
-        assertFalse(res.getMembershipResource().isPresent());
-        assertFalse(res.getMemberRelation().isPresent());
-        assertFalse(res.getMemberOfRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().isPresent());
-        assertFalse(res.getBinary().isPresent());
-        assertFalse(res.hasAcl());
-        assertEquals(3L, res.stream(LDP.PreferContainment).count());
-        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
-        assertEquals(2L, res.stream(Trellis.PreferServerManaged).count());
-        assertEquals(8L, res.stream().count());
+        assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
+        assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified(), "Incorrect modification date!");
+        assertEquals(LDP.BasicContainer, res.getInteractionModel(), "Incorrect interaction model!");
+        assertFalse(res.getMembershipResource().isPresent(), "Unexpected ldp:membershipResource value!");
+        assertFalse(res.getMemberRelation().isPresent(), "Unexpected ldp:memberRelation value!");
+        assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation value!");
+        assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
+        assertFalse(res.getBinary().isPresent(), "Unexpected binary present!");
+        assertFalse(res.hasAcl(), "Unexpected ACL present!");
+        assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment count!");
+        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
+        assertEquals(2L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
+        assertEquals(8L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test
     public void testBinary() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "binary");
         final File file = new File(getClass().getResource("/binary.nq").getFile());
-        assertTrue(file.exists());
+        assertTrue(file.exists(), "Resource file doesn't exist!");
         final Resource res = new FileResource(identifier, file);
 
-        assertEquals(identifier, res.getIdentifier());
-        assertEquals(parse("2017-02-16T11:17:00Z"), res.getModified());
-        assertEquals(LDP.NonRDFSource, res.getInteractionModel());
-        assertFalse(res.getMembershipResource().isPresent());
-        assertFalse(res.getMemberRelation().isPresent());
-        assertFalse(res.getMemberOfRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getBinary().isPresent());
+        assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
+        assertEquals(parse("2017-02-16T11:17:00Z"), res.getModified(), "Incorrect modification date!");
+        assertEquals(LDP.NonRDFSource, res.getInteractionModel(), "Incorrect interaction model!");
+        assertFalse(res.getMembershipResource().isPresent(), "Unexpected ldp:membershipResource value!");
+        assertFalse(res.getMemberRelation().isPresent(), "Unexpected ldp:memberRelation value!");
+        assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation value!");
+        assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
+        assertTrue(res.getBinary().isPresent(), "Missing binary metadata!");
         res.getBinary().ifPresent(binary -> {
-            assertEquals(parse("2017-02-16T11:17:00Z"), binary.getModified());
-            assertEquals(of(10L), binary.getSize());
-            assertEquals(of("text/plain"), binary.getMimeType());
-            assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier());
+            assertEquals(parse("2017-02-16T11:17:00Z"), binary.getModified(), "Incorrect binary modification date!");
+            assertEquals(of(10L), binary.getSize(), "Incorrect binary size!");
+            assertEquals(of("text/plain"), binary.getMimeType(), "Incorrect binary mime type!");
+            assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier(), "Incorrect binary id!");
         });
-        assertFalse(res.hasAcl());
-        assertEquals(0L, res.stream(LDP.PreferContainment).count());
-        assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
-        assertEquals(6L, res.stream(Trellis.PreferServerManaged).count());
-        assertEquals(8L, res.stream().count());
+        assertFalse(res.hasAcl(), "Unexpected ACL present!");
+        assertEquals(0L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
+        assertEquals(2L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
+        assertEquals(6L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
+        assertEquals(8L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test
@@ -94,59 +94,62 @@ public class FileResourceTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File dir = new File(getClass().getResource("/resource.nq").getFile()).getParentFile();
         final File file = new File(dir, "nonexistent");
-        assertFalse(file.exists());
+        assertFalse(file.exists(), "Non-existent file shouldn't exist!");
         final Resource res = new FileResource(identifier, file);
-        assertEquals(identifier, res.getIdentifier());
-        assertNull(res.getInteractionModel());
-        assertEquals(0L, res.stream().count());
+        assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
+        assertNull(res.getInteractionModel(), "Unexpected interaction model!");
+        assertEquals(0L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test
     public void testIndirectContainer() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/ldpic.nq").getFile());
-        assertTrue(file.exists());
+        assertTrue(file.exists(), "Resource file doesn't exist!");
         final Resource res = new FileResource(identifier, file);
 
-        assertEquals(identifier, res.getIdentifier());
-        assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified());
-        assertEquals(LDP.IndirectContainer, res.getInteractionModel());
-        assertTrue(res.getMembershipResource().isPresent());
-        res.getMembershipResource().ifPresent(rel -> assertEquals(rdf.createIRI(TRELLIS_DATA_PREFIX + "members"), rel));
-        assertTrue(res.getMemberRelation().isPresent());
-        res.getMemberRelation().ifPresent(rel -> assertEquals(DC.subject, rel));
-        assertTrue(res.getInsertedContentRelation().isPresent());
-        res.getInsertedContentRelation().ifPresent(rel -> assertEquals(DC.relation, rel));
-        assertFalse(res.getMemberOfRelation().isPresent());
-        assertFalse(res.getBinary().isPresent());
-        assertFalse(res.hasAcl());
-        assertEquals(3L, res.stream(LDP.PreferContainment).count());
-        assertEquals(6L, res.stream(Trellis.PreferUserManaged).count());
-        assertEquals(5L, res.stream(Trellis.PreferServerManaged).count());
-        assertEquals(14L, res.stream().count());
+        assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
+        assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified(), "Incorrect modification date!");
+        assertEquals(LDP.IndirectContainer, res.getInteractionModel(), "Incorrect interaction model!");
+        assertTrue(res.getMembershipResource().isPresent(), "Missing ldp:membershipResource!");
+        res.getMembershipResource().ifPresent(rel ->
+                assertEquals(rdf.createIRI(TRELLIS_DATA_PREFIX + "members"), rel, "Incorrect ldp:membershipResource!"));
+        assertTrue(res.getMemberRelation().isPresent(), "Missing ldp:memberRelation!");
+        res.getMemberRelation().ifPresent(rel -> assertEquals(DC.subject, rel, "Incorrect ldp:memberRelation!"));
+        assertTrue(res.getInsertedContentRelation().isPresent(), "Missing ldp:insertedContentRelation!");
+        res.getInsertedContentRelation().ifPresent(rel ->
+                assertEquals(DC.relation, rel, "Incorrect ldp:insertedContentRelation!"));
+        assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation!");
+        assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!");
+        assertFalse(res.hasAcl(), "Unexpected ACL!");
+        assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
+        assertEquals(6L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
+        assertEquals(5L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");
+        assertEquals(14L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test
     public void testDirectContainer() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/ldpdc.nq").getFile());
-        assertTrue(file.exists());
+        assertTrue(file.exists(), "Resource file doesn't exist!");
         final Resource res = new FileResource(identifier, file);
 
-        assertEquals(identifier, res.getIdentifier());
-        assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified());
-        assertEquals(LDP.DirectContainer, res.getInteractionModel());
-        assertTrue(res.getMembershipResource().isPresent());
-        res.getMembershipResource().ifPresent(rel -> assertEquals(rdf.createIRI(TRELLIS_DATA_PREFIX + "members"), rel));
-        assertFalse(res.getMemberRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().isPresent());
-        assertTrue(res.getMemberOfRelation().isPresent());
-        res.getMemberOfRelation().ifPresent(rel -> assertEquals(DC.isPartOf, rel));
-        assertFalse(res.getBinary().isPresent());
-        assertFalse(res.hasAcl());
-        assertEquals(3L, res.stream(LDP.PreferContainment).count());
-        assertEquals(5L, res.stream(Trellis.PreferUserManaged).count());
-        assertEquals(4L, res.stream(Trellis.PreferServerManaged).count());
-        assertEquals(12L, res.stream().count());
+        assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
+        assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified(), "Incorrect modification date!");
+        assertEquals(LDP.DirectContainer, res.getInteractionModel(), "Incorrect interaction model!");
+        assertTrue(res.getMembershipResource().isPresent(), "Missing ldp:membershipResource!");
+        res.getMembershipResource().ifPresent(rel ->
+                assertEquals(rdf.createIRI(TRELLIS_DATA_PREFIX + "members"), rel, "Incorrect ldp:membershipResource!"));
+        assertFalse(res.getMemberRelation().isPresent(), "Unexpected ldp:memberRelation!");
+        assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation!");
+        assertTrue(res.getMemberOfRelation().isPresent(), "Missing ldp:isMemberOfRelation!");
+        res.getMemberOfRelation().ifPresent(rel -> assertEquals(DC.isPartOf, rel, "Incorrect ldp:isMemberOfRelation!"));
+        assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!");
+        assertFalse(res.hasAcl(), "Unexpected ACL!");
+        assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
+        assertEquals(5L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
+        assertEquals(4L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");
+        assertEquals(12L, res.stream().count(), "Incorrect total triple count!");
     }
 }
