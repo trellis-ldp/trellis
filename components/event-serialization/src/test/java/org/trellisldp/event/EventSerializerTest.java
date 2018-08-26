@@ -73,8 +73,8 @@ public class EventSerializerTest {
     @Test
     public void testSerialization() {
         final Optional<String> json = svc.serialize(mockEvent);
-        assertTrue(json.isPresent());
-        assertTrue(json.get().contains("\"inbox\":\"info:ldn/inbox\""));
+        assertTrue(json.isPresent(), "Serialization not present!");
+        assertTrue(json.get().contains("\"inbox\":\"info:ldn/inbox\""), "ldp:inbox not in serialization!");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class EventSerializerTest {
         });
 
         final Optional<String> json = svc.serialize(mockEvent);
-        assertFalse(json.isPresent());
+        assertFalse(json.isPresent(), "exception didn't prevent serialization!");
     }
 
     @Test
@@ -93,31 +93,31 @@ public class EventSerializerTest {
         when(mockEvent.getTypes()).thenReturn(asList(Create, Activity));
 
         final Optional<String> json = svc.serialize(mockEvent);
-        assertTrue(json.isPresent());
+        assertTrue(json.isPresent(), "Serialization not present!");
 
         final ObjectMapper mapper = new ObjectMapper();
         @SuppressWarnings("unchecked")
         final Map<String, Object> map = mapper.readValue(json.get(), Map.class);
-        assertTrue(map.containsKey("@context"));
-        assertTrue(map.containsKey("id"));
-        assertTrue(map.containsKey("type"));
-        assertTrue(map.containsKey("inbox"));
-        assertTrue(map.containsKey("actor"));
-        assertTrue(map.containsKey("object"));
-        assertTrue(map.containsKey("published"));
+        assertTrue(map.containsKey("@context"), "@context property not in JSON structure!");
+        assertTrue(map.containsKey("id"), "id property not in JSON structure!");
+        assertTrue(map.containsKey("type"), "type property not in JSON structure!");
+        assertTrue(map.containsKey("inbox"), "inbox property not in JSON structure!");
+        assertTrue(map.containsKey("actor"), "actor property not in JSON structure!");
+        assertTrue(map.containsKey("object"), "object property not in JSON structure!");
+        assertTrue(map.containsKey("published"), "published property not in JSON structure!");
 
         final List<?> types = (List<?>) map.get("type");
-        assertTrue(types.contains("Create"));
-        assertTrue(types.contains(Activity.getIRIString()));
+        assertTrue(types.contains("Create"), "as:Create not in type list!");
+        assertTrue(types.contains(Activity.getIRIString()), "prov:Activity not in type list!");
 
-        assertTrue(AS.getNamespace().contains((String) map.get("@context")));
+        assertTrue(AS.getNamespace().contains((String) map.get("@context")), "AS namespace not in @context!");
 
         final List<?> actor = (List<?>) map.get("actor");
-        assertTrue(actor.contains("info:user/test"));
+        assertTrue(actor.contains("info:user/test"), "actor property has incorrect value!");
 
-        assertTrue(map.get("id").equals("info:event/12345"));
-        assertTrue(map.get("inbox").equals("info:ldn/inbox"));
-        assertTrue(map.get("published").equals(time.toString()));
+        assertTrue(map.get("id").equals("info:event/12345"), "id property has incorrect value!");
+        assertTrue(map.get("inbox").equals("info:ldn/inbox"), "inbox property has incorrect value!");
+        assertTrue(map.get("published").equals(time.toString()), "published property has incorrect value!");
     }
 
     @Test
@@ -127,31 +127,31 @@ public class EventSerializerTest {
         when(mockEvent.getTargetTypes()).thenReturn(emptyList());
 
         final Optional<String> json = svc.serialize(mockEvent);
-        assertTrue(json.isPresent());
+        assertTrue(json.isPresent(), "Serialization not present!");
 
         final ObjectMapper mapper = new ObjectMapper();
         @SuppressWarnings("unchecked")
         final Map<String, Object> map = mapper.readValue(json.get(), Map.class);
-        assertTrue(map.containsKey("@context"));
-        assertTrue(map.containsKey("id"));
-        assertTrue(map.containsKey("type"));
-        assertFalse(map.containsKey("inbox"));
-        assertFalse(map.containsKey("actor"));
-        assertTrue(map.containsKey("object"));
-        assertTrue(map.containsKey("published"));
+        assertTrue(map.containsKey("@context"), "@context property not in JSON structure!");
+        assertTrue(map.containsKey("id"), "id property not in JSON structure!");
+        assertTrue(map.containsKey("type"), "type property not in JSON strucutre!");
+        assertFalse(map.containsKey("inbox"), "inbox property unexpectedly in JSON structure!");
+        assertFalse(map.containsKey("actor"), "actor property unexpectedly in JSON structure!");
+        assertTrue(map.containsKey("object"), "object property not in JSON structure!");
+        assertTrue(map.containsKey("published"), "published property not in JSON structure!");
 
         final List<?> types = (List<?>) map.get("type");
-        assertTrue(types.contains("Create"));
+        assertTrue(types.contains("Create"), "as:Create type not in type list!");
 
         @SuppressWarnings("unchecked")
         final Map<String, Object> obj = (Map<String, Object>) map.get("object");
-        assertTrue(obj.containsKey("id"));
-        assertFalse(obj.containsKey("type"));
+        assertTrue(obj.containsKey("id"), "object id property not in JSON structure!");
+        assertFalse(obj.containsKey("type"), "empty object type unexpectedly in JSON structure!");
 
-        assertTrue(AS.getNamespace().contains((String) map.get("@context")));
+        assertTrue(AS.getNamespace().contains((String) map.get("@context")), "AS namespace not in @context!");
 
-        assertTrue(map.get("id").equals("info:event/12345"));
-        assertTrue(map.get("published").equals(time.toString()));
+        assertTrue(map.get("id").equals("info:event/12345"), "id property has incorrect value!");
+        assertTrue(map.get("published").equals(time.toString()), "published property has incorrect value!");
     }
 
     @SuppressWarnings("unchecked")
