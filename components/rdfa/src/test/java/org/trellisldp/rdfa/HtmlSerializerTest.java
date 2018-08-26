@@ -93,74 +93,80 @@ public class HtmlSerializerTest {
     @Test
     public void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
-        assertThrows(UncheckedIOException.class, () -> service.write(getTriples(), mockOutputStream, ""));
+        assertThrows(UncheckedIOException.class, () -> service.write(getTriples(), mockOutputStream, ""),
+                "IOException in write operation doesn't cause failure!");
     }
 
     @Test
     public void testHtmlSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, null);
-        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
+        assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
     public void testHtmlSerializer2() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, "http://example.org/");
-        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
+        service.write(getTriples(), out, "http://example.com/");
+        assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
     public void testHtmlSerializer3() {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new HtmlSerializer(mockNamespaceService, "/resource-test.mustache",
                 "//www.trellisldp.org/assets/css/trellis.css", "", "//www.trellisldp.org/assets/img/trellis.png");
 
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service4.write(getTriples(), out, "http://example.org/");
-        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
+        service4.write(getTriples(), out, "http://example.com/");
+        assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
     public void testHtmlSerializer4() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
-
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new HtmlSerializer(mockNamespaceService, path,
                 "//www.trellisldp.org/assets/css/trellis.css", "", null);
-
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service4.write(getTriples(), out, "http://example.org/");
-        assertAll(checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
+        service4.write(getTriples(), out, "http://example.com/");
+        assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
     public void testHtmlSerializer5() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
-
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new HtmlSerializer(null, path,
                 "//www.trellisldp.org/assets/css/trellis.css", "", null);
 
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service4.write(getTriples2(), out, "http://example.org/");
+        service4.write(getTriples2(), out, "http://example.com/");
         final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>http://example.org/</title>"));
-        assertTrue(html.contains("_:B"));
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">http://purl.org/dc/terms/spatial</a>"));
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">http://purl.org/dc/dcmitype/Text</a>"));
-        assertTrue(html.contains("<a href=\"mailto:user@host.com\">mailto:user@host.com</a>"));
-        assertTrue(html.contains("<h1>http://example.org/</h1>"));
+        assertTrue(html.contains("<title>http://example.com/</title>"), "Title not in HTML!");
+        assertTrue(html.contains("_:B"), "bnode value not in HTML!");
+        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"),
+                "Geonames object IRI not in HTML!");
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">http://purl.org/dc/terms/spatial</a>"),
+                "dc:spatial predicate not in HTML!");
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">http://purl.org/dc/dcmitype/Text</a>"),
+                "dcmi type not in HTML output!");
+        assertTrue(html.contains("<a href=\"mailto:user@example.com\">mailto:user@example.com</a>"),
+                "email IRI not in output!");
+        assertTrue(html.contains("<h1>http://example.com/</h1>"), "Default title not in output!");
     }
 
     private static Stream<Executable> checkHtmlFromTriples(final String html) {
         return of(
-                () -> assertTrue(html.contains("<title>A title</title>")),
-                () -> assertTrue(html.contains("_:B")),
+                () -> assertTrue(html.contains("<title>A title</title>"), "Title not in HTML!"),
+                () -> assertTrue(html.contains("_:B"), "BNode not in HTML output!"),
                 () -> assertTrue(
-                    html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>")),
-                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>")),
-                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>")),
-                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>")),
-                () -> assertTrue(html.contains("<h1>A title</h1>")));
+                    html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"),
+                    "Geonames object IRI not in HTML!"),
+                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"),
+                                 "dc:title predicate not in HTML!"),
+                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"),
+                                 "dc:spatial predicate not in HTML!"),
+                () -> assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"),
+                                 "dcmitype:Text object not in HTML!"),
+                () -> assertTrue(html.contains("<h1>A title</h1>"), "Title value not in HTML!"));
     }
 
     private static Stream<Triple> getTriples() {
@@ -175,12 +181,11 @@ public class HtmlSerializerTest {
                 create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929024/")),
                 create(sub, type, Text.asNode()))
             .map(rdf::asTriple);
-
     }
 
     private static Stream<Triple> getTriples2() {
         final Node sub = createURI("trellis:data/resource");
-        final Node other = createURI("mailto:user@host.com");
+        final Node other = createURI("mailto:user@example.com");
         final Node bn = createBlankNode();
         return of(
                 create(sub, subject.asNode(), bn),
@@ -189,6 +194,5 @@ public class HtmlSerializerTest {
                 create(bn, subject.asNode(), other),
                 create(sub, type, Text.asNode()))
             .map(rdf::asTriple);
-
     }
 }
