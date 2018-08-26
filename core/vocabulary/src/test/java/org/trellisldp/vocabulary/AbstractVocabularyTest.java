@@ -60,7 +60,7 @@ public abstract class AbstractVocabularyTest {
         } catch (final HttpException ex) {
             LOGGER.warn("Could not fetch {}: {}", url, ex.getMessage());
         }
-        assumeTrue(graph.size() > 0);
+        assumeTrue(graph.size() > 0, "Remote vocabulary has no terms! Skip the test for " + url);
         return graph;
     }
 
@@ -71,7 +71,7 @@ public abstract class AbstractVocabularyTest {
         final Set<String> subjects = graph.find(ANY, ANY, ANY).mapWith(Triple::getSubject)
                 .filterKeep(Node::isURI).mapWith(Node::getURI).filterKeep(Objects::nonNull).toSet();
 
-        assertTrue(fields().count() > 0);
+        assertTrue(fields().count() > 0, "No fields found in the vocabulary class!");
         fields().forEach(field -> {
             if (isStrict()) {
                 assertTrue(subjects.contains(namespace() + field),

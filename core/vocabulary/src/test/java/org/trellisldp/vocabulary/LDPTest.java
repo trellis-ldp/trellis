@@ -36,8 +36,8 @@ public class LDPTest extends AbstractVocabularyTest {
 
     @Test
     public void testSuperclass() {
-        assertEquals(LDP.Resource, LDP.getSuperclassOf(LDP.NonRDFSource));
-        assertEquals(LDP.Container, LDP.getSuperclassOf(LDP.BasicContainer));
-        assertNull(LDP.getSuperclassOf(LDP.Resource));
+        assertEquals(LDP.Resource, LDP.getSuperclassOf(LDP.NonRDFSource), "LDP-R isn't a superclass of LDP-NR!");
+        assertEquals(LDP.Container, LDP.getSuperclassOf(LDP.BasicContainer), "LDP-C isn't a superclass of LDP-BC!");
+        assertNull(LDP.getSuperclassOf(LDP.Resource), "Astonishingly, LDP-R has a superclass!");
     }
 }

@@ -32,15 +32,15 @@ public class XSDTest {
 
     @Test
     public void testVocabulary() {
-        assertEquals(namespace() + "dateTime", XSD.dateTime.getIRIString());
-        assertEquals(namespace() + "string", XSD.string_.getIRIString());
-        assertEquals(dateTime.getURI(), XSD.dateTime.getIRIString());
-        assertEquals(xstring.getURI(), XSD.string_.getIRIString());
+        assertEquals(namespace() + "dateTime", XSD.dateTime.getIRIString(), "xsd:dateTime IRIs don't match");
+        assertEquals(namespace() + "string", XSD.string_.getIRIString(), "xsd:string IRIs don't match!");
+        assertEquals(dateTime.getURI(), XSD.dateTime.getIRIString(), "xsd:dateTime IRI doesn't match Jena's value!");
+        assertEquals(xstring.getURI(), XSD.string_.getIRIString(), "xsd:string IRI doesn't match Jena's value!");
     }
 
     @Test
     public void checkUri() {
-        assertEquals(namespace(), XSD.getNamespace());
-        assertEquals(NS, XSD.getNamespace());
+        assertEquals(namespace(), XSD.getNamespace(), "Namespace IRIs don't match!");
+        assertEquals(NS, XSD.getNamespace(), "Namespace IRI doesn't match Jena's value!");
     }
 }
