@@ -28,9 +28,9 @@ public class SimpleAgentServiceTest {
     public void testAgent() {
         final AgentService service = new SimpleAgentService();
 
-        assertEquals("user:acoburn", service.asAgent("user:acoburn").getIRIString());
-        assertEquals("user:foo/bar", service.asAgent("user:foo/bar").getIRIString());
-        assertEquals(Trellis.AnonymousAgent, service.asAgent(null));
-        assertEquals(Trellis.AnonymousAgent, service.asAgent(""));
+        assertEquals("user:acoburn", service.asAgent("user:acoburn").getIRIString(), "Unexpected acoburn agent IRI!");
+        assertEquals("user:foo/bar", service.asAgent("user:foo/bar").getIRIString(), "Unexpected foo/bar agent IRI!");
+        assertEquals(Trellis.AnonymousAgent, service.asAgent(null), "null agent isn't anonymous!");
+        assertEquals(Trellis.AnonymousAgent, service.asAgent(""), "blank agent isn't anonymous!");
     }
 }
