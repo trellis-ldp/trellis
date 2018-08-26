@@ -67,9 +67,10 @@ public class DefaultAuditServiceTest {
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.creation(subject, mockSession).forEach(dataset::add);
-        assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent());
-        assertTrue(dataset.contains(null, null, type, AS.Create));
-        assertAll(checkEventProperties(dataset));
+        assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent(),
+                "Graph and dataset sizes don't match for creation event!");
+        assertTrue(dataset.contains(null, null, type, AS.Create), "as:Create type not in create dataset!");
+        assertAll("Event property check", checkEventProperties(dataset));
     }
 
     @Test
@@ -77,9 +78,10 @@ public class DefaultAuditServiceTest {
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.deletion(subject, mockSession).forEach(dataset::add);
-        assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent());
-        assertTrue(dataset.contains(null, null, type, AS.Delete));
-        assertAll(checkEventProperties(dataset));
+        assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent(),
+                "Graph and dataset sizes don't match for deletion event!");
+        assertTrue(dataset.contains(null, null, type, AS.Delete), "as:Delete type not in delete dataset!");
+        assertAll("Event property check", checkEventProperties(dataset));
     }
 
     @Test
@@ -89,17 +91,20 @@ public class DefaultAuditServiceTest {
         svc.update(subject, mockSession).forEach(dataset::add);
         assertTrue(dataset.getGraph(Trellis.PreferAudit).filter(graph -> graph.size() == dataset.size()).isPresent());
         assertTrue(dataset.contains(null, null, type, AS.Update));
-        assertAll(checkEventProperties(dataset));
+        assertAll("Event property check", checkEventProperties(dataset));
     }
 
     private Stream<Executable> checkEventProperties(final Dataset dataset) {
         return Stream.of(
-                () -> assertTrue(dataset.contains(null, null, type, PROV.Activity)),
-                () -> assertTrue(dataset.contains(null, subject, PROV.wasGeneratedBy, null)),
-                () -> assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousAgent)),
-                () -> assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.AdministratorAgent)),
+                () -> assertTrue(dataset.contains(null, null, type, PROV.Activity), "missing prov:Activity triple!"),
+                () -> assertTrue(dataset.contains(null, subject, PROV.wasGeneratedBy, null),
+                                 "missing prov:wasGeneratedBy triple!"),
+                () -> assertTrue(dataset.contains(null, null, PROV.wasAssociatedWith, Trellis.AnonymousAgent),
+                                 "missing prov:wasAssociatedWith triple!"),
+                () -> assertTrue(dataset.contains(null, null, PROV.actedOnBehalfOf, Trellis.AdministratorAgent),
+                                 "missing prov:actedOnBehalfOf triple!"),
                 () -> assertTrue(dataset.contains(null, null, PROV.atTime,
-                        rdf.createLiteral(created.toString(), XSD.dateTime))),
-                () -> assertEquals(6L, dataset.size()));
+                        rdf.createLiteral(created.toString(), XSD.dateTime)), "missing prov:atTime triple!"),
+                () -> assertEquals(6L, dataset.size(), "Incorrect dataset size!"));
     }
 }
