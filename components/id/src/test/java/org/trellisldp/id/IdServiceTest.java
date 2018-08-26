@@ -14,7 +14,7 @@
 package org.trellisldp.id;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Supplier;
@@ -34,9 +34,9 @@ public class IdServiceTest {
         final String id1 = supplier.get();
         final String id2 = supplier.get();
 
-        assertTrue(id1.startsWith(prefix));
-        assertTrue(id2.startsWith(prefix));
-        assertFalse(id1.equals(id2));
+        assertTrue(id1.startsWith(prefix), "Generated id has wrong prefix!");
+        assertTrue(id2.startsWith(prefix), "Generated id has wrong prefix!");
+        assertNotEquals(id1, id2, "Generated ids shouldn't match!");
     }
 
     @Test
@@ -50,10 +50,10 @@ public class IdServiceTest {
         final String id1 = gen1.get();
         final String id2 = gen2.get();
 
-        assertTrue(id1.startsWith(prefix1));
-        assertFalse(id1.equals(prefix1));
-        assertTrue(id2.startsWith(prefix2));
-        assertFalse(id2.equals(prefix2));
+        assertTrue(id1.startsWith(prefix1), "Generated id has wrong prefix!");
+        assertNotEquals(prefix1, id1, "Generated id shouldn't equal prefix!");
+        assertTrue(id2.startsWith(prefix2), "Generated id has wrong prefix!");
+        assertNotEquals(prefix2, id2, "Generated id shouldn't equal prefix!");
     }
 
     @Test
@@ -64,11 +64,11 @@ public class IdServiceTest {
         final String id = gen.get();
 
         final String[] parts = id.split("/");
-        assertEquals(5L, parts.length);
-        assertEquals(parts[0], parts[4].substring(0, 2));
-        assertEquals(parts[1], parts[4].substring(2, 4));
-        assertEquals(parts[2], parts[4].substring(4, 6));
-        assertEquals(parts[3], parts[4].substring(6, 8));
+        assertEquals(5L, parts.length, "hierarchical supplier has wrong number of levels!");
+        assertEquals(parts[0], parts[4].substring(0, 2), "hierarchical supplier has wrong first section!");
+        assertEquals(parts[1], parts[4].substring(2, 4), "hierarchical supplier has wrong second section!");
+        assertEquals(parts[2], parts[4].substring(4, 6), "hierarchical supplier has wrong third section!");
+        assertEquals(parts[3], parts[4].substring(6, 8), "hierarchical supplier has wrong fourth section!");
     }
 
     @Test
@@ -77,6 +77,6 @@ public class IdServiceTest {
         final String id1 = supplier.get();
         final String id2 = supplier.get();
 
-        assertFalse(id1.equals(id2));
+        assertNotEquals(id1, id2, "Suppliers shouldn't be equal!");
     }
 }
