@@ -54,7 +54,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
     public void testDelete() {
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
         final Response res = handler.deleteResource(handler.initialize(mockResource)).join().build();
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect delete response!");
     }
 
     @Test
@@ -69,7 +69,8 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                "No exception thrown when the backend reports an exception!");
     }
 
     @Test
@@ -78,7 +79,8 @@ public class DeleteHandlerTest extends HandlerBaseTest {
             .thenReturn(asyncException());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                "No exception thrown when the backend reports an exception!");
     }
 
     @Test
@@ -89,8 +91,8 @@ public class DeleteHandlerTest extends HandlerBaseTest {
                 handler.initialize(mockResource)).getResponse();
         assertTrue(res.getLinks().stream().anyMatch(link ->
             link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
-            link.getRel().equals(LDP.constrainedBy.getIRIString())), "Check links");
-        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType(), "Check media type");
+            link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing Link headers");
+        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType(), "Incorrect media type");
     }
 
     @Test
@@ -100,7 +102,8 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                "No exception thrown when an ACL couldn't be deleted!");
     }
 
     @Test
@@ -112,7 +115,8 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))));
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                "No exception thrown when an ACL audit stream couldn't be written!");
     }
 
     @Test
@@ -122,7 +126,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.initialize(mockResource)).getResponse();
-        assertEquals(PRECONDITION_FAILED, res.getStatusInfo());
+                handler.initialize(mockResource), "Unexpected response type!").getResponse();
+        assertEquals(PRECONDITION_FAILED, res.getStatusInfo(), "Incorrect response type!");
     }
 }
