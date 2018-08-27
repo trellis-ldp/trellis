@@ -21,6 +21,7 @@ import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -97,13 +98,13 @@ public class RdfUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("text", "turtle"));
 
-        assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, types, empty()));
+        assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, types, empty()), "Cannot determine Turtle syntax!");
     }
 
     @Test
     public void testGetSyntaxEmpty() {
-        assertFalse(RdfUtils.getSyntax(ioService, emptyList(), of("some/type")).isPresent());
-        assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, emptyList(), empty()));
+        assertFalse(RdfUtils.getSyntax(ioService, emptyList(), of("some/type")).isPresent(), "Syntax not rejected!");
+        assertEquals(of(TURTLE), RdfUtils.getSyntax(ioService, emptyList(), empty()), "Turtle not default syntax!");
     }
 
     @Test
@@ -113,7 +114,8 @@ public class RdfUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("text", "turtle"));
 
-        assertFalse(RdfUtils.getSyntax(ioService, types, of("application/json")).isPresent());
+        assertFalse(RdfUtils.getSyntax(ioService, types, of("application/json")).isPresent(),
+                "Non-RDF syntax is incorrectly handled!");
     }
 
     @Test
@@ -122,7 +124,8 @@ public class RdfUtilsTest {
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"));
 
-        assertThrows(NotAcceptableException.class, () -> RdfUtils.getSyntax(ioService, types, empty()));
+        assertThrows(NotAcceptableException.class, () -> RdfUtils.getSyntax(ioService, types, empty()),
+                "Not-Acceptable Exception should be thrown when nothing matches");
     }
 
     @Test
@@ -131,9 +134,9 @@ public class RdfUtilsTest {
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferServerManaged.getIRIString() + "\""))).collect(toList());
 
-        assertFalse(filtered.contains(QUAD2));
-        assertTrue(filtered.contains(QUAD3));
-        assertEquals(1, filtered.size());
+        assertFalse(filtered.contains(QUAD2), "Prefer filter doesn't catch quad!");
+        assertTrue(filtered.contains(QUAD3), "Prefer filter misses quad!");
+        assertEquals(1, filtered.size(), "Incorrect size of filtered quad list");
     }
 
     @Test
@@ -141,8 +144,8 @@ public class RdfUtilsTest {
         final List<Quad> filtered2 = QUADS.stream().filter(RdfUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation"))).collect(toList());
 
-        assertTrue(filtered2.contains(QUAD3));
-        assertEquals(1, filtered2.size());
+        assertTrue(filtered2.contains(QUAD3), "Prefer filter omits quad!");
+        assertEquals(1, filtered2.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
@@ -151,10 +154,10 @@ public class RdfUtilsTest {
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferAudit.getIRIString() + "\""))).collect(toList());
 
-        assertTrue(filtered3.contains(QUAD1));
-        assertFalse(filtered3.contains(QUAD2));
-        assertTrue(filtered3.contains(QUAD3));
-        assertEquals(2, filtered3.size());
+        assertTrue(filtered3.contains(QUAD1), "Prefer filter omits quad!");
+        assertFalse(filtered3.contains(QUAD2), "Prefer filter doesn't catch quad!");
+        assertTrue(filtered3.contains(QUAD3), "Prefer filter omits quad!");
+        assertEquals(2, filtered3.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
@@ -163,10 +166,10 @@ public class RdfUtilsTest {
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferUserManaged.getIRIString() + "\""))).collect(toList());
 
-        assertFalse(filtered4.contains(QUAD1));
-        assertFalse(filtered4.contains(QUAD2));
-        assertTrue(filtered4.contains(QUAD3));
-        assertEquals(1, filtered4.size());
+        assertFalse(filtered4.contains(QUAD1), "Prefer filter doesn't omit quad!");
+        assertFalse(filtered4.contains(QUAD2), "Prefer filter doesn't omit quad!");
+        assertTrue(filtered4.contains(QUAD3), "Prefer filter omits quad!");
+        assertEquals(1, filtered4.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
@@ -220,13 +223,13 @@ public class RdfUtilsTest {
             .map(RdfUtils.skolemizeTriples(mockResourceService, "http://example.org/"))
             .collect(toList());
 
-        assertTrue(triples.stream().anyMatch(t -> t.getSubject().equals(identifier)));
-        assertTrue(triples.stream().anyMatch(t -> t.getObject().equals(literal)));
+        assertTrue(triples.stream().anyMatch(t -> t.getSubject().equals(identifier)), "subject not in triple stream!");
+        assertTrue(triples.stream().anyMatch(t -> t.getObject().equals(literal)), "Literal not in triple stream!");
         assertTrue(triples.stream().anyMatch(t -> t.getSubject().ntriplesString()
-                    .startsWith("<" + TRELLIS_BNODE_PREFIX)));
+                    .startsWith("<" + TRELLIS_BNODE_PREFIX)), "Skolemized bnode not in triple stream!");
 
-        triples.stream().map(RdfUtils.unskolemizeTriples(mockResourceService, "http://example.org/"))
-            .forEach(t -> assertTrue(graph.contains(t)));
+        assertAll(triples.stream().map(RdfUtils.unskolemizeTriples(mockResourceService, "http://example.org/"))
+            .map(t -> () -> assertTrue(graph.contains(t), "Graph doesn't include triple: " + t)));
     }
 
     @Test
@@ -235,7 +238,7 @@ public class RdfUtilsTest {
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
                 new MediaType("application", "ld+json", singletonMap("profile", compacted.getIRIString())));
-        assertEquals(compacted, RdfUtils.getProfile(types, JSONLD));
+        assertEquals(compacted, RdfUtils.getProfile(types, JSONLD), "Incorrect json-ld profile!");
     }
 
     @Test
@@ -244,7 +247,7 @@ public class RdfUtilsTest {
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
                 new MediaType("application", "ld+json", singletonMap("profile", "first second")));
-        assertEquals(rdf.createIRI("first"), RdfUtils.getProfile(types, JSONLD));
+        assertEquals(rdf.createIRI("first"), RdfUtils.getProfile(types, JSONLD), "Incorrect json-ld profile!");
     }
 
     @Test
@@ -253,7 +256,7 @@ public class RdfUtilsTest {
         final Literal object = rdf.createLiteral("title");
         final Triple triple = rdf.createTriple(subject, DC.title, object);
         final Quad quad = rdf.createQuad(Trellis.PreferUserManaged, subject, DC.title, object);
-        assertEquals(quad, RdfUtils.toQuad(Trellis.PreferUserManaged).apply(triple));
+        assertEquals(quad, RdfUtils.toQuad(Trellis.PreferUserManaged).apply(triple), "Incorrect quad from triple!");
     }
 
     @Test
@@ -262,13 +265,13 @@ public class RdfUtilsTest {
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
                 new MediaType("application", "ld+json"));
-        assertNull(RdfUtils.getProfile(types, JSONLD));
+        assertNull(RdfUtils.getProfile(types, JSONLD), "Unexpected json-ld profile!");
     }
 
     @Test
     public void testCloseInputStreamWithError() throws IOException {
         doThrow(new IOException()).when(mockInputStream).close();
         assertThrows(UncheckedIOException.class, () ->
-                RdfUtils.closeInputStreamAsync(mockInputStream).accept(null, null));
+                RdfUtils.closeInputStreamAsync(mockInputStream).accept(null, null), "No exception on bad InputStream!");
     }
 }

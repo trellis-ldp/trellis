@@ -29,10 +29,10 @@ public class MementoResourceTest {
     @Test
     public void testIsMementoLink() {
         assertTrue(MementoResource.isMementoLink(fromUri(url).rel("memento")
-                    .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()));
+                    .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()), "Valid Memento Link header skipped!");
         assertFalse(MementoResource.isMementoLink(fromUri(url).rel("foo")
-                    .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()));
+                    .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()), "Invalid Memento header accepted!");
         assertFalse(MementoResource.isMementoLink(fromUri(url).rel("memento")
-                    .param("bar", "Fri, 11 May 2018 15:29:25 GMT").build()));
+                    .param("bar", "Fri, 11 May 2018 15:29:25 GMT").build()), "Invalid Memento header accepted!");
     }
 }

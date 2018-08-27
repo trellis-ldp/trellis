@@ -56,7 +56,7 @@ public class TrellisDatasetTest {
             try (final TrellisDataset dataset = new TrellisDataset(mockDataset)) {
                 // nothing here
             }
-        });
+        }, "IOException isn't caught when closing the dataset!");
     }
 
     @Test
@@ -73,9 +73,10 @@ public class TrellisDatasetTest {
 
         final String asString = dataset.toString();
         assertTrue(asString.contains(format("%1$s %2$s %3$s %4$s .", identifier, DC.title, title,
-                        Trellis.PreferUserManaged)));
+                        Trellis.PreferUserManaged)), "Serialized dataset is missing dc:title quad!");
         assertTrue(asString.contains(format("%1$s %2$s %3$s %4$s .", identifier, SKOS.prefLabel, label,
-                        Trellis.PreferUserManaged)));
-        assertTrue(asString.contains(format("%1$s %2$s %3$s  .", identifier, DC.subject, subject)));
+                        Trellis.PreferUserManaged)), "Serialized dataset is missing skos:prefLabel quad!");
+        assertTrue(asString.contains(format("%1$s %2$s %3$s  .", identifier, DC.subject, subject)),
+                "Serialized dataset is missing dc:subject triple!");
     }
 }

@@ -45,6 +45,6 @@ public class TrellisGraphTest {
             try (final TrellisGraph dataset = new TrellisGraph(mockGraph)) {
                 // nothing here
             }
-        });
+        }, "IOException isn't caught when closing the graph!");
     }
 }

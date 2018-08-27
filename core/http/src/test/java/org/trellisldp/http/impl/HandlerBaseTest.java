@@ -23,6 +23,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
@@ -166,32 +167,29 @@ abstract class HandlerBaseTest {
 
     protected Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {
         final String allow = res.getHeaderString(ALLOW);
-        return of(
-                () -> assertNotNull(allow),
-                () -> assertEquals(allow.contains(GET), methods.contains(GET)),
-                () -> assertEquals(allow.contains(HEAD), methods.contains(HEAD)),
-                () -> assertEquals(allow.contains(OPTIONS), methods.contains(OPTIONS)),
-                () -> assertEquals(allow.contains(PUT), methods.contains(PUT)),
-                () -> assertEquals(allow.contains(DELETE), methods.contains(DELETE)),
-                () -> assertEquals(allow.contains(POST), methods.contains(POST)),
-                () -> assertEquals(allow.contains(PATCH), methods.contains(PATCH)));
+        return concat(of(() -> assertNotNull(allow, "Missing Allow header!")),
+                of(GET, HEAD, OPTIONS, PUT, DELETE, POST, PATCH).map(m -> checkAllowHeader(methods, allow, m)));
+    }
+
+    private static Executable checkAllowHeader(final List<String> expected, final String actual, final String method) {
+        final Boolean expectation = expected.contains(method);
+        return () -> assertEquals(expectation, actual.contains(method), "Expecting method " + method + " to be "
+                + (expectation ? "present" : "absent"));
     }
 
     protected Stream<Executable> checkLdpType(final Response res, final IRI type) {
         final Set<String> types = RdfUtils.ldpResourceTypes(type).map(IRI::getIRIString).collect(toSet());
         final Set<String> responseTypes = res.getLinks().stream().filter(link -> TYPE.equals(link.getRel()))
             .map(link -> link.getUri().toString()).collect(toSet());
-        return of(
-                () -> assertEquals(responseTypes.contains(LDP.Resource), types.contains(LDP.Resource)),
-                () -> assertEquals(responseTypes.contains(LDP.RDFSource), types.contains(LDP.RDFSource)),
-                () -> assertEquals(responseTypes.contains(LDP.NonRDFSource), types.contains(LDP.NonRDFSource)),
-                () -> assertEquals(responseTypes.contains(LDP.Container), types.contains(LDP.Container)),
-                () -> assertEquals(responseTypes.contains(LDP.BasicContainer), types.contains(LDP.BasicContainer)),
-                () -> assertEquals(responseTypes.contains(LDP.DirectContainer), types.contains(LDP.DirectContainer)),
-                () -> assertEquals(responseTypes.contains(LDP.IndirectContainer),
-                                 types.contains(LDP.IndirectContainer)));
+        return of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer,
+                LDP.IndirectContainer).map(t -> checkLdpType(types, responseTypes, t));
     }
 
+    private static Executable checkLdpType(final Set<String> expected, final Set<String> actual, final IRI type) {
+        final Boolean expectation = expected.contains(type);
+        return () -> assertEquals(expectation, actual.contains(type), "Expecting " + type + " to be "
+                + (expectation ? "present" : "absent"));
+    }
     protected void unwrapAsyncError(final CompletableFuture async) {
         try {
             async.join();

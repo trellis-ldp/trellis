@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_PREFIX;
 
 import java.time.Instant;
 
@@ -35,20 +36,20 @@ public class HttpSessionTest {
     public void testHttpSession() {
         final Instant time = now();
         final Session session = new HttpSession();
-        assertEquals(Trellis.AnonymousAgent, session.getAgent());
-        assertFalse(session.getDelegatedBy().isPresent());
-        assertTrue(session.getIdentifier().getIRIString().startsWith("trellis:session/"));
+        assertEquals(Trellis.AnonymousAgent, session.getAgent(), "Incorrect agent in default session!");
+        assertFalse(session.getDelegatedBy().isPresent(), "Unexpected delegatedBy property!");
+        assertTrue(session.getIdentifier().getIRIString().startsWith(TRELLIS_SESSION_PREFIX), "ID has wrong prefix!");
         final Session session2 = new HttpSession();
-        assertNotEquals(session.getIdentifier(), session2.getIdentifier());
-        assertFalse(session.getCreated().isBefore(time));
-        assertFalse(session.getCreated().isAfter(session2.getCreated()));
+        assertNotEquals(session.getIdentifier(), session2.getIdentifier(), "Session identifiers aren't unique!");
+        assertFalse(session.getCreated().isBefore(time), "Session date precedes its creation!");
+        assertFalse(session.getCreated().isAfter(session2.getCreated()), "Session date is out of order!");
     }
 
     @Test
     public void testSessionProperties() {
         final Session session = new HttpSession();
         session.setProperty("foo", "bar");
-        assertFalse(session.getProperty("bar").isPresent());
-        assertEquals(of("bar"), session.getProperty("foo"));
+        assertFalse(session.getProperty("bar").isPresent(), "Unexpected session property!");
+        assertEquals(of("bar"), session.getProperty("foo"), "Missing session property!");
     }
 }
