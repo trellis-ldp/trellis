@@ -73,27 +73,26 @@ public class AuthorizationTest {
     public void testGraph() {
         final Authorization auth = Authorization.from(subject, graph);
 
-        assertEquals(subject, auth.getIdentifier());
+        assertEquals(subject, auth.getIdentifier(), "Incorrect identifier!");
+        assertEquals(2, auth.getAgent().size(), "Incorrect number of agents!");
+        assertTrue(auth.getAgent().contains(rdf.createIRI("info:agent/foo")), "Expected agent missing!");
+        assertTrue(auth.getAgent().contains(rdf.createIRI("info:agent/bar")), "Expected agent missing!");
 
-        assertEquals(2, auth.getAgent().size());
-        assertTrue(auth.getAgent().contains(rdf.createIRI("info:agent/foo")));
-        assertTrue(auth.getAgent().contains(rdf.createIRI("info:agent/bar")));
+        assertEquals(1, auth.getAgentClass().size(), "Incorrect number of agentClasses!");
+        assertTrue(auth.getAgentClass().contains(rdf.createIRI("info:agent/SomeClass")), "agentClass value missing!");
 
-        assertEquals(1, auth.getAgentClass().size());
-        assertTrue(auth.getAgentClass().contains(rdf.createIRI("info:agent/SomeClass")));
+        assertEquals(4, auth.getAgentGroup().size(), "Incorrect number of agentGroups!");
+        assertTrue(auth.getAgentGroup().contains(rdf.createIRI("info:group/group1")), "agentGroup value missing!");
 
-        assertEquals(4, auth.getAgentGroup().size());
-        assertTrue(auth.getAgentGroup().contains(rdf.createIRI("info:group/group1")));
+        assertEquals(1, auth.getMode().size(), "Incorrect number of modes!");
+        assertTrue(auth.getMode().contains(ACL.Read), "Read mode missing!");
 
-        assertEquals(1, auth.getMode().size());
-        assertTrue(auth.getMode().contains(ACL.Read));
+        assertEquals(3, auth.getAccessTo().size(), "Incorrect number of accessTo values!");
+        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource2")), "missing accessTo value!");
+        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource3")), "missing accessTo value!");
+        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource4")), "missing accessTo value!");
 
-        assertEquals(3, auth.getAccessTo().size());
-        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource2")));
-        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource3")));
-        assertTrue(auth.getAccessTo().contains(rdf.createIRI("trellis:data/resource4")));
-
-        assertEquals(1, auth.getDefault().size());
-        assertTrue(auth.getDefault().contains(rdf.createIRI("trellis:data/container")));
+        assertEquals(1, auth.getDefault().size(), "Incorrect number of default values!");
+        assertTrue(auth.getDefault().contains(rdf.createIRI("trellis:data/container")), "missing default value!");
     }
 }

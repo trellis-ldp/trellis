@@ -45,6 +45,6 @@ public class WrappedGraphTest {
             try (final WrappedGraph graph = WrappedGraph.wrap(mockGraph)) {
                 // nothing here
             }
-        });
+        }, "IOException not called when graph is closed!");
     }
 }
