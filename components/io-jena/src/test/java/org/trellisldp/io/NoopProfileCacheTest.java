@@ -34,9 +34,9 @@ public class NoopProfileCacheTest {
         };
 
         final CacheService<String, String> cache = new NoopProfileCache();
-        assertEquals("one-some-suffix", cache.get("one", mapper));
-        assertEquals("two-some-suffix", cache.get("two", mapper));
-        assertEquals("one-some-suffix", cache.get("one", mapper));
-        assertEquals(3L, list.size());
+        assertEquals("one-some-suffix", cache.get("one", mapper), "Cache response didn't match!");
+        assertEquals("two-some-suffix", cache.get("two", mapper), "Cache response didn't match!");
+        assertEquals("one-some-suffix", cache.get("one", mapper), "Cache response didn't match!");
+        assertEquals(3L, list.size(), "Incorrect invocation count!");
     }
 }
