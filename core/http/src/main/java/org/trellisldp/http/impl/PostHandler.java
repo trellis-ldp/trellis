@@ -20,6 +20,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Predicate.isEqual;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
@@ -165,6 +166,7 @@ public class PostHandler extends MutatingLdpHandler {
             final TrellisDataset immutable, final ResponseBuilder builder) {
 
         final Binary binary;
+        final CompletableFuture<Void> persistPromise;
 
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
@@ -175,7 +177,8 @@ public class PostHandler extends MutatingLdpHandler {
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
-            persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
+            persistPromise = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType)).thenAccept(future ->
+                LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
             binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
         } else {
@@ -186,6 +189,7 @@ public class PostHandler extends MutatingLdpHandler {
                     ofNullable(rdfSyntax).orElse(TURTLE));
 
             binary = null;
+            persistPromise = completedFuture(null);
         }
 
         // Should this come from the parent resource data?
@@ -193,6 +197,7 @@ public class PostHandler extends MutatingLdpHandler {
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
 
         return allOf(
+                persistPromise,
                 getServices().getResourceService().create(internalId, getSession(), ldpType, mutable.asDataset(),
                     parentIdentifier, binary),
                 getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))

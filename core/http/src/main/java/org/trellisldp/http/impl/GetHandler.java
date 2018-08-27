@@ -18,7 +18,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -76,6 +78,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import javax.ws.rs.NotFoundException;
@@ -197,7 +200,7 @@ public class GetHandler extends BaseLdpHandler {
      * @param builder the response builder
      * @return the response builder
      */
-    public ResponseBuilder getRepresentation(final ResponseBuilder builder) {
+    public CompletableFuture<ResponseBuilder> getRepresentation(final ResponseBuilder builder) {
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
         getResource().getBinary().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
@@ -280,8 +283,8 @@ public class GetHandler extends BaseLdpHandler {
         }
     }
 
-    private ResponseBuilder getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax, final IRI profile) {
-
+    private CompletableFuture<ResponseBuilder> getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax,
+            final IRI profile) {
         final Prefer prefer = ACL.equals(getRequest().getExt()) ?
             new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
                     of(PreferUserManaged, LDP.PreferContainment, LDP.PreferMembership).map(IRI::getIRIString)
@@ -301,14 +304,13 @@ public class GetHandler extends BaseLdpHandler {
         ofNullable(prefer).ifPresent(p -> builder.header(PREFERENCE_APPLIED, PREFER_RETURN + "=" + p.getPreference()
                     .orElse(PREFER_REPRESENTATION)));
 
-
         if (ofNullable(prefer).flatMap(Prefer::getPreference).filter(PREFER_MINIMAL::equals).isPresent()) {
-            return builder.status(NO_CONTENT);
+            return completedFuture(builder.status(NO_CONTENT));
         }
 
         // Short circuit HEAD requests
         if (HEAD.equals(getRequest().getRequest().getMethod())) {
-            return builder;
+            return completedFuture(builder);
         }
 
         // Stream the rdf content
@@ -325,10 +327,23 @@ public class GetHandler extends BaseLdpHandler {
                 }
             }
         };
-        return builder.entity(stream);
+        return completedFuture(builder.entity(stream));
     }
 
-    private ResponseBuilder getLdpNr(final ResponseBuilder builder) {
+    private CompletableFuture<Optional<String>> computeInstanceDigest(final IRI dsid) {
+        // Add instance digests, if Requested and supported
+        if (nonNull(getRequest().getWantDigest())) {
+            final Optional<String> algorithm = getRequest().getWantDigest().getAlgorithms().stream()
+                .filter(getServices().getBinaryService().supportedAlgorithms()::contains).findFirst();
+            if (algorithm.isPresent()) {
+                return getServices().getBinaryService().calculateDigest(dsid, algorithm.get())
+                    .thenApply(digest -> Optional.of(algorithm.get().toLowerCase() + "=" + digest));
+            }
+        }
+        return completedFuture(empty());
+    }
+
+    private CompletableFuture<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
 
         final Instant mod = getResource().getBinary().map(Binary::getModified).orElse(null);
         if (isNull(mod)) {
@@ -348,30 +363,9 @@ public class GetHandler extends BaseLdpHandler {
             throw new WebApplicationException("Could not access binary metadata");
         }
 
-        builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag);
-
-        if (isMemento) {
-            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
-        } else {
-            builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PUT, DELETE));
-        }
-
-        // Add instance digests, if Requested and supported
-        if (nonNull(getRequest().getWantDigest())) {
-            final Optional<String> algorithm = getRequest().getWantDigest().getAlgorithms().stream()
-                .filter(getServices().getBinaryService().supportedAlgorithms()::contains).findFirst();
-            if (algorithm.isPresent()) {
-                final String digest = getServices().getBinaryService().calculateDigest(dsid, algorithm.get())
-                    .exceptionally(err -> {
-                        LOGGER.error("Error computing digest on content", err);
-                        return null;
-                    }).join();
-                if (isNull(digest)) {
-                    throw new WebApplicationException("Error computing digest");
-                }
-                builder.header(DIGEST, algorithm.get().toLowerCase() + "=" + digest);
-            }
-        }
+        // Add standard headers
+        builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag)
+            .header(ALLOW, isMemento ? join(",", GET, HEAD, OPTIONS) : join(",", GET, HEAD, OPTIONS, PUT, DELETE));
 
         // Stream the binary content
         final StreamingOutput stream = new StreamingOutput() {
@@ -384,7 +378,8 @@ public class GetHandler extends BaseLdpHandler {
             }
         };
 
-        return builder.entity(stream);
+        return computeInstanceDigest(dsid).thenAccept(digest -> digest.ifPresent(d -> builder.header(DIGEST, d)))
+            .thenApply(future -> builder.entity(stream));
     }
 
     private InputStream getBinaryStream(final IRI dsid, final LdpRequest req) {

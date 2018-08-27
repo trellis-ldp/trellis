@@ -334,7 +334,7 @@ public class LdpResource implements ContainerRequestFilter {
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
                 .thenApply(getHandler::initialize).thenApply(getHandler::standardHeaders)
                 .thenCombine(trellis.getMementoService().list(identifier), getHandler::addMementoHeaders)
-                .thenApply(getHandler::getRepresentation);
+                .thenCompose(getHandler::getRepresentation);
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
@@ -364,7 +364,7 @@ public class LdpResource implements ContainerRequestFilter {
         return trellis.getResourceService().get(identifier).thenApply(getHandler::initialize)
             .thenApply(getHandler::standardHeaders)
             .thenCombine(trellis.getMementoService().list(identifier), getHandler::addMementoHeaders)
-            .thenApply(getHandler::getRepresentation);
+            .thenCompose(getHandler::getRepresentation);
     }
 
     private CompletableFuture<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {

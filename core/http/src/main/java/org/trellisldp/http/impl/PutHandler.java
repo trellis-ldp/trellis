@@ -20,6 +20,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Predicate.isEqual;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -190,6 +191,7 @@ public class PutHandler extends MutatingLdpHandler {
     private CompletableFuture<ResponseBuilder> handleResourceUpdate(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder, final IRI ldpType) {
         final Binary binary;
+        final CompletableFuture<Void> persistPromise;
 
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
@@ -200,8 +202,8 @@ public class PutHandler extends MutatingLdpHandler {
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
-            persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType));
-            LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation);
+            persistPromise = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType)).thenAccept(future ->
+                LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
             binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
         } else {
@@ -217,6 +219,7 @@ public class PutHandler extends MutatingLdpHandler {
             }
             LOGGER.trace("Successfully checked for constraint violations");
             binary = ofNullable(getResource()).flatMap(Resource::getBinary).orElse(null);
+            persistPromise = completedFuture(null);
         }
 
         if (nonNull(getResource())) {
@@ -236,6 +239,7 @@ public class PutHandler extends MutatingLdpHandler {
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
         return allOf(
+                persistPromise,
                 createOrReplace(ldpType, mutable, binary),
                 getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
             .thenApply(future ->

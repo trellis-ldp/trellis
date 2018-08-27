@@ -108,7 +108,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
@@ -140,7 +140,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertEquals("text/ldpatch", res.getHeaderString(ACCEPT_PATCH));
@@ -157,7 +157,7 @@ public class GetHandlerTest extends HandlerBaseTest {
     public void testGetVersionedLdprs() {
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, true, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertEquals(from(time), res.getLastModified());
@@ -188,9 +188,9 @@ public class GetHandlerTest extends HandlerBaseTest {
                 .thenReturn(notModified());
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
-
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))).getResponse();
+                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))))
+                    .getResponse();
         assertEquals(NOT_MODIFIED, res.getStatusInfo());
     }
 
@@ -203,9 +203,9 @@ public class GetHandlerTest extends HandlerBaseTest {
                 .thenReturn(notModified());
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
-
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))).getResponse();
+                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))))
+                    .getResponse();
         assertEquals(NOT_MODIFIED, res.getStatusInfo());
     }
 
@@ -221,7 +221,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertTrue(res.getLinks().stream().anyMatch(hasType(SKOS.Concept)));
@@ -237,7 +237,8 @@ public class GetHandlerTest extends HandlerBaseTest {
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
 
         final Response res = assertThrows(NotAcceptableException.class, () ->
-                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))).getResponse();
+                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))))
+                    .getResponse();
         assertEquals(NOT_ACCEPTABLE, res.getStatusInfo());
     }
 
@@ -248,7 +249,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo());
         assertEquals(from(time), res.getLastModified());
@@ -284,7 +285,7 @@ public class GetHandlerTest extends HandlerBaseTest {
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
         assertEquals(OK, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertEquals(from(time), res.getLastModified());
@@ -322,7 +323,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
@@ -340,7 +341,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertAll(checkBinaryDescription(res));
     }
@@ -353,7 +354,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertAll(checkBinaryDescription(res));
     }
@@ -381,7 +382,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertEquals(-1, res.getLength());
@@ -404,7 +405,7 @@ public class GetHandlerTest extends HandlerBaseTest {
 
         final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .build();
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo());
         assertAll(checkLdpType(res, LDP.RDFSource));

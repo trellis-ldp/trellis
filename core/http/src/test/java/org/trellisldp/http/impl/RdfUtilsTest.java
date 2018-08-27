@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
@@ -36,6 +37,9 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.List;
 
 import javax.ws.rs.NotAcceptableException;
@@ -77,6 +81,9 @@ public class RdfUtilsTest {
 
     @Mock
     private ResourceService mockResourceService;
+
+    @Mock
+    private InputStream mockInputStream;
 
     @BeforeEach
     public void setUp() {
@@ -256,5 +263,12 @@ public class RdfUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("application", "ld+json"));
         assertNull(RdfUtils.getProfile(types, JSONLD));
+    }
+
+    @Test
+    public void testCloseInputStreamWithError() throws IOException {
+        doThrow(new IOException()).when(mockInputStream).close();
+        assertThrows(UncheckedIOException.class, () ->
+                RdfUtils.closeInputStreamAsync(mockInputStream).accept(null, null));
     }
 }
