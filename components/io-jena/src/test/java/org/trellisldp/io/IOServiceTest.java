@@ -149,7 +149,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service3.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkExpandedSerialization(output, graph));
+        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
     }
 
     @Test
@@ -159,7 +159,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkExpandedSerialization(output, graph));
+        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
     }
 
     @Test
@@ -188,7 +188,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkExpandedSerialization(output, graph));
+        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
     }
 
 
@@ -215,7 +215,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkExpandedSerialization(output, graph));
+        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
     }
 
     @Test
@@ -226,7 +226,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         myservice.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkExpandedSerialization(output, graph));
+        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
     }
 
     @Test
@@ -236,7 +236,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkExpandedSerialization(output, graph));
+        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
     }
 
     @Test
@@ -246,7 +246,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkCompactSerialization(output, graph));
+        assertAll("Check compact serialization", checkCompactSerialization(output, graph));
     }
 
     @Test
@@ -256,7 +256,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkCompactSerialization(output, graph));
+        assertAll("Check compact serialization", checkCompactSerialization(output, graph));
     }
 
     @Test
@@ -266,7 +266,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkFlattenedSerialization(output, graph));
+        assertAll("Check flattened serialization", checkFlattenedSerialization(output, graph));
     }
 
     @Test
@@ -276,7 +276,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkFlattenedSerialization(output, graph));
+        assertAll("Check flattened serialization", checkFlattenedSerialization(output, graph));
     }
 
     @Test
@@ -286,7 +286,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkFlattenedSerialization(output, graph));
+        assertAll("Check flattened serialization", checkFlattenedSerialization(output, graph));
     }
 
     @Test
@@ -296,7 +296,7 @@ public class IOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll(checkFlattenedSerialization(output, graph));
+        assertAll("Check flattened serialization", checkFlattenedSerialization(output, graph));
     }
 
     @Test
