@@ -248,7 +248,8 @@ public class PutHandler extends MutatingLdpHandler {
 
     private IRI effectiveLdpType(final IRI ldpType) {
         LOGGER.trace("Determining effective LDP type from offered type {}", ldpType.getIRIString());
-        return LDP.NonRDFSource.equals(ldpType) && isBinaryDescription() ? LDP.RDFSource : ldpType;
+        return ACL.equals(getRequest().getExt())
+            || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
     }
 
     private CompletableFuture<Void> createOrReplace(final IRI ldpType, final TrellisDataset ds, final Binary b) {

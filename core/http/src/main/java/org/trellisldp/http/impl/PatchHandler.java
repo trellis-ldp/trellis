@@ -154,7 +154,11 @@ public class PatchHandler extends MutatingLdpHandler {
         LOGGER.debug("Updating {} via PATCH", getIdentifier());
 
         // Add the LDP link types
-        getLinkTypes(getResource().getInteractionModel()).forEach(type -> builder.link(type, "type"));
+        if (ACL.equals(getRequest().getExt())) {
+            getLinkTypes(LDP.RDFSource).forEach(type -> builder.link(type, "type"));
+        } else {
+            getLinkTypes(getResource().getInteractionModel()).forEach(type -> builder.link(type, "type"));
+        }
 
         final TrellisDataset mutable = TrellisDataset.createDataset();
         final TrellisDataset immutable = TrellisDataset.createDataset();

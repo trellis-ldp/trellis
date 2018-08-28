@@ -133,9 +133,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testHeadDefaultType() {
         final Response res = target(RESOURCE_PATH).request().head();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type: " + res.getMediaType());
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type: " + res.getMediaType());
     }
 
     /* ******************************* *
@@ -145,19 +145,19 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testGetJson() throws IOException {
         final Response res = target("/" + RESOURCE_PATH).request().accept("application/ld+json").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertAll(checkJsonLdResponse(res));
-        assertAll(checkLdTemplateHeaders(res));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
+        assertAll("Check JSON-LD Response", checkJsonLdResponse(res));
+        assertAll("Check LD-Template headers", checkLdTemplateHeaders(res));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Map<String, Object>> obj = MAPPER.readValue(entity,
                 new TypeReference<List<Map<String, Object>>>(){});
 
-        assertEquals(1L, obj.size());
+        assertEquals(1L, obj.size(), "Incorrect JSON object structure!");
 
         @SuppressWarnings("unchecked")
         final List<Map<String, String>> titles = (List<Map<String, String>>) obj.get(0)
@@ -165,33 +165,33 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final List<String> titleVals = titles.stream().map(x -> x.get("@value")).collect(toList());
 
-        assertEquals(1L, titleVals.size());
-        assertTrue(titleVals.contains("A title"));
+        assertEquals(1L, titleVals.size(), "Incorrect JSON title size");
+        assertTrue(titleVals.contains("A title"), "Incorrect JSON title value!");
     }
 
     @Test
     public void testGetDefaultType() {
         final Response res = target(RESOURCE_PATH).request().get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type: " + res.getMediaType());
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type: " + res.getMediaType());
     }
 
     @Test
     public void testGetDefaultType2() {
         final Response res = target("repository/resource").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type: " + res.getMediaType());
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type: " + res.getMediaType());
     }
 
     @Test
     public void testScrewyPreferHeader() {
         final Response res = target(RESOURCE_PATH).request().header("Prefer", "wait=just one minute").get();
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -199,32 +199,32 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Accept-Datetime",
                 "it's pathetic how we both").get();
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testScrewyRange() {
         final Response res = target(BINARY_PATH).request().header("Range", "say it to my face, then").get();
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetRootSlash() {
         final Response res = target("/").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type: " + res.getMediaType());
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type: " + res.getMediaType());
     }
 
     @Test
     public void testGetRoot() {
         final Response res = target("").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type: " + res.getMediaType());
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type: " + res.getMediaType());
     }
 
     @Test
@@ -233,53 +233,54 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH
                                     + "?version=1496262729000"), "self")));
         assertFalse(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH), "self")));
-        assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
-        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Missing Memento-Datetime header!");
+        assertAll("Check Memento headers", checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
     public void testGetTrailingSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals(from(time), res.getLastModified());
-        assertTrue(hasTimeGateLink(res, RESOURCE_PATH));
-        assertTrue(hasOriginalLink(res, RESOURCE_PATH));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
+        assertTrue(hasTimeGateLink(res, RESOURCE_PATH), "Missing rel=timegate link!");
+        assertTrue(hasOriginalLink(res, RESOURCE_PATH), "Missing rel=original link!");
     }
 
     @Test
     public void testGetBinaryDescription() {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), "self")));
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(MEMENTO_DATETIME));
-        assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type: " + res.getMediaType());
+        assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
+        assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!");
+        assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
+        assertAll("Check allowed methods",
+                checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
     public void testGetBinary() throws IOException {
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")));
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), "self")));
-        assertAll(checkBinaryResponse(res));
+        assertAll("Check Binary response", checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity);
+        assertEquals("Some input stream", entity, "Incorrect entity value!");
     }
 
     @Test
@@ -287,7 +288,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockBinary.getModified()).thenReturn(null);
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -295,54 +296,54 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockBinary.getIdentifier()).thenReturn(null);
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetBinaryDigestInvalid() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertNull(res.getHeaderString(DIGEST));
-        assertAll(checkBinaryResponse(res));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertNull(res.getHeaderString(DIGEST), "Unexpected Digest header!");
+        assertAll("Check Binary response", checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity);
+        assertEquals("Some input stream", entity, "Incorrect entity value!");
     }
 
     @Test
     public void testGetBinaryDigestMd5() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals("md5=md5-digest", res.getHeaderString(DIGEST));
-        assertAll(checkBinaryResponse(res));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertEquals("md5=md5-digest", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
+        assertAll("Check Binary response", checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity);
+        assertEquals("Some input stream", entity, "Incorrect entity value!");
     }
 
     @Test
     public void testGetBinaryDigestSha1() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "SHA").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals("sha=sha1-digest", res.getHeaderString(DIGEST));
-        assertAll(checkBinaryResponse(res));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertEquals("sha=sha1-digest", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
+        assertAll("Check Binary response", checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity);
+        assertEquals("Some input stream", entity, "Incorrect entity value!");
     }
 
     @Test
     public void testGetBinaryRange() throws IOException {
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=3-10").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkBinaryResponse(res));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check Binary response", checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("e input", entity);
+        assertEquals("e input", entity, "Incorrect entity value!");
     }
 
     @Test
@@ -350,7 +351,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier))).thenReturn(completedFuture(mockInputStream));
         when(mockInputStream.skip(anyLong())).thenThrow(new IOException());
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=300-400").get();
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -360,51 +361,51 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                     throw new RuntimeTrellisException("Expected exception");
                 }));
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetVersionError() {
         final Response res = target(BINARY_PATH).queryParam("version", "looking at my history").request().get();
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().get();
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetTimemapNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("ext", "timemap").request().get();
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetTimegateNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .header(ACCEPT_DATETIME, "Wed, 16 May 2018 13:18:57 GMT").get();
-        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetBinaryVersion() throws IOException {
         final Response res = target(BINARY_PATH).queryParam("version", timestamp).request().get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkMementoHeaders(res, BINARY_PATH));
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check Memento headers", checkMementoHeaders(res, BINARY_PATH));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
 
-        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-        assertEquals("bytes", res.getHeaderString(ACCEPT_RANGES));
-        assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
+        assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE), "Incorrect content-type: " + res.getMediaType());
+        assertEquals("bytes", res.getHeaderString(ACCEPT_RANGES), "Incorrect Accept-Ranges header!");
+        assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Missing Memento-Datetime header!");
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
-        assertAll(checkVary(res, asList(RANGE, WANT_DIGEST)));
+        assertAll("Check Vary headers", checkVary(res, asList(RANGE, WANT_DIGEST)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity);
+        assertEquals("Some input stream", entity, "Incorrect entity value!");
     }
 
     @Test
@@ -413,13 +414,14 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Prefer", "return=representation; include=\"" + PreferServerManaged.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
-        assertEquals("A title", (String) obj.get("title"));
+        assertAll("Check JSON-LD structure",
+                checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
+        assertEquals("A title", (String) obj.get("title"), "Incorrect title value!");
     }
 
     @Test
@@ -431,14 +433,14 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertAll(checkJsonStructure(obj, asList("@context", "title"),
+        assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "title"),
                     asList("mode", "created", "contains", "member")));
-        assertEquals("A title", (String) obj.get("title"));
+        assertEquals("A title", (String) obj.get("title"), "Incorrect title value!");
     }
 
     @Test
@@ -450,12 +452,12 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Prefer", "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertAll(checkJsonStructure(obj, asList("@context", "contains", "member"),
+        assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "contains", "member"),
                     asList("title", "mode", "created")));
     }
 
@@ -464,14 +466,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkLdfResponse(res));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDF response", checkLdfResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
         assertEquals("A title", (String) obj.get("title"));
-        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
+        assertAll("Check JSON-LD structure",
+                checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
     }
 
     @Test
@@ -481,8 +484,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .queryParam("predicate", "http://purl.org/dc/terms/title").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkLdfResponse(res));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDF response", checkLdfResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
@@ -493,7 +496,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertTrue(titles.contains("A title"));
         assertEquals(2L, titles.size());
         assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"));
-        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("creator", "mode", "created")));
+        assertAll("Check JSON-LD structure",
+                checkJsonStructure(obj, asList("@context", "title"), asList("creator", "mode", "created")));
     }
 
     @Test
@@ -504,15 +508,16 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .queryParam("object", "ex:Type").queryParam("predicate", "").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkLdfResponse(res));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDF response", checkLdfResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
         assertEquals("ex:Type", obj.get("@type"));
         assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"));
-        assertAll(checkJsonStructure(obj, asList("@type"), asList("@context", "creator", "title", "mode", "created")));
+        assertAll("Check JSON-LD structure",
+                checkJsonStructure(obj, asList("@type"), asList("@context", "creator", "title", "mode", "created")));
     }
 
     @Test
@@ -523,23 +528,24 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .queryParam("object", "A title").queryParam("predicate", DC.title.getIRIString()).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(from(time), res.getLastModified());
         assertTrue(hasTimeGateLink(res, RESOURCE_PATH));
         assertTrue(hasOriginalLink(res, RESOURCE_PATH));
 
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
-        assertAll(checkJsonLdResponse(res));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
+        assertAll("Check JSON-LD Response", checkJsonLdResponse(res));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
         assertEquals("A title", obj.get("title"));
         assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"));
-        assertAll(checkJsonStructure(obj, asList("@context", "title"), asList("@type", "creator", "mode", "created")));
+        assertAll("Check JSON-LD structure",
+                checkJsonStructure(obj, asList("@context", "title"), asList("@type", "creator", "mode", "created")));
     }
 
     @Test
@@ -548,7 +554,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
     }
 
@@ -558,7 +564,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final Response res = target("repository/resource").queryParam("ext", "timemap").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
     }
 
@@ -569,7 +575,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("some/made-up-format").get();
 
-        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -583,13 +589,14 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType());
         assertNull(res.getLastModified());
-        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
+        assertAll("Check Memento headers", checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers",
+                checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Link> entityLinks = stream(entity.split(",\n")).map(Link::valueOf).collect(toList());
@@ -608,12 +615,13 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertNull(res.getLastModified());
-        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
-        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
+        assertAll("Check Simple JSON-LD", checkSimpleJsonLdResponse(res, LDP.RDFSource));
+        assertAll("Check Memento headers", checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers",
+                checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity,
@@ -651,12 +659,13 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertNull(res.getLastModified());
-        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
-        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
+        assertAll("Check Simple JSON-LD", checkSimpleJsonLdResponse(res, LDP.RDFSource));
+        assertAll("Check Memento headers", checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers",
+                checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final List<Map<String, Object>> obj = MAPPER.readValue(entity,
@@ -688,13 +697,13 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(from(time), res.getLastModified());
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
-        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
-        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES)));
+        assertAll("Check Simple JSON-LD", checkSimpleJsonLdResponse(res, LDP.RDFSource));
+        assertAll("Check Memento headers", checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES)));
     }
 
     @Test
@@ -703,20 +712,20 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(from(time), res.getLastModified());
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant());
-        assertAll(checkSimpleJsonLdResponse(res, LDP.Container));
-        assertAll(checkMementoHeaders(res, RESOURCE_PATH));
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES)));
+        assertAll("Check Simple JSON-LD", checkSimpleJsonLdResponse(res, LDP.Container));
+        assertAll("Check Memento headers", checkMementoHeaders(res, RESOURCE_PATH));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES)));
     }
 
     @Test
     public void testGetNoAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().get();
 
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -724,7 +733,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockBinaryResource.hasAcl()).thenReturn(true);
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
@@ -735,7 +744,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testGetBinaryLinks() {
         final Response res = target(BINARY_PATH).request().get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
@@ -746,7 +755,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testGetBinaryDescriptionLinks() {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describes")));
         assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals("describedby")));
         assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals("canonical")));
@@ -759,7 +768,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertEquals(from(time), res.getLastModified());
         // The next two assertions may change at some point
@@ -771,32 +780,32 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
         assertEquals(ACL.Control.getIRIString(), (String) obj.get("mode"));
-        assertAll(checkSimpleJsonLdResponse(res, LDP.RDFSource));
-        assertAll(checkAllowedMethods(res, asList(PATCH, GET, HEAD, OPTIONS)));
-        assertAll(checkVary(res, asList(ACCEPT_DATETIME)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
-        assertAll(checkJsonStructure(obj, asList("@context", "mode"), asList("title")));
+        assertAll("Check Simple JSON-LD", checkSimpleJsonLdResponse(res, LDP.RDFSource));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, GET, HEAD, OPTIONS)));
+        assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
+        assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "mode"), asList("title")));
     }
 
     @Test
     public void testGetLdpResource() {
         final Response res = target(RESOURCE_PATH).request().get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request().get();
 
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testGetGone() {
         final Response res = target(DELETED_PATH).request().get();
 
-        assertEquals(SC_GONE, res.getStatus());
+        assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -805,9 +814,10 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkNullHeaders(res, asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials",
-                        "Access-Control-Max-Age", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods")));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check null headers", checkNullHeaders(res, asList("Access-Control-Allow-Origin",
+                        "Access-Control-Allow-Credentials", "Access-Control-Max-Age",
+                        "Access-Control-Allow-Headers", "Access-Control-Allow-Methods")));
     }
 
     @Test
@@ -816,7 +826,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
         final Response res = target(RESOURCE_PATH).request().get();
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     /* ******************************* *
@@ -826,22 +836,22 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testOptionsLDPRS() {
         final Response res = target(RESOURCE_PATH).request().options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(MEMENTO_DATETIME)));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(MEMENTO_DATETIME)));
     }
 
     @Test
     public void testOptionsLDPNR() {
         final Response res = target(BINARY_PATH).request().options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
     }
 
     @Test
@@ -849,12 +859,13 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target(RESOURCE_PATH).request().options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
         assertNotNull(res.getHeaderString(ACCEPT_POST));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
-        assertAll(checkLdpTypeHeaders(res, LDP.Container));
-        assertAll(checkNullHeaders(res, asList(MEMENTO_DATETIME)));
+        assertAll("Check allowed methods",
+                checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.Container));
+        assertAll("Check null headers", checkNullHeaders(res, asList(MEMENTO_DATETIME)));
 
         final List<String> acceptPost = asList(res.getHeaderString(ACCEPT_POST).split(","));
         assertEquals(3L, acceptPost.size());
@@ -867,40 +878,40 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testOptionsACL() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
     }
 
     @Test
     public void testOptionsNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().options();
 
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testOptionsVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().options();
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testOptionsGone() {
         final Response res = target(DELETED_PATH).request().options();
 
-        assertEquals(SC_GONE, res.getStatus());
+        assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testOptionsSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH));
-        assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
     }
 
     @Test
@@ -912,18 +923,18 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, MEMENTO_DATETIME)));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, MEMENTO_DATETIME)));
     }
 
     @Test
     public void testOptionsVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-        assertAll(checkNullHeaders(res, asList(ACCEPT_PATCH, ACCEPT_POST)));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_PATCH, ACCEPT_POST)));
     }
 
     @Test
@@ -932,7 +943,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
         final Response res = target(RESOURCE_PATH).request().options();
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     /* ******************************* *
@@ -947,9 +958,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -963,9 +974,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target("").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + RANDOM_VALUE, res.getLocation().toString());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -973,7 +984,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Link", "I never really liked his friends")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -981,7 +992,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -994,7 +1005,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1007,7 +1018,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1020,9 +1031,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1034,7 +1045,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1045,7 +1056,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1055,9 +1066,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1067,7 +1078,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "child/grandchild")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1075,7 +1086,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1083,7 +1094,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1096,7 +1107,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .post(entity("<> <http://www.w3.org/ns/ldp#inbox> \"Some literal\" .",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
@@ -1111,7 +1122,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1121,7 +1132,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(NON_EXISTENT_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1131,7 +1142,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(DELETED_PATH).request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_GONE, res.getStatus());
+        assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1142,8 +1153,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1154,7 +1165,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .header("Digest", "md5=blahblah").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1162,7 +1173,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .header("Digest", "digest this, man!").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1173,7 +1184,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
             .header("Digest", "uh=huh").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1184,8 +1195,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Digest", "md5=BJozgIQwPzzVzSxvjQsWkA==")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1196,8 +1207,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request().header("Digest", "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1209,8 +1220,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Digest", "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
             .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1218,7 +1229,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1226,7 +1237,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH + "/").request().header("Slug", "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1236,7 +1247,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
         final Response res = target(RESOURCE_PATH).request().post(entity("", TEXT_TURTLE_TYPE));
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     /* ******************************* *
@@ -1247,8 +1258,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1257,8 +1268,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1268,8 +1279,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1281,8 +1292,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         + " a <http://example.com/Type1>, <http://www.w3.org/ns/ldp#BasicContainer> .",
                         TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1292,8 +1303,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Link", LDP.Container + "; rel=\"type\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.Container));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.Container));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1302,7 +1313,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1311,7 +1322,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"Some literal\" .",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
@@ -1322,7 +1333,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .put(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
                     TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1334,9 +1345,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH + "/test").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/test", res.getHeaderString(CONTENT_LOCATION));
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1345,8 +1356,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(DELETED_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CREATED, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertEquals(getBaseUrl() + DELETED_PATH, res.getHeaderString(CONTENT_LOCATION));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
@@ -1356,7 +1367,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1364,8 +1375,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1374,8 +1385,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1384,8 +1395,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1394,7 +1405,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -1405,7 +1416,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -1414,8 +1425,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testPutBinary() {
         final Response res = target(BINARY_PATH).request().put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1423,7 +1434,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header("Digest", "md5=blahblah")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1431,8 +1442,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header("Digest", "md5=BJozgIQwPzzVzSxvjQsWkA==")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1440,8 +1451,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header("Digest", "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1449,7 +1460,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request()
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1459,7 +1470,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"" + etag + "\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1467,7 +1478,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header("If-Match", "4db2c60044c906361ac212ae8684e8ad")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus());
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1476,7 +1487,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("If-Unmodified-Since", "Tue, 29 Aug 2017 07:14:52 GMT")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1484,7 +1495,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"blahblahblah\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_PRECONDITION_FAILED, res.getStatus());
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1493,7 +1504,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("If-Unmodified-Since", "Wed, 19 Oct 2016 10:15:00 GMT")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_PRECONDITION_FAILED, res.getStatus());
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1502,8 +1513,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .header("Digest", "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -1511,7 +1522,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH + "/").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1520,7 +1531,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1529,7 +1540,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
         final Response res = target(RESOURCE_PATH).request().put(entity("", TEXT_TURTLE_TYPE));
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     /* ******************************* *
@@ -1539,7 +1550,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testDeleteExisting() {
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1547,21 +1558,21 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testDeleteNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().delete();
 
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDeleteDeleted() {
         final Response res = target(DELETED_PATH).request().delete();
 
-        assertEquals(SC_GONE, res.getStatus());
+        assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDeleteVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().delete();
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1573,7 +1584,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final Response res = target(RESOURCE_PATH + "/test").request().delete();
 
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1585,7 +1596,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1595,7 +1606,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1605,28 +1616,28 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         final Response res = target(RESOURCE_PATH).request().delete();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDeleteAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().delete();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
     @Test
     public void testDeleteTimeMap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().delete();
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDeleteSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().delete();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
         assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
@@ -1639,7 +1650,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
         final Response res = target(RESOURCE_PATH).request().delete();
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     /* ********************* *
@@ -1651,7 +1662,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1660,7 +1671,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1669,8 +1680,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1679,7 +1690,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(NON_EXISTENT_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1687,7 +1698,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(DELETED_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
-        assertEquals(SC_GONE, res.getStatus());
+        assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1699,8 +1710,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                         + " a <http://example.com/Type1>, <http://www.w3.org/ns/ldp#BasicContainer> } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertFalse(entity.contains("BasicContainer"));
@@ -1713,8 +1724,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1725,8 +1736,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_OK, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertTrue(entity.contains("A title"));
@@ -1738,7 +1749,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> a \"Some literal\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidRange, LDP.constrainedBy.getIRIString())));
     }
@@ -1748,7 +1759,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .method("PATCH", entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1761,7 +1772,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NOT_FOUND, res.getStatus());
+        assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1771,8 +1782,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1783,7 +1794,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -1795,7 +1806,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_CONFLICT, res.getStatus());
+        assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
         assertTrue(getLinks(res).stream()
                 .anyMatch(hasLink(InvalidCardinality, LDP.constrainedBy.getIRIString())));
     }
@@ -1807,8 +1818,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
@@ -1818,15 +1829,15 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertAll(checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
     public void testPatchInvalidContent() {
         final Response res = target(RESOURCE_PATH).request().method("PATCH", entity("blah blah blah", "invalid/type"));
 
-        assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus());
+        assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1836,7 +1847,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME));
     }
 
@@ -1846,7 +1857,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
 
-        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus());
+        assertEquals(SC_NOT_ACCEPTABLE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1855,7 +1866,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
         final Response res = target(RESOURCE_PATH).request().method("PATCH", entity("", APPLICATION_SPARQL_UPDATE));
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
     /**
@@ -1864,7 +1875,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     @Test
     public void testOtherMethod() {
         final Response res = target(RESOURCE_PATH).request().method("FOO");
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     /* ************************************ *
@@ -1873,7 +1884,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     @Test
     public void testCacheControl() {
         final Response res = target(RESOURCE_PATH).request().get();
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertNotNull(res.getHeaderString(CACHE_CONTROL));
         assertTrue(res.getHeaderString(CACHE_CONTROL).contains("max-age="));
     }
@@ -1881,7 +1892,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     @Test
     public void testCacheControlOptions() {
         final Response res = target(RESOURCE_PATH).request().options();
-        assertEquals(SC_NO_CONTENT, res.getStatus());
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(CACHE_CONTROL));
     }
 
@@ -1944,21 +1955,21 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
     private Stream<Executable> checkVary(final Response res, final List<String> vary) {
         final List<String> vheaders = res.getStringHeaders().get(VARY);
-        return Stream.of(
-                () -> assertEquals(vary.contains(RANGE), vheaders.contains(RANGE)),
-                () -> assertEquals(vary.contains(WANT_DIGEST), vheaders.contains(WANT_DIGEST)),
-                () -> assertEquals(vary.contains(ACCEPT_DATETIME), vheaders.contains(ACCEPT_DATETIME)),
-                () -> assertEquals(vary.contains(PREFER), vheaders.contains(PREFER)));
+        return Stream.of(RANGE, WANT_DIGEST, ACCEPT_DATETIME, PREFER).map(header -> vary.contains(header)
+                ? () -> assertTrue(vheaders.contains(header), "Missing Vary header: " + header)
+                : () -> assertFalse(vheaders.contains(header), "Unexpected Vary header: " + header));
     }
 
     private Stream<Executable> checkLdTemplateHeaders(final Response res) {
         final List<String> templates = res.getStringHeaders().get(LINK_TEMPLATE);
         return Stream.of(
-            () -> assertEquals(2L, templates.size()),
+            () -> assertEquals(2L, templates.size(), "Incorrect Link-Template header count!"),
             () -> assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH
-                    + "{?subject,predicate,object}>; rel=\"" + LDP.RDFSource.getIRIString() + "\"")),
+                    + "{?subject,predicate,object}>; rel=\"" + LDP.RDFSource.getIRIString() + "\""),
+                             "Template for Linked Data Fragments not found!"),
             () -> assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH
-                    + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"")));
+                    + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\""),
+                             "Template for Memento queries not found!"));
     }
 
     private static Stream<IRI> ldpResourceSupertypes(final IRI ldpType) {
@@ -1970,15 +1981,11 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Set<String> subTypes = ldpResourceSupertypes(ldpType).map(IRI::getIRIString).collect(toSet());
         final Set<String> responseTypes = getLinks(res).stream().filter(link -> "type".equals(link.getRel()))
             .map(link -> link.getUri().toString()).collect(toSet());
-        return Stream.of(
-                () -> assertEquals(responseTypes.contains(LDP.Resource), subTypes.contains(LDP.Resource)),
-                () -> assertEquals(responseTypes.contains(LDP.RDFSource), subTypes.contains(LDP.RDFSource)),
-                () -> assertEquals(responseTypes.contains(LDP.NonRDFSource), subTypes.contains(LDP.NonRDFSource)),
-                () -> assertEquals(responseTypes.contains(LDP.Container), subTypes.contains(LDP.Container)),
-                () -> assertEquals(responseTypes.contains(LDP.BasicContainer), subTypes.contains(LDP.BasicContainer)),
-                () -> assertEquals(responseTypes.contains(LDP.DirectContainer), subTypes.contains(LDP.DirectContainer)),
-                () -> assertEquals(responseTypes.contains(LDP.IndirectContainer),
-                                 subTypes.contains(LDP.IndirectContainer)));
+        return Stream.concat(
+                subTypes.stream().map(t -> () -> assertTrue(responseTypes.contains(t),
+                        "Response type doesn't contain LDP subtype: " + t)),
+                responseTypes.stream().map(t -> () -> assertTrue(subTypes.contains(t),
+                    "Subtype " + t + " not present in response type for: " + t)));
     }
 
     private Stream<Executable> checkMementoHeaders(final Response res, final String path) {
@@ -1987,84 +1994,95 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
                         .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496260729000"))),
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496260729000")),
+                                 "Missing expected first rel=memento Link!"),
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
                         .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496261729000"))),
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496261729000")),
+                                 "Missing expected second rel=memento Link!"),
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496262729000"))),
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496262729000")),
+                                 "Missing expected third rel=memento Link!"),
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
                         .equals(l.getParams().get("from")) &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
                         .equals(l.getParams().get("until")) &&
                     APPLICATION_LINK_FORMAT.equals(l.getType()) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?ext=timemap"))),
-                () -> assertTrue(hasTimeGateLink(res, path)),
-                () -> assertTrue(hasOriginalLink(res, path)));
+                    l.getUri().toString().equals(getBaseUrl() + path + "?ext=timemap")), "Missing valid timemap link!"),
+                () -> assertTrue(hasTimeGateLink(res, path), "No rel=timegate Link!"),
+                () -> assertTrue(hasOriginalLink(res, path), "No rel=original Link!"));
     }
 
     private Stream<Executable> checkBinaryResponse(final Response res) {
         return Stream.of(
-                () -> assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE)),
-                () -> assertNotNull(res.getHeaderString(ACCEPT_RANGES)),
-                () -> assertNull(res.getHeaderString(MEMENTO_DATETIME)),
-                () -> assertAll(checkVary(res, asList(RANGE, WANT_DIGEST, ACCEPT_DATETIME))),
-                () -> assertAll(checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS))),
-                () -> assertAll(checkLdpTypeHeaders(res, LDP.NonRDFSource)));
+                () -> assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE), "Incompatible content-type!"),
+                () -> assertNotNull(res.getHeaderString(ACCEPT_RANGES), "Missing Accept-Ranges header!"),
+                () -> assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!"),
+                () -> assertAll("Check Vary header", checkVary(res, asList(RANGE, WANT_DIGEST, ACCEPT_DATETIME))),
+                () -> assertAll("Check allowed methods",
+                                checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS))),
+                () -> assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource)));
     }
 
     private Stream<Executable> checkJsonLdResponse(final Response res) {
         return Stream.of(
-                () -> assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType())),
-                () -> assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE)),
-                () -> assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub"))),
+                () -> assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()),
+                                 "Incorrect JSON-LD content-type!"),
+                () -> assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE),
+                                 "Incompatible JSON-LD content-type!"),
+                () -> assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")),
+                                 "Missing rel=hub Link header!"),
                 () -> assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH),
-                                                                         "self"))),
-                () -> assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH)),
-                () -> assertTrue(res.hasEntity()));
+                                                                         "self")), "Missing rel=self Link header!"),
+                () -> assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH),
+                                   "Incorrect Accept-Patch header!"),
+                () -> assertTrue(res.hasEntity(), "Missing JSON-LD entity!"));
     }
 
     private Stream<Executable> checkNullHeaders(final Response res, final List<String> headers) {
-        return headers.stream().map(h -> () -> assertNull(res.getHeaderString(h)));
+        return headers.stream().map(h -> () -> assertNull(res.getHeaderString(h), "Unexpected header: " + h));
     }
 
     private Stream<Executable> checkJsonStructure(final Map<String, Object> obj, final List<String> include,
             final List<String> omit) {
         return Stream.concat(
-                include.stream().map(key -> () -> assertTrue(obj.containsKey(key))),
-                omit.stream().map(key -> () -> assertFalse(obj.containsKey(key))));
+                include.stream().map(key ->
+                    () -> assertTrue(obj.containsKey(key), "JSON-LD didn't contain expected key: " + key)),
+                omit.stream().map(key ->
+                    () -> assertFalse(obj.containsKey(key), "JSON-LD caontained extraneous key: " + key)));
     }
 
     private Stream<Executable> checkSimpleJsonLdResponse(final Response res, final IRI ldpType) {
         return Stream.of(
-                () -> assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType())),
-                () -> assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE)),
-                () -> assertAll(checkLdpTypeHeaders(res, ldpType)));
+                () -> assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()),
+                                 "Incompatible JSON-LD content-type: " + res.getMediaType()),
+                () -> assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE),
+                                 "Incorrect JSON-LD content-type: " + res.getMediaType()),
+                () -> assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, ldpType)));
     }
 
     private Stream<Executable> checkLdfResponse(final Response res) {
         return Stream.of(
-                () -> assertEquals(from(time), res.getLastModified()),
-                () -> assertTrue(hasTimeGateLink(res, RESOURCE_PATH)),
-                () -> assertTrue(hasOriginalLink(res, RESOURCE_PATH)),
-                () -> assertAll(checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS))),
-                () -> assertAll(checkVary(res, asList(ACCEPT_DATETIME, PREFER))),
-                () -> assertAll(checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES))),
-                () -> assertAll(checkJsonLdResponse(res)),
-                () -> assertAll(checkLdpTypeHeaders(res, LDP.RDFSource)));
+                () -> assertEquals(from(time), res.getLastModified(), "Incorrect modification date!"),
+                () -> assertTrue(hasTimeGateLink(res, RESOURCE_PATH), "Missing rel=timegate link!"),
+                () -> assertTrue(hasOriginalLink(res, RESOURCE_PATH), "Missing rel=original link!"),
+                () -> assertAll("Check allowed methods",
+                                checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS))),
+                () -> assertAll("Check Vary header", checkVary(res, asList(ACCEPT_DATETIME, PREFER))),
+                () -> assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES))),
+                () -> assertAll("Check json-ld response", checkJsonLdResponse(res)),
+                () -> assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource)));
     }
 
-    private Stream<Executable> checkAllowedMethods(final Response res, final List<String> methods) {
-        return Stream.of(
-                () -> assertEquals(res.getAllowedMethods().contains(HEAD), methods.contains(HEAD)),
-                () -> assertEquals(res.getAllowedMethods().contains(GET), methods.contains(GET)),
-                () -> assertEquals(res.getAllowedMethods().contains(OPTIONS), methods.contains(OPTIONS)),
-                () -> assertEquals(res.getAllowedMethods().contains(PATCH), methods.contains(PATCH)),
-                () -> assertEquals(res.getAllowedMethods().contains(POST), methods.contains(POST)),
-                () -> assertEquals(res.getAllowedMethods().contains(PUT), methods.contains(PUT)),
-                () -> assertEquals(res.getAllowedMethods().contains(DELETE), methods.contains(DELETE)));
+    private Stream<Executable> checkAllowedMethods(final Response res, final List<String> expected) {
+        final Set<String> actual = res.getAllowedMethods();
+        return Stream.concat(
+                actual.stream().map(method -> () -> assertTrue(expected.contains(method), "Method " + method
+                        + " was not present in the list of expected methods!")),
+                expected.stream().map(method -> () -> assertTrue(actual.contains(method), "Method " + method
+                        + " was not in the response header!")));
     }
 }
