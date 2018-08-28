@@ -14,12 +14,16 @@
 package org.trellisldp.http.domain;
 
 import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 /**
  * @author acoburn
@@ -29,49 +33,25 @@ public class PreferTest {
     @Test
     public void testPrefer1() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test\"");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference");
-        assertEquals(1L, prefer.getInclude().size(), "Check includes count");
-        assertTrue(prefer.getInclude().contains("http://example.org/test"), "Check includes value");
-        assertTrue(prefer.getOmit().isEmpty(), "Check omits count");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
     public void testPrefer1b() {
         final Prefer prefer = Prefer.ofInclude("http://example.org/test");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference");
-        assertEquals(1L, prefer.getInclude().size(), "Check includes count");
-        assertTrue(prefer.getInclude().contains("http://example.org/test"), "Check includes value");
-        assertTrue(prefer.getOmit().isEmpty(), "Check omits count");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
     public void testPrefer1c() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=http://example.org/test");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference");
-        assertEquals(1L, prefer.getInclude().size(), "Check includes count");
-        assertTrue(prefer.getInclude().contains("http://example.org/test"), "Check includes value");
-        assertTrue(prefer.getOmit().isEmpty(), "Check omits count");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
     public void testPrefer2() {
         final Prefer prefer = Prefer.valueOf("return  =  representation;   include =  \"http://example.org/test\"");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference value");
-        assertEquals(1L, prefer.getInclude().size(), "Check includes count");
-        assertTrue(prefer.getInclude().contains("http://example.org/test"), "Check includes value");
-        assertTrue(prefer.getOmit().isEmpty(), "Check omits count");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
@@ -218,5 +198,16 @@ public class PreferTest {
     @Test
     public void testNullPrefer() {
         assertNull(Prefer.valueOf(null), "Check null value");
+    }
+
+    private Stream<Executable> checkPreferInclude(final Prefer prefer, final String url) {
+        return Stream.of(
+                () -> assertEquals(of("representation"), prefer.getPreference(), "Check preference"),
+                () -> assertEquals(1L, prefer.getInclude().size(), "Check includes count"),
+                () -> assertTrue(prefer.getInclude().contains(url), "Check includes value"),
+                () -> assertTrue(prefer.getOmit().isEmpty(), "Check omits count"),
+                () -> assertFalse(prefer.getHandling().isPresent(), "Check handling"),
+                () -> assertFalse(prefer.getWait().isPresent(), "Check wait"),
+                () -> assertFalse(prefer.getRespondAsync(), "Check respond async"));
     }
 }
