@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.description;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,8 +80,9 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
-        assertEquals(CONFLICT, res.getStatusInfo());
+                handler.setResource(handler.initialize(mockResource)).join(),
+                "No exception when trying to invalidly change IXN models!").getResponse();
+        assertEquals(CONFLICT, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -95,7 +97,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.setResource(handler.initialize(mockResource))));
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource))),
+                "No exception when the audit backend completes exceptionally!");
     }
 
     @Test
@@ -107,8 +110,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.RDFSource));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response type");
+        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
@@ -123,8 +126,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkLdpType(res, LDP.Container));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code");
+        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
@@ -139,8 +142,9 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo());
+                handler.setResource(handler.initialize(mockResource)).join(),
+                "No exception when the entity stream doesn't exist!").getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -152,8 +156,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkBinaryPut(res));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+        assertAll("Check Binary PUT interactions", checkBinaryPut(res));
     }
 
     @Test
@@ -166,8 +170,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkBinaryPut(res));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+        assertAll("Check Binary PUT interactions", checkBinaryPut(res));
     }
 
     @Test
@@ -180,8 +184,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleLiteral.ttl", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkRdfPut(res));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+        assertAll("Check RDF PUT interactions", checkRdfPut(res));
     }
 
     @Test
@@ -193,8 +197,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleLiteral.ttl", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkRdfPut(res));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+        assertAll("Check RDF PUT interactions", checkRdfPut(res));
     }
 
     @Test
@@ -202,8 +206,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/emptyData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkRdfPut(res));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+        assertAll("Check RDF PUT interactions", checkRdfPut(res));
     }
 
     @Test
@@ -215,8 +219,9 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
-        assertEquals(PRECONDITION_FAILED, res.getStatusInfo());
+                handler.setResource(handler.initialize(mockResource)).join(),
+                "No exception when the request precondition fails!").getResponse();
+        assertEquals(PRECONDITION_FAILED, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -228,8 +233,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
         final Response res = handler.setResource(handler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
-        assertAll(checkRdfPut(res));
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+        assertAll("Check RDF PUT interactions", checkRdfPut(res));
     }
 
     @Test
@@ -240,12 +245,13 @@ public class PutHandlerTest extends HandlerBaseTest {
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
         final Response res = assertThrows(BadRequestException.class, () ->
-                handler.setResource(handler.initialize(mockResource)).join()).getResponse();
+                handler.setResource(handler.initialize(mockResource)).join(),
+                "No exception when the interaction model isn't supported!").getResponse();
 
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
         assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
-                link.getRel().equals(LDP.constrainedBy.getIRIString())));
+                link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing constraint header!");
     }
 
     @Test
@@ -260,7 +266,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.setResource(handler.initialize(mockResource))));
+                unwrapAsyncError(handler.setResource(handler.initialize(mockResource))),
+                "No exception when there's a problem with the backend!");
     }
 
     @Test
@@ -275,7 +282,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);
 
         assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockResource)).join());
+                handler.setResource(handler.initialize(mockResource)).join(),
+                "No exception when there's a problem with the backend binary service!");
     }
 
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
@@ -285,15 +293,19 @@ public class PutHandlerTest extends HandlerBaseTest {
 
     private Stream<Executable> checkRdfPut(final Response res) {
         return Stream.of(
-                () -> assertAll(checkLdpType(res, LDP.RDFSource)),
-                () -> verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class)),
-                () -> verify(mockIoService).read(any(InputStream.class), any(RDFSyntax.class), anyString()));
+                () -> assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource)),
+                () -> verify(mockBinaryService, never().description("Binary service shouldn't have been called!"))
+                             .setContent(any(IRI.class), any(InputStream.class)),
+                () -> verify(mockIoService, description("IOService should have been called with an RDF resource"))
+                             .read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }
 
     private Stream<Executable> checkBinaryPut(final Response res) {
         return Stream.of(
-                () -> assertAll(checkLdpType(res, LDP.NonRDFSource)),
-                () -> verify(mockBinaryService).setContent(any(IRI.class), any(InputStream.class), any()),
-                () -> verify(mockIoService, never()).read(any(InputStream.class), any(RDFSyntax.class), anyString()));
+                () -> assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource)),
+                () -> verify(mockBinaryService, description("BinaryService should have been called to set content!"))
+                            .setContent(any(IRI.class), any(InputStream.class), any()),
+                () -> verify(mockIoService, never().description("IOService shouldn't have been called with a Binary!"))
+                            .read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }
 }

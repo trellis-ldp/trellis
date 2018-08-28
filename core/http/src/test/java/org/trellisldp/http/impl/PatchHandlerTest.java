@@ -75,8 +75,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
     public void testPatchNoSparql() {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null, mockBundler, null);
         final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.initialize(mockResource)).getResponse();
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+                patchHandler.initialize(mockResource), "No exception thrown with a null input!").getResponse();
+        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -92,7 +92,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
 
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.updateResource(handler.initialize(mockResource))));
+                unwrapAsyncError(handler.updateResource(handler.initialize(mockResource))),
+                "No exception thrown when there is an error in the audit backend!");
     }
 
     @Test
@@ -103,7 +104,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -117,7 +118,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
-        assertEquals(NO_CONTENT, res.getStatusInfo());
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
 
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
         verify(mockResourceService).replace(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class),
@@ -133,13 +134,14 @@ public class PatchHandlerTest extends HandlerBaseTest {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
-        assertEquals(OK, res.getStatusInfo());
-        assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED));
-        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertAll(checkLdpType(res, LDP.RDFSource));
+        assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
+        assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
+                "Incorrect Preference-Applied header!");
+        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type header!");
+        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type header!");
+        assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
+        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
+        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -153,13 +155,14 @@ public class PatchHandlerTest extends HandlerBaseTest {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
 
-        assertEquals(OK, res.getStatusInfo());
-        assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED));
-        assertTrue(TEXT_HTML_TYPE.isCompatible(res.getMediaType()));
-        assertTrue(res.getMediaType().isCompatible(TEXT_HTML_TYPE));
-        assertNull(res.getHeaderString(ACCEPT_POST));
-        assertNull(res.getHeaderString(ACCEPT_RANGES));
-        assertAll(checkLdpType(res, LDP.RDFSource));
+        assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
+        assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
+                "Incorrect Preference-Applied header!");
+        assertTrue(TEXT_HTML_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type header!");
+        assertTrue(res.getMediaType().isCompatible(TEXT_HTML_TYPE), "Incorrect content-type header!");
+        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
+        assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
+        assertAll("Check LDP type link headers", checkLdpType(res, LDP.RDFSource));
     }
 
     @Test
@@ -169,10 +172,9 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
         final Response res = assertThrows(WebApplicationException.class, () ->
-                patchHandler.initialize(mockResource)).getResponse();
-        assertEquals(CONFLICT, res.getStatusInfo());
+                patchHandler.initialize(mockResource), "No exception thrown for CONFLICT!").getResponse();
+        assertEquals(CONFLICT, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -183,9 +185,9 @@ public class PatchHandlerTest extends HandlerBaseTest {
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockResource))));
+                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockResource))),
+                "No exception thrown when the backend triggers an exception!");
     }
 
     @Test
@@ -195,12 +197,11 @@ public class PatchHandlerTest extends HandlerBaseTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.initialize(mockResource)).getResponse();
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
-
+                patchHandler.initialize(mockResource), "No exception for an unsupported IXN model!").getResponse();
+        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
         assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
-                link.getRel().equals(LDP.constrainedBy.getIRIString())));
+                link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing Link header with constraint!");
     }
 
     @Test
@@ -211,9 +212,9 @@ public class PatchHandlerTest extends HandlerBaseTest {
             .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
-
         final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.updateResource(patchHandler.initialize(mockResource)).join()).getResponse();
-        assertEquals(BAD_REQUEST, res.getStatusInfo());
+                patchHandler.updateResource(patchHandler.initialize(mockResource)).join(),
+                "No exception when the update triggers an error!").getResponse();
+        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
     }
 }
