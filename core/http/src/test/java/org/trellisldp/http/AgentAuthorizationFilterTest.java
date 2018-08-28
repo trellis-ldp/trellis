@@ -73,6 +73,6 @@ public class AgentAuthorizationFilterTest {
         filter.setAdminUsers(emptyList());
         filter.filter(mockContext);
         verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
-        assertEquals(Trellis.AnonymousAgent, sessionArgument.getValue().getAgent());
+        assertEquals(Trellis.AnonymousAgent, sessionArgument.getValue().getAgent(), "Unexpected agent IRI!");
     }
 }

@@ -58,12 +58,12 @@ public class CORSAnyOriginTest extends BaseCORSTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"), "Unexpected -Allow-Credentials header!");
+        assertNull(res.getHeaderString("Access-Control-Max-Age"), "Unexpected -Max-Age header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"), "Unexpected -Allow-Headers header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Methods"), "Unexpecgted -Allow-Methods header!");
     }
 
     @Test
@@ -74,12 +74,12 @@ public class CORSAnyOriginTest extends BaseCORSTest {
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").get();
 
-        assertEquals(SC_OK, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Methods"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"), "Unexpected -Allow-Credentials header!");
+        assertNull(res.getHeaderString("Access-Control-Max-Age"), "Unexpected -Max-Age header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Methods"), "Unexpected -Allow-Methods header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"), "Unexpected -Allow-Headers header!");
     }
 
     @Test
@@ -90,13 +90,16 @@ public class CORSAnyOriginTest extends BaseCORSTest {
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertTrue(res.getHeaderString("Access-Control-Allow-Headers").contains("accept"));
-        assertFalse(res.getHeaderString("Access-Control-Allow-Methods").contains("POST"));
-        assertTrue(res.getHeaderString("Access-Control-Allow-Methods").contains("PATCH"));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
+        assertNull(res.getHeaderString("Access-Control-Max-Age"), "Unexpected -Max-Age header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"), "Unexpected -Allow-Credentials header!");
+        assertTrue(res.getHeaderString("Access-Control-Allow-Headers").contains("accept"),
+                "accept missing from -Allow-Headers!");
+        assertFalse(res.getHeaderString("Access-Control-Allow-Methods").contains("POST"),
+                "Unexpected POST in -Allow-Methods header!");
+        assertTrue(res.getHeaderString("Access-Control-Allow-Methods").contains("PATCH"),
+                "PATCH missing from -Allow-Methods header!");
     }
 
 
@@ -108,26 +111,26 @@ public class CORSAnyOriginTest extends BaseCORSTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Language, Content-Type, Link").options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"), "Unexpected -Allow-Credentials header!");
+        assertNull(res.getHeaderString("Access-Control-Max-Age"), "Unexpected -Max-Age header!");
 
         final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
             .collect(toList());
-        assertEquals(4L, headers.size());
-        assertTrue(headers.contains("accept"));
-        assertTrue(headers.contains("link"));
-        assertTrue(headers.contains("content-type"));
-        assertTrue(headers.contains("accept-datetime"));
+        assertEquals(4L, headers.size(), "Incorrect -Allow-Headers count!");
+        assertTrue(headers.contains("accept"), "Accept missing from -Allow-Headers!");
+        assertTrue(headers.contains("link"), "Link missing from -Allow-Headers!");
+        assertTrue(headers.contains("content-type"), "Content-Type missing from -Allow-Headers!");
+        assertTrue(headers.contains("accept-datetime"), "Accept-Datetime missing from -Allow-Headers!");
 
         final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
-        assertEquals(4L, methods.size());
-        assertTrue(methods.contains("PUT"));
-        assertTrue(methods.contains("PATCH"));
-        assertTrue(methods.contains("GET"));
-        assertTrue(methods.contains("HEAD"));
+        assertEquals(4L, methods.size(), "Incorrect method count!");
+        assertTrue(methods.contains("PUT"), "Missing PUT method in CORS header!");
+        assertTrue(methods.contains("PATCH"), "Missing PATCH method in CORS header!");
+        assertTrue(methods.contains("GET"), "Missing GET method in CORS header!");
+        assertTrue(methods.contains("HEAD"), "Missing HEAD method in CORS header!");
     }
 
     @Test
@@ -138,19 +141,19 @@ public class CORSAnyOriginTest extends BaseCORSTest {
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Language").options();
 
-        assertEquals(SC_NO_CONTENT, res.getStatus());
-        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"));
-        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"));
-        assertNull(res.getHeaderString("Access-Control-Max-Age"));
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
+        assertNull(res.getHeaderString("Access-Control-Allow-Credentials"), "Unexpected -Allow-Credentials header!");
+        assertNull(res.getHeaderString("Access-Control-Max-Age"), "Unexpected -Max-Age header!");
 
-        assertNull(res.getHeaderString("Access-Control-Allow-Headers"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Headers"), "Unexpected -Allow-Headers!");
 
         final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
-        assertEquals(4L, methods.size());
-        assertTrue(methods.contains("PUT"));
-        assertTrue(methods.contains("PATCH"));
-        assertTrue(methods.contains("GET"));
-        assertTrue(methods.contains("HEAD"));
+        assertEquals(4L, methods.size(), "Incorrect method count!");
+        assertTrue(methods.contains("PUT"), "Missing PUT method in CORS header!");
+        assertTrue(methods.contains("PATCH"), "Missing PATCH method in CORS header!");
+        assertTrue(methods.contains("GET"), "Missing GET method in CORS header!");
+        assertTrue(methods.contains("HEAD"), "Missing HEAD method in CORS header!");
     }
 }

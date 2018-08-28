@@ -87,93 +87,75 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
     @Test
     public void testGetJson() {
         final Response res = target("/resource").request().accept("application/ld+json").get();
-
-        assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
-        assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
-        assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
-        assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
+        assertAll("Check response", checkStandardResponse(res));
     }
 
     @Test
     public void testDefaultType() {
         final Response res = target("resource").request().get();
-
-        assertEquals(SC_UNAUTHORIZED, res.getStatus());
-        assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE));
-        assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size());
-        assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH));
-        assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH));
+        assertAll("Check response", checkStandardResponse(res));
     }
 
     @Test
     public void testTrailingSlash() {
         final Response res = target("resource/").request().get();
-        assertAll(checkStandardResponse(res));
+        assertAll("Check response", checkStandardResponse(res));
     }
 
     @Test
     public void testCORS() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
-
         final Response res = target("resource").request().header("Origin", origin).options();
-        assertNull(res.getHeaderString("Access-Control-Allow-Origin"));
+        assertNull(res.getHeaderString("Access-Control-Allow-Origin"), "Unexpected CORS header!");
     }
 
     @Test
     public void testOptions1() {
         final Response res = target("resource").request().options();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check response", checkStandardResponse(res));
     }
 
     @Test
     public void testOptions2() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target("resource").request().options();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check response", checkStandardResponse(res));
     }
 
     @Test
     public void testGetJsonCompact() {
         final Response res = target("resource").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testGetTimeMapLink() {
         final Response res = target("resource").queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testGetTimeMapJson() {
         final Response res = target("resource").queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testGetVersionJson() {
         final Response res = target("resource").queryParam("version", 1496262729).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testGetAclJsonCompact() {
         final Response res = target("resource").queryParam("ext", "acl").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
@@ -181,8 +163,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").queryParam("ext", "acl").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
@@ -190,69 +171,62 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         final Response res = target("resource").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testPost1() {
         final Response res = target("resource").queryParam("ext", "acl").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testPost2() {
         final Response res = target("resource").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testPut1() {
         final Response res = target("resource").queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testPut2() {
         final Response res = target("resource").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testDelete1() {
         final Response res = target("resource").queryParam("ext", "acl").request().delete();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testDelete2() {
         final Response res = target("resource").request().delete();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     @Test
     public void testDelete3() {
         final Response res = target("resource/").request().delete();
-
-        assertAll(checkStandardResponse(res));
+        assertAll("Check standard response", checkStandardResponse(res));
     }
 
     private Stream<Executable> checkStandardResponse(final Response res) {
         return Stream.of(
-                () -> assertEquals(SC_UNAUTHORIZED, res.getStatus()),
-                () -> assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE)),
-                () -> assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size()),
-                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH)),
-                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH)));
+                () -> assertEquals(SC_UNAUTHORIZED, res.getStatus(), "Incorrect response code!"),
+                () -> assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE),
+                                   "Incorrect WWW-Authenticate header!"),
+                () -> assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size(), "Incorrect auth header size!"),
+                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH), "Digest not in header!"),
+                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH), "Basic not in header!"));
     }
 }

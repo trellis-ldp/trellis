@@ -16,6 +16,7 @@ package org.trellisldp.http;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.NotAllowedException;
@@ -86,7 +88,8 @@ public class WebACFilterTest {
 
         final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
 
-        assertThrows(NotAllowedException.class, () -> filter.filter(mockContext));
+        assertThrows(NotAllowedException.class, () -> filter.filter(mockContext),
+                "No exception thrown with unexpected method!");
     }
 
     @Test
@@ -97,16 +100,17 @@ public class WebACFilterTest {
 
         final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
         modes.add(ACL.Append);
-        filter.filter(mockContext);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Append ability!");
 
         modes.add(ACL.Write);
-        filter.filter(mockContext);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
 
         modes.remove(ACL.Append);
-        filter.filter(mockContext);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after removing Append ability!");
 
         modes.clear();
-        assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext));
+        assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
+                "No expception thrown when not authorized!");
     }
 
     @Test
@@ -117,19 +121,17 @@ public class WebACFilterTest {
         final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
         filter.setChallenges(asList("Foo", "Bar"));
 
-        try {
-            filter.filter(mockContext);
-        } catch (final NotAuthorizedException ex) {
-            assertTrue(ex.getChallenges().contains("Foo"));
-            assertTrue(ex.getChallenges().contains("Bar"));
-        }
+        final List<Object> challenges = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
+                "No auth exception thrown with no access modes!").getChallenges();
+
+        assertTrue(challenges.contains("Foo"), "Foo not among challenges!");
+        assertTrue(challenges.contains("Bar"), "Bar not among challenges!");
 
         filter.setChallenges(emptyList());
-        try {
-            filter.filter(mockContext);
-        } catch (final NotAuthorizedException ex) {
-            assertTrue(ex.getChallenges().contains("Foo"));
-            assertTrue(ex.getChallenges().contains("Bar"));
-        }
+        final List<Object> challenges2 = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
+                "No auth exception thrown with no access modes!").getChallenges();
+
+        assertTrue(challenges2.contains("Foo"), "Foo not among challenges after reset!");
+        assertTrue(challenges2.contains("Bar"), "Bar not among challenges after reset!");
     }
 }

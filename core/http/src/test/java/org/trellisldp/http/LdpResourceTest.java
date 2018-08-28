@@ -99,7 +99,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         final LdpResource filter = new LdpResource(mockBundler);
 
         filter.filter(mockContext);
-        verify(mockContext, never()).abortWith(any());
+        verify(mockContext, never().description("Trailing slash should trigger a redirect!")).abortWith(any());
     }
 
     @Test
@@ -117,6 +117,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
         final Response res = captor.getValue();
         assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")));
+                    l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")),
+                "Missing rel=self header with correct prefix!");
     }
 }

@@ -79,35 +79,35 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
     public void testGetJson() {
         final Response res = target("/repo1/resource").request().accept("application/ld+json").get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testForbiddenNoAcl() {
         final Response res = target("/repo1/resource").request().get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDefaultType() {
         final Response res = target("repo1/resource").request().get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testTrailingSlash() {
         final Response res = target("repo1/resource/").request().get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testOptions1() {
         final Response res = target("repo1/resource").request().options();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -115,7 +115,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target("repo1/resource").request().options();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -123,7 +123,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -131,7 +131,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -139,7 +139,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -147,7 +147,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").queryParam("version", 1496262729).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -155,7 +155,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -164,7 +164,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -173,7 +173,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -181,7 +181,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -189,7 +189,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -197,7 +197,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -205,28 +205,28 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         final Response res = target("repo1/resource").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" . ", APPLICATION_N_TRIPLES_TYPE));
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDelete1() {
         final Response res = target("repo1/resource").queryParam("ext", "acl").request().delete();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDelete2() {
         final Response res = target("repo1/resource").request().delete();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
     public void testDelete3() {
         final Response res = target("repo1/resource/").request().delete();
 
-        assertEquals(SC_FORBIDDEN, res.getStatus());
+        assertEquals(SC_FORBIDDEN, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -236,7 +236,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
 
         final Response res = target("repo1/resource/").request().get();
 
-        assertEquals(SC_OK, res.getStatus());
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -245,7 +245,6 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
             .method("FOO", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE_TYPE));
 
-        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus());
+        assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
-
 }
