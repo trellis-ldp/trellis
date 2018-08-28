@@ -72,7 +72,7 @@ public class AnonymousAuthFilterTest {
         filter.filter(mockContext);
 
         verify(mockContext).setSecurityContext(securityCaptor.capture());
-        assertAll(checkSecurityContext(false));
+        assertAll("Check security context", checkSecurityContext(false));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class AnonymousAuthFilterTest {
         filter.filter(mockContext);
 
         verify(mockContext).setSecurityContext(securityCaptor.capture());
-        assertAll(checkSecurityContext(true));
+        assertAll("Check security context", checkSecurityContext(true));
     }
 
     @Test
@@ -104,16 +104,17 @@ public class AnonymousAuthFilterTest {
         filter.filter(mockContext);
 
         verify(mockContext).setSecurityContext(securityCaptor.capture());
-        assertAll(checkSecurityContext(false));
+        assertAll("Check security context", checkSecurityContext(false));
     }
 
     private Stream<Executable> checkSecurityContext(final Boolean isSecure) {
         return Stream.of(
                 () -> assertEquals(Trellis.AnonymousAgent.getIRIString(),
-                                   securityCaptor.getValue().getUserPrincipal().getName()),
-                () -> assertFalse(securityCaptor.getValue().isUserInRole("role")),
-                () -> assertEquals(isSecure, securityCaptor.getValue().isSecure()),
-                () -> assertEquals("NONE", securityCaptor.getValue().getAuthenticationScheme()));
+                                   securityCaptor.getValue().getUserPrincipal().getName(), "Not anon principal!"),
+                () -> assertFalse(securityCaptor.getValue().isUserInRole("role"), "User is not in 'role'"),
+                () -> assertEquals(isSecure, securityCaptor.getValue().isSecure(), "secure bit is not: " + isSecure),
+                () -> assertEquals("NONE", securityCaptor.getValue().getAuthenticationScheme(),
+                                   "Incorrect auth scheme!"));
     }
 
     @Test
@@ -126,6 +127,6 @@ public class AnonymousAuthFilterTest {
         final AuthFilter<String, Principal> filter = new AnonymousAuthFilter.Builder()
             .setAuthenticator(new AnonymousAuthenticator()).buildAuthFilter();
 
-        assertThrows(WebApplicationException.class, () -> filter.filter(mockContext));
+        assertThrows(WebApplicationException.class, () -> filter.filter(mockContext), "No exception for unauth users!");
     }
 }

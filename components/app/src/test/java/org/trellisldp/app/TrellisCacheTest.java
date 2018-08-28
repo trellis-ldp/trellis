@@ -45,12 +45,12 @@ public class TrellisCacheTest {
     @Test
     public void testCache() {
         final TrellisCache<String, String> cache = new TrellisCache<>(newBuilder().maximumSize(5).build());
-        assertEquals("longer", cache.get("long", x -> x + "er"));
+        assertEquals("longer", cache.get("long", x -> x + "er"), "Incorrect cache response!");
     }
 
     @Test
     public void testCacheException() throws Exception {
         final TrellisCache<String, String> cache = new TrellisCache<>(mockCache);
-        assertNull(cache.get("long", x -> x + "er"));
+        assertNull(cache.get("long", x -> x + "er"), "Exception wasn't swallowed!");
     }
 }

@@ -39,10 +39,8 @@ public class BasicAuthenticatorTest {
         final BasicCredentials credentials = new BasicCredentials("acoburn", "secret");
 
         final Optional<Principal> res = authenticator.authenticate(credentials);
-        assertTrue(res.isPresent());
-        res.ifPresent(p -> {
-            assertEquals("https://people.apache.org/~acoburn/#i", p.getName());
-        });
+        assertTrue(res.isPresent(), "Missing principal!");
+        res.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
     }
 
     @Test
@@ -51,7 +49,7 @@ public class BasicAuthenticatorTest {
         final BasicCredentials credentials = new BasicCredentials("other", "pass");
 
         final Optional<Principal> res = authenticator.authenticate(credentials);
-        assertFalse(res.isPresent());
+        assertFalse(res.isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -60,7 +58,7 @@ public class BasicAuthenticatorTest {
         final BasicCredentials credentials = new BasicCredentials("acoburn", "incorrect");
 
         final Optional<Principal> res = authenticator.authenticate(credentials);
-        assertFalse(res.isPresent());
+        assertFalse(res.isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -70,7 +68,7 @@ public class BasicAuthenticatorTest {
         final BasicCredentials credentials = new BasicCredentials("acoburn", "incorrect");
 
         final Optional<Principal> res = authenticator.authenticate(credentials);
-        assertFalse(res.isPresent());
+        assertFalse(res.isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -82,7 +80,7 @@ public class BasicAuthenticatorTest {
         assumeTrue(userFile.setReadable(false));
 
         final Optional<Principal> res = authenticator.authenticate(credentials);
-        assertFalse(res.isPresent());
+        assertFalse(res.isPresent(), "Unexpected principal!");
         userFile.setReadable(true);
     }
 

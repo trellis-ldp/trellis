@@ -53,8 +53,8 @@ public class FederatedJwtAuthenticatorTest {
                 asList("trellis", "foo"));
 
         final Optional<Principal> result = authenticator.authenticate(jwt);
-        assertTrue(result.isPresent());
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#me", p.getName()));
+        assertTrue(result.isPresent(), "Missing principal!");
+        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#me", p.getName(), "Incorrect webid!"));
     }
 
     @Test
@@ -71,8 +71,8 @@ public class FederatedJwtAuthenticatorTest {
                 asList("trellis-public"));
 
         final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent());
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName()));
+        assertTrue(result.isPresent(), "Missing principal!");
+        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
     }
 
     @Test
@@ -85,8 +85,8 @@ public class FederatedJwtAuthenticatorTest {
                 asList("trellis-ec"));
 
         final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent());
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName()));
+        assertTrue(result.isPresent(), "Missing principal!");
+        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -118,8 +118,8 @@ public class FederatedJwtAuthenticatorTest {
                 asList("trellis-ec"));
 
         final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent());
-        result.ifPresent(p -> assertEquals("http://localhost/acoburn", p.getName()));
+        assertTrue(result.isPresent(), "Missing principal!");
+        result.ifPresent(p -> assertEquals("http://localhost/acoburn", p.getName(), "Incorrect webid!"));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -149,7 +149,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -161,7 +161,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis", "foo"));
 
-        assertFalse(authenticator.authenticate(token).isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -173,7 +173,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
                 asList("foo"));
 
-        assertFalse(authenticator.authenticate(token).isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
     }
 
     @Test
@@ -189,7 +189,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(mockKeyStore,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent());
+        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
     }
 
     private String buildEcToken(final Key key, final String id) {

@@ -35,9 +35,7 @@ public class AnonymousAuthenticatorTest {
         final Authenticator<String, Principal> authenticator = new AnonymousAuthenticator();
 
         final Optional<Principal> res = authenticator.authenticate("blahblah");
-        assertTrue(res.isPresent());
-        res.ifPresent(p -> {
-            assertEquals(Trellis.AnonymousAgent.getIRIString(), p.getName());
-        });
+        assertTrue(res.isPresent(), "Missing principal!");
+        res.ifPresent(p -> assertEquals(Trellis.AnonymousAgent.getIRIString(), p.getName(), "Incorrect agent name!"));
     }
 }

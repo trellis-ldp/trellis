@@ -56,21 +56,21 @@ public class TrellisApplicationTest {
         CLIENT.property(READ_TIMEOUT, 5000);
     }
 
-
     @Test
     public void testGetName() {
         final Application<TrellisConfiguration> app = new SimpleTrellisApp();
-        assertEquals("Trellis LDP", app.getName());
+        assertEquals("Trellis LDP", app.getName(), "Incorrect application name!");
     }
 
     @Test
     public void testGET() {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         try (final Response res = CLIENT.target(baseUrl).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Wrong content-type " + res.getMediaType());
             assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
-                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())));
+                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())),
+                    "No ldp:Resource link header!");
         }
     }
 
@@ -78,12 +78,14 @@ public class TrellisApplicationTest {
     public void testPOST() {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         try (final Response res = CLIENT.target(baseUrl).request().post(entity("", TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertNotNull(res.getLocation());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
+            assertNotNull(res.getLocation(), "Missing Location header!");
             assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
-                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())));
+                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())),
+                    "Missing ldp:Resource link header!");
             assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
-                        TYPE.equals(link.getRel()) && LDP.RDFSource.getIRIString().equals(link.getUri().toString())));
+                        TYPE.equals(link.getRel()) && LDP.RDFSource.getIRIString().equals(link.getUri().toString())),
+                    "Missing ldp:RDFSource link header!");
         }
     }
 }

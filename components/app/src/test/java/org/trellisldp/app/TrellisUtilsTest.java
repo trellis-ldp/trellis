@@ -61,11 +61,11 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
 
-        assertTrue(TrellisUtils.getCorsConfiguration(config).isPresent());
+        assertTrue(TrellisUtils.getCorsConfiguration(config).isPresent(), "CORS configuration is missing!");
 
         config.getCors().setEnabled(false);
 
-        assertFalse(TrellisUtils.getCorsConfiguration(config).isPresent());
+        assertFalse(TrellisUtils.getCorsConfiguration(config).isPresent(), "CORS config persists after disabling it!");
     }
 
     @Test
@@ -74,11 +74,11 @@ public class TrellisUtilsTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertTrue(TrellisUtils.getWebacCache(config).isPresent());
+        assertTrue(TrellisUtils.getWebacCache(config).isPresent(), "WebAC configuration not present!");
 
         config.getAuth().getWebac().setEnabled(false);
 
-        assertFalse(TrellisUtils.getWebacCache(config).isPresent());
+        assertFalse(TrellisUtils.getWebacCache(config).isPresent(), "WebAC config persists after disabling it!");
     }
 
     @Test
@@ -89,14 +89,14 @@ public class TrellisUtilsTest {
         config.getAuth().getJwt().setKeyStore(null);
 
         final Optional<List<AuthFilter>> filters = TrellisUtils.getAuthFilters(config);
-        assertTrue(filters.isPresent());
-        filters.ifPresent(f -> assertEquals(3L, f.size()));
+        assertTrue(filters.isPresent(), "Auth filters are missing!");
+        filters.ifPresent(f -> assertEquals(3L, f.size(), "Incorrect auth filter count!"));
 
         config.getAuth().getAnon().setEnabled(false);
         config.getAuth().getBasic().setEnabled(false);
         config.getAuth().getJwt().setEnabled(false);
 
-        assertFalse(TrellisUtils.getAuthFilters(config).isPresent());
+        assertFalse(TrellisUtils.getAuthFilters(config).isPresent(), "Auth filters should have been disabled!");
     }
 
     @Test
@@ -105,7 +105,7 @@ public class TrellisUtilsTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
-        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not enabled!");
     }
 
     @Test
@@ -115,7 +115,7 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("foo", "bar"));
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
     }
 
     @Test
@@ -125,7 +125,7 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("trellis", "trellis-ec", "trellis-public"));
-        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not enabled!");
     }
 
     @Test
@@ -134,7 +134,7 @@ public class TrellisUtilsTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("config1.yml"));
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
     }
 
     @Test
@@ -144,7 +144,7 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         final String nonexistent = resourceFilePath("config1.yml").replaceAll("config1.yml", "nonexistent.yml");
         config.getAuth().getJwt().setKeyStore(nonexistent);
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
     }
 
     @Test
@@ -154,6 +154,6 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(null);
         config.getAuth().getJwt().setKey("");
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent());
+        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
     }
 }
