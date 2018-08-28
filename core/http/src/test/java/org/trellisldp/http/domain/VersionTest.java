@@ -26,22 +26,22 @@ public class VersionTest {
     @Test
     public void testVersion() {
         final Version v = Version.valueOf("1493646202676");
-        assertEquals("2017-05-01T13:43:22.676Z", v.getInstant().toString());
-        assertEquals("2017-05-01T13:43:22.676Z", v.toString());
+        assertEquals("2017-05-01T13:43:22.676Z", v.getInstant().toString(), "Check datetime string");
+        assertEquals("2017-05-01T13:43:22.676Z", v.toString(), "Check stringified version");
     }
 
     @Test
     public void testInvalidVersion() {
-        assertNull(Version.valueOf("blah"));
+        assertNull(Version.valueOf("blah"), "Check parsing an invalid version");
     }
 
     @Test
     public void testBadValue() {
-        assertNull(Version.valueOf("-13.12"));
+        assertNull(Version.valueOf("-13.12"), "Check parsing an invalid date");
     }
 
     @Test
     public void testNullValue() {
-        assertNull(Version.valueOf(null));
+        assertNull(Version.valueOf(null), "Check parsing a null value");
     }
 }

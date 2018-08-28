@@ -26,19 +26,19 @@ public class DigestTest {
     @Test
     public void testDigest() {
         final Digest d = Digest.valueOf("md5=HUXZLQLMuI/KZ5KDcJPcOA==");
-        assertEquals("md5", d.getAlgorithm());
-        assertEquals("HUXZLQLMuI/KZ5KDcJPcOA==", d.getDigest());
+        assertEquals("md5", d.getAlgorithm(), "check algorithm name");
+        assertEquals("HUXZLQLMuI/KZ5KDcJPcOA==", d.getDigest(), "check digest value");
     }
 
     @Test
     public void testDigest2() {
         final Digest d = new Digest("md5", "HUXZLQLMuI/KZ5KDcJPcOA==");
-        assertEquals("md5", d.getAlgorithm());
-        assertEquals("HUXZLQLMuI/KZ5KDcJPcOA==", d.getDigest());
+        assertEquals("md5", d.getAlgorithm(), "Check md5 algorithm name");
+        assertEquals("HUXZLQLMuI/KZ5KDcJPcOA==", d.getDigest(), "Check digest value");
     }
 
     @Test
     public void testInvalidDigest() {
-        assertNull(Digest.valueOf("blah"));
+        assertNull(Digest.valueOf("blah"), "Check parsing invalid digest");
     }
 }

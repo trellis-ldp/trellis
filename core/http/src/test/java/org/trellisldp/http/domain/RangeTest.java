@@ -26,37 +26,37 @@ public class RangeTest {
     @Test
     public void testRange() {
         final Range range = Range.valueOf("bytes=1-10");
-        assertTrue(range.getFrom().equals(1));
-        assertTrue(range.getTo().equals(10));
+        assertTrue(range.getFrom().equals(1), "Check 'from' value");
+        assertTrue(range.getTo().equals(10), "Check 'to' value");
     }
 
     @Test
     public void testInvalidRange() {
-        assertNull(Range.valueOf("bytes=10-1"));
+        assertNull(Range.valueOf("bytes=10-1"), "Check invalid range");
     }
 
     @Test
     public void testInvalidNumbers() {
-        assertNull(Range.valueOf("bytes=1-15.5"));
+        assertNull(Range.valueOf("bytes=1-15.5"), "Check invalid numbers");
     }
 
     @Test
     public void testInvalidRange2() {
-        assertNull(Range.valueOf("bytes=1-15, 20-24"));
+        assertNull(Range.valueOf("bytes=1-15, 20-24"), "Check invalid multiple ranges");
     }
 
     @Test
     public void testInvalidNumbers3() {
-        assertNull(Range.valueOf("bytes=1-foo"));
+        assertNull(Range.valueOf("bytes=1-foo"), "Check invalid values");
     }
 
     @Test
     public void testBadInput() {
-        assertNull(Range.valueOf("blahblahblah"));
+        assertNull(Range.valueOf("blahblahblah"), "Check invalid input");
     }
 
     @Test
     public void testNullInput() {
-        assertNull(Range.valueOf(null));
+        assertNull(Range.valueOf(null), "Check null input");
     }
 }

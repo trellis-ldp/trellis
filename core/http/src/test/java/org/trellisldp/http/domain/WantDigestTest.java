@@ -26,46 +26,46 @@ public class WantDigestTest {
     @Test
     public void testWantDigest1() {
         final WantDigest wantDigest = new WantDigest("md5, sha-1");
-        assertEquals(2, wantDigest.getAlgorithms().size());
-        assertEquals("MD5", wantDigest.getAlgorithms().get(0));
-        assertEquals("SHA-1", wantDigest.getAlgorithms().get(1));
+        assertEquals(2, wantDigest.getAlgorithms().size(), "Check algorithm list");
+        assertEquals("MD5", wantDigest.getAlgorithms().get(0), "Check presence of MD5");
+        assertEquals("SHA-1", wantDigest.getAlgorithms().get(1), "Check presence of SHA-1");
     }
 
     @Test
     public void testWantDigest2() {
         final WantDigest wantDigest = new WantDigest("sha-1, md5");
-        assertEquals(2, wantDigest.getAlgorithms().size());
-        assertEquals("SHA-1", wantDigest.getAlgorithms().get(0));
-        assertEquals("MD5", wantDigest.getAlgorithms().get(1));
+        assertEquals(2, wantDigest.getAlgorithms().size(), "Check algorithm list");
+        assertEquals("SHA-1", wantDigest.getAlgorithms().get(0), "Check that sha-1 is first");
+        assertEquals("MD5", wantDigest.getAlgorithms().get(1), "Check that md5 is second");
     }
 
     @Test
     public void testWantDigest3() {
         final WantDigest wantDigest = new WantDigest("sha-1;q=0.3, md5;q=1");
-        assertEquals(2, wantDigest.getAlgorithms().size());
-        assertEquals("MD5", wantDigest.getAlgorithms().get(0));
-        assertEquals("SHA-1", wantDigest.getAlgorithms().get(1));
+        assertEquals(2, wantDigest.getAlgorithms().size(), "Check algorithm list");
+        assertEquals("MD5", wantDigest.getAlgorithms().get(0), "Check that md5 is first");
+        assertEquals("SHA-1", wantDigest.getAlgorithms().get(1), "Check that sha-1 is second");
     }
 
     @Test
     public void testWantDigest4() {
         final WantDigest wantDigest = new WantDigest(null);
-        assertTrue(wantDigest.getAlgorithms().isEmpty());
+        assertTrue(wantDigest.getAlgorithms().isEmpty(), "Check parsing null value");
     }
 
     @Test
     public void testWantDigest5() {
         final WantDigest wantDigest = new WantDigest("sha-1;q=0.3, md5;q=blah");
-        assertEquals(2, wantDigest.getAlgorithms().size());
-        assertEquals("SHA-1", wantDigest.getAlgorithms().get(0));
-        assertEquals("MD5", wantDigest.getAlgorithms().get(1));
+        assertEquals(2, wantDigest.getAlgorithms().size(), "Check algorithm list");
+        assertEquals("SHA-1", wantDigest.getAlgorithms().get(0), "Check that sha-1 is first");
+        assertEquals("MD5", wantDigest.getAlgorithms().get(1), "Check that md5 is second");
     }
 
     @Test
     public void testWantDigest6() {
         final WantDigest wantDigest = new WantDigest("sha-1;q=0.3, md5;p=1.0");
-        assertEquals(2, wantDigest.getAlgorithms().size());
-        assertEquals("SHA-1", wantDigest.getAlgorithms().get(0));
-        assertEquals("MD5", wantDigest.getAlgorithms().get(1));
+        assertEquals(2, wantDigest.getAlgorithms().size(), "Check algorithm list");
+        assertEquals("SHA-1", wantDigest.getAlgorithms().get(0), "Check that sha-1 is first");
+        assertEquals("MD5", wantDigest.getAlgorithms().get(1), "Check that md5 is second");
     }
 }
