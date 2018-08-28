@@ -37,7 +37,7 @@ public class RDFConnectionHealthCheckTest {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final HealthCheck check = new RDFConnectionHealthCheck(rdfConnection);
-        assertTrue(check.execute().isHealthy());
+        assertTrue(check.execute().isHealthy(), "RDFConnection isn't healthy!");
     }
 
     @Test
@@ -46,6 +46,6 @@ public class RDFConnectionHealthCheckTest {
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         rdfConnection.close();
         final HealthCheck check = new RDFConnectionHealthCheck(rdfConnection);
-        assertFalse(check.execute().isHealthy());
+        assertFalse(check.execute().isHealthy(), "Closed RDFConnection doesn't report as unhealthy!");
     }
 }

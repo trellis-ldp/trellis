@@ -27,6 +27,6 @@ public class TrellisApplicationTest {
     @Test
     public void testGetName() {
         final Application<AppConfiguration> app = new TrellisApplication();
-        assertEquals("Trellis LDP", app.getName());
+        assertEquals("Trellis LDP", app.getName(), "Incorrect application name!");
     }
 }

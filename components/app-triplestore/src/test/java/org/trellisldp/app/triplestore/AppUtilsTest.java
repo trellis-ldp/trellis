@@ -64,22 +64,22 @@ public class AppUtilsTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
+        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using in-memory dataset!");
+        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
 
         config.setResources("http://localhost/sparql");
 
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
+        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using local HTTP!");
+        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
 
         config.setResources("https://localhost/sparql");
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
+        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using local HTTPS!");
+        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
 
         final File dir = new File(new File(getClass().getResource("/data").toURI()), "resources");
         config.setResources(dir.getAbsolutePath());
-        assertNotNull(AppUtils.getRDFConnection(config));
-        assertFalse(AppUtils.getRDFConnection(config).isClosed());
+        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using local file!");
+        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
     }
 
     @Test
@@ -89,8 +89,8 @@ public class AppUtilsTest {
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.NONE);
         final EventService svc = AppUtils.getNotificationService(c, mockEnv);
-        assertNotNull(svc);
-        assertTrue(svc instanceof NoopEventService);
+        assertNotNull(svc, "Missing EventService!");
+        assertTrue(svc instanceof NoopEventService, "EventService isn't a NoopEvenService!");
     }
 
     @Test
@@ -103,8 +103,8 @@ public class AppUtilsTest {
         c.setEnabled(false);
         c.setType(NotificationsConfiguration.Type.KAFKA);
         final EventService svc = AppUtils.getNotificationService(c, mockEnv);
-        assertNotNull(svc);
-        assertTrue(svc instanceof NoopEventService);
+        assertNotNull(svc, "Missing EventService!");
+        assertTrue(svc instanceof NoopEventService, "EventService didn't default to No-op service!");
     }
 
     @Test
@@ -117,8 +117,8 @@ public class AppUtilsTest {
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.KAFKA);
         final EventService svc = AppUtils.getNotificationService(c, mockEnv);
-        assertNotNull(svc);
-        assertTrue(svc instanceof KafkaPublisher);
+        assertNotNull(svc, "Missing EventService!");
+        assertTrue(svc instanceof KafkaPublisher, "EventService isn't a KafkaPublisher!");
     }
 
     @Test
@@ -130,10 +130,11 @@ public class AppUtilsTest {
         c.set("key.serializer", "some.bogus.key.serializer");
         c.setConnectionString("localhost:9092");
         final Properties p = AppUtils.getKafkaProperties(c);
-        assertEquals("all", p.getProperty("acks"));
-        assertEquals("value", p.getProperty("some.other"));
-        assertEquals("org.apache.kafka.common.serialization.StringSerializer", p.getProperty("key.serializer"));
-        assertEquals("localhost:9092", p.getProperty("bootstrap.servers"));
+        assertEquals("all", p.getProperty("acks"), "Incorrect kafka acks property!");
+        assertEquals("value", p.getProperty("some.other"), "Incorrect custom property!");
+        assertEquals("org.apache.kafka.common.serialization.StringSerializer", p.getProperty("key.serializer"),
+                "Incorrect serializer class property!");
+        assertEquals("localhost:9092", p.getProperty("bootstrap.servers"), "Incorrect bootstrap.servers property!");
     }
 
     @Test
@@ -142,7 +143,8 @@ public class AppUtilsTest {
         c.setConnectionString("tcp://localhost:61616");
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.JMS);
-        assertThrows(RuntimeTrellisException.class, () -> AppUtils.getNotificationService(c, mockEnv));
+        assertThrows(RuntimeTrellisException.class, () ->
+                AppUtils.getNotificationService(c, mockEnv), "No exception when JMS client doesn't connect!");
     }
 
     @Test
@@ -151,20 +153,20 @@ public class AppUtilsTest {
         c.setConnectionString("localhost:61616");
 
         final ActiveMQConnectionFactory factory1 = AppUtils.getJmsFactory(c);
-        assertNull(factory1.getUserName());
-        assertNull(factory1.getPassword());
-        assertEquals("localhost:61616", factory1.getBrokerURL());
+        assertNull(factory1.getUserName(), "Unexpected username!");
+        assertNull(factory1.getPassword(), "Unexpected password!");
+        assertEquals("localhost:61616", factory1.getBrokerURL(), "Incorrect broker URL!");
 
         c.set("password", "pass");
         final ActiveMQConnectionFactory factory2 = AppUtils.getJmsFactory(c);
-        assertNull(factory2.getUserName());
-        assertNull(factory2.getPassword());
-        assertEquals("localhost:61616", factory2.getBrokerURL());
+        assertNull(factory2.getUserName(), "Unexpected username!");
+        assertNull(factory2.getPassword(), "Unexpected password!");
+        assertEquals("localhost:61616", factory2.getBrokerURL(), "Incorrect broker URL!");
 
         c.set("username", "user");
         final ActiveMQConnectionFactory factory3 = AppUtils.getJmsFactory(c);
-        assertEquals("user", factory3.getUserName());
-        assertEquals("pass", factory3.getPassword());
-        assertEquals("localhost:61616", factory3.getBrokerURL());
+        assertEquals("user", factory3.getUserName(), "Incorrect username!");
+        assertEquals("pass", factory3.getPassword(), "Incorrect password!");
+        assertEquals("localhost:61616", factory3.getBrokerURL(), "Incorrect broker URL!");
     }
 }

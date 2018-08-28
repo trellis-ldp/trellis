@@ -41,26 +41,27 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertEquals("Trellis", config.getDefaultName());
-        assertEquals((Integer) 86400, config.getCache().getMaxAge());
-        assertTrue(config.getCache().getMustRevalidate());
-        assertFalse(config.getCache().getNoCache());
-        assertEquals((Long) 10L, config.getJsonld().getCacheSize());
-        assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours());
-        assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty());
-        assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"));
-        assertNull(config.getResources());
-        assertEquals("http://hub.example.com/", config.getHubUrl());
-        assertEquals((Integer) 2, config.getBinaryHierarchyLevels());
-        assertEquals((Integer) 1, config.getBinaryHierarchyLength());
-        assertEquals("my.cluster.node", config.any().get("cassandraAddress"));
-        assertEquals((Integer)245993, config.any().get("cassandraPort"));
+        assertEquals("Trellis", config.getDefaultName(), "Incorrect default name!");
+        assertEquals((Integer) 86400, config.getCache().getMaxAge(), "Incorrect maxAge!");
+        assertTrue(config.getCache().getMustRevalidate(), "Incorrect cache/mustRevalidate value!");
+        assertFalse(config.getCache().getNoCache(), "Incorrect cache/noCache value!");
+        assertEquals((Long) 10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize value!");
+        assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours value!");
+        assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty(), "Incorrect jsonld/contextDomainWhitelist");
+        assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"),
+                "Incorrect jsonld/contextWhitelist value!");
+        assertNull(config.getResources(), "Unexpected resources value!");
+        assertEquals("http://hub.example.com/", config.getHubUrl(), "Incorrect hub value!");
+        assertEquals((Integer) 2, config.getBinaryHierarchyLevels(), "Incorrect binaryHierarchyLevels value!");
+        assertEquals((Integer) 1, config.getBinaryHierarchyLength(), "Incorrect binaryHierarchyLength value!");
+        assertEquals("my.cluster.node", config.any().get("cassandraAddress"), "Incorrect custom value!");
+        assertEquals((Integer)245993, config.any().get("cassandraPort"), "Incorrect custom value (2)!");
         @SuppressWarnings("unchecked")
         final Map<String, Object> extraConfig = (Map<String, Object>) config.any().get("extraConfigValues");
-        assertTrue((Boolean) extraConfig.get("one"));
+        assertTrue((Boolean) extraConfig.get("one"), "Invalid nested custom values as boolean!");
         @SuppressWarnings("unchecked")
         final List<String> list = (List<String>) extraConfig.get("two");
-        assertEquals(newArrayList("value1", "value2"), list);
+        assertEquals(newArrayList("value1", "value2"), list, "Invalid nested custom values as list!");
     }
 
 
@@ -69,10 +70,10 @@ public class TrellisConfigurationTest {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
-        assertEquals("org/trellisldp/rdfa/resource.mustache", config.getAssets().getTemplate());
-        assertEquals("http://example.org/image.icon", config.getAssets().getIcon());
-        assertTrue(config.getAssets().getJs().contains("http://example.org/scripts1.js"));
-        assertTrue(config.getAssets().getCss().contains("http://example.org/styles1.css"));
+        assertEquals("org/trellisldp/rdfa/resource.mustache", config.getAssets().getTemplate(), "Incorrect asset tpl!");
+        assertEquals("http://example.org/image.icon", config.getAssets().getIcon(), "Incorrect asset icon!");
+        assertTrue(config.getAssets().getJs().contains("http://example.org/scripts1.js"), "Incorrect asset js!");
+        assertTrue(config.getAssets().getCss().contains("http://example.org/styles1.css"), "Incorrect asset css!");
     }
 
     @Test
@@ -81,11 +82,12 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertFalse(config.getNotifications().getEnabled());
-        assertEquals(NotificationsConfiguration.Type.NONE, config.getNotifications().getType());
-        assertEquals("example.com:1234", config.getNotifications().getConnectionString());
-        assertEquals("foo", config.getNotifications().any().get("some.other.value"));
-        assertEquals("test", config.getNotifications().getTopicName());
+        assertFalse(config.getNotifications().getEnabled(), "Notifications aren't enabled!");
+        assertEquals(NotificationsConfiguration.Type.NONE, config.getNotifications().getType(),
+                "Incorrect notification type!");
+        assertEquals("example.com:1234", config.getNotifications().getConnectionString(), "Incorrect connect string!");
+        assertEquals("foo", config.getNotifications().any().get("some.other.value"), "Incorrect custom value!");
+        assertEquals("test", config.getNotifications().getTopicName(), "Incorrect topic name!");
 
     }
 
@@ -95,14 +97,14 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertEquals("/tmp/trellisData/binaries", config.getBinaries());
-        assertEquals("/tmp/trellisData/mementos", config.getMementos());
-        assertEquals("http://localhost:8080/", config.getBaseUrl());
-        assertEquals("http://hub.example.com/", config.getHubUrl());
+        assertEquals("/tmp/trellisData/binaries", config.getBinaries(), "Incorrect binary location!");
+        assertEquals("/tmp/trellisData/mementos", config.getMementos(), "Incorrect memento location!");
+        assertEquals("http://localhost:8080/", config.getBaseUrl(), "Incorrect base URL!");
+        assertEquals("http://hub.example.com/", config.getHubUrl(), "Incorrect hub URL!");
 
         final String resources = "http://triplestore.example.com/";
         config.setResources(resources);
-        assertEquals(resources, config.getResources());
+        assertEquals(resources, config.getResources(), "Incorrect resource location!");
     }
 
     @Test
@@ -111,29 +113,29 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertTrue(config.getAuth().getWebac().getEnabled());
-        assertEquals((Long) 100L, config.getAuth().getWebac().getCacheSize());
-        assertEquals((Long) 10L, config.getAuth().getWebac().getCacheExpireSeconds());
-        assertTrue(config.getAuth().getAnon().getEnabled());
-        assertTrue(config.getAuth().getBasic().getEnabled());
-        assertEquals("users.auth", config.getAuth().getBasic().getUsersFile());
-        assertEquals("trellis", config.getAuth().getBasic().getRealm());
+        assertTrue(config.getAuth().getWebac().getEnabled(), "WebAC wasn't enabled!");
+        assertEquals((Long) 100L, config.getAuth().getWebac().getCacheSize(), "Incorrect auth/webac/cacheSize value!");
+        assertEquals((Long) 10L, config.getAuth().getWebac().getCacheExpireSeconds(), "Incorrect webac cache expiry!");
+        assertTrue(config.getAuth().getAnon().getEnabled(), "Missing anon auth support!");
+        assertTrue(config.getAuth().getBasic().getEnabled(), "Missing basic auth support!");
+        assertEquals("users.auth", config.getAuth().getBasic().getUsersFile(), "Incorrect basic auth users file!");
+        assertEquals("trellis", config.getAuth().getBasic().getRealm(), "Incorrect basic auth realm!");
 
         config.getAuth().getBasic().setRealm("foo");
-        assertEquals("foo", config.getAuth().getBasic().getRealm());
-        assertTrue(config.getAuth().getJwt().getEnabled());
-        assertEquals("secret", config.getAuth().getJwt().getKey());
-        assertFalse(config.getAuth().getJwt().getBase64Encoded());
-        assertEquals("trellis", config.getAuth().getJwt().getRealm());
+        assertEquals("foo", config.getAuth().getBasic().getRealm(), "Incorrect basic auth realm!");
+        assertTrue(config.getAuth().getJwt().getEnabled(), "JWT not enabled!");
+        assertEquals("secret", config.getAuth().getJwt().getKey(), "Incorrect JWT key!");
+        assertFalse(config.getAuth().getJwt().getBase64Encoded(), "Incorrect JWT base64 encoded setting!");
+        assertEquals("trellis", config.getAuth().getJwt().getRealm(), "Incorrect JWT realm!");
         config.getAuth().getJwt().setRealm("bar");
-        assertEquals("bar", config.getAuth().getJwt().getRealm());
+        assertEquals("bar", config.getAuth().getJwt().getRealm(), "Incorrect JWT realm after reset!");
 
-        assertEquals("password", config.getAuth().getJwt().getKeyStorePassword());
-        assertEquals("/tmp/trellisData/keystore.jks", config.getAuth().getJwt().getKeyStore());
-        assertTrue(config.getAuth().getJwt().getKeyIds().contains("foo"));
-        assertTrue(config.getAuth().getJwt().getKeyIds().contains("bar"));
-        assertTrue(config.getAuth().getJwt().getKeyIds().contains("trellis"));
-        assertEquals(3, config.getAuth().getJwt().getKeyIds().size());
+        assertEquals("password", config.getAuth().getJwt().getKeyStorePassword(), "Incorrect JWT keystore password!");
+        assertEquals("/tmp/trellisData/keystore.jks", config.getAuth().getJwt().getKeyStore(), "Wrong keystore loc!");
+        assertTrue(config.getAuth().getJwt().getKeyIds().contains("foo"), "'foo' missing from JWT key ids!");
+        assertTrue(config.getAuth().getJwt().getKeyIds().contains("bar"), "'bar' missing from JWT key ids!");
+        assertTrue(config.getAuth().getJwt().getKeyIds().contains("trellis"), "'trellis' missing from JWT key ids!");
+        assertEquals(3, config.getAuth().getJwt().getKeyIds().size(), "Incorrect JWT Key id count!");
     }
 
     @Test
@@ -142,7 +144,7 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertEquals("/tmp/trellisData/namespaces.json", config.getNamespaces());
+        assertEquals("/tmp/trellisData/namespaces.json", config.getNamespaces(), "Incorrect namespace location!");
     }
 
     @Test
@@ -151,13 +153,12 @@ public class TrellisConfigurationTest {
                 Validators.newValidator(), Jackson.newObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertTrue(config.getCors().getEnabled());
-        assertTrue(config.getCors().getAllowOrigin().contains("*"));
-        assertTrue(config.getCors().getAllowHeaders().contains("Link"));
-        assertTrue(config.getCors().getAllowMethods().contains("PATCH"));
-        assertTrue(config.getCors().getExposeHeaders().contains("Location"));
-        assertEquals((Integer) 180, config.getCors().getMaxAge());
-        assertTrue(config.getCors().getAllowCredentials());
+        assertTrue(config.getCors().getEnabled(), "CORS isn't enabled!");
+        assertTrue(config.getCors().getAllowOrigin().contains("*"), "CORS origin not '*'");
+        assertTrue(config.getCors().getAllowHeaders().contains("Link"), "Link not in CORS allow-headers!");
+        assertTrue(config.getCors().getAllowMethods().contains("PATCH"), "PATCH not in CORS allow-methods!");
+        assertTrue(config.getCors().getExposeHeaders().contains("Location"), "Location not in CORS expose-headers!");
+        assertEquals((Integer) 180, config.getCors().getMaxAge(), "incorrect max-age in CORS headers!");
+        assertTrue(config.getCors().getAllowCredentials(), "CORS allow-credentials not set!");
     }
-
 }
