@@ -73,7 +73,7 @@ public class KafkaPublisherTest {
         svc.emit(mockEvent);
 
         final List<ProducerRecord<String, String>> records = producer.history();
-        assertEquals(1L, records.size());
-        assertEquals(1L, records.stream().filter(r -> r.topic().equals(queueName)).count());
+        assertEquals(1L, records.size(), "Incorrect total records size!");
+        assertEquals(1L, records.stream().filter(r -> r.topic().equals(queueName)).count(), "Incorrect filtered size!");
     }
 }
