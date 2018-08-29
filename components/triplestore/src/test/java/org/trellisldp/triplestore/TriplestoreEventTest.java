@@ -52,10 +52,10 @@ public class TriplestoreEventTest {
     public void testSimpleSession() {
         final Session s1 = new SimpleSession(Trellis.AdministratorAgent);
         final Session s2 = new SimpleSession(Trellis.AdministratorAgent);
-        assertNotEquals(s1.getIdentifier(), s2.getIdentifier());
-        assertEquals(s1.getAgent(), s2.getAgent());
-        assertFalse(s1.getCreated().isAfter(s2.getCreated()));
-        assertFalse(s1.getDelegatedBy().isPresent());
+        assertNotEquals(s1.getIdentifier(), s2.getIdentifier(), "Identifiers should be unique!");
+        assertEquals(s1.getAgent(), s2.getAgent(), "Agents should be equal!");
+        assertFalse(s1.getCreated().isAfter(s2.getCreated()), "Dates should be sequential!");
+        assertFalse(s1.getDelegatedBy().isPresent(), "Unexpected delegation value!");
     }
 
     @Test
@@ -65,20 +65,20 @@ public class TriplestoreEventTest {
 
         final Event event = new SimpleEvent(identifier, asList(agent),
                 asList(PROV.Activity, AS.Create), asList(LDP.RDFSource, SKOS.Concept), inbox);
-        assertFalse(time.isAfter(event.getCreated()));
-        assertTrue(event.getIdentifier().getIRIString().startsWith("urn:uuid:"));
-        assertEquals(of(resource), event.getTarget());
-        assertEquals(of(inbox), event.getInbox());
-        assertEquals(1L, event.getAgents().size());
-        assertTrue(event.getAgents().contains(agent));
+        assertFalse(time.isAfter(event.getCreated()), "Non-sequential events!");
+        assertTrue(event.getIdentifier().getIRIString().startsWith("urn:uuid:"), "Incorrect ID prefix for event!");
+        assertEquals(of(resource), event.getTarget(), "Incorrect target resource!");
+        assertEquals(of(inbox), event.getInbox(), "Incorrect ldp:inbox value!");
+        assertEquals(1L, event.getAgents().size(), "Incorrect agent count!");
+        assertTrue(event.getAgents().contains(agent), "Incorrect agent value!");
         final Collection<IRI> targetTypes = event.getTargetTypes();
-        assertEquals(2L, targetTypes.size());
-        assertTrue(targetTypes.contains(LDP.RDFSource));
-        assertTrue(targetTypes.contains(SKOS.Concept));
+        assertEquals(2L, targetTypes.size(), "Incorrect target type size!");
+        assertTrue(targetTypes.contains(LDP.RDFSource), "Missing ldp:RDFSource type!");
+        assertTrue(targetTypes.contains(SKOS.Concept), "Missing skos:Concept type!");
         final Collection<IRI> eventTypes = event.getTypes();
-        assertEquals(2L, eventTypes.size());
-        assertTrue(eventTypes.contains(AS.Create));
-        assertTrue(eventTypes.contains(PROV.Activity));
+        assertEquals(2L, eventTypes.size(), "Incorrect event type size!");
+        assertTrue(eventTypes.contains(AS.Create), "Missing as:Create from event type!");
+        assertTrue(eventTypes.contains(PROV.Activity), "Missing prov:Activity from event type!");
     }
 
     @Test
@@ -86,10 +86,10 @@ public class TriplestoreEventTest {
         final IRI resource = rdf.createIRI(identifier);
 
         final Event event = new SimpleEvent(identifier, emptyList(), emptyList(), emptyList(), null);
-        assertEquals(of(resource), event.getTarget());
-        assertFalse(event.getInbox().isPresent());
-        assertTrue(event.getAgents().isEmpty());
-        assertTrue(event.getTargetTypes().isEmpty());
-        assertTrue(event.getTypes().isEmpty());
+        assertEquals(of(resource), event.getTarget(), "Incorrect target resource!");
+        assertFalse(event.getInbox().isPresent(), "Unexpected ldp:inbox value!");
+        assertTrue(event.getAgents().isEmpty(), "Unexpected agent list!");
+        assertTrue(event.getTargetTypes().isEmpty(), "Unexpected target types!");
+        assertTrue(event.getTypes().isEmpty(), "Unexpected event types!");
     }
 }
