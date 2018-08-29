@@ -36,7 +36,7 @@ public class ServiceBundlerTest {
     public void testServiceBundler() {
         final ServiceBundler bundler = new WebappServiceBundler();
 
-        assertEquals(bundler.getResourceService(), bundler.getAuditService());
-        assertNotNull(bundler.getBinaryService());
+        assertEquals(bundler.getResourceService(), bundler.getAuditService(), "Incorrect audit/resource services!");
+        assertNotNull(bundler.getBinaryService(), "Missing binary service!");
     }
 }

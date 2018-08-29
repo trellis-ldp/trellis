@@ -37,79 +37,82 @@ public class AppUtilsTest {
 
     @Test
     public void testLoaderError() {
-        assertThrows(RuntimeTrellisException.class, () -> AppUtils.loadFirst(LdpResource.class));
+        assertThrows(RuntimeTrellisException.class, () -> AppUtils.loadFirst(LdpResource.class),
+                "No exception on loader error!");
     }
 
     @Test
     public void testLoaderWithDefault() {
-        assertFalse(loadWithDefault(MementoService.class, NoopMementoService::new) instanceof NoopMementoService);
-        assertTrue(loadWithDefault(MementoService.class, NoopMementoService::new) instanceof FileMementoService);
+        assertFalse(loadWithDefault(MementoService.class, NoopMementoService::new) instanceof NoopMementoService,
+                "Loader unexpectedly used default service!");
+        assertTrue(loadWithDefault(MementoService.class, NoopMementoService::new) instanceof FileMementoService,
+                "Checking loader instance type");
     }
 
     @Test
     public void testCollectivist() {
-        assertTrue(AppUtils.asCollection(null).isEmpty());
-        assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("2"));
-        assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("1"));
+        assertTrue(AppUtils.asCollection(null).isEmpty(), "check null input");
+        assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("2"), "Check that 2 appears in collection");
+        assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("1"), "Check that 1 appears in collection");
     }
 
     @Test
     public void testRDFConnectionMem() {
         final RDFConnection conn = AppUtils.getRDFConnection(null);
 
-        assertNotNull(conn);
-        assertTrue(conn instanceof RDFConnectionLocal);
-        assertFalse(conn.isClosed());
+        assertNotNull(conn, "No connection found!");
+        assertTrue(conn instanceof RDFConnectionLocal, "Unexpected RDFConnection type!");
+        assertFalse(conn.isClosed(), "Connection closed prematurely!");
     }
 
     @Test
     public void testRDFConnectionLocal() {
         final RDFConnection conn = AppUtils.getRDFConnection(config.get("trellis.rdf.location"));
 
-        assertNotNull(conn);
-        assertTrue(conn instanceof RDFConnectionLocal);
-        assertFalse(conn.isClosed());
+        assertNotNull(conn, "No connection found!");
+        assertTrue(conn instanceof RDFConnectionLocal, "Unexpected RDFConnection type!");
+        assertFalse(conn.isClosed(), "Connection closed prematurely!");
     }
 
     @Test
     public void testRDFConnectionRemote() {
         final RDFConnection conn = AppUtils.getRDFConnection("http://example.com");
 
-        assertNotNull(conn);
-        assertTrue(conn instanceof RDFConnectionRemote);
-        assertFalse(conn.isClosed());
+        assertNotNull(conn, "No connection found!");
+        assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
+        assertFalse(conn.isClosed(), "Connection closed prematurely!");
     }
 
     @Test
     public void testRDFConnectionRemoteSSL() {
         final RDFConnection conn = AppUtils.getRDFConnection("https://example.com");
 
-        assertNotNull(conn);
-        assertTrue(conn instanceof RDFConnectionRemote);
-        assertFalse(conn.isClosed());
+        assertNotNull(conn, "No connection found!");
+        assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
+        assertFalse(conn.isClosed(), "Connection closed prematurely!");
     }
 
     @Test
     public void testNoCORSFilter() {
        System.getProperties().setProperty("trellis.cors.enabled", "false");
-       assertFalse(AppUtils.getCORSFilter().isPresent());
+       assertFalse(AppUtils.getCORSFilter().isPresent(), "Unexpected CORS filter!");
        System.getProperties().remove("trellis.cors.enabled");
     }
 
     @Test
     public void testCORSFilter() {
-       assertTrue(AppUtils.getCORSFilter().isPresent());
+       assertTrue(AppUtils.getCORSFilter().isPresent(), "Missing CORS filter!");
     }
 
     @Test
     public void testNoCacheFilter() {
        System.getProperties().setProperty("trellis.cache.enabled", "false");
-       assertFalse(AppUtils.getCacheControlFilter().isPresent());
+       assertFalse(AppUtils.getCacheControlFilter().isPresent(), "Unexpected cache filter!");
        System.getProperties().remove("trellis.cache.enabled");
     }
 
     @Test
     public void testCacheFilter() {
-       assertTrue(AppUtils.getCacheControlFilter().isPresent());
+       assertTrue(AppUtils.getCacheControlFilter().isPresent(), "Missing cache filter!");
     }
 }

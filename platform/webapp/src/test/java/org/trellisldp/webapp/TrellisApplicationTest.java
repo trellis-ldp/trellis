@@ -53,6 +53,6 @@ public class TrellisApplicationTest extends JerseyTest {
     @Test
     public void testSimple() {
         final Response res = target().request().get();
-        assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+        assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response code!");
     }
 }
