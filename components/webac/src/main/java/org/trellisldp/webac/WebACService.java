@@ -14,6 +14,10 @@
 package org.trellisldp.webac;
 
 import static java.lang.String.join;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
@@ -281,6 +285,7 @@ public class WebACService implements AccessControlService {
      */
     @java.lang.annotation.Documented
     @java.lang.annotation.Retention(RUNTIME)
+    @java.lang.annotation.Target({TYPE, METHOD, FIELD, PARAMETER})
     @javax.inject.Qualifier
     public @interface TrellisAuthorizationCache { }
 }
