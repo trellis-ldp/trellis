@@ -148,7 +148,8 @@ abstract class BaseLdpResourceTest extends JerseyTest {
     protected AgentService mockAgentService;
 
     @Mock
-    protected Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource;
+    protected Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource,
+              mockRootResource;
 
     @Mock
     protected Binary mockBinary;
@@ -200,7 +201,7 @@ abstract class BaseLdpResourceTest extends JerseyTest {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
             .thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
         when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.get(eq(newresourceIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -332,5 +333,12 @@ abstract class BaseLdpResourceTest extends JerseyTest {
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockRootResource.getModified()).thenReturn(time);
+        when(mockRootResource.getBinary()).thenReturn(empty());
+        when(mockRootResource.getIdentifier()).thenReturn(root);
+        when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        when(mockRootResource.hasAcl()).thenReturn(true);
     }
 }

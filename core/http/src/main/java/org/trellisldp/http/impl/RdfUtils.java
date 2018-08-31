@@ -64,7 +64,7 @@ import org.trellisldp.vocabulary.Trellis;
  *
  * @author acoburn
  */
-final class RdfUtils {
+public final class RdfUtils {
 
     private static final Logger LOGGER = getLogger(RdfUtils.class);
 
@@ -291,7 +291,7 @@ final class RdfUtils {
     /**
      * Get a mapping function to turn a triple into a quad.
      *
-     * @param graph the graph name
+     * @param graphName the graph name
      * @return the mapping function
      */
     public static Function<Triple, Quad> toQuad(final IRI graphName) {

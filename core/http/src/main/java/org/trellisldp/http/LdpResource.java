@@ -18,6 +18,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
@@ -27,9 +28,11 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
+import static org.trellisldp.http.impl.RdfUtils.toQuad;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -38,6 +41,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -68,6 +72,7 @@ import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.AcceptDatetime;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
@@ -77,11 +82,17 @@ import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetHandler;
+import org.trellisldp.http.impl.HttpSession;
 import org.trellisldp.http.impl.MementoResource;
 import org.trellisldp.http.impl.OptionsHandler;
 import org.trellisldp.http.impl.PatchHandler;
 import org.trellisldp.http.impl.PostHandler;
 import org.trellisldp.http.impl.PutHandler;
+import org.trellisldp.http.impl.TrellisDataset;
+import org.trellisldp.vocabulary.ACL;
+import org.trellisldp.vocabulary.FOAF;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * A {@link ContainerRequestFilter} that also matches path-based HTTP resource operations.
@@ -128,6 +139,37 @@ public class LdpResource implements ContainerRequestFilter {
         this.trellis = trellis;
     }
 
+    /**
+     * Initialize the Trellis backend.
+     */
+    @PostConstruct
+    public void initialize() {
+        final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+        final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
+        final TrellisDataset dataset = TrellisDataset.createDataset();
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+        trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset))
+            .whenComplete((val, err) -> dataset.close()).join();
+    }
+
+    private CompletableFuture<Void> initialize(final IRI id, final Resource res, final TrellisDataset dataset) {
+        final Session session = new HttpSession(Trellis.AdministratorAgent);
+        if (MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res)) {
+            LOGGER.info("Initializing root container: {}", id);
+            return trellis.getResourceService().create(id, session, LDP.BasicContainer, dataset.asDataset(), null,
+                    null);
+        } else if (!res.hasAcl()) {
+            LOGGER.info("Initializeing root ACL: {}", id);
+            res.stream(Trellis.PreferUserManaged).map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
+            return trellis.getResourceService().replace(res.getIdentifier(), session, res.getInteractionModel(),
+                    dataset.asDataset(), null, null);
+        }
+        return completedFuture(null);
+    }
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
