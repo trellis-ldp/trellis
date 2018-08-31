@@ -39,8 +39,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Priority;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -93,7 +93,7 @@ import org.trellisldp.http.impl.PutHandler;
 @PreMatching
 @Provider
 @Priority(AUTHORIZATION + 20)
-@Singleton
+@ApplicationScoped
 @Path("{path: .*}")
 public class LdpResource implements ContainerRequestFilter {
 
