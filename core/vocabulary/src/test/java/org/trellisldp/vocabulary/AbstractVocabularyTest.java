@@ -33,6 +33,7 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -57,7 +58,7 @@ public abstract class AbstractVocabularyTest {
         final Graph graph = createDefaultGraph();
         try {
             RDFParser.source(url).httpAccept(ACCEPT).parse(graph);
-        } catch (final HttpException ex) {
+        } catch (final HttpException | RiotNotFoundException ex) {
             LOGGER.warn("Could not fetch {}: {}", url, ex.getMessage());
         }
         assumeTrue(graph.size() > 0, "Remote vocabulary has no terms! Skip the test for " + url);
