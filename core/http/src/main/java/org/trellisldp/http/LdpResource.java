@@ -140,7 +140,14 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     /**
-     * Initialize the Trellis backend.
+     * Initialize the Trellis backend with a root container and default ACL quads.
+     *
+     * @apiNote In a CDI context, this initialization step will be called automatically.
+     *          In a Java SE context, however, it may be necessary to invoke this method
+     *          in code, though a ResourceService implementation may still choose to
+     *          initialize itself independently of this method. In either case, if the
+     *          persistence backend has already been initialized with a root resoure and
+     *          root ACL, this method will make no changes to the storage layer.
      */
     @PostConstruct
     public void initialize() {
