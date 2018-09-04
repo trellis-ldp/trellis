@@ -132,10 +132,19 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testInitializeRoot() {
-        final Instant early = now();
+    public void testNoRoot() {
         final ResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+
+        assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX)).join(), "Not a missing resource!");
+    }
+
+    @Test
+    public void testInitializeRoot() {
+        final Instant early = now();
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Resource res = svc.get(root).join();
         assertAll("Check resource", checkResource(res, root, LDP.BasicContainer, early));
@@ -150,7 +159,9 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferServerManaged, root, DC.modified, rdf.createLiteral(early.toString(), XSD.dateTime));
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, mockEventService);
+        final TriplestoreResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
+                mockEventService);
+        svc.initialize();
 
         final Resource res = svc.get(root).join();
         assertAll("Check resource", checkResource(res, root, LDP.BasicContainer, early));
@@ -160,8 +171,9 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testUpdateRoot() throws Exception {
         final Instant early = now();
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Resource res1 = svc.get(root).join();
         assertAll("Check resource", checkResource(res1, root, LDP.BasicContainer, early));
@@ -188,7 +200,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testRDFConnectionError() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService, mockEventService);
+        final TriplestoreResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService,
+                mockEventService);
+        svc.initialize();
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection).update(any(UpdateRequest.class));
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection)
             .loadDataset(any(org.apache.jena.query.Dataset.class));
@@ -202,8 +216,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testGetContainer() {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         assertFalse(svc.getContainer(root).isPresent(), "parent found for root container!");
         assertTrue(svc.getContainer(resource).isPresent(), "no parent found for non-root!");
@@ -214,8 +229,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpRs() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
@@ -237,8 +253,9 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testPutLdpRsWithoutBaseUrl() throws Exception {
         when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(empty());
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -256,8 +273,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpNr() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final IRI binaryIdentifier = rdf.createIRI("foo:binary");
         final Instant binaryTime = now();
@@ -309,8 +327,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpC() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
@@ -374,8 +393,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testAddAuditTriples() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset1 = rdf.createDataset();
         final Dataset dataset2 = rdf.createDataset();
@@ -399,8 +419,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutDeleteLdpC() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("resource title"));
@@ -461,8 +482,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpBc() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
@@ -523,8 +545,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDcSelf() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container"));
@@ -570,8 +593,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDc() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container"));
@@ -631,8 +655,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDcMultiple() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container"));
@@ -751,8 +776,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpDcMultipleInverse() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container inverse"));
@@ -871,8 +897,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIc() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode0 = rdf.createBlankNode();
@@ -950,8 +977,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIcDefaultContent() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("Indirect Container"));
@@ -1017,8 +1045,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIcMultipleStatements() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
@@ -1090,8 +1119,9 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpIcMultipleResources() throws Exception {
-        final ResourceService svc = new TriplestoreResourceService(
+        final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+        svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();

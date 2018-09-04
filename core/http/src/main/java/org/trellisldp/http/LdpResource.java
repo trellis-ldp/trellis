@@ -152,14 +152,14 @@ public class LdpResource implements ContainerRequestFilter {
     public void initialize() {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
-        final TrellisDataset dataset = TrellisDataset.createDataset();
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
-        trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset))
-            .whenComplete((val, err) -> dataset.close()).join();
+        try (final TrellisDataset dataset = TrellisDataset.createDataset()) {
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+            trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset)).join();
+        }
     }
 
     private CompletableFuture<Void> initialize(final IRI id, final Resource res, final TrellisDataset dataset) {

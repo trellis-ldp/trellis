@@ -134,7 +134,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         this.eventService = ofNullable(eventService);
         this.supportedIxnModels = unmodifiableSet(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                 LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer).stream().collect(toSet()));
-        init();
     }
 
     @Override
@@ -530,13 +529,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     /**
      * This code is equivalent to the SPARQL queries below.
      *
-     * <p><pre><code>
+     * <pre><code>
      * SELECT ?object WHERE {
      *   GRAPH trellis:PreferServerManaged { IDENTIFIER rdf:type ?object }
      * }
-     * </code></pre></p>
+     * </code></pre>
      *
-     * <p><pre><code>
+     * <pre><code>
      * INSERT DATA {
      *   GRAPH trellis:PreferServerManaged {
      *     IDENTIFIER rdf:type ldp:Container ;
@@ -552,9 +551,9 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      *       acl:accessTo IDENTIFIER }
      * }
      *
-     * </code></pre></p>
+     * </code></pre>
      */
-    private void init() {
+    public void initialize() {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         final Query q = new Query();
         q.setQuerySelectType();
