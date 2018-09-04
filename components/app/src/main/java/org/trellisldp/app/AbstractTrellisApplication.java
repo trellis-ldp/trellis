@@ -92,7 +92,9 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
 
         // Resource matchers
-        environment.jersey().register(new LdpResource(getServiceBundler(), config.getBaseUrl()));
+        final LdpResource ldpResource = new LdpResource(getServiceBundler(), config.getBaseUrl());
+        ldpResource.initialize();
+        environment.jersey().register(ldpResource);
 
         // Authentication
         final AgentAuthorizationFilter agentFilter

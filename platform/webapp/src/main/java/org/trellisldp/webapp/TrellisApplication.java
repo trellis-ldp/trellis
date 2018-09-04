@@ -30,8 +30,10 @@ public class TrellisApplication extends ResourceConfig {
         super();
 
         final ServiceBundler serviceBundler = new WebappServiceBundler();
+        final LdpResource ldpResource = new LdpResource(serviceBundler);
+        ldpResource.initialize();
 
-        register(new LdpResource(serviceBundler));
+        register(ldpResource);
         register(new AgentAuthorizationFilter(serviceBundler.getAgentService()));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);

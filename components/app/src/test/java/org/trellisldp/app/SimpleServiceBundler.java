@@ -45,12 +45,10 @@ public class SimpleServiceBundler implements ServiceBundler {
     private final AgentService agentService = new SimpleAgentService();
     private final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(),
             emptySet());
-
-    private final TriplestoreResourceService triplestoreService
-        = new TriplestoreResourceService(connect(createTxnMem()), idService, new NoopEventService());
     private final BinaryService binaryService = new FileBinaryService(idService,
             resourceFilePath("data") + "/binaries", 2, 2);
-
+    private final TriplestoreResourceService triplestoreService
+        = new TriplestoreResourceService(connect(createTxnMem()), idService, new NoopEventService());
 
     @Override
     public AgentService getAgentService() {
