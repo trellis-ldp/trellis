@@ -26,6 +26,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toGraph;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -73,6 +74,8 @@ public class WebACService implements AccessControlService {
     private static final Logger LOGGER = getLogger(WebACService.class);
 
     private static final RDF rdf = getInstance();
+
+    private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
 
     private static final Set<IRI> allModes = new HashSet<>();
 
@@ -173,7 +176,7 @@ public class WebACService implements AccessControlService {
     }
 
     private Set<IRI> getModesFor(final IRI identifier, final IRI agent) {
-        return getNearestResource(identifier).map(resource -> getAllAuthorizationsFor(resource, true)
+        return getNearestResource(identifier).map(resource -> getAllAuthorizationsFor(resource, false)
                 .filter(agentFilter(agent)))
             .orElseGet(Stream::empty)
             .peek(auth -> LOGGER.debug("Applying Authorization {} to {}", auth.getIdentifier(), identifier))
@@ -200,7 +203,7 @@ public class WebACService implements AccessControlService {
     }
 
     private Predicate<Authorization> getInheritedAuth(final IRI identifier) {
-        return auth -> auth.getDefault().contains(identifier);
+        return auth -> root.equals(identifier) || auth.getDefault().contains(identifier);
     }
 
     private Predicate<Authorization> getAccessToAuth(final IRI identifier) {
@@ -225,22 +228,23 @@ public class WebACService implements AccessControlService {
             }).collect(toList());
     }
 
-    private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final Boolean top) {
+    private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final Boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
         if (resource.hasAcl()) {
             try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).collect(toGraph()))) {
                 final List<Authorization> authorizations = getAuthorizationFromGraph(graph.getGraph());
 
-                if (!top && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
+                if (inherited && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
                     return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
+                } else if (!inherited) {
+                    return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
                 }
-                return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
             }
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
         return resourceService.getContainer(resource.getIdentifier()).map(resourceService::get)
-            .map(CompletableFuture::join).map(res -> getAllAuthorizationsFor(res, false))
+            .map(CompletableFuture::join).map(res -> getAllAuthorizationsFor(res, true))
             .orElseGet(Stream::empty);
     }
 
