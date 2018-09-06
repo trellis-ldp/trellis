@@ -18,11 +18,10 @@ import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -36,7 +35,6 @@ import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.hasConstrainedBy;
-import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.test.TestUtils.readEntityAsJson;
@@ -153,25 +151,19 @@ public interface LdpRdfTests extends CommonTests {
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-
+            assertAll("Check for a LDP-BC", checkRdfResponse(res, LDP.BasicContainer, null));
             setContainerLocation(res.getLocation().toString());
         }
 
         // POST an LDP-RS
         try (final Response res = target(getContainerLocation()).request().post(entity(content, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check for an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
             setResourceLocation(res.getLocation().toString());
         }
 
         // POST an LDP-RS
         try (final Response res = target(getContainerLocation()).request().post(entity(annotation, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check for an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
             setAnnotationLocation(res.getLocation().toString());
         }
     }
@@ -183,11 +175,7 @@ public interface LdpRdfTests extends CommonTests {
     @DisplayName("Fetch the default RDF serialization")
     default void testGetDefault() {
         try (final Response res = target(getResourceLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check for an LDP-RS as Turtle", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
         }
     }
 
@@ -198,19 +186,14 @@ public interface LdpRdfTests extends CommonTests {
     @DisplayName("Fetch the default JSON-LD serialization")
     default void testGetJsonLdDefault() {
         try (final Response res = target(getAnnotationLocation()).request().accept("application/ld+json").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check for an LDP-RS as JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final List<Map<String, Object>> obj = readEntityAsJson(res.getEntity(),
                     new TypeReference<List<Map<String, Object>>>(){});
-            assertEquals(1L, obj.size());
-            assertTrue(obj.get(0).containsKey("@id"));
-            assertTrue(obj.get(0).containsKey("@type"));
-            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasBody"));
-            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasTarget"));
+            assertEquals(1L, obj.size(), "Check the JSON structure");
+            assertTrue(obj.get(0).containsKey("@id"), "Check for an @id key");
+            assertTrue(obj.get(0).containsKey("@type"), "Check for a @type key");
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasBody"), "Check for an oa:hasBody key");
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasTarget"), "Check for an os:hasTarget key");
         }
     }
 
@@ -222,19 +205,14 @@ public interface LdpRdfTests extends CommonTests {
     default void testGetJsonLdExpanded() {
         try (final Response res = target(getAnnotationLocation()).request()
                 .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check for expanded JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final List<Map<String, Object>> obj = readEntityAsJson(res.getEntity(),
                     new TypeReference<List<Map<String, Object>>>(){});
-            assertEquals(1L, obj.size());
-            assertTrue(obj.get(0).containsKey("@id"));
-            assertTrue(obj.get(0).containsKey("@type"));
-            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasBody"));
-            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasTarget"));
+            assertEquals(1L, obj.size(), "Check json structure");
+            assertTrue(obj.get(0).containsKey("@id"), "Check for an @id property");
+            assertTrue(obj.get(0).containsKey("@type"), "Check for a @type property");
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasBody"), "Check for an oa:hasBody prop");
+            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasTarget"), "Check for an oa:hasTarget prop");
         }
     }
 
@@ -246,18 +224,13 @@ public interface LdpRdfTests extends CommonTests {
     default void testGetJsonLdCompacted() {
         try (final Response res = target(getAnnotationLocation()).request()
                 .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check for compact JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final Map<String, Object> obj = readEntityAsJson(res.getEntity(),
                     new TypeReference<Map<String, Object>>(){});
-            assertTrue(obj.containsKey("@id"));
-            assertTrue(obj.containsKey("@type"));
-            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasBody")));
-            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasTarget")));
+            assertTrue(obj.containsKey("@id"), "Check for an @id property");
+            assertTrue(obj.containsKey("@type"), "Check for a @type property");
+            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasBody")), "Check for a hasBody property");
+            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasTarget")), "Check for a hasTarget prop");
         }
     }
 
@@ -273,20 +246,15 @@ public interface LdpRdfTests extends CommonTests {
 
         try (final Response res = target(getAnnotationLocation()).request()
                 .accept("application/ld+json; profile=\"http://www.w3.org/ns/anno.jsonld\"").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_LD_JSON_TYPE));
-            assertTrue(APPLICATION_LD_JSON_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check for custom JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final Map<String, Object> obj = readEntityAsJson(res.getEntity(),
                     new TypeReference<Map<String, Object>>(){});
-            assertTrue(obj.containsKey("@context"));
-            assertEquals("http://www.w3.org/ns/anno.jsonld", obj.get("@context"));
-            assertEquals(getAnnotationLocation(), obj.get("id"));
-            assertEquals("Annotation", obj.get("type"));
-            assertEquals("http://example.org/post1", obj.get("body"));
-            assertEquals("http://example.org/page1", obj.get("target"));
+            assertTrue(obj.containsKey("@context"), "Check for a @context property");
+            assertEquals("http://www.w3.org/ns/anno.jsonld", obj.get("@context"), "Check the @context value");
+            assertEquals(getAnnotationLocation(), obj.get("id"), "Check the id value");
+            assertEquals("Annotation", obj.get("type"), "Check the type value");
+            assertEquals("http://example.org/post1", obj.get("body"), "Check the body value");
+            assertEquals("http://example.org/page1", obj.get("target"), "Check the target value");
         }
     }
 
@@ -297,11 +265,7 @@ public interface LdpRdfTests extends CommonTests {
     @DisplayName("Fetch the N-Triples serialization")
     default void testGetNTriples() {
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
-            assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check for N-Triples", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
         }
     }
 
@@ -315,14 +279,10 @@ public interface LdpRdfTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getContainerLocation()).request().post(entity(content, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check POSTing an RDF resource", checkRdfResponse(res, LDP.RDFSource, null));
             final String location = res.getLocation().toString();
-            assertTrue(location.startsWith(getContainerLocation()));
-            assertTrue(location.length() > getContainerLocation().length());
+            assertTrue(location.startsWith(getContainerLocation()), "Check the Location header");
+            assertTrue(location.length() > getContainerLocation().length(), "Re-check the Location header");
         }
     }
 
@@ -335,21 +295,18 @@ public interface LdpRdfTests extends CommonTests {
         final RDF rdf = getInstance();
         // Fetch the new resource
         try (final Response res = target(getResourceLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check an LDP-RS resource", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(3L, g.size());
+            assertEquals(3L, g.size(), "Check the size of the resulting graph");
             final IRI identifier = rdf.createIRI(getResourceLocation());
-            assertTrue(g.contains(identifier, type, SKOS.Concept));
-            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")));
-            assertTrue(g.contains(identifier, DC.subject, rdf.createIRI("http://example.org/subject/1")));
+            assertTrue(g.contains(identifier, type, SKOS.Concept), "Check for a rdf:type triple");
+            assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
+                    "Check for a skos:prefLabel triple");
+            assertTrue(g.contains(identifier, DC.subject, rdf.createIRI("http://example.org/subject/1")),
+                    "Check for a dc:subject triple");
             setFirstETag(res.getEntityTag());
-            assertTrue(getFirstETag().isWeak());
-            assertNotEquals(getFirstETag(), getSecondETag());
+            assertTrue(getFirstETag().isWeak(), "Check that the first ETag is weak");
+            assertNotEquals(getFirstETag(), getSecondETag(), "Compare ETags 1 and 2");
         }
     }
 
@@ -367,29 +324,21 @@ public interface LdpRdfTests extends CommonTests {
                     entity("INSERT { <> a <http://www.w3.org/ns/ldp#Container> ; "
                         + "<http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.Container)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check an LDP-RS resource", checkRdfResponse(res, LDP.RDFSource, null));
         }
 
         meanwhile();
 
         // Fetch the updated resource
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(APPLICATION_N_TRIPLES_TYPE));
-            assertTrue(APPLICATION_N_TRIPLES_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
+            assertAll("Check an updated resource", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES);
-            assertEquals(4L, g.size());
-            assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")));
+            assertEquals(4L, g.size(), "Check the graph size");
+            assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
+                    "Check for a dc:title triple");
             setSecondETag(res.getEntityTag());
-            assertTrue(getSecondETag().isWeak());
-            assertNotEquals(getFirstETag(), getSecondETag());
+            assertTrue(getSecondETag().isWeak(), "Check that the ETag is weak");
+            assertNotEquals(getFirstETag(), getSecondETag(), "Compare the first and second ETags");
         }
     }
 
@@ -402,12 +351,10 @@ public interface LdpRdfTests extends CommonTests {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll("Check a container resource", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
-                        rdf.createIRI(getResourceLocation())));
+                        rdf.createIRI(getResourceLocation())), "Check for an ldp:contains property");
         }
     }
 
@@ -422,8 +369,10 @@ public interface LdpRdfTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getContainerLocation()).request().post(entity(rdf, TEXT_TURTLE))) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidRange)));
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(),
+                    "Semantically invalid RDF should throw a 4xx error");
+            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidRange)),
+                    "Check for an InvalidRange constraint for weird rdf:type constructs");
         }
     }
 
@@ -442,7 +391,7 @@ public interface LdpRdfTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getContainerLocation()).request().post(entity(rdf, TEXT_TURTLE))) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Syntactically invalid RDF produces a 4xx");
         }
     }
 }

@@ -19,8 +19,8 @@ import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -33,9 +33,7 @@ import static org.trellisldp.http.domain.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
-import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
-import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
@@ -122,17 +120,13 @@ public interface LdpBinaryTests extends CommonTests {
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
-
+            assertAll("Check LDP-BC response", checkRdfResponse(res, LDP.BasicContainer, null));
             setContainerLocation(res.getLocation().toString());
         }
 
         // POST an LDP-NR
         try (final Response res = target(getContainerLocation()).request().post(entity(CONTENT, TEXT_PLAIN))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-
+            assertAll("Check LDP-NR response", checkNonRdfResponse(res, null));
             setResourceLocation(res.getLocation().toString());
         }
     }
@@ -145,16 +139,11 @@ public interface LdpBinaryTests extends CommonTests {
     default void testGetBinary() {
         // Fetch the new resource
         try (final Response res = target(getResourceLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-            assertEquals(CONTENT, readEntityAsString(res.getEntity()));
-            assertFalse(res.getEntityTag().isWeak());
+            assertAll("Check binary resource", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
+            assertEquals(CONTENT, readEntityAsString(res.getEntity()), "Check for matching content");
+            assertFalse(res.getEntityTag().isWeak(), "Check for a strong ETag");
             setFirstETag(res.getEntityTag());
-            assertNotEquals(getFirstETag(), getSecondETag());
+            assertNotEquals(getFirstETag(), getSecondETag(), "Check for different ETag values");
         }
     }
 
@@ -166,17 +155,12 @@ public interface LdpBinaryTests extends CommonTests {
     default void testGetBinaryDescription() {
         // Fetch the description
         try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check binary description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertTrue(g.size() >= 0L);
-            assertTrue(res.getEntityTag().isWeak());
+            assertTrue(g.size() >= 0L, "Assert that the graph isn't empty");
+            assertTrue(res.getEntityTag().isWeak(), "Check for a weak ETag");
             setSecondETag(res.getEntityTag());
-            assertNotEquals(getFirstETag(), getSecondETag());
+            assertNotEquals(getFirstETag(), getSecondETag(), "Check for different ETag values");
         }
     }
 
@@ -188,14 +172,10 @@ public interface LdpBinaryTests extends CommonTests {
     default void testPostBinary() {
         // POST an LDP-NR
         try (final Response res = target(getContainerLocation()).request().post(entity(CONTENT, TEXT_PLAIN))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check POSTing LDP-NR", checkNonRdfResponse(res, null));
             final String location = res.getLocation().toString();
-            assertTrue(location.startsWith(getContainerLocation()));
-            assertTrue(location.length() > getContainerLocation().length());
+            assertTrue(location.startsWith(getContainerLocation()), "Check the response location");
+            assertTrue(location.length() > getContainerLocation().length(), "Check for a nested response location");
         }
     }
 
@@ -208,14 +188,10 @@ public interface LdpBinaryTests extends CommonTests {
         // POST an LDP-NR
         try (final Response res = target(getContainerLocation()).request()
                 .header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==").post(entity(CONTENT, TEXT_PLAIN))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check POSTing LDP-NR with digest", checkNonRdfResponse(res, null));
             final String resource = res.getLocation().toString();
-            assertTrue(resource.startsWith(getContainerLocation()));
-            assertTrue(resource.length() > getContainerLocation().length());
+            assertTrue(resource.startsWith(getContainerLocation()), "Check the response location");
+            assertTrue(resource.length() > getContainerLocation().length(), "Check for a nested response location");
         }
     }
 
@@ -230,17 +206,12 @@ public interface LdpBinaryTests extends CommonTests {
 
         // Fetch the description
         try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check an LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(0L, g.size());
+            assertEquals(0L, g.size(), "Check for a non-empty graph");
             etag = res.getEntityTag();
-            assertTrue(etag.isWeak());
-            assertNotEquals(getFirstETag(), etag);
+            assertTrue(etag.isWeak(), "Check for a weak ETag");
+            assertNotEquals(getFirstETag(), etag, "Check for different ETag values");
         }
 
         meanwhile();
@@ -249,35 +220,24 @@ public interface LdpBinaryTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().method("PATCH",
                     entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check PATCHing LDP-NR description", checkRdfResponse(res, LDP.RDFSource, null));
         }
 
         // Fetch the new description
         try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE));
-            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertFalse(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check the new LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(1L, g.size());
-            assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")));
-            assertNotEquals(etag, res.getEntityTag());
+            assertEquals(1L, g.size(), "Check the graph size");
+            assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
+                    "Check for a dc:title triple");
+            assertNotEquals(etag, res.getEntityTag(), "Check that the ETag values are different");
         }
 
         // Verify that the binary is still accessible
         try (final Response res = target(getResourceLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.NonRDFSource)));
-            assertEquals(CONTENT, readEntityAsString(res.getEntity()));
-            assertEquals(getFirstETag(), res.getEntityTag());
+            assertAll("Check the LDP-NR", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
+            assertEquals(CONTENT, readEntityAsString(res.getEntity()), "Check for an expected binary content value");
+            assertEquals(getFirstETag(), res.getEntityTag(), "Check that the ETag values are different");
         }
     }
 
@@ -290,12 +250,10 @@ public interface LdpBinaryTests extends CommonTests {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
         try (final Response res = target(getContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.BasicContainer)));
+            assertAll("Check binary in container", checkRdfResponse(res, LDP.BasicContainer, null));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
-                        rdf.createIRI(getResourceLocation())));
+                        rdf.createIRI(getResourceLocation())), "Check for an ldp:contains triple");
         }
     }
 
@@ -307,10 +265,8 @@ public interface LdpBinaryTests extends CommonTests {
     default void testBinaryWantDigestSha() {
         // Test the SHA-1 algorithm
         try (final Response res = target(getResourceLocation()).request().header(WANT_DIGEST, "SHA,MD5").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertEquals("sha=Z5pg2cWB1IqkKKMjh57cQKAeKp0=", res.getHeaderString(DIGEST));
+            assertAll("Check binary with SHA-1 digest", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
+            assertEquals("sha=Z5pg2cWB1IqkKKMjh57cQKAeKp0=", res.getHeaderString(DIGEST), "Check the SHA digest value");
         }
     }
 
@@ -322,10 +278,9 @@ public interface LdpBinaryTests extends CommonTests {
     default void testBinaryWantDigestSha256() {
         // Test the SHA-256 algorithm
         try (final Response res = target(getResourceLocation()).request().header(WANT_DIGEST, "SHA-256").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST));
+            assertAll("Check binary with SHA-256 digest", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
+            assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST),
+                    "Check the SHA-256 digest value");
         }
     }
 
@@ -337,10 +292,8 @@ public interface LdpBinaryTests extends CommonTests {
     default void testBinaryWantDigestUnknown() {
         // Test an unknown digest algorithm
         try (final Response res = target(getResourceLocation()).request().header(WANT_DIGEST, "FOO").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE));
-            assertTrue(TEXT_PLAIN_TYPE.isCompatible(res.getMediaType()));
-            assertNull(res.getHeaderString(DIGEST));
+            assertAll("Check binary with unknown digest", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
+            assertNull(res.getHeaderString(DIGEST), "Check that no Digest header is present");
         }
     }
 }

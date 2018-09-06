@@ -20,6 +20,7 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -30,6 +31,7 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.PREFER;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.hasConstrainedBy;
@@ -234,13 +236,12 @@ public interface LdpIndirectContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         //Fetch the member resource
         try (final Response res = target(getSecondIndirectContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assertAll("Check the member resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getSecondIndirectContainerLocation()), LDP.contains,
-                        rdf.createIRI(getChildLocation())));
+                        rdf.createIRI(getChildLocation())), "Check for an ldp:contains triple");
             assertTrue(g.contains(rdf.createIRI(getSecondIndirectContainerLocation() + MEMBER_RESOURCE_HASH),
-                        LDP.member, rdf.createIRI(getChildLocation())));
+                        LDP.member, rdf.createIRI(getChildLocation())), "Check for an ldp:member triple");
         }
     }
 
@@ -264,22 +265,21 @@ public interface LdpIndirectContainerTests extends CommonTests {
 
         // Fetch the member resource
         try (final Response res = target(getMemberLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check the member LDP-RS", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertFalse(g.contains(rdf.createIRI(getMemberLocation()), LDP.member, null));
+            assertFalse(g.contains(rdf.createIRI(getMemberLocation()), LDP.member, null), "Check for no ldp:member");
             etag1 = res.getEntityTag();
-            assertTrue(etag1.isWeak());
+            assertTrue(etag1.isWeak(), "Check that the ETag is weak");
         }
 
         // Fetch the container resource
         try (final Response res = target(getFirstIndirectContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assertAll("Check the container resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertFalse(g.contains(rdf.createIRI(getFirstIndirectContainerLocation()), LDP.contains, null));
+            assertFalse(g.contains(rdf.createIRI(getFirstIndirectContainerLocation()), LDP.contains, null),
+                    "Check for no ldp:contains property");
             etag4 = res.getEntityTag();
-            assertTrue(etag4.isWeak());
+            assertTrue(etag4.isWeak(), "Check that ETag 4 is weak");
         }
 
         meanwhile();
@@ -287,89 +287,85 @@ public interface LdpIndirectContainerTests extends CommonTests {
         // POST an LDP-RS child
         try (final Response res = target(getFirstIndirectContainerLocation()).request()
                 .post(entity(childContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check POSTing a child resource", checkRdfResponse(res, LDP.RDFSource, null));
             child1 = res.getLocation().toString();
-            assertTrue(child1.startsWith(getFirstIndirectContainerLocation()));
-            assertTrue(child1.length() > getFirstIndirectContainerLocation().length());
+            assertTrue(child1.startsWith(getFirstIndirectContainerLocation()), "Check the Location header");
+            assertTrue(child1.length() > getFirstIndirectContainerLocation().length(), "Re-check the Location header");
         }
 
         // POST an LDP-RS child
         try (final Response res = target(getFirstIndirectContainerLocation()).request()
                 .post(entity(childContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
-
+            assertAll("Check POSTing a child resource", checkRdfResponse(res, LDP.RDFSource, null));
             child2 = res.getLocation().toString();
-            assertTrue(child2.startsWith(getFirstIndirectContainerLocation()));
-            assertTrue(child2.length() > getFirstIndirectContainerLocation().length());
+            assertTrue(child2.startsWith(getFirstIndirectContainerLocation()), "Check the Location header");
+            assertTrue(child2.length() > getFirstIndirectContainerLocation().length(), "Re-check the Location header");
         }
 
         // Fetch the member resource
         try (final Response res = target(getMemberLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check the member LDP-RS", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getMemberLocation());
-            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child1 + hash)));
-            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + hash)));
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child1 + hash)), "Check for a member triple");
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + hash)), "Check for a member triple");
             etag2 = res.getEntityTag();
-            assertTrue(etag2.isWeak());
-            assertNotEquals(etag1, etag2);
+            assertTrue(etag2.isWeak(), "Verify that the second ETag is weak");
+            assertNotEquals(etag1, etag2, "Compare the first and second ETags");
         }
 
         // Fetch the container resource
         try (final Response res = target(getFirstIndirectContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assertAll("Check the container resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getFirstIndirectContainerLocation());
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)), "Check for first ldp:contains");
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)), "Check for second ldp:contains");
             etag5 = res.getEntityTag();
-            assertTrue(etag5.isWeak());
-            assertNotEquals(etag4, etag5);
+            assertTrue(etag5.isWeak(), "Check that the fifth ETag is weak");
+            assertNotEquals(etag4, etag5, "Compare ETags 4 and 5");
         }
 
         meanwhile();
 
         // Delete one of the child resources
         try (final Response res = target(child1).request().delete()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Verify that the DELETE succeeds");
         }
 
         // Try fetching the deleted resource
         try (final Response res = target(child1).request().get()) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Verify that a missing resource throws a 4xx");
         }
 
         // Fetch the member resource
         try (final Response res = target(getMemberLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check the member resource", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getMemberLocation());
-            assertFalse(g.contains(identifier, LDP.member, rdf.createIRI(child1 + hash)));
-            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + hash)));
+            assertFalse(g.contains(identifier, LDP.member, rdf.createIRI(child1 + hash)),
+                    "Verify that the child is no longer contained");
+            assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + hash)),
+                    "Verify that the second child is still contained");
             etag3 = res.getEntityTag();
-            assertTrue(etag3.isWeak());
-            assertNotEquals(etag1, etag3);
-            assertNotEquals(etag2, etag3);
+            assertTrue(etag3.isWeak(), "Check that the third ETag is weak");
+            assertNotEquals(etag1, etag3, "Compare the first and third ETags");
+            assertNotEquals(etag2, etag3, "Compare the second and third ETags");
         }
 
         // Fetch the container resource
         try (final Response res = target(getFirstIndirectContainerLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assertAll("Check the container resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getFirstIndirectContainerLocation());
-            assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child1)));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)));
+            assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child1)),
+                    "Check the first child isn't contained");
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)),
+                    "Check that the second child is contained");
             etag6 = res.getEntityTag();
-            assertTrue(etag6.isWeak());
-            assertNotEquals(etag5, etag6);
-            assertNotEquals(etag4, etag6);
+            assertTrue(etag6.isWeak(), "Verify that the sixth ETag is weak");
+            assertNotEquals(etag5, etag6, "Compare ETags 5 and 6");
+            assertNotEquals(etag4, etag6, "Compare ETags 4 and 6");
         }
 
         // Now change the membership property
@@ -382,17 +378,16 @@ public interface LdpIndirectContainerTests extends CommonTests {
         // Patch the indirect container
         try (final Response res = target(getFirstIndirectContainerLocation()).request()
                 .method("PATCH", entity(updateContent, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assertAll("Check PATCHing the container resource", checkRdfResponse(res, LDP.IndirectContainer, null));
         }
 
         // Fetch the member resource
         try (final Response res = target(getMemberLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+            assertAll("Check the member resource", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getMemberLocation());
-            assertTrue(g.contains(identifier, DC.relation, rdf.createIRI(child2 + hash)));
+            assertTrue(g.contains(identifier, DC.relation, rdf.createIRI(child2 + hash)),
+                    "Confirm that a dc:relation triple is present");
         }
     }
 
@@ -410,8 +405,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(other2).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assertAll("Check PUTting an LDP-IC", checkRdfResponse(res, LDP.IndirectContainer, null));
         }
     }
 
@@ -424,12 +418,11 @@ public interface LdpIndirectContainerTests extends CommonTests {
         final String content = getResourceAsString("/indirectContainerInverse.ttl")
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2);
 
-        // PUT an LDP-DC
+        // PUT an LDP-IC
         try (final Response res = target(getThirdIndirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)));
+            assertAll("Check replacing an LDP-IC via PUT", checkRdfResponse(res, LDP.IndirectContainer, null));
         }
     }
 
@@ -447,8 +440,9 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getThirdIndirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for a 4xx response");
+            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)),
+                    "Check for an InvalidCardinality constraint IRI");
         }
     }
 
@@ -465,8 +459,9 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getThirdIndirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for a 4xx response");
+            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)),
+                    "Check for an InvalidCardinality constraint IRI");
         }
     }
 
@@ -484,8 +479,9 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getThirdIndirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for a 4xx response");
+            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)),
+                    "Check for an InvalidCardinality contraint IRI");
         }
     }
 
@@ -508,8 +504,9 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getThirdIndirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Missing member property results in 4xx");
+            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)),
+                    "Check that a missing memberRelation results in an InvalidCardinality constraint");
         }
     }
 
@@ -525,8 +522,9 @@ public interface LdpIndirectContainerTests extends CommonTests {
         try (final Response res = target(getThirdIndirectContainerLocation()).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)));
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "no membershipResource results in 4xx");
+            assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidCardinality)),
+                    "A missing membershipResource property results in an InvalidCardinality constraint");
         }
     }
 
@@ -539,12 +537,12 @@ public interface LdpIndirectContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,
                     "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertAll("Check a member resource with Prefer", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getMemberLocation());
-            assertTrue(g.contains(identifier, SKOS.prefLabel, null));
-            assertFalse(g.contains(identifier, LDP.member, null));
-            assertFalse(g.contains(identifier, DC.relation, null));
+            assertTrue(g.contains(identifier, SKOS.prefLabel, null), "Check for a skos:prefLabel triple");
+            assertFalse(g.contains(identifier, LDP.member, null), "Check for no ldp:member triple");
+            assertFalse(g.contains(identifier, DC.relation, null), "Check for no dc:relation triple");
         }
     }
 
@@ -557,11 +555,12 @@ public interface LdpIndirectContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,
                     "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertAll("Check a member resource with Prefer", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getMemberLocation());
-            assertFalse(g.contains(identifier, SKOS.prefLabel, null));
-            assertTrue(g.contains(identifier, LDP.member, null) || g.contains(identifier, DC.relation, null));
+            assertFalse(g.contains(identifier, SKOS.prefLabel, null), "Check for no skos:prefLabel triple");
+            assertTrue(g.contains(identifier, LDP.member, null) || g.contains(identifier, DC.relation, null),
+                    "Check for either an ldp:member or dc:relation triple");
         }
     }
 
