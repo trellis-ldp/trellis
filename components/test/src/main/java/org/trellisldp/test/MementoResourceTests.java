@@ -17,6 +17,7 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,7 +26,6 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.domain.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
-import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.vocabulary.RDF.type;
 
@@ -73,8 +73,8 @@ public interface MementoResourceTests extends MementoCommonTests {
     @DisplayName("Test the presence of three mementos")
     default void testMementosWereFound() {
         final Map<String, String> mementos = getMementos();
-        assertFalse(mementos.isEmpty());
-        assertEquals(3, mementos.size());
+        assertFalse(mementos.isEmpty(), "Check that mementos were found");
+        assertEquals(3, mementos.size(), "Check that 3 mementos were found");
     }
 
     /**
@@ -85,9 +85,10 @@ public interface MementoResourceTests extends MementoCommonTests {
     default void testMementoDateTimeHeader() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful memento request");
                 final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
-                assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME));
+                assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME),
+                        "Check that the memento-datetime header is correct");
             }
         });
     }
@@ -100,9 +101,10 @@ public interface MementoResourceTests extends MementoCommonTests {
     default void testMementoAcceptDateTimeHeader() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(getResourceLocation()).request().header(ACCEPT_DATETIME, date).get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful memento request");
                 final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
-                assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME));
+                assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME),
+                        "Check that the memento-datetime header is correct");
             }
         });
     }
@@ -115,14 +117,7 @@ public interface MementoResourceTests extends MementoCommonTests {
     default void testMementoAllowedMethods() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-                assertTrue(res.getAllowedMethods().contains("GET"));
-                assertTrue(res.getAllowedMethods().contains("HEAD"));
-                assertTrue(res.getAllowedMethods().contains("OPTIONS"));
-                assertFalse(res.getAllowedMethods().contains("POST"));
-                assertFalse(res.getAllowedMethods().contains("PUT"));
-                assertFalse(res.getAllowedMethods().contains("PATCH"));
-                assertFalse(res.getAllowedMethods().contains("DELETE"));
+                assertAll("Check allowed methods", checkMementoAllowedMethods(res));
             }
         });
     }
@@ -135,9 +130,7 @@ public interface MementoResourceTests extends MementoCommonTests {
     default void testMementoLdpResource() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)));
-                assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)));
+                assertAll("Check LDP headers", checkMementoLdpHeaders(res, LDP.RDFSource));
             }
         });
     }
@@ -153,7 +146,7 @@ public interface MementoResourceTests extends MementoCommonTests {
         final Map<String, String> mementos = getMementos();
         mementos.forEach((memento, date) -> {
             try (final Response res = target(memento).request().get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful request");
                 readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE).stream().forEach(triple ->
                         dataset.add(rdf.createIRI(memento), triple.getSubject(), triple.getPredicate(),
                             triple.getObject()));
@@ -162,32 +155,41 @@ public interface MementoResourceTests extends MementoCommonTests {
 
         final IRI subject = rdf.createIRI(getResourceLocation());
         final List<IRI> urls = mementos.keySet().stream().sorted().map(rdf::createIRI).collect(toList());
-        assertEquals(3L, urls.size());
-        assertTrue(dataset.getGraph(urls.get(0)).isPresent());
+        assertEquals(3L, urls.size(), "Check that three mementos were found");
+        assertTrue(dataset.getGraph(urls.get(0)).isPresent(), "Check that the first graph is present");
         dataset.getGraph(urls.get(0)).ifPresent(g -> {
-            assertTrue(g.contains(subject, type, SKOS.Concept));
-            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")));
-            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")));
-            assertEquals(3L, g.size());
+            assertTrue(g.contains(subject, type, SKOS.Concept), "Check for a skos:Concept type");
+            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
+                    "Check for a skos:prefLabel property");
+            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
+                    "Check for a dc:subject property");
+            assertEquals(3L, g.size(), "Check for three triples");
         });
 
-        assertTrue(dataset.getGraph(urls.get(1)).isPresent());
+        assertTrue(dataset.getGraph(urls.get(1)).isPresent(), "Check that the second graph is present");
         dataset.getGraph(urls.get(1)).ifPresent(g -> {
-            assertTrue(g.contains(subject, type, SKOS.Concept));
-            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")));
-            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")));
-            assertTrue(g.contains(subject, DC.title, rdf.createLiteral("Title")));
-            assertEquals(4L, g.size());
+            assertTrue(g.contains(subject, type, SKOS.Concept), "Check for a skos:Concept type");
+            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
+                    "Check for a skos:prefLabel property");
+            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
+                    "Check for a dc:subject property");
+            assertTrue(g.contains(subject, DC.title, rdf.createLiteral("Title")),
+                    "Check for a dc:title property");
+            assertEquals(4L, g.size(), "Check for four triples");
         });
 
-        assertTrue(dataset.getGraph(urls.get(2)).isPresent());
+        assertTrue(dataset.getGraph(urls.get(2)).isPresent(), "Check that the third graph is present");
         dataset.getGraph(urls.get(2)).ifPresent(g -> {
-            assertTrue(g.contains(subject, type, SKOS.Concept));
-            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")));
-            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")));
-            assertTrue(g.contains(subject, DC.title, rdf.createLiteral("Title")));
-            assertTrue(g.contains(subject, DC.alternative, rdf.createLiteral("Alternative Title")));
-            assertEquals(5L, g.size());
+            assertTrue(g.contains(subject, type, SKOS.Concept), "Check for a skos:Concept type");
+            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
+                    "Check for a skos:prefLabel property");
+            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
+                    "Check for a dc:subject property");
+            assertTrue(g.contains(subject, DC.title, rdf.createLiteral("Title")),
+                    "Check for a dc:title property");
+            assertTrue(g.contains(subject, DC.alternative, rdf.createLiteral("Alternative Title")),
+                    "Check for a dc:alternative property");
+            assertEquals(5L, g.size(), "Check for five triples");
         });
     }
 }

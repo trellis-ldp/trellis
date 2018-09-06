@@ -52,8 +52,8 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     @DisplayName("Test the presence of a Vary: Accept-DateTime header")
     default void testAcceptDateTimeHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertTrue(res.getHeaderString(VARY).contains(ACCEPT_DATETIME));
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
+            assertTrue(res.getHeaderString(VARY).contains(ACCEPT_DATETIME), "Check for a Vary: Accept-Datetime header");
         }
     }
 
@@ -64,9 +64,10 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     @DisplayName("Test the presence of a rel=timegate Link header")
     default void testTimeGateLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
             assertTrue(getLinks(res).stream().filter(l -> l.getRels().contains("timegate")
-                        && l.getUri().toString().equals(getResourceLocation())).findFirst().isPresent());
+                        && l.getUri().toString().equals(getResourceLocation())).findFirst().isPresent(),
+                    "Check for a rel=timegate Link header");
         }
     }
 
@@ -77,9 +78,10 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     @DisplayName("Test the presence of a rel=original Link header")
     default void testOriginalLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
             assertTrue(getLinks(res).stream().filter(l -> l.getRels().contains("original")
-                        && l.getUri().toString().equals(getResourceLocation())).findFirst().isPresent());
+                        && l.getUri().toString().equals(getResourceLocation())).findFirst().isPresent(),
+                    "Check for a rel=original Link header");
         }
     }
 
@@ -93,8 +95,8 @@ public interface MementoTimeGateTests extends MementoCommonTests {
         try (final Response res = target(getResourceLocation()).request()
                 .property("jersey.config.client.followRedirects", Boolean.FALSE)
                 .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get()) {
-            assertEquals(REDIRECTION, res.getStatusInfo().getFamily());
-            assertNotNull(res.getLocation());
+            assertEquals(REDIRECTION, res.getStatusInfo().getFamily(), "Check for a redirect response");
+            assertNotNull(res.getLocation(), "Check for a non-null Location header");
         }
     }
 
@@ -107,8 +109,8 @@ public interface MementoTimeGateTests extends MementoCommonTests {
         final Instant time = now();
         try (final Response res = target(getResourceLocation()).request()
                 .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
-            assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
+            assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Check for a Memento-Datetime header");
         }
     }
 
@@ -120,7 +122,7 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     default void testBadTimeGateRequest() {
         try (final Response res = target(getResourceLocation()).request()
                 .header(ACCEPT_DATETIME, "unparseable date string").get()) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for an error response");
         }
     }
 
@@ -133,8 +135,8 @@ public interface MementoTimeGateTests extends MementoCommonTests {
         final Instant time = now().minusSeconds(1000000);
         try (final Response res = target(getResourceLocation()).request()
                 .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get()) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily());
-            assertEquals(NOT_ACCEPTABLE, fromStatusCode(res.getStatus()));
+            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for an error response");
+            assertEquals(NOT_ACCEPTABLE, fromStatusCode(res.getStatus()), "Check for a 406 error");
         }
     }
 }
