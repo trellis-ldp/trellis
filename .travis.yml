@@ -16,6 +16,16 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
+branches:
+  only:
+    - master
+    # release tags
+    - /^trellis-\d+\.\d+\.\d+$/
+    # maintenance branches
+    - /^trellis-\d+\.\d+\.x$/
+    # long-lived branches
+    - /branch-.+/
+
 matrix:
   fast_finish: true
 
