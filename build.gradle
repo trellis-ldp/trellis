@@ -30,7 +30,7 @@ ext {
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.1'
     jwtVersion = '0.9.1'
-    kafkaVersion = '1.1.0'
+    kafkaVersion = '2.0.0'
     metricsVersion = '4.0.3'
     mustacheVersion = '0.9.5'
     rabbitMqVersion = '5.4.1'
@@ -54,7 +54,7 @@ ext {
 
     /* OSGi */
     asmVersion = '6.2.1'
-    mustacheOsgiVersion = '0.9.5_3'
+    mustacheOsgiVersion = "${mustacheVersion}_4"
     jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = "${kafkaVersion}_1"
     karafVersion = '4.2.1'
