@@ -348,10 +348,10 @@ public interface AuthAnonymousTests extends AuthCommonTests {
     }
 
     /**
-     * Verify that an anonymous user can read a default ACL resource.
+     * Verify that an anonymous user can read a non-inheriting ACL resource.
      */
     @Test
-    @DisplayName("Verify that an anonymous user can read a default ACL resource")
+    @DisplayName("Verify that an anonymous user can read a non-inheriting ACL resource")
     default void testCanReadDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
@@ -359,10 +359,11 @@ public interface AuthAnonymousTests extends AuthCommonTests {
     }
 
     /**
-     * Verify that an anonymous user cannot read the child of a default ACL resource.
+     * Verify that an anonymous user cannot read the child of a resource with no
+     * default ACL inheritance.
      */
     @Test
-    @DisplayName("Verify that an anonymous user cannot read the child of a default ACL resource")
+    @DisplayName("Verify that an anonymous user can read the child of a default ACL resource")
     default void testCanReadDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request().get()) {
             assertEquals(UNAUTHORIZED, fromStatusCode(res.getStatus()));

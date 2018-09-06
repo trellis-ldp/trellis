@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.RDF.type;
@@ -60,27 +61,27 @@ public class WebACServiceTest {
 
     private static final RDF rdf = new JenaRDF();
 
-    private static final IRI memberIRI = rdf.createIRI("trellis:data/member");
-    private static final IRI nonexistentIRI = rdf.createIRI("trellis:data/parent/child/nonexistent");
-    private static final IRI resourceIRI = rdf.createIRI("trellis:data/parent/child/resource");
-    private static final IRI childIRI = rdf.createIRI("trellis:data/parent/child");
-    private static final IRI parentIRI = rdf.createIRI("trellis:data/parent");
-    private static final IRI rootIRI = rdf.createIRI("trellis:data/");
+    private static final IRI memberIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "member");
+    private static final IRI nonexistentIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "parent/child/nonexistent");
+    private static final IRI resourceIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "parent/child/resource");
+    private static final IRI childIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "parent/child");
+    private static final IRI parentIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "parent");
+    private static final IRI rootIRI = rdf.createIRI(TRELLIS_DATA_PREFIX);
 
-    private static final IRI authIRI1 = rdf.createIRI("trellis:data/acl/public/auth1");
-    private static final IRI authIRI2 = rdf.createIRI("trellis:data/acl/public/auth2");
-    private static final IRI authIRI3 = rdf.createIRI("trellis:data/acl/public/auth3");
-    private static final IRI authIRI4 = rdf.createIRI("trellis:data/acl/public/auth4");
-    private static final IRI authIRI5 = rdf.createIRI("trellis:data/acl/private/auth5");
-    private static final IRI authIRI6 = rdf.createIRI("trellis:data/acl/private/auth6");
-    private static final IRI authIRI8 = rdf.createIRI("trellis:data/acl/private/auth8");
+    private static final IRI authIRI1 = rdf.createIRI(TRELLIS_DATA_PREFIX + "acl/public/auth1");
+    private static final IRI authIRI2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "acl/public/auth2");
+    private static final IRI authIRI3 = rdf.createIRI(TRELLIS_DATA_PREFIX + "acl/public/auth3");
+    private static final IRI authIRI4 = rdf.createIRI(TRELLIS_DATA_PREFIX + "acl/public/auth4");
+    private static final IRI authIRI5 = rdf.createIRI(TRELLIS_DATA_PREFIX + "acl/private/auth5");
+    private static final IRI authIRI6 = rdf.createIRI(TRELLIS_DATA_PREFIX + "acl/private/auth6");
+    private static final IRI authIRI8 = rdf.createIRI(TRELLIS_DATA_PREFIX + "acl/private/auth8");
 
     private static final IRI addisonIRI = rdf.createIRI("info:user/addison");
     private static final IRI acoburnIRI = rdf.createIRI("info:user/acoburn");
     private static final IRI agentIRI = rdf.createIRI("info:user/agent");
 
-    private static final IRI groupIRI = rdf.createIRI("trellis:data/group/test");
-    private static final IRI groupIRI2 = rdf.createIRI("trellis:data/group/test/");
+    private static final IRI groupIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "group/test");
+    private static final IRI groupIRI2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "group/test/");
 
     private static final Set<IRI> allModels = new HashSet<>();
 
@@ -417,33 +418,71 @@ public class WebACServiceTest {
     }
 
     @Test
-    public void testDefaultForNew() {
+    public void testInheritance() {
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
-                rdf.createTriple(authIRI5, type, ACL.Authorization),
-                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
-                rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
-
-                rdf.createTriple(authIRI6, type, ACL.Authorization),
-                rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
-                rdf.createTriple(authIRI6, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI6, ACL.mode, ACL.Append),
-
                 rdf.createTriple(authIRI8, type, ACL.Authorization),
-                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI8, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI8, ACL.agent, agentIRI),
                 rdf.createTriple(authIRI8, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI8, ACL.default_, rootIRI)));
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Append)));
 
         when(mockSession.getAgent()).thenReturn(agentIRI);
 
         assertAll("Test default ACL writability",
                 checkCanWrite(resourceIRI),
                 checkCanWrite(childIRI),
+                checkCannotWrite(parentIRI),
+                checkCannotWrite(rootIRI));
+    }
+
+    @Test
+    public void testNoInheritance() {
+        when(mockChildResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
+                rdf.createTriple(authIRI2, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
+
+                rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI3, ACL.mode, ACL.Write),
+                rdf.createTriple(authIRI3, ACL.mode, ACL.Control),
+                rdf.createTriple(authIRI3, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI3, ACL.accessTo, childIRI),
+
+                rdf.createTriple(authIRI4, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI4, type, ACL.Authorization)));
+
+        assertAll("Test default ACL writability",
+                checkCanWrite(resourceIRI),
+                checkCanWrite(childIRI),
                 checkCanWrite(parentIRI),
                 checkCanWrite(rootIRI));
+    }
+
+    @Test
+    public void testInheritRoot() {
+        when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createTriple(authIRI8, type, ACL.Authorization),
+                rdf.createTriple(authIRI8, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI8, ACL.accessTo, rootIRI),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI8, ACL.mode, ACL.Append)));
+
+        when(mockChildResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
+                rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
+                rdf.createTriple(authIRI2, ACL.agent, agentIRI),
+                rdf.createTriple(authIRI2, ACL.accessTo, childIRI)));
+
+        when(mockSession.getAgent()).thenReturn(agentIRI);
+
+        assertAll("Test default ACL writability",
+                checkCannotWrite(resourceIRI),
+                checkCanWrite(childIRI),
+                checkCannotWrite(parentIRI),
+                checkCannotWrite(rootIRI));
     }
 
     @Test
@@ -454,23 +493,14 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI1, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI1, ACL.agentClass, FOAF.Agent),
                 rdf.createTriple(authIRI1, ACL.accessTo, childIRI),
-
-                rdf.createTriple(authIRI2, type, ACL.Authorization),
-                rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
-                rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
-                rdf.createTriple(authIRI2, ACL.agent, addisonIRI),
-                rdf.createTriple(authIRI2, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
+                rdf.createTriple(authIRI1, ACL.default_, childIRI),
 
                 rdf.createTriple(authIRI3, type, ACL.Authorization),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI3, ACL.agentClass, FOAF.Agent),
                 rdf.createTriple(authIRI3, ACL.accessTo, childIRI),
-
-                rdf.createTriple(authIRI4, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI4, type, ACL.Authorization)));
+                rdf.createTriple(authIRI3, ACL.default_, childIRI)));
         assertAll("Test foaf:Agent writability",
                 checkCanWrite(nonexistentIRI),
                 checkCanWrite(resourceIRI),
@@ -507,23 +537,11 @@ public class WebACServiceTest {
                     rdf.createTriple(authIRI5, ACL.mode, ACL.Read)));
 
         when(mockRootResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
-                rdf.createTriple(authIRI5, type, ACL.Authorization),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Append),
-                rdf.createTriple(authIRI5, ACL.mode, ACL.Read),
-                rdf.createTriple(authIRI5, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI5, ACL.agent, addisonIRI),
-
-                rdf.createTriple(authIRI6, type, ACL.Authorization),
-                rdf.createTriple(authIRI6, ACL.mode, ACL.Append),
-                rdf.createTriple(authIRI6, ACL.agent, acoburnIRI),
-                rdf.createTriple(authIRI6, ACL.accessTo, rootIRI),
-
                 rdf.createTriple(authIRI8, type, ACL.Authorization),
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI8, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI8, ACL.agent, agentIRI),
-                rdf.createTriple(authIRI8, ACL.accessTo, rootIRI),
-                rdf.createTriple(authIRI8, ACL.default_, rootIRI)));
+                rdf.createTriple(authIRI8, ACL.accessTo, rootIRI)));
 
         when(mockSession.getAgent()).thenReturn(agentIRI);
         assertAll("Test non-inheritance writability",
@@ -550,7 +568,6 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI2, ACL.agentGroup, groupIRI),
                 rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
 
-                rdf.createTriple(authIRI3, type, PROV.Activity),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Control),
@@ -591,7 +608,6 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Control),
 
-                rdf.createTriple(authIRI3, type, PROV.Activity),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Write),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Control),
@@ -712,6 +728,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI1, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI1, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI1, ACL.accessTo, childIRI),
+                rdf.createTriple(authIRI1, ACL.default_, childIRI),
 
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Read),
                 rdf.createTriple(authIRI2, ACL.mode, ACL.Write),
@@ -719,6 +736,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI2, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI2, ACL.agent, agentIRI),
                 rdf.createTriple(authIRI2, ACL.accessTo, childIRI),
+                rdf.createTriple(authIRI2, ACL.default_, childIRI),
 
                 rdf.createTriple(authIRI3, type, PROV.Activity),
                 rdf.createTriple(authIRI3, ACL.mode, ACL.Read),
@@ -727,6 +745,7 @@ public class WebACServiceTest {
                 rdf.createTriple(authIRI3, ACL.agent, addisonIRI),
                 rdf.createTriple(authIRI3, ACL.agent, agentIRI),
                 rdf.createTriple(authIRI3, ACL.accessTo, childIRI),
+                rdf.createTriple(authIRI3, ACL.default_, childIRI),
 
                 rdf.createTriple(authIRI4, ACL.agent, agentIRI),
                 rdf.createTriple(authIRI4, type, ACL.Authorization)));

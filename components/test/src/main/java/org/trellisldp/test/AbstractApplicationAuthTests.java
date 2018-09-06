@@ -282,6 +282,18 @@ public abstract class AbstractApplicationAuthTests {
                 container = res.getLocation().toString();
             }
 
+            // Add an ACL for this container, with no permissions
+            final String rootAcl = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+                + prefixAcl
+                + "INSERT DATA { [ acl:accessTo <" + container + ">; acl:agentClass foaf:Agent; \n"
+                + "    acl:default <" + container + ">]}";
+
+            // Add an ACL for the quasi-root container
+            try (final Response res = target(container + EXT_ACL).request().header(AUTHORIZATION, jwt)
+                    .method(PATCH, entity(rootAcl, APPLICATION_SPARQL_UPDATE))) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            }
+
             // POST a public container
             try (final Response res = target(container).request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
@@ -303,10 +315,10 @@ public abstract class AbstractApplicationAuthTests {
             final String publicAcl = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
                 + prefixAcl
                 + "INSERT DATA { [acl:accessTo <" + publicContainer + ">; acl:mode acl:Read; "
-                + "   acl:agentClass foaf:Agent ] }; \n"
+                + "   acl:agentClass foaf:Agent; acl:default <" + publicContainer + "> ] }; \n"
                 + prefixAcl
                 + "INSERT DATA { [acl:accessTo <" + publicContainer + ">; acl:mode acl:Read, acl:Write;"
-                + "   acl:agentClass acl:AuthenticatedAgent ] }";
+                + "   acl:agentClass acl:AuthenticatedAgent; acl:default <" + publicContainer + ">] }";
 
             // Add an ACL for the public container
             try (final Response res = target(getPublicContainer() + EXT_ACL).request().header(AUTHORIZATION, jwt)
@@ -335,11 +347,12 @@ public abstract class AbstractApplicationAuthTests {
             final String protectedAcl = prefixAcl
                 + "INSERT DATA { \n"
                 + "[acl:accessTo  <" + protectedContainer + ">;  acl:mode acl:Read, acl:Write;"
-                + "   acl:agent <https://people.apache.org/~acoburn/#i> ] };"
+                + "   acl:agent <https://people.apache.org/~acoburn/#i>; acl:default <" + protectedContainer + "> ] };"
                 + prefixAcl
                 + "INSERT DATA { \n"
                 + "[acl:accessTo  <" + protectedContainer + ">; acl:mode acl:Read, acl:Append; "
-                + "   acl:agent <https://madison.example.com/profile/#me> ] }";
+                + "   acl:agent <https://madison.example.com/profile/#me>; "
+                + "   acl:default <" + protectedContainer + "> ] }";
 
             // Add an ACL for the protected container
             try (final Response res = target(getProtectedContainer() + EXT_ACL).request().header(AUTHORIZATION, jwt)
@@ -368,7 +381,7 @@ public abstract class AbstractApplicationAuthTests {
             final String privateAcl = prefixAcl
                 + "INSERT DATA { "
                 + "[acl:accessTo  <" + privateContainer + ">; acl:mode acl:Read, acl:Write; "
-                + "   acl:agent <http://example.com/administrator> ] }";
+                + "   acl:agent <http://example.com/administrator>; acl:default <" + privateContainer + "> ] }";
 
             // Add an ACL for the private container
             try (final Response res = target(getPrivateContainer() + EXT_ACL).request().header(AUTHORIZATION, jwt)
@@ -416,11 +429,11 @@ public abstract class AbstractApplicationAuthTests {
             final String groupAcl = prefixAcl
                 + "INSERT DATA {  "
                 + "[acl:accessTo <" + groupContainer + ">; acl:mode acl:Read, acl:Write; "
-                + " acl:agentGroup <" + groupResource + "#Developers> ] };\n"
+                + " acl:agentGroup <" + groupResource + "#Developers>; acl:default <" + groupContainer + "> ] };\n"
                 + prefixAcl
                 + "INSERT DATA {  "
                 + "[acl:accessTo <" + groupContainer + ">; acl:mode acl:Read; "
-                + " acl:agentGroup <" + groupResource + "#Management> ] }";
+                + " acl:agentGroup <" + groupResource + "#Management>; acl:default <" + groupContainer + "> ] }";
 
             // Add an ACL for the private container
             try (final Response res = target(groupContainer + EXT_ACL).request().header(AUTHORIZATION, jwt)
@@ -452,7 +465,6 @@ public abstract class AbstractApplicationAuthTests {
                 + "[acl:accessTo <" + defaultContainer + ">; acl:mode acl:Read; acl:agentClass foaf:Agent ] }; \n"
                 + prefixAcl
                 + "INSERT DATA { [acl:accessTo <" + defaultContainer + ">; acl:mode acl:Read, acl:Write; \n"
-                + "   acl:default <" + defaultContainer + ">; \n"
                 + "   acl:agent <https://people.apache.org/~acoburn/#i> ] }";
 
             // Add an ACL for the public container
