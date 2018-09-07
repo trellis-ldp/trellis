@@ -72,11 +72,8 @@ public class WebACService implements AccessControlService {
     public static final String WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
     private static final Logger LOGGER = getLogger(WebACService.class);
-
     private static final RDF rdf = getInstance();
-
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-
     private static final Set<IRI> allModes = new HashSet<>();
 
     static {
@@ -137,14 +134,12 @@ public class WebACService implements AccessControlService {
 
         final Set<IRI> cachedModes = cache.get(getCacheKey(identifier, session.getAgent()), k ->
                 getAuthz(identifier, session.getAgent()));
-        final Optional<IRI> delegate = session.getDelegatedBy();
-        if (delegate.isPresent()) {
-            final Set<IRI> delegatedModes = new HashSet<>(cache.get(getCacheKey(identifier, delegate.get()), k ->
-                        getAuthz(identifier, delegate.get())));
-            delegatedModes.retainAll(cachedModes);
-            return unmodifiableSet(delegatedModes);
-        }
-        return unmodifiableSet(cachedModes);
+        return session.getDelegatedBy().map(delegate -> {
+                final Set<IRI> delegatedModes = new HashSet<>(cache.get(getCacheKey(identifier, delegate), k ->
+                            getAuthz(identifier, delegate)));
+                delegatedModes.retainAll(cachedModes);
+                return unmodifiableSet(delegatedModes);
+            }).orElseGet(() -> unmodifiableSet(cachedModes));
     }
 
     private String getCacheKey(final IRI identifier, final IRI agent) {
@@ -159,11 +154,9 @@ public class WebACService implements AccessControlService {
         final Set<IRI> modes = getModesFor(identifier, agent);
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
-            resourceService.getContainer(identifier).map(resourceService::get)
-                .map(CompletableFuture::join)
+            resourceService.getContainer(identifier).map(resourceService::get).map(CompletableFuture::join)
                 .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
-                .map(member -> getModesFor(member, agent))
-                .ifPresent(memberModes -> {
+                .map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
                     }
@@ -177,11 +170,9 @@ public class WebACService implements AccessControlService {
 
     private Set<IRI> getModesFor(final IRI identifier, final IRI agent) {
         return getNearestResource(identifier).map(resource -> getAllAuthorizationsFor(resource, false)
-                .filter(agentFilter(agent)))
-            .orElseGet(Stream::empty)
+                .filter(agentFilter(agent))).orElseGet(Stream::empty)
             .peek(auth -> LOGGER.debug("Applying Authorization {} to {}", auth.getIdentifier(), identifier))
-            .flatMap(auth -> auth.getMode().stream())
-            .collect(toSet());
+            .flatMap(auth -> auth.getMode().stream()).collect(toSet());
     }
 
     private Boolean resourceExists(final Resource res) {
@@ -233,9 +224,10 @@ public class WebACService implements AccessControlService {
         if (resource.hasAcl()) {
             try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).collect(toGraph()))) {
                 final List<Authorization> authorizations = getAuthorizationFromGraph(graph.getGraph());
-
+                // Check for any acl:default statements if checking for inheritance
                 if (inherited && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
                     return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
+                // If not inheriting, just return the relevant Authorizations in the ACL
                 } else if (!inherited) {
                     return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
                 }
@@ -244,8 +236,7 @@ public class WebACService implements AccessControlService {
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
         return resourceService.getContainer(resource.getIdentifier()).map(resourceService::get)
-            .map(CompletableFuture::join).map(res -> getAllAuthorizationsFor(res, true))
-            .orElseGet(Stream::empty);
+            .map(CompletableFuture::join).map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
     }
 
     /**
@@ -283,7 +274,7 @@ public class WebACService implements AccessControlService {
 
     /**
      * A {@link CacheService} that can be used for authorization information.
-     * 
+     *
      * @author ajs6f
      *
      */
