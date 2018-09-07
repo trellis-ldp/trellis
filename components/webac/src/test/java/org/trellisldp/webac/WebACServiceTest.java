@@ -666,23 +666,15 @@ public class WebACServiceTest {
     public void testCacheCanWrite1() {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
-        assertFalse(testCacheService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write), "user can write");
-        assertFalse(testCacheService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write), "user can write!");
-        assertFalse(testCacheService.getAccessModes(childIRI, mockSession).contains(ACL.Write), "user can write!");
-        assertFalse(testCacheService.getAccessModes(parentIRI, mockSession).contains(ACL.Write), "user can write!");
-        assertFalse(testCacheService.getAccessModes(rootIRI, mockSession).contains(ACL.Write), "user can write!");
+        assertAll("Check writability with cache", checkNoneCanWrite());
     }
 
     @Test
     public void testCacheCanWrite2() {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
-        assertTrue(testCacheService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write),
-                "user cannot write!");
-        assertTrue(testCacheService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write), "user cannot write!");
-        assertTrue(testCacheService.getAccessModes(childIRI, mockSession).contains(ACL.Write), "user cannot write!");
-        assertFalse(testCacheService.getAccessModes(parentIRI, mockSession).contains(ACL.Write), "user can write!");
-        assertFalse(testCacheService.getAccessModes(rootIRI, mockSession).contains(ACL.Write), "user can write!");
+        assertAll("Test writability with cache", checkCanWrite(nonexistentIRI), checkCanWrite(resourceIRI),
+                checkCanWrite(childIRI), checkCannotWrite(parentIRI), checkCannotWrite(rootIRI));
     }
 
     @Test
@@ -690,12 +682,8 @@ public class WebACServiceTest {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));
-        assertTrue(testCacheService.getAccessModes(nonexistentIRI, mockSession).contains(ACL.Write),
-                "user cannot write!");
-        assertTrue(testCacheService.getAccessModes(resourceIRI, mockSession).contains(ACL.Write), "user cannot write!");
-        assertTrue(testCacheService.getAccessModes(childIRI, mockSession).contains(ACL.Write), "user cannot write!");
-        assertFalse(testCacheService.getAccessModes(parentIRI, mockSession).contains(ACL.Write), "user can write!");
-        assertFalse(testCacheService.getAccessModes(rootIRI, mockSession).contains(ACL.Write), "user can write!");
+        assertAll("Test delegated writability with cache", checkCanWrite(nonexistentIRI), checkCanWrite(resourceIRI),
+                checkCanWrite(childIRI), checkCannotWrite(parentIRI), checkCannotWrite(rootIRI));
     }
 
     private Stream<Executable> checkAllCanRead() {
