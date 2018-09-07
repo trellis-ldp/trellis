@@ -666,15 +666,18 @@ public class WebACServiceTest {
     public void testCacheCanWrite1() {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
-        assertAll("Check writability with cache", checkNoneCanWrite());
+        assertAll("Check writability with cache", checkCannotWrite(testCacheService, nonexistentIRI),
+                checkCannotWrite(testCacheService, resourceIRI), checkCannotWrite(testCacheService, childIRI),
+                checkCannotWrite(testCacheService, parentIRI), checkCannotWrite(testCacheService, rootIRI));
     }
 
     @Test
     public void testCacheCanWrite2() {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
-        assertAll("Test writability with cache", checkCanWrite(nonexistentIRI), checkCanWrite(resourceIRI),
-                checkCanWrite(childIRI), checkCannotWrite(parentIRI), checkCannotWrite(rootIRI));
+        assertAll("Check writability with cache", checkCanWrite(testCacheService, nonexistentIRI),
+                checkCanWrite(testCacheService, resourceIRI), checkCanWrite(testCacheService, childIRI),
+                checkCannotWrite(testCacheService, parentIRI), checkCannotWrite(testCacheService, rootIRI));
     }
 
     @Test
@@ -682,8 +685,9 @@ public class WebACServiceTest {
         final AccessControlService testCacheService = new WebACService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));
-        assertAll("Test delegated writability with cache", checkCanWrite(nonexistentIRI), checkCanWrite(resourceIRI),
-                checkCanWrite(childIRI), checkCannotWrite(parentIRI), checkCannotWrite(rootIRI));
+        assertAll("Check delegated writability with cache", checkCanWrite(testCacheService, nonexistentIRI),
+                checkCanWrite(testCacheService, resourceIRI), checkCanWrite(testCacheService, childIRI),
+                checkCannotWrite(testCacheService, parentIRI), checkCannotWrite(testCacheService, rootIRI));
     }
 
     private Stream<Executable> checkAllCanRead() {
@@ -808,6 +812,16 @@ public class WebACServiceTest {
     private Executable checkCanRead(final IRI id) {
         return () -> assertTrue(testService.getAccessModes(id, mockSession).contains(ACL.Read),
                 mockSession.getAgent() + " cannot Read from " + id);
+    }
+
+    private Executable checkCannotWrite(final AccessControlService svc, final IRI id) {
+        return () -> assertFalse(svc.getAccessModes(id, mockSession).contains(ACL.Write),
+                mockSession.getAgent() + " can Write to " + id);
+    }
+
+    private Executable checkCanWrite(final AccessControlService svc, final IRI id) {
+        return () -> assertTrue(svc.getAccessModes(id, mockSession).contains(ACL.Write),
+                mockSession.getAgent() + " cannot Write to " + id);
     }
 
     private Executable checkCannotWrite(final IRI id) {
