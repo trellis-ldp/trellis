@@ -13,12 +13,14 @@
  */
 package org.trellisldp.test;
 
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -88,14 +90,14 @@ public interface AuditTests extends CommonTests {
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
                 .header(AUTHORIZATION, jwt).post(entity(containerContent, TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Confirm a successful POST response");
             container = res.getLocation().toString();
         }
 
         // POST an LDP-RS
         try (final Response res = target(container).request().header(AUTHORIZATION, jwt)
                 .post(entity("", TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Confirm a successful POST response");
             setResourceLocation(res.getLocation().toString());
         }
 
@@ -103,14 +105,14 @@ public interface AuditTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().header(AUTHORIZATION, user1)
                 .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Confirm a successful PATCH response");
         }
 
         // PATCH the LDP-RS
         try (final Response res = target(getResourceLocation()).request().header(AUTHORIZATION, user2).method("PATCH",
                     entity("INSERT { <> <http://www.w3.org/2004/02/skos/core#prefLabel> \"Label\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Confirm a successful PATCH response");
         }
     }
 
@@ -122,7 +124,7 @@ public interface AuditTests extends CommonTests {
     default void testNoAuditTriples() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(2L, g.size());
+            assertEquals(2L, g.size(), "Check that the graph has 2 triples");
         }
     }
 
@@ -135,7 +137,7 @@ public interface AuditTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().header("Prefer",
                     "return=representation; omit=\"" + Trellis.PreferAudit.getIRIString() + "\"").get()) {
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(2L, g.size());
+            assertEquals(2L, g.size(), "Check that the graph has only 2 triples");
         }
     }
 
@@ -149,20 +151,24 @@ public interface AuditTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().header("Prefer",
                     "return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"").get()) {
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(3L, g.stream(rdf.createIRI(getResourceLocation()), PROV.wasGeneratedBy, null).count());
-            g.stream(rdf.createIRI(getResourceLocation()), PROV.wasGeneratedBy, null).forEach(triple -> {
-                assertTrue(g.contains((BlankNodeOrIRI) triple.getObject(), type, PROV.Activity));
-                assertTrue(g.contains((BlankNodeOrIRI) triple.getObject(), PROV.atTime, null));
-                assertEquals(4L, g.stream((BlankNodeOrIRI) triple.getObject(), null, null).count());
-            });
-            assertTrue(g.contains(null, PROV.wasAssociatedWith, Trellis.AdministratorAgent));
+            assertEquals(3L, g.stream(rdf.createIRI(getResourceLocation()), PROV.wasGeneratedBy, null).count(),
+                    "Check for the presence of audit triples in the graph");
+            assertAll("Check the graph triples",
+                    g.stream(rdf.createIRI(getResourceLocation()), PROV.wasGeneratedBy, null).flatMap(triple -> of(
+                        () -> assertTrue(g.contains((BlankNodeOrIRI) triple.getObject(), type, PROV.Activity),
+                                         "Verify that the prov:activity type is present for the resource"),
+                        () -> assertTrue(g.contains((BlankNodeOrIRI) triple.getObject(), PROV.atTime, null),
+                                         "Verify that the prov:atTime property is present for the resource"),
+                        () -> assertEquals(4L, g.stream((BlankNodeOrIRI) triple.getObject(), null, null).count(),
+                                         "Verify that we have the right number of triples for the resource"))));
+            assertTrue(g.contains(null, PROV.wasAssociatedWith, Trellis.AdministratorAgent), "Verify agent 1");
             assertTrue(g.contains(null, PROV.wasAssociatedWith,
-                        rdf.createIRI("https://madison.example.com/profile#me")));
+                        rdf.createIRI("https://madison.example.com/profile#me")), "Verify agent 2");
             assertTrue(g.contains(null, PROV.wasAssociatedWith,
-                        rdf.createIRI("https://people.apache.org/~acoburn/#i")));
-            assertEquals(2L, g.stream(null, type, AS.Update).count());
-            assertEquals(1L, g.stream(null, type, AS.Create).count());
-            assertEquals(17L, g.size());
+                        rdf.createIRI("https://people.apache.org/~acoburn/#i")), "Verify agent 3");
+            assertEquals(2L, g.stream(null, type, AS.Update).count(), "Count the number of update events");
+            assertEquals(1L, g.stream(null, type, AS.Create).count(), "Count the number of create events");
+            assertEquals(17L, g.size(), "Get the total graph size");
         }
     }
 }
