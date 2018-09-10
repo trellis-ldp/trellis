@@ -323,6 +323,10 @@ subprojects { subproj ->
     }
 
     javadoc {
+        options.tags = ["apiNote:a:API Note:",
+                "implSpec:a:Implementation Requirements:",
+                "implNote:a:Implementation Note:"]
+
         if (JavaVersion.current().isJava9Compatible()) {
             options.addBooleanOption('html5', true)
         }

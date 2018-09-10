@@ -36,10 +36,3 @@ jar {
                 osgi.serviceloader=org.trellisldp.api.AuditService'''
     }
 }
-
-javadoc {
-    options.tags = ["apiNote:a:API Note:",
-                    "implSpec:a:Implementation Requirements:",
-                    "implNote:a:Implementation Note:"]
-}
-
