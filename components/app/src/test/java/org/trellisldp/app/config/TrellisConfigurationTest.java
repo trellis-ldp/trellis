@@ -36,7 +36,7 @@ public class TrellisConfigurationTest {
     @Test
     public void testConfigurationGeneral1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertEquals("Trellis", config.getDefaultName(), "Incorrect app name!");
@@ -75,7 +75,7 @@ public class TrellisConfigurationTest {
     @Test
     public void testConfigurationAssets1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         assertEquals("org/trellisldp/rdfa/resource.mustache", config.getAssets().getTemplate(), "Bad assets/template");
         assertEquals("http://example.com/image.icon", config.getAssets().getIcon(), "Bad assets/icon value!");
@@ -86,7 +86,7 @@ public class TrellisConfigurationTest {
     @Test
     public void testConfigurationNotifications() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertFalse(config.getNotifications().getEnabled(), "Notifications unexpectedly enabled!");
@@ -101,7 +101,7 @@ public class TrellisConfigurationTest {
     @Test
     public void testConfigurationLocations() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertEquals("http://localhost:8080/", config.getBaseUrl(), "Incorrect baseUrl!");
@@ -111,7 +111,7 @@ public class TrellisConfigurationTest {
     @Test
     public void testConfigurationAuth1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertTrue(config.getAuth().getWebac().getEnabled(), "WebAC should be enabled!");
@@ -142,7 +142,7 @@ public class TrellisConfigurationTest {
     @Test
     public void testConfigurationCORS1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertTrue(config.getCors().getEnabled(), "CORS not enabled!");

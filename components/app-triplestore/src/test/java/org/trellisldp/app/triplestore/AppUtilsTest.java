@@ -61,7 +61,7 @@ public class AppUtilsTest {
     @Test
     public void testGetRDFConnection() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using in-memory dataset!");

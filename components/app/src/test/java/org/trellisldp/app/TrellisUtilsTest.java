@@ -57,7 +57,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetCORSConfig() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
 
@@ -71,7 +71,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetWebacCache() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertTrue(TrellisUtils.getWebacCache(config).isPresent(), "WebAC configuration not present!");
@@ -84,7 +84,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetAuthFilters() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(null);
 
@@ -102,7 +102,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetJwtAuthenticator() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not enabled!");
@@ -111,7 +111,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetJwtAuthenticatorNoKeyIds() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("foo", "bar"));
@@ -121,7 +121,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetJwtAuthenticatorFederated() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("trellis", "trellis-ec", "trellis-public"));
@@ -131,7 +131,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetJwtAuthenticatorBadKeystore() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(resourceFilePath("config1.yml"));
         assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
@@ -140,7 +140,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetJwtAuthenticatorNoKeystore() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         final String nonexistent = resourceFilePath("config1.yml").replaceAll("config1.yml", "nonexistent.yml");
         config.getAuth().getJwt().setKeyStore(nonexistent);
@@ -150,7 +150,7 @@ public class TrellisUtilsTest {
     @Test
     public void testGetNoJwtAuthenticator() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
-                Validators.newValidator(), Jackson.newObjectMapper(), "")
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(null);
         config.getAuth().getJwt().setKey("");
