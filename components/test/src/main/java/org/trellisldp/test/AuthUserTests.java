@@ -42,7 +42,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCanReadPublicResource() {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -54,7 +54,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCanReadPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -66,7 +66,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCanAppendPublicResource() {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).post(entity("", TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -79,7 +79,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_BAR, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -92,7 +92,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_BAR, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -104,7 +104,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotControlPublicResource() {
         try (final Response res = target(getPublicContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -116,7 +116,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotControlPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -128,7 +128,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCanReadProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -140,7 +140,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCanReadProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -152,7 +152,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCanAppendProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).post(entity("", TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -165,7 +165,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_BAR, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -178,7 +178,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_BAR, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -190,7 +190,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotControlProtectedResource() {
         try (final Response res = target(getProtectedContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -202,7 +202,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotControlProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -214,7 +214,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotReadPrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -226,7 +226,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotReadPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -238,7 +238,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotAppendPrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).post(entity("", TEXT_TURTLE))) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -251,7 +251,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -264,7 +264,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -276,7 +276,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotControlPrivateResource() {
         try (final Response res = target(getPrivateContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -288,7 +288,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testUserCannotControlPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -300,7 +300,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCanReadGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -312,7 +312,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCanReadGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -325,7 +325,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -338,7 +338,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -350,7 +350,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCannotControlGroupResource() {
         try (final Response res = target(getGroupContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -362,7 +362,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCannotControlGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -374,7 +374,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCanReadDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -386,7 +386,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCannotReadDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -399,7 +399,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -412,7 +412,7 @@ public interface AuthUserTests extends AuthCommonTests {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -424,7 +424,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCannotControlDefaultAclResource() {
         try (final Response res = target(getDefaultContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 
@@ -436,7 +436,7 @@ public interface AuthUserTests extends AuthCommonTests {
     default void testCannotControlDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()));
+            assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
         }
     }
 }

@@ -40,38 +40,42 @@ public class TestUtilsTest {
     public void testReadEntityAsString() {
         final String text = "some text";
         final InputStream is = new ByteArrayInputStream(text.getBytes(UTF_8));
-        assertEquals(text, TestUtils.readEntityAsString(is));
+        assertEquals(text, TestUtils.readEntityAsString(is), "Verify that the input stream matches");
     }
 
     @Test
     public void testReadEntityAsStringError() throws IOException {
         final InputStream mockInputStream = mock(InputStream.class);
         when(mockInputStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException("Expected"));
-        assertThrows(UncheckedIOException.class, () ->
-                TestUtils.readEntityAsString(mockInputStream));
+        assertThrows(UncheckedIOException.class, () -> TestUtils.readEntityAsString(mockInputStream),
+                "Check that an expected exception is thrown");
     }
 
     @Test
     public void testGetResourceAsString() {
-        assertTrue(TestUtils.getResourceAsString("/annotation.ttl").contains("<> a oa:Annotation"));
+        assertTrue(TestUtils.getResourceAsString("/annotation.ttl").contains("<> a oa:Annotation"),
+                "Check the resource loader works as expected");
     }
 
     @Test
     public void testGetResourceAsStringNull() {
-        assertNull(TestUtils.getResourceAsString("/non-existent-resource.ttl"));
+        assertNull(TestUtils.getResourceAsString("/non-existent-resource.ttl"),
+                "Check loading a non-existent resource");
     }
 
     @Test
     public void testReadEntityAsJson() {
         final Map<String, Object> data = singletonMap("foo", "bar");
         final InputStream is = new ByteArrayInputStream("{\"foo\" : \"bar\" }".getBytes(UTF_8));
-        assertEquals(data, TestUtils.readEntityAsJson(is, new TypeReference<Map<String, Object>>(){}));
+        assertEquals(data, TestUtils.readEntityAsJson(is, new TypeReference<Map<String, Object>>(){}),
+                "Check converting an InputStream to JSON");
     }
 
     @Test
     public void testReadEntityAsJsonError() {
         final InputStream is = new ByteArrayInputStream("{\"invalid JSON\" }".getBytes(UTF_8));
         assertThrows(UncheckedIOException.class, () ->
-                TestUtils.readEntityAsJson(is, new TypeReference<Map<String, Object>>(){}));
+                TestUtils.readEntityAsJson(is, new TypeReference<Map<String, Object>>(){}),
+                "Check converting malformed JSON");
     }
 }

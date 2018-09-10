@@ -18,6 +18,10 @@ package org.trellisldp.test;
  */
 public interface AuthCommonTests extends CommonTests {
 
+    String OK_RESPONSE = "Verify an OK response";
+    String FORBIDDEN_RESPONSE = "Verify a Forbidden response";
+    String NOT_FOUND_RESPONSE = "Verify a Not Found response";
+    String UNAUTHORIZED_RESPONSE = "Verify an Unauthorized response";
     String INSERT_PROP_FOO = "INSERT { <> <http://example.com/prop> \"Foo\" } WHERE {}";
     String INSERT_PROP_BAR = "INSERT { <> <http://example.com/prop> \"Bar\" } WHERE {}";
     String EXT_ACL = "?ext=acl";

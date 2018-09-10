@@ -41,7 +41,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadPublicResource() {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -53,7 +53,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -66,7 +66,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -79,7 +79,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -91,7 +91,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlPublicResource() {
         try (final Response res = target(getPublicContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -103,7 +103,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()), NOT_FOUND_RESPONSE);
         }
     }
 
@@ -115,7 +115,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -127,7 +127,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -140,7 +140,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -153,7 +153,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -165,7 +165,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlProtectedResource() {
         try (final Response res = target(getProtectedContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -177,7 +177,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()), NOT_FOUND_RESPONSE);
         }
     }
 
@@ -189,7 +189,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadPrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -201,7 +201,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -214,7 +214,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -227,7 +227,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -239,7 +239,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlPrivateResource() {
         try (final Response res = target(getPrivateContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -251,7 +251,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()), NOT_FOUND_RESPONSE);
         }
     }
 
@@ -263,7 +263,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -275,7 +275,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanReadGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -288,7 +288,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -301,7 +301,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -313,7 +313,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlGroupResource() {
         try (final Response res = target(getGroupContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -325,7 +325,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testAdminCanControlGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()), NOT_FOUND_RESPONSE);
         }
     }
 
@@ -337,7 +337,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testCanReadDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -349,7 +349,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testCanReadDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -362,7 +362,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -375,7 +375,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -387,7 +387,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testCanControlDefaultAclResource() {
         try (final Response res = target(getDefaultContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily());
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
         }
     }
 
@@ -399,7 +399,7 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     default void testCanControlDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
-            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()));
+            assertEquals(NOT_FOUND, fromStatusCode(res.getStatus()), NOT_FOUND_RESPONSE);
         }
     }
 }
