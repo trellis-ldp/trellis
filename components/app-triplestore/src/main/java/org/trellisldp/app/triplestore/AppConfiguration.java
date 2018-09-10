@@ -114,11 +114,10 @@ class AppConfiguration extends TrellisConfiguration {
     /**
      * Set the character length of intermediate path components for internal binary resource identifiers.
      *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Setting this to "2" results in a maximum of 256 subdirectories in each intermediate segment.
-     * Values between 1 and 3 are suitable for most cases.
-     *
+     * @implNote For POSIX filesystems there are performance consideration for placing many
+     *           files in a single directory. Using such intermediate directories can significantly
+     *           improve performance. Setting this to "2" results in a maximum of 256 subdirectories
+     *           in each intermediate segment. Values between 1 and 3 are suitable for most cases.
      * @param length the character length of each hierarchy segment
      */
     @JsonProperty
@@ -129,11 +128,10 @@ class AppConfiguration extends TrellisConfiguration {
     /**
      * Get the character length of intermediate path components for internal binary resource identifiers.
      *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Setting this to "2" results in a maximum of 256 subdirectories in each intermediate segment.
-     * Values between 1 and 3 are suitable for most cases.
-     *
+     * @implNote For POSIX filesystems there are performance consideration for placing many
+     *           files in a single directory. Using such intermediate directories can significantly
+     *           improve performance. Setting this to "2" results in a maximum of 256 subdirectories
+     *           in each intermediate segment. Values between 1 and 3 are suitable for most cases.
      * @return the character length of each hierarchy segment
      */
     @JsonProperty
@@ -144,10 +142,9 @@ class AppConfiguration extends TrellisConfiguration {
     /**
      * Set the number of levels of hierarchy for internal binary resource identifiers.
      *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Values between 2 and 4 are generally suitable for most uses.
-     *
+     * @implNote For POSIX filesystems there are performance consideration for placing many
+     *           files in a single directory. Using such intermediate directories can significantly
+     *           improve performance. Values between 2 and 4 are generally suitable for most uses.
      * @param levels the number of levels of hierarchy.
      */
     @JsonProperty
@@ -158,15 +155,13 @@ class AppConfiguration extends TrellisConfiguration {
     /**
      * Get the number of levels of hierarchy for internal binary resource identifiers.
      *
-     * <p>Note: for POSIX filesystems there are performance consideration for placing many
-     * files in a single directory. Using such intermediate directories can significantly improve
-     * performance. Values between 2 and 4 are generally suitable for most uses.
-     *
+     * @implNote For POSIX filesystems there are performance consideration for placing many
+     *           files in a single directory. Using such intermediate directories can significantly
+     *           improve performance. Values between 2 and 4 are generally suitable for most uses.
      * @return the number of levels of hierarchy.
      */
     @JsonProperty
     public Integer getBinaryHierarchyLevels() {
         return levels;
     }
-
 }

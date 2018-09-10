@@ -86,8 +86,7 @@ import org.trellisldp.http.impl.PutHandler;
 /**
  * A {@link ContainerRequestFilter} that also matches path-based HTTP resource operations.
  *
- * <p>Requests are pre-filtered to validate incoming request headers and query parameters.
- *
+ * @implNote Requests are pre-filtered to validate incoming request headers and query parameters.
  * @author acoburn
  */
 @PreMatching
@@ -181,11 +180,10 @@ public class LdpResource implements ContainerRequestFilter {
     /**
      * Perform a GET operation on an LDP Resource.
      *
+     * @implNote The Memento implemenation pattern exactly follows
+     *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
      * @param request the request parameters
      * @param response the async response
-     *
-     * Note: The Memento implemenation pattern exactly follows
-     * <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
      */
     @GET
     @Timed
@@ -197,11 +195,10 @@ public class LdpResource implements ContainerRequestFilter {
     /**
      * Perform a HEAD operation on an LDP Resource.
      *
+     * @implNote The Memento implemenation pattern exactly follows
+     *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
      * @param request the request parameters
      * @param response the async response
-     *
-     * Note: The Memento implemenation pattern exactly follows
-     * <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
      */
     @HEAD
     @Timed

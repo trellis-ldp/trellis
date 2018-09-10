@@ -76,19 +76,18 @@ public interface BinaryService {
      * Purge the content from its corresponding datastore.
      *
      * @param identifier the binary object identifier
-     * @return a new completion stage that, when the stage completes normally, indicates that the binary
-     * data were successfully deleted from the corresponding persistence layer. In the case of an unsuccessful
-     * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
+     * @return a new completion stage that, when the stage completes normally, indicates that the binary data
+     *         were successfully deleted from the corresponding persistence layer. In the case of an unsuccessful
+     *         operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
+     *         {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
     CompletableFuture<Void> purgeContent(IRI identifier);
 
     /**
      * Calculate the digest for a binary object.
      *
-     * <p>Note: as per RFC 3230, the digest value is calculated over the entire resource,
-     * not just the HTTP payload.
-     *
+     * @apiNote As per RFC 3230, the digest value is calculated over the entire resource,
+     *          not just the HTTP payload.
      * @param identifier the identifier
      * @param algorithm the algorithm
      * @return the new completion stage containing a computed digest for the binary resource

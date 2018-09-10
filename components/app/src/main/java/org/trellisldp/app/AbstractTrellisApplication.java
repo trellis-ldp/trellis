@@ -59,8 +59,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     /**
      * Get any additional components to register with Jersey.
      *
-     * <p>Note: by default, this returns an empty list.
-     *
+     * @implSpec By default, this returns an empty list.
      * @return any additional components.
      */
     protected List<Object> getComponents() {

@@ -36,8 +36,7 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
     /**
      * Get the identifier for the structurally-logical container for the resource.
      *
-     * <p>Note: The returned identifier is not guaranteed to exist.
-     *
+     * @apiNote The returned identifier is not guaranteed to exist.
      * @param identifier the identifier
      * @return an identifier for the structurally-logical container
      *

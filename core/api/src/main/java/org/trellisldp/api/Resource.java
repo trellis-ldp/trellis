@@ -38,8 +38,7 @@ public interface Resource {
 
     enum SpecialResources implements Resource {
         /**
-         * A non-existent resource: one that does not
-         * exist at a given IRI.
+         * A non-existent resource: one that does not exist at a given IRI.
          */
         MISSING_RESOURCE {
             @Override
@@ -69,8 +68,7 @@ public interface Resource {
         },
 
         /**
-         * A resource that previously existed but which
-         * no longer exists.
+         * A resource that previously existed but which no longer exists.
          */
         DELETED_RESOURCE {
             @Override
@@ -124,8 +122,7 @@ public interface Resource {
     /**
      * Retrieve the membership resource if this is an LDP Direct or Indirect container.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.</p>
-     *
+     * @implSpec Other LDP resource types will always return an empty {@link Optional} value
      * @return the membership resource
      */
     default Optional<IRI> getMembershipResource() {
@@ -135,8 +132,7 @@ public interface Resource {
     /**
      * Retrieve the member relation if this is an LDP Direct or Indirect container.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.
-     *
+     * @implSpec Other LDP resource types will always return an empty {@link Optional} value
      * @return the ldp:hasMemberRelation IRI
      */
     default Optional<IRI> getMemberRelation() {
@@ -146,8 +142,7 @@ public interface Resource {
     /**
      * Retrieve the member of relation IRI.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.
-     *
+     * @implSpec Other LDP resource types will always return an empty {@link Optional} value
      * @return the ldp:isMemberOfRelation IRI
      */
     default Optional<IRI> getMemberOfRelation() {
@@ -157,8 +152,7 @@ public interface Resource {
     /**
      * Retrieve the inserted content relation if this is an LDP Indirect container.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.
-     *
+     * @implSpec Other LDP resource types will always return an empty {@link Optional} value
      * @return the inserted content relation
      */
     default Optional<IRI> getInsertedContentRelation() {
@@ -205,8 +199,7 @@ public interface Resource {
     /**
      * Retrieve a Binary for this resouce, if it is a LDP-NR.
      *
-     * <p>Note: Other resource types will always return an empty {@link Optional} value.
-     *
+     * @implSpec Other LDP resource types will always return an empty {@link Optional} value
      * @return the binary object
      */
     default Optional<Binary> getBinary() {
@@ -225,11 +218,10 @@ public interface Resource {
     /**
      * Get any extra implementation-defined link relations for this resource.
      *
-     * <p>Each entry will be used to create a link header, such that the key refers
-     * to the URI and the value is the "rel" portion. For example, an item with
-     * {@code key="http://example.com/author001"} and {@code value="author"} will result in
-     * the header {@code Link: <http://example.com/author001>; rel="author"}.
-     *
+     * @apiNote Each entry will be used to create a link header, such that the key refers
+     *          to the URI and the value is the "rel" portion. For example, an item with
+     *          {@code key="http://example.com/author001"} and {@code value="author"} will result
+     *          in the header {@code Link: <http://example.com/author001>; rel="author"}.
      * @return a stream of relation types
      */
     default Stream<Entry<String, String>> getExtraLinkRelations() {
