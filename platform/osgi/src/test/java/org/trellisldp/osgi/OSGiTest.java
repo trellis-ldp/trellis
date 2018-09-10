@@ -98,72 +98,94 @@ public class OSGiTest {
 
     @Test
     public void testCoreInstallation() throws Exception {
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("commons-rdf-jena")));
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-io-jena")));
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-api")));
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-vocabulary")));
+        assertTrue("commons-rdf-jena not installed!",
+                featuresService.isInstalled(featuresService.getFeature("commons-rdf-jena")));
+        assertTrue("trellis-io-jena not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-io-jena")));
+        assertTrue("trellis-api not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-api")));
+        assertTrue("trellis-vocabulary not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-vocabulary")));
     }
 
     @Test
     public void testAuditAndTriplestoreInstallation() throws Exception {
         // test these two together because trellis-triplestore depends on trellis-audit
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
+        assertFalse("trellis-audit already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
         featuresService.installFeature("trellis-audit");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
+        assertTrue("trellis-audit not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
         featuresService.uninstallFeature("trellis-audit");
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
+        assertFalse("trellis-audit still installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
 
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
+        assertFalse("trellis-triplestore already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
         featuresService.installFeature("trellis-triplestore");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
+        assertTrue("trellis-triplestore not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
     }
 
     @Test
     public void testHttpInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-http")));
+        assertFalse("trellis-http already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-http")));
         featuresService.installFeature("trellis-http");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-http")));
+        assertTrue("trellis-http not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-http")));
     }
 
     @Test
     public void testRDFaInstallation() throws Exception {
         featuresService.installFeature("trellis-rdfa");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-rdfa")));
+        assertTrue("trellis-rdfa not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-rdfa")));
     }
 
     @Test
     public void testIdInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-id")));
+        assertFalse("trellis-id already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-id")));
         featuresService.installFeature("trellis-id");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-id")));
+        assertTrue("trellis-id not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-id")));
     }
 
     @Test
     public void testWebacInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
+        assertFalse("trellis-webac already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
         featuresService.installFeature("trellis-webac");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
+        assertTrue("trellis-webac not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
     }
 
     @Test
     public void testAgentInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
+        assertFalse("trellis-agent already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
         featuresService.installFeature("trellis-agent");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
+        assertTrue("trellis-agent not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
     }
 
     @Test
     public void testFileInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-file")));
+        assertFalse("trellis-file already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-file")));
         featuresService.installFeature("trellis-file");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-file")));
+        assertTrue("trellis-file not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-file")));
     }
 
     @Test
     public void testConstraintsInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
+        assertFalse("trellis-constraint-rules already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
         featuresService.installFeature("trellis-constraint-rules");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
+        assertTrue("trellis-constraint-rules not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
     }
 
     @Test
@@ -171,38 +193,47 @@ public class OSGiTest {
         if (!featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization"))) {
             featuresService.installFeature("trellis-event-serialization");
         }
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization")));
+        assertTrue("trellis-event-serialization not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization")));
     }
 
     @Test
     public void testKafkaInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
+        assertFalse("trellis-kafka already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
         featuresService.installFeature("trellis-event-serialization");
         featuresService.installFeature("trellis-kafka");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
+        assertTrue("trellis-kafka not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
     }
 
     @Test
     public void testAmqpInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
+        assertFalse("trellis-amqp already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
         featuresService.installFeature("trellis-event-serialization");
         featuresService.installFeature("trellis-amqp");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
+        assertTrue("trellis-amqp not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
     }
 
     @Test
     public void testJmsInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
+        assertFalse("trellis-jms already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
         featuresService.installFeature("trellis-event-serialization");
         featuresService.installFeature("trellis-jms");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
+        assertTrue("trellis-jms not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
     }
 
     @Test
     public void testNamespacesInstallation() throws Exception {
-        assertFalse(featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
+        assertFalse("trellis-namespace already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
         featuresService.installFeature("trellis-namespaces");
-        assertTrue(featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
+        assertTrue("trellis-namespace not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
     }
 
     protected <T> T getOsgiService(final Class<T> type, final String filter, final long timeout) {

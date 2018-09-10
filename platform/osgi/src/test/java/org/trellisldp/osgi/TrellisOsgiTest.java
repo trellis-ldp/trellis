@@ -21,6 +21,6 @@ public class TrellisOsgiTest {
     @Test
     public void testOSGiClass() {
         final TrellisOsgi osgi = new TrellisOsgi();
-        assertNotNull(osgi);
+        assertNotNull("Verify that the OSGi class is not null", osgi);
     }
 }
