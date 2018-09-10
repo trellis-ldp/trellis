@@ -20,6 +20,7 @@ dependencies {
     compile("org.apache.activemq:activemq-client:$activeMqVersion")
     compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     compile("org.apache.jena:jena-osgi:$jenaVersion")
+    compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
 
     compile project(':trellis-constraint-rules')
@@ -45,7 +46,6 @@ dependencies {
     testCompile("io.dropwizard:dropwizard-client:$dropwizardVersion")
     testCompile("io.dropwizard:dropwizard-testing:$dropwizardVersion")
     testCompile("org.apache.activemq:activemq-broker:$activeMqVersion")
-    testCompile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testCompile("org.awaitility:awaitility:$awaitilityVersion")
     testCompile("ch.qos.logback:logback-classic:$logbackVersion")
     testCompile("org.mockito:mockito-core:$mockitoVersion")
