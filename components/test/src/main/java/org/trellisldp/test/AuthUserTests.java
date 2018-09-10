@@ -297,7 +297,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user can read a group-controlled resource")
-    default void testCanReadGroupResource() {
+    default void testUserCanReadGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
@@ -309,7 +309,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user can read the child of a group-controlled resource")
-    default void testCanReadGroupResourceChild() {
+    default void testUserCanReadGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
@@ -321,7 +321,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user can write to a group-controlled resource")
-    default void testCanWriteGroupResource() {
+    default void testUserCanWriteGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
@@ -334,7 +334,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user can write to the child of a group-controlled resource")
-    default void testCanWriteGroupResourceChild() {
+    default void testUserCanWriteGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
@@ -347,7 +347,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user cannot control a group-controlled resource")
-    default void testCannotControlGroupResource() {
+    default void testUserCannotControlGroupResource() {
         try (final Response res = target(getGroupContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
@@ -359,7 +359,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user cannot control the child of a group-controlled resource")
-    default void testCannotControlGroupResourceChild() {
+    default void testUserCannotControlGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
@@ -371,7 +371,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user can read a non-inheritable ACL resource")
-    default void testCanReadDefaultAclResource() {
+    default void testUserCanReadDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
@@ -383,7 +383,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user cannot read the child of a non-inheritable ACL resource")
-    default void testCannotReadDefaultAclResourceChild() {
+    default void testUserCannotReadDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
@@ -395,7 +395,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user can write to a non-inheritable ACL resource")
-    default void testCanWriteDefaultAclResource() {
+    default void testUserCanWriteDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
@@ -408,7 +408,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user cannot write to the child of a non-inheritable ACL resource")
-    default void testCannotWriteDefaultAclResourceChild() {
+    default void testUserCannotWriteDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
                 .method(PATCH, entity(INSERT_PROP_FOO, APPLICATION_SPARQL_UPDATE))) {
@@ -421,7 +421,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user cannot control a non-inheritable ACL resource")
-    default void testCannotControlDefaultAclResource() {
+    default void testUserCannotControlDefaultAclResource() {
         try (final Response res = target(getDefaultContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
@@ -433,7 +433,7 @@ public interface AuthUserTests extends AuthCommonTests {
      */
     @Test
     @DisplayName("Verify that a user cannot control the child of a non-inheritable ACL resource")
-    default void testCannotControlDefaultAclResourceChild() {
+    default void testUserCannotControlDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(FORBIDDEN, fromStatusCode(res.getStatus()), FORBIDDEN_RESPONSE);
