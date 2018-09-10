@@ -97,13 +97,13 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset = buildDataset(identifier, "Creation Test", SUBJECT1);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
         assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join());
+                .join(), "Check that the resource was successfully created");
         final Resource res = getResourceService().get(identifier).join();
-        res.stream(Trellis.PreferUserManaged)
-           .forEach(t -> assertTrue(dataset.contains(of(Trellis.PreferUserManaged), t.getSubject(), t.getPredicate(),
-                        t.getObject())));
+        assertAll("Check the LDP-RS stream", res.stream(Trellis.PreferUserManaged)
+                .map(t -> rdf.createQuad(Trellis.PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
+                .map(q -> () -> assertTrue(dataset.contains(q), "Verify that the quad is from the dataset: " + q)));
     }
 
     /**
@@ -117,9 +117,9 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset = buildDataset(identifier, "Replacement Test", SUBJECT2);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
         assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join());
+                .join(), "Check that the LDP-RS was successfully created");
 
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.prefLabel, rdf.createLiteral("preferred label"));
@@ -127,12 +127,12 @@ public interface ResourceServiceTests {
         dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
 
         assertNull(getResourceService().replace(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                    .join());
+                    .join(), "Check that the LDP-RS was successfully replaced");
         final Resource res = getResourceService().get(identifier).join();
-        res.stream(Trellis.PreferUserManaged).forEach(t ->
-                    assertTrue(dataset.contains(of(Trellis.PreferUserManaged), t.getSubject(), t.getPredicate(),
-                        t.getObject())));
-        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+        assertAll("Check the replaced LDP-RS stream", res.stream(Trellis.PreferUserManaged)
+                .map(t -> rdf.createQuad(Trellis.PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
+                .map(q -> () -> assertTrue(dataset.contains(q), "Check that the quad comes from the dataset: " + q)));
+        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the total user-managed triple count");
     }
 
     /**
@@ -146,14 +146,18 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset = buildDataset(identifier, "Deletion Test", SUBJECT1);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(),
+                "Check that the resource doesn't exist");
 
         assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join());
-        assertNotEquals(DELETED_RESOURCE, getResourceService().get(identifier).join());
+                .join(), "Check that the resource was successfully created");
+        assertNotEquals(DELETED_RESOURCE, getResourceService().get(identifier).join(),
+                "Check that the resource isn't currently 'deleted'");
 
-        assertNull(getResourceService().delete(identifier, getSession(), LDP.Resource, rdf.createDataset()).join());
-        assertEquals(DELETED_RESOURCE, getResourceService().get(identifier).join());
+        assertNull(getResourceService().delete(identifier, getSession(), LDP.Resource, rdf.createDataset()).join(),
+                "Check that the delete operation succeeded");
+        assertEquals(DELETED_RESOURCE, getResourceService().get(identifier).join(),
+                "Verify that the resource is marked as deleted");
     }
 
     /**
@@ -168,7 +172,7 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = buildDataset(identifier, "Immutable Resource Test", SUBJECT2);
 
         assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset0, ROOT_CONTAINER, null)
-                .join());
+                .join(), "Check the successful creation of an LDP-RS");
 
         final IRI audit1 = rdf.createIRI(TRELLIS_BNODE_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset1 = rdf.createDataset();
@@ -177,13 +181,14 @@ public interface ResourceServiceTests {
         dataset1.add(Trellis.PreferAudit, audit1, type, AS.Create);
         dataset1.add(Trellis.PreferAudit, audit1, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
 
-        assertNull(getResourceService().add(identifier, getSession(), dataset1).join());
+        assertNull(getResourceService().add(identifier, getSession(), dataset1).join(),
+                "Check the successful addition of audit quads");
 
         final Resource res = getResourceService().get(identifier).join();
-        res.stream(Trellis.PreferAudit).forEach(t ->
-                assertTrue(dataset1.contains(of(Trellis.PreferAudit), t.getSubject(), t.getPredicate(),
-                        t.getObject())));
-        assertEquals(4L, res.stream(Trellis.PreferAudit).count());
+        assertAll("Check the audit stream", res.stream(Trellis.PreferAudit)
+                .map(t -> rdf.createQuad(Trellis.PreferAudit, t.getSubject(), t.getPredicate(), t.getObject()))
+                .map(q -> () -> assertTrue(dataset1.contains(q), "Check that the audit stream includes: " + q)));
+        assertEquals(4L, res.stream(Trellis.PreferAudit).count(), "Check the audit triple count");
 
         final IRI audit2 = rdf.createIRI(TRELLIS_BNODE_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset2 = rdf.createDataset();
@@ -192,7 +197,8 @@ public interface ResourceServiceTests {
         dataset2.add(Trellis.PreferAudit, audit2, type, AS.Update);
         dataset2.add(Trellis.PreferAudit, audit2, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
 
-        assertNull(getResourceService().add(identifier, getSession(), dataset2).join());
+        assertNull(getResourceService().add(identifier, getSession(), dataset2).join(),
+                "Check that audit triples are added successfully");
 
         final Resource res2 = getResourceService().get(identifier).join();
 
@@ -200,9 +206,10 @@ public interface ResourceServiceTests {
         dataset1.stream().forEach(combined::add);
         dataset2.stream().forEach(combined::add);
 
-        res2.stream(Trellis.PreferAudit).map(t -> rdf.createQuad(Trellis.PreferAudit, t.getSubject(),
-                    t.getPredicate(), t.getObject())).forEach(q -> assertTrue(combined.contains(q)));
-        assertEquals(8L, res2.stream(Trellis.PreferAudit).count());
+        assertAll("Check the audit stream", res2.stream(Trellis.PreferAudit)
+                .map(t -> rdf.createQuad(Trellis.PreferAudit, t.getSubject(), t.getPredicate(), t.getObject()))
+                .map(q -> () -> assertTrue(combined.contains(q), "Check that the audit stream includes: " + q)));
+        assertEquals(8L, res2.stream(Trellis.PreferAudit).count(), "Check the audit triple count");
     }
 
     /**
@@ -217,12 +224,12 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset = buildDataset(identifier, "Create LDP-RS Test", SUBJECT1);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
         assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join());
+                .join(), "Check the creation of an LDP-RS");
         final Resource res = getResourceService().get(identifier).join();
-        assertAll(checkResource(res, identifier, LDP.RDFSource, time, dataset));
-        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+        assertAll("Check the LDP-RS resource", checkResource(res, identifier, LDP.RDFSource, time, dataset));
+        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user triple count");
     }
 
     /**
@@ -241,18 +248,18 @@ public interface ResourceServiceTests {
         final IRI binaryLocation = rdf.createIRI("binary:location/" + getResourceService().generateIdentifier());
         final Binary binary = new Binary(binaryLocation, binaryTime, "text/plain", 150L);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-NR");
         assertNull(getResourceService().create(identifier, getSession(), LDP.NonRDFSource, dataset, ROOT_CONTAINER,
-                    binary).join());
+                    binary).join(), "Check the creation of an LDP-NR");
         final Resource res = getResourceService().get(identifier).join();
-        assertAll(checkResource(res, identifier, LDP.NonRDFSource, time, dataset));
-        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+        assertAll("Check the LDP-NR resource", checkResource(res, identifier, LDP.NonRDFSource, time, dataset));
+        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed count of the LDP-NR");
         res.getBinary().ifPresent(b -> {
-            assertEquals(binaryLocation, b.getIdentifier());
-            assertFalse(b.getModified().isBefore(binaryTime.truncatedTo(MILLIS)));
-            assertFalse(b.getModified().isAfter(now()));
-            assertEquals(of("text/plain"), b.getMimeType());
-            assertEquals(of(150L), b.getSize());
+            assertEquals(binaryLocation, b.getIdentifier(), "Check the binary identifier");
+            assertFalse(b.getModified().isBefore(binaryTime.truncatedTo(MILLIS)), "Check an early time boundary");
+            assertFalse(b.getModified().isAfter(now()), "Check an outer time boundary");
+            assertEquals(of("text/plain"), b.getMimeType(), "Check the binary mimeType");
+            assertEquals(of(150L), b.getSize(), "Check the binary size");
         });
     }
 
@@ -269,30 +276,32 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(base);
         final Dataset dataset0 = buildDataset(identifier, "Container Test", SUBJECT0);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-C");
         assertNull(getResourceService().create(identifier, getSession(), LDP.Container, dataset0, ROOT_CONTAINER, null)
-                .join());
+                .join(), "Check that the LDP-C is created successfully");
 
         final IRI child1 = rdf.createIRI(base + "/child01");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check for no child1 resource");
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
+                "Check that the first child was successfully created in the LDP-C");
 
         final IRI child2 = rdf.createIRI(base + "/child02");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check for no child2 resource");
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
+                "Check that the second child was successfully created in the LDP-C");
 
         final Resource res = getResourceService().get(identifier).join();
-        assertAll(checkResource(res, identifier, LDP.Container, time, dataset0));
-        assertEquals(2L, res.stream(LDP.PreferContainment).count());
+        assertAll("Check the LDP-C resource", checkResource(res, identifier, LDP.Container, time, dataset0));
+        assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
-        assertTrue(graph.contains(identifier, LDP.contains, child1));
-        assertTrue(graph.contains(identifier, LDP.contains, child2));
-        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+        assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-C");
+        assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-C");
+        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
     }
 
     /**
@@ -308,30 +317,32 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(base);
         final Dataset dataset0 = buildDataset(identifier, "Basic Container Test", SUBJECT0);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for a pre-existing LDP-BC");
         assertNull(getResourceService().create(identifier, getSession(), LDP.BasicContainer, dataset0, ROOT_CONTAINER,
-                    null).join());
+                    null).join(), "Check that creating an LDP-BC succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child11");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check for no child1 resource");
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
+                "Check that child1 is created");
 
         final IRI child2 = rdf.createIRI(base + "/child12");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check for no child2 resource");
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
+                "Check that child2 is created");
 
         final Resource res = getResourceService().get(identifier).join();
-        assertAll(checkResource(res, identifier, LDP.BasicContainer, time, dataset0));
-        assertEquals(2L, res.stream(LDP.PreferContainment).count());
+        assertAll("Check the LDP-BC resource", checkResource(res, identifier, LDP.BasicContainer, time, dataset0));
+        assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
-        assertTrue(graph.contains(identifier, LDP.contains, child1));
-        assertTrue(graph.contains(identifier, LDP.contains, child2));
-        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count());
+        assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-BC");
+        assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-BC");
+        assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
     }
 
     /**
@@ -353,34 +364,37 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.membershipResource, member);
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.isMemberOfRelation, DC.isPartOf);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check that the DC doesn't exist");
         assertNull(getResourceService().create(identifier, getSession(), LDP.DirectContainer, dataset0, ROOT_CONTAINER,
-                    null).join());
+                    null).join(), "Check that creating the LDP-DC succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = buildDataset(child1, "Child 1", SUBJECT1);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check that no child resource exists");
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
+                "Check that the child resource is successfully created");
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Child 2", SUBJECT2);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check that no child2 resource exists");
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
+                "Check that the child2 resource is successfully created");
 
         final Resource res = getResourceService().get(identifier).join();
-        assertAll(checkResource(res, identifier, LDP.DirectContainer, time, dataset0));
-        assertEquals(of(member), res.getMembershipResource());
-        assertEquals(of(DC.isPartOf), res.getMemberOfRelation());
-        assertFalse(res.getMemberRelation().isPresent());
-        assertFalse(res.getInsertedContentRelation().filter(isEqual(LDP.MemberSubject).negate()).isPresent());
-        assertEquals(2L, res.stream(LDP.PreferContainment).count());
+        assertAll("Check the resource", checkResource(res, identifier, LDP.DirectContainer, time, dataset0));
+        assertEquals(of(member), res.getMembershipResource(), "Check for ldp:membershipResource");
+        assertEquals(of(DC.isPartOf), res.getMemberOfRelation(), "Check for ldp:isMemberOfRelation");
+        assertFalse(res.getMemberRelation().isPresent(), "Check for no ldp:hasMemberRelation");
+        assertFalse(res.getInsertedContentRelation().filter(isEqual(LDP.MemberSubject).negate()).isPresent(),
+                "Check for no ldp:InsertedContentRelation, excepting ldp:MemberSubject");
+        assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment count");
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
-        assertTrue(graph.contains(identifier, LDP.contains, child1));
-        assertTrue(graph.contains(identifier, LDP.contains, child2));
-        assertEquals(5L, res.stream(Trellis.PreferUserManaged).count());
+        assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-DC");
+        assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-DC");
+        assertEquals(5L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
     }
 
     /**
@@ -403,34 +417,39 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.hasMemberRelation, DC.relation);
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.insertedContentRelation, FOAF.primaryTopic);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(),
+                "Check for a missing resource");
         assertNull(getResourceService().create(identifier, getSession(), LDP.IndirectContainer, dataset0,
-                    ROOT_CONTAINER, null).join());
+                    ROOT_CONTAINER, null).join(), "Check that creating a resource succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = buildDataset(child1, "Indirect Container Child 1", SUBJECT1);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join());
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(),
+                "Check that the child resource doesn't exist");
+        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
+                "Check that creating a child resource succeeds");
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Indirect Container Child 2", SUBJECT2);
 
-        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join());
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join());
+        assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(),
+                "Check that the child resource doesn't exist");
+        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
+                "Check that creating the child resource succeeds");
 
         final Resource res = getResourceService().get(identifier).join();
-        assertAll(checkResource(res, identifier, LDP.IndirectContainer, time, dataset0));
-        assertEquals(of(member), res.getMembershipResource());
-        assertEquals(of(DC.relation), res.getMemberRelation());
-        assertEquals(of(FOAF.primaryTopic), res.getInsertedContentRelation());
-        assertFalse(res.getMemberOfRelation().isPresent());
-        assertEquals(2L, res.stream(LDP.PreferContainment).count());
+        assertAll("Check the resource", checkResource(res, identifier, LDP.IndirectContainer, time, dataset0));
+        assertEquals(of(member), res.getMembershipResource(), "Check for ldp:membershipResource");
+        assertEquals(of(DC.relation), res.getMemberRelation(), "Check for ldp:hasMemberRelation");
+        assertEquals(of(FOAF.primaryTopic), res.getInsertedContentRelation(), "Check for ldp:insertedContentRelation");
+        assertFalse(res.getMemberOfRelation().isPresent(), "Check for no ldp:isMemberOfRelation");
+        assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
         final Graph graph = rdf.createGraph();
         res.stream(LDP.PreferContainment).forEach(graph::add);
-        assertTrue(graph.contains(identifier, LDP.contains, child1));
-        assertTrue(graph.contains(identifier, LDP.contains, child2));
-        assertEquals(6L, res.stream(Trellis.PreferUserManaged).count());
+        assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-IC");
+        assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-IC");
+        assertEquals(6L, res.stream(Trellis.PreferUserManaged).count(), "Check the total triple count");
     }
 
     /**
@@ -439,7 +458,7 @@ public interface ResourceServiceTests {
     default void testIdentifierGeneration() {
         final int size = 1000;
         final Set<String> identifiers = generate(getResourceService()::generateIdentifier).limit(size).collect(toSet());
-        assertEquals(size, identifiers.size());
+        assertEquals(size, identifiers.size(), "Check the uniqueness of the identifier generator");
     }
 
     /**
