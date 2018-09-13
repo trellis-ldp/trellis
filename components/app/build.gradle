@@ -13,6 +13,7 @@ dependencies {
     api project(':trellis-api')
 
     implementation("io.jsonwebtoken:jjwt:$jwtVersion")
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')

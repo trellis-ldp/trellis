@@ -28,6 +28,7 @@ import io.dropwizard.setup.Environment;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.ServiceBundler;
@@ -48,6 +49,7 @@ import org.trellisldp.webac.WebACService;
 public abstract class AbstractTrellisApplication<T extends TrellisConfiguration> extends Application<T> {
 
     private static final Logger LOGGER = getLogger(AbstractTrellisApplication.class);
+    public static final String APPLICATION_SELF_INITIALIZE = "trellis.app.initialize.root";
 
     /**
      * Get the Trellis {@link ServiceBundler}. This object collects the various
@@ -92,7 +94,9 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Resource matchers
         final LdpResource ldpResource = new LdpResource(getServiceBundler(), config.getBaseUrl());
-        ldpResource.initialize();
+        if (ConfigurationProvider.getConfiguration().getOrDefault(APPLICATION_SELF_INITIALIZE, Boolean.class, true)) {
+            ldpResource.initialize();
+        }
         environment.jersey().register(ldpResource);
 
         // Authentication

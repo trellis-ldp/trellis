@@ -50,6 +50,10 @@ public class SimpleServiceBundler implements ServiceBundler {
     private final TriplestoreResourceService triplestoreService
         = new TriplestoreResourceService(connect(createTxnMem()), idService, new NoopEventService());
 
+    public SimpleServiceBundler() {
+        triplestoreService.initialize();
+    }
+
     @Override
     public AgentService getAgentService() {
         return agentService;
