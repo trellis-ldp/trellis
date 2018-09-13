@@ -39,6 +39,7 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 public class JmsPublisher implements EventService {
 
+    /** The configuration key controlling the JMS queue name. **/
     public static final String JMS_QUEUE_NAME = "trellis.jms.queue";
 
     private static final Logger LOGGER = getLogger(JmsPublisher.class);

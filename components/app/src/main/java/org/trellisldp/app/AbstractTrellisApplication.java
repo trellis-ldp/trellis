@@ -49,6 +49,8 @@ import org.trellisldp.webac.WebACService;
 public abstract class AbstractTrellisApplication<T extends TrellisConfiguration> extends Application<T> {
 
     private static final Logger LOGGER = getLogger(AbstractTrellisApplication.class);
+
+    /** The configuration key controlling whether an application should initialize its own root resource. **/
     public static final String APPLICATION_SELF_INITIALIZE = "trellis.app.initialize.root";
 
     /**

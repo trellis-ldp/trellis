@@ -81,8 +81,13 @@ import org.trellisldp.api.IdentifierService;
  */
 public class FileBinaryService implements BinaryService {
 
+    /** The configuration key controlling the base filesystem path for the binary service. */
     public static final String BINARY_BASE_PATH = "trellis.file.binary.basepath";
+
+    /** The configuration key controlling the levels of hierarchy in a binary storage layout. */
     public static final String BINARY_HIERARCHY = "trellis.file.binary.hierarchy";
+
+    /** The configuration key controlling the length of each level of hierarchy in a filesystem layout. */
     public static final String BINARY_LENGTH = "trellis.file.binary.length";
 
     private static final Logger LOGGER = getLogger(FileBinaryService.class);

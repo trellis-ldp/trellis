@@ -34,12 +34,12 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 public class KafkaPublisher implements EventService {
 
-    public static final String KAFKA_TOPIC = "trellis.kafka.topic";
-
     private static final Logger LOGGER = getLogger(KafkaPublisher.class);
-
     private static ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
+
+    /** The configuration key controlling the name of the kafka topic. **/
+    public static final String KAFKA_TOPIC = "trellis.kafka.topic";
 
     private final Producer<String, String> producer;
     private final String topic;

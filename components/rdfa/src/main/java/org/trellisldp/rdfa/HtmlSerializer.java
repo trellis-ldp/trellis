@@ -48,9 +48,16 @@ public class HtmlSerializer implements RDFaWriterService {
 
     private static final MustacheFactory mf = new DefaultMustacheFactory();
 
+    /** The configuration key controlling the HTML template to use. **/
     public static final String HTML_TEMPLATE = "trellis.html.template";
+
+    /** The configuration key controlling the CSS URLs to use. **/
     public static final String HTML_CSS = "trellis.html.css";
+
+    /** The configuration key controlling the web icon to use. **/
     public static final String HTML_ICON = "trellis.html.icon";
+
+    /** The configuration key controlling the JS URLs to use. **/
     public static final String HTML_JS = "trellis.html.js";
 
     private final NamespaceService namespaceService;

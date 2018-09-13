@@ -39,27 +39,26 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 public class AmqpPublisher implements EventService {
 
-    public static final String AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
-
-    public static final String AMQP_ROUTING_KEY = "trellis.amqp.routingkey";
-
-    public static final String AMQP_MANDATORY = "trellis.amqp.mandatory";
-
-    public static final String AMQP_IMMEDIATE = "trellis.amqp.immediate";
-
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
-
     private static ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
+    /** The configuration key controlling the AMQP exchange name. **/
+    public static final String AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
+
+    /** The configuration key controlling the AMQP routing key. **/
+    public static final String AMQP_ROUTING_KEY = "trellis.amqp.routingkey";
+
+    /** The configuration key controlling whether publishing is mandatory. **/
+    public static final String AMQP_MANDATORY = "trellis.amqp.mandatory";
+
+    /** The configuration key controlling whether publishing is immediate. **/
+    public static final String AMQP_IMMEDIATE = "trellis.amqp.immediate";
+
     private final Channel channel;
-
     private final String exchangeName;
-
     private final String routingKey;
-
     private final Boolean mandatory;
-
     private final Boolean immediate;
 
     /**
