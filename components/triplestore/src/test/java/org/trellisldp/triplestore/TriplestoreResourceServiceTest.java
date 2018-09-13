@@ -314,13 +314,11 @@ public class TriplestoreResourceServiceTest {
                 assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!");
             }),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res -> {
-                assertTrue(res.getModified().isBefore(evenLater), "out-of-order modification sequence (1)!");
-                assertFalse(res.getBinary().isPresent(), "unexpected binary metadata!");
-            }),
+            svc.get(root).thenAccept(checkPredates(evenLater)),
+            svc.get(root).thenAccept(res ->
+                assertFalse(res.getBinary().isPresent(), "unexpected binary metadata!")),
             svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 7L, 1L, 0L)),
-            svc.get(resource).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater), "out-of-order modification sequence (2)!"))).join();
+            svc.get(resource).thenAccept(checkPredates(evenLater))).join();
 
         verify(mockEventService, times(3)).emit(any());
     }
@@ -363,8 +361,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(child).thenAccept(checkChild(evenLater, 1L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 3L, 1L)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater), "out-of-order creation sequence!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater))).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -382,11 +379,9 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 3L, 3L, 2L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 3L, 1L)),
-            svc.get(resource).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-order create sequence (1)!")),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-order create sequence (2)!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater2)),
+            svc.get(resource).thenAccept(checkPredates(evenLater2))).join();
 
         verify(mockEventService, times(5)).emit(any());
     }
@@ -454,8 +449,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(child).thenAccept(checkChild(evenLater, 2L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 2L, 3L, 1L, 1L)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater), "out-of-order creation sequence!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater))).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -474,8 +468,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(child).thenAccept(res -> assertEquals(DELETED_RESOURCE, res, "Incorrect resource object!")),
             svc.get(resource).thenAccept(checkResource(preDelete, LDP.Container, 2L, 3L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(preDelete), "out-of-order modification dates!"))).join();
+            svc.get(root).thenAccept(checkPredates(preDelete))).join();
 
         verify(mockEventService, times(6)).emit(any());
     }
@@ -516,8 +509,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(child).thenAccept(checkChild(evenLater, 2L, 3L, 1L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 3L, 0L, 1L)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater), "out-of-order create sequence!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater))).join();
 
         verify(mockEventService, times(4)).emit(any());
 
@@ -534,11 +526,9 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 2L, 3L, 2L)),
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 3L, 0L, 1L)),
-            svc.get(resource).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-order create sequence (1)!")),
+            svc.get(resource).thenAccept(checkPredates(evenLater2)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-order create sequence (2)!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
 
         verify(mockEventService, times(5)).emit(any());
     }
@@ -585,8 +575,7 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(resource, DC.relation, child))), "Missing membership triple!");
             }),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-order creation sequence!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
 
         verify(mockEventService, times(4)).emit(any());
     }
@@ -625,7 +614,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 0L, 0L)),
             svc.get(members).thenAccept(res -> assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!")),
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 0L, 0L)),
-            svc.get(resource).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater), "out-of-sequence!")),
+            svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -647,8 +636,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-sequence creation date!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
 
         verify(mockEventService, times(7)).emit(any());
     }
@@ -711,12 +699,10 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 2L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 1L, 0L)),
-            svc.get(resource).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-sequence creation dates!")),
-            svc.get(resource2).thenAccept(res -> {
-                assertAll("Check resource stream", checkResourceStream(res, 6L, 7L, 0L, 1L, 0L, 0L));
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-sequence creation dates (2)!");
-            }),
+            svc.get(resource).thenAccept(checkPredates(evenLater2)),
+            svc.get(resource2).thenAccept(checkPredates(evenLater2)),
+            svc.get(resource2).thenAccept(res ->
+                assertAll("Check resource stream", checkResourceStream(res, 6L, 7L, 0L, 1L, 0L, 0L))),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L))).join();
 
         verify(mockEventService, times(6)).emit(any());
@@ -739,8 +725,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater3), "out-of-sequence creation dates!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater3))).join();
 
         verify(mockEventService, times(9)).emit(any());
 
@@ -768,8 +753,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, DC.subject, child2))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater4), "out-of-order create sequence!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater4))).join();
 
         verify(mockEventService, times(12)).emit(any());
     }
@@ -829,12 +813,10 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 1L, 0L)),
-            svc.get(resource).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "Out-of-order create sequence (1)!")),
-            svc.get(resource2).thenAccept(res -> {
-                assertTrue(res.getModified().isBefore(evenLater2), "Out-of-order create sequence (2)!");
-                assertAll("Check resource stream", checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
-            }),
+            svc.get(resource).thenAccept(checkPredates(evenLater2)),
+            svc.get(resource2).thenAccept(checkPredates(evenLater2)),
+            svc.get(resource2).thenAccept(res ->
+                assertAll("Check resource stream", checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L))),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L))).join();
 
         verify(mockEventService, times(6)).emit(any());
@@ -857,11 +839,9 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
-            svc.get(members).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater3), "Out-of-order creation sequence (1)!")),
+            svc.get(members).thenAccept(checkPredates(evenLater3)),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater3), "Out-of-order creation sequence (2)!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater3))).join();
 
         verify(mockEventService, times(8)).emit(any());
 
@@ -886,11 +866,9 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(resource2, LDP.contains, child2))), "Missing contains triple!");
             }),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
-            svc.get(members).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater4), "Out-of-order create sequence (1)!")),
+            svc.get(members).thenAccept(checkPredates(evenLater4)),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater4), "Out-of-order create sequence (2)!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater4))).join();
 
         verify(mockEventService, times(10)).emit(any());
     }
@@ -941,8 +919,7 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 4L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 7L, 4L, 0L)),
-            svc.get(resource).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater), "out-of-order creation sequence!")),
+            svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -969,8 +946,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing member triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
-            svc.get(root).thenAccept(res ->
-                assertTrue(res.getModified().isBefore(evenLater2), "out-of-order creation sequence!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
 
         verify(mockEventService, times(7)).emit(any());
     }
@@ -1111,8 +1087,7 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label1))), "Missing member triple (2)!");
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
-            svc.get(root).thenAccept(res -> assertTrue(res.getModified().isBefore(evenLater2),
-                    "Out-of-sequence resource dates!"))).join();
+            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
 
         verify(mockEventService, times(7)).emit(any());
     }
@@ -1267,6 +1242,11 @@ public class TriplestoreResourceServiceTest {
             assertAll("Check resource", checkResource(res, root, LDP.BasicContainer, time));
             assertAll("Check resource stream", checkResourceStream(res, 0L, 2L, 5L, 0L, 0L, children));
         };
+    }
+
+    private static Consumer<Resource> checkPredates(final Instant time) {
+        return res -> assertTrue(res.getModified().isBefore(time), "Resource " + res.getIdentifier()
+                + " has an unexpected lastModified date: " + res.getModified() + " !< " + time);
     }
 
     private static Consumer<Resource> checkResource(final Instant time, final IRI ldpType, final long properties,
