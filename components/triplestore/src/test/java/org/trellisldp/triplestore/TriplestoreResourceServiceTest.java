@@ -710,7 +710,7 @@ public class TriplestoreResourceServiceTest {
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("ldp-dc child resource"));
+        dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("ldp-dc (1) child resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
@@ -732,8 +732,8 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("ldp-dc (2) child resource"));
 
         final Instant evenLater4 = meanwhile();
 
@@ -848,8 +848,8 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
-        dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("Second child resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("Second child resource"));
 
         final Instant evenLater4 = meanwhile();
 
@@ -978,18 +978,20 @@ public class TriplestoreResourceServiceTest {
         verify(mockEventService, times(2)).emit(any());
 
         // Now add a membership resource
+        final BlankNode bnode = rdf.createBlankNode();
         dataset.clear();
+        dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Member resource"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() -> svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join(),
                 "Unsuccessful create operation!");
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater)),
+            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 2L, 0L)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
         verify(mockEventService, times(4)).emit(any());
@@ -1009,7 +1011,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 5L, 7L, 1L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 1L)),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 2L, 1L)),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, child))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
@@ -1045,15 +1047,18 @@ public class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
+        final BlankNode bnode2 = rdf.createBlankNode();
+        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, members, PROV.wasGeneratedBy, bnode2);
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Membership LDP-RS"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() -> svc.create(members, mockSession, LDP.RDFSource, dataset, root, null).join(),
                 "Unsuccessful create operation!");
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 1L, 0L)),
+            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 3L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 2L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
@@ -1077,7 +1082,7 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 7L, 2L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 2L)),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 3L, 2L)),
             svc.get(members).thenAccept(res -> {
                 assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label2))), "Missing member triple (1)!");
