@@ -21,10 +21,10 @@ import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -98,8 +98,8 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Creation Test", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join(), "Check that the resource was successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset,
+                    ROOT_CONTAINER, null).join(), "Check that the resource was successfully created");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-RS stream", res.stream(Trellis.PreferUserManaged)
                 .map(t -> rdf.createQuad(Trellis.PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
@@ -118,16 +118,16 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Replacement Test", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join(), "Check that the LDP-RS was successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset,
+                    ROOT_CONTAINER, null).join(), "Check that the LDP-RS was successfully created");
 
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.prefLabel, rdf.createLiteral("preferred label"));
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.altLabel, rdf.createLiteral("alternate label"));
         dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
 
-        assertNull(getResourceService().replace(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                    .join(), "Check that the LDP-RS was successfully replaced");
+        assertDoesNotThrow(() -> getResourceService().replace(identifier, getSession(), LDP.RDFSource, dataset,
+                    ROOT_CONTAINER, null).join(), "Check that the LDP-RS was successfully replaced");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the replaced LDP-RS stream", res.stream(Trellis.PreferUserManaged)
                 .map(t -> rdf.createQuad(Trellis.PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
@@ -149,13 +149,13 @@ public interface ResourceServiceTests {
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(),
                 "Check that the resource doesn't exist");
 
-        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join(), "Check that the resource was successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset,
+                    ROOT_CONTAINER, null).join(), "Check that the resource was successfully created");
         assertNotEquals(DELETED_RESOURCE, getResourceService().get(identifier).join(),
                 "Check that the resource isn't currently 'deleted'");
 
-        assertNull(getResourceService().delete(identifier, getSession(), LDP.Resource, rdf.createDataset()).join(),
-                "Check that the delete operation succeeded");
+        assertDoesNotThrow(() -> getResourceService().delete(identifier, getSession(), LDP.Resource,
+                    rdf.createDataset()).join(), "Check that the delete operation succeeded");
         assertEquals(DELETED_RESOURCE, getResourceService().get(identifier).join(),
                 "Verify that the resource is marked as deleted");
     }
@@ -171,8 +171,8 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset0 = buildDataset(identifier, "Immutable Resource Test", SUBJECT2);
 
-        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset0, ROOT_CONTAINER, null)
-                .join(), "Check the successful creation of an LDP-RS");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset0,
+                    ROOT_CONTAINER, null).join(), "Check the successful creation of an LDP-RS");
 
         final IRI audit1 = rdf.createIRI(TRELLIS_BNODE_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset1 = rdf.createDataset();
@@ -181,7 +181,7 @@ public interface ResourceServiceTests {
         dataset1.add(Trellis.PreferAudit, audit1, type, AS.Create);
         dataset1.add(Trellis.PreferAudit, audit1, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
 
-        assertNull(getResourceService().add(identifier, getSession(), dataset1).join(),
+        assertDoesNotThrow(() -> getResourceService().add(identifier, getSession(), dataset1).join(),
                 "Check the successful addition of audit quads");
 
         final Resource res = getResourceService().get(identifier).join();
@@ -197,7 +197,7 @@ public interface ResourceServiceTests {
         dataset2.add(Trellis.PreferAudit, audit2, type, AS.Update);
         dataset2.add(Trellis.PreferAudit, audit2, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
 
-        assertNull(getResourceService().add(identifier, getSession(), dataset2).join(),
+        assertDoesNotThrow(() -> getResourceService().add(identifier, getSession(), dataset2).join(),
                 "Check that audit triples are added successfully");
 
         final Resource res2 = getResourceService().get(identifier).join();
@@ -225,8 +225,8 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Create LDP-RS Test", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset, ROOT_CONTAINER, null)
-                .join(), "Check the creation of an LDP-RS");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset,
+                    ROOT_CONTAINER, null).join(), "Check the creation of an LDP-RS");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-RS resource", checkResource(res, identifier, LDP.RDFSource, time, dataset));
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user triple count");
@@ -249,8 +249,8 @@ public interface ResourceServiceTests {
         final Binary binary = new Binary(binaryLocation, binaryTime, "text/plain", 150L);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-NR");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.NonRDFSource, dataset, ROOT_CONTAINER,
-                    binary).join(), "Check the creation of an LDP-NR");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.NonRDFSource, dataset,
+                    ROOT_CONTAINER, binary).join(), "Check the creation of an LDP-NR");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-NR resource", checkResource(res, identifier, LDP.NonRDFSource, time, dataset));
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed count of the LDP-NR");
@@ -277,22 +277,22 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = buildDataset(identifier, "Container Test", SUBJECT0);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-C");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.Container, dataset0, ROOT_CONTAINER, null)
-                .join(), "Check that the LDP-C is created successfully");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.Container, dataset0,
+                    ROOT_CONTAINER, null).join(), "Check that the LDP-C is created successfully");
 
         final IRI child1 = rdf.createIRI(base + "/child01");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check for no child1 resource");
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
-                "Check that the first child was successfully created in the LDP-C");
+        assertDoesNotThrow(() -> getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier,
+                    null).join(), "Check that the first child was successfully created in the LDP-C");
 
         final IRI child2 = rdf.createIRI(base + "/child02");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check for no child2 resource");
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
-                "Check that the second child was successfully created in the LDP-C");
+        assertDoesNotThrow(() -> getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier,
+                    null).join(), "Check that the second child was successfully created in the LDP-C");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-C resource", checkResource(res, identifier, LDP.Container, time, dataset0));
@@ -318,22 +318,22 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = buildDataset(identifier, "Basic Container Test", SUBJECT0);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for a pre-existing LDP-BC");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.BasicContainer, dataset0, ROOT_CONTAINER,
-                    null).join(), "Check that creating an LDP-BC succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.BasicContainer, dataset0,
+                    ROOT_CONTAINER, null).join(), "Check that creating an LDP-BC succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child11");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check for no child1 resource");
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
-                "Check that child1 is created");
+        assertDoesNotThrow(() -> getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier,
+                    null).join(), "Check that child1 is created");
 
         final IRI child2 = rdf.createIRI(base + "/child12");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check for no child2 resource");
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
-                "Check that child2 is created");
+        assertDoesNotThrow(() -> getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier,
+                    null).join(), "Check that child2 is created");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-BC resource", checkResource(res, identifier, LDP.BasicContainer, time, dataset0));
@@ -365,22 +365,22 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.isMemberOfRelation, DC.isPartOf);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check that the DC doesn't exist");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.DirectContainer, dataset0, ROOT_CONTAINER,
-                    null).join(), "Check that creating the LDP-DC succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.DirectContainer, dataset0,
+                    ROOT_CONTAINER, null).join(), "Check that creating the LDP-DC succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = buildDataset(child1, "Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check that no child resource exists");
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
-                "Check that the child resource is successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier,
+                    null).join(), "Check that the child resource is successfully created");
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Child 2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check that no child2 resource exists");
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
-                "Check that the child2 resource is successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier,
+                    null).join(), "Check that the child2 resource is successfully created");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the resource", checkResource(res, identifier, LDP.DirectContainer, time, dataset0));
@@ -419,7 +419,7 @@ public interface ResourceServiceTests {
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(),
                 "Check for a missing resource");
-        assertNull(getResourceService().create(identifier, getSession(), LDP.IndirectContainer, dataset0,
+        assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.IndirectContainer, dataset0,
                     ROOT_CONTAINER, null).join(), "Check that creating a resource succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child1");
@@ -427,16 +427,16 @@ public interface ResourceServiceTests {
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(),
                 "Check that the child resource doesn't exist");
-        assertNull(getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier, null).join(),
-                "Check that creating a child resource succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(child1, getSession(), LDP.RDFSource, dataset1, identifier,
+                    null).join(), "Check that creating a child resource succeeds");
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Indirect Container Child 2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(),
                 "Check that the child resource doesn't exist");
-        assertNull(getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier, null).join(),
-                "Check that creating the child resource succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(child2, getSession(), LDP.RDFSource, dataset2, identifier,
+                    null).join(), "Check that creating the child resource succeeds");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the resource", checkResource(res, identifier, LDP.IndirectContainer, time, dataset0));
