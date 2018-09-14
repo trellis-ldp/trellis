@@ -16,7 +16,9 @@ package org.trellisldp.http;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,6 +30,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+
+import java.util.stream.Stream;
 
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -42,6 +46,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -143,12 +148,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
         final LdpResource matcher = new LdpResource(mockBundler);
         matcher.initialize();
-
-        verify(mockService, never().description("Don't re-initialize the root if it already exists"))
-            .create(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any());
-        verify(mockService, never().description("Don't re-initialize the root if it already exists"))
-            .replace(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any());
-        verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
+        assertAll("Verify interactions with init-errored resource service", verifyInteractions(mockService));
     }
 
     @Test
@@ -159,12 +159,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
         final LdpResource matcher = new LdpResource(mockBundler);
         matcher.initialize();
-
-        verify(mockService, never().description("Don't re-initialize the root if it already exists"))
-            .create(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any());
-        verify(mockService, never().description("Don't re-initialize the root if it already exists"))
-            .replace(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any());
-        verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
+        assertAll("Verify interactions with resource service", verifyInteractions(mockService));
     }
 
     @Test
@@ -220,5 +215,14 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         verify(mockService, never().description("replace shouldn't be called when re-initializing a deleted root"))
             .replace(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any());
         verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
+    }
+
+    private Stream<Executable> verifyInteractions(final ResourceService svc) {
+        return of(
+                () -> verify(svc, never().description("Don't re-initialize the root if it already exists"))
+                        .create(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any()),
+                () -> verify(svc, never().description("Don't re-initialize the root if it already exists"))
+                        .replace(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any()),
+                () -> verify(svc, description("Verify that the root resource is fetched only once")).get(root));
     }
 }

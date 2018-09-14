@@ -14,7 +14,6 @@
 package org.trellisldp.app;
 
 import org.trellisldp.app.config.TrellisConfiguration;
-import org.trellisldp.http.LdpResource;
 
 /**
  * A simple test app.
@@ -22,7 +21,7 @@ import org.trellisldp.http.LdpResource;
 public class SimpleNoInitTrellisApp extends SimpleTrellisApp {
 
     @Override
-    protected LdpResource getLdpComponent(final TrellisConfiguration config, final Boolean initialize) {
+    protected Object getLdpComponent(final TrellisConfiguration config, final Boolean initialize) {
         return super.getLdpComponent(config, false);
     }
 }
