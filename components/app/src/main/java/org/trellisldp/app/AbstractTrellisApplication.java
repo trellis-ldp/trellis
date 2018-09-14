@@ -71,11 +71,24 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     }
 
     /**
+     * Get the LdpResource matcher.
+     *
+     * @param initialize true if the LdpResource object should be initialized; false otherwise
+     * @return the LDP resource matcher
+     */
+    protected LdpResource getLdpComponent(final T config, final Boolean initialize) {
+        final LdpResource ldpResource = new LdpResource(getServiceBundler(), config.getBaseUrl());
+        if (initialize) {
+            ldpResource.initialize();
+        }
+        return ldpResource;
+    }
+
+    /**
      * Setup the trellis application.
      *
-     * <p>This method is called at the very beginning of the {@link Application#run} method. It can be used
-     * to configure or register any of the Trellis-related services that an implementation instantiates.
-     *
+     * @apiNote This method is called at the very beginning of the {@link Application#run} method. It can be used
+     *          to configure or register any of the Trellis-related services that an implementation instantiates.
      * @param config the configuration
      * @param environment the environment
      */
@@ -95,11 +108,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
 
         // Resource matchers
-        final LdpResource ldpResource = new LdpResource(getServiceBundler(), config.getBaseUrl());
-        if (ConfigurationProvider.getConfiguration().getOrDefault(APPLICATION_SELF_INITIALIZE, Boolean.class, true)) {
-            ldpResource.initialize();
-        }
-        environment.jersey().register(ldpResource);
+        environment.jersey().register(getLdpComponent(config, ConfigurationProvider.getConfiguration()
+                    .getOrDefault(APPLICATION_SELF_INITIALIZE, Boolean.class, true)));
 
         // Authentication
         final AgentAuthorizationFilter agentFilter
