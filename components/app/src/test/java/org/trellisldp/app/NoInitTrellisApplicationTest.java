@@ -14,34 +14,20 @@
 package org.trellisldp.app;
 
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.HttpHeaders.LINK;
-import static javax.ws.rs.core.Link.TYPE;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
 
-import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.testing.DropwizardTestSupport;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.Response;
 
-import org.junit.jupiter.api.Test;
 import org.trellisldp.app.config.TrellisConfiguration;
-import org.trellisldp.vocabulary.LDP;
 
 /**
  * LDP-related tests for Trellis.
  */
-public class NoInitTrellisApplicationTest {
+public class NoInitTrellisApplicationTest extends TrellisApplicationTest {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(SimpleNoInitTrellisApp.class,
@@ -51,41 +37,8 @@ public class NoInitTrellisApplicationTest {
 
     static {
         APP.before();
-        CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
+        CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client 2");
         CLIENT.property(CONNECT_TIMEOUT, 5000);
         CLIENT.property(READ_TIMEOUT, 5000);
-    }
-
-    @Test
-    public void testGetName() {
-        final Application<TrellisConfiguration> app = new SimpleTrellisApp();
-        assertEquals("Trellis LDP", app.getName(), "Incorrect application name!");
-    }
-
-    @Test
-    public void testGET() {
-        final String baseUrl = "http://localhost:" + APP.getLocalPort();
-        try (final Response res = CLIENT.target(baseUrl).request().get()) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
-            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Wrong content-type " + res.getMediaType());
-            assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
-                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())),
-                    "No ldp:Resource link header!");
-        }
-    }
-
-    @Test
-    public void testPOST() {
-        final String baseUrl = "http://localhost:" + APP.getLocalPort();
-        try (final Response res = CLIENT.target(baseUrl).request().post(entity("", TEXT_TURTLE))) {
-            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
-            assertNotNull(res.getLocation(), "Missing Location header!");
-            assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
-                        TYPE.equals(link.getRel()) && LDP.Resource.getIRIString().equals(link.getUri().toString())),
-                    "Missing ldp:Resource link header!");
-            assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
-                        TYPE.equals(link.getRel()) && LDP.RDFSource.getIRIString().equals(link.getUri().toString())),
-                    "Missing ldp:RDFSource link header!");
-        }
     }
 }
