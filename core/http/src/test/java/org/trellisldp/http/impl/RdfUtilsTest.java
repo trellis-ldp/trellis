@@ -251,15 +251,6 @@ public class RdfUtilsTest {
     }
 
     @Test
-    public void testToQuad() {
-        final IRI subject = rdf.createIRI("http://example.com/resource");
-        final Literal object = rdf.createLiteral("title");
-        final Triple triple = rdf.createTriple(subject, DC.title, object);
-        final Quad quad = rdf.createQuad(Trellis.PreferUserManaged, subject, DC.title, object);
-        assertEquals(quad, RdfUtils.toQuad(Trellis.PreferUserManaged).apply(triple), "Incorrect quad from triple!");
-    }
-
-    @Test
     public void testNoProfile() {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),

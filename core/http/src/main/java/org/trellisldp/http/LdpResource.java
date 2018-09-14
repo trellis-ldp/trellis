@@ -28,11 +28,11 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.RDFUtils.toQuad;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
-import static org.trellisldp.http.impl.RdfUtils.toQuad;
 
 import com.codahale.metrics.annotation.Timed;
 

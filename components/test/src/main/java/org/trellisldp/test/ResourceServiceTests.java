@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.RDFUtils.toQuad;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.RDF.type;
@@ -101,8 +102,7 @@ public interface ResourceServiceTests {
         assertDoesNotThrow(() -> getResourceService().create(identifier, getSession(), LDP.RDFSource, dataset,
                     ROOT_CONTAINER, null).join(), "Check that the resource was successfully created");
         final Resource res = getResourceService().get(identifier).join();
-        assertAll("Check the LDP-RS stream", res.stream(Trellis.PreferUserManaged)
-                .map(t -> rdf.createQuad(Trellis.PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
+        assertAll("Check resource stream", res.stream(Trellis.PreferUserManaged).map(toQuad(Trellis.PreferUserManaged))
                 .map(q -> () -> assertTrue(dataset.contains(q), "Verify that the quad is from the dataset: " + q)));
     }
 
@@ -130,7 +130,7 @@ public interface ResourceServiceTests {
                     ROOT_CONTAINER, null).join(), "Check that the LDP-RS was successfully replaced");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the replaced LDP-RS stream", res.stream(Trellis.PreferUserManaged)
-                .map(t -> rdf.createQuad(Trellis.PreferUserManaged, t.getSubject(), t.getPredicate(), t.getObject()))
+                .map(toQuad(Trellis.PreferUserManaged))
                 .map(q -> () -> assertTrue(dataset.contains(q), "Check that the quad comes from the dataset: " + q)));
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the total user-managed triple count");
     }
@@ -185,8 +185,7 @@ public interface ResourceServiceTests {
                 "Check the successful addition of audit quads");
 
         final Resource res = getResourceService().get(identifier).join();
-        assertAll("Check the audit stream", res.stream(Trellis.PreferAudit)
-                .map(t -> rdf.createQuad(Trellis.PreferAudit, t.getSubject(), t.getPredicate(), t.getObject()))
+        assertAll("Check the audit stream", res.stream(Trellis.PreferAudit).map(toQuad(Trellis.PreferAudit))
                 .map(q -> () -> assertTrue(dataset1.contains(q), "Check that the audit stream includes: " + q)));
         assertEquals(4L, res.stream(Trellis.PreferAudit).count(), "Check the audit triple count");
 
@@ -206,8 +205,7 @@ public interface ResourceServiceTests {
         dataset1.stream().forEach(combined::add);
         dataset2.stream().forEach(combined::add);
 
-        assertAll("Check the audit stream", res2.stream(Trellis.PreferAudit)
-                .map(t -> rdf.createQuad(Trellis.PreferAudit, t.getSubject(), t.getPredicate(), t.getObject()))
+        assertAll("Check the audit stream", res2.stream(Trellis.PreferAudit).map(toQuad(Trellis.PreferAudit))
                 .map(q -> () -> assertTrue(combined.contains(q), "Check that the audit stream includes: " + q)));
         assertEquals(8L, res2.stream(Trellis.PreferAudit).count(), "Check the audit triple count");
     }

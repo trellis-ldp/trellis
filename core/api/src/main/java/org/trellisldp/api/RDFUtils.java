@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
+import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
@@ -105,6 +106,16 @@ public final class RDFUtils {
             right.iterate().forEach(left::add);
             return left;
         }, UNORDERED);
+    }
+
+    /**
+     * Get a mapping function to turn a triple into a quad.
+     *
+     * @param graphName the graph name
+     * @return the mapping function
+     */
+    public static Function<Triple, Quad> toQuad(final IRI graphName) {
+        return triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject());
     }
 
     /**

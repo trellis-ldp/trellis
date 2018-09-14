@@ -287,17 +287,6 @@ public final class RdfUtils {
         return RDFA.equals(syntax) ? identifier : expanded;
     }
 
-
-    /**
-     * Get a mapping function to turn a triple into a quad.
-     *
-     * @param graphName the graph name
-     * @return the mapping function
-     */
-    public static Function<Triple, Quad> toQuad(final IRI graphName) {
-        return triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject());
-    }
-
     private RdfUtils() {
         // prevent instantiation
     }
