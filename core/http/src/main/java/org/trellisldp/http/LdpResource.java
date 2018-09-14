@@ -158,7 +158,12 @@ public class LdpResource implements ContainerRequestFilter {
             dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
             dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
             dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
-            trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset)).join();
+            trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset))
+                .exceptionally(err -> {
+                    LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
+                    LOGGER.debug("Error auto-initializing Trellis", err);
+                    return null;
+                }).join();
         }
     }
 

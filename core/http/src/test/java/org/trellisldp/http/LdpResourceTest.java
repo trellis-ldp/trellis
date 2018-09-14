@@ -15,6 +15,7 @@ package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +46,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.LdpRequest;
 
@@ -129,6 +131,24 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         assertTrue(getLinks(res).stream().anyMatch(l ->
                     l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")),
                 "Missing rel=self header with correct prefix!");
+    }
+
+    @Test
+    public void testInitializeExistingLdpResourceWithFailure() throws Exception {
+        final ResourceService mockService = mock(ResourceService.class);
+        when(mockBundler.getResourceService()).thenReturn(mockService);
+        when(mockService.get(eq(root))).thenAnswer(inv -> runAsync(() -> {
+            throw new RuntimeTrellisException("Expected exception");
+        }));
+
+        final LdpResource matcher = new LdpResource(mockBundler);
+        matcher.initialize();
+
+        verify(mockService, never().description("Don't re-initialize the root if it already exists"))
+            .create(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any());
+        verify(mockService, never().description("Don't re-initialize the root if it already exists"))
+            .replace(eq(root), any(Session.class), any(IRI.class), any(Dataset.class), any(), any());
+        verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
     }
 
     @Test
