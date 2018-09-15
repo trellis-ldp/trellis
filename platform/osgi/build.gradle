@@ -143,12 +143,6 @@ test {
     systemProperty 'karaf.ssh.port', randomPort()
     systemProperty 'karaf.rmiServer.port', randomPort()
     systemProperty 'karaf.rmiRegistry.port', randomPort()
-
-    enabled = JavaVersion.current().isJava8() || JavaVersion.current().isJava10()
-
-    jacoco {
-        enabled = true
-    }
 }
 
 tasks.test.dependsOn tasks.generateDependsFile
