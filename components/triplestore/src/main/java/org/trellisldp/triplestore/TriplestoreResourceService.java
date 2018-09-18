@@ -122,7 +122,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             final Dataset dataset, final IRI container, final Binary binary) {
         LOGGER.debug("Creating: {}", id);
         return runAsync(() ->
-                createOrReplace(id, session, ixnModel, dataset, OperationType.CREATE, container, binary));
+                createOrReplace(id, ixnModel, dataset, OperationType.CREATE, container, binary));
     }
 
     @Override
@@ -133,7 +133,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             final Instant eventTime = now();
             dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
             dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
-            storeResource(identifier, session, dataset, eventTime, OperationType.DELETE);
+            storeResource(identifier, dataset, eventTime, OperationType.DELETE);
         });
     }
 
@@ -142,10 +142,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             final Dataset dataset, final IRI container, final Binary binary) {
         LOGGER.debug("Updating: {}", id);
         return runAsync(() ->
-                createOrReplace(id, session, ixnModel, dataset, OperationType.REPLACE, container, binary));
+                createOrReplace(id, ixnModel, dataset, OperationType.REPLACE, container, binary));
     }
 
-    private void createOrReplace(final IRI identifier, final Session session, final IRI ixnModel,
+    private void createOrReplace(final IRI identifier, final IRI ixnModel,
                     final Dataset dataset, final OperationType type, final IRI container, final Binary binary) {
         final Instant eventTime = now();
 
@@ -185,10 +185,10 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.extent, size));
         }
 
-        storeResource(identifier, session, dataset, eventTime, type);
+        storeResource(identifier, dataset, eventTime, type);
     }
 
-    private void storeResource(final IRI identifier, final Session session, final Dataset dataset,
+    private void storeResource(final IRI identifier, final Dataset dataset,
             final Instant eventTime, final OperationType type) {
         final Literal time = rdf.createLiteral(eventTime.toString(), XSD.dateTime);
         try {

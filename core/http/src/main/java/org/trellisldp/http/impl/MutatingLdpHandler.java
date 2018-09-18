@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Principal;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -192,36 +193,27 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @return the next completion stage
      */
     protected CompletableFuture<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
+        // Always notify about updates for the resource in question
         getServices().getEventService().emit(new SimpleEvent(getUrl(identifier), getSession().getAgent(),
                     asList(PROV.Activity, activityType), asList(resourceType)));
+        // If this was an update and the parent is an ldp:IndirectContainer,
+        // notify about the member resource (if it exists)
         if (AS.Update.equals(activityType) && LDP.IndirectContainer.equals(getParentModel())) {
             return emitMembershipUpdateEvent();
+        // If this was a creation or deletion, and the parent is some form of container,
+        // notify about the parent resource, too
         } else if (AS.Create.equals(activityType) || AS.Delete.equals(activityType)) {
-            if (RdfUtils.isContainer(getParentModel())) {
-                getServices().getEventService().emit(new SimpleEvent(getUrl(getParentIdentifier()),
-                                getSession().getAgent(), asList(PROV.Activity, AS.Update), asList(getParentModel())));
-                if (!getParentIdentifier().equals(getParentMembershipResource())) {
+            final IRI model = getParentModel();
+            final IRI id = getParentIdentifier();
+            if (RdfUtils.isContainer(model)) {
+                getServices().getEventService().emit(new SimpleEvent(getUrl(id),
+                                getSession().getAgent(), asList(PROV.Activity, AS.Update), asList(model)));
+                // If the parent's membership resource is different than the parent itself,
+                // notify about that membership resource, too (if it exists)
+                if (!Objects.equals(id, getParentMembershipResource())) {
                     return emitMembershipUpdateEvent();
                 }
             }
-        }
-        return completedFuture(null);
-    }
-
-    /**
-     * Emit update events for the membership resource.
-     * @return the next completion stage
-     */
-    protected CompletableFuture<Void> emitMembershipUpdateEvent() {
-        final IRI membershipResource = getParentMembershipResource();
-        if (nonNull(membershipResource)) {
-            return getServices().getResourceService().get(membershipResource).thenAccept(res -> {
-                if (nonNull(res.getIdentifier())) {
-                    getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
-                                getSession().getAgent(), asList(PROV.Activity, AS.Update),
-                                asList(res.getInteractionModel())));
-                }
-            });
         }
         return completedFuture(null);
     }
@@ -289,12 +281,12 @@ class MutatingLdpHandler extends BaseLdpHandler {
     protected CompletableFuture<Void> handleResourceReplacement(final TrellisDataset mutable,
             final TrellisDataset immutable) {
         // update the resource
-        final IRI parent = getServices().getResourceService().getContainer(getResource().getIdentifier())
+        final IRI parentId = getServices().getResourceService().getContainer(getResource().getIdentifier())
             .orElse(null);
         return allOf(
                 getServices().getResourceService()
                     .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
-                        mutable.asDataset(), parent, getResource().getBinary().orElse(null)),
+                        mutable.asDataset(), parentId, getResource().getBinary().orElse(null)),
                 getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
                         immutable.asDataset()));
     }
@@ -304,6 +296,26 @@ class MutatingLdpHandler extends BaseLdpHandler {
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()));
     }
 
+    /*
+     * Emit update events for the membership resource, if it exists.
+     */
+    private CompletableFuture<Void> emitMembershipUpdateEvent() {
+        final IRI membershipResource = getParentMembershipResource();
+        if (nonNull(membershipResource)) {
+            return getServices().getResourceService().get(membershipResource).thenAccept(res -> {
+                if (nonNull(res.getIdentifier())) {
+                    getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
+                                getSession().getAgent(), asList(PROV.Activity, AS.Update),
+                                asList(res.getInteractionModel())));
+                }
+            });
+        }
+        return completedFuture(null);
+    }
+
+    /*
+     * Convert an internal identifier to an external identifier, suitable for notifications.
+     */
     private String getUrl(final IRI identifier) {
         return getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
     }
