@@ -57,6 +57,7 @@ public class TrellisServiceBundler implements ServiceBundler {
     private final BinaryService binaryService;
     private final AgentService agentService;
     private final IOService ioService;
+    private final EventService eventService;
 
     /**
      * Create a new application service bundler.
@@ -70,6 +71,7 @@ public class TrellisServiceBundler implements ServiceBundler {
         auditService = resourceService = buildResourceService(idService, config, environment);
         binaryService = buildBinaryService(idService, config);
         ioService = buildIoService(config);
+        eventService = AppUtils.getNotificationService(config.getNotifications(), environment);
     }
 
     @Override
@@ -102,15 +104,18 @@ public class TrellisServiceBundler implements ServiceBundler {
         return agentService;
     }
 
+    @Override
+    public EventService getEventService() {
+        return eventService;
+    }
+
     private static TriplestoreResourceService buildResourceService(final IdentifierService idService,
             final AppConfiguration config, final Environment environment) {
         final RDFConnection rdfConnection = AppUtils.getRDFConnection(config);
-        final EventService notificationService = AppUtils.getNotificationService(config.getNotifications(),
-                environment);
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
-        return new TriplestoreResourceService(rdfConnection, idService, notificationService);
+        return new TriplestoreResourceService(rdfConnection, idService);
     }
 
     private static IOService buildIoService(final AppConfiguration config) {

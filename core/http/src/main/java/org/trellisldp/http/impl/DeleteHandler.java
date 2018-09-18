@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -72,10 +73,11 @@ public class DeleteHandler extends MutatingLdpHandler {
     /**
      * Initialze the handler with a Trellis resource.
      *
+     * @param parent the parent resource
      * @param resource the Trellis resource
      * @return a response builder
      */
-    public ResponseBuilder initialize(final Resource resource) {
+    public ResponseBuilder initialize(final Resource parent, final Resource resource) {
 
         // Check that the persistence layer supports LDP-R
         if (MISSING_RESOURCE.equals(resource)) {
@@ -95,6 +97,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         checkCache(resource.getModified(), etag);
 
         setResource(resource);
+        setParent(parent);
         return noContent();
     }
 
@@ -122,7 +125,8 @@ public class DeleteHandler extends MutatingLdpHandler {
         if (ACL.equals(getRequest().getExt())) {
             return handleAclDeletion(mutable, immutable);
         }
-        return handleResourceDeletion(mutable, immutable);
+        return handleResourceDeletion(mutable, immutable).thenCompose(future ->
+                emitEvent(getInternalId(), AS.Delete, LDP.Resource));
     }
 
     private CompletableFuture<Void> handleAclDeletion(final TrellisDataset mutable,

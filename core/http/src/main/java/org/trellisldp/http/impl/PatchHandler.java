@@ -17,6 +17,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -70,6 +71,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
 
@@ -112,10 +114,11 @@ public class PatchHandler extends MutatingLdpHandler {
     /**
      * Initialze the handler with a Trellis resource.
      *
+     * @param parent the parent resource
      * @param resource the Trellis resource
      * @return a response builder
      */
-    public ResponseBuilder initialize(final Resource resource) {
+    public ResponseBuilder initialize(final Resource parent, final Resource resource) {
 
         if (MISSING_RESOURCE.equals(resource)) {
             // Can't patch non-existent resources
@@ -141,6 +144,7 @@ public class PatchHandler extends MutatingLdpHandler {
         checkCache(resource.getModified(), etag);
 
         setResource(resource);
+        setParent(parent);
         return ok();
     }
 
@@ -237,24 +241,29 @@ public class PatchHandler extends MutatingLdpHandler {
 
         // Collect the audit data
         getAuditUpdateData().forEachOrdered(immutable::add);
-        return handleResourceReplacement(mutable, immutable).thenApply(future -> {
-            final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
-                    getRequest().getHeaders().getAcceptableMediaTypes(), empty()).orElse(null);
-            final IRI profile = ofNullable(getProfile(getRequest().getHeaders().getAcceptableMediaTypes(),
-                        outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, getIdentifier()));
-            if (nonNull(preference)) {
-                final StreamingOutput stream = new StreamingOutput() {
-                    @Override
-                    public void write(final OutputStream out) throws IOException {
-                        getServices().getIOService().write(triples.stream()
-                                    .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
-                                    out, outputSyntax, profile);
-                    }
-                };
-                return builder.header(PREFERENCE_APPLIED, "return=representation")
-                    .type(outputSyntax.mediaType()).entity(stream);
-            }
-            return builder.status(NO_CONTENT);
-        });
+        return handleResourceReplacement(mutable, immutable).thenCompose(future -> {
+                if (!ACL.equals(getRequest().getExt())) {
+                    return emitEvent(getInternalId(), AS.Update, getResource().getInteractionModel());
+                }
+                return completedFuture(null);
+            }).thenApply(future -> {
+                final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
+                        getRequest().getHeaders().getAcceptableMediaTypes(), empty()).orElse(null);
+                final IRI profile = ofNullable(getProfile(getRequest().getHeaders().getAcceptableMediaTypes(),
+                            outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, getIdentifier()));
+                if (nonNull(preference)) {
+                    final StreamingOutput stream = new StreamingOutput() {
+                        @Override
+                        public void write(final OutputStream out) throws IOException {
+                            getServices().getIOService().write(triples.stream()
+                                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
+                                        out, outputSyntax, profile);
+                        }
+                    };
+                    return builder.header(PREFERENCE_APPLIED, "return=representation")
+                        .type(outputSyntax.mediaType()).entity(stream);
+                }
+                return builder.status(NO_CONTENT);
+            });
     }
 }

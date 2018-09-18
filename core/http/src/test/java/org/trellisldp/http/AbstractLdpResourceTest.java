@@ -23,6 +23,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Date.from;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -63,6 +64,9 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -113,6 +117,8 @@ import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.EventService;
+import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -982,6 +988,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
     @Test
     public void testPostRoot() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -994,6 +1002,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + RANDOM_VALUE, res.getLocation().toString(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        verify(myEventService, times(2)).emit(any());
     }
 
     @Test
@@ -1079,6 +1088,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
     @Test
     public void testPostSlug() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
@@ -1087,6 +1098,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        verify(myEventService, times(2)).emit(any());
     }
 
     @Test
@@ -1113,6 +1125,114 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPostIndirectContainer() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target().request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(2)).emit(any());
+    }
+
+    @Test
+    public void testPostIndirectContainerSelf() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(root));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target().request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(2)).emit(any());
+    }
+
+    @Test
+    public void testPostIndirectContainerResource() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target().request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(3)).emit(any());
+    }
+
+    @Test
+    public void testPostDirectContainer() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target().request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(2)).emit(any());
+    }
+
+    @Test
+    public void testPostDirectContainerSelf() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(root));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target().request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(2)).emit(any());
+    }
+
+    @Test
+    public void testPostDirectContainerResource() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target().request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(3)).emit(any());
     }
 
     @Test
@@ -1279,6 +1399,98 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!");
+    }
+
+    @Test
+    public void testPutIndirectContainer() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(1)).emit(any());
+    }
+
+    @Test
+    public void testPutIndirectContainerSelf() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(root));
+        when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
+
+        // MOCK mockResourceService.getContainer
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(2)).emit(any());
+    }
+
+    @Test
+    public void testPutIndirectContainerResource() {
+        final EventService myEventService = mock(EventService.class);
+        final Resource mockChildResource = mock(Resource.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockResourceService.get(childIdentifier)).thenAnswer(inv -> completedFuture(mockChildResource));
+        when(mockChildResource.getIdentifier()).thenReturn(childIdentifier);
+        when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(childIdentifier));
+        when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
+
+        // MOCK mockResourceService.getContainer
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(2)).emit(any());
+    }
+
+    @Test
+    public void testPutDirectContainer() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(1)).emit(any());
+    }
+
+    @Test
+    public void testPutDirectContainerSelf() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(root));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(1)).emit(any());
+    }
+
+    @Test
+    public void testPutDirectContainerResource() {
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(1)).emit(any());
     }
 
     @Test

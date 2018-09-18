@@ -75,7 +75,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
     public void testPatchNoSparql() {
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null, mockBundler, null);
         final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.initialize(mockResource), "No exception thrown with a null input!").getResponse();
+                patchHandler.initialize(mockParent, mockResource),
+                "No exception thrown with a null input!").getResponse();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
     }
 
@@ -92,7 +93,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
 
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.updateResource(handler.initialize(mockResource))),
+                unwrapAsyncError(handler.updateResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when there is an error in the audit backend!");
     }
 
@@ -102,7 +103,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+            .join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
     }
@@ -116,7 +118,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+            .join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
 
@@ -132,7 +135,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
@@ -153,7 +157,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockResource)).join().build();
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+            .join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
@@ -173,7 +178,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         final Response res = assertThrows(WebApplicationException.class, () ->
-                patchHandler.initialize(mockResource), "No exception thrown for CONFLICT!").getResponse();
+                patchHandler.initialize(mockParent, mockResource), "No exception thrown for CONFLICT!").getResponse();
         assertEquals(CONFLICT, res.getStatusInfo(), "Incorrect response code!");
     }
 
@@ -186,7 +191,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockResource))),
+                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend triggers an exception!");
     }
 
@@ -197,7 +202,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.initialize(mockResource), "No exception for an unsupported IXN model!").getResponse();
+                patchHandler.initialize(mockParent, mockResource),
+                "No exception for an unsupported IXN model!").getResponse();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
         assertTrue(res.getLinks().stream().anyMatch(link ->
                 link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
@@ -213,7 +219,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
         final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.updateResource(patchHandler.initialize(mockResource)).join(),
+                patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource)).join(),
                 "No exception when the update triggers an error!").getResponse();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
     }

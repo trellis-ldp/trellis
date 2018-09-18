@@ -19,9 +19,7 @@ import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
-import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.id.UUIDGenerator;
@@ -34,11 +32,10 @@ public class ResourceServiceTest extends AbstractResourceServiceTests {
 
     private static final JenaRDF rdf = new JenaRDF();
     private static final IdentifierService idService = new UUIDGenerator();
-    private static final EventService eventService = new NoopEventService();
 
     private final JenaDataset dataset = rdf.createDataset();
     private final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-    private final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService, eventService);
+    private final ResourceService svc = new TriplestoreResourceService(rdfConnection, idService);
     private final Session session = new SimpleSession(rdf.createIRI("user:test"));
 
     @Override

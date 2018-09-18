@@ -22,6 +22,7 @@ import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
@@ -42,13 +43,14 @@ public class SimpleServiceBundler implements ServiceBundler {
 
     private final IdentifierService idService = new UUIDGenerator();
     private final MementoService mementoService = new NoopMementoService();
+    private final EventService eventService = new NoopEventService();
     private final AgentService agentService = new SimpleAgentService();
     private final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(),
             emptySet());
     private final BinaryService binaryService = new FileBinaryService(idService,
             resourceFilePath("data") + "/binaries", 2, 2);
     private final TriplestoreResourceService triplestoreService
-        = new TriplestoreResourceService(connect(createTxnMem()), idService, new NoopEventService());
+        = new TriplestoreResourceService(connect(createTxnMem()), idService);
 
     public SimpleServiceBundler() {
         triplestoreService.initialize();
@@ -82,5 +84,10 @@ public class SimpleServiceBundler implements ServiceBundler {
     @Override
     public MementoService getMementoService() {
         return mementoService;
+    }
+
+    @Override
+    public EventService getEventService() {
+        return eventService;
     }
 }

@@ -13,10 +13,12 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.util.Arrays.asList;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
@@ -54,7 +56,9 @@ import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.RDF;
 
 /**
@@ -68,6 +72,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
 
     private final File entity;
     private final Session session;
+
+    private Resource parent;
 
     /**
      * Create a base handler for a mutating LDP response.
@@ -95,6 +101,23 @@ class MutatingLdpHandler extends BaseLdpHandler {
         this.session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
             .map(getServices().getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
         session.setProperty(TRELLIS_SESSION_BASE_URL, getBaseUrl());
+    }
+
+    protected void setParent(final Resource parent) {
+        this.parent = parent;
+    }
+
+    protected IRI getParentIdentifier() {
+        return ofNullable(parent).map(Resource::getIdentifier).orElse(null);
+    }
+
+    protected IRI getParentModel() {
+        return ofNullable(parent).map(Resource::getInteractionModel).orElse(null);
+    }
+
+    protected IRI getParentMembershipResource() {
+        return ofNullable(parent).flatMap(Resource::getMembershipResource).map(IRI::getIRIString)
+            .map(res -> res.split("#")[0]).map(rdf::createIRI).orElse(null);
     }
 
     /**
@@ -159,6 +182,48 @@ class MutatingLdpHandler extends BaseLdpHandler {
             LOGGER.error("Error processing input", ex);
             throw new WebApplicationException("Error processing input");
         }
+    }
+
+    /**
+     * Emit events for the change.
+     * @param identifier the resource identifier
+     * @param activityType the activity type
+     * @param resourceType the resource type
+     * @return the next completion stage
+     */
+    protected CompletableFuture<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
+        getServices().getEventService().emit(new SimpleEvent(getUrl(identifier), getSession().getAgent(),
+                    asList(PROV.Activity, activityType), asList(resourceType)));
+        if (AS.Update.equals(activityType) && LDP.IndirectContainer.equals(getParentModel())) {
+            return emitMembershipUpdateEvent();
+        } else if (AS.Create.equals(activityType) || AS.Delete.equals(activityType)) {
+            if (RdfUtils.isContainer(getParentModel())) {
+                getServices().getEventService().emit(new SimpleEvent(getUrl(getParentIdentifier()),
+                                getSession().getAgent(), asList(PROV.Activity, AS.Update), asList(getParentModel())));
+                if (!getParentIdentifier().equals(getParentMembershipResource())) {
+                    return emitMembershipUpdateEvent();
+                }
+            }
+        }
+        return completedFuture(null);
+    }
+
+    /**
+     * Emit update events for the membership resource.
+     * @return the next completion stage
+     */
+    protected CompletableFuture<Void> emitMembershipUpdateEvent() {
+        final IRI membershipResource = getParentMembershipResource();
+        if (nonNull(membershipResource)) {
+            return getServices().getResourceService().get(membershipResource).thenAccept(res -> {
+                if (nonNull(res.getIdentifier())) {
+                    getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
+                                getSession().getAgent(), asList(PROV.Activity, AS.Update),
+                                asList(res.getInteractionModel())));
+                }
+            });
+        }
+        return completedFuture(null);
     }
 
     /**
@@ -237,5 +302,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
     protected Stream<Quad> getAuditUpdateData() {
         return getServices().getAuditService().update(getResource().getIdentifier(), getSession()).stream()
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()));
+    }
+
+    private String getUrl(final IRI identifier) {
+        return getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
     }
 }

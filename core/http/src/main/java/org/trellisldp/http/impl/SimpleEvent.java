@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.triplestore;
+package org.trellisldp.http.impl;
 
 import static java.time.Instant.now;
+import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.trellisldp.api.RDFUtils.getInstance;
 
@@ -38,28 +39,25 @@ public class SimpleEvent implements Event {
     private final IRI identifier;
     private final IRI target;
     private final Instant created;
-    private final List<IRI> agents;
+    private final IRI agent;
     private final List<IRI> activityTypes;
-    private final IRI inbox;
     private final List<IRI> targetTypes;
 
     /**
      * Create a new notification.
      * @param target the target resource
-     * @param agents the agents associated with this event
+     * @param agent the agent associated with this event
      * @param activityTypes the activity types associated with this event
      * @param targetTypes the rdf types of the resource
-     * @param inbox the inbox of the inbox, may be null
      */
-    public SimpleEvent(final String target, final List<IRI> agents, final List<IRI> activityTypes,
-            final List<IRI> targetTypes, final IRI inbox) {
+    public SimpleEvent(final String target, final IRI agent, final List<IRI> activityTypes,
+            final List<IRI> targetTypes) {
         this.target = rdf.createIRI(target);
         this.identifier = rdf.createIRI("urn:uuid:" + randomUUID());
-        this.agents = agents;
+        this.agent = agent;
         this.activityTypes = activityTypes;
         this.created = now();
         this.targetTypes = targetTypes;
-        this.inbox = inbox;
     }
 
     @Override
@@ -69,7 +67,7 @@ public class SimpleEvent implements Event {
 
     @Override
     public Collection<IRI> getAgents() {
-        return agents;
+        return asList(agent);
     }
 
     @Override
@@ -94,6 +92,6 @@ public class SimpleEvent implements Event {
 
     @Override
     public Optional<IRI> getInbox() {
-        return ofNullable(inbox);
+        return empty();
     }
 }

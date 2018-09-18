@@ -54,4 +54,10 @@ public interface ServiceBundler {
      * @return the service for interacting with memento resources.
      */
     MementoService getMementoService();
+
+    /**
+     * Get the {@link EventService} for the application.
+     * @return the service for emiting notifications.
+     */
+    EventService getEventService();
 }
