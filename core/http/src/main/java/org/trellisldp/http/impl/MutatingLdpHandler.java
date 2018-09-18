@@ -25,7 +25,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.api.RDFUtils.toQuad;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
@@ -101,7 +100,6 @@ class MutatingLdpHandler extends BaseLdpHandler {
         this.entity = entity;
         this.session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
             .map(getServices().getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
-        session.setProperty(TRELLIS_SESSION_BASE_URL, getBaseUrl());
     }
 
     protected void setParent(final Resource parent) {

@@ -71,11 +71,6 @@ public final class RDFUtils {
     public static final String TRELLIS_SESSION_PREFIX = TRELLIS_SCHEME + "session/";
 
     /**
-     * The session property for a baseURL.
-     */
-    public static final String TRELLIS_SESSION_BASE_URL = "baseURL";
-
-    /**
      * Get the Commons RDF instance in use.
      *
      * @return the RDF instance

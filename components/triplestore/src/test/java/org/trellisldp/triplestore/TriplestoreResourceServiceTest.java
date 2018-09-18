@@ -15,7 +15,6 @@ package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.function.Predicate.isEqual;
@@ -36,7 +35,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
@@ -106,7 +104,6 @@ public class TriplestoreResourceServiceTest {
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getCreated()).thenReturn(created);
         when(mockSession.getDelegatedBy()).thenReturn(empty());
-        when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(of(baseUrl));
     }
 
     @Test
@@ -244,7 +241,6 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpRsWithoutBaseUrl() throws Exception {
-        when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(empty());
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
