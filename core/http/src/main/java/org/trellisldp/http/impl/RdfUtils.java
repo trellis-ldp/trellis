@@ -287,6 +287,16 @@ public final class RdfUtils {
         return RDFA.equals(syntax) ? identifier : expanded;
     }
 
+    /**
+     * Check whether an LDP type is a sort of container.
+     * @param ldpType the LDP type to test
+     * @return true if it is a type of LDP container
+     */
+    public static Boolean isContainer(final IRI ldpType) {
+        return LDP.Container.equals(ldpType) || LDP.BasicContainer.equals(ldpType)
+            || LDP.DirectContainer.equals(ldpType) || LDP.IndirectContainer.equals(ldpType);
+    }
+
     private RdfUtils() {
         // prevent instantiation
     }

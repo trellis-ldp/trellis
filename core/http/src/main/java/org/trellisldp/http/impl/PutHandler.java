@@ -68,6 +68,7 @@ import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -107,10 +108,11 @@ public class PutHandler extends MutatingLdpHandler {
 
     /**
      * Initialize the response handler.
+     * @param parent the parent resource
      * @param resource the resource
      * @return the response builder
      */
-    public ResponseBuilder initialize(final Resource resource) {
+    public ResponseBuilder initialize(final Resource parent, final Resource resource) {
         setResource(DELETED_RESOURCE.equals(resource) || MISSING_RESOURCE.equals(resource) ? null : resource);
 
         // Check the cache
@@ -137,6 +139,7 @@ public class PutHandler extends MutatingLdpHandler {
             throw new NotAcceptableException();
         }
 
+        setParent(parent);
         return status(NO_CONTENT);
     }
 
@@ -242,6 +245,12 @@ public class PutHandler extends MutatingLdpHandler {
                 persistPromise,
                 createOrReplace(ldpType, mutable, binary),
                 getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
+            .thenCompose(future -> {
+                if (!ACL.equals(getRequest().getExt())) {
+                    return emitEvent(getInternalId(), isNull(getResource()) ? AS.Create : AS.Update, ldpType);
+                }
+                return completedFuture(null);
+            })
             .thenApply(future ->
                 isNull(getResource()) ? builder.status(CREATED).contentLocation(create(getIdentifier())) : builder);
     }

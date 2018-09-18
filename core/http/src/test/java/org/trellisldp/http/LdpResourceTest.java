@@ -123,7 +123,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
     public void testNoBaseURL() throws Exception {
         final LdpResource matcher = new LdpResource(mockBundler, null);
 
-        when(mockLdpRequest.getPath()).thenReturn("repo1/resource");
+        when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockLdpRequest.getBaseUrl()).thenReturn("http://my.example.com/");
         when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));

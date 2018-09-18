@@ -64,6 +64,7 @@ import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopAuditService;
@@ -99,16 +100,14 @@ abstract class BaseLdpResourceTest extends JerseyTest {
 
     protected static final Long BINARY_SIZE = 100L;
 
-    protected static final String REPO1 = "repo1";
-
     protected static final String RANDOM_VALUE = "randomValue";
 
-    protected static final String RESOURCE_PATH = REPO1 + "/resource";
+    protected static final String RESOURCE_PATH = "resource";
     protected static final String CHILD_PATH = RESOURCE_PATH + "/child";
-    protected static final String BINARY_PATH = REPO1 + "/binary";
-    protected static final String NON_EXISTENT_PATH = REPO1 + "/nonexistent";
-    protected static final String DELETED_PATH = REPO1 + "/deleted";
-    protected static final String USER_DELETED_PATH = REPO1 + "/userdeleted";
+    protected static final String BINARY_PATH = "binary";
+    protected static final String NON_EXISTENT_PATH = "nonexistent";
+    protected static final String DELETED_PATH = "deleted";
+    protected static final String USER_DELETED_PATH = "userdeleted";
     protected static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
 
     protected static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
@@ -146,6 +145,9 @@ abstract class BaseLdpResourceTest extends JerseyTest {
 
     @Mock
     protected AgentService mockAgentService;
+
+    @Mock
+    protected EventService mockEventService;
 
     @Mock
     protected Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource,
@@ -195,6 +197,7 @@ abstract class BaseLdpResourceTest extends JerseyTest {
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
         when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
+        when(mockBundler.getEventService()).thenReturn(mockEventService);
     }
 
     private void setUpResourceService() {
@@ -210,36 +213,9 @@ abstract class BaseLdpResourceTest extends JerseyTest {
         when(mockResourceService.get(eq(deletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockResourceService.get(eq(userDeletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
-        when(mockResourceService.unskolemize(any(IRI.class)))
-            .thenAnswer(inv -> {
-                final IRI iri = inv.getArgument(0);
-                final String uri = iri.getIRIString();
-                if (uri.startsWith(TRELLIS_BNODE_PREFIX)) {
-                    return bnode;
-                }
-                return iri;
-            });
-        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = inv.getArgument(0);
-            if (term instanceof IRI) {
-                final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(getBaseUrl())) {
-                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(getBaseUrl().length()));
-                }
-            }
-            return term;
-        });
-        when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = inv.getArgument(0);
-            if (term instanceof IRI) {
-                final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(TRELLIS_DATA_PREFIX)) {
-                    return rdf.createIRI(getBaseUrl() + iri.substring(TRELLIS_DATA_PREFIX.length()));
-                }
-            }
-            return term;
-        });
-
+        when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
+        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
+        when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
             .thenReturn(completedFuture(null));
         when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))

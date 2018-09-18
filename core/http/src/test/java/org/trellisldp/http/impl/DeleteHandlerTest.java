@@ -53,7 +53,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
     @Test
     public void testDelete() {
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
-        final Response res = handler.deleteResource(handler.initialize(mockResource)).join().build();
+        final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect delete response!");
     }
 
@@ -69,7 +69,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend reports an exception!");
     }
 
@@ -79,7 +79,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
             .thenReturn(asyncException());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend reports an exception!");
     }
 
@@ -88,7 +88,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.initialize(mockResource)).getResponse();
+                handler.initialize(mockParent, mockResource)).getResponse();
         assertTrue(res.getLinks().stream().anyMatch(link ->
             link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
             link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing Link headers");
@@ -102,7 +102,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when an ACL couldn't be deleted!");
     }
 
@@ -115,7 +115,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockResource))),
+                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when an ACL audit stream couldn't be written!");
     }
 
@@ -126,7 +126,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.initialize(mockResource), "Unexpected response type!").getResponse();
+                handler.initialize(mockParent, mockResource), "Unexpected response type!").getResponse();
         assertEquals(PRECONDITION_FAILED, res.getStatusInfo(), "Incorrect response type!");
     }
 }

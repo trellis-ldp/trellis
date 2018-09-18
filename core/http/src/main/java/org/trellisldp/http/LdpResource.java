@@ -39,6 +39,7 @@ import com.codahale.metrics.annotation.Timed;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.PostConstruct;
@@ -296,7 +297,7 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase);
 
-        trellis.getResourceService().get(identifier).thenApply(patchHandler::initialize)
+        getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
@@ -315,7 +316,7 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, urlBase);
 
-        trellis.getResourceService().get(identifier).thenApply(deleteHandler::initialize)
+        getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), deleteHandler::initialize)
             .thenCompose(deleteHandler::deleteResource).thenApply(ResponseBuilder::build)
             .exceptionally(this::handleException).thenApply(response::resume);
     }
@@ -343,7 +344,6 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier);
         final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, urlBase);
 
-        // First try to fetch the parent and child resources, and then create a new child resource
         trellis.getResourceService().get(parent)
             .thenCombine(trellis.getResourceService().get(child), postHandler::initialize)
             .thenCompose(postHandler::createResource).thenCompose(postHandler::updateMemento)
@@ -365,9 +365,17 @@ public class LdpResource implements ContainerRequestFilter {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);
 
-        trellis.getResourceService().get(identifier).thenApply(putHandler::initialize)
+        getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
+    }
+
+    private CompletableFuture<? extends Resource> getParent(final IRI identifier) {
+        final Optional<IRI> parent = trellis.getResourceService().getContainer(identifier);
+        if (parent.isPresent()) {
+            return trellis.getResourceService().get(parent.get());
+        }
+        return completedFuture(MISSING_RESOURCE);
     }
 
     private String getBaseUrl(final LdpRequest req) {

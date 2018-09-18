@@ -84,6 +84,7 @@ import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopAuditService;
@@ -118,6 +119,9 @@ abstract class HandlerBaseTest {
 
     @Mock
     protected ResourceService mockResourceService;
+
+    @Mock
+    protected EventService mockEventService;
 
     @Mock
     protected IOService mockIoService;
@@ -230,16 +234,8 @@ abstract class HandlerBaseTest {
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
-        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
-            if (term instanceof IRI) {
-                final String iri = ((IRI) term).getIRIString();
-                if (iri.startsWith(baseUrl)) {
-                    return rdf.createIRI(TRELLIS_DATA_PREFIX + iri.substring(baseUrl.length()));
-                }
-            }
-            return term;
-        });
+        when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
+        when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
     }
 
     private void setUpBinaryService() {
@@ -264,6 +260,7 @@ abstract class HandlerBaseTest {
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockBundler.getMementoService()).thenReturn(mementoService);
         when(mockBundler.getAgentService()).thenReturn(agentService);
+        when(mockBundler.getEventService()).thenReturn(mockEventService);
     }
 
     private void setUpIoService() {
@@ -280,5 +277,7 @@ abstract class HandlerBaseTest {
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockParent.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockParent.getIdentifier()).thenReturn(root);
+        when(mockParent.getMembershipResource()).thenReturn(empty());
     }
 }

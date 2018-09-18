@@ -15,7 +15,6 @@ package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.function.Predicate.isEqual;
@@ -33,12 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_BASE_URL;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
@@ -60,7 +56,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.EventService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -101,9 +96,6 @@ public class TriplestoreResourceServiceTest {
     private Session mockSession;
 
     @Mock
-    private EventService mockEventService;
-
-    @Mock
     private RDFConnection mockRdfConnection;
 
     @BeforeEach
@@ -112,13 +104,12 @@ public class TriplestoreResourceServiceTest {
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getCreated()).thenReturn(created);
         when(mockSession.getDelegatedBy()).thenReturn(empty());
-        when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(of(baseUrl));
     }
 
     @Test
     public void testIdentifierService() {
         final ResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier(), "Not unique identifiers!");
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier(), "Not unique identifiers!");
     }
@@ -126,7 +117,7 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testResourceNotFound() {
         final ResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).join(),
                 "Not a missing resource!");
     }
@@ -134,7 +125,7 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testNoRoot() {
         final ResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
 
         assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX)).join(), "Not a missing resource!");
     }
@@ -143,7 +134,7 @@ public class TriplestoreResourceServiceTest {
     public void testInitializeRoot() {
         final Instant early = now();
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Resource res = svc.get(root).join();
@@ -159,8 +150,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferServerManaged, root, DC.modified, rdf.createLiteral(early.toString(), XSD.dateTime));
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final TriplestoreResourceService svc = new TriplestoreResourceService(rdfConnection, idService,
-                mockEventService);
+        final TriplestoreResourceService svc = new TriplestoreResourceService(rdfConnection, idService);
         svc.initialize();
 
         final Resource res = svc.get(root).join();
@@ -172,7 +162,7 @@ public class TriplestoreResourceServiceTest {
     public void testUpdateRoot() throws Exception {
         final Instant early = now();
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Resource res1 = svc.get(root).join();
@@ -200,8 +190,7 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testRDFConnectionError() throws Exception {
-        final TriplestoreResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService,
-                mockEventService);
+        final TriplestoreResourceService svc = new TriplestoreResourceService(mockRdfConnection, idService);
         svc.initialize();
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection).update(any(UpdateRequest.class));
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection)
@@ -217,7 +206,7 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testGetContainer() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         assertFalse(svc.getContainer(root).isPresent(), "parent found for root container!");
@@ -230,7 +219,7 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testPutLdpRs() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -252,9 +241,8 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testPutLdpRsWithoutBaseUrl() throws Exception {
-        when(mockSession.getProperty(TRELLIS_SESSION_BASE_URL)).thenReturn(empty());
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -274,7 +262,7 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testPutLdpNr() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final IRI binaryIdentifier = rdf.createIRI("foo:binary");
@@ -294,8 +282,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(res ->
                 assertAll("Check binary", checkBinary(res, binaryIdentifier, binaryTime, "text/plain", 10L))),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
-
-        verify(mockEventService, times(2)).emit(any());
 
         final IRI resource3 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
         dataset.clear();
@@ -319,14 +305,12 @@ public class TriplestoreResourceServiceTest {
                 assertFalse(res.getBinary().isPresent(), "unexpected binary metadata!")),
             svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 7L, 1L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater))).join();
-
-        verify(mockEventService, times(3)).emit(any());
     }
 
     @Test
     public void testPutLdpC() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -346,8 +330,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.Container, 3L, 3L, 3L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
-        verify(mockEventService, times(2)).emit(any());
-
         // Now add a child resource
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("child"));
@@ -362,8 +344,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 3L, 1L)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(evenLater))).join();
-
-        verify(mockEventService, times(4)).emit(any());
 
         // Now update that child resource
         dataset.clear();
@@ -382,14 +362,12 @@ public class TriplestoreResourceServiceTest {
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(evenLater2)),
             svc.get(resource).thenAccept(checkPredates(evenLater2))).join();
-
-        verify(mockEventService, times(5)).emit(any());
     }
 
     @Test
     public void testAddAuditTriples() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset1 = rdf.createDataset();
@@ -408,14 +386,12 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 3L, 2L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
-
-        verify(mockEventService, times(2)).emit(any());
     }
 
     @Test
     public void testPutDeleteLdpC() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -431,8 +407,6 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 3L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
-
-        verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
         dataset.clear();
@@ -451,8 +425,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(evenLater))).join();
 
-        verify(mockEventService, times(4)).emit(any());
-
         // Now delete the child resource
         final BlankNode bnode = rdf.createBlankNode();
         dataset.clear();
@@ -470,14 +442,12 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(preDelete, LDP.Container, 2L, 3L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(preDelete))).join();
-
-        verify(mockEventService, times(6)).emit(any());
     }
 
     @Test
     public void testPutLdpBc() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -493,8 +463,6 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.BasicContainer, 3L, 3L, 0L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
-
-        verify(mockEventService, times(2)).emit(any());
 
         // Now add a child resource
         dataset.clear();
@@ -512,8 +480,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(evenLater))).join();
 
-        verify(mockEventService, times(4)).emit(any());
-
         // Now update the child resource
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
@@ -530,14 +496,12 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkPredates(evenLater2)),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(evenLater2))).join();
-
-        verify(mockEventService, times(5)).emit(any());
     }
 
     @Test
     public void testPutLdpDcSelf() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -554,8 +518,6 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 0L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
-
-        verify(mockEventService, times(2)).emit(any());
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -577,14 +539,12 @@ public class TriplestoreResourceServiceTest {
             }),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(evenLater))).join();
-
-        verify(mockEventService, times(4)).emit(any());
     }
 
     @Test
     public void testPutLdpDc() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -601,8 +561,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 0L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
-        verify(mockEventService, times(2)).emit(any());
-
         // Now add a membership resource
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("member resource"));
@@ -617,8 +575,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 0L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
-
-        verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -638,14 +594,12 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
             svc.get(root).thenAccept(checkPredates(evenLater2))).join();
-
-        verify(mockEventService, times(7)).emit(any());
     }
 
     @Test
     public void testPutLdpDcMultiple() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -662,8 +616,6 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
-
-        verify(mockEventService, times(2)).emit(any());
 
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -685,8 +637,6 @@ public class TriplestoreResourceServiceTest {
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
-        verify(mockEventService, times(4)).emit(any());
-
         // Now add a membership resource
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -705,8 +655,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource2).thenAccept(res ->
                 assertAll("Check resource stream", checkResourceStream(res, 6L, 7L, 0L, 1L, 0L, 0L))),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L))).join();
-
-        verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -727,8 +675,6 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
             svc.get(root).thenAccept(checkPredates(evenLater3))).join();
-
-        verify(mockEventService, times(9)).emit(any());
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
@@ -755,14 +701,12 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(members, DC.subject, child2))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
             svc.get(root).thenAccept(checkPredates(evenLater4))).join();
-
-        verify(mockEventService, times(12)).emit(any());
     }
 
     @Test
     public void testPutLdpDcMultipleInverse() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -781,8 +725,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
-        verify(mockEventService, times(2)).emit(any());
-
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-DC"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
@@ -799,8 +741,6 @@ public class TriplestoreResourceServiceTest {
                 assertAll("Check resource stream", checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L));
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
-
-        verify(mockEventService, times(4)).emit(any());
 
         // Now add a membership resource
         dataset.clear();
@@ -819,8 +759,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource2).thenAccept(res ->
                 assertAll("Check resource stream", checkResourceStream(res, 3L, 7L, 0L, 1L, 0L, 0L))),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L))).join();
-
-        verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -843,8 +781,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(members).thenAccept(checkPredates(evenLater3)),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
             svc.get(root).thenAccept(checkPredates(evenLater3))).join();
-
-        verify(mockEventService, times(8)).emit(any());
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
@@ -870,14 +806,12 @@ public class TriplestoreResourceServiceTest {
             svc.get(members).thenAccept(checkPredates(evenLater4)),
             svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
             svc.get(root).thenAccept(checkPredates(evenLater4))).join();
-
-        verify(mockEventService, times(10)).emit(any());
     }
 
     @Test
     public void testPutLdpIc() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -902,8 +836,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 7L, 4L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
-        verify(mockEventService, times(2)).emit(any());
-
         // Now add a membership resource
         final BlankNode bnode1 = rdf.createBlankNode();
         dataset.clear();
@@ -922,8 +854,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 7L, 4L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
-
-        verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
         final BlankNode bnode2 = rdf.createBlankNode();
@@ -948,14 +878,12 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing member triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
             svc.get(root).thenAccept(checkPredates(evenLater2))).join();
-
-        verify(mockEventService, times(7)).emit(any());
     }
 
     @Test
     public void testPutLdpIcDefaultContent() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -975,8 +903,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 1L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
-        verify(mockEventService, times(2)).emit(any());
-
         // Now add a membership resource
         final BlankNode bnode = rdf.createBlankNode();
         dataset.clear();
@@ -993,8 +919,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 2L, 0L)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
-
-        verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
         final Literal label = rdf.createLiteral("label1");
@@ -1016,14 +940,12 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, child))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
             svc.get(root).thenAccept(checkPredates(evenLater2))).join();
-
-        verify(mockEventService, times(7)).emit(any());
     }
 
     @Test
     public void testPutLdpIcMultipleStatements() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -1043,8 +965,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 2L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
-        verify(mockEventService, times(2)).emit(any());
-
         // Now add a membership resource
         dataset.clear();
         final BlankNode bnode2 = rdf.createBlankNode();
@@ -1062,8 +982,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 7L, 2L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
-
-        verify(mockEventService, times(4)).emit(any());
 
         // Now add the child resources to the ldp-dc
         final Literal label1 = rdf.createLiteral("Label", "en");
@@ -1091,14 +1009,12 @@ public class TriplestoreResourceServiceTest {
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
             svc.get(root).thenAccept(checkPredates(evenLater2))).join();
-
-        verify(mockEventService, times(7)).emit(any());
     }
 
     @Test
     public void testPutLdpIcMultipleResources() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService, mockEventService);
+                connect(wrap(rdf.createDataset().asJenaDatasetGraph())), idService);
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -1120,8 +1036,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 7L, 3L, 0L)),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
-        verify(mockEventService, times(2)).emit(any());
-
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-IC"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
@@ -1140,8 +1054,6 @@ public class TriplestoreResourceServiceTest {
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
 
-        verify(mockEventService, times(4)).emit(any());
-
         // Now add a membership resource
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Shared member resource"));
@@ -1159,8 +1071,6 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource2).thenAccept(res ->
                 assertAll("Check resource stream", checkResourceStream(res, 4L, 7L, 0L, 1L, 0L, 0L))),
             svc.get(root).thenAccept(checkRoot(evenLater, 3L))).join();
-
-        verify(mockEventService, times(6)).emit(any());
 
         // Now add the child resources to the ldp-ic
         final Literal label = rdf.createLiteral("first label");
@@ -1182,8 +1092,6 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing membership triple!")),
             svc.get(root).thenAccept(checkRoot(evenLater, 3L)),
             svc.get(root).thenAccept(checkPredates(evenLater3))).join();
-
-        verify(mockEventService, times(9)).emit(any());
 
         // Now add the child resources to the ldp-ic
         final Literal label2 = rdf.createLiteral("second label");
@@ -1222,8 +1130,6 @@ public class TriplestoreResourceServiceTest {
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 3L)),
             svc.get(root).thenAccept(checkPredates(evenLater4))).join();
-
-        verify(mockEventService, times(12)).emit(any());
     }
 
     private static Consumer<Resource> checkChild(final Instant time, final long properties, final long server,

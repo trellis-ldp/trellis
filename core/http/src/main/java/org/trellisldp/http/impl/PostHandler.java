@@ -66,6 +66,7 @@ import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -88,7 +89,7 @@ public class PostHandler extends MutatingLdpHandler {
      * Create a builder for an LDP POST response.
      *
      * @param req the LDP request
-     * @param parentIdentifier the parent IRI
+     * @param parentIdentifier the parent resource
      * @param id the new resource's identifier
      * @param entity the entity
      * @param trellis the Trellis application bundle
@@ -143,6 +144,7 @@ public class PostHandler extends MutatingLdpHandler {
             throw new BadRequestException("Cannot save resource as a NonRDFSource with RDF syntax");
         }
 
+        setParent(parent);
         return status(CREATED);
     }
 
@@ -201,6 +203,7 @@ public class PostHandler extends MutatingLdpHandler {
                 getServices().getResourceService().create(internalId, getSession(), ldpType, mutable.asDataset(),
                     parentIdentifier, binary),
                 getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
+            .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
                 return builder.location(create(getIdentifier()));
