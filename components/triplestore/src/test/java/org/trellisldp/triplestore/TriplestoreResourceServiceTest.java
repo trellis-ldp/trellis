@@ -78,7 +78,6 @@ public class TriplestoreResourceServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
     private static final IdentifierService idService = new UUIDGenerator();
-    private static final String baseUrl = "http://example.com/";
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
     private static final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
