@@ -283,10 +283,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
             .orElse(null);
         return allOf(
                 getServices().getResourceService()
-                    .replace(getResource().getIdentifier(), getSession(), getResource().getInteractionModel(),
+                    .replace(getResource().getIdentifier(), getResource().getInteractionModel(),
                         mutable.asDataset(), parentId, getResource().getBinary().orElse(null)),
-                getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
-                        immutable.asDataset()));
+                getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
     }
 
     protected Stream<Quad> getAuditUpdateData() {

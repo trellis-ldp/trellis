@@ -58,7 +58,6 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.LDP;
 
@@ -91,8 +90,7 @@ public class PutHandlerTest extends HandlerBaseTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(asyncException());
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
@@ -260,8 +258,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(eq(identifier), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
+        when(mockResourceService.replace(eq(identifier), any(IRI.class), any(Dataset.class), any(), any()))
+            .thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
@@ -275,8 +273,8 @@ public class PutHandlerTest extends HandlerBaseTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
+        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
+                    any(Dataset.class), any(), any())).thenReturn(asyncException());
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
         final PutHandler handler = new PutHandler(mockLdpRequest, entity, mockBundler, null);

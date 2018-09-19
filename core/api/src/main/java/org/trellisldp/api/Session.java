@@ -54,20 +54,4 @@ public interface Session {
      * @return the creation date
      */
     Instant getCreated();
-
-    /**
-     * Set a session-related property.
-     *
-     * @param key the key
-     * @param value the value
-     */
-    void setProperty(String key, String value);
-
-    /**
-     * Get a session-related property.
-     *
-     * @param key the key
-     * @return the value associated with the provided key, if one exists
-     */
-    Optional<String> getProperty(String key);
 }

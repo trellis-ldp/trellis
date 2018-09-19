@@ -31,7 +31,6 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * Create a resource in the server.
      *
      * @param identifier the identifier for the new resource
-     * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
      * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
@@ -41,14 +40,12 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> create(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
-            Binary binary);
+    CompletableFuture<Void> create(IRI identifier, IRI ixnModel, Dataset dataset, IRI container, Binary binary);
 
     /**
      * Replace a resource in the server.
      *
      * @param identifier the identifier for the new resource
-     * @param session the session context for this operation
      * @param ixnModel the LDP interaction model for this resource
      * @param dataset the dataset to be persisted
      * @param container an LDP container for this resource, {@code null} for none
@@ -58,14 +55,12 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> replace(IRI identifier, Session session, IRI ixnModel, Dataset dataset, IRI container,
-            Binary binary);
+    CompletableFuture<Void> replace(IRI identifier, IRI ixnModel, Dataset dataset, IRI container, Binary binary);
 
     /**
      * Delete a resource from the server.
      *
      * @param identifier the identifier for the new resource
-     * @param session the session context for this operation
      * @param ixnModel the new LDP interaction model for this resource
      * @param dataset the dataset
      * @return a new completion stage that, when the stage completes normally, indicates that the resource
@@ -73,6 +68,6 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> delete(IRI identifier, Session session, IRI ixnModel, Dataset dataset);
+    CompletableFuture<Void> delete(IRI identifier, IRI ixnModel, Dataset dataset);
 
 }

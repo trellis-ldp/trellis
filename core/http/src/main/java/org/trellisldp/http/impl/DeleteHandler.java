@@ -155,9 +155,8 @@ public class DeleteHandler extends MutatingLdpHandler {
 
         // delete the resource
         return allOf(
-                getServices().getResourceService().delete(getResource().getIdentifier(), getSession(), LDP.Resource,
+                getServices().getResourceService().delete(getResource().getIdentifier(), LDP.Resource,
                     mutable.asDataset()),
-                getServices().getResourceService().add(getResource().getIdentifier(), getSession(),
-                        immutable.asDataset()));
+                getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
     }
 }

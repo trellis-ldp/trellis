@@ -200,9 +200,9 @@ public class PostHandler extends MutatingLdpHandler {
 
         return allOf(
                 persistPromise,
-                getServices().getResourceService().create(internalId, getSession(), ldpType, mutable.asDataset(),
+                getServices().getResourceService().create(internalId, ldpType, mutable.asDataset(),
                     parentIdentifier, binary),
-                getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
+                getServices().getResourceService().add(internalId, immutable.asDataset()))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));

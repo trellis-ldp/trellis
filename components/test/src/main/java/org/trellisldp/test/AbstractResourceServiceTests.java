@@ -14,7 +14,6 @@
 package org.trellisldp.test;
 
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.Session;
 
 /**
  * A convenience class for running the ResourceService tests.
@@ -26,10 +25,4 @@ public abstract class AbstractResourceServiceTests implements ResourceServiceTes
      * @return the resource service
      */
     public abstract ResourceService getResourceService();
-
-    /**
-     * Get the session context.
-     * @return the session context
-     */
-    public abstract Session getSession();
 }

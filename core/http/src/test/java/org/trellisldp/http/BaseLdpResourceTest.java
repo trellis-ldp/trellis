@@ -216,13 +216,12 @@ abstract class BaseLdpResourceTest extends JerseyTest {
         when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(null));
+        when(mockResourceService.delete(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(completedFuture(null));
-        when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(completedFuture(null));
-        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
+        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class),
                         any(), any())).thenReturn(completedFuture(null));
-        when(mockResourceService.create(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class),
+        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class),
                         any(), any())).thenReturn(completedFuture(null));
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());

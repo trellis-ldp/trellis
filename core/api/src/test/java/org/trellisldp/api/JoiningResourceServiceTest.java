@@ -50,7 +50,6 @@ public class JoiningResourceServiceTest {
     private static final IRI testResourceId1 = createIRI("http://example.com/1");
     private static final IRI testResourceId2 = createIRI("http://example.com/2");
     private static final IRI testResourceId3 = createIRI("http://example.com/3");
-    private static final Session mockSession = mock(Session.class);
 
     private static IRI badId = createIRI("http://bad.com");
 
@@ -92,7 +91,7 @@ public class JoiningResourceServiceTest {
                     implements ImmutableDataService<Resource> {
 
         @Override
-        public CompletableFuture<Void> add(final IRI identifier, final Session session, final Dataset dataset) {
+        public CompletableFuture<Void> add(final IRI identifier, final Dataset dataset) {
             resources.compute(identifier, (id, old) -> {
                 final TestResource newRes = new TestResource(id, dataset);
                 return old == null ? newRes : new RetrievableResource(old, newRes);
@@ -105,21 +104,21 @@ public class JoiningResourceServiceTest {
                     implements MutableDataService<Resource> {
 
         @Override
-        public CompletableFuture<Void> create(final IRI id, final Session session, final IRI ixnModel,
+        public CompletableFuture<Void> create(final IRI id, final IRI ixnModel,
                 final Dataset dataset, final IRI container, final Binary binary) {
             resources.put(id, new TestResource(id, dataset));
             return isntBadId(id);
         }
 
         @Override
-        public CompletableFuture<Void> replace(final IRI id, final Session session, final IRI ixnModel,
+        public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel,
                 final Dataset dataset, final IRI container, final Binary binary) {
             resources.replace(id, new TestResource(id, dataset));
             return isntBadId(id);
         }
 
         @Override
-        public CompletableFuture<Void> delete(final IRI identifier, final Session session, final IRI ixnModel,
+        public CompletableFuture<Void> delete(final IRI identifier, final IRI ixnModel,
                         final Dataset dataset) {
             resources.remove(identifier);
             return isntBadId(identifier);
@@ -193,7 +192,7 @@ public class JoiningResourceServiceTest {
     public void testRoundtripping() {
         final Quad testQuad = createQuad(testResourceId1, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(testResourceId1, testQuad);
-        assertNull(testable.create(testResourceId1, mockSession, testResource.getInteractionModel(),
+        assertNull(testable.create(testResourceId1, testResource.getInteractionModel(),
                     testResource.dataset(), null, null).join(), "Couldn't create a resource!");
         Resource retrieved = testable.get(testResourceId1).join();
         assertEquals(testResource.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
@@ -202,14 +201,14 @@ public class JoiningResourceServiceTest {
 
         final Quad testQuad2 = createQuad(testResourceId1, badId, testResourceId1, badId);
         final Resource testResource2 = new TestResource(testResourceId1, testQuad2);
-        assertNull(testable.replace(testResourceId1, mockSession, testResource2.getInteractionModel(),
+        assertNull(testable.replace(testResourceId1, testResource2.getInteractionModel(),
                         testResource2.dataset(), null, null).join(), "Couldn't replace resource!");
         retrieved = testable.get(testResourceId1).join();
         assertEquals(testResource2.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource2.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
-        assertNull(testable.delete(testResourceId1, mockSession, testResource2.getInteractionModel(),
+        assertNull(testable.delete(testResourceId1, testResource2.getInteractionModel(),
                         testResource2.dataset()).join(), "Couldn't delete resource!");
         assertEquals(MISSING_RESOURCE, testable.get(testResourceId1).join(), "Found resource after deleting it!");
     }
@@ -221,10 +220,10 @@ public class JoiningResourceServiceTest {
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testMutableResource = new TestResource(testResourceId2, testMutableQuad);
-        assertNull(testable.create(testResourceId2, mockSession, testMutableResource.getInteractionModel(),
+        assertNull(testable.create(testResourceId2, testMutableResource.getInteractionModel(),
                         testMutableResource.dataset(), null, null).join(), "Couldn't create a mutable resource!");
         final Resource testImmutableResource = new TestResource(testResourceId2, testImmutableQuad);
-        assertNull(testable.add(testResourceId2, mockSession, testImmutableResource.dataset()).join(),
+        assertNull(testable.add(testResourceId2, testImmutableResource.dataset()).join(),
                         "Couldn't create an immutable resource!");
 
         final Resource retrieved = testable.get(testResourceId2).join();
@@ -242,7 +241,7 @@ public class JoiningResourceServiceTest {
     public void testBadPersist() {
         final Quad testQuad = createQuad(badId, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(badId, testQuad);
-        assertThrows(CompletionException.class, () -> testable.create(badId, mockSession,
+        assertThrows(CompletionException.class, () -> testable.create(badId,
                     testResource.getInteractionModel(), testResource.dataset(),
                     null, null).join(), "Could create a resource when underlying services should reject it!");
     }
@@ -254,10 +253,10 @@ public class JoiningResourceServiceTest {
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testFirstResource = new TestResource(testResourceId3, testFirstQuad);
-        assertNull(testable.add(testResourceId3, mockSession, testFirstResource.dataset()).join(),
+        assertNull(testable.add(testResourceId3, testFirstResource.dataset()).join(),
                         "Couldn't create an immutable resource!");
         final Resource testSecondResource = new TestResource(testResourceId3, testSecondQuad);
-        assertNull(testable.add(testResourceId3, mockSession, testSecondResource.dataset()).join(),
+        assertNull(testable.add(testResourceId3, testSecondResource.dataset()).join(),
                         "Couldn't add to an immutable resource!");
 
         final Resource retrieved = testable.get(testResourceId3).join();

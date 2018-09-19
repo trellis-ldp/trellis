@@ -244,7 +244,7 @@ public class PutHandler extends MutatingLdpHandler {
         return allOf(
                 persistPromise,
                 createOrReplace(ldpType, mutable, binary),
-                getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
+                getServices().getResourceService().add(internalId, immutable.asDataset()))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }
@@ -274,10 +274,10 @@ public class PutHandler extends MutatingLdpHandler {
         final Resource resource = getResource();
         if (resource == null) {
             LOGGER.debug("Creating new resource {}", internalId);
-            return getServices().getResourceService().create(internalId, getSession(), ldpType, ds.asDataset(), c, b);
+            return getServices().getResourceService().create(internalId, ldpType, ds.asDataset(), c, b);
         } else {
             LOGGER.debug("Replacing old resource {}", internalId);
-            return getServices().getResourceService().replace(internalId, getSession(), ldpType, ds.asDataset(), c, b);
+            return getServices().getResourceService().replace(internalId, ldpType, ds.asDataset(), c, b);
         }
     }
 
