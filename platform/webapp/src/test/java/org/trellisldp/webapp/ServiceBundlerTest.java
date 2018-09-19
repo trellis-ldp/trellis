@@ -38,5 +38,6 @@ public class ServiceBundlerTest {
 
         assertEquals(bundler.getResourceService(), bundler.getAuditService(), "Incorrect audit/resource services!");
         assertNotNull(bundler.getBinaryService(), "Missing binary service!");
+        assertNotNull(bundler.getEventService(), "Missing event service!");
     }
 }
