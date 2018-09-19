@@ -73,7 +73,6 @@ import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.api.Session;
 import org.trellisldp.http.domain.AcceptDatetime;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
@@ -83,7 +82,6 @@ import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetHandler;
-import org.trellisldp.http.impl.HttpSession;
 import org.trellisldp.http.impl.MementoResource;
 import org.trellisldp.http.impl.OptionsHandler;
 import org.trellisldp.http.impl.PatchHandler;
@@ -169,15 +167,13 @@ public class LdpResource implements ContainerRequestFilter {
     }
 
     private CompletableFuture<Void> initialize(final IRI id, final Resource res, final TrellisDataset dataset) {
-        final Session session = new HttpSession(Trellis.AdministratorAgent);
         if (MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res)) {
             LOGGER.info("Initializing root container: {}", id);
-            return trellis.getResourceService().create(id, session, LDP.BasicContainer, dataset.asDataset(), null,
-                    null);
+            return trellis.getResourceService().create(id, LDP.BasicContainer, dataset.asDataset(), null, null);
         } else if (!res.hasAcl()) {
             LOGGER.info("Initializeing root ACL: {}", id);
             res.stream(Trellis.PreferUserManaged).map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
-            return trellis.getResourceService().replace(res.getIdentifier(), session, res.getInteractionModel(),
+            return trellis.getResourceService().replace(res.getIdentifier(), res.getInteractionModel(),
                     dataset.asDataset(), null, null);
         }
         return completedFuture(null);

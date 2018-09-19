@@ -41,7 +41,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.AuditService;
-import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.LDP;
 
@@ -63,8 +62,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(asyncException());
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
@@ -75,7 +73,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testDeleteError() {
-        when(mockResourceService.delete(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class)))
+        when(mockResourceService.delete(any(IRI.class), any(IRI.class), any(Dataset.class)))
             .thenReturn(asyncException());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
@@ -97,8 +95,8 @@ public class DeleteHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testDeleteACLError() {
-        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class), any(),
-                        any())).thenReturn(asyncException());
+        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
+            .thenReturn(asyncException());
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
@@ -108,10 +106,9 @@ public class DeleteHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testDeleteACLAuditError() {
-        when(mockResourceService.replace(any(IRI.class), any(Session.class), any(IRI.class), any(Dataset.class), any(),
-                        any())).thenReturn(completedFuture(null));
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(asyncException());
+        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
+            .thenReturn(completedFuture(null));
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockLdpRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->

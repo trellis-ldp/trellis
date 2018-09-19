@@ -14,7 +14,6 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
-import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.trellisldp.api.RDFUtils.TRELLIS_SESSION_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -59,15 +58,5 @@ class SimpleSession implements Session {
     @Override
     public Instant getCreated() {
         return created;
-    }
-
-    @Override
-    public Optional<String> getProperty(final String key) {
-        return ofNullable(properties.get(key));
-    }
-
-    @Override
-    public void setProperty(final String key, final String value) {
-        properties.put(key, value);
     }
 }

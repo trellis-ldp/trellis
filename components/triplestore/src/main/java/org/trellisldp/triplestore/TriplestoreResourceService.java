@@ -77,7 +77,6 @@ import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -118,16 +117,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> create(final IRI id, final Session session, final IRI ixnModel,
-            final Dataset dataset, final IRI container, final Binary binary) {
+    public CompletableFuture<Void> create(final IRI id, final IRI ixnModel, final Dataset dataset, final IRI container,
+            final Binary binary) {
         LOGGER.debug("Creating: {}", id);
         return runAsync(() ->
                 createOrReplace(id, ixnModel, dataset, OperationType.CREATE, container, binary));
     }
 
     @Override
-    public CompletableFuture<Void> delete(final IRI identifier, final Session session, final IRI ixnModel,
-            final Dataset dataset) {
+    public CompletableFuture<Void> delete(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
         LOGGER.debug("Deleting: {}", identifier);
         return runAsync(() -> {
             final Instant eventTime = now();
@@ -138,8 +136,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> replace(final IRI id, final Session session, final IRI ixnModel,
-            final Dataset dataset, final IRI container, final Binary binary) {
+    public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel, final Dataset dataset, final IRI container,
+            final Binary binary) {
         LOGGER.debug("Updating: {}", id);
         return runAsync(() ->
                 createOrReplace(id, ixnModel, dataset, OperationType.REPLACE, container, binary));
@@ -467,7 +465,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> add(final IRI id, final Session session, final Dataset dataset) {
+    public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         return runAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
             try (final Dataset data = rdf.createDataset()) {

@@ -58,7 +58,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -87,8 +86,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         // will never store audit
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(asyncException());
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
 
@@ -124,8 +122,7 @@ public class PatchHandlerTest extends HandlerBaseTest {
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
 
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
-        verify(mockResourceService).replace(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class),
-                        any(), any());
+        verify(mockResourceService).replace(eq(identifier), eq(LDP.RDFSource), any(Dataset.class), any(), any());
     }
 
     @Test
@@ -186,8 +183,8 @@ public class PatchHandlerTest extends HandlerBaseTest {
     public void testError() {
         when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockLdpRequest.getPath()).thenReturn("resource");
-        when(mockResourceService.replace(eq(identifier), any(Session.class),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
+        when(mockResourceService.replace(eq(identifier), any(IRI.class), any(Dataset.class), any(), any()))
+            .thenReturn(asyncException());
 
         final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
         assertThrows(CompletionException.class, () ->

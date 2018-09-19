@@ -55,7 +55,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.domain.Digest;
 import org.trellisldp.vocabulary.DC;
@@ -84,8 +83,7 @@ public class PostHandlerTest extends HandlerBaseTest {
         when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
-        when(mockResourceService.add(any(IRI.class), any(Session.class), any(Dataset.class)))
-            .thenReturn(asyncException());
+        when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PostHandler handler = buildPostHandler("/simpleTriple.ttl", null, null);
 
@@ -189,8 +187,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
-        verify(mockResourceService).create(eq(identifier), any(Session.class), eq(LDP.RDFSource), any(Dataset.class),
-                        any(), any());
+        verify(mockResourceService).create(eq(identifier), eq(LDP.RDFSource), any(Dataset.class), any(), any());
     }
 
     @Test
@@ -277,7 +274,7 @@ public class PostHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testError() throws IOException {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")), any(Session.class),
+        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")),
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
         when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
 
@@ -296,7 +293,7 @@ public class PostHandlerTest extends HandlerBaseTest {
     private Stream<Executable> checkBinaryEntityResponse(final IRI identifier) {
         return Stream.of(
                 () -> verify(mockResourceService, description("ResourceService::create not called!"))
-                            .create(eq(identifier), any(), eq(LDP.NonRDFSource), any(Dataset.class), any(), any()),
+                            .create(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class), any(), any()),
                 () -> verify(mockIoService, never().description("entity shouldn't be read!")).read(any(), any(), any()),
                 () -> verify(mockBinaryService, description("content not set on binary service!"))
                             .setContent(iriArgument.capture(), any(InputStream.class), metadataArgument.capture()),
