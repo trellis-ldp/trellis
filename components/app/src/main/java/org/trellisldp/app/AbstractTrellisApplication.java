@@ -38,7 +38,7 @@ import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
-import org.trellisldp.http.LdpResource;
+import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.webac.WebACService;
@@ -71,14 +71,14 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     }
 
     /**
-     * Get the LdpResource matcher.
+     * Get the TrellisHttpResource matcher.
      *
      * @param config the configuration
-     * @param initialize true if the LdpResource object should be initialized; false otherwise
+     * @param initialize true if the TrellisHttpResource object should be initialized; false otherwise
      * @return the LDP resource matcher
      */
     protected Object getLdpComponent(final T config, final Boolean initialize) {
-        final LdpResource ldpResource = new LdpResource(getServiceBundler(), config.getBaseUrl());
+        final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(), config.getBaseUrl());
         if (initialize) {
             ldpResource.initialize();
         }

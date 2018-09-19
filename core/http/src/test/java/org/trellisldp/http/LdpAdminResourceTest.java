@@ -42,7 +42,7 @@ public class LdpAdminResourceTest extends AbstractLdpResourceTest {
         agentFilter.setAdminUsers(asList("testUser"));
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockBundler, baseUri));
+        config.register(new TrellisHttpResource(mockBundler, baseUri));
         config.register(new TestAuthenticationFilter("testUser", ""));
         config.register(new WebAcFilter(mockAccessControlService));
         config.register(agentFilter);

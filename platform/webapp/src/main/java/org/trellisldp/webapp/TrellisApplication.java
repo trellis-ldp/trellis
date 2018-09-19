@@ -16,7 +16,7 @@ package org.trellisldp.webapp;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.AgentAuthorizationFilter;
-import org.trellisldp.http.LdpResource;
+import org.trellisldp.http.TrellisHttpResource;
 
 /**
  * A Trellis application.
@@ -30,7 +30,7 @@ public class TrellisApplication extends ResourceConfig {
         super();
 
         final ServiceBundler serviceBundler = new WebappServiceBundler();
-        final LdpResource ldpResource = new LdpResource(serviceBundler);
+        final TrellisHttpResource ldpResource = new TrellisHttpResource(serviceBundler);
         ldpResource.initialize();
 
         register(ldpResource);

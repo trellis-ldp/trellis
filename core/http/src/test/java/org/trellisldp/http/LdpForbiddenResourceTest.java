@@ -62,7 +62,7 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new WebAcFilter(mockAccessControlService));
-        config.register(new LdpResource(mockBundler, null));
+        config.register(new TrellisHttpResource(mockBundler, null));
         System.getProperties().remove(CONFIGURATION_BASE_URL);
 
         return config;

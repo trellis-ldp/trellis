@@ -67,7 +67,7 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         webacFilter.setChallenges(asList(BASIC_AUTH, DIGEST_AUTH));
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockBundler));
+        config.register(new TrellisHttpResource(mockBundler));
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(webacFilter);
         config.register(new CrossOriginResourceSharingFilter(asList(origin),

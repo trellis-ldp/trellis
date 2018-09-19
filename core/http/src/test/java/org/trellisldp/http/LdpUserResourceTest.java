@@ -35,7 +35,7 @@ public class LdpUserResourceTest extends AbstractLdpResourceTest {
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockBundler));
+        config.register(new TrellisHttpResource(mockBundler));
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new WebAcFilter(mockAccessControlService));
         config.register(new AgentAuthorizationFilter(mockAgentService));

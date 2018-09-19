@@ -95,7 +95,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
         final ResourceConfig config = new ResourceConfig();
 
-        config.register(new LdpResource(mockBundler, null));
+        config.register(new TrellisHttpResource(mockBundler, null));
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new CacheControlFilter(86400, true, false));
         config.register(new WebSubHeaderFilter(HUB));
@@ -112,7 +112,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         when(mockUriInfo.getPath()).thenReturn("/");
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
 
-        final LdpResource filter = new LdpResource(mockBundler);
+        final TrellisHttpResource filter = new TrellisHttpResource(mockBundler);
 
         filter.filter(mockContext);
         verify(mockContext, never().description("Trailing slash should trigger a redirect!")).abortWith(any());
@@ -120,7 +120,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
     @Test
     public void testNoBaseURL() throws Exception {
-        final LdpResource matcher = new LdpResource(mockBundler, null);
+        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
 
         when(mockLdpRequest.getPath()).thenReturn("resource");
         when(mockLdpRequest.getBaseUrl()).thenReturn("http://my.example.com/");
@@ -145,7 +145,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
 
-        final LdpResource matcher = new LdpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
         assertAll("Verify interactions with init-errored resource service", verifyInteractions(mockService));
     }
@@ -156,7 +156,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
 
-        final LdpResource matcher = new LdpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
         assertAll("Verify interactions with resource service", verifyInteractions(mockService));
     }
@@ -170,7 +170,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         when(mockService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
             .thenReturn(completedFuture(null));
 
-        final LdpResource matcher = new LdpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
 
         verify(mockService, never().description("When re-initializing the root ACL, create should not be called"))
@@ -188,7 +188,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         when(mockService.create(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
             .thenReturn(completedFuture(null));
 
-        final LdpResource matcher = new LdpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
 
         verify(mockService, description("Re-create a missing root resource on initialization"))
@@ -206,7 +206,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         when(mockService.create(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
             .thenReturn(completedFuture(null));
 
-        final LdpResource matcher = new LdpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
 
         verify(mockService, description("A previously deleted root resource should be re-created upon initialization"))
