@@ -245,14 +245,22 @@ public class PutHandler extends MutatingLdpHandler {
                 persistPromise,
                 createOrReplace(ldpType, mutable, binary),
                 getServices().getResourceService().add(internalId, getSession(), immutable.asDataset()))
-            .thenCompose(future -> {
-                if (!ACL.equals(getRequest().getExt())) {
-                    return emitEvent(getInternalId(), isNull(getResource()) ? AS.Create : AS.Update, ldpType);
-                }
-                return completedFuture(null);
-            })
-            .thenApply(future ->
-                isNull(getResource()) ? builder.status(CREATED).contentLocation(create(getIdentifier())) : builder);
+            .thenCompose(future -> handleUpdateEvent(ldpType))
+            .thenApply(future -> decorateResponse(builder));
+    }
+
+    private ResponseBuilder decorateResponse(final ResponseBuilder builder) {
+        if (isNull(getResource())) {
+            return builder.status(CREATED).contentLocation(create(getIdentifier()));
+        }
+        return builder;
+    }
+
+    private CompletableFuture<Void> handleUpdateEvent(final IRI ldpType) {
+        if (!ACL.equals(getRequest().getExt())) {
+            return emitEvent(getInternalId(), isNull(getResource()) ? AS.Create : AS.Update, ldpType);
+        }
+        return completedFuture(null);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {
