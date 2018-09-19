@@ -87,12 +87,12 @@ public final class RdfUtils {
      */
     public static Stream<IRI> ldpResourceTypes(final IRI ixnModel) {
         final Stream.Builder<IRI> supertypes = Stream.builder();
-        if (ixnModel != null) {
+        if (nonNull(ixnModel)) {
             LOGGER.debug("Finding types that subsume {}", ixnModel.getIRIString());
-            supertypes.add(ixnModel);
+            supertypes.accept(ixnModel);
             final IRI superClass = LDP.getSuperclassOf(ixnModel);
             LOGGER.debug("... including {}", superClass);
-            ldpResourceTypes(superClass).flatMap(RdfUtils::ldpResourceTypes).distinct().forEach(supertypes::add);
+            ldpResourceTypes(superClass).forEach(supertypes::accept);
         }
         return supertypes.build();
     }
