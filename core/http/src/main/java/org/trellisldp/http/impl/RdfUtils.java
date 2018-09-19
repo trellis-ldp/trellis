@@ -92,7 +92,7 @@ public final class RdfUtils {
             supertypes.add(ixnModel);
             final IRI superClass = LDP.getSuperclassOf(ixnModel);
             LOGGER.debug("... including {}", superClass);
-            ldpResourceTypes(superClass).flatMap(RdfUtils::ldpResourceTypes).forEach(supertypes::add);
+            ldpResourceTypes(superClass).flatMap(RdfUtils::ldpResourceTypes).distinct().forEach(supertypes::add);
         }
         return supertypes.build();
     }
