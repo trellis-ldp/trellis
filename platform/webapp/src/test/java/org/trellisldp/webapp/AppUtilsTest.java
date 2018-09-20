@@ -29,7 +29,7 @@ import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.file.FileMementoService;
-import org.trellisldp.http.LdpResource;
+import org.trellisldp.http.TrellisHttpResource;
 
 public class AppUtilsTest {
 
@@ -37,7 +37,7 @@ public class AppUtilsTest {
 
     @Test
     public void testLoaderError() {
-        assertThrows(RuntimeTrellisException.class, () -> AppUtils.loadFirst(LdpResource.class),
+        assertThrows(RuntimeTrellisException.class, () -> AppUtils.loadFirst(TrellisHttpResource.class),
                 "No exception on loader error!");
     }
 

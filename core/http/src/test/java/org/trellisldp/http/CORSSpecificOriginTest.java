@@ -44,7 +44,7 @@ public class CORSSpecificOriginTest extends BaseCORSTest {
         init();
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new LdpResource(mockBundler));
+        config.register(new TrellisHttpResource(mockBundler));
         config.register(new CrossOriginResourceSharingFilter(asList(ORIGIN),
                     asList("GET", "HEAD", "PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Patch"),

@@ -104,9 +104,9 @@ import org.trellisldp.vocabulary.Trellis;
 @Priority(AUTHORIZATION + 20)
 @ApplicationScoped
 @Path("{path: .*}")
-public class LdpResource implements ContainerRequestFilter {
+public class TrellisHttpResource implements ContainerRequestFilter {
 
-    private static final Logger LOGGER = getLogger(LdpResource.class);
+    private static final Logger LOGGER = getLogger(TrellisHttpResource.class);
 
     private static final List<String> MUTATING_METHODS = asList("POST", "PUT", "DELETE", "PATCH");
 
@@ -117,22 +117,22 @@ public class LdpResource implements ContainerRequestFilter {
     protected final String baseUrl;
 
     /**
-     * Create an LdpResource.
+     * Create a Trellis HTTP resource matcher.
      *
      * @param trellis the Trellis application bundle
      */
     @Inject
-    public LdpResource(final ServiceBundler trellis) {
+    public TrellisHttpResource(final ServiceBundler trellis) {
         this(trellis, ConfigurationProvider.getConfiguration().get(CONFIGURATION_BASE_URL));
     }
 
     /**
-     * Create an LdpResource.
+     * Create a Trellis HTTP resource matcher.
      *
      * @param trellis the Trellis application bundle
      * @param baseUrl a base URL
      */
-    public LdpResource(final ServiceBundler trellis, final String baseUrl) {
+    public TrellisHttpResource(final ServiceBundler trellis, final String baseUrl) {
         this.baseUrl = baseUrl;
         this.trellis = trellis;
     }
