@@ -32,6 +32,11 @@
             dc:identifier "websub" ;
             rdfs:seeAlso <https://www.w3.org/TR/websub/> ] ,
         [ a doap:Specification ;
+            doap:name "Linked Data Notifications"@en ;
+            doap:description "W3C Linked Data Notifications Receiver"@en ;
+            dc:identifier "ldn" ;
+            rdfs:seeAlso <https://www.w3.org/TR/ldn/> ] ,
+        [ a doap:Specification ;
             doap:name "Memento"@en ;
             doap:description "RFC 7089: HTTP Framework for Time-Based Access to Resource States"@en ;
             dc:identifier "memento" ;
