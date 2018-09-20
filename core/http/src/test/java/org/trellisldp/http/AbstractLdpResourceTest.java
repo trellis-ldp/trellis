@@ -1236,13 +1236,24 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     }
 
     @Test
-    public void testPostBadJsonLd() {
+    public void testPostBadJsonLdSemantics() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request()
             .post(entity("{\"@id\": \"\", \"@type\": \"some type\"}", APPLICATION_LD_JSON_TYPE));
+
+        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPostBadJsonLdSyntax() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request().post(entity("{\"@id:", APPLICATION_LD_JSON_TYPE));
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
