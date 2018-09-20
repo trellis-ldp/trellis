@@ -82,8 +82,6 @@ public class TriplestoreResourceServiceTest {
     private static final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
     private static final IRI child2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2/child");
 
-    private final Instant created = now();
-
     static {
         setDefaultPollInterval(100L, MILLISECONDS);
     }
