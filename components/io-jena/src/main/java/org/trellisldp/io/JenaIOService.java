@@ -340,7 +340,7 @@ public class JenaIOService implements IOService {
                 });
             }
             return rdf.asGraph(graph).stream();
-        } catch (final RiotException | AtlasException ex) {
+        } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
             throw new RuntimeTrellisException(ex);
         }
     }
