@@ -6,8 +6,12 @@
 
     <reference id="resourceService" interface="org.trellisldp.api.ResourceService"/>
 
+    <bean id="cacheService" class="org.trellisldp.webac.WebACService.NoopAuthorizationCache"/>
+
     <bean id="webacService" class="org.trellisldp.webac.WebACService">
       <argument ref="resourceService"/>
+      <argument ref="cacheService"/>
+      <argument value="false"/>
     </bean>
 
     <service ref="webacService" interface="org.trellisldp.api.AccessControlService" ranking="3">

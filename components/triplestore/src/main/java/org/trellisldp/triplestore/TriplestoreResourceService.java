@@ -108,6 +108,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      */
     @Inject
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
+        super();
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
         requireNonNull(identifierService, "IdentifierService may not be null!");
         this.rdfConnection = rdfConnection;

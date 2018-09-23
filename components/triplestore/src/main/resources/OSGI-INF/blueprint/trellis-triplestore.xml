@@ -12,16 +12,11 @@
         <argument ref="dataset"/>
     </bean>
 
-    <!-- TODO generalize this -->
-    <bean id="eventService" class="org.trellisldp.api.NoopEventService"/>
-    <!--<reference id="eventService" interface="org.trellisldp.api.EventService"/>-->
-
     <reference id="idService" interface="org.trellisldp.api.IdentifierService"/>
 
     <bean id="resourceService" class="org.trellisldp.triplestore.TriplestoreResourceService">
       <argument ref="rdfConnection"/>
       <argument ref="idService"/>
-      <argument ref="eventService"/>
     </bean>
 
     <service ref="resourceService" auto-export="all-classes" ranking="10">

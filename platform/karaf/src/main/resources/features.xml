@@ -4,7 +4,7 @@
   <feature name="trellis-api" version="${project.version}">
     <details>Installs the Trellis API bundle</details>
 
-    <feature>aries-blueprint</feature>
+    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
@@ -20,8 +20,8 @@
   <feature name="trellis-agent" version="${project.version}">
     <details>Installs the Trellis Agent service bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle>mvn:org.trellisldp/trellis-agent/${project.version}</bundle>
   </feature>
@@ -29,8 +29,8 @@
   <feature name="trellis-audit" version="${project.version}">
     <details>Installs the Trellis Audit bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle>mvn:org.trellisldp/trellis-audit/${project.version}</bundle>
   </feature>
@@ -38,9 +38,10 @@
   <feature name="trellis-file" version="${project.version}">
     <details>Installs the Trellis File-based service bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
-    <feature>aries-blueprint</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+    <feature dependency="true">aries-blueprint</feature>
+    <feature dependency="true">pax-cdi</feature>
 
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
@@ -53,8 +54,8 @@
   <feature name="trellis-constraint-rules" version="${project.version}">
     <details>Installs the Trellis Constraint rules service bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle>mvn:org.trellisldp/trellis-constraint-rules/${project.version}</bundle>
   </feature>
@@ -62,8 +63,8 @@
   <feature name="trellis-event-serialization" version="${project.version}">
     <details>Installs the Trellis Event Serialization bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
@@ -76,8 +77,8 @@
   <feature name="trellis-http" version="${project.version}">
     <details>Installs the Trellis HTTP bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
     <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
@@ -85,7 +86,6 @@
     <bundle dependency="true">mvn:javax.json/javax.json-api/${javaxJsonVersion}</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
-
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
@@ -94,7 +94,7 @@
   <feature name="trellis-id" version="${project.version}">
     <details>Installs the Trellis ID generator service</details>
 
-    <feature>trellis-api</feature>
+    <feature dependency="true">trellis-api</feature>
 
     <bundle>mvn:org.trellisldp/trellis-id/${project.version}</bundle>
   </feature>
@@ -102,10 +102,11 @@
   <feature name="trellis-io-jena" version="${project.version}">
     <details>Installs the Jena-backed serialization service</details>
 
-    <feature>commons-rdf-jena</feature>
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
-    <feature>aries-blueprint</feature>
+    <feature dependency="true">commons-rdf-jena</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+    <feature dependency="true">aries-blueprint</feature>
+
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
@@ -117,9 +118,9 @@
   <feature name="trellis-rdfa" version="${project.version}">
     <details>Installs a simple HTML writer</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
-    <feature>aries-blueprint</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
@@ -131,8 +132,8 @@
   <feature name="trellis-namespaces" version="${project.version}">
     <details>Installs the Trellis JSON-file-based Namespace service</details>
 
-    <feature>trellis-api</feature>
-    <feature>aries-blueprint</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
@@ -149,12 +150,12 @@
   <feature name="trellis-triplestore" version="${project.version}">
     <details>Installs the Triplestore-based Resource service</details>
 
-    <feature>commons-rdf-jena</feature>
-    <feature>trellis-api</feature>
-    <feature>trellis-audit</feature>
-    <feature>trellis-vocabulary</feature>
-    <feature>aries-blueprint</feature>
+    <feature dependency="true">commons-rdf-jena</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+    <feature dependency="true">aries-blueprint</feature>
 
+    <bundle dependency="true">mvn:org.trellisldp/trellis-audit/${project.version}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-triplestore/${project.version}</bundle>
@@ -176,9 +177,9 @@
   <feature name="trellis-webac" version="${project.version}">
     <details>Installs the Trellis WebAC bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
-    <feature>aries-blueprint</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
@@ -200,7 +201,7 @@
   <feature name="trellis-kafka" version="${project.version}">
     <details>Installs the Trellis Kafka service bundle</details>
 
-    <feature>trellis-api</feature>
+    <feature dependency="true">trellis-api</feature>
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.kafka-clients/${kafkaOsgiVersion}</bundle>
@@ -212,7 +213,7 @@
   <feature name="trellis-amqp" version="${project.version}">
     <details>Installs the Trellis AMQP service bundle</details>
 
-    <feature>trellis-api</feature>
+    <feature dependency="true">trellis-api</feature>
 
     <bundle dependency="true">mvn:com.rabbitmq/amqp-client/${rabbitMqVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
@@ -224,10 +225,10 @@
   <feature name="trellis-jms" version="${project.version}">
     <details>Installs the Trellis JMS service bundle</details>
 
-    <feature>trellis-api</feature>
-    <feature>transaction</feature>
-    <feature>aries-blueprint</feature>
-    <feature>activemq-client</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">transaction</feature>
+    <feature dependency="true">aries-blueprint</feature>
+    <feature dependency="true">activemq-client</feature>
 
     <bundle dependency="true">mvn:javax.jms/javax.jms-api/${jmsApiVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
@@ -243,17 +244,17 @@
 
     <feature prerequisite="true">http</feature>
     <feature prerequisite="true">cxf</feature>
-    <feature prerequisite="true">cxf-jaxrs</feature>
+    <feature prerequisite="true">cxf-jaxrs-cdi</feature>
 
     <feature dependency="true">trellis-constraint-rules</feature>
-    <feature>trellis-id</feature>
-    <feature>trellis-agent</feature>
-    <feature>trellis-file</feature>
-    <feature>trellis-namespaces</feature>
-    <feature>trellis-io-jena</feature>
-    <feature>trellis-http</feature>
-    <feature>trellis-triplestore</feature>
-    <feature>trellis-rdfa</feature>
+    <feature dependency="true">trellis-id</feature>
+    <feature dependency="true">trellis-agent</feature>
+    <feature dependency="true">trellis-file</feature>
+    <feature dependency="true">trellis-namespaces</feature>
+    <feature dependency="true">trellis-io-jena</feature>
+    <feature dependency="true">trellis-http</feature>
+    <feature dependency="true">trellis-triplestore</feature>
+    <feature dependency="true">trellis-rdfa</feature>
 
     <bundle>mvn:org.trellisldp/trellis-osgi/${project.version}</bundle>
 

@@ -27,13 +27,17 @@
     <reference id="agentService" interface="org.trellisldp.api.AgentService"/>
     <reference id="mementoService" interface="org.trellisldp.api.MementoService"/>
 
-    <bean id="ldpResource" class="org.trellisldp.http.LdpResource">
-      <argument ref="triplestoreService"/>
-      <argument ref="ioService"/>
-      <argument ref="binaryService"/>
-      <argument ref="agentService"/>
+    <bean id="serviceBundler" class="org.trellisldp.osgi.TrellisServiceBundler">
       <argument ref="mementoService"/>
+      <argument ref="binaryService"/>
+      <argument ref="ioService"/>
+      <argument ref="agentService"/>
+      <argument ref="eventService"/>
       <argument ref="triplestoreService"/>
+    </bean>
+
+    <bean id="httpResource" class="org.trellisldp.http.TrellisHttpResource">
+      <argument ref="serviceBundler"/>
       <argument value="${http.baseUrl}"/>
     </bean>
 
@@ -49,11 +53,11 @@
 
     <jaxrs:server id="trellisService" address="/">
 			<jaxrs:serviceBeans>
-					<ref component-id="ldpResource"/>
+					<ref component-id="httpResource"/>
 			</jaxrs:serviceBeans>
       <jaxrs:providers>
           <ref component-id="agentFilter"/>
-					<ref component-id="ldpResource"/>
+					<ref component-id="httpResource"/>
       </jaxrs:providers>
 		</jaxrs:server>
 </blueprint>
