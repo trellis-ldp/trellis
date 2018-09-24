@@ -265,6 +265,7 @@ abstract class BaseLdpResourceTest extends JerseyTest {
                 between(time, ofEpochSecond(timestamp + 1000)))));
         when(mockMementoService.list(eq(deletedIdentifier))).thenReturn(completedFuture(emptyList()));
         when(mockMementoService.list(eq(userDeletedIdentifier))).thenReturn(completedFuture(emptyList()));
+        when(mockMementoService.put(any())).thenReturn(completedFuture(null));
     }
 
     private void setUpBinaryService() {
