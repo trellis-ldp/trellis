@@ -1163,7 +1163,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     public void testPostIndirectContainerResource() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
-        when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
