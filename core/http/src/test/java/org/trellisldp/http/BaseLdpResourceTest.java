@@ -15,6 +15,7 @@ package org.trellisldp.http;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -247,6 +248,8 @@ abstract class BaseLdpResourceTest extends JerseyTest {
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
             .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(completedFuture(mockBinaryVersionedResource));
 

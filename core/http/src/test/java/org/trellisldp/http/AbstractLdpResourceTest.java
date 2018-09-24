@@ -1135,11 +1135,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target().request()
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+            .post(entity("<> <http://purl.org/dc/terms/title> \"An indirect container\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         verify(myEventService, times(2)).emit(any());
@@ -1153,11 +1151,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target().request()
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A self-contained LDP-IC\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         verify(myEventService, times(2)).emit(any());
@@ -1171,11 +1167,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target().request()
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+            .post(entity("<> <http://purl.org/dc/terms/title> \"An LDP-IC\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         verify(myEventService, times(3)).emit(any());
@@ -1189,11 +1183,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target().request()
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+            .post(entity("<> <http://purl.org/dc/terms/title> \"An LDP-DC\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         verify(myEventService, times(2)).emit(any());
@@ -1207,11 +1199,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target().request()
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A self-contained LDP-DC\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         verify(myEventService, times(2)).emit(any());
@@ -1225,11 +1215,9 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target().request()
-            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+            .post(entity("<> <http://purl.org/dc/terms/title> \"An LDP-DC resource\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         verify(myEventService, times(3)).emit(any());
