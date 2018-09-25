@@ -17,6 +17,7 @@ import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
 import static java.util.Date.from;
 import static java.util.Optional.of;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -34,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.description;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,6 +60,8 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.LDP;
 
@@ -266,6 +270,21 @@ public class PutHandlerTest extends HandlerBaseTest {
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
                 "No exception when there's a problem with the backend!");
+    }
+
+    @Test
+    public void testMementoError() {
+        final MementoService mockMementoService = mock(MementoService.class);
+        when(mockBundler.getMementoService()).thenReturn(mockMementoService);
+        when(mockMementoService.put(any())).thenAnswer(inv -> runAsync(() -> {
+            throw new RuntimeTrellisException("Expected error");
+        }));
+
+        final PutHandler handler = buildPutHandler("/simpleData.txt", null);
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .thenCompose(handler::updateMemento).join().build();
+
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
