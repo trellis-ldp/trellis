@@ -13,6 +13,8 @@
  */
 package org.trellisldp.osgi;
 
+import static java.util.Arrays.stream;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.ops4j.pax.exam.CoreOptions.maven;
@@ -22,6 +24,7 @@ import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.features;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.karafDistributionConfiguration;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.keepRuntimeFolder;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.logLevel;
+import static org.osgi.framework.Bundle.ACTIVE;
 import static org.osgi.framework.Constants.OBJECTCLASS;
 import static org.osgi.framework.FrameworkUtil.createFilter;
 
@@ -106,6 +109,7 @@ public class OSGiTest {
                 featuresService.isInstalled(featuresService.getFeature("trellis-api")));
         assertTrue("trellis-vocabulary not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-vocabulary")));
+        checkTrellisBundlesAreActive();
     }
 
     @Test
@@ -123,6 +127,7 @@ public class OSGiTest {
         assertFalse("trellis-triplestore already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
         featuresService.installFeature("trellis-triplestore");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-triplestore not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
     }
@@ -132,6 +137,7 @@ public class OSGiTest {
         assertFalse("trellis-http already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-http")));
         featuresService.installFeature("trellis-http");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-http not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-http")));
     }
@@ -139,6 +145,7 @@ public class OSGiTest {
     @Test
     public void testRDFaInstallation() throws Exception {
         featuresService.installFeature("trellis-rdfa");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-rdfa not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-rdfa")));
     }
@@ -148,6 +155,7 @@ public class OSGiTest {
         assertFalse("trellis-id already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-id")));
         featuresService.installFeature("trellis-id");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-id not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-id")));
     }
@@ -157,6 +165,7 @@ public class OSGiTest {
         assertFalse("trellis-webac already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
         featuresService.installFeature("trellis-webac");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-webac not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
     }
@@ -166,6 +175,7 @@ public class OSGiTest {
         assertFalse("trellis-agent already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
         featuresService.installFeature("trellis-agent");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-agent not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
     }
@@ -175,6 +185,7 @@ public class OSGiTest {
         assertFalse("trellis-file already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-file")));
         featuresService.installFeature("trellis-file");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-file not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-file")));
     }
@@ -184,6 +195,7 @@ public class OSGiTest {
         assertFalse("trellis-constraint-rules already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
         featuresService.installFeature("trellis-constraint-rules");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-constraint-rules not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
     }
@@ -193,6 +205,7 @@ public class OSGiTest {
         if (!featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization"))) {
             featuresService.installFeature("trellis-event-serialization");
         }
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-event-serialization not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization")));
     }
@@ -213,6 +226,7 @@ public class OSGiTest {
                 featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
         featuresService.installFeature("trellis-event-serialization");
         featuresService.installFeature("trellis-amqp");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-amqp not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
     }
@@ -223,6 +237,7 @@ public class OSGiTest {
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
         featuresService.installFeature("trellis-event-serialization");
         featuresService.installFeature("trellis-jms");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-jms not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
     }
@@ -232,8 +247,14 @@ public class OSGiTest {
         assertFalse("trellis-namespace already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
         featuresService.installFeature("trellis-namespaces");
+        checkTrellisBundlesAreActive();
         assertTrue("trellis-namespace not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
+    }
+
+    private void checkTrellisBundlesAreActive() {
+        stream(bundleContext.getBundles()).filter(b -> b.getSymbolicName().startsWith("org.trellisldp")).forEach(b ->
+                    assertEquals("Bundle " + b.getSymbolicName() + " is not active!", ACTIVE, b.getState()));
     }
 
     protected <T> T getOsgiService(final Class<T> type, final String filter, final long timeout) {
