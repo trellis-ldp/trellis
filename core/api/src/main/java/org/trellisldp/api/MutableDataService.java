@@ -61,13 +61,12 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * Delete a resource from the server.
      *
      * @param identifier the identifier for the new resource
-     * @param ixnModel the new LDP interaction model for this resource
-     * @param dataset the dataset
+     * @param container an LDP container for this resource, {@code null} for none
      * @return a new completion stage that, when the stage completes normally, indicates that the resource
      * was successfully deleted from the corresponding persistence layer. In the case of an unsuccessful delete
      * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> delete(IRI identifier, IRI ixnModel, Dataset dataset);
+    CompletableFuture<Void> delete(IRI identifier, IRI container);
 
 }

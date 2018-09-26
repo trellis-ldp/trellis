@@ -56,6 +56,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -225,13 +226,13 @@ abstract class HandlerBaseTest {
             .thenReturn(completedFuture(null));
         when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
             .thenReturn(completedFuture(null));
-        when(mockResourceService.delete(any(IRI.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(completedFuture(null));
+        when(mockResourceService.delete(any(IRI.class), any(IRI.class))).thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
+        when(mockResourceService.getContainer(any(IRI.class))).thenCallRealMethod();
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
     }
@@ -269,6 +270,7 @@ abstract class HandlerBaseTest {
 
     private void setUpResources() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockResource.getContainer()).thenReturn(Optional.of(root));
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinary()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);

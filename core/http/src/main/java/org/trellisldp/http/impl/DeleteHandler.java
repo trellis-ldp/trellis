@@ -125,7 +125,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         if (ACL.equals(getRequest().getExt())) {
             return handleAclDeletion(mutable, immutable);
         }
-        return handleResourceDeletion(mutable, immutable).thenCompose(future ->
+        return handleResourceDeletion(immutable).thenCompose(future ->
                 emitEvent(getInternalId(), AS.Delete, LDP.Resource));
     }
 
@@ -146,8 +146,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         return handleResourceReplacement(mutable, immutable);
     }
 
-    private CompletableFuture<Void> handleResourceDeletion(final TrellisDataset mutable,
-            final TrellisDataset immutable) {
+    private CompletableFuture<Void> handleResourceDeletion(final TrellisDataset immutable) {
         // Collect the audit data
         getServices().getAuditService().deletion(getResource().getIdentifier(), getSession()).stream()
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))
@@ -155,8 +154,8 @@ public class DeleteHandler extends MutatingLdpHandler {
 
         // delete the resource
         return allOf(
-                getServices().getResourceService().delete(getResource().getIdentifier(), LDP.Resource,
-                    mutable.asDataset()),
+                getServices().getResourceService().delete(getResource().getIdentifier(),
+                    getResource().getContainer().orElse(null)),
                 getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
     }
 }

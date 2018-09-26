@@ -84,9 +84,8 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public CompletableFuture<Void> delete(final IRI id, final IRI ixnModel,
-            final Dataset dataset) {
-        return mutableData.delete(id, ixnModel, dataset);
+    public CompletableFuture<Void> delete(final IRI id, final IRI container) {
+        return mutableData.delete(id, container);
     }
 
     /**

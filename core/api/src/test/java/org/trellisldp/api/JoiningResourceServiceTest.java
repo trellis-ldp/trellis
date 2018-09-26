@@ -120,8 +120,7 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
-        public CompletableFuture<Void> delete(final IRI identifier, final IRI ixnModel,
-                        final Dataset dataset) {
+        public CompletableFuture<Void> delete(final IRI identifier, final IRI container) {
             resources.remove(identifier);
             return isntBadId(identifier);
         }
@@ -215,8 +214,7 @@ public class JoiningResourceServiceTest {
         assertEquals(testResource2.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
-        assertNull(testable.delete(testResourceId1, testResource2.getInteractionModel(),
-                        testResource2.dataset()).join(), "Couldn't delete resource!");
+        assertNull(testable.delete(testResourceId1, null).join(), "Couldn't delete resource!");
         assertEquals(MISSING_RESOURCE, testable.get(testResourceId1).join(), "Found resource after deleting it!");
     }
 
