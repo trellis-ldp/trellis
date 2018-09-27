@@ -48,11 +48,15 @@ public class TrellisServiceBundlerTest {
     private MementoService mementoService;
 
     @Test
-    public void testOSGiClass() {
+    public void testServiceBundler() {
         final ServiceBundler bundler = new TrellisServiceBundler(mementoService, binaryService,
                 ioService, agentService, eventService, service);
         assertEquals(ioService, bundler.getIOService());
         assertEquals(service, bundler.getAuditService());
         assertEquals(service, bundler.getResourceService());
+        assertEquals(agentService, bundler.getAgentService());
+        assertEquals(binaryService, bundler.getBinaryService());
+        assertEquals(mementoService, bundler.getMementoService());
+        assertEquals(eventService, bundler.getEventService());
     }
 }
