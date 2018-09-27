@@ -289,7 +289,8 @@ public interface LdpBasicContainerTests extends CommonTests {
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
             assertAll("Check the resulting graph", checkRdfGraph(g, identifier));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child4)), "Check for an ldp:contains triple");
+            assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child4)),
+                    "Check for an ldp:contains triple");
             setThirdETag(res.getEntityTag());
             assertTrue(getThirdETag().isWeak(), "Check for a weak ETag");
             assertNotEquals(getFirstETag(), getThirdETag(), "Check ETags 1 and 3");

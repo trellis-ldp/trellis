@@ -279,12 +279,11 @@ class MutatingLdpHandler extends BaseLdpHandler {
     protected CompletableFuture<Void> handleResourceReplacement(final TrellisDataset mutable,
             final TrellisDataset immutable) {
         // update the resource
-        final IRI parentId = getServices().getResourceService().getContainer(getResource().getIdentifier())
-            .orElse(null);
         return allOf(
                 getServices().getResourceService()
                     .replace(getResource().getIdentifier(), getResource().getInteractionModel(),
-                        mutable.asDataset(), parentId, getResource().getBinary().orElse(null)),
+                        mutable.asDataset(), getResource().getContainer().orElse(null),
+                        getResource().getBinary().orElse(null)),
                 getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
     }
 

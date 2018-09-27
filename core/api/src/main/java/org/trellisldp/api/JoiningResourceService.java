@@ -14,10 +14,12 @@
 
 package org.trellisldp.api;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.concat;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -100,11 +102,13 @@ public abstract class JoiningResourceService implements ResourceService {
         private final Instant modified = Instant.now();
         private final IRI id;
         private final IRI ixnModel;
+        private final IRI container;
         private final Dataset dataset;
 
-        public PersistableResource(final IRI id, final IRI ixnModel, final Dataset dataset) {
+        public PersistableResource(final IRI id, final IRI ixnModel, final IRI container, final Dataset dataset) {
             this.id = id;
             this.ixnModel = ixnModel;
+            this.container = container;
             this.dataset = dataset;
         }
 
@@ -126,6 +130,11 @@ public abstract class JoiningResourceService implements ResourceService {
         @Override
         public Instant getModified() {
             return modified;
+        }
+
+        @Override
+        public Optional<IRI> getContainer() {
+            return ofNullable(container);
         }
 
         @Override
@@ -160,6 +169,11 @@ public abstract class JoiningResourceService implements ResourceService {
         @Override
         public IRI getInteractionModel() {
             return mutable.getInteractionModel();
+        }
+
+        @Override
+        public Optional<IRI> getContainer() {
+            return mutable.getContainer();
         }
 
         @Override

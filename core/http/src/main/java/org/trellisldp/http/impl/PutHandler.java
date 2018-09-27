@@ -270,14 +270,14 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private CompletableFuture<Void> createOrReplace(final IRI ldpType, final TrellisDataset ds, final Binary b) {
-        final IRI c = getServices().getResourceService().getContainer(internalId).orElse(null);
         final Resource resource = getResource();
-        if (resource == null) {
+        if (isNull(resource)) {
             LOGGER.debug("Creating new resource {}", internalId);
-            return getServices().getResourceService().create(internalId, ldpType, ds.asDataset(), c, b);
+            return getServices().getResourceService().create(internalId, ldpType, ds.asDataset(), null, b);
         } else {
             LOGGER.debug("Replacing old resource {}", internalId);
-            return getServices().getResourceService().replace(internalId, ldpType, ds.asDataset(), c, b);
+            return getServices().getResourceService().replace(internalId, ldpType, ds.asDataset(),
+                    resource.getContainer().orElse(null), b);
         }
     }
 

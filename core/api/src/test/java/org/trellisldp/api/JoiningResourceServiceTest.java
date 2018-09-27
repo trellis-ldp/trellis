@@ -17,6 +17,7 @@ package org.trellisldp.api;
 import static java.time.Instant.now;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.synchronizedMap;
+import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,6 +32,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -172,6 +174,11 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
+        public Optional<IRI> getContainer() {
+            return empty();
+        }
+
+        @Override
         public Stream<? extends Quad> stream() {
             return dataset.stream();
         }
@@ -295,7 +302,7 @@ public class JoiningResourceServiceTest {
         final Dataset dataset = RDFUtils.getInstance().createDataset();
         dataset.add(quad);
 
-        final Resource res = new JoiningResourceService.PersistableResource(identifier, LDP.Container, dataset);
+        final Resource res = new JoiningResourceService.PersistableResource(identifier, LDP.Container, null, dataset);
         assertEquals(identifier, res.getIdentifier(), "Resource has wrong ID!");
         assertEquals(LDP.Container, res.getInteractionModel(), "Resource has wrong LDP type!");
         assertFalse(res.getModified().isBefore(time), "Resource modification date predates its creation!");
