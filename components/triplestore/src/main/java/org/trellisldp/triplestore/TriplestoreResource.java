@@ -17,8 +17,6 @@ import static java.util.Objects.nonNull;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
-import static java.util.stream.Stream.empty;
-import static java.util.stream.Stream.of;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -181,12 +179,8 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public Optional<IRI> getContainer() {
-        return graph.stream(identifier, DC.isPartOf, null).map(Triple::getObject).flatMap(obj -> {
-            if (obj instanceof IRI) {
-                return of((IRI) obj);
-            }
-            return empty();
-        }).findFirst();
+        return graph.stream(identifier, DC.isPartOf, null).map(Triple::getObject)
+            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
     }
 
     @Override
