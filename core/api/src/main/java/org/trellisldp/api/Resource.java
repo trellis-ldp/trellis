@@ -134,7 +134,7 @@ public interface Resource {
      *
      * @apiNote returning an empty Optional should indicate here that the resource is not
      *          contained by any parent resource. This may be because it is a root resource
-     *          and therefore not contained by any other resource. Alternately, it could also
+     *          and therefore not contained by any other resource. Alternatively, it could
      *          mean that a PUT operation was used to create the resource.
      * @return the identifier for a container, if one exists.
      */
