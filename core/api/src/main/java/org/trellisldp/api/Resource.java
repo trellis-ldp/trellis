@@ -57,6 +57,11 @@ public interface Resource {
             }
 
             @Override
+            public Optional<IRI> getContainer() {
+                return empty();
+            }
+
+            @Override
             public Stream<? extends Quad> stream() {
                 return Stream.empty();
             }
@@ -84,6 +89,11 @@ public interface Resource {
             @Override
             public IRI getInteractionModel() {
                 return null;
+            }
+
+            @Override
+            public Optional<IRI> getContainer() {
+                return empty();
             }
 
             @Override
@@ -118,6 +128,17 @@ public interface Resource {
      * @return the last-modified date
      */
     Instant getModified();
+
+    /**
+     * Get the container for this resource.
+     *
+     * @apiNote returning an empty Optional should indicate here that the resource is not
+     *          contained by any parent resource. This may be because it is a root resource
+     *          and therefore not contained by any other resource. Alternately, it could also
+     *          mean that a PUT operation was used to create the resource.
+     * @return the identifier for a container, if one exists.
+     */
+    Optional<IRI> getContainer();
 
     /**
      * Retrieve the membership resource if this is an LDP Direct or Indirect container.

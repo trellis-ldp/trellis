@@ -84,6 +84,11 @@ public class FileResource implements Resource {
     }
 
     @Override
+    public Optional<IRI> getContainer() {
+        return getObjectForPredicate(DC.isPartOf);
+    }
+
+    @Override
     public Optional<Binary> getBinary() {
         return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(t -> t instanceof IRI)
                 .map(t -> (IRI) t).findFirst().map(id -> new Binary((IRI) id,
