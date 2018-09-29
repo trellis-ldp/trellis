@@ -94,31 +94,29 @@
       <property name="checkHtml" value="true"/>
     </module>
 
-		<module name="LocalFinalVariableName">
-			<!-- Validates identifiers for local final variables against the
-			expression "^[a-z][a-zA-Z0-9]*$". -->
-			<property name="severity" value="error"/>
-		</module>
+    <module name="LocalFinalVariableName">
+      <!-- Validates identifiers for local final variables against the
+      expression "^[a-z][a-zA-Z0-9]*$". -->
+      <property name="severity" value="error"/>
+    </module>
 
+    <!-- Type parameters must be either one of the four blessed letters
+    T, U, K, V, W, X or else be capital-case terminated with a T,
+    such as MyGenericParameterT -->
+    <module name="ClassTypeParameterName">
+      <property name="format" value="^(((T|U|K|V|W|X|R)[0-9]*)|([A-Z][a-z][a-zA-Z]*))$"/>
+      <property name="severity" value="error"/>
+    </module>
 
-		<!-- Type parameters must be either one of the four blessed letters
-		T, U, K, V, W, X or else be capital-case terminated with a T,
-		such as MyGenericParameterT -->
-		<module name="ClassTypeParameterName">
-			<property name="format" value="^(((T|U|K|V|W|X|R)[0-9]*)|([A-Z][a-z][a-zA-Z]*))$"/>
-			<property name="severity" value="error"/>
-		</module>
+    <module name="MethodTypeParameterName">
+      <property name="format" value="^(((T|U|K|V|W|X|R)[0-9]*)|([A-Z][a-z][a-zA-Z]*T))$"/>
+      <property name="severity" value="error"/>
+    </module>
 
-		<module name="MethodTypeParameterName">
-			<property name="format" value="^(((T|U|K|V|W|X|R)[0-9]*)|([A-Z][a-z][a-zA-Z]*T))$"/>
-			<property name="severity" value="error"/>
-		</module>
-
-		<module name="InterfaceTypeParameterName">
-			<property name="format" value="^(((T|U|K|V|W|X|R)[0-9]*)|([A-Z][a-z][a-zA-Z]*T))$"/>
-			<property name="severity" value="error"/>
-		</module>
-
+    <module name="InterfaceTypeParameterName">
+      <property name="format" value="^(((T|U|K|V|W|X|R)[0-9]*)|([A-Z][a-z][a-zA-Z]*T))$"/>
+      <property name="severity" value="error"/>
+    </module>
 
     <!-- K&R style braces -->
     <module name="NeedBraces"/>
