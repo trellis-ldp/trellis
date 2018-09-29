@@ -139,7 +139,7 @@ public class PutHandler extends MutatingLdpHandler {
             throw new NotAcceptableException();
         }
 
-        setParent(parent);
+        ofNullable(resource).flatMap(Resource::getContainer).ifPresent(p -> setParent(parent));
         return status(NO_CONTENT);
     }
 

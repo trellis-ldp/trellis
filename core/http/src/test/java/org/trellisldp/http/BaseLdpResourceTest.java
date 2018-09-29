@@ -307,6 +307,7 @@ abstract class BaseLdpResourceTest extends JerseyTest {
         when(mockBinary.getMimeType()).thenReturn(of(BINARY_MIME_TYPE));
         when(mockBinary.getSize()).thenReturn(of(BINARY_SIZE));
 
+        when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinary()).thenReturn(empty());

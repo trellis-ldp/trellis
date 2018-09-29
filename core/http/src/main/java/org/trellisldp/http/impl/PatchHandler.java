@@ -144,7 +144,7 @@ public class PatchHandler extends MutatingLdpHandler {
         checkCache(resource.getModified(), etag);
 
         setResource(resource);
-        setParent(parent);
+        resource.getContainer().ifPresent(p -> setParent(parent));
         return ok();
     }
 
