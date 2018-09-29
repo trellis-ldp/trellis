@@ -1434,7 +1434,6 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
 
-        // MOCK mockResourceService.getContainer
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1454,7 +1453,6 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         when(mockRootResource.getMembershipResource()).thenReturn(of(childIdentifier));
         when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
 
-        // MOCK mockResourceService.getContainer
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
