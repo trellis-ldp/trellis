@@ -116,7 +116,6 @@ public class TrellisConfigurationTest {
         assertTrue(config.getAuth().getWebac().getEnabled(), "WebAC wasn't enabled!");
         assertEquals((Long) 100L, config.getAuth().getWebac().getCacheSize(), "Incorrect auth/webac/cacheSize value!");
         assertEquals((Long) 10L, config.getAuth().getWebac().getCacheExpireSeconds(), "Incorrect webac cache expiry!");
-        assertTrue(config.getAuth().getAnon().getEnabled(), "Missing anon auth support!");
         assertTrue(config.getAuth().getBasic().getEnabled(), "Missing basic auth support!");
         assertEquals("users.auth", config.getAuth().getBasic().getUsersFile(), "Incorrect basic auth users file!");
         assertEquals("trellis", config.getAuth().getBasic().getRealm(), "Incorrect basic auth realm!");
@@ -124,8 +123,8 @@ public class TrellisConfigurationTest {
         config.getAuth().getBasic().setRealm("foo");
         assertEquals("foo", config.getAuth().getBasic().getRealm(), "Incorrect basic auth realm!");
         assertTrue(config.getAuth().getJwt().getEnabled(), "JWT not enabled!");
-        assertEquals("secret", config.getAuth().getJwt().getKey(), "Incorrect JWT key!");
-        assertFalse(config.getAuth().getJwt().getBase64Encoded(), "Incorrect JWT base64 encoded setting!");
+        assertEquals("xd1GuAwiP2+M+pyK+GlIUEAumSmFx5DP3dziGtVb1tA+/8oLXfSDMDZFkxVghyAd28rXImy18TmttUi+g0iomQ==",
+                config.getAuth().getJwt().getKey(), "Incorrect JWT key!");
         assertEquals("trellis", config.getAuth().getJwt().getRealm(), "Incorrect JWT realm!");
         config.getAuth().getJwt().setRealm("bar");
         assertEquals("bar", config.getAuth().getJwt().getRealm(), "Incorrect JWT realm after reset!");

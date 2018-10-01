@@ -10,11 +10,9 @@ ext {
 dependencies {
     compile("com.github.jsonld-java:jsonld-java:$jsonldVersion")
     compile("commons-codec:commons-codec:$commonsCodecVersion")
-    compile("io.dropwizard:dropwizard-auth:$dropwizardVersion")
     compile("io.dropwizard:dropwizard-core:$dropwizardVersion")
     compile("io.dropwizard:dropwizard-metrics:$dropwizardVersion")
     compile("io.dropwizard:dropwizard-http2:$dropwizardVersion")
-    compile("io.jsonwebtoken:jjwt:$jwtVersion")
     compile("javax.activation:javax.activation-api:$activationApiVersion")
     compile("javax.jms:javax.jms-api:$jmsApiVersion")
     compile("org.apache.activemq:activemq-client:$activeMqVersion")
@@ -40,6 +38,8 @@ dependencies {
     compile project(':trellis-rdfa')
     compile project(':trellis-kafka')
     compile project(':trellis-app')
+    compile project(':trellis-auth-oauth')
+    compile project(':trellis-auth-basic')
 
     runtime ("javax.xml.bind:jaxb-api:$jaxbVersion")
 

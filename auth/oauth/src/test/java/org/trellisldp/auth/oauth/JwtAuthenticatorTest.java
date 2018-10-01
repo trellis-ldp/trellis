@@ -11,23 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.auth;
+package org.trellisldp.auth.oauth;
 
+import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
+import static io.jsonwebtoken.security.Keys.secretKeyFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.dropwizard.auth.AuthenticationException;
-import io.dropwizard.auth.Authenticator;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.crypto.EllipticCurveProvider;
 import io.jsonwebtoken.impl.crypto.RsaProvider;
+import io.jsonwebtoken.security.SecurityException;
 
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.Principal;
+import java.util.Base64;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -38,12 +42,12 @@ import org.junit.jupiter.api.Test;
 public class JwtAuthenticatorTest {
 
     @Test
-    public void testAuthenticate() throws AuthenticationException {
-         final String key = "c2VjcmV0";
-         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
-             .signWith(SignatureAlgorithm.HS512, key).compact();
+    public void testAuthenticate() {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS256);
+        final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
+             .signWith(key).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, true);
+        final Authenticator authenticator = new JwtAuthenticator(key);
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent(), "Missing principal!");
@@ -51,12 +55,12 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateEC() throws AuthenticationException {
+    public void testAuthenticateEC() {
         final KeyPair keypair = EllipticCurveProvider.generateKeyPair(SignatureAlgorithm.ES256);
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
-             .signWith(SignatureAlgorithm.ES256, keypair.getPrivate()).compact();
+             .signWith(keypair.getPrivate(), SignatureAlgorithm.ES256).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(keypair.getPublic());
+        final Authenticator authenticator = new JwtAuthenticator(keypair.getPublic());
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent(), "Missing principal!");
@@ -64,12 +68,12 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateRSA() throws AuthenticationException {
+    public void testAuthenticateRSA() {
         final KeyPair keypair = RsaProvider.generateKeyPair();
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
-             .signWith(SignatureAlgorithm.RS256, keypair.getPrivate()).compact();
+             .signWith(keypair.getPrivate(), SignatureAlgorithm.RS256).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(keypair.getPublic());
+        final Authenticator authenticator = new JwtAuthenticator(keypair.getPublic());
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent(), "Missing principal!");
@@ -83,9 +87,9 @@ public class JwtAuthenticatorTest {
 
         final Key privateKey = ks.getKey("trellis", "password".toCharArray());
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
-             .signWith(SignatureAlgorithm.RS256, privateKey).compact();
+             .signWith(privateKey, SignatureAlgorithm.RS256).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+        final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis").getPublicKey());
 
         final Optional<Principal> result = authenticator.authenticate(token);
@@ -100,9 +104,9 @@ public class JwtAuthenticatorTest {
 
         final Key privateKey = ks.getKey("trellis", "password".toCharArray());
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
-             .signWith(SignatureAlgorithm.RS256, privateKey).compact();
+             .signWith(privateKey, SignatureAlgorithm.RS256).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+        final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis-public").getPublicKey());
 
         final Optional<Principal> result = authenticator.authenticate(token);
@@ -117,9 +121,9 @@ public class JwtAuthenticatorTest {
 
         final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
-             .signWith(SignatureAlgorithm.ES256, privateKey).compact();
+             .signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+        final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis-ec").getPublicKey());
 
         final Optional<Principal> result = authenticator.authenticate(token);
@@ -135,9 +139,9 @@ public class JwtAuthenticatorTest {
         final Key privateKey = ks.getKey("trellis-ec", "password".toCharArray());
         final String token = Jwts.builder().setSubject("acoburn")
              .claim("website", "https://people.apache.org/~acoburn/#i")
-             .signWith(SignatureAlgorithm.ES256, privateKey).compact();
+             .signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(
+        final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis-ec").getPublicKey());
 
         final Optional<Principal> result = authenticator.authenticate(token);
@@ -146,24 +150,23 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateNoSub() throws AuthenticationException {
-         final String key = "c2VjcmV0";
-         final String token = Jwts.builder().setIssuer("http://localhost")
-             .signWith(SignatureAlgorithm.HS256, key).compact();
+    public void testAuthenticateNoSub() {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS384);
+        final String token = Jwts.builder().setIssuer("http://localhost").signWith(key).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, true);
+        final Authenticator authenticator = new JwtAuthenticator(key);
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertFalse(result.isPresent(), "Unexpected principal!");
     }
 
     @Test
-    public void testAuthenticateSubIss() throws AuthenticationException {
-         final String key = "c2VjcmV0";
-         final String token = Jwts.builder().setSubject("acoburn").setIssuer("http://localhost")
-             .signWith(SignatureAlgorithm.HS512, key).compact();
+    public void testAuthenticateSubIss() {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS512);
+        final String token = Jwts.builder().setSubject("acoburn").setIssuer("http://localhost")
+             .signWith(key).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, true);
+        final Authenticator authenticator = new JwtAuthenticator(key);
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent(), "Missing principal!");
@@ -171,24 +174,23 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateSubNoWebIss() throws AuthenticationException {
-         final String key = "c2VjcmV0";
-         final String token = Jwts.builder().setSubject("acoburn").setIssuer("some org")
-             .signWith(SignatureAlgorithm.HS512, key).compact();
+    public void testAuthenticateSubNoWebIss() {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS512);
+        final String token = Jwts.builder().setSubject("acoburn").setIssuer("some org").signWith(key).compact();
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, true);
+        final Authenticator authenticator = new JwtAuthenticator(key);
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertFalse(result.isPresent(), "Unexpected principal!");
     }
 
     @Test
-    public void testAuthenticateToken() throws AuthenticationException {
-        final String key = "secret";
-        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJodHRwczovL" +
-            "3Blb3BsZS5hcGFjaGUub3JnL35hY29idXJuLyNpIn0.Njgb_f5deb5hjr6UP-Q0GAWAz3ykvBW0-A0Sr5thdMo";
+    public void testAuthenticateToken() {
+        final String key = "N0NuokWWb5XjMP+V3XLfyLkaSArwxNm17VeAvv7+y4+Y/DmxBLenvwOPO404lfl6UfyyEGgQ02ETDEPRMwV/+Q==";
+        final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJodHRwczovL3Blb3BsZS5hcGFjaGUub3JnL35" +
+            "hY29idXJuLyNpIn0.n-C7xhjVyn3WEWGfSXfuqrjXVSoAnD08sO5K8mDsBiZF6Z8lwiksGos6lR-6RjD5jI25d1yPJ47LKBWqMlMm_A";
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
+        final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent(), "Missing principal!");
@@ -196,12 +198,13 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateTokenIssSub() throws AuthenticationException {
-        final String key = "secret";
-        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9" +
-            "uIENvYnVybiIsImlzcyI6Imh0dHA6Ly9leGFtcGxlLm9yZy8ifQ.DPb_i9vfI5um2X_g_df2y1uFktThGdDBo-Q7AMqjaWc";
+    public void testAuthenticateTokenIssSub() {
+        final String key = "N0NuokWWb5XjMP+V3XLfyLkaSArwxNm17VeAvv7+y4+Y/DmxBLenvwOPO404lfl6UfyyEGgQ02ETDEPRMwV/+Q==";
+        final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVyb" +
+            "iIsImlzcyI6Imh0dHA6Ly9leGFtcGxlLm9yZy8ifQ.4Srityp5iPScGyqvkPakD3DmtXYWhkyHjr0K6B7kpcR2ll8MC-hGpYoIDM8ar" +
+            "ro3dyZQp0kDhPfYZ6MiAGfGTQ";
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
+        final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent(), "Missing principal!");
@@ -209,13 +212,13 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticationTokenWebid() throws AuthenticationException {
-        final String key = "secret";
-        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vcGVvcGxlLmFwYWNo" +
-            "ZS5vcmcvfmFjb2J1cm4vI2kiLCJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVybiIsImlzcyI6Imh0dHA6Ly" +
-            "9leGFtcGxlLm9yZy8ifQ.LqrqNUXIMJD-Qrw7b38c0o6HYaaX_8G3GzCANhPclhk";
+    public void testAuthenticationTokenWebid() {
+        final String key = "N0NuokWWb5XjMP+V3XLfyLkaSArwxNm17VeAvv7+y4+Y/DmxBLenvwOPO404lfl6UfyyEGgQ02ETDEPRMwV/+Q==";
+        final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vcGVvcGxlLmFwYWNoZS5vcmcvfm" +
+            "Fjb2J1cm4vI2kiLCJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVybiIsImlzcyI6Imh0dHA6Ly9leGFtcGxlLm9yZy8ifQ" +
+            ".kIHJDSzaisxfIF5fQou2e9rBInsDsl0vZ4QQ60zlZlSufm9nnmC7eL-875WPsVGzPAfptF6MrImrpFeNxdW9ZQ";
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
+        final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertTrue(result.isPresent(), "Missing principal!");
@@ -223,38 +226,36 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticationTokenWebidBadKey() throws AuthenticationException {
-        final String key = "incorrect";
-        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vYWNvYnVybi5wZW9w" +
-            "bGUuYW1oZXJzdC5lZHUvIiwic3ViIjoiYWNvYnVybiIsIm5hbWUiOiJBYXJvbiBDb2J1cm4iLCJpc3MiOiJodHRwOi8vZX" +
-            "hhbXBsZS5vcmcvIn0.X-7_VfEuLGzH5ZEqzpkHWp1bo3tMzBiyDcNUwwdLeqw";
+    public void testAuthenticationTokenWebidBadKey() {
+        final String key = "2YuUlb+t36yVzrTkYLl8xBlBJSC41CE7uNF3somMDxdYDfcACv9JYIU54z17s4Ah313uKu/4Ll+vDNKpxx6v4Q==";
+        final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vcGVvcGxlLmFwYWNoZS5vcmcvfm" +
+            "Fjb2J1cm4vI2kiLCJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVybiIsImlzcyI6Imh0dHA6Ly9leGFtcGxlLm9yZy8ifQ" +
+            ".kIHJDSzaisxfIF5fQou2e9rBInsDsl0vZ4QQ60zlZlSufm9nnmC7eL-875WPsVGzPAfptF6MrImrpFeNxdW9ZQ";
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
+        final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
+
+        assertThrows(SecurityException.class, () -> authenticator.authenticate(token), "Parsed bad JWT!");
+    }
+
+    @Test
+    public void testAuthenticationNoPrincipal() {
+        final String key = "w8+z9hrcbr3ktQ5WTr9xNZknke3L/RAj8r8RieriWozGu1M4RDgkpJcfTEg90pqYyadbIBLy+qFHu1JJ8O0rjw==";
+        final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9" +
+            "uIENvYnVybiJ9.srs7gSbix8nLDuFmwYCEN0In-5pa6-59D5nqF1UgRD-hsJBS2UoieYoBJZNGGKj1hO1DaboqtuS_36bE9QGdCw";
+
+        final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
         final Optional<Principal> result = authenticator.authenticate(token);
         assertFalse(result.isPresent(), "Unexpected principal!");
     }
 
     @Test
-    public void testAuthenticationNoPrincipal() throws AuthenticationException {
-        final String key = "secret";
-        final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY29idXJuIiwibmFtZSI" +
-            "6IkFhcm9uIENvYnVybiJ9.IMuzkEyDDHaLi8wps_W3F6wJkIVwocK4DFb8OFYaADA";
-
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
-
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent(), "Unexpected principal!");
-    }
-
-    @Test
-    public void testGarbledToken() throws AuthenticationException {
-        final String key = "secret";
+    public void testGarbledToken() {
+        final String key = "thj983z1fiqAiaV7Nv4nWpjaDi6eVTd7jOGxbs92mp8=";
         final String token = "blahblah";
 
-        final Authenticator<String, Principal> authenticator = new JwtAuthenticator(key, false);
+        final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent(), "Unexpected principal!");
+        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token), "Parsed bad JWT!");
     }
 }

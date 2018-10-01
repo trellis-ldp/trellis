@@ -70,7 +70,7 @@ public class TrellisAuthorizationTest extends AbstractApplicationAuthTests {
 
     @Override
     public String getJwtSecret() {
-        return "secret";
+        return "EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA==";
     }
 
     @AfterAll

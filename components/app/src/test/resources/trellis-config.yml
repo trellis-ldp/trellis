@@ -28,12 +28,9 @@ hubUrl: http://example.com/websubhub/
 auth:
     webac:
         enabled: true
-    anon:
-        enabled: true
     jwt:
         enabled: true
-        base64Encoded: false
-        key: secret
+        key: Te9q+frJ56y1m5hRDA7o6dSmA/MK9fdEMsMbLNtuKgL7rLe/BrLxWrm6Lnysgme/NzQ8q6FsYXcYsuNYqXkYIg==
     basic:
         enabled: true
 

@@ -31,7 +31,7 @@ public class NoInitTrellisApplicationTest extends TrellisApplicationTest {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(SimpleNoInitTrellisApp.class,
-                resourceFilePath("trellis-config.yml"));
+                    resourceFilePath("trellis-config.yml"));
 
     private static final Client CLIENT;
 

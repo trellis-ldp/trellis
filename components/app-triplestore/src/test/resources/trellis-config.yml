@@ -29,12 +29,9 @@ hubUrl:
 auth:
     webac:
         enabled: true
-    anon:
-        enabled: true
     jwt:
         enabled: true
-        base64Encoded: false
-        key: secret
+        key: EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA==
     basic:
         enabled: true
 

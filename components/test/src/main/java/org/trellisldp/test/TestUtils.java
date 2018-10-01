@@ -13,6 +13,7 @@
  */
 package org.trellisldp.test;
 
+import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
 import static java.util.Collections.emptySet;
@@ -27,7 +28,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +67,7 @@ public final class TestUtils {
      */
     public static String buildJwt(final String webid, final String secret) {
         return "Bearer " + Jwts.builder().claim("webid", webid)
-            .signWith(SignatureAlgorithm.HS512, secret.getBytes(UTF_8)).compact();
+            .signWith(hmacShaKeyFor(secret.getBytes(UTF_8))).compact();
     }
 
     /**

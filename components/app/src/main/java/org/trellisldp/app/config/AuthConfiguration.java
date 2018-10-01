@@ -27,7 +27,6 @@ public class AuthConfiguration {
     private JwtAuthConfiguration jwt = new JwtAuthConfiguration();
     private BasicAuthConfiguration basic = new BasicAuthConfiguration();
     private WebacConfiguration webac = new WebacConfiguration();
-    private AnonAuthConfiguration anon = new AnonAuthConfiguration();
 
     @NotNull
     private List<String> adminUsers = new ArrayList<>();
@@ -102,23 +101,5 @@ public class AuthConfiguration {
     @JsonProperty
     public WebacConfiguration getWebac() {
         return webac;
-    }
-
-    /**
-     * Set the anonymous auth configuration.
-     * @param anon the anonymous auth config
-     */
-    @JsonProperty
-    public void setAnon(final AnonAuthConfiguration anon) {
-        this.anon = anon;
-    }
-
-    /**
-     * Get the anonymous auth configuration.
-     * @return the anonymous auth config
-     */
-    @JsonProperty
-    public AnonAuthConfiguration getAnon() {
-        return this.anon;
     }
 }

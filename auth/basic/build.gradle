@@ -1,0 +1,43 @@
+apply plugin: 'java-library'
+apply plugin: 'osgi'
+
+description = 'Trellis Basic authentication filter'
+
+ext {
+    moduleName = 'org.trellisldp.auth.basic'
+}
+
+dependencies {
+    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+
+    implementation("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation project(':trellis-vocabulary')
+
+    testRuntime("javax.xml.bind:jaxb-api:$jaxbVersion")
+    testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
+
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+}
+
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Automatic-Module-Name', moduleName
+        instruction 'Import-Package', '*'
+        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+    }
+}
+
+
