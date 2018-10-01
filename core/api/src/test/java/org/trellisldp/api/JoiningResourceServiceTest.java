@@ -285,12 +285,14 @@ public class JoiningResourceServiceTest {
         when(mockMutable.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockMutable.getModified()).thenReturn(time);
         when(mockMutable.hasAcl()).thenReturn(true);
+        when(mockMutable.getContainer()).thenReturn(empty());
         when(mockMutable.stream()).thenAnswer(inv -> Stream.of(quad));
 
         final Resource res = new RetrievableResource(mockMutable, null);
         assertEquals(LDP.RDFSource, res.getInteractionModel(), "Resource retrieved with wrong interaction model!");
         assertEquals(time, res.getModified(), "Resource has wrong modified date!");
         assertTrue(res.hasAcl(), "Resource is missing ACL!");
+        assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
         assertTrue(res.stream().anyMatch(quad::equals), "Expected quad not present in resource stream!");
     }
 
@@ -308,6 +310,7 @@ public class JoiningResourceServiceTest {
         assertFalse(res.getModified().isBefore(time), "Resource modification date predates its creation!");
         assertFalse(res.getModified().isAfter(now()), "Resource modification date is too late!");
         assertTrue(res.stream().anyMatch(quad::equals), "Expected quad not present in resource stream");
+        assertFalse(res.getContainer().isPresent(), "Expected no parent container");
         assertThrows(UnsupportedOperationException.class, res::hasAcl, "ACL retrieval should throw an exception!");
     }
 }

@@ -55,6 +55,7 @@ public class FileResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
         assertFalse(res.getBinary().isPresent(), "Unexpected binary present!");
         assertFalse(res.hasAcl(), "Unexpected ACL present!");
+        assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment count!");
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
         assertEquals(2L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
@@ -82,6 +83,7 @@ public class FileResourceTest {
             assertEquals(of("text/plain"), binary.getMimeType(), "Incorrect binary mime type!");
             assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier(), "Incorrect binary id!");
         });
+        assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
         assertFalse(res.hasAcl(), "Unexpected ACL present!");
         assertEquals(0L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(2L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");

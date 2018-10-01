@@ -87,13 +87,13 @@ public interface Resource {
             }
 
             @Override
-            public IRI getInteractionModel() {
-                return null;
+            public Optional<IRI> getContainer() {
+                return empty();
             }
 
             @Override
-            public Optional<IRI> getContainer() {
-                return empty();
+            public IRI getInteractionModel() {
+                return null;
             }
 
             @Override

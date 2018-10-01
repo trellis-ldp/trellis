@@ -115,7 +115,7 @@ public class TriplestoreResourceTest {
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false));
+        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 2L, 0L, 0L, 0L, 0L));
     }
@@ -130,7 +130,7 @@ public class TriplestoreResourceTest {
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false));
+        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 2L, 0L, 5L, 0L, 0L));
     }
@@ -148,7 +148,7 @@ public class TriplestoreResourceTest {
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, true));
+        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, true, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 2L, 3L, 5L, 0L, 0L));
     }
@@ -179,7 +179,7 @@ public class TriplestoreResourceTest {
             assertEquals(of(Long.parseLong(size)), b.getSize(), "Incorrect binary size!");
             assertEquals(of(mimeType), b.getMimeType(), "Incorrect binary mime type!");
         });
-        assertAll("Check resource", checkResource(res, identifier, LDP.NonRDFSource, true, false));
+        assertAll("Check resource", checkResource(res, identifier, LDP.NonRDFSource, true, false, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 6L, 0L, 5L, 0L, 0L));
     }
@@ -195,7 +195,7 @@ public class TriplestoreResourceTest {
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(res, identifier, LDP.Container, false, false));
+        assertAll("Check resource", checkResource(res, identifier, LDP.Container, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 3L, 0L, 0L, 0L, 4L));
     }
@@ -210,7 +210,7 @@ public class TriplestoreResourceTest {
                 identifier);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false));
+        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 3L, 0L, 0L, 0L, 0L));
     }
@@ -231,14 +231,14 @@ public class TriplestoreResourceTest {
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(res, identifier, LDP.DirectContainer, false, false));
+        assertAll("Check resource", checkResource(res, identifier, LDP.DirectContainer, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, member, DC.subject, null, LDP.MemberSubject));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 7L, 0L, 0L, 0L, 4L));
 
         final TriplestoreResource memberRes = new TriplestoreResource(rdfConnection, member);
         memberRes.fetchData();
         assertTrue(memberRes.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(memberRes, member, LDP.RDFSource, false, false));
+        assertAll("Check resource", checkResource(memberRes, member, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(memberRes, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(memberRes, 1L, 3L, 0L, 0L, 4L, 0L));
         assertEquals(4L, memberRes.stream(singleton(LDP.PreferMembership)).map(Triple::getPredicate)
@@ -265,14 +265,14 @@ public class TriplestoreResourceTest {
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        assertAll("Check resource", checkResource(res, identifier, LDP.IndirectContainer, false, false));
+        assertAll("Check resource", checkResource(res, identifier, LDP.IndirectContainer, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, member, DC.relation, null, DC.subject));
         assertAll("Check RDF stream", checkRdfStream(res, 3L, 7L, 0L, 0L, 0L, 4L));
 
         final TriplestoreResource res2 = new TriplestoreResource(rdfConnection, member);
         res2.fetchData();
         assertTrue(res2.exists(), "Missing resource (2)!");
-        assertAll("Check resource", checkResource(res2, member, LDP.RDFSource, false, false));
+        assertAll("Check resource", checkResource(res2, member, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res2, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res2, 2L, 3L, 0L, 0L, 4L, 0L));
         assertEquals(4L, res2.stream(singleton(LDP.PreferMembership)).map(Triple::getPredicate)
@@ -296,12 +296,13 @@ public class TriplestoreResourceTest {
     }
 
     private static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
-            final Boolean hasBinary, final Boolean hasAcl) {
+            final Boolean hasBinary, final Boolean hasAcl, final Boolean hasParent) {
         return Stream.of(
                 () -> assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!"),
                 () -> assertEquals(ldpType, res.getInteractionModel(), "Incorrect interaction model!"),
                 () -> assertEquals(parse(time), res.getModified(), "Incorrect modified date!"),
                 () -> assertEquals(hasBinary, res.getBinary().isPresent(), "Unexpected binary presence!"),
+                () -> assertEquals(hasParent, res.getContainer().isPresent(), "Unexpected parent resource!"),
                 () -> assertEquals(hasAcl, res.hasAcl(), "Unexpected ACL presence!"));
     }
 
