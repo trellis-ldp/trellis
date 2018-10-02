@@ -189,6 +189,8 @@ public class TriplestoreResourceServiceTest {
                 "No exception with dropped backend connection!");
         assertThrows(ExecutionException.class, () -> svc.add(resource, rdf.createDataset()).get(),
                 "No exception with dropped backend connection!");
+        assertThrows(ExecutionException.class, () -> svc.delete(resource, root).get(),
+                "No exception with dropped backend connection!");
     }
 
     @Test
@@ -422,7 +424,7 @@ public class TriplestoreResourceServiceTest {
 
         final Instant preDelete = meanwhile();
 
-        assertDoesNotThrow(() -> svc.delete(child, LDP.Resource, dataset).join(),
+        assertDoesNotThrow(() -> svc.delete(child, resource).join(),
                 "Unsuccessful delete operation!");
 
         allOf(

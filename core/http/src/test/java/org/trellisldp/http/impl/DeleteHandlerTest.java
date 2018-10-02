@@ -73,8 +73,7 @@ public class DeleteHandlerTest extends HandlerBaseTest {
 
     @Test
     public void testDeleteError() {
-        when(mockResourceService.delete(any(IRI.class), any(IRI.class), any(Dataset.class)))
-            .thenReturn(asyncException());
+        when(mockResourceService.delete(any(IRI.class), any(IRI.class))).thenReturn(asyncException());
         final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),

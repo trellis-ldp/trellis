@@ -126,13 +126,18 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> delete(final IRI identifier, final IRI ixnModel, final Dataset dataset) {
+    public CompletableFuture<Void> delete(final IRI identifier, final IRI container) {
         LOGGER.debug("Deleting: {}", identifier);
         return runAsync(() -> {
-            final Instant eventTime = now();
-            dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
-            dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
-            storeResource(identifier, dataset, eventTime, OperationType.DELETE);
+            try (final Dataset dataset = rdf.createDataset()) {
+                final Instant eventTime = now();
+                dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
+                dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
+                storeResource(identifier, dataset, eventTime, OperationType.DELETE);
+            } catch (final Exception ex) {
+                LOGGER.error("Error deleting resource: {}", ex.getMessage());
+                throw new RuntimeTrellisException(ex);
+            }
         });
     }
 
