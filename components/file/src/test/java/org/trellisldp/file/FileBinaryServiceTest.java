@@ -37,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
@@ -62,7 +63,12 @@ public class FileBinaryServiceTest {
 
     @BeforeAll
     public static void setUpEverything() {
-        System.getProperties().setProperty(FileBinaryService.BINARY_BASE_PATH, directory);
+        System.setProperty(FileBinaryService.BINARY_BASE_PATH, directory);
+    }
+
+    @AfterAll
+    public static void cleanUp() {
+        System.clearProperty(FileBinaryService.BINARY_BASE_PATH);
     }
 
     @Test

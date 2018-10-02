@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.commons.text.RandomStringGenerator;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.ServiceBundler;
@@ -30,6 +31,11 @@ public class ServiceBundlerTest {
     public static void setUp() {
         final String id = "-" + generator.generate(5);
         System.setProperty("trellis.rdf.location", System.getProperty("trellis.rdf.location") + id);
+    }
+
+    @AfterAll
+    public static void cleanUp() {
+        System.clearProperty("trellis.rdf.location");
     }
 
     @Test

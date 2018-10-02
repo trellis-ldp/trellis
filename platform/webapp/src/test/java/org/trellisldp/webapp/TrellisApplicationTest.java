@@ -48,6 +48,7 @@ public class TrellisApplicationTest extends JerseyTest {
     @AfterAll
     public void after() throws Exception {
         super.tearDown();
+        System.clearProperty("trellis.rdf.location");
     }
 
     @Test

@@ -94,9 +94,12 @@ public class AppUtilsTest {
 
     @Test
     public void testNoCORSFilter() {
-       System.getProperties().setProperty("trellis.cors.enabled", "false");
-       assertFalse(AppUtils.getCORSFilter().isPresent(), "Unexpected CORS filter!");
-       System.getProperties().remove("trellis.cors.enabled");
+        try {
+            System.setProperty("trellis.cors.enabled", "false");
+            assertFalse(AppUtils.getCORSFilter().isPresent(), "Unexpected CORS filter!");
+        } finally {
+            System.clearProperty("trellis.cors.enabled");
+        }
     }
 
     @Test
@@ -106,9 +109,12 @@ public class AppUtilsTest {
 
     @Test
     public void testNoCacheFilter() {
-       System.getProperties().setProperty("trellis.cache.enabled", "false");
-       assertFalse(AppUtils.getCacheControlFilter().isPresent(), "Unexpected cache filter!");
-       System.getProperties().remove("trellis.cache.enabled");
+        try {
+            System.setProperty("trellis.cache.enabled", "false");
+            assertFalse(AppUtils.getCacheControlFilter().isPresent(), "Unexpected cache filter!");
+        } finally {
+            System.clearProperty("trellis.cache.enabled");
+        }
     }
 
     @Test
