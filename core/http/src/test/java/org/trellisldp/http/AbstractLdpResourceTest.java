@@ -1976,6 +1976,17 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     }
 
     @Test
+    public void testPatchRoot() {
+        final Response res = target().request()
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.BasicContainer));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!");
+    }
+
+    @Test
     public void testPatchMissing() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
