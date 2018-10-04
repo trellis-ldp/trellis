@@ -16,7 +16,6 @@ package org.trellisldp.api;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * A {@link NamespaceService} that stores nothing and offers nothing.
@@ -29,16 +28,6 @@ public class NoopNamespaceService implements NamespaceService {
     @Override
     public Map<String, String> getNamespaces() {
         return Collections.emptyMap();
-    }
-
-    @Override
-    public Optional<String> getNamespace(final String prefix) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<String> getPrefix(final String namespace) {
-        return Optional.empty();
     }
 
     @Override

@@ -14,7 +14,6 @@
 
 package org.trellisldp.api;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -25,8 +24,6 @@ public class NoopNamespaceServiceTest {
     public void noAction() {
         final NamespaceService testService = new NoopNamespaceService();
         testService.setPrefix("foo", "http://bar/");
-        assertFalse(testService.getNamespace("foo").isPresent(), "Prefix present in no-op namespace svc!");
         assertTrue(testService.getNamespaces().isEmpty(), "Namespace list not empty in no-op service!");
-        assertFalse(testService.getPrefix("http://bar/").isPresent(), "Namespace present in no-op service!");
     }
 }

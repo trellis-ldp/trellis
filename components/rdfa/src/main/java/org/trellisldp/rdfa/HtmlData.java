@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Triple;
+import org.apache.jena.shared.PrefixMapping;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.RDFS;
@@ -53,7 +54,7 @@ class HtmlData {
 
     private final List<Triple> triples;
     private final String subject;
-    private final NamespaceService namespaceService;
+    private final PrefixMapping prefixMapping = PrefixMapping.Factory.create();
     private final List<String> css;
     private final List<String> js;
     private final String icon;
@@ -72,12 +73,14 @@ class HtmlData {
             final List<String> css, final List<String> js, final String icon) {
         requireNonNull(css, "The CSS list may not be null!");
         requireNonNull(js, "The JS list may not be null!");
-        this.namespaceService = namespaceService;
         this.subject = nonNull(subject) ? subject : "";
         this.triples = triples;
         this.css = css;
         this.js = js;
         this.icon = nonNull(icon) ? icon : "//www.trellisldp.org/assets/img/trellis.png";
+        if (nonNull(namespaceService)) {
+            this.prefixMapping.setNsPrefixes(namespaceService.getNamespaces());
+        }
     }
 
     /**
@@ -138,26 +141,7 @@ class HtmlData {
     }
 
     private String getLabel(final String iri) {
-        final int lastHash = iri.lastIndexOf('#');
-        String namespace = null;
-        final String qname;
-        if (lastHash != -1) {
-            namespace = iri.substring(0, lastHash + 1);
-            qname = iri.substring(lastHash + 1);
-        } else {
-            final int lastSlash = iri.lastIndexOf('/');
-            if (lastSlash != -1) {
-                namespace = iri.substring(0, lastSlash + 1);
-                qname = iri.substring(lastSlash + 1);
-            } else {
-                qname = "";
-            }
-        }
-        if (nonNull(namespaceService)) {
-            return ofNullable(namespace).flatMap(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
-                .orElse(iri);
-        }
-        return iri;
+        return ofNullable(prefixMapping.qnameFor(iri)).orElse(iri);
     }
 
     private LabelledTriple labelTriple(final Triple triple) {

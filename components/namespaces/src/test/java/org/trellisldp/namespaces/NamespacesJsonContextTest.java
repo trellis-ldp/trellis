@@ -13,7 +13,6 @@
  */
 package org.trellisldp.namespaces;
 
-import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -52,8 +51,6 @@ public class NamespacesJsonContextTest {
             System.setProperty(NamespacesJsonContext.NAMESPACES_PATH, res.getPath());
             final NamespacesJsonContext svc = new NamespacesJsonContext();
             assertEquals(2, svc.getNamespaces().size(), "Namespace mapping count is incorrect!");
-            assertEquals(of(LDP), svc.getNamespace("ldp"), "LDP namespace is incorrect!");
-            assertEquals(of("ldp"), svc.getPrefix(LDP), "LDP prefix is incorrect!");
         } finally {
             System.clearProperty(NamespacesJsonContext.NAMESPACES_PATH);
         }
@@ -98,16 +95,13 @@ public class NamespacesJsonContextTest {
 
             final NamespacesJsonContext svc1 = new NamespacesJsonContext();
             assertEquals(15, svc1.getNamespaces().size(), "Incorrect namespace mapping count!");
-            assertFalse(svc1.getNamespace("jsonld").isPresent(), "jsonld namespace unexpectedly found!");
-            assertFalse(svc1.getPrefix(JSONLD).isPresent(), "jsonld prefix unexpectedly found!");
+            assertFalse(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix unexpectedly found!");
             assertTrue(svc1.setPrefix("jsonld", JSONLD), "unable to set jsonld mapping!");
             assertEquals(16, svc1.getNamespaces().size(), "Namespace count was not incremented!");
-            assertEquals(of(JSONLD), svc1.getNamespace("jsonld"), "jsonld namespace not found in mapping!");
-            assertEquals(of("jsonld"), svc1.getPrefix(JSONLD), "jsonld prefix not found in mapping!");
+            assertTrue(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix not found in mapping!");
 
             final NamespacesJsonContext svc2 = new NamespacesJsonContext();
             assertEquals(16, svc2.getNamespaces().size(), "Incorrect namespace count when reloading from file!");
-            assertEquals(of(JSONLD), svc2.getNamespace("jsonld"), "jsonld namespace not found in mapping!");
             assertFalse(svc2.setPrefix("jsonld", JSONLD), "unexpected response when trying to re-set jsonld mapping!");
         } finally {
             System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
