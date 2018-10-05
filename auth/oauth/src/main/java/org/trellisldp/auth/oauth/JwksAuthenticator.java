@@ -79,7 +79,7 @@ public class JwksAuthenticator implements Authenticator {
         final Deserializer<Map<String, List<Map<String, String>>>> deserializer = new JacksonDeserializer<>();
         final Map<String, List<Map<String, String>>> data = new HashMap<>();
         try (final InputStream input = new URL(location).openConnection().getInputStream()) {
-            deserializer.deserialize(IOUtils.toByteArray(input)).forEach((k, v) -> data.put(k, v));
+            deserializer.deserialize(IOUtils.toByteArray(input)).forEach(data::put);
         } catch (final IOException ex) {
             LOGGER.error("Error fetching/parsing jwk document", ex);
         }

@@ -82,8 +82,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
 
         getCredentials(requestContext)
             .map(credentials -> authenticate(credentials).orElseThrow(() -> new NotAuthorizedException(BASIC_AUTH)))
-            .ifPresent(principal -> {
-                requestContext.setSecurityContext(new SecurityContext() {
+            .ifPresent(principal -> requestContext.setSecurityContext(new SecurityContext() {
                     @Override
                     public Principal getUserPrincipal() {
                         return principal;
@@ -103,8 +102,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
                     public String getAuthenticationScheme() {
                         return BASIC_AUTH;
                     }
-                });
-            });
+                }));
     }
 
     private Optional<Principal> authenticate(final String credentials) {

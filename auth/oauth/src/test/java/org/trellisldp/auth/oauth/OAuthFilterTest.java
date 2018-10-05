@@ -261,7 +261,7 @@ public class OAuthFilterTest {
         try {
             final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
             System.setProperty(OAuthFilter.KEYSTORE_PATH, keystorePath);
-            System.setProperty(OAuthFilter.KEYSTORE_PASSWORD, passphrase);
+            System.setProperty(OAuthFilter.KEYSTORE_CREDENTIALS, passphrase);
             System.setProperty(OAuthFilter.KEY_IDS, "trellis,trellis-ec");
 
             final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -279,7 +279,7 @@ public class OAuthFilterTest {
             assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         } finally {
             System.clearProperty(OAuthFilter.KEYSTORE_PATH);
-            System.clearProperty(OAuthFilter.KEYSTORE_PASSWORD);
+            System.clearProperty(OAuthFilter.KEYSTORE_CREDENTIALS);
             System.clearProperty(OAuthFilter.KEY_IDS);
         }
     }

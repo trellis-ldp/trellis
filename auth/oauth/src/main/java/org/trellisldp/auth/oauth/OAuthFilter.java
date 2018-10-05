@@ -50,7 +50,7 @@ public class OAuthFilter implements ContainerRequestFilter {
 
     public static final String SCHEME = "Bearer";
     public static final String KEYSTORE_PATH = "trellis.oauth.keystore.path";
-    public static final String KEYSTORE_PASSWORD = "trellis.oauth.keystore.password";
+    public static final String KEYSTORE_CREDENTIALS = "trellis.oauth.keystore.password";
     public static final String KEY_IDS = "trellis.oauth.keyids";
     public static final String SHARED_SECRET = "trellis.oauth.sharedsecret";
     public static final String JWK_LOCATION = "trellis.oauth.jwk.location";
@@ -81,8 +81,7 @@ public class OAuthFilter implements ContainerRequestFilter {
 
         getOAuthToken(requestContext)
             .map(token -> authenticate(token).orElseThrow(() -> new NotAuthorizedException(SCHEME)))
-            .ifPresent(principal -> {
-                requestContext.setSecurityContext(new SecurityContext() {
+            .ifPresent(principal -> requestContext.setSecurityContext(new SecurityContext() {
                     @Override
                     public Principal getUserPrincipal() {
                         return principal;
@@ -102,8 +101,7 @@ public class OAuthFilter implements ContainerRequestFilter {
                     public String getAuthenticationScheme() {
                         return SCHEME;
                     }
-                });
-            });
+                }));
     }
 
     private Optional<Principal> authenticate(final String token) {
@@ -133,7 +131,7 @@ public class OAuthFilter implements ContainerRequestFilter {
         }
 
         final Authenticator keystoreAuthenticator = OAuthUtils.buildAuthenticatorWithTruststore(
-                config.get(KEYSTORE_PATH), config.getOrDefault(KEYSTORE_PASSWORD, "").toCharArray(),
+                config.get(KEYSTORE_PATH), config.getOrDefault(KEYSTORE_CREDENTIALS, "").toCharArray(),
                 asList(config.getOrDefault(KEY_IDS, "").split(",")));
         if (nonNull(keystoreAuthenticator)) {
             return keystoreAuthenticator;
