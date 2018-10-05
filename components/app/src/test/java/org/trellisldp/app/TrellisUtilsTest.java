@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.auth.oauth.FederatedJwtAuthenticator;
+import org.trellisldp.auth.oauth.JwksAuthenticator;
 import org.trellisldp.auth.oauth.JwtAuthenticator;
 import org.trellisldp.auth.oauth.NullAuthenticator;
 
@@ -102,10 +103,20 @@ public class TrellisUtilsTest {
     }
 
     @Test
+    public void testGetJwksAuthenticator() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwksAuthenticator,
+                "JWT auth not enabled!");
+    }
+
+    @Test
     public void testGetJwtAuthenticator() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
                 "JWT auth not enabled!");
@@ -116,6 +127,7 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("foo", "bar"));
         assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
@@ -127,6 +139,7 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("trellis", "trellis-ec", "trellis-public"));
         assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof FederatedJwtAuthenticator,
@@ -138,6 +151,7 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("config1.yml"));
         assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
                 "JWT auth not disabled!");
@@ -149,6 +163,7 @@ public class TrellisUtilsTest {
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         final String nonexistent = resourceFilePath("config1.yml").replaceAll("config1.yml", "nonexistent.yml");
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(nonexistent);
         assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
                 "JWT auth not disabled!");
@@ -161,6 +176,7 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(null);
         config.getAuth().getJwt().setKey("");
+        config.getAuth().getJwt().setJwks(null);
         assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof NullAuthenticator,
                 "JWT auth not disabled!");
     }

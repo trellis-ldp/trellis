@@ -136,6 +136,8 @@ public class TrellisConfigurationTest {
         assertTrue(config.getAuth().getJwt().getKeyIds().contains("bar"), "'bar' not in auth/jwt/keyIds");
         assertTrue(config.getAuth().getJwt().getKeyIds().contains("trellis"), "'trellis' not in auth/jwt/keyIds");
         assertEquals(3, config.getAuth().getJwt().getKeyIds().size(), "Incorrect count of auth/jwt/keyIds");
+        assertEquals("https://www.trellisldp.org/testing/jwks.json", config.getAuth().getJwt().getJwks(),
+                "Wrong jwks value!");
     }
 
     @Test

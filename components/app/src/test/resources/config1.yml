@@ -26,6 +26,7 @@ auth:
         usersFile: users.auth
     jwt:
         enabled: true
+        jwks: https://www.trellisldp.org/testing/jwks.json
         key: Mz4DGzFLQysSGC98ESAnSafMLbxa71ls/zzUFOdCIJw9L0J8Q0Gt7+yCM+Ag73Tm5OTwpBemFOqPFiZ5BeBo4Q==
         keyStore: /tmp/trellisData/keystore.jks
         keyStorePassword: password
