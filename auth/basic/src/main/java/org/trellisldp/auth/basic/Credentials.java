@@ -68,6 +68,6 @@ public class Credentials {
 
     @Override
     public String toString() {
-        return "username=" + username + ", passphrase=********";
+        return "Credentials[username=" + username + "]";
     }
 }
