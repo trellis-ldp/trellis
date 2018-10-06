@@ -34,13 +34,10 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import java.util.stream.Stream;
 
 import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -61,12 +58,6 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
     @Mock
     private AsyncResponse mockResponse;
-
-    @Mock
-    private ContainerRequestContext mockContext;
-
-    @Mock
-    private UriInfo mockUriInfo;
 
     @Mock
     private LdpRequest mockLdpRequest;
@@ -99,23 +90,11 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
         config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new CacheControlFilter(86400, true, false));
         config.register(new WebSubHeaderFilter(HUB));
+        config.register(new TrellisHttpFilter());
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));
         return config;
-    }
-
-    @Test
-    public void testTestRootSlash() throws Exception {
-
-        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
-        when(mockUriInfo.getPath()).thenReturn("/");
-        when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
-
-        final TrellisHttpResource filter = new TrellisHttpResource(mockBundler);
-
-        filter.filter(mockContext);
-        verify(mockContext, never().description("Trailing slash should trigger a redirect!")).abortWith(any());
     }
 
     @Test

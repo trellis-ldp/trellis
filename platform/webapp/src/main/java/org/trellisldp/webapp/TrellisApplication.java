@@ -16,6 +16,7 @@ package org.trellisldp.webapp;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.AgentAuthorizationFilter;
+import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 
 /**
@@ -34,6 +35,7 @@ public class TrellisApplication extends ResourceConfig {
         ldpResource.initialize();
 
         register(ldpResource);
+        register(new TrellisHttpFilter());
         register(new AgentAuthorizationFilter(serviceBundler.getAgentService()));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);

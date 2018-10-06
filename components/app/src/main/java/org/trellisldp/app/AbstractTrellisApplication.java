@@ -37,6 +37,7 @@ import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
+import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.http.WebSubHeaderFilter;
@@ -118,6 +119,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Filters
         environment.jersey().register(agentFilter);
+        environment.jersey().register(new TrellisHttpFilter());
         environment.jersey().register(new CacheControlFilter(config.getCache().getMaxAge(),
                     config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
 
