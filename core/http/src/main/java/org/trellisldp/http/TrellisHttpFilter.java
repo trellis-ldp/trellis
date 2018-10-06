@@ -40,7 +40,7 @@ import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.Version;
 
 @PreMatching
-@Priority(AUTHORIZATION + 20)
+@Priority(AUTHORIZATION - 20)
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private static final List<String> MUTATING_METHODS = asList("POST", "PUT", "DELETE", "PATCH");
