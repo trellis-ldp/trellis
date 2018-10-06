@@ -28,6 +28,7 @@ import java.security.SecureRandom;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.vocabulary.JSONLD;
 
 /**
  * @author acoburn
@@ -35,8 +36,6 @@ import org.junit.jupiter.api.Test;
 public class NamespacesJsonContextTest {
 
     private static final String nsDoc = "/testNamespaces.json";
-    private static final String JSONLD = "http://www.w3.org/ns/json-ld#";
-    private static final String LDP = "http://www.w3.org/ns/ldp#";
 
     @AfterAll
     public static void cleanUp() throws IOException {
@@ -96,13 +95,14 @@ public class NamespacesJsonContextTest {
             final NamespacesJsonContext svc1 = new NamespacesJsonContext();
             assertEquals(15, svc1.getNamespaces().size(), "Incorrect namespace mapping count!");
             assertFalse(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix unexpectedly found!");
-            assertTrue(svc1.setPrefix("jsonld", JSONLD), "unable to set jsonld mapping!");
+            assertTrue(svc1.setPrefix("jsonld", JSONLD.getNamespace()), "unable to set jsonld mapping!");
             assertEquals(16, svc1.getNamespaces().size(), "Namespace count was not incremented!");
             assertTrue(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix not found in mapping!");
 
             final NamespacesJsonContext svc2 = new NamespacesJsonContext();
             assertEquals(16, svc2.getNamespaces().size(), "Incorrect namespace count when reloading from file!");
-            assertFalse(svc2.setPrefix("jsonld", JSONLD), "unexpected response when trying to re-set jsonld mapping!");
+            assertFalse(svc2.setPrefix("jsonld", JSONLD.getNamespace()),
+                    "unexpected response when trying to re-set jsonld mapping!");
         } finally {
             System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
         }
