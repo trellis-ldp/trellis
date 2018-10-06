@@ -44,11 +44,8 @@ auth:
     adminUsers: []
     webac:
         enabled: true
-    anon:
-        enabled: true
     jwt:
         enabled: false
-        base64Encoded: false
         key: changeme
     basic:
         enabled: true

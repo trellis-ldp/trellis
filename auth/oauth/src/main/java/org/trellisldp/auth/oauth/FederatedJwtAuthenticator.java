@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.auth;
+package org.trellisldp.auth.oauth;
 
 import static java.util.Objects.isNull;
 
@@ -19,8 +19,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
+import io.jsonwebtoken.security.SecurityException;
 
 import java.security.Key;
 import java.security.KeyStore;
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * A Federated JWT-based authenticator.
  */
-public class FederatedJwtAuthenticator extends AbstractJwtAuthenticator {
+public class FederatedJwtAuthenticator implements Authenticator {
 
     private final KeyStore keyStore;
     private final List<String> keyIds;
@@ -46,7 +46,7 @@ public class FederatedJwtAuthenticator extends AbstractJwtAuthenticator {
     }
 
     @Override
-    protected Claims parse(final String credentials) {
+    public Claims parse(final String credentials) {
         // Parse the JWT claims
         return Jwts.parser().setSigningKeyResolver(new SigningKeyResolverAdapter() {
             @Override
@@ -59,9 +59,9 @@ public class FederatedJwtAuthenticator extends AbstractJwtAuthenticator {
                         return keyStore.getCertificate(header.getKeyId()).getPublicKey();
                     }
                 } catch (final KeyStoreException ex) {
-                    throw new SignatureException("Error retrieving key from keystore", ex);
+                    throw new SecurityException("Error retrieving key from keystore", ex);
                 }
-                throw new SignatureException("Could not locate key in keystore: " + header.getKeyId());
+                throw new SecurityException("Could not locate key in keystore: " + header.getKeyId());
             }
         }).parseClaimsJws(credentials).getBody();
     }

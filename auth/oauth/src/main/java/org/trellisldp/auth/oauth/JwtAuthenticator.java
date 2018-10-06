@@ -11,26 +11,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.auth;
+package org.trellisldp.auth.oauth;
 
-import static java.util.Optional.of;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 
-import io.dropwizard.auth.AuthenticationException;
-import io.dropwizard.auth.Authenticator;
-import io.dropwizard.auth.PrincipalImpl;
-
-import java.security.Principal;
-import java.util.Optional;
-
-import org.trellisldp.vocabulary.Trellis;
+import java.security.Key;
 
 /**
- * Anonymous Authenticator.
+ * A JWT-based authenticator.
  */
-public class AnonymousAuthenticator implements Authenticator<String, Principal> {
+public class JwtAuthenticator implements Authenticator {
+
+    private final Key key;
+
+    /**
+     * Create a JWT-based authenticator.
+     * @param key a key
+     */
+    public JwtAuthenticator(final Key key) {
+        this.key = key;
+    }
 
     @Override
-    public Optional<Principal> authenticate(final String credentials) throws AuthenticationException {
-        return of(new PrincipalImpl(Trellis.AnonymousAgent.getIRIString()));
+    public Claims parse(final String token) {
+        // Parse the JWT claims
+        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
     }
 }

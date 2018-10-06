@@ -11,9 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Trellis Application auth services
- *
- * <p>This package implements auth-related services for a deployable Trellis application.
- */
-package org.trellisldp.app.auth;
+package org.trellisldp.auth.oauth;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.security.Principal;
+
+import org.junit.jupiter.api.Test;
+
+public class OAuthPrincipalTest {
+
+    @Test
+    public void testPrincipal() {
+        final String name = "TestPrincipal";
+        final Principal principal = new OAuthPrincipal(name);
+        assertEquals(name, principal.getName());
+        assertEquals(name, principal.toString());
+    }
+}

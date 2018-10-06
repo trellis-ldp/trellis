@@ -22,7 +22,6 @@ import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
 import static org.trellisldp.app.TrellisUtils.getWebacCache;
 
 import io.dropwizard.Application;
-import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.setup.Environment;
 
 import java.util.ArrayList;
@@ -106,7 +105,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     public void run(final T config, final Environment environment) throws Exception {
         initialize(config, environment);
 
-        getAuthFilters(config).ifPresent(filters -> environment.jersey().register(new ChainedAuthFilter<>(filters)));
+        getAuthFilters(config).forEach(environment.jersey()::register);
 
         // Resource matchers
         environment.jersey().register(getLdpComponent(config, ConfigurationProvider.getConfiguration()

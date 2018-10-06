@@ -7,7 +7,7 @@ sonarqube {
 }
 
 dependencies {
-    implementation("io.jsonwebtoken:jjwt:$jwtVersion")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     implementation("javax.jms:javax.jms-api:$jmsApiVersion")
     implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     implementation("org.apache.activemq:activemq-client:$activeMqVersion")

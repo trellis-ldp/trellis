@@ -8,17 +8,17 @@ ext {
 }
 
 dependencies {
-    api("io.dropwizard:dropwizard-auth:$dropwizardVersion")
     api("io.dropwizard:dropwizard-core:$dropwizardVersion")
     api project(':trellis-api')
 
-    implementation("io.jsonwebtoken:jjwt:$jwtVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-agent')
     implementation project(':trellis-webac')
+    implementation project(':trellis-auth-basic')
+    implementation project(':trellis-auth-oauth')
 
     testRuntime("javax.xml.bind:jaxb-api:$jaxbVersion")
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")

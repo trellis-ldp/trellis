@@ -13,6 +13,8 @@
  */
 package org.trellisldp.app.config;
 
+import static java.util.Collections.emptyList;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -29,15 +31,17 @@ public class JwtAuthConfiguration {
 
     private Boolean enabled = true;
 
-    private Boolean isEncoded = false;
-
     private String key;
 
     private String keyStore;
 
-    private String keyStorePassword;
+    @NotNull
+    private String keyStorePassword = "";
 
-    private List<String> keyIds;
+    private String jwks;
+
+    @NotNull
+    private List<String> keyIds = emptyList();
 
     /**
      * Get whether basic authentication has been enabled.
@@ -58,7 +62,7 @@ public class JwtAuthConfiguration {
     }
 
     /**
-     * Get the JWT key.
+     * Get the base64-encoded JWT key.
      * @return the key
      */
     @JsonProperty
@@ -67,30 +71,12 @@ public class JwtAuthConfiguration {
     }
 
     /**
-     * Set the JWT key.
+     * Set the base64-encoded JWT key.
      * @param key the key
      */
     @JsonProperty
     public void setKey(final String key) {
         this.key = key;
-    }
-
-    /**
-     * Get whether the key is base64 encoded.
-     * @return true if the key is base64 encoded; false otherwise
-     */
-    @JsonProperty
-    public Boolean getBase64Encoded() {
-        return isEncoded;
-    }
-
-    /**
-     * Set whether the key is base64 encoded.
-     * @param isEncoded true if the key is base64 encoded; false otherwise
-     */
-    @JsonProperty
-    public void setBase64Encoded(final Boolean isEncoded) {
-        this.isEncoded = isEncoded;
     }
 
     /**
@@ -145,6 +131,24 @@ public class JwtAuthConfiguration {
     @JsonProperty
     public List<String> getKeyIds() {
         return keyIds;
+    }
+
+    /**
+     * Get the JWKS location.
+     * @return the location of a JWKS document
+     */
+    @JsonProperty
+    public String getJwks() {
+        return jwks;
+    }
+
+    /**
+     * Set the jwks location.
+     * @param jwks the location of a JWKS document
+     */
+    @JsonProperty
+    public void setJwks(final String jwks) {
+        this.jwks = jwks;
     }
 
     /**

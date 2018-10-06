@@ -29,7 +29,7 @@ ext {
     jerseyVersion = '2.27'
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.1'
-    jwtVersion = '0.9.1'
+    jjwtVersion = '0.10.5'
     kafkaVersion = '2.0.0'
     metricsVersion = '4.0.3'
     mustacheVersion = '0.9.5'

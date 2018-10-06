@@ -11,18 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.auth;
+package org.trellisldp.auth.oauth;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import io.dropwizard.auth.Authenticator;
 import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.SecurityException;
 
 import java.security.Key;
 import java.security.KeyStore;
@@ -47,9 +49,9 @@ public class FederatedJwtAuthenticatorTest {
         final Key privateKey = ks.getKey("trellis", passphrase);
         final String jwt = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis")
             .setSubject("https://people.apache.org/~acoburn/#me")
-            .signWith(SignatureAlgorithm.RS256, privateKey).compact();
+            .signWith(privateKey, SignatureAlgorithm.RS256).compact();
 
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis", "foo"));
 
         final Optional<Principal> result = authenticator.authenticate(jwt);
@@ -65,9 +67,9 @@ public class FederatedJwtAuthenticatorTest {
         final Key privateKey = ks.getKey("trellis", passphrase);
         final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-public")
             .setSubject("https://people.apache.org/~acoburn/#i")
-            .signWith(SignatureAlgorithm.RS256, privateKey).compact();
+            .signWith(privateKey, SignatureAlgorithm.RS256).compact();
 
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-public"));
 
         final Optional<Principal> result = authenticator.authenticate(token);
@@ -81,7 +83,7 @@ public class FederatedJwtAuthenticatorTest {
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
         final String token = buildEcToken(ks.getKey("trellis-ec", passphrase), "trellis-ec");
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
         final Optional<Principal> result = authenticator.authenticate(token);
@@ -96,9 +98,9 @@ public class FederatedJwtAuthenticatorTest {
 
         final Key privateKey = ks.getKey("trellis-ec", passphrase);
         final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
-            .setIssuer("http://localhost").signWith(SignatureAlgorithm.ES256, privateKey).compact();
+            .setIssuer("http://localhost").signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
         assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
@@ -112,9 +114,9 @@ public class FederatedJwtAuthenticatorTest {
         final Key privateKey = ks.getKey("trellis-ec", passphrase);
         final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
             .setSubject("acoburn").setIssuer("http://localhost")
-            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
+            .signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
         final Optional<Principal> result = authenticator.authenticate(token);
@@ -130,9 +132,9 @@ public class FederatedJwtAuthenticatorTest {
         final Key privateKey = ks.getKey("trellis-ec", passphrase);
         final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-ec")
             .setSubject("acoburn").setIssuer("some org")
-            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
+            .signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
         assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
@@ -145,11 +147,11 @@ public class FederatedJwtAuthenticatorTest {
 
         final Key privateKey = ks.getKey("trellis-ec", passphrase);
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
-            .signWith(SignatureAlgorithm.ES256, privateKey).compact();
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+            .signWith(privateKey, SignatureAlgorithm.ES256).compact();
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
+        assertThrows(JwtException.class, () -> authenticator.authenticate(token), "Unexpected key id field!");
     }
 
     @Test
@@ -158,10 +160,10 @@ public class FederatedJwtAuthenticatorTest {
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
         final String token = buildEcToken(ks.getKey("trellis-ec", passphrase), "trellis-ec");
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis", "foo"));
 
-        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
+        assertThrows(SecurityException.class, () -> authenticator.authenticate(token), "Unexpected keystore entry!");
     }
 
     @Test
@@ -170,10 +172,10 @@ public class FederatedJwtAuthenticatorTest {
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
         final String token = buildEcToken(ks.getKey("trellis-ec", passphrase), "foo");
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(ks,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("foo"));
 
-        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
+        assertThrows(SecurityException.class, () -> authenticator.authenticate(token), "Unexpected keystore entry!");
     }
 
     @Test
@@ -186,15 +188,16 @@ public class FederatedJwtAuthenticatorTest {
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
         final String token = buildEcToken(ks.getKey("trellis-ec", passphrase), "trellis-ec");
-        final Authenticator<String, Principal> authenticator = new FederatedJwtAuthenticator(mockKeyStore,
+        final Authenticator authenticator = new FederatedJwtAuthenticator(mockKeyStore,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
+        assertThrows(SecurityException.class, () -> authenticator.authenticate(token),
+                "Unexpectedly functional keystore!");
     }
 
     private String buildEcToken(final Key key, final String id) {
         return Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, id)
             .setSubject("https://people.apache.org/~acoburn/#i")
-            .signWith(SignatureAlgorithm.ES256, key).compact();
+            .signWith(key, SignatureAlgorithm.ES256).compact();
     }
 }

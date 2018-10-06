@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
@@ -30,12 +29,17 @@ import io.dropwizard.setup.Environment;
 
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
+
+import javax.ws.rs.container.ContainerRequestFilter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.app.config.TrellisConfiguration;
+import org.trellisldp.auth.oauth.FederatedJwtAuthenticator;
+import org.trellisldp.auth.oauth.JwksAuthenticator;
+import org.trellisldp.auth.oauth.JwtAuthenticator;
+import org.trellisldp.auth.oauth.NullAuthenticator;
 
 /**
  * @author acoburn
@@ -88,15 +92,23 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(null);
 
-        final Optional<List<AuthFilter>> filters = TrellisUtils.getAuthFilters(config);
-        assertTrue(filters.isPresent(), "Auth filters are missing!");
-        filters.ifPresent(f -> assertEquals(3L, f.size(), "Incorrect auth filter count!"));
+        final List<ContainerRequestFilter> filters = TrellisUtils.getAuthFilters(config);
+        assertFalse(filters.isEmpty(), "Auth filters are missing!");
+        assertEquals(2L, filters.size(), "Incorrect auth filter count!");
 
-        config.getAuth().getAnon().setEnabled(false);
         config.getAuth().getBasic().setEnabled(false);
         config.getAuth().getJwt().setEnabled(false);
 
-        assertFalse(TrellisUtils.getAuthFilters(config).isPresent(), "Auth filters should have been disabled!");
+        assertTrue(TrellisUtils.getAuthFilters(config).isEmpty(), "Auth filters should have been disabled!");
+    }
+
+    @Test
+    public void testGetJwksAuthenticator() throws Exception {
+        final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
+                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
+            .build(new File(getClass().getResource("/config1.yml").toURI()));
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwksAuthenticator,
+                "JWT auth not enabled!");
     }
 
     @Test
@@ -104,8 +116,10 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
-        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not enabled!");
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
+                "JWT auth not enabled!");
     }
 
     @Test
@@ -113,9 +127,11 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("foo", "bar"));
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
+                "JWT auth not disabled!");
     }
 
     @Test
@@ -123,9 +139,11 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("keystore.jks"));
         config.getAuth().getJwt().setKeyIds(asList("trellis", "trellis-ec", "trellis-public"));
-        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not enabled!");
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof FederatedJwtAuthenticator,
+                "JWT auth not enabled!");
     }
 
     @Test
@@ -133,8 +151,10 @@ public class TrellisUtilsTest {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(resourceFilePath("config1.yml"));
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
+                "JWT auth not disabled!");
     }
 
     @Test
@@ -143,8 +163,10 @@ public class TrellisUtilsTest {
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         final String nonexistent = resourceFilePath("config1.yml").replaceAll("config1.yml", "nonexistent.yml");
+        config.getAuth().getJwt().setJwks(null);
         config.getAuth().getJwt().setKeyStore(nonexistent);
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwtAuthenticator,
+                "JWT auth not disabled!");
     }
 
     @Test
@@ -154,6 +176,8 @@ public class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(null);
         config.getAuth().getJwt().setKey("");
-        assertFalse(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()).isPresent(), "JWT auth not disabled!");
+        config.getAuth().getJwt().setJwks(null);
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof NullAuthenticator,
+                "JWT auth not disabled!");
     }
 }
