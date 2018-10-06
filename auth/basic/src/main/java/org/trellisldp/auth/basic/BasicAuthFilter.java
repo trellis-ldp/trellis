@@ -89,11 +89,6 @@ public class BasicAuthFilter implements ContainerRequestFilter {
                     }
 
                     @Override
-                    public boolean isUserInRole(final String role) {
-                        return true;
-                    }
-
-                    @Override
                     public boolean isSecure() {
                         return secure;
                     }
@@ -101,6 +96,11 @@ public class BasicAuthFilter implements ContainerRequestFilter {
                     @Override
                     public String getAuthenticationScheme() {
                         return BASIC_AUTH;
+                    }
+
+                    @Override
+                    public boolean isUserInRole(final String role) {
+                        return true;
                     }
                 }));
     }
