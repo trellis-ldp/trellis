@@ -16,7 +16,6 @@ package org.trellisldp.namespaces;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
@@ -75,16 +73,6 @@ public class NamespacesJsonContext implements NamespaceService {
     @Override
     public Map<String, String> getNamespaces() {
         return unmodifiableMap(data);
-    }
-
-    @Override
-    public Optional<String> getNamespace(final String prefix) {
-        return ofNullable(data.get(prefix));
-    }
-
-    @Override
-    public Optional<String> getPrefix(final String namespace) {
-        return ofNullable(dataRev.get(namespace));
     }
 
     @Override

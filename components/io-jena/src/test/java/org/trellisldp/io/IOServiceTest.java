@@ -16,7 +16,6 @@ package org.trellisldp.io;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -62,7 +61,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -129,12 +127,6 @@ public class IOServiceTest {
         service3 = new JenaIOService(mockNamespaceService, null, mockCache, emptySet(), emptySet());
 
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
-        when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
-        when(mockNamespaceService.getPrefix(eq("http://sws.geonames.org/4929022/"))).thenReturn(empty());
-        when(mockNamespaceService.getPrefix(eq("http://www.w3.org/1999/02/22-rdf-syntax-ns#")))
-            .thenReturn(Optional.of("rdf"));
-        when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/dcmitype/")))
-            .thenReturn(Optional.of("dcmitype"));
         when(mockCache.get(anyString(), any(Function.class))).thenAnswer(inv -> {
             final String key = inv.getArgument(0);
             final Function<String, String> mapper = inv.getArgument(1);

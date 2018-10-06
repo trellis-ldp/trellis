@@ -14,7 +14,6 @@
 package org.trellisldp.rdfa;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.jena.graph.NodeFactory.createBlankNode;
 import static org.apache.jena.graph.NodeFactory.createLiteral;
@@ -30,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -41,7 +39,6 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Triple;
@@ -76,18 +73,13 @@ public class HtmlSerializerTest {
     public void setUp() {
         initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("dcterms", DCTerms.NS);
+        namespaces.put("dc", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
+        namespaces.put("dcmitype", "http://purl.org/dc/dcmitype/");
+        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
 
         service = new HtmlSerializer(mockNamespaceService);
 
-        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
-        when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
-        when(mockNamespaceService.getPrefix(eq("http://sws.geonames.org/4929022/"))).thenReturn(empty());
-        when(mockNamespaceService.getPrefix(eq("http://www.w3.org/1999/02/22-rdf-syntax-ns#")))
-            .thenReturn(Optional.of("rdf"));
-        when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/dcmitype/")))
-            .thenReturn(Optional.of("dcmitype"));
     }
 
     @Test

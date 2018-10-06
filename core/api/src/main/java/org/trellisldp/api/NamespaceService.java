@@ -14,7 +14,6 @@
 package org.trellisldp.api;
 
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Namespaces may be stored globally across the server, and the NamespaceService
@@ -30,22 +29,6 @@ public interface NamespaceService {
      * @return the namespace mapping as prefix, namespace pairs
      */
     Map<String, String> getNamespaces();
-
-    /**
-     * Fetch the namespace for a particular prefix.
-     *
-     * @param prefix the prefix
-     * @return the corresponding namespace
-     */
-    Optional<String> getNamespace(String prefix);
-
-    /**
-     * Fetch the prefix for a particular namespace.
-     *
-     * @param namespace the namespace
-     * @return the corresponding prefix
-     */
-    Optional<String> getPrefix(String namespace);
 
     /**
      * Set the namespace for a given prefix.
