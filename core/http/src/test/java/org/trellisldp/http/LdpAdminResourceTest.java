@@ -48,6 +48,7 @@ public class LdpAdminResourceTest extends AbstractLdpResourceTest {
         config.register(agentFilter);
         config.register(new CacheControlFilter(86400, true, false));
         config.register(new WebSubHeaderFilter(HUB));
+        config.register(new TrellisHttpFilter());
         config.register(new CrossOriginResourceSharingFilter(asList(origin),
                     asList("PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Datetime"),

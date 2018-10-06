@@ -46,6 +46,7 @@ public class LdpResourceNoAgentTest extends AbstractLdpResourceTest {
         config.register(new TrellisHttpResource(mockBundler, baseUri));
         config.register(new CacheControlFilter(86400, true, false));
         config.register(new WebSubHeaderFilter(HUB));
+        config.register(new TrellisHttpFilter());
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));

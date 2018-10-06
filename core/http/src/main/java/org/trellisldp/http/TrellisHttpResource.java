@@ -13,18 +13,10 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static javax.ws.rs.Priorities.AUTHORIZATION;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.seeOther;
-import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -37,13 +29,10 @@ import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
 import com.codahale.metrics.annotation.Timed;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BeanParam;
@@ -58,11 +47,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.Provider;
@@ -73,12 +58,8 @@ import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.domain.AcceptDatetime;
-import org.trellisldp.http.domain.Digest;
 import org.trellisldp.http.domain.LdpRequest;
 import org.trellisldp.http.domain.PATCH;
-import org.trellisldp.http.domain.Prefer;
-import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetHandler;
@@ -94,21 +75,16 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
- * A {@link ContainerRequestFilter} that also matches path-based HTTP resource operations.
+ * An HTTP request matcher for path-based HTTP resource operations.
  *
- * @implNote Requests are pre-filtered to validate incoming request headers and query parameters.
  * @author acoburn
  */
-@PreMatching
 @Provider
-@Priority(AUTHORIZATION + 20)
 @ApplicationScoped
 @Path("{path: .*}")
-public class TrellisHttpResource implements ContainerRequestFilter {
+public class TrellisHttpResource {
 
     private static final Logger LOGGER = getLogger(TrellisHttpResource.class);
-
-    private static final List<String> MUTATING_METHODS = asList("POST", "PUT", "DELETE", "PATCH");
 
     protected static final RDF rdf = getInstance();
 
@@ -178,55 +154,6 @@ public class TrellisHttpResource implements ContainerRequestFilter {
                     dataset.asDataset(), null, null);
         }
         return completedFuture(null);
-    }
-
-    @Override
-    public void filter(final ContainerRequestContext ctx) throws IOException {
-        final String slash = "/";
-        // Check for a trailing slash. If so, redirect
-        final String path = ctx.getUriInfo().getPath();
-        if (path.endsWith(slash) && !path.equals(slash)) {
-            ctx.abortWith(seeOther(fromUri(path.substring(0, path.length() - 1)).build()).build());
-        }
-
-        // Validate header/query parameters
-        ofNullable(ctx.getHeaderString("Accept-Datetime")).filter(x -> isNull(AcceptDatetime.valueOf(x)))
-            .ifPresent(x -> ctx.abortWith(status(BAD_REQUEST).build()));
-
-        ofNullable(ctx.getHeaderString("Slug")).filter(s -> s.contains(slash)).ifPresent(x ->
-            ctx.abortWith(status(BAD_REQUEST).build()));
-
-        ofNullable(ctx.getHeaderString("Prefer")).filter(x -> isNull(Prefer.valueOf(x))).ifPresent(x ->
-            ctx.abortWith(status(BAD_REQUEST).build()));
-
-        ofNullable(ctx.getHeaderString("Range")).filter(x -> isNull(Range.valueOf(x))).ifPresent(x ->
-            ctx.abortWith(status(BAD_REQUEST).build()));
-
-        ofNullable(ctx.getHeaderString("Link")).ifPresent(x -> {
-            try {
-                Link.valueOf(x);
-            } catch (final IllegalArgumentException ex) {
-                ctx.abortWith(status(BAD_REQUEST).build());
-            }
-        });
-
-        ofNullable(ctx.getHeaderString("Digest")).filter(x -> isNull(Digest.valueOf(x))).ifPresent(x ->
-            ctx.abortWith(status(BAD_REQUEST).build()));
-
-        ofNullable(ctx.getUriInfo().getQueryParameters().getFirst("version")).ifPresent(x -> {
-            // Check well-formedness
-            if (isNull(Version.valueOf(x))) {
-                ctx.abortWith(status(BAD_REQUEST).build());
-            // Do not allow mutating versioned resources
-            } else if (MUTATING_METHODS.contains(ctx.getMethod())) {
-                ctx.abortWith(status(METHOD_NOT_ALLOWED).build());
-            }
-        });
-
-        // Do not allow direct manipulation of timemaps
-        ofNullable(ctx.getUriInfo().getQueryParameters().get("ext")).filter(l -> l.contains(TIMEMAP))
-            .filter(x -> MUTATING_METHODS.contains(ctx.getMethod()))
-            .ifPresent(x -> ctx.abortWith(status(METHOD_NOT_ALLOWED).build()));
     }
 
     /**
