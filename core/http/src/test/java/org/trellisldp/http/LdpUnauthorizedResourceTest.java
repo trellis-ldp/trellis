@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -25,6 +24,7 @@ import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,8 +63,8 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
 
-        final WebAcFilter webacFilter = new WebAcFilter(mockAccessControlService);
-        webacFilter.setChallenges(asList(BASIC_AUTH, DIGEST_AUTH));
+        final WebAcFilter webacFilter = new WebAcFilter(mockAccessControlService, asList(BASIC_AUTH, DIGEST_AUTH),
+                "my-realm");
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler));
@@ -221,12 +221,14 @@ public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
     }
 
     private Stream<Executable> checkStandardResponse(final Response res) {
+        final String realm = " realm=\"my-realm\"";
         return Stream.of(
                 () -> assertEquals(SC_UNAUTHORIZED, res.getStatus(), "Incorrect response code!"),
-                () -> assertEquals(join(",", DIGEST_AUTH, BASIC_AUTH), res.getHeaderString(WWW_AUTHENTICATE),
-                                   "Incorrect WWW-Authenticate header!"),
+                () -> assertNotNull(res.getHeaderString(WWW_AUTHENTICATE), "Missing WWW-Authenticate header!"),
                 () -> assertEquals(2L, res.getHeaders().get(WWW_AUTHENTICATE).size(), "Incorrect auth header size!"),
-                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH), "Digest not in header!"),
-                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH), "Basic not in header!"));
+                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(DIGEST_AUTH + realm),
+                                 "Digest not in header!"),
+                () -> assertTrue(res.getHeaders().get(WWW_AUTHENTICATE).contains(BASIC_AUTH + realm),
+                                 "Basic not in header!"));
     }
 }

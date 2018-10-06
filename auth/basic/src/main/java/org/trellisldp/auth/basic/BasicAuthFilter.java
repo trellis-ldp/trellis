@@ -46,9 +46,14 @@ public class BasicAuthFilter implements ContainerRequestFilter {
 
     private static final Logger LOGGER = getLogger(BasicAuthFilter.class);
 
+    /** The configuration key controlling the location of the basic auth credentials file. **/
     public static final String CREDENTIALS_FILE = "trellis.auth.basic.credentialsfile";
 
+    /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
+    public static final String TRELLIS_AUTH_REALM = "trellis.auth.realm";
+
     private final File file;
+    private final String challenge;
 
     /**
      * Create a basic auth filter.
@@ -71,7 +76,17 @@ public class BasicAuthFilter implements ContainerRequestFilter {
      * @param file the credentials file
      */
     public BasicAuthFilter(final File file) {
+        this(file, getConfiguration().getOrDefault(TRELLIS_AUTH_REALM, "trellis"));
+    }
+
+    /**
+     * Create a basic auth filter.
+     * @param file the credentials file
+     * @param realm the authentication realm
+     */
+    public BasicAuthFilter(final File file, final String realm) {
         this.file = file;
+        this.challenge = "Basic realm=\"" + realm + "\"";
     }
 
     @Override
@@ -81,7 +96,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             .isPresent();
 
         getCredentials(requestContext)
-            .map(credentials -> authenticate(credentials).orElseThrow(() -> new NotAuthorizedException(BASIC_AUTH)))
+            .map(credentials -> authenticate(credentials).orElseThrow(() -> new NotAuthorizedException(challenge)))
             .ifPresent(principal -> requestContext.setSecurityContext(new SecurityContext() {
                     @Override
                     public Principal getUserPrincipal() {

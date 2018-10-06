@@ -29,6 +29,9 @@ public class AuthConfiguration {
     private WebacConfiguration webac = new WebacConfiguration();
 
     @NotNull
+    private String realm = "trellis";
+
+    @NotNull
     private List<String> adminUsers = new ArrayList<>();
 
     /**
@@ -101,5 +104,23 @@ public class AuthConfiguration {
     @JsonProperty
     public WebacConfiguration getWebac() {
         return webac;
+    }
+
+    /**
+     * Get the security realm.
+     * @return the realm; by default, this is 'trellis'
+     */
+    @JsonProperty
+    public String getRealm() {
+        return realm;
+    }
+
+    /**
+     * Set the security realm.
+     * @param realm the security realm
+     */
+    @JsonProperty
+    public void setRealm(final String realm) {
+        this.realm = realm;
     }
 }

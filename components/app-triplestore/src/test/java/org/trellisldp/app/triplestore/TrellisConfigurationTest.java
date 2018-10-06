@@ -118,16 +118,13 @@ public class TrellisConfigurationTest {
         assertEquals((Long) 10L, config.getAuth().getWebac().getCacheExpireSeconds(), "Incorrect webac cache expiry!");
         assertTrue(config.getAuth().getBasic().getEnabled(), "Missing basic auth support!");
         assertEquals("users.auth", config.getAuth().getBasic().getUsersFile(), "Incorrect basic auth users file!");
-        assertEquals("trellis", config.getAuth().getBasic().getRealm(), "Incorrect basic auth realm!");
+        assertEquals("trellis", config.getAuth().getRealm(), "Incorrect auth realm!");
 
-        config.getAuth().getBasic().setRealm("foo");
-        assertEquals("foo", config.getAuth().getBasic().getRealm(), "Incorrect basic auth realm!");
+        config.getAuth().setRealm("foo");
+        assertEquals("foo", config.getAuth().getRealm(), "Incorrect auth realm!");
         assertTrue(config.getAuth().getJwt().getEnabled(), "JWT not enabled!");
         assertEquals("xd1GuAwiP2+M+pyK+GlIUEAumSmFx5DP3dziGtVb1tA+/8oLXfSDMDZFkxVghyAd28rXImy18TmttUi+g0iomQ==",
                 config.getAuth().getJwt().getKey(), "Incorrect JWT key!");
-        assertEquals("trellis", config.getAuth().getJwt().getRealm(), "Incorrect JWT realm!");
-        config.getAuth().getJwt().setRealm("bar");
-        assertEquals("bar", config.getAuth().getJwt().getRealm(), "Incorrect JWT realm after reset!");
 
         assertEquals("password", config.getAuth().getJwt().getKeyStorePassword(), "Incorrect JWT keystore password!");
         assertEquals("/tmp/trellisData/keystore.jks", config.getAuth().getJwt().getKeyStore(), "Wrong keystore loc!");
