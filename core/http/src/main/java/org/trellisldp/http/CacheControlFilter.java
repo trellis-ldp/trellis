@@ -17,14 +17,18 @@ import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.Priorities.USER;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 
 import java.io.IOException;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.CacheControl;
+
+import org.apache.tamaya.Configuration;
 
 /**
  * A {@link ContainerResponseFilter} that adds Cache-Control headers to all
@@ -35,9 +39,28 @@ import javax.ws.rs.core.CacheControl;
 @Priority(USER)
 public class CacheControlFilter implements ContainerResponseFilter {
 
+    /** The configuration key for setting a cache-control max-age header. **/
+    public static final String CONFIG_CACHE_AGE = "trellis.http.cache.maxage";
+    /** The configuration key for setting a cache-control must-revalidate header. **/
+    public static final String CONFIG_CACHE_REVALIDATE = "trellis.http.cache.revalidate";
+    /** The configuration key for setting a cache-control no-cache header. **/
+    public static final String CONFIG_CACHE_NOCACHE = "trellis.http.cache.nocache";
+
+    private static final Configuration config = getConfiguration();
+
     private final Integer cacheAge;
     private final Boolean revalidate;
     private final Boolean noCache;
+
+    /**
+     * Create a new CacheControl Decorator.
+     */
+    @Inject
+    public CacheControlFilter() {
+        this(config.getOrDefault(CONFIG_CACHE_AGE, Integer.class, 86400),
+             config.getOrDefault(CONFIG_CACHE_REVALIDATE, Boolean.class, true),
+             config.getOrDefault(CONFIG_CACHE_NOCACHE, Boolean.class, false));
+    }
 
     /**
      * Create a new CacheControl Decorator.
@@ -54,7 +77,7 @@ public class CacheControlFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-        if (req.getMethod().equals(GET) && SUCCESSFUL.equals(res.getStatusInfo().getFamily())) {
+        if (req.getMethod().equals(GET) && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && cacheAge > 0) {
             final CacheControl cc = new CacheControl();
             cc.setMaxAge(cacheAge);
             cc.setMustRevalidate(revalidate);

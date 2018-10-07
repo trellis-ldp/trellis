@@ -46,7 +46,7 @@ public class LdpAdminResourceTest extends AbstractLdpResourceTest {
         config.register(new TestAuthenticationFilter("testUser", ""));
         config.register(new WebAcFilter(mockAccessControlService));
         config.register(agentFilter);
-        config.register(new CacheControlFilter(86400, true, false));
+        config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
         config.register(new CrossOriginResourceSharingFilter(asList(origin),

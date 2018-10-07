@@ -88,7 +88,7 @@ public class LdpResourceTest extends AbstractLdpResourceTest {
 
         config.register(new TrellisHttpResource(mockBundler, null));
         config.register(new AgentAuthorizationFilter(mockAgentService));
-        config.register(new CacheControlFilter(86400, true, false));
+        config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
