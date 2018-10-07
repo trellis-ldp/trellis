@@ -13,15 +13,18 @@
  */
 package org.trellisldp.http;
 
+import static java.util.Objects.nonNull;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.Priorities.USER;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 
 import java.io.IOException;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -35,7 +38,18 @@ import javax.ws.rs.container.ContainerResponseFilter;
 @Priority(USER)
 public class WebSubHeaderFilter implements ContainerResponseFilter {
 
+    /** The configuration key controlling the location of a web-sub-hub. **/
+    public static final String CONF_WEB_SUB_HUB = "trellis.http.websubhub";
+
     private final String hub;
+
+    /**
+     * Create a new WebSub header Decorator.
+     */
+    @Inject
+    public WebSubHeaderFilter() {
+        this(getConfiguration().get(CONF_WEB_SUB_HUB));
+    }
 
     /**
      * Create a new WebSub Header Decorator.
@@ -48,7 +62,7 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-        if (req.getMethod().equals(GET) && SUCCESSFUL.equals(res.getStatusInfo().getFamily())) {
+        if (req.getMethod().equals(GET) && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && nonNull(hub)) {
             res.getHeaders().add(LINK, fromUri(hub).rel("hub").build());
         }
     }

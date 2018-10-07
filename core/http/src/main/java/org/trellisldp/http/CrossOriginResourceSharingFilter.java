@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
@@ -32,11 +33,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
 
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 
 /**
@@ -50,6 +53,19 @@ import org.slf4j.Logger;
 @PreMatching
 @Priority(AUTHORIZATION - 10)
 public class CrossOriginResourceSharingFilter implements ContainerResponseFilter {
+
+    /** The configuration key controlling the CORS -Allow-Origin header. **/
+    public static final String CONFIG_CORS_ORIGIN = "trellis.http.cors.origin";
+    /** The configuration key controlling the CORS -Allow-Methods header. **/
+    public static final String CONFIG_CORS_ALLOW_METHODS = "trellis.http.cors.allowedmethods";
+    /** The configuration key controlling the CORS -Allow-Headers header. **/
+    public static final String CONFIG_CORS_ALLOW_HEADERS = "trellis.http.cors.allowedheaders";
+    /** The configuration key controlling the CORS -Expose-Headers header. **/
+    public static final String CONFIG_CORS_EXPOSE_HEADERS = "trellis.http.cors.exposedheaders";
+    /** The configuration key controlling the CORS -Allow-Credentials header. **/
+    public static final String CONFIG_CORS_ALLOW_CREDENTIALS = "trellis.http.cors.allowcredentials";
+    /** The configuration key controlling the CORS -Max-Age header. **/
+    public static final String CONFIG_CORS_MAX_AGE = "trellis.http.cors.maxage";
 
     private static final Logger LOGGER = getLogger(CrossOriginResourceSharingFilter.class);
 
@@ -70,6 +86,27 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
     private final Boolean credentials;
 
     private final Integer cacheSeconds;
+
+    /**
+     * Create a CORS filter with default values.
+     */
+    @Inject
+    public CrossOriginResourceSharingFilter() {
+        this(getConfiguration());
+    }
+
+    private CrossOriginResourceSharingFilter(final Configuration config) {
+        this(populateFieldNames(config.getOrDefault(CONFIG_CORS_ORIGIN, "*")),
+             populateFieldNames(config.getOrDefault(CONFIG_CORS_ALLOW_METHODS,
+                     "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE")),
+             populateFieldNames(config.getOrDefault(CONFIG_CORS_ALLOW_HEADERS,
+                     "Content-Type,Link,Accept,Accept-DateTIme,Prefer,Want-Digest,Slug,Digest,Origin")),
+             populateFieldNames(config.getOrDefault(CONFIG_CORS_EXPOSE_HEADERS,
+                     "Content-Type,Link,Memento-Datetime,Preference-Applied,Location,Accept-Patch,Accept-Post," +
+                     "Digest,Accept-Ranges,ETag,Vary")),
+             config.getOrDefault(CONFIG_CORS_ALLOW_CREDENTIALS, Boolean.class, true),
+             config.getOrDefault(CONFIG_CORS_MAX_AGE, Integer.class, 180));
+    }
 
     /**
      * Create a CORS filter.
@@ -203,7 +240,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         return headers;
     }
 
-    private Set<String> populateFieldNames(final String requestHeaders) {
+    private static Set<String> populateFieldNames(final String requestHeaders) {
         return isNull(requestHeaders)
             ? emptySet()
             : stream(requestHeaders.split(",")).map(String::trim).collect(toSet());
