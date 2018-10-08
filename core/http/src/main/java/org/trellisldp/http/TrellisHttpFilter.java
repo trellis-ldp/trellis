@@ -93,6 +93,4 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
             .filter(x -> MUTATING_METHODS.contains(ctx.getMethod()))
             .ifPresent(x -> ctx.abortWith(status(METHOD_NOT_ALLOWED).build()));
     }
-
-
 }

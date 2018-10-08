@@ -78,6 +78,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final RDF rdf = getInstance();
+    private static final Configuration config = getConfiguration();
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
@@ -92,17 +93,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      */
     @Inject
     public WebAcFilter(final AccessControlService accessService) {
-        this(accessService, getConfiguration());
-    }
-
-
-    /**
-     * Create a WebAc-based auth filter.
-     *
-     * @param accessService the access service
-     * @param config the configuration
-     */
-    public WebAcFilter(final AccessControlService accessService, final Configuration config) {
         this(accessService, asList(config.getOrDefault(TRELLIS_AUTH_CHALLENGES, "").split(",")),
                 config.getOrDefault(TRELLIS_AUTH_REALM, "trellis"));
     }

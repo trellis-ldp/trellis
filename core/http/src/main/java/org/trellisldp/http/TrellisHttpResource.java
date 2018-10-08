@@ -89,7 +89,6 @@ public class TrellisHttpResource {
     protected static final RDF rdf = getInstance();
 
     protected final ServiceBundler trellis;
-
     protected final String baseUrl;
 
     /**
