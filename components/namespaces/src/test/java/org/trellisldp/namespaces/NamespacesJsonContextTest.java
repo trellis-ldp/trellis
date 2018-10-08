@@ -47,11 +47,11 @@ public class NamespacesJsonContextTest {
     public void testReadFromJson() {
         final URL res = NamespacesJsonContext.class.getResource(nsDoc);
         try {
-            System.setProperty(NamespacesJsonContext.NAMESPACES_PATH, res.getPath());
+            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, res.getPath());
             final NamespacesJsonContext svc = new NamespacesJsonContext();
             assertEquals(2, svc.getNamespaces().size(), "Namespace mapping count is incorrect!");
         } finally {
-            System.clearProperty(NamespacesJsonContext.NAMESPACES_PATH);
+            System.clearProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
         }
     }
 
@@ -59,11 +59,11 @@ public class NamespacesJsonContextTest {
     public void testReadError() {
         final URL res = NamespacesJsonContext.class.getResource("/thisIsNot.json");
         try {
-            System.setProperty(NamespacesJsonContext.NAMESPACES_PATH, res.getPath());
+            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, res.getPath());
             assertThrows(UncheckedIOException.class, NamespacesJsonContext::new,
                     "Loaded namespaces from invalid file!");
         } finally {
-            System.clearProperty(NamespacesJsonContext.NAMESPACES_PATH);
+            System.clearProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
         }
     }
 
@@ -72,7 +72,7 @@ public class NamespacesJsonContextTest {
         final URL res = NamespacesJsonContext.class.getResource("/readonly.json");
 
         try {
-            System.setProperty(NamespacesJsonContext.NAMESPACES_PATH, res.getPath());
+            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, res.getPath());
 
             final NamespacesJsonContext svc = new NamespacesJsonContext();
             final File file = new File(res.toURI());
@@ -80,7 +80,7 @@ public class NamespacesJsonContextTest {
             assertThrows(UncheckedIOException.class, () ->
                     svc.setPrefix("ex", "http://example.com/"), "Set prefix on unwritable namespace file!");
         } finally {
-            System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
+            System.getProperties().remove(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
         }
     }
 
@@ -90,7 +90,7 @@ public class NamespacesJsonContextTest {
         final String filename = file.getParent() + "/" + randomFilename();
 
         try {
-            System.setProperty(NamespacesJsonContext.NAMESPACES_PATH, filename);
+            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, filename);
 
             final NamespacesJsonContext svc1 = new NamespacesJsonContext();
             assertEquals(15, svc1.getNamespaces().size(), "Incorrect namespace mapping count!");
@@ -104,7 +104,7 @@ public class NamespacesJsonContextTest {
             assertFalse(svc2.setPrefix("jsonld", JSONLD.getNamespace()),
                     "unexpected response when trying to re-set jsonld mapping!");
         } finally {
-            System.getProperties().remove(NamespacesJsonContext.NAMESPACES_PATH);
+            System.getProperties().remove(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
         }
     }
 

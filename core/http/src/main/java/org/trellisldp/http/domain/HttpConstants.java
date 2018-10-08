@@ -43,7 +43,7 @@ public final class HttpConstants {
 
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 
-    public static final String CONFIGURATION_BASE_URL = "trellis.http.baseUrl";
+    public static final String CONFIG_HTTP_BASE_URL = "trellis.http.baseUrl";
 
     public static final String EXT = "ext";
 

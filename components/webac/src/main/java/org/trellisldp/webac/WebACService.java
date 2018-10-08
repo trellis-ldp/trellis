@@ -70,7 +70,7 @@ import org.trellisldp.vocabulary.VCARD;
 public class WebACService implements AccessControlService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. **/
-    public static final String WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
+    public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
     private static final Logger LOGGER = getLogger(WebACService.class);
     private static final RDF rdf = getInstance();
@@ -106,7 +106,8 @@ public class WebACService implements AccessControlService {
     @Inject
     public WebACService(final ResourceService resourceService,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
-        this(resourceService, cache, getConfiguration().getOrDefault(WEBAC_MEMBERSHIP_CHECK, Boolean.class, false));
+        this(resourceService, cache, getConfiguration()
+                .getOrDefault(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class, false));
     }
 
     /**

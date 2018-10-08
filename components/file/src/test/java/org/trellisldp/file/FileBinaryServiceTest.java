@@ -63,12 +63,12 @@ public class FileBinaryServiceTest {
 
     @BeforeAll
     public static void setUpEverything() {
-        System.setProperty(FileBinaryService.BINARY_BASE_PATH, directory);
+        System.setProperty(FileBinaryService.CONFIG_FILE_BINARY_BASE_PATH, directory);
     }
 
     @AfterAll
     public static void cleanUp() {
-        System.clearProperty(FileBinaryService.BINARY_BASE_PATH);
+        System.clearProperty(FileBinaryService.CONFIG_FILE_BINARY_BASE_PATH);
     }
 
     @Test

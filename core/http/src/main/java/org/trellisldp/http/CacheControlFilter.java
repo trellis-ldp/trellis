@@ -40,11 +40,11 @@ import org.apache.tamaya.Configuration;
 public class CacheControlFilter implements ContainerResponseFilter {
 
     /** The configuration key for setting a cache-control max-age header. **/
-    public static final String CONFIG_CACHE_AGE = "trellis.http.cache.maxage";
+    public static final String CONFIG_HTTP_CACHE_AGE = "trellis.http.cache.maxage";
     /** The configuration key for setting a cache-control must-revalidate header. **/
-    public static final String CONFIG_CACHE_REVALIDATE = "trellis.http.cache.revalidate";
+    public static final String CONFIG_HTTP_CACHE_REVALIDATE = "trellis.http.cache.revalidate";
     /** The configuration key for setting a cache-control no-cache header. **/
-    public static final String CONFIG_CACHE_NOCACHE = "trellis.http.cache.nocache";
+    public static final String CONFIG_HTTP_CACHE_NOCACHE = "trellis.http.cache.nocache";
 
     private static final Configuration config = getConfiguration();
 
@@ -57,9 +57,9 @@ public class CacheControlFilter implements ContainerResponseFilter {
      */
     @Inject
     public CacheControlFilter() {
-        this(config.getOrDefault(CONFIG_CACHE_AGE, Integer.class, 86400),
-             config.getOrDefault(CONFIG_CACHE_REVALIDATE, Boolean.class, true),
-             config.getOrDefault(CONFIG_CACHE_NOCACHE, Boolean.class, false));
+        this(config.getOrDefault(CONFIG_HTTP_CACHE_AGE, Integer.class, 86400),
+             config.getOrDefault(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class, true),
+             config.getOrDefault(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class, false));
     }
 
     /**

@@ -136,10 +136,11 @@ public class OAuthFilterTest {
     public void testFilterGenericWebid() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
         try {
-            System.setProperty(OAuthFilter.SHARED_SECRET,
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
             final String token = Jwts.builder().claim("webid", webid)
-                .signWith(hmacShaKeyFor(getConfiguration().get(OAuthFilter.SHARED_SECRET).getBytes(UTF_8))).compact();
+                .signWith(hmacShaKeyFor(getConfiguration()
+                            .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
             final OAuthFilter filter = new OAuthFilter();
@@ -151,7 +152,7 @@ public class OAuthFilterTest {
             assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
             assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
         } finally {
-            System.clearProperty(OAuthFilter.SHARED_SECRET);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET);
         }
     }
 
@@ -159,10 +160,11 @@ public class OAuthFilterTest {
     public void testFilterGenericJwtSecret() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
         try {
-            System.setProperty(OAuthFilter.SHARED_SECRET,
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
             final String token = Jwts.builder().claim("webid", webid)
-                .signWith(hmacShaKeyFor(getConfiguration().get(OAuthFilter.SHARED_SECRET).getBytes(UTF_8))).compact();
+                .signWith(hmacShaKeyFor(getConfiguration()
+                            .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BEARER " + token);
 
             final OAuthFilter filter = new OAuthFilter();
@@ -174,7 +176,7 @@ public class OAuthFilterTest {
             assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
             assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
         } finally {
-            System.clearProperty(OAuthFilter.SHARED_SECRET);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET);
         }
     }
 
@@ -182,24 +184,25 @@ public class OAuthFilterTest {
     public void testFilterNotBasicAuth() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
         try {
-            System.setProperty(OAuthFilter.SHARED_SECRET,
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
             final String token = Jwts.builder().claim("webid", webid)
-                .signWith(hmacShaKeyFor(getConfiguration().get(OAuthFilter.SHARED_SECRET).getBytes(UTF_8))).compact();
+                .signWith(hmacShaKeyFor(getConfiguration()
+                            .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
 
             final OAuthFilter filter = new OAuthFilter();
             filter.filter(mockContext);
             verify(mockContext, never()).setSecurityContext(any());
         } finally {
-            System.clearProperty(OAuthFilter.SHARED_SECRET);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET);
         }
     }
 
     @Test
     public void testFilterNoToken() throws Exception {
         try {
-            System.setProperty(OAuthFilter.SHARED_SECRET,
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer");
 
@@ -207,7 +210,7 @@ public class OAuthFilterTest {
             filter.filter(mockContext);
             verify(mockContext, never()).setSecurityContext(any());
         } finally {
-            System.clearProperty(OAuthFilter.SHARED_SECRET);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET);
         }
     }
 
@@ -237,7 +240,7 @@ public class OAuthFilterTest {
             "38zhMXE5VLC6PzhR3i_4KKpe4nq2otsrJ3KlEc7Me6UeiMXxPYz8rrPovW5L3LFWDmntGs5q923fBZFLFg8yBgMdTineaahEQ"));
 
         try {
-            System.setProperty(OAuthFilter.JWK_LOCATION, "https://www.trellisldp.org/tests/jwks.json");
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_JWK_URL, "https://www.trellisldp.org/tests/jwks.json");
 
             final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
             final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-test")
@@ -250,7 +253,7 @@ public class OAuthFilterTest {
             verify(mockContext).setSecurityContext(securityArgument.capture());
             assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         } finally {
-            System.clearProperty(OAuthFilter.JWK_LOCATION);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_JWK_URL);
         }
     }
 
@@ -260,9 +263,9 @@ public class OAuthFilterTest {
         final String webid = "https://people.apache.org/~acoburn/#me";
         try {
             final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
-            System.setProperty(OAuthFilter.KEYSTORE_PATH, keystorePath);
-            System.setProperty(OAuthFilter.KEYSTORE_CREDENTIALS, passphrase);
-            System.setProperty(OAuthFilter.KEY_IDS, "trellis,trellis-ec");
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_PATH, keystorePath);
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS, passphrase);
+            System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_IDS, "trellis,trellis-ec");
 
             final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase.toCharArray());
@@ -278,9 +281,9 @@ public class OAuthFilterTest {
             verify(mockContext).setSecurityContext(securityArgument.capture());
             assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         } finally {
-            System.clearProperty(OAuthFilter.KEYSTORE_PATH);
-            System.clearProperty(OAuthFilter.KEYSTORE_CREDENTIALS);
-            System.clearProperty(OAuthFilter.KEY_IDS);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_PATH);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS);
+            System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_IDS);
         }
     }
 }

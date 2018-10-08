@@ -82,13 +82,13 @@ import org.trellisldp.api.IdentifierService;
 public class FileBinaryService implements BinaryService {
 
     /** The configuration key controlling the base filesystem path for the binary service. */
-    public static final String BINARY_BASE_PATH = "trellis.file.binary.basepath";
+    public static final String CONFIG_FILE_BINARY_BASE_PATH = "trellis.file.binary.basepath";
 
     /** The configuration key controlling the levels of hierarchy in a binary storage layout. */
-    public static final String BINARY_HIERARCHY = "trellis.file.binary.hierarchy";
+    public static final String CONFIG_FILE_BINARY_HIERARCHY = "trellis.file.binary.hierarchy";
 
     /** The configuration key controlling the length of each level of hierarchy in a filesystem layout. */
-    public static final String BINARY_LENGTH = "trellis.file.binary.length";
+    public static final String CONFIG_FILE_BINARY_LENGTH = "trellis.file.binary.length";
 
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
     private static final String SHA = "SHA";
@@ -122,15 +122,15 @@ public class FileBinaryService implements BinaryService {
      */
     public FileBinaryService(final IdentifierService idService, final String basePath,
             final Integer hierarchy, final Integer length) {
-        requireNonNull(basePath, BINARY_BASE_PATH + " configuration may not be null!");
+        requireNonNull(basePath, CONFIG_FILE_BINARY_BASE_PATH + " configuration may not be null!");
         this.basePath = basePath;
         this.idSupplier = idService.getSupplier("file:///", hierarchy, length);
     }
 
     private FileBinaryService(final IdentifierService idService, final Configuration config) {
-        this(idService, config.get(BINARY_BASE_PATH),
-                config.getOrDefault(BINARY_HIERARCHY, Integer.class, DEFAULT_HIERARCHY),
-                config.getOrDefault(BINARY_LENGTH, Integer.class, DEFAULT_LENGTH));
+        this(idService, config.get(CONFIG_FILE_BINARY_BASE_PATH),
+                config.getOrDefault(CONFIG_FILE_BINARY_HIERARCHY, Integer.class, DEFAULT_HIERARCHY),
+                config.getOrDefault(CONFIG_FILE_BINARY_LENGTH, Integer.class, DEFAULT_LENGTH));
     }
 
     @Override

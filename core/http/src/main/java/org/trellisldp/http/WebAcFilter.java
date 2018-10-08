@@ -71,10 +71,10 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      *
      * <p>Multiple challenges should be separated with commas.
      **/
-    public static final String TRELLIS_AUTH_CHALLENGES = "trellis.auth.challenges";
+    public static final String CONFIG_AUTH_CHALLENGES = "trellis.auth.challenges";
 
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
-    public static final String TRELLIS_AUTH_REALM = "trellis.auth.realm";
+    public static final String CONFIG_AUTH_REALM = "trellis.auth.realm";
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final RDF rdf = getInstance();
@@ -93,8 +93,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      */
     @Inject
     public WebAcFilter(final AccessControlService accessService) {
-        this(accessService, asList(config.getOrDefault(TRELLIS_AUTH_CHALLENGES, "").split(",")),
-                config.getOrDefault(TRELLIS_AUTH_REALM, "trellis"));
+        this(accessService, asList(config.getOrDefault(CONFIG_AUTH_CHALLENGES, "").split(",")),
+                config.getOrDefault(CONFIG_AUTH_REALM, "trellis"));
     }
 
     /**

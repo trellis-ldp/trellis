@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package org.trellisldp.io;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -97,15 +98,13 @@ import org.trellisldp.api.RuntimeTrellisException;
 public class JenaIOService implements IOService {
 
     /** The configuration key listing valid JSON-LD profile documents. **/
-    public static final String IO_JSONLD_PROFILES = "trellis.io.jsonld.profiles";
+    public static final String CONFIG_IO_JSONLD_PROFILES = "trellis.io.jsonld.profiles";
 
     /** The configuration key listing valid JSON-LD profile domains. **/
-    public static final String IO_JSONLD_DOMAINS = "trellis.io.jsonld.domains";
+    public static final String CONFIG_IO_JSONLD_DOMAINS = "trellis.io.jsonld.domains";
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);
-
     private static final JenaRDF rdf = new JenaRDF();
-
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
                 new SimpleEntry<>(compacted, JSONLD_COMPACT_FLAT),
                 new SimpleEntry<>(flattened, JSONLD_FLATTEN_FLAT),
@@ -119,7 +118,6 @@ public class JenaIOService implements IOService {
     private final RDFaWriterService htmlSerializer;
     private final Set<String> whitelist;
     private final Set<String> whitelistDomains;
-
     private final List<RDFSyntax> readable;
     private final List<RDFSyntax> writable;
     private final List<RDFSyntax> updatable;
@@ -161,8 +159,8 @@ public class JenaIOService implements IOService {
             final RDFaWriterService htmlSerializer,
             @TrellisProfileCache final CacheService<String, String> cache) {
         this(namespaceService, htmlSerializer, cache,
-                ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_PROFILES, ""),
-                ConfigurationProvider.getConfiguration().getOrDefault(IO_JSONLD_DOMAINS, ""));
+                ConfigurationProvider.getConfiguration().getOrDefault(CONFIG_IO_JSONLD_PROFILES, ""),
+                ConfigurationProvider.getConfiguration().getOrDefault(CONFIG_IO_JSONLD_DOMAINS, ""));
     }
 
     /**

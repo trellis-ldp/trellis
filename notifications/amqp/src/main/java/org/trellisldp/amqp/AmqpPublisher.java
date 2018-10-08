@@ -44,16 +44,16 @@ public class AmqpPublisher implements EventService {
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     /** The configuration key controlling the AMQP exchange name. **/
-    public static final String AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
+    public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
 
     /** The configuration key controlling the AMQP routing key. **/
-    public static final String AMQP_ROUTING_KEY = "trellis.amqp.routingkey";
+    public static final String CONFIG_AMQP_ROUTING_KEY = "trellis.amqp.routingkey";
 
     /** The configuration key controlling whether publishing is mandatory. **/
-    public static final String AMQP_MANDATORY = "trellis.amqp.mandatory";
+    public static final String CONFIG_AMQP_MANDATORY = "trellis.amqp.mandatory";
 
     /** The configuration key controlling whether publishing is immediate. **/
-    public static final String AMQP_IMMEDIATE = "trellis.amqp.immediate";
+    public static final String CONFIG_AMQP_IMMEDIATE = "trellis.amqp.immediate";
 
     private final Channel channel;
     private final String exchangeName;
@@ -71,9 +71,9 @@ public class AmqpPublisher implements EventService {
     }
 
     private AmqpPublisher(final Channel channel, final Configuration config) {
-        this(channel, config.get(AMQP_EXCHANGE_NAME), config.get(AMQP_ROUTING_KEY),
-            config.getOrDefault(AMQP_MANDATORY, Boolean.class, true),
-            config.getOrDefault(AMQP_IMMEDIATE, Boolean.class, false));
+        this(channel, config.get(CONFIG_AMQP_EXCHANGE_NAME), config.get(CONFIG_AMQP_ROUTING_KEY),
+            config.getOrDefault(CONFIG_AMQP_MANDATORY, Boolean.class, true),
+            config.getOrDefault(CONFIG_AMQP_IMMEDIATE, Boolean.class, false));
     }
 
     /**

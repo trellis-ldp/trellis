@@ -39,7 +39,7 @@ public class KafkaPublisher implements EventService {
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     /** The configuration key controlling the name of the kafka topic. **/
-    public static final String KAFKA_TOPIC = "trellis.kafka.topic";
+    public static final String CONFIG_KAFKA_TOPIC = "trellis.kafka.topic";
 
     private final Producer<String, String> producer;
     private final String topic;
@@ -50,7 +50,7 @@ public class KafkaPublisher implements EventService {
      */
     @Inject
     public KafkaPublisher(final Producer<String, String> producer) {
-        this(producer, ConfigurationProvider.getConfiguration().get(KAFKA_TOPIC));
+        this(producer, ConfigurationProvider.getConfiguration().get(CONFIG_KAFKA_TOPIC));
     }
 
     /**

@@ -40,7 +40,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 public class JmsPublisher implements EventService {
 
     /** The configuration key controlling the JMS queue name. **/
-    public static final String JMS_QUEUE_NAME = "trellis.jms.queue";
+    public static final String CONFIG_JMS_QUEUE_NAME = "trellis.jms.queue";
 
     private static final Logger LOGGER = getLogger(JmsPublisher.class);
 
@@ -59,7 +59,7 @@ public class JmsPublisher implements EventService {
     @Inject
     public JmsPublisher(final Connection conn) throws JMSException {
         this(conn.createSession(false, AUTO_ACKNOWLEDGE),
-                ConfigurationProvider.getConfiguration().get(JMS_QUEUE_NAME));
+                ConfigurationProvider.getConfiguration().get(CONFIG_JMS_QUEUE_NAME));
     }
 
     /**

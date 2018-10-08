@@ -47,16 +47,21 @@ import org.slf4j.Logger;
 public class OAuthFilter implements ContainerRequestFilter {
 
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
-    public static final String TRELLIS_AUTH_REALM = "trellis.auth.realm";
+    public static final String CONFIG_AUTH_REALM = "trellis.auth.realm";
+    /** The configuration key controlling the OAuth Keystore path. **/
+    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_PATH = "trellis.auth.oauth.keystore.path";
+    /** The configuration key controlling the OAuth Keystore credentials. **/
+    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS = "trellis.auth.oauth.keystore.credentials";
+    /** The configuration key controlling the OAuth Keystore ids. **/
+    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_IDS = "trellis.auth.oauth.keystore.ids";
+    /** The configuration key controlling the OAuth HMAC shared secret. **/
+    public static final String CONFIG_AUTH_OAUTH_SHARED_SECRET = "trellis.auth.oauth.sharedsecret";
+    /** The configuration key controlling the OAuth JWK URL. **/
+    public static final String CONFIG_AUTH_OAUTH_JWK_URL = "trellis.auth.oauth.jwk";
+    /** The authentication scheme used by this module. **/
+    public static final String SCHEME = "Bearer";
 
     private static final Logger LOGGER = getLogger(OAuthFilter.class);
-
-    public static final String SCHEME = "Bearer";
-    public static final String KEYSTORE_PATH = "trellis.oauth.keystore.path";
-    public static final String KEYSTORE_CREDENTIALS = "trellis.oauth.keystore.password";
-    public static final String KEY_IDS = "trellis.oauth.keyids";
-    public static final String SHARED_SECRET = "trellis.oauth.sharedsecret";
-    public static final String JWK_LOCATION = "trellis.oauth.jwk.location";
 
     private final Authenticator authenticator;
     private final String challenge;
@@ -74,7 +79,7 @@ public class OAuthFilter implements ContainerRequestFilter {
      * @param authenticator the authenticator
      */
     public OAuthFilter(final Authenticator authenticator) {
-        this(authenticator, getConfiguration().getOrDefault(TRELLIS_AUTH_REALM, "trellis"));
+        this(authenticator, getConfiguration().getOrDefault(CONFIG_AUTH_REALM, "trellis"));
     }
 
     /**
@@ -139,24 +144,24 @@ public class OAuthFilter implements ContainerRequestFilter {
         final Configuration config = getConfiguration();
 
         final Authenticator jwksAuthenticator = OAuthUtils.buildAuthenticatorWithJwk(
-                config.get(JWK_LOCATION));
+                config.get(CONFIG_AUTH_OAUTH_JWK_URL));
         if (nonNull(jwksAuthenticator)) {
             return jwksAuthenticator;
         }
 
         final Authenticator keystoreAuthenticator = OAuthUtils.buildAuthenticatorWithTruststore(
-                config.get(KEYSTORE_PATH), config.getOrDefault(KEYSTORE_CREDENTIALS, "").toCharArray(),
-                asList(config.getOrDefault(KEY_IDS, "").split(",")));
+                config.get(CONFIG_AUTH_OAUTH_KEYSTORE_PATH),
+                config.getOrDefault(CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS, "").toCharArray(),
+                asList(config.getOrDefault(CONFIG_AUTH_OAUTH_KEYSTORE_IDS, "").split(",")));
         if (nonNull(keystoreAuthenticator)) {
             return keystoreAuthenticator;
         }
 
         final Authenticator sharedKeyAuthenticator = OAuthUtils.buildAuthenticatorWithSharedSecret(
-                config.get(SHARED_SECRET));
+                config.get(CONFIG_AUTH_OAUTH_SHARED_SECRET));
         if (nonNull(sharedKeyAuthenticator)) {
             return sharedKeyAuthenticator;
         }
-
         return new NullAuthenticator();
     }
 }

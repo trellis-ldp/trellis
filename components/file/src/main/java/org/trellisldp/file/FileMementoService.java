@@ -62,7 +62,7 @@ import org.trellisldp.api.Resource;
 public class FileMementoService implements MementoService {
 
     /** The configuration key controlling the base filesystem path for memento storage. **/
-    public static final String MEMENTO_BASE_PATH = "trellis.file.memento.basepath";
+    public static final String CONFIG_FILE_MEMENTO_BASE_PATH = "trellis.file.memento.basepath";
 
     private final File directory;
 
@@ -71,7 +71,7 @@ public class FileMementoService implements MementoService {
      */
     @Inject
     public FileMementoService() {
-        this(ConfigurationProvider.getConfiguration().get(MEMENTO_BASE_PATH));
+        this(ConfigurationProvider.getConfiguration().get(CONFIG_FILE_MEMENTO_BASE_PATH));
     }
 
     /**

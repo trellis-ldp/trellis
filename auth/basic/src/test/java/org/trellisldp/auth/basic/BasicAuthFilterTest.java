@@ -88,7 +88,7 @@ public class BasicAuthFilterTest {
     @Test
     public void testCredentialsViaConfiguration() throws Exception {
         try {
-            System.setProperty(BasicAuthFilter.CREDENTIALS_FILE, getAuthFile());
+            System.setProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS, getAuthFile());
             final BasicAuthFilter filter = new BasicAuthFilter();
             final String webid = "https://madison.example.com/profile/#me";
             final String token = encodeCredentials("user", "password");
@@ -100,7 +100,7 @@ public class BasicAuthFilterTest {
             assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
             assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
         } finally {
-            System.clearProperty(BasicAuthFilter.CREDENTIALS_FILE);
+            System.clearProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS);
         }
     }
 
