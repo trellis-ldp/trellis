@@ -340,26 +340,34 @@ public interface LdpBasicContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         final EntityTag etag;
 
+        // TODO remove the getChildLocation and setChildLocation methods from this interface
+        final String childResource;
+
+        try (final Response res = target(getContainerLocation()).request().post(entity("", TEXT_TURTLE))) {
+            assertAll("Check for an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
+            childResource = res.getLocation().toString();
+        }
+
+        meanwhile();
+
         try (final Response res = target(getContainerLocation()).request().get()) {
             assertAll("Check for an LDP-BC", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final IRI identifier = rdf.createIRI(getContainerLocation());
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertAll("Verify the resulting graph", checkRdfGraph(g, identifier));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(getChildLocation())),
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(childResource)),
                     "Check for the presence of an ldp:contains triple");
             etag = res.getEntityTag();
             assertTrue(etag.isWeak(), "Verify that the ETag is weak");
         }
 
-        meanwhile();
-
         // Delete one of the child resources
-        try (final Response res = target(getChildLocation()).request().delete()) {
+        try (final Response res = target(childResource).request().delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check the response type");
         }
 
         // Try fetching the deleted resource
-        try (final Response res = target(getChildLocation()).request().get()) {
+        try (final Response res = target(childResource).request().get()) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for an expected error");
         }
 
@@ -367,7 +375,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertAll("Check the parent container", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertFalse(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
-                        rdf.createIRI(getChildLocation())), "Check the graph doesn't contain the deleted resource");
+                        rdf.createIRI(childResource)), "Check the graph doesn't contain the deleted resource");
             assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
             assertNotEquals(etag, res.getEntityTag(), "Verify that the ETag value is different");
         }
