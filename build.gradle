@@ -24,7 +24,7 @@ ext {
     javaxInjectVersion = '2.5.0-b62'
     jaxbVersion = '2.3.0'
     jaxrsVersion = '2.1.1'
-    jenaVersion = '3.8.0'
+    jenaVersion = '3.9.0'
     jerseyVersion = '2.27'
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.1'
