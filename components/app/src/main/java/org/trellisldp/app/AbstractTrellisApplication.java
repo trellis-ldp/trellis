@@ -24,6 +24,7 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.tamaya.ConfigurationProvider;
@@ -110,9 +111,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     .getOrDefault(APPLICATION_SELF_INITIALIZE, Boolean.class, true)));
 
         // Authentication
-        final AgentAuthorizationFilter agentFilter
-            = new AgentAuthorizationFilter(getServiceBundler().getAgentService());
-        agentFilter.setAdminUsers(config.getAuth().getAdminUsers());
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),
+                new HashSet<>(config.getAuth().getAdminUsers()));
 
         // Filters
         environment.jersey().register(agentFilter);

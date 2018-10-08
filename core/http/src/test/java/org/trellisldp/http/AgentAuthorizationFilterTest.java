@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -70,7 +69,6 @@ public class AgentAuthorizationFilterTest {
     public void testFilterMissingAgent() throws Exception {
         when(mockPrincipal.getName()).thenReturn("");
         final AgentAuthorizationFilter filter = new AgentAuthorizationFilter(mockAgentService);
-        filter.setAdminUsers(emptyList());
         filter.filter(mockContext);
         verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
         assertEquals(Trellis.AnonymousAgent, sessionArgument.getValue().getAgent(), "Unexpected agent IRI!");

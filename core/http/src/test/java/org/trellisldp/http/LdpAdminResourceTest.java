@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -38,8 +39,8 @@ public class LdpAdminResourceTest extends AbstractLdpResourceTest {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(mockAgentService);
-        agentFilter.setAdminUsers(asList("testUser"));
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(mockAgentService,
+                singleton("testUser"));
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, baseUri));

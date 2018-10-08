@@ -13,16 +13,17 @@
  */
 package org.trellisldp.http;
 
+import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Priority;
@@ -51,10 +52,13 @@ import org.trellisldp.http.impl.HttpSession;
 @Priority(AUTHORIZATION - 200)
 public class AgentAuthorizationFilter implements ContainerRequestFilter {
 
+    /** A configuration key controlling which agents should be considered administrators. **/
+    public static final String CONFIG_HTTP_AGENT_ADMIN_USERS = "trellis.http.agent.adminusers";
+
     private static final Logger LOGGER = getLogger(AgentAuthorizationFilter.class);
 
     private final AgentService agentService;
-    private final Set<String> adminUsers = new HashSet<>();
+    private final Set<String> adminUsers;
 
     /**
      * Create an authorization filter.
@@ -63,16 +67,18 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
      */
     @Inject
     public AgentAuthorizationFilter(final AgentService agentService) {
-        this.agentService = agentService;
+        this(agentService, getConfiguredAdmins());
     }
 
     /**
-     * Set any admin users for the auth filter.
+     * Create an authorization filter.
      *
-     * @param adminUsers users that should be treated as server administrators
+     * @param agentService the agent service
+     * @param adminUsers the admin users
      */
-    public void setAdminUsers(final List<String> adminUsers) {
-        adminUsers.forEach(this.adminUsers::add);
+    public AgentAuthorizationFilter(final AgentService agentService, final Set<String> adminUsers) {
+        this.agentService = agentService;
+        this.adminUsers = adminUsers;
     }
 
     @Override
@@ -87,10 +93,15 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
         }
     }
 
-    private String getPrincipalName(final Principal principal) {
+    private static String getPrincipalName(final Principal principal) {
         if (nonNull(principal) && !principal.getName().isEmpty()) {
             return principal.getName();
         }
         return null;
+    }
+
+    private static Set<String> getConfiguredAdmins() {
+        final String admins = getConfiguration().getOrDefault(CONFIG_HTTP_AGENT_ADMIN_USERS, "");
+        return stream(admins.split(",")).map(String::trim).collect(toSet());
     }
 }
