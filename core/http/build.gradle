@@ -26,7 +26,6 @@ dependencies {
     testImplementation("com.google.guava:guava:$guavaVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
-    testImplementation("org.glassfish:javax.json:$jsonVersion")
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
