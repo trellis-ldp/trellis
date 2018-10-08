@@ -46,6 +46,9 @@ import org.slf4j.Logger;
 @Priority(AUTHENTICATION)
 public class OAuthFilter implements ContainerRequestFilter {
 
+    /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
+    public static final String TRELLIS_AUTH_REALM = "trellis.auth.realm";
+
     private static final Logger LOGGER = getLogger(OAuthFilter.class);
 
     public static final String SCHEME = "Bearer";
@@ -56,6 +59,7 @@ public class OAuthFilter implements ContainerRequestFilter {
     public static final String JWK_LOCATION = "trellis.oauth.jwk.location";
 
     private final Authenticator authenticator;
+    private final String challenge;
 
     /**
      * Create an OAuth filter.
@@ -70,7 +74,17 @@ public class OAuthFilter implements ContainerRequestFilter {
      * @param authenticator the authenticator
      */
     public OAuthFilter(final Authenticator authenticator) {
+        this(authenticator, getConfiguration().getOrDefault(TRELLIS_AUTH_REALM, "trellis"));
+    }
+
+    /**
+     * Create an OAuth filter with a defined authenticator.
+     * @param authenticator the authenticator
+     * @param realm the authentication realm
+     */
+    public OAuthFilter(final Authenticator authenticator, final String realm) {
         this.authenticator = authenticator;
+        this.challenge = "Bearer realm=\"" + realm + "\"";
     }
 
     @Override
@@ -80,7 +94,7 @@ public class OAuthFilter implements ContainerRequestFilter {
             .isPresent();
 
         getOAuthToken(requestContext)
-            .map(token -> authenticate(token).orElseThrow(() -> new NotAuthorizedException(SCHEME)))
+            .map(token -> authenticate(token).orElseThrow(() -> new NotAuthorizedException(challenge)))
             .ifPresent(principal -> requestContext.setSecurityContext(new SecurityContext() {
                     @Override
                     public Principal getUserPrincipal() {

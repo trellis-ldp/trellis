@@ -16,20 +16,21 @@ package org.trellisldp.http;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +47,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
@@ -64,15 +66,24 @@ import org.trellisldp.vocabulary.Trellis;
 @Priority(AUTHORIZATION)
 public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
-    private static final RDF rdf = getInstance();
+    /**
+     * The configuration key controlling which WWW-Authenticate challenges are provided on 401 errors.
+     *
+     * <p>Multiple challenges should be separated with commas.
+     **/
+    public static final String TRELLIS_AUTH_CHALLENGES = "trellis.auth.challenges";
+
+    /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
+    public static final String TRELLIS_AUTH_REALM = "trellis.auth.realm";
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
-
-    private final AccessControlService accessService;
-    private final List<String> challenges = new ArrayList<>();
+    private static final RDF rdf = getInstance();
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
+
+    private final AccessControlService accessService;
+    private final List<String> challenges;
 
     /**
      * Create a new WebAc-based auth filter.
@@ -81,20 +92,36 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      */
     @Inject
     public WebAcFilter(final AccessControlService accessService) {
-        this.accessService = accessService;
-        challenges.add(BASIC_AUTH);
+        this(accessService, getConfiguration());
+    }
+
+
+    /**
+     * Create a WebAc-based auth filter.
+     *
+     * @param accessService the access service
+     * @param config the configuration
+     */
+    public WebAcFilter(final AccessControlService accessService, final Configuration config) {
+        this(accessService, asList(config.getOrDefault(TRELLIS_AUTH_CHALLENGES, "").split(",")),
+                config.getOrDefault(TRELLIS_AUTH_REALM, "trellis"));
     }
 
     /**
-     * Set the auth challenges.
+     * Create a WebAc-based auth filter.
      *
-     * @param challenges the auth challenges
+     * @param accessService the access service
+     * @param challengeTypes the WWW-Authenticate challenge types
+     * @param realm the authentication realm
      */
-    public void setChallenges(final List<String> challenges) {
-        if (!challenges.isEmpty()) {
-            this.challenges.clear();
-            challenges.forEach(this.challenges::add);
-        }
+    public WebAcFilter(final AccessControlService accessService, final List<String> challengeTypes,
+            final String realm) {
+        requireNonNull(accessService, "Access Control service may not be null!");
+        requireNonNull(challengeTypes, "Challenges may not be null!");
+        requireNonNull(realm, "Realm may not be null!");
+        this.accessService = accessService;
+        this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
+            .collect(toList());
     }
 
     @Override

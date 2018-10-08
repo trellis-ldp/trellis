@@ -26,9 +26,6 @@ import javax.validation.constraints.NotNull;
  */
 public class JwtAuthConfiguration {
 
-    @NotNull
-    private String realm = "trellis";
-
     private Boolean enabled = true;
 
     private String key;
@@ -149,23 +146,5 @@ public class JwtAuthConfiguration {
     @JsonProperty
     public void setJwks(final String jwks) {
         this.jwks = jwks;
-    }
-
-    /**
-     * Get the security realm.
-     * @return the realm; by default, this is 'trellis'
-     */
-    @JsonProperty
-    public String getRealm() {
-        return realm;
-    }
-
-    /**
-     * Set the security realm.
-     * @param realm the security realm
-     */
-    @JsonProperty
-    public void setRealm(final String realm) {
-        this.realm = realm;
     }
 }

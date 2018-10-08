@@ -14,7 +14,6 @@
 package org.trellisldp.app;
 
 import static java.util.Collections.emptyList;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.TrellisUtils.getAuthFilters;
@@ -31,8 +30,6 @@ import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.app.config.BasicAuthConfiguration;
-import org.trellisldp.app.config.JwtAuthConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
@@ -126,14 +123,14 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         // Authorization
         getWebacCache(config).ifPresent(cache -> {
             final AccessControlService webac = new WebACService(getServiceBundler().getResourceService(), cache);
-            final WebAcFilter filter = new WebAcFilter(webac);
             final List<String> challenges = new ArrayList<>();
-            of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled)
-                .map(c -> "Bearer realm=\"" + c.getRealm() + "\"").ifPresent(challenges::add);
-            of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled)
-                .map(c -> "Basic realm=\"" + c.getRealm() + "\"").ifPresent(challenges::add);
-            filter.setChallenges(challenges);
-            environment.jersey().register(filter);
+            if (config.getAuth().getJwt().getEnabled()) {
+                challenges.add("Bearer");
+            }
+            if (config.getAuth().getBasic().getEnabled()) {
+                challenges.add("Basic");
+            }
+            environment.jersey().register(new WebAcFilter(webac, challenges, config.getAuth().getRealm()));
         });
 
         // WebSub

@@ -118,20 +118,12 @@ public class WebACFilterTest {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
-        final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
-        filter.setChallenges(asList("Foo", "Bar"));
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService, asList("Foo", "Bar"), "my-realm");
 
         final List<Object> challenges = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No auth exception thrown with no access modes!").getChallenges();
 
-        assertTrue(challenges.contains("Foo"), "Foo not among challenges!");
-        assertTrue(challenges.contains("Bar"), "Bar not among challenges!");
-
-        filter.setChallenges(emptyList());
-        final List<Object> challenges2 = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
-                "No auth exception thrown with no access modes!").getChallenges();
-
-        assertTrue(challenges2.contains("Foo"), "Foo not among challenges after reset!");
-        assertTrue(challenges2.contains("Bar"), "Bar not among challenges after reset!");
+        assertTrue(challenges.contains("Foo realm=\"my-realm\""), "Foo not among challenges!");
+        assertTrue(challenges.contains("Bar realm=\"my-realm\""), "Bar not among challenges!");
     }
 }
