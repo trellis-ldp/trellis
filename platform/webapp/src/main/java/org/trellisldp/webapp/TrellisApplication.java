@@ -15,9 +15,12 @@ package org.trellisldp.webapp;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.auth.basic.BasicAuthFilter;
+import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
+import org.trellisldp.webac.WebACService;
 
 /**
  * A Trellis application.
@@ -37,6 +40,9 @@ public class TrellisApplication extends ResourceConfig {
         register(ldpResource);
         register(new TrellisHttpFilter());
         register(new AgentAuthorizationFilter(serviceBundler.getAgentService()));
+        register(new OAuthFilter());
+        register(new BasicAuthFilter());
+        register(new WebACService(serviceBundler.getResourceService()));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);
         AppUtils.getCORSFilter().ifPresent(this::register);
