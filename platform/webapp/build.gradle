@@ -10,6 +10,7 @@ dependencies {
     compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     compile("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     compile("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
+
     compile project(':trellis-agent')
     compile project(':trellis-api')
     compile project(':trellis-constraint-rules')
@@ -19,6 +20,8 @@ dependencies {
     compile project(':trellis-io-jena')
     compile project(':trellis-namespaces')
     compile project(':trellis-triplestore')
+    compile project(':trellis-auth-basic')
+    compile project(':trellis-auth-oauth')
 
     runtime("javax.xml.bind:jaxb-api:$jaxbVersion")
     runtime("javax.activation:javax.activation-api:$activationApiVersion")
