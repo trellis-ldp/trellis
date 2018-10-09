@@ -20,6 +20,7 @@ import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
+import org.trellisldp.webac.WebACService;
 
 /**
  * A Trellis application.
@@ -41,6 +42,7 @@ public class TrellisApplication extends ResourceConfig {
         register(new AgentAuthorizationFilter(serviceBundler.getAgentService()));
         register(new OAuthFilter());
         register(new BasicAuthFilter());
+        register(new WebACService(serviceBundler.getResourceService()));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);
         AppUtils.getCORSFilter().ifPresent(this::register);
