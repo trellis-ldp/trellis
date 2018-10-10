@@ -22,8 +22,6 @@ import static org.trellisldp.webapp.AppUtils.loadWithDefault;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionLocal;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
-import org.apache.tamaya.Configuration;
-import org.apache.tamaya.ConfigurationProvider;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;
@@ -32,8 +30,6 @@ import org.trellisldp.file.FileMementoService;
 import org.trellisldp.http.TrellisHttpResource;
 
 public class AppUtilsTest {
-
-    private static final Configuration config = ConfigurationProvider.getConfiguration();
 
     @Test
     public void testLoaderError() {
