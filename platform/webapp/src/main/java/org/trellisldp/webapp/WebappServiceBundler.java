@@ -14,8 +14,6 @@
 package org.trellisldp.webapp;
 
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.tamaya.Configuration;
-import org.apache.tamaya.ConfigurationProvider;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -41,8 +39,6 @@ import org.trellisldp.triplestore.TriplestoreResourceService;
  */
 public class WebappServiceBundler implements ServiceBundler {
 
-    private static final Configuration config = ConfigurationProvider.getConfiguration();
-
     private final AgentService agentService;
     private final MementoService mementoService;
     private final AuditService auditService;
@@ -56,7 +52,7 @@ public class WebappServiceBundler implements ServiceBundler {
      */
     public WebappServiceBundler() {
         final IdentifierService idService = AppUtils.loadFirst(IdentifierService.class);
-        final RDFConnection rdfConnection = AppUtils.getRDFConnection(config.get("trellis.rdf.location"));
+        final RDFConnection rdfConnection = AppUtils.getRDFConnection();
 
         eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);
         agentService = AppUtils.loadFirst(AgentService.class);

@@ -55,17 +55,17 @@ import org.slf4j.Logger;
 public class CrossOriginResourceSharingFilter implements ContainerResponseFilter {
 
     /** The configuration key controlling the CORS -Allow-Origin header. **/
-    public static final String CONFIG_CORS_ORIGIN = "trellis.http.cors.origin";
+    public static final String CONFIG_HTTP_CORS_ALLOW_ORIGIN = "trellis.http.cors.alloworigin";
     /** The configuration key controlling the CORS -Allow-Methods header. **/
-    public static final String CONFIG_CORS_ALLOW_METHODS = "trellis.http.cors.allowedmethods";
+    public static final String CONFIG_HTTP_CORS_ALLOW_METHODS = "trellis.http.cors.allowmethods";
     /** The configuration key controlling the CORS -Allow-Headers header. **/
-    public static final String CONFIG_CORS_ALLOW_HEADERS = "trellis.http.cors.allowedheaders";
+    public static final String CONFIG_HTTP_CORS_ALLOW_HEADERS = "trellis.http.cors.allowheaders";
     /** The configuration key controlling the CORS -Expose-Headers header. **/
-    public static final String CONFIG_CORS_EXPOSE_HEADERS = "trellis.http.cors.exposedheaders";
+    public static final String CONFIG_HTTP_CORS_EXPOSE_HEADERS = "trellis.http.cors.exposeheaders";
     /** The configuration key controlling the CORS -Allow-Credentials header. **/
-    public static final String CONFIG_CORS_ALLOW_CREDENTIALS = "trellis.http.cors.allowcredentials";
+    public static final String CONFIG_HTTP_CORS_ALLOW_CREDENTIALS = "trellis.http.cors.allowcredentials";
     /** The configuration key controlling the CORS -Max-Age header. **/
-    public static final String CONFIG_CORS_MAX_AGE = "trellis.http.cors.maxage";
+    public static final String CONFIG_HTTP_CORS_MAX_AGE = "trellis.http.cors.maxage";
 
     private static final Logger LOGGER = getLogger(CrossOriginResourceSharingFilter.class);
     private static final Configuration config = getConfiguration();
@@ -86,16 +86,16 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
      */
     @Inject
     public CrossOriginResourceSharingFilter() {
-        this(populateFieldNames(config.getOrDefault(CONFIG_CORS_ORIGIN, "*")),
-             populateFieldNames(config.getOrDefault(CONFIG_CORS_ALLOW_METHODS,
+        this(populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_ORIGIN, "*")),
+             populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_METHODS,
                      "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE")),
-             populateFieldNames(config.getOrDefault(CONFIG_CORS_ALLOW_HEADERS,
+             populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_HEADERS,
                      "Content-Type,Link,Accept,Accept-DateTIme,Prefer,Want-Digest,Slug,Digest,Origin")),
-             populateFieldNames(config.getOrDefault(CONFIG_CORS_EXPOSE_HEADERS,
+             populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_EXPOSE_HEADERS,
                      "Content-Type,Link,Memento-Datetime,Preference-Applied,Location,Accept-Patch,Accept-Post," +
                      "Digest,Accept-Ranges,ETag,Vary")),
-             config.getOrDefault(CONFIG_CORS_ALLOW_CREDENTIALS, Boolean.class, true),
-             config.getOrDefault(CONFIG_CORS_MAX_AGE, Integer.class, 180));
+             config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_CREDENTIALS, Boolean.class, true),
+             config.getOrDefault(CONFIG_HTTP_CORS_MAX_AGE, Integer.class, 180));
     }
 
     /**

@@ -47,10 +47,10 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     private static final Logger LOGGER = getLogger(BasicAuthFilter.class);
 
     /** The configuration key controlling the location of the basic auth credentials file. **/
-    public static final String CREDENTIALS_FILE = "trellis.auth.basic.credentialsfile";
+    public static final String CONFIG_AUTH_BASIC_CREDENTIALS = "trellis.auth.basic.credentials";
 
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
-    public static final String TRELLIS_AUTH_REALM = "trellis.auth.realm";
+    public static final String CONFIG_AUTH_REALM = "trellis.auth.realm";
 
     private final File file;
     private final String challenge;
@@ -60,7 +60,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
      */
     @Inject
     public BasicAuthFilter() {
-        this(getConfiguration().get(CREDENTIALS_FILE));
+        this(getConfiguration().get(CONFIG_AUTH_BASIC_CREDENTIALS));
     }
 
     /**
@@ -76,7 +76,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
      * @param file the credentials file
      */
     public BasicAuthFilter(final File file) {
-        this(file, getConfiguration().getOrDefault(TRELLIS_AUTH_REALM, "trellis"));
+        this(file, getConfiguration().getOrDefault(CONFIG_AUTH_REALM, "trellis"));
     }
 
     /**

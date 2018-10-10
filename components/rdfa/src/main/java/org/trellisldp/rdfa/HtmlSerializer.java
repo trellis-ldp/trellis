@@ -49,16 +49,16 @@ public class HtmlSerializer implements RDFaWriterService {
     private static final MustacheFactory mf = new DefaultMustacheFactory();
 
     /** The configuration key controlling the HTML template to use. **/
-    public static final String HTML_TEMPLATE = "trellis.html.template";
+    public static final String CONFIG_RDFA_TEMPLATE = "trellis.rdfa.template";
 
     /** The configuration key controlling the CSS URLs to use. **/
-    public static final String HTML_CSS = "trellis.html.css";
+    public static final String CONFIG_RDFA_CSS = "trellis.rdfa.css";
 
     /** The configuration key controlling the web icon to use. **/
-    public static final String HTML_ICON = "trellis.html.icon";
+    public static final String CONFIG_RDFA_ICON = "trellis.rdfa.icon";
 
     /** The configuration key controlling the JS URLs to use. **/
-    public static final String HTML_JS = "trellis.html.js";
+    public static final String CONFIG_RDFA_JS = "trellis.rdfa.js";
 
     private final NamespaceService namespaceService;
     private final Mustache template;
@@ -73,9 +73,9 @@ public class HtmlSerializer implements RDFaWriterService {
      */
     @Inject
     public HtmlSerializer(final NamespaceService namespaceService) {
-        this(namespaceService, getConfiguration().get(HTML_TEMPLATE),
-                getConfiguration().get(HTML_CSS), getConfiguration().get(HTML_JS),
-                getConfiguration().get(HTML_ICON));
+        this(namespaceService, getConfiguration().get(CONFIG_RDFA_TEMPLATE),
+                getConfiguration().get(CONFIG_RDFA_CSS), getConfiguration().get(CONFIG_RDFA_JS),
+                getConfiguration().get(CONFIG_RDFA_ICON));
     }
 
     /**

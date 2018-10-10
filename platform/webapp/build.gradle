@@ -6,6 +6,7 @@ dependencies {
     compile("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     compile("org.apache.jena:jena-osgi:$jenaVersion")
     compile("org.apache.commons:commons-compress:$commonsCompressVersion")
+    compile("org.apache.commons:commons-lang3:$commonsLangVersion")
     compile("org.apache.tamaya:tamaya-api:$tamayaVersion")
     compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     compile("org.glassfish.jersey.core:jersey-server:$jerseyVersion")

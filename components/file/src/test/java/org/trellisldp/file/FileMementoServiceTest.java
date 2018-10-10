@@ -73,7 +73,7 @@ public class FileMementoServiceTest {
         assertTrue(dir.isDirectory(), "Resource directory isn't a valid directory");
 
         try {
-            System.setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
             final MementoService svc = new FileMementoService();
 
@@ -89,7 +89,7 @@ public class FileMementoServiceTest {
             svc.get(identifier, MAX).thenAccept(res -> assertEquals(time2, res.getModified(), "Incorrect date!"))
                 .join();
         } finally {
-            System.clearProperty(FileMementoService.MEMENTO_BASE_PATH);
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
     }
 
@@ -98,7 +98,7 @@ public class FileMementoServiceTest {
         final File dir = new File(getClass().getResource("/versions").getFile());
 
         try {
-            System.setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
             final MementoService svc = new FileMementoService();
             final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "nonexistent");
@@ -108,7 +108,7 @@ public class FileMementoServiceTest {
             assertTrue(svc.list(identifier).join().isEmpty(), "Resource directory isn't empty!");
             assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join(), "Wrong response for missing resource!");
         } finally {
-            System.clearProperty(FileMementoService.MEMENTO_BASE_PATH);
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
     }
 
@@ -117,7 +117,7 @@ public class FileMementoServiceTest {
         final File dir = new File(getClass().getResource("/versions").getFile());
 
         try {
-            System.setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
             final MementoService svc = new FileMementoService();
             final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "empty");
@@ -127,7 +127,7 @@ public class FileMementoServiceTest {
             assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join(), "Wrong response for missing resource!");
             assertTrue(svc.list(identifier).join().isEmpty(), "Memento list isn't empty!");
         } finally {
-            System.clearProperty(FileMementoService.MEMENTO_BASE_PATH);
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
     }
 
@@ -141,7 +141,7 @@ public class FileMementoServiceTest {
         assertFalse(versionDir.exists(), "Version directory already exists!");
 
         try {
-            System.setProperty(FileMementoService.MEMENTO_BASE_PATH, versionDir.getAbsolutePath());
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, versionDir.getAbsolutePath());
 
             final MementoService svc = new FileMementoService();
 
@@ -159,7 +159,7 @@ public class FileMementoServiceTest {
             assertNull(svc.delete(identifier, time.plusSeconds(10)).join(), "Error with Memento deletion (+10s)!");
             assertEquals(1L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
         } finally {
-            System.clearProperty(FileMementoService.MEMENTO_BASE_PATH);
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
     }
 
@@ -173,7 +173,7 @@ public class FileMementoServiceTest {
         assumeTrue(readonly.setReadOnly(), "Unable to set directory read-only, skipping test!");
 
         try {
-            System.setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
             final MementoService svc = new FileMementoService();
             assertEquals(2L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
@@ -191,7 +191,7 @@ public class FileMementoServiceTest {
                     "Error deleting non-existent Memento (+10s)!");
             assertEquals(2L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
         } finally {
-            System.clearProperty(FileMementoService.MEMENTO_BASE_PATH);
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
     }
 
@@ -205,7 +205,7 @@ public class FileMementoServiceTest {
         assumeTrue(unreadable.setReadable(false), "Couldn't set directory as unreadable, skipping test!");
 
         try {
-            System.setProperty(FileMementoService.MEMENTO_BASE_PATH, dir.getAbsolutePath());
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
             final MementoService svc = new FileMementoService();
 
@@ -215,7 +215,7 @@ public class FileMementoServiceTest {
                 return emptyList();
             }).join().isEmpty(), "Memento list wasn't empty!");
         } finally {
-            System.clearProperty(FileMementoService.MEMENTO_BASE_PATH);
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
     }
 

@@ -52,7 +52,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     private static final Logger LOGGER = getLogger(AbstractTrellisApplication.class);
 
     /** The configuration key controlling whether an application should initialize its own root resource. **/
-    public static final String APPLICATION_SELF_INITIALIZE = "trellis.app.initialize.root";
+    public static final String CONFIG_APP_INITIALIZE_ROOT = "trellis.app.initialize.root";
 
     /**
      * Get the Trellis {@link ServiceBundler}. This object collects the various
@@ -111,7 +111,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Resource matchers
         environment.jersey().register(getLdpComponent(config, ConfigurationProvider.getConfiguration()
-                    .getOrDefault(APPLICATION_SELF_INITIALIZE, Boolean.class, true)));
+                    .getOrDefault(CONFIG_APP_INITIALIZE_ROOT, Boolean.class, true)));
 
         // Authentication
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),

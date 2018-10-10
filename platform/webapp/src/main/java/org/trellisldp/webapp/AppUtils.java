@@ -19,6 +19,7 @@ import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
@@ -38,6 +39,10 @@ import org.trellisldp.http.CrossOriginResourceSharingFilter;
 
 final class AppUtils {
 
+    public static final String CONFIG_WEBAPP_CACHE_ENABLED = "trellis.webapp.cache.enabled";
+    public static final String CONFIG_WEBAPP_CORS_ENABLED = "trellis.webapp.cors.enabled";
+    public static final String CONFIG_WEBAPP_RDF_LOCATION = "trellis.webapp.rdf.location";
+
     private static final Configuration config = ConfigurationProvider.getConfiguration();
 
     public static <T> T loadFirst(final Class<T> service) {
@@ -54,30 +59,22 @@ final class AppUtils {
     }
 
     public static Optional<CacheControlFilter> getCacheControlFilter() {
-        if (config.getOrDefault("trellis.cache.enabled", Boolean.class, false)) {
-            return of(new CacheControlFilter(
-                        config.getOrDefault("trellis.cache.maxAge", Integer.class, 86400),
-                        config.getOrDefault("trellis.cache.mustRevalidate", Boolean.class, true),
-                        config.getOrDefault("trellis.cache.noCache", Boolean.class, false)));
+        if (config.getOrDefault(CONFIG_WEBAPP_CACHE_ENABLED, Boolean.class, false)) {
+            return of(new CacheControlFilter());
         }
         return empty();
     }
 
     public static Optional<CrossOriginResourceSharingFilter> getCORSFilter() {
-        if (config.getOrDefault("trellis.cors.enabled", Boolean.class, false)) {
-            return of(new CrossOriginResourceSharingFilter(
-                        AppUtils.asCollection(config.get("trellis.cors.allowOrigin")),
-                        AppUtils.asCollection(config.get("trellis.cors.allowMethods")),
-                        AppUtils.asCollection(config.get("trellis.cors.allowHeaders")),
-                        AppUtils.asCollection(config.get("trellis.cors.exposeHeaders")),
-                        false, // <- Allow-Credentials not supported
-                        config.getOrDefault("trellis.cors.maxAge", Integer.class, 180)));
+        if (config.getOrDefault(CONFIG_WEBAPP_CORS_ENABLED, Boolean.class, false)) {
+            return of(new CrossOriginResourceSharingFilter());
         }
         return empty();
     }
 
-    public static RDFConnection getRDFConnection(final String location) {
-        if (isNull(location)) {
+    public static RDFConnection getRDFConnection() {
+        final String location = config.get(CONFIG_WEBAPP_RDF_LOCATION);
+        if (isEmpty(location)) {
             return connect(createTxnMem());
         } else if (location.startsWith("http://") || location.startsWith("https://")) {
             return connect(location);

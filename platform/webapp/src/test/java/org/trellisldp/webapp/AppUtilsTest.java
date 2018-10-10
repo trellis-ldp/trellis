@@ -58,7 +58,7 @@ public class AppUtilsTest {
 
     @Test
     public void testRDFConnectionMem() {
-        final RDFConnection conn = AppUtils.getRDFConnection(null);
+        final RDFConnection conn = AppUtils.getRDFConnection();
 
         assertNotNull(conn, "No connection found!");
         assertTrue(conn instanceof RDFConnectionLocal, "Unexpected RDFConnection type!");
@@ -67,38 +67,53 @@ public class AppUtilsTest {
 
     @Test
     public void testRDFConnectionLocal() {
-        final RDFConnection conn = AppUtils.getRDFConnection(config.get("trellis.rdf.location"));
+        try {
+            System.setProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION, "./build/data");
+            final RDFConnection conn = AppUtils.getRDFConnection();
 
-        assertNotNull(conn, "No connection found!");
-        assertTrue(conn instanceof RDFConnectionLocal, "Unexpected RDFConnection type!");
-        assertFalse(conn.isClosed(), "Connection closed prematurely!");
+            assertNotNull(conn, "No connection found!");
+            assertTrue(conn instanceof RDFConnectionLocal, "Unexpected RDFConnection type!");
+            assertFalse(conn.isClosed(), "Connection closed prematurely!");
+        } finally {
+            System.clearProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION);
+        }
     }
 
     @Test
     public void testRDFConnectionRemote() {
-        final RDFConnection conn = AppUtils.getRDFConnection("http://example.com");
+        try {
+            System.setProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION, "http://example.com");
+            final RDFConnection conn = AppUtils.getRDFConnection();
 
-        assertNotNull(conn, "No connection found!");
-        assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
-        assertFalse(conn.isClosed(), "Connection closed prematurely!");
+            assertNotNull(conn, "No connection found!");
+            assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
+            assertFalse(conn.isClosed(), "Connection closed prematurely!");
+        } finally {
+            System.clearProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION);
+        }
     }
 
     @Test
     public void testRDFConnectionRemoteSSL() {
-        final RDFConnection conn = AppUtils.getRDFConnection("https://example.com");
+        try {
+            System.setProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION, "https://example.com");
+            final RDFConnection conn = AppUtils.getRDFConnection();
 
-        assertNotNull(conn, "No connection found!");
-        assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
-        assertFalse(conn.isClosed(), "Connection closed prematurely!");
+            assertNotNull(conn, "No connection found!");
+            assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
+            assertFalse(conn.isClosed(), "Connection closed prematurely!");
+        } finally {
+            System.clearProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION);
+        }
     }
 
     @Test
     public void testNoCORSFilter() {
         try {
-            System.setProperty("trellis.cors.enabled", "false");
+            System.setProperty(AppUtils.CONFIG_WEBAPP_CORS_ENABLED, "false");
             assertFalse(AppUtils.getCORSFilter().isPresent(), "Unexpected CORS filter!");
         } finally {
-            System.clearProperty("trellis.cors.enabled");
+            System.clearProperty(AppUtils.CONFIG_WEBAPP_CORS_ENABLED);
         }
     }
 
@@ -110,10 +125,10 @@ public class AppUtilsTest {
     @Test
     public void testNoCacheFilter() {
         try {
-            System.setProperty("trellis.cache.enabled", "false");
+            System.setProperty(AppUtils.CONFIG_WEBAPP_CACHE_ENABLED, "false");
             assertFalse(AppUtils.getCacheControlFilter().isPresent(), "Unexpected cache filter!");
         } finally {
-            System.clearProperty("trellis.cache.enabled");
+            System.clearProperty(AppUtils.CONFIG_WEBAPP_CACHE_ENABLED);
         }
     }
 

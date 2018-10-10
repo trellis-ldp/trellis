@@ -39,7 +39,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 public class WebSubHeaderFilter implements ContainerResponseFilter {
 
     /** The configuration key controlling the location of a web-sub-hub. **/
-    public static final String CONF_WEB_SUB_HUB = "trellis.http.websubhub";
+    public static final String CONFIG_HTTP_WEB_SUB_HUB = "trellis.http.websubhub";
 
     private final String hub;
 
@@ -48,7 +48,7 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
      */
     @Inject
     public WebSubHeaderFilter() {
-        this(getConfiguration().get(CONF_WEB_SUB_HUB));
+        this(getConfiguration().get(CONFIG_HTTP_WEB_SUB_HUB));
     }
 
     /**

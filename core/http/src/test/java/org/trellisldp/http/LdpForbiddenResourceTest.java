@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
+import static org.trellisldp.http.domain.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
 
@@ -56,14 +56,17 @@ public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
         initMocks(this);
 
         BASE_URL = getBaseUri().toString();
-        System.getProperties().setProperty(CONFIGURATION_BASE_URL, BASE_URL);
-
         final ResourceConfig config = new ResourceConfig();
-        config.register(new TestAuthenticationFilter("testUser", "group"));
-        config.register(new AgentAuthorizationFilter(mockAgentService));
-        config.register(new WebAcFilter(mockAccessControlService));
-        config.register(new TrellisHttpResource(mockBundler, null));
-        System.getProperties().remove(CONFIGURATION_BASE_URL);
+        try {
+            System.setProperty(CONFIG_HTTP_BASE_URL, BASE_URL);
+
+            config.register(new TestAuthenticationFilter("testUser", "group"));
+            config.register(new AgentAuthorizationFilter(mockAgentService));
+            config.register(new WebAcFilter(mockAccessControlService));
+            config.register(new TrellisHttpResource(mockBundler, null));
+        } finally {
+            System.clearProperty(CONFIG_HTTP_BASE_URL);
+        }
 
         return config;
     }

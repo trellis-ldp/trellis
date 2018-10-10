@@ -23,7 +23,7 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toQuad;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.domain.HttpConstants.CONFIGURATION_BASE_URL;
+import static org.trellisldp.http.domain.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
 
 import com.codahale.metrics.annotation.Timed;
@@ -98,7 +98,7 @@ public class TrellisHttpResource {
      */
     @Inject
     public TrellisHttpResource(final ServiceBundler trellis) {
-        this(trellis, ConfigurationProvider.getConfiguration().get(CONFIGURATION_BASE_URL));
+        this(trellis, ConfigurationProvider.getConfiguration().get(CONFIG_HTTP_BASE_URL));
     }
 
     /**
