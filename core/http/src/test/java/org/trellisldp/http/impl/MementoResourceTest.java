@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.trellisldp.http.domain.TimemapGenerator;
 
 /**
  * @author acoburn
@@ -28,11 +29,12 @@ public class MementoResourceTest {
 
     @Test
     public void testIsMementoLink() {
-        assertTrue(MementoResource.isMementoLink(fromUri(url).rel("memento")
+        final TimemapGenerator svc = new TimemapGenerator() { };
+        assertTrue(svc.isMementoLink(fromUri(url).rel("memento")
                     .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()), "Valid Memento Link header skipped!");
-        assertFalse(MementoResource.isMementoLink(fromUri(url).rel("foo")
+        assertFalse(svc.isMementoLink(fromUri(url).rel("foo")
                     .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()), "Invalid Memento header accepted!");
-        assertFalse(MementoResource.isMementoLink(fromUri(url).rel("memento")
+        assertFalse(svc.isMementoLink(fromUri(url).rel("memento")
                     .param("bar", "Fri, 11 May 2018 15:29:25 GMT").build()), "Invalid Memento header accepted!");
     }
 }
