@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -22,6 +23,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,9 @@ public class CacheControlFilterTest {
 
     @Mock
     private ContainerResponseContext mockResponse;
+
+    @Mock
+    private MultivaluedMap<String, Object> mockHeaders;
 
     @BeforeEach
     public void setUp() {
@@ -50,5 +55,18 @@ public class CacheControlFilterTest {
 
         filter.filter(mockRequest, mockResponse);
         verify(mockResponse, never()).getHeaders();
+    }
+
+    @Test
+    public void testCacheControlHead() throws Exception {
+
+        when(mockRequest.getMethod()).thenReturn(HEAD);
+        when(mockResponse.getStatusInfo()).thenReturn(OK);
+        when(mockResponse.getHeaders()).thenReturn(mockHeaders);
+
+        final CacheControlFilter filter = new CacheControlFilter(180, true, false);
+
+        filter.filter(mockRequest, mockResponse);
+        verify(mockResponse).getHeaders();
     }
 }

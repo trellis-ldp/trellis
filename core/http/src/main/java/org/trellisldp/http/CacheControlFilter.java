@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
@@ -76,7 +77,8 @@ public class CacheControlFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-        if (req.getMethod().equals(GET) && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && cacheAge > 0) {
+        if ((GET.equals(req.getMethod()) || HEAD.equals(req.getMethod()))
+                && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && cacheAge > 0) {
             final CacheControl cc = new CacheControl();
             cc.setMaxAge(cacheAge);
             cc.setMustRevalidate(revalidate);
