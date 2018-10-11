@@ -28,6 +28,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -1304,6 +1305,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
             .post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertTrue(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")), "No describedby link!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
@@ -1716,6 +1718,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         final Response res = target(BINARY_PATH).request().put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertTrue(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")), "No describedby link!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 

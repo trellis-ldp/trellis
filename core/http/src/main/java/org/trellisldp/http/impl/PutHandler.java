@@ -209,6 +209,7 @@ public class PutHandler extends MutatingLdpHandler {
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
             binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
+            builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
 

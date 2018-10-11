@@ -183,6 +183,7 @@ public class PostHandler extends MutatingLdpHandler {
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
             binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
+            builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
 
