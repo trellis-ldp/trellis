@@ -32,6 +32,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.ext.Provider;
 
 import org.trellisldp.http.domain.AcceptDatetime;
 import org.trellisldp.http.domain.Digest;
@@ -39,6 +40,7 @@ import org.trellisldp.http.domain.Prefer;
 import org.trellisldp.http.domain.Range;
 import org.trellisldp.http.domain.Version;
 
+@Provider
 @PreMatching
 @Priority(AUTHORIZATION - 20)
 public class TrellisHttpFilter implements ContainerRequestFilter {

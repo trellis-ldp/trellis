@@ -14,19 +14,18 @@
 package org.trellisldp.http;
 
 import static javax.ws.rs.HttpMethod.GET;
-import static javax.ws.rs.Priorities.USER;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 
 import java.io.IOException;
 
-import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.ext.Provider;
 
 import org.apache.tamaya.Configuration;
 
@@ -36,7 +35,7 @@ import org.apache.tamaya.Configuration;
  *
  * @author acoburn
  */
-@Priority(USER)
+@Provider
 public class CacheControlFilter implements ContainerResponseFilter {
 
     /** The configuration key for setting a cache-control max-age header. **/

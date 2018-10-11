@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
 
 import org.slf4j.Logger;
 import org.trellisldp.api.AgentService;
@@ -49,6 +50,7 @@ import org.trellisldp.http.impl.HttpSession;
  *
  * @author acoburn
  */
+@Provider
 @Priority(AUTHORIZATION - 200)
 public class AgentAuthorizationFilter implements ContainerRequestFilter {
 

@@ -22,7 +22,6 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.HttpMethod.OPTIONS;
-import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -32,12 +31,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.ext.Provider;
 
 import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
@@ -50,8 +48,7 @@ import org.slf4j.Logger;
  *
  * @author acoburn
  */
-@PreMatching
-@Priority(AUTHORIZATION - 10)
+@Provider
 public class CrossOriginResourceSharingFilter implements ContainerResponseFilter {
 
     /** The configuration key controlling the CORS -Allow-Origin header. **/

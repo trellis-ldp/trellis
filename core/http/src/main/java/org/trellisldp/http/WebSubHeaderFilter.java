@@ -15,7 +15,6 @@ package org.trellisldp.http;
 
 import static java.util.Objects.nonNull;
 import static javax.ws.rs.HttpMethod.GET;
-import static javax.ws.rs.Priorities.USER;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
@@ -23,11 +22,11 @@ import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 
 import java.io.IOException;
 
-import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.ext.Provider;
 
 /**
  * A {@link ContainerResponseFilter} that adds WebSub headers to all
@@ -35,7 +34,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
  *
  * @see <a href="https://www.w3.org/TR/websub/">WebSub</a>
  */
-@Priority(USER)
+@Provider
 public class WebSubHeaderFilter implements ContainerResponseFilter {
 
     /** The configuration key controlling the location of a web-sub-hub. **/
