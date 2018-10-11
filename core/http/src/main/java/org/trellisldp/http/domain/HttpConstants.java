@@ -47,13 +47,21 @@ public final class HttpConstants {
 
     public static final String EXT = "ext";
 
+    public static final String DATETIME = "datetime";
+
     public static final String DESCRIPTION = "description";
 
     public static final String DIGEST = "Digest";
 
+    public static final String FROM = "from";
+
     public static final String LINK_TEMPLATE = "Link-Template";
 
+    public static final String MEMENTO = "memento";
+
     public static final String MEMENTO_DATETIME = "Memento-Datetime";
+
+    public static final String ORIGINAL = "original";
 
     public static final String PATCH = "PATCH";
 
@@ -65,9 +73,13 @@ public final class HttpConstants {
 
     public static final String SESSION_PROPERTY = "session";
 
+    public static final String TIMEGATE = "timegate";
+
     public static final String TIMEMAP = "timemap";
 
     public static final String WANT_DIGEST = "Want-Digest";
+
+    public static final String UNTIL = "until";
 
     public static final Set<String> DEFAULT_REPRESENTATION = unmodifiableSet(asList(PreferContainment, PreferMembership,
                 PreferUserManaged).stream().map(IRI::getIRIString).collect(toSet()));
