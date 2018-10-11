@@ -92,32 +92,14 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
 
-        final Boolean secure = ofNullable(requestContext.getSecurityContext()).filter(SecurityContext::isSecure)
+        final boolean secure = ofNullable(requestContext.getSecurityContext()).filter(SecurityContext::isSecure)
             .isPresent();
 
         getCredentials(requestContext)
-            .map(credentials -> authenticate(credentials).orElseThrow(() -> new NotAuthorizedException(challenge)))
-            .ifPresent(principal -> requestContext.setSecurityContext(new SecurityContext() {
-                    @Override
-                    public Principal getUserPrincipal() {
-                        return principal;
-                    }
-
-                    @Override
-                    public boolean isSecure() {
-                        return secure;
-                    }
-
-                    @Override
-                    public String getAuthenticationScheme() {
-                        return BASIC_AUTH;
-                    }
-
-                    @Override
-                    public boolean isUserInRole(final String role) {
-                        return true;
-                    }
-                }));
+                        .map(credentials -> authenticate(credentials)
+                                        .<RuntimeException>orElseThrow(() -> new NotAuthorizedException(challenge)))
+                        .ifPresent(principal -> requestContext
+                                        .setSecurityContext(new BasiAuthSecurityContext(principal, secure)));
     }
 
     private Optional<Principal> authenticate(final String credentials) {
@@ -138,5 +120,35 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     private Optional<String> getCredentials(final ContainerRequestContext ctx) {
         return ofNullable(ctx.getHeaderString(AUTHORIZATION)).map(h -> h.split(" ", 2))
             .filter(pair -> pair[0].equalsIgnoreCase(BASIC_AUTH)).filter(pair -> pair.length == 2).map(pair -> pair[1]);
+    }
+
+    private static final class BasiAuthSecurityContext implements SecurityContext {
+        private final Principal principal;
+        private final boolean secure;
+
+        private BasiAuthSecurityContext(final Principal principal, final boolean secure) {
+            this.principal = principal;
+            this.secure = secure;
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            return principal;
+        }
+
+        @Override
+        public boolean isSecure() {
+            return secure;
+        }
+
+        @Override
+        public String getAuthenticationScheme() {
+            return BASIC_AUTH;
+        }
+
+        @Override
+        public boolean isUserInRole(final String role) {
+            return true;
+        }
     }
 }
