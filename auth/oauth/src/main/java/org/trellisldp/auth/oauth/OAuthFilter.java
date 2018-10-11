@@ -90,32 +90,14 @@ public class OAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
 
-        final Boolean secure = ofNullable(requestContext.getSecurityContext()).filter(SecurityContext::isSecure)
+        final boolean secure = ofNullable(requestContext.getSecurityContext()).filter(SecurityContext::isSecure)
             .isPresent();
 
         getOAuthToken(requestContext)
-            .map(token -> authenticate(token).orElseThrow(() -> new NotAuthorizedException(challenge)))
-            .ifPresent(principal -> requestContext.setSecurityContext(new SecurityContext() {
-                    @Override
-                    public Principal getUserPrincipal() {
-                        return principal;
-                    }
-
-                    @Override
-                    public boolean isUserInRole(final String role) {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean isSecure() {
-                        return secure;
-                    }
-
-                    @Override
-                    public String getAuthenticationScheme() {
-                        return SCHEME;
-                    }
-                }));
+                        .map(token -> authenticate(token)
+                                        .<RuntimeException>orElseThrow(() -> new NotAuthorizedException(challenge)))
+                        .ifPresent(principal -> requestContext
+                                        .setSecurityContext(new OAuthSecurityContext(secure, principal)));
     }
 
     private Optional<Principal> authenticate(final String token) {
@@ -158,5 +140,35 @@ public class OAuthFilter implements ContainerRequestFilter {
         }
 
         return new NullAuthenticator();
+    }
+
+    private static final class OAuthSecurityContext implements SecurityContext {
+        private final boolean secure;
+        private final Principal principal;
+
+        private OAuthSecurityContext(final boolean secure, final Principal principal) {
+            this.secure = secure;
+            this.principal = principal;
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            return principal;
+        }
+
+        @Override
+        public boolean isUserInRole(final String role) {
+            return true;
+        }
+
+        @Override
+        public boolean isSecure() {
+            return secure;
+        }
+
+        @Override
+        public String getAuthenticationScheme() {
+            return SCHEME;
+        }
     }
 }
