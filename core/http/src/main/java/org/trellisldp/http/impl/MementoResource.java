@@ -33,9 +33,11 @@ import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.Range.between;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.trellisldp.api.RDFUtils.findFirst;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
 import static org.trellisldp.http.core.HttpConstants.DATETIME;
 import static org.trellisldp.http.core.HttpConstants.FROM;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO;
@@ -65,6 +67,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.apache.tamaya.Configuration;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.LdpRequest;
 import org.trellisldp.http.core.TimemapGenerator;
@@ -74,6 +77,7 @@ import org.trellisldp.http.core.TimemapGenerator;
  */
 public final class MementoResource {
 
+    private static final Configuration config = getConfiguration();
     private static final String TIMEMAP_PARAM = "?ext=timemap";
 
     private final ServiceBundler trellis;
@@ -105,8 +109,9 @@ public final class MementoResource {
         final List<Link> links = getMementoLinks(identifier, mementos).collect(toList());
 
         final ResponseBuilder builder = ok().link(identifier, ORIGINAL + " " + TIMEGATE);
-        builder.links(links.toArray(new Link[0])).link(Resource.getIRIString(), TYPE)
-            .link(RDFSource.getIRIString(), TYPE).header(ALLOW, join(",", GET, HEAD, OPTIONS));
+        builder.links(links.stream().map(MementoResource::filterLinkParams).toArray(Link[]::new))
+            .link(Resource.getIRIString(), TYPE).link(RDFSource.getIRIString(), TYPE)
+            .header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
         final Optional<RDFSyntax> syntax;
         syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT));
@@ -126,7 +131,8 @@ public final class MementoResource {
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)
-            .entity(links.stream().map(Link::toString).collect(joining(",\n")) + "\n");
+            .entity(links.stream().map(MementoResource::filterLinkParams).map(Link::toString)
+                    .collect(joining(",\n")) + "\n");
     }
 
     /**
@@ -143,7 +149,7 @@ public final class MementoResource {
         return status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().toEpochMilli()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
-            .links(getMementoLinks(identifier, mementos).toArray(Link[]::new))
+            .links(getMementoLinks(identifier, mementos).map(MementoResource::filterLinkParams).toArray(Link[]::new))
             .header(VARY, ACCEPT_DATETIME);
     }
 
@@ -156,6 +162,34 @@ public final class MementoResource {
      */
     public static Stream<Link> getMementoLinks(final String identifier, final List<Range<Instant>> mementos) {
         return concat(getTimeMap(identifier, mementos.stream()), mementos.stream().map(mementoToLink(identifier)));
+    }
+
+    /**
+     * Filter link parameters from a provided Link object, if configured to do so.
+     * @param link the link
+     * @return a Link without Memento parameters, if desired; otherwise, the original link
+     */
+    public static Link filterLinkParams(final Link link) {
+        return filterLinkParams(link, !config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, true));
+    }
+
+    /**
+     * Filter link parameters from a provided Link object, if configured to do so.
+     * @param link the link
+     * @param filter whether to filter the memento parameters
+     * @return a Link without Memento parameters, if desired; otherwise, the original link
+     */
+    public static Link filterLinkParams(final Link link, final Boolean filter) {
+        // from and until parameters can cause problems with downstream applications because they contain commas. This
+        // method makes it possible to filter out those params, if desired. By default, they are not filtered out.
+        if (filter) {
+            if (TIMEMAP.equals(link.getRel())) {
+                return Link.fromUri(link.getUri()).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT).build();
+            } else if (MEMENTO.equals(link.getRel())) {
+                return Link.fromUri(link.getUri()).rel(MEMENTO).build();
+            }
+        }
+        return link;
     }
 
     private static String getBaseUrl(final String baseUrl, final LdpRequest req) {
@@ -177,5 +211,4 @@ public final class MementoResource {
                 .param(DATETIME, ofInstant(range.getMinimum().minusNanos(1L).plusSeconds(1L), UTC)
                         .format(RFC_1123_DATE_TIME)).build();
     }
-
 }

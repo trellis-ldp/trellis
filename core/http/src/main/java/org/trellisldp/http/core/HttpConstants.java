@@ -43,7 +43,11 @@ public final class HttpConstants {
 
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 
+    /** Configuration key defining the server's base URL. **/
     public static final String CONFIG_HTTP_BASE_URL = "trellis.http.baseUrl";
+
+    /** Configuration key defining whether to include dates in memento headers. **/
+    public static final String CONFIG_HTTP_MEMENTO_HEADER_DATES = "trellis.http.memento.headerdates";
 
     public static final String EXT = "ext";
 
