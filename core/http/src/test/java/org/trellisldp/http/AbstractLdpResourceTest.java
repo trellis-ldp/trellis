@@ -985,6 +985,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(),
                 "Incorrect Location header!");
+        assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")),
+                "Unexpected describedby link!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
@@ -1412,6 +1414,8 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")),
+                "Unexpected describedby link!");
         assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!");
     }
 
