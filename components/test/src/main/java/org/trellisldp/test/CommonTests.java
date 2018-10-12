@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -71,6 +72,17 @@ public interface CommonTests {
      */
     default WebTarget target(final String url) {
         return getClient().target(url);
+    }
+
+    /**
+     * Get the EntityTag for a given resource.
+     * @param url the URL
+     * @return the entity tag
+     */
+    default EntityTag getETag(final String url) {
+        try (final Response res = target(url).request().get()) {
+            return res.getEntityTag();
+        }
     }
 
     /**
