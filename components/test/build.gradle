@@ -11,6 +11,7 @@ dependencies {
     implementation("javax.jms:javax.jms-api:$jmsApiVersion")
     implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     implementation("org.apache.activemq:activemq-client:$activeMqVersion")
+    implementation("org.apache.commons:commons-text:$commonsTextVersion")
     implementation("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     implementation("org.awaitility:awaitility:$awaitilityVersion")
