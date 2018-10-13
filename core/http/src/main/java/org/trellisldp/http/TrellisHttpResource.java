@@ -357,7 +357,7 @@ public class TrellisHttpResource {
     }
 
     private Response handleException(final Throwable err) {
-        return of(err).map(Throwable::getCause).filter(ex -> ex instanceof WebApplicationException)
-            .map(ex -> (WebApplicationException) ex).orElseGet(() -> new WebApplicationException(err)).getResponse();
+        return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
+            .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err)).getResponse();
     }
 }

@@ -79,8 +79,8 @@ public class FileResource implements Resource {
 
     @Override
     public Instant getModified() {
-        return graph.stream(identifier, DC.modified, null).map(triple -> (Literal) triple.getObject())
-            .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
+        return graph.stream(identifier, DC.modified, null).map(Triple::getObject).filter(Literal.class::isInstance)
+            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
     }
 
     @Override
@@ -90,17 +90,19 @@ public class FileResource implements Resource {
 
     @Override
     public Optional<Binary> getBinary() {
-        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(t -> t instanceof IRI)
-                .map(t -> (IRI) t).findFirst().map(id -> new Binary((IRI) id,
+        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(IRI.class::isInstance)
+                .map(IRI.class::cast).findFirst().map(id -> new Binary(id,
                         // Add a date
-                        graph.stream(id, DC.modified, null).map(Triple::getObject).map(t -> (Literal) t)
-                            .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null),
+                        graph.stream(id, DC.modified, null).map(Triple::getObject).filter(Literal.class::isInstance)
+                            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Instant::parse).findFirst()
+                            .orElse(null),
                         // Add a MIMEtype
-                        graph.stream(id, DC.format, null).map(Triple::getObject)
-                            .map(t -> (Literal) t).map(Literal::getLexicalForm).findFirst().orElse(null),
+                        graph.stream(id, DC.format, null).map(Triple::getObject).filter(Literal.class::isInstance)
+                            .map(Literal.class::cast).map(Literal::getLexicalForm).findFirst().orElse(null),
                         // Add a size value
-                        graph.stream(id, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
-                            .map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null)));
+                        graph.stream(id, DC.extent, null).map(Triple::getObject).filter(Literal.class::isInstance)
+                            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Long::parseLong).findFirst()
+                            .orElse(null)));
     }
 
     @Override
@@ -124,8 +126,8 @@ public class FileResource implements Resource {
     }
 
     private Optional<IRI> getObjectForPredicate(final IRI predicate) {
-        return graph.stream(identifier, predicate, null).filter(t -> t.getObject() instanceof IRI)
-            .map(t -> (IRI) t.getObject()).findFirst();
+        return graph.stream(identifier, predicate, null).map(Triple::getObject).filter(IRI.class::isInstance)
+            .map(IRI.class::cast).findFirst();
     }
 
     @Override

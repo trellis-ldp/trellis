@@ -129,7 +129,7 @@ public final class RdfUtils {
             p.getOmit().forEach(include::remove);
             p.getInclude().stream().filter(iri -> !ignoredPreferences.contains(iri)).forEach(include::add);
         });
-        return quad -> quad.getGraphName().filter(x -> x instanceof IRI).map(x -> (IRI) x)
+        return quad -> quad.getGraphName().filter(IRI.class::isInstance).map(IRI.class::cast)
             .map(IRI::getIRIString).filter(include::contains).isPresent();
     }
 

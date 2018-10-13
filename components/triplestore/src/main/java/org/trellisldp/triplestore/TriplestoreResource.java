@@ -201,40 +201,47 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public IRI getInteractionModel() {
-        return (IRI) graph.stream(identifier, RDF.type, null).map(Triple::getObject).findFirst().orElse(null);
+        return graph.stream(identifier, RDF.type, null).map(Triple::getObject)
+            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst().orElse(null);
     }
 
     @Override
     public Optional<IRI> getMembershipResource() {
-        return graph.stream(identifier, LDP.membershipResource, null).map(t -> (IRI) t.getObject()).findFirst();
+        return graph.stream(identifier, LDP.membershipResource, null).map(Triple::getObject)
+            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
     }
 
     @Override
     public Optional<IRI> getMemberRelation() {
-        return graph.stream(identifier, LDP.hasMemberRelation, null).map(t -> (IRI) t.getObject()).findFirst();
+        return graph.stream(identifier, LDP.hasMemberRelation, null).map(Triple::getObject)
+            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
     }
 
     @Override
     public Optional<IRI> getMemberOfRelation() {
-        return graph.stream(identifier, LDP.isMemberOfRelation, null).map(t -> (IRI) t.getObject()).findFirst();
+        return graph.stream(identifier, LDP.isMemberOfRelation, null).map(Triple::getObject)
+            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
     }
 
     @Override
     public Optional<IRI> getInsertedContentRelation() {
-        return graph.stream(identifier, LDP.insertedContentRelation, null).map(t -> (IRI) t.getObject()).findFirst();
+        return graph.stream(identifier, LDP.insertedContentRelation, null).map(Triple::getObject)
+            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
     }
 
     @Override
     public Optional<Binary> getBinary() {
-        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(t -> t instanceof IRI)
-                .map(t -> (IRI) t).findFirst().map(id -> {
-            final Instant date = graph.stream(id, DC.modified, null).map(Triple::getObject).map(t -> (Literal) t)
-                .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
+        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(IRI.class::isInstance)
+                .map(IRI.class::cast).findFirst().map(id -> {
+            final Instant date = graph.stream(id, DC.modified, null).map(Triple::getObject)
+                .filter(Literal.class::isInstance).map(Literal.class::cast).map(Literal::getLexicalForm)
+                .map(Instant::parse).findFirst().orElse(null);
             final String mimeType = graph.stream(id, DC.format, null).map(Triple::getObject)
-                .map(t -> (Literal) t).map(Literal::getLexicalForm).findFirst().orElse(null);
-            final Long size = graph.stream(id, DC.extent, null).map(Triple::getObject).map(t -> (Literal) t)
-                .map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null);
-            return new Binary((IRI) id, date, mimeType, size);
+                .filter(Literal.class::isInstance).map(Literal.class::cast).map(Literal::getLexicalForm)
+                .findFirst().orElse(null);
+            final Long size = graph.stream(id, DC.extent, null).map(Triple::getObject).filter(Literal.class::isInstance)
+                .map(Literal.class::cast).map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null);
+            return new Binary(id, date, mimeType, size);
         });
     }
 
