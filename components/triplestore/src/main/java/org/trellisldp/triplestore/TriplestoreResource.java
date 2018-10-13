@@ -247,8 +247,8 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public Instant getModified() {
-        return graph.stream(identifier, DC.modified, null).map(triple -> (Literal) triple.getObject())
-            .map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
+        return graph.stream(identifier, DC.modified, null).map(Triple::getObject).filter(Literal.class::isInstance)
+            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
     }
 
     @Override
