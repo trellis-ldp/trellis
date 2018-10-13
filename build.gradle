@@ -32,7 +32,7 @@ ext {
     kafkaVersion = '2.0.0'
     metricsVersion = '4.0.3'
     mustacheVersion = '0.9.5'
-    rabbitMqVersion = '5.4.2'
+    rabbitMqVersion = '5.4.3'
     slf4jVersion = '1.7.25'
     tamayaVersion = '0.3-incubating'
 
