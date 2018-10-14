@@ -26,7 +26,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.test.TestUtils.buildJwt;
 import static org.trellisldp.test.TestUtils.checkEventGraph;
 import static org.trellisldp.test.TestUtils.getResourceAsString;

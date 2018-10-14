@@ -59,7 +59,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.http.core.Prefer;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;

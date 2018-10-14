@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.http.core.LdpRequest;
 
 /**
  * @author acoburn

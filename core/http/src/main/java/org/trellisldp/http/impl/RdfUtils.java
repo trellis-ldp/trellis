@@ -24,7 +24,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.http.domain.HttpConstants.DEFAULT_REPRESENTATION;
+import static org.trellisldp.http.core.HttpConstants.DEFAULT_REPRESENTATION;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
@@ -55,7 +55,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 

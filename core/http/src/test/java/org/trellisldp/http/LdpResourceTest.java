@@ -49,7 +49,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.http.core.LdpRequest;
 
 /**
  * @author acoburn

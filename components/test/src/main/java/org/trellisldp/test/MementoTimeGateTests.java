@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.domain.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
 
 import java.time.Instant;

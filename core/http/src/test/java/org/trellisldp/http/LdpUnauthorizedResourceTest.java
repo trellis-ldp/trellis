@@ -30,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
+import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE_TYPE;
 
 import java.util.stream.Stream;
 

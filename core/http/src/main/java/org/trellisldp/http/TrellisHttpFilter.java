@@ -22,7 +22,7 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
+import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,11 +34,11 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
-import org.trellisldp.http.domain.AcceptDatetime;
-import org.trellisldp.http.domain.Digest;
-import org.trellisldp.http.domain.Prefer;
-import org.trellisldp.http.domain.Range;
-import org.trellisldp.http.domain.Version;
+import org.trellisldp.http.core.AcceptDatetime;
+import org.trellisldp.http.core.Digest;
+import org.trellisldp.http.core.Prefer;
+import org.trellisldp.http.core.Range;
+import org.trellisldp.http.core.Version;
 
 @Provider
 @PreMatching

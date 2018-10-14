@@ -47,8 +47,8 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
-import static org.trellisldp.http.domain.HttpConstants.PATCH;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.http.core.HttpConstants.PATCH;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -94,7 +94,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.http.core.LdpRequest;
 import org.trellisldp.vocabulary.LDP;
 
 /**

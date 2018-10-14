@@ -11,15 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.http.domain;
+package org.trellisldp.http.core;
 
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.http.domain.HttpConstants.DATETIME;
-import static org.trellisldp.http.domain.HttpConstants.FROM;
-import static org.trellisldp.http.domain.HttpConstants.MEMENTO;
-import static org.trellisldp.http.domain.HttpConstants.UNTIL;
+import static org.trellisldp.http.core.HttpConstants.DATETIME;
+import static org.trellisldp.http.core.HttpConstants.FROM;
+import static org.trellisldp.http.core.HttpConstants.MEMENTO;
+import static org.trellisldp.http.core.HttpConstants.UNTIL;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.ArrayList;

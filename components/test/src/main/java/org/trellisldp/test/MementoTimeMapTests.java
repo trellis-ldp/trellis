@@ -22,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON_TYPE;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 

@@ -28,7 +28,7 @@ import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
+import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -52,7 +52,7 @@ import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.domain.HttpConstants;
+import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.http.impl.HttpSession;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.Trellis;

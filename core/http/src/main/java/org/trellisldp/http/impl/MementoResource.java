@@ -34,15 +34,15 @@ import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.Range.between;
 import static org.trellisldp.api.RDFUtils.findFirst;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.domain.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.domain.HttpConstants.DATETIME;
-import static org.trellisldp.http.domain.HttpConstants.FROM;
-import static org.trellisldp.http.domain.HttpConstants.MEMENTO;
-import static org.trellisldp.http.domain.HttpConstants.ORIGINAL;
-import static org.trellisldp.http.domain.HttpConstants.TIMEGATE;
-import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
-import static org.trellisldp.http.domain.HttpConstants.UNTIL;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.core.HttpConstants.DATETIME;
+import static org.trellisldp.http.core.HttpConstants.FROM;
+import static org.trellisldp.http.core.HttpConstants.MEMENTO;
+import static org.trellisldp.http.core.HttpConstants.ORIGINAL;
+import static org.trellisldp.http.core.HttpConstants.TIMEGATE;
+import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
+import static org.trellisldp.http.core.HttpConstants.UNTIL;
 import static org.trellisldp.http.impl.RdfUtils.getProfile;
 import static org.trellisldp.http.impl.RdfUtils.getSyntax;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
@@ -66,8 +66,8 @@ import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.domain.LdpRequest;
-import org.trellisldp.http.domain.TimemapGenerator;
+import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TimemapGenerator;
 
 /**
  * @author acoburn

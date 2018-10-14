@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.File;
@@ -56,7 +56,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.domain.Digest;
+import org.trellisldp.http.core.Digest;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 

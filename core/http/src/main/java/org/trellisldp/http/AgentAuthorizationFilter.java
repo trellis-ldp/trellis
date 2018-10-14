@@ -19,7 +19,7 @@ import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
+import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
 
 import java.io.IOException;

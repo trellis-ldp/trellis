@@ -35,7 +35,7 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.toQuad;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.domain.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.impl.RdfUtils.buildEtagHash;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
@@ -67,7 +67,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.http.core.LdpRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 

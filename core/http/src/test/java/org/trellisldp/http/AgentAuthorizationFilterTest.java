@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.http.domain.HttpConstants.SESSION_PROPERTY;
+import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 
 import java.security.Principal;
 

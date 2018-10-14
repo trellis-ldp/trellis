@@ -35,11 +35,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_RANGES;
-import static org.trellisldp.http.domain.HttpConstants.PREFERENCE_APPLIED;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
+import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -59,7 +59,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.domain.Prefer;
+import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDFS;
 

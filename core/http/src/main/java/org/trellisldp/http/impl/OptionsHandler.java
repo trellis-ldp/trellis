@@ -28,12 +28,12 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.domain.HttpConstants.ACL;
-import static org.trellisldp.http.domain.HttpConstants.PATCH;
-import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
+import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.PATCH;
+import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
@@ -49,7 +49,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.domain.LdpRequest;
+import org.trellisldp.http.core.LdpRequest;
 
 /**
  * The OPTIONS response builder.

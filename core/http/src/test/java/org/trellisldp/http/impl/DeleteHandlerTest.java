@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.http.domain.HttpConstants.ACL;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.concurrent.CompletionException;

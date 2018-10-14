@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.http.domain;
+package org.trellisldp.http.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -21,27 +21,22 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class VersionTest {
+public class AcceptDatetimeTest {
 
     @Test
-    public void testVersion() {
-        final Version v = Version.valueOf("1493646202676");
-        assertEquals("2017-05-01T13:43:22.676Z", v.getInstant().toString(), "Check datetime string");
-        assertEquals("2017-05-01T13:43:22.676Z", v.toString(), "Check stringified version");
+    public void testDatetime() {
+        final AcceptDatetime datetime = AcceptDatetime.valueOf("Mon, 1 May 2017 13:43:22 GMT");
+        assertEquals("2017-05-01T13:43:22Z", datetime.toString(), "Incorrect datetime string!");
+        assertEquals("2017-05-01T13:43:22Z", datetime.getInstant().toString(), "Incorrect stringified datetime!");
     }
 
     @Test
-    public void testInvalidVersion() {
-        assertNull(Version.valueOf("blah"), "Check parsing an invalid version");
+    public void testInvalidDatetime() {
+        assertNull(AcceptDatetime.valueOf("Mon, 2 May 2017 13:43:22 GMT"), "Unexpected invalid datetime!");
     }
 
     @Test
-    public void testBadValue() {
-        assertNull(Version.valueOf("-13.12"), "Check parsing an invalid date");
-    }
-
-    @Test
-    public void testNullValue() {
-        assertNull(Version.valueOf(null), "Check parsing a null value");
+    public void testNullDatetime() {
+        assertNull(AcceptDatetime.valueOf(null), "Check null datetime");
     }
 }

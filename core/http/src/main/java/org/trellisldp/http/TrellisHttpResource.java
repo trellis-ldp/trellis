@@ -23,8 +23,8 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toQuad;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.domain.HttpConstants.CONFIG_HTTP_BASE_URL;
-import static org.trellisldp.http.domain.HttpConstants.TIMEMAP;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -58,9 +58,9 @@ import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.domain.LdpRequest;
-import org.trellisldp.http.domain.PATCH;
-import org.trellisldp.http.domain.Version;
+import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.PATCH;
+import org.trellisldp.http.core.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetHandler;
 import org.trellisldp.http.impl.MementoResource;

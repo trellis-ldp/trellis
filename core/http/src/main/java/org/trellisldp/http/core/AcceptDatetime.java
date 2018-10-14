@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.http.domain;
+package org.trellisldp.http.core;
 
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;

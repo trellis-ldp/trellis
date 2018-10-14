@@ -30,13 +30,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_PATCH;
-import static org.trellisldp.http.domain.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.domain.HttpConstants.PATCH;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_LD_JSON;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_N_TRIPLES;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
+import static org.trellisldp.http.core.HttpConstants.PATCH;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 
 import javax.ws.rs.core.Response;
 

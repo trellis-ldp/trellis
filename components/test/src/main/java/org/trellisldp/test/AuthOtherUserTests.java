@@ -19,8 +19,8 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.trellisldp.http.domain.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 
 import javax.ws.rs.core.Response;
 

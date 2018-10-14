@@ -23,8 +23,8 @@ import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE;
-import static org.trellisldp.http.domain.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;

@@ -18,4 +18,4 @@
  *
  * @author acoburn
  */
-package org.trellisldp.http.domain;
+package org.trellisldp.http.core;
