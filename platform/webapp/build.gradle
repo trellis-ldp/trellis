@@ -29,12 +29,13 @@ dependencies {
     runtime("javax.activation:javax.activation-api:$activationApiVersion")
     runtime("ch.qos.logback:logback-classic:$logbackVersion")
 
-    testImplementation("org.apache.commons:commons-text:$commonsTextVersion")
-    testImplementation("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
-    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jetty:$jerseyVersion")
-    testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
-    testImplementation("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
-    testImplementation project(':trellis-test')
+    testCompile("org.awaitility:awaitility:$awaitilityVersion")
+    testCompile("org.apache.commons:commons-text:$commonsTextVersion")
+    testCompile("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
+    testCompile("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jetty:$jerseyVersion")
+    testCompile("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
+    testCompile("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    testCompile project(':trellis-test')
 
     testRuntimeClasspath("javax.xml.bind:jaxb-api:$jaxbVersion")
     testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
@@ -46,4 +47,6 @@ test {
     systemProperty 'trellis.file.binary.basepath', "$buildDir/data/binaries"
     systemProperty 'trellis.rdf.location', "$buildDir/data/rdf"
     systemProperty 'trellis.namespaces.path', "$buildDir/data/namespaces.json"
+    systemProperty 'trellis.auth.basic.credentials', "$buildDir/resources/test/users.auth"
+    systemProperty 'trellis.auth.oauth.sharedsecret', 'EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA=='
 }
