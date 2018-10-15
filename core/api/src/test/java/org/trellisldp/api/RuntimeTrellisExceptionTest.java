@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class TrellisRuntimeExceptionTest {
+public class RuntimeTrellisExceptionTest {
 
     @Test
     public void testException1() {

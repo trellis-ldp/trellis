@@ -25,7 +25,7 @@ import org.trellisldp.api.IdentifierService;
 /**
  * @author acoburn
  */
-public class IdServiceTest {
+public class UUIDGeneratorTest {
 
     @Test
     public void testSupplier() {

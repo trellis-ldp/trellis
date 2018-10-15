@@ -46,7 +46,7 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class OptionsHandlerTest extends HandlerBaseTest {
+public class OptionsHandlerTest extends BaseTestHandler {
 
     @Test
     public void testOptionsLdprs() {

@@ -68,7 +68,7 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class PutHandlerTest extends HandlerBaseTest {
+public class PutHandlerTest extends BaseTestHandler {
 
     private static final Instant binaryTime = ofEpochSecond(1496262750);
 

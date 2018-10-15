@@ -52,7 +52,7 @@ import org.trellisldp.vocabulary.LDP;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class LdpUnauthorizedResourceTest extends BaseLdpResourceTest {
+public class TrellisHttpResourceUnauthorizedTest extends BaseTrellisHttpResourceTest {
 
     @Override
     public Application configure() {

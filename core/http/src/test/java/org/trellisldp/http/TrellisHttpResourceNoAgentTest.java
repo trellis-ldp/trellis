@@ -25,7 +25,7 @@ import org.trellisldp.agent.SimpleAgentService;
 /**
  * @author acoburn
  */
-public class LdpResourceNoAgentTest extends AbstractLdpResourceTest {
+public class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceTest {
 
     @Override
     protected String getBaseUrl() {

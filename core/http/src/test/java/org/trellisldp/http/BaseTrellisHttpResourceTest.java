@@ -79,7 +79,7 @@ import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.XSD;
 
-abstract class BaseLdpResourceTest extends JerseyTest {
+abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     protected static final IOService ioService = new JenaIOService();
 

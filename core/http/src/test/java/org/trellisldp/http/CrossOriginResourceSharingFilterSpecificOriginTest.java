@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class CORSSpecificOriginTest extends BaseCORSTest {
+public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCrossOriginResourceSharingFilterTest {
 
     @Override
     public Application configure() {

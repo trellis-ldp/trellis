@@ -24,7 +24,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 /**
  * @author acoburn
  */
-public class LdpAdminResourceTest extends AbstractLdpResourceTest {
+public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTest {
 
     @Override
     protected String getBaseUrl() {

@@ -23,7 +23,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 /**
  * @author acoburn
  */
-public class LdpUserResourceTest extends AbstractLdpResourceTest {
+public class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest {
 
     @Override
     public Application configure() {

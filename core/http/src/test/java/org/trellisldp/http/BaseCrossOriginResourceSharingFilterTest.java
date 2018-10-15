@@ -35,7 +35,7 @@ import org.junit.jupiter.api.function.Executable;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class BaseCORSTest extends BaseLdpResourceTest {
+abstract class BaseCrossOriginResourceSharingFilterTest extends BaseTrellisHttpResourceTest {
 
     protected static final String ORIGIN = "http://example.com";
 

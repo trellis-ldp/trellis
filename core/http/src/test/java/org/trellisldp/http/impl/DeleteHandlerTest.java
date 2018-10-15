@@ -47,7 +47,7 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class DeleteHandlerTest extends HandlerBaseTest {
+public class DeleteHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDelete() {

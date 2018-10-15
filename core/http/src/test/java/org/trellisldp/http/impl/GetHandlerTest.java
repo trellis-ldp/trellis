@@ -98,7 +98,7 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * @author acoburn
  */
-public class GetHandlerTest extends HandlerBaseTest {
+public class GetHandlerTest extends BaseTestHandler {
 
     private static final Instant binaryTime = ofEpochSecond(1496262750);
 

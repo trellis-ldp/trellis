@@ -54,7 +54,7 @@ import org.trellisldp.http.core.LdpRequest;
 /**
  * @author acoburn
  */
-public class LdpResourceTest extends AbstractLdpResourceTest {
+public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
     @Mock
     private AsyncResponse mockResponse;

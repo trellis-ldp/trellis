@@ -23,7 +23,7 @@ import org.trellisldp.http.core.TimemapGenerator;
 /**
  * @author acoburn
  */
-public class MementoResourceTest {
+public class TimemapGeneratorTest {
 
     private final String url = "http://example.com/resource/memento";
 

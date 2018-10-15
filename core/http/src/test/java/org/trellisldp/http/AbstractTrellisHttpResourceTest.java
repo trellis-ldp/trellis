@@ -132,7 +132,7 @@ import org.trellisldp.vocabulary.XSD;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
+abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTest {
 
     /* ****************************** *
      *           HEAD Tests
@@ -812,7 +812,7 @@ abstract class AbstractLdpResourceTest extends BaseLdpResourceTest {
     }
 
     @Test
-    public void testGetLdpResource() {
+    public void testGetResource() {
         final Response res = target(RESOURCE_PATH).request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");

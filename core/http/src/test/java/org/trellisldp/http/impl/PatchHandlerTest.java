@@ -66,7 +66,7 @@ import org.trellisldp.vocabulary.RDFS;
 /**
  * @author acoburn
  */
-public class PatchHandlerTest extends HandlerBaseTest {
+public class PatchHandlerTest extends BaseTestHandler {
 
     private static final String insert = "INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}";
 

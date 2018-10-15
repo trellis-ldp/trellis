@@ -63,7 +63,7 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class PostHandlerTest extends HandlerBaseTest {
+public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testPostLdprs() throws IOException {

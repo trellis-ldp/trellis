@@ -100,7 +100,7 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * Base class for the HTTP handler tests.
  */
-abstract class HandlerBaseTest {
+abstract class BaseTestHandler {
 
     protected static final String baseUrl = "http://example.org/";
     protected static final RDF rdf = getInstance();

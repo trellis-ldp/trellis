@@ -45,7 +45,7 @@ import org.trellisldp.vocabulary.LDP;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class LdpForbiddenResourceTest extends BaseLdpResourceTest {
+public class TrellisHttpResourceForbiddenTest extends BaseTrellisHttpResourceTest {
 
     protected String BASE_URL = "";
 
