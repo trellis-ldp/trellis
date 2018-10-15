@@ -26,9 +26,12 @@ import javax.ws.rs.client.Client;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-public class BaseTrellisApplicationTest {
+/**
+ * A base class for setting up a Trellis Application for testing.
+ */
+public class BaseTrellisApplication {
 
-    protected DropwizardTestSupport<AppConfiguration> APP = buildApplication();
+    protected static final DropwizardTestSupport<AppConfiguration> APP = buildApplication();
     protected Client CLIENT;
 
     @BeforeAll

@@ -26,7 +26,7 @@ import org.trellisldp.test.AbstractApplicationAuthTests;
  * Authorization tests.
  */
 @TestInstance(PER_CLASS)
-public class TrellisAuthorizationTest extends BaseTrellisApplicationTest {
+public class TrellisAuthorizationTest extends BaseTrellisApplication {
 
     @Nested
     @DisplayName("LDP tests")

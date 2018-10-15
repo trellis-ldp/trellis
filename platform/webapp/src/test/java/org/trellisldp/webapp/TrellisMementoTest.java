@@ -23,7 +23,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.test.AbstractApplicationMementoTests;
 
 @TestInstance(PER_CLASS)
-public class TrellisMementoTest extends BaseTrellisApplicationTest {
+public class TrellisMementoTest extends BaseTrellisApplication {
 
     @Nested
     @DisplayName("Memento tests")

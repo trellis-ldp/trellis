@@ -28,9 +28,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
 /**
- * Base application tests.
+ * A base class for setting up a Trellis application.
  */
-public class BaseTrellisApplicationTest extends JerseyTest {
+public class BaseTrellisApplication extends JerseyTest {
 
     private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
         .withinRange('a', 'z').build();

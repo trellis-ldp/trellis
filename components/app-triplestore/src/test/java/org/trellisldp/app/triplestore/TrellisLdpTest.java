@@ -29,7 +29,7 @@ import org.trellisldp.test.AbstractApplicationLdpTests;
  * Run LDP-Related Tests.
  */
 @TestInstance(PER_CLASS)
-public class TrellisLdpTest extends BaseTrellisApplicationTest {
+public class TrellisLdpTest extends BaseTrellisApplication {
 
     @Nested
     @DisplayName("Trellis LDP Tests")

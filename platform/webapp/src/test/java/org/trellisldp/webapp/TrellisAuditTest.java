@@ -26,7 +26,7 @@ import org.trellisldp.test.AbstractApplicationAuditTests;
  * Audit tests.
  */
 @TestInstance(PER_CLASS)
-public class TrellisAuditTest extends BaseTrellisApplicationTest {
+public class TrellisAuditTest extends BaseTrellisApplication {
 
     @Nested
     @DisplayName("Audit tests")
