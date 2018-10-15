@@ -169,22 +169,7 @@ public abstract class AbstractApplicationLdpTests {
     @Nested
     @DisplayName("LDP Basic Containment tests")
     public class BasicContainmentTests extends LdpCommonTests implements LdpBasicContainerTests {
-        private String child;
         private String container;
-        private EntityTag etag1;
-        private EntityTag etag2;
-        private EntityTag etag3;
-        private EntityTag etag4;
-
-        @Override
-        public void setChildLocation(final String location) {
-            child = location;
-        }
-
-        @Override
-        public String getChildLocation() {
-            return child;
-        }
 
         @Override
         public void setContainerLocation(final String location) {
@@ -194,46 +179,6 @@ public abstract class AbstractApplicationLdpTests {
         @Override
         public String getContainerLocation() {
             return container;
-        }
-
-        @Override
-        public void setFirstETag(final EntityTag etag) {
-            etag1 = etag;
-        }
-
-        @Override
-        public EntityTag getFirstETag() {
-            return etag1;
-        }
-
-        @Override
-        public void setSecondETag(final EntityTag etag) {
-            etag2 = etag;
-        }
-
-        @Override
-        public EntityTag getSecondETag() {
-            return etag2;
-        }
-
-        @Override
-        public void setThirdETag(final EntityTag etag) {
-            etag3 = etag;
-        }
-
-        @Override
-        public EntityTag getThirdETag() {
-            return etag3;
-        }
-
-        @Override
-        public void setFourthETag(final EntityTag etag) {
-            etag4 = etag;
-        }
-
-        @Override
-        public EntityTag getFourthETag() {
-            return etag4;
         }
     }
 

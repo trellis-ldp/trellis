@@ -20,6 +20,7 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -34,7 +35,6 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.hasType;
-import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
 import javax.ws.rs.core.EntityTag;
@@ -43,6 +43,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,67 +73,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      */
     String getContainerLocation();
 
-
-    /**
-     * Set the location of the child resource.
-     * @param location the location
-     */
-    void setChildLocation(String location);
-
-    /**
-     * Get the location of the child resource.
-     * @return the location
-     */
-    String getChildLocation();
-
-    /**
-     * Get the first etag.
-     * @return the etag
-     */
-    EntityTag getFirstETag();
-
-    /**
-     * Get the second etag.
-     * @return the etag
-     */
-    EntityTag getSecondETag();
-
-    /**
-     * Get the third etag.
-     * @return the etag
-     */
-    EntityTag getThirdETag();
-
-    /**
-     * Get the fourth etag.
-     * @return the etag
-     */
-    EntityTag getFourthETag();
-
-    /**
-     * Set the first etag.
-     * @param etag the etag
-     */
-    void setFirstETag(EntityTag etag);
-
-    /**
-     * Set the second etag.
-     * @param etag the etag
-     */
-    void setSecondETag(EntityTag etag);
-
-    /**
-     * Set the third etag.
-     * @param etag the etag
-     */
-    void setThirdETag(EntityTag etag);
-
-    /**
-     * Set the fourth etag.
-     * @param etag the etag
-     */
-    void setFourthETag(EntityTag etag);
-
     /**
      * Check for a successful creation response.
      * @param res the response
@@ -153,26 +93,16 @@ public interface LdpBasicContainerTests extends CommonTests {
     @BeforeAll
     @DisplayName("Initialize Basic Containment tests")
     default void beforeAllTests() {
-        final String containerContent = getResourceAsString(BASIC_CONTAINER);
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+            .withinRange('a', 'z').build();
+
+       final String containerContent = getResourceAsString(BASIC_CONTAINER);
         // POST an LDP-BC
         try (final Response res = target().request()
+                .header("Slug", generator.generate(16) + "-LdbBasicContainerTests")
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
             setContainerLocation(checkCreateResponseAssumptions(res, LDP.BasicContainer));
-        }
-
-        // POST an LDP-BC
-        try (final Response res = target(getContainerLocation()).request()
-                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
-                .post(entity(containerContent, TEXT_TURTLE))) {
-            setChildLocation(checkCreateResponseAssumptions(res, LDP.BasicContainer));
-        }
-
-        // POST an LDP-BC
-        try (final Response res = target(getContainerLocation()).request()
-                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
-                .post(entity(containerContent, TEXT_TURTLE))) {
-            checkCreateResponseAssumptions(res, LDP.BasicContainer);
         }
     }
 
@@ -223,9 +153,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
             assertAll("Check the RDF graph", checkRdfGraph(g, identifier));
-            setFirstETag(res.getEntityTag());
-            assertTrue(getFirstETag().isWeak(), "Verify that the ETag is weak");
-            assertNotEquals(getFirstETag(), getSecondETag(), "Verify that the ETag values are different");
+            assertTrue(res.getEntityTag().isWeak(), "Verify that the ETag is weak");
         }
     }
 
@@ -238,7 +166,9 @@ public interface LdpBasicContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child3;
-        meanwhile();
+
+        // First fetch the container headers to get the initial ETag
+        final EntityTag initialETag = getETag(getContainerLocation());
 
         // POST an LDP-BC
         try (final Response res = target(getContainerLocation()).request()
@@ -251,18 +181,18 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertTrue(child3.length() > getContainerLocation().length(), "Check the Location header again");
         }
 
+        await().until(() -> !initialETag.equals(getETag(getContainerLocation())));
+
         // Now fetch the container
         try (final Response res = target(getContainerLocation()).request().get()) {
             assertAll("Check the LDP-BC again", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
+            final EntityTag etag = res.getEntityTag();
             assertAll("Check the LDP-BC graph", checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
-            setSecondETag(res.getEntityTag());
-            assertTrue(getSecondETag().isWeak(), "Verify that the ETag is weak");
-            assertNotEquals(getFirstETag(), getSecondETag(), "Check that the ETag has been changed");
-            assertNotEquals(getThirdETag(), getSecondETag(), "Check that the ETags are different");
-            assertNotEquals(getFourthETag(), getSecondETag(), "Check that the ETags are different");
+            assertTrue(etag.isWeak(), "Verify that the ETag is weak");
+            assertNotEquals(initialETag, etag, "Check that the ETag has been changed");
         }
     }
 
@@ -275,7 +205,9 @@ public interface LdpBasicContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child4 = getContainerLocation() + "/child4";
-        meanwhile();
+
+        // First fetch the container headers to get the initial ETag
+        final EntityTag initialETag = getETag(getContainerLocation());
 
         try (final Response res = target(child4).request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
@@ -288,14 +220,12 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertAll("Check an LDP-BC after PUT", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
+            final EntityTag etag = res.getEntityTag();
             assertAll("Check the resulting graph", checkRdfGraph(g, identifier));
             assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child4)),
                     "Check for an ldp:contains triple");
-            setThirdETag(res.getEntityTag());
-            assertTrue(getThirdETag().isWeak(), "Check for a weak ETag");
-            assertNotEquals(getFirstETag(), getThirdETag(), "Check ETags 1 and 3");
-            assertNotEquals(getSecondETag(), getThirdETag(), "Check ETags 2 and 3");
-            assertNotEquals(getFourthETag(), getThirdETag(), "Check ETags 3 and 4");
+            assertTrue(etag.isWeak(), "Check for a weak ETag");
+            assertEquals(initialETag, etag, "Check ETags");
         }
     }
 
@@ -308,6 +238,10 @@ public interface LdpBasicContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child5 = getContainerLocation() + "/child5";
+
+        // First fetch the container headers to get the initial ETag
+        final EntityTag initialETag = getETag(getContainerLocation());
+
         // POST an LDP-BC
         try (final Response res = target(getContainerLocation()).request().header("Slug", "child5")
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
@@ -316,18 +250,18 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertEquals(child5, res.getLocation().toString(), "Check the resource location");
         }
 
+        await().until(() -> !initialETag.equals(getETag(getContainerLocation())));
+
         // Now fetch the resource
         try (final Response res = target(getContainerLocation()).request().get()) {
             assertAll("Check GETting the new resource", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
+            final EntityTag etag = res.getEntityTag();
             assertAll("Check the resulting Graph", checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child5)), "Check for an ldp:contains triple");
-            setFourthETag(res.getEntityTag());
-            assertTrue(getFourthETag().isWeak(), "Check for a weak ETag");
-            assertNotEquals(getFirstETag(), getFourthETag(), "Compare ETags 1 and 4");
-            assertNotEquals(getSecondETag(), getFourthETag(), "Compare ETags 2 and 4");
-            assertNotEquals(getThirdETag(), getFourthETag(), "Compare ETags 3 and 4");
+            assertTrue(etag.isWeak(), "Check for a weak ETag");
+            assertNotEquals(initialETag, etag, "Compare ETags 1 and 4");
         }
     }
 
@@ -338,28 +272,36 @@ public interface LdpBasicContainerTests extends CommonTests {
     @DisplayName("Test deleting a basic container")
     default void testDeleteContainer() {
         final RDF rdf = getInstance();
-        final EntityTag etag;
+        final String childResource;
 
+        final EntityTag initialETag = getETag(getContainerLocation());
+
+        try (final Response res = target(getContainerLocation()).request().post(entity("", TEXT_TURTLE))) {
+            assertAll("Check for an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
+            childResource = res.getLocation().toString();
+        }
+
+        await().until(() -> !initialETag.equals(getETag(getContainerLocation())));
+
+        final EntityTag etag;
         try (final Response res = target(getContainerLocation()).request().get()) {
             assertAll("Check for an LDP-BC", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final IRI identifier = rdf.createIRI(getContainerLocation());
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertAll("Verify the resulting graph", checkRdfGraph(g, identifier));
-            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(getChildLocation())),
+            assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(childResource)),
                     "Check for the presence of an ldp:contains triple");
             etag = res.getEntityTag();
             assertTrue(etag.isWeak(), "Verify that the ETag is weak");
         }
 
-        meanwhile();
-
         // Delete one of the child resources
-        try (final Response res = target(getChildLocation()).request().delete()) {
+        try (final Response res = target(childResource).request().delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check the response type");
         }
 
         // Try fetching the deleted resource
-        try (final Response res = target(getChildLocation()).request().get()) {
+        try (final Response res = target(childResource).request().get()) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for an expected error");
         }
 
@@ -367,7 +309,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertAll("Check the parent container", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertFalse(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
-                        rdf.createIRI(getChildLocation())), "Check the graph doesn't contain the deleted resource");
+                        rdf.createIRI(childResource)), "Check the graph doesn't contain the deleted resource");
             assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
             assertNotEquals(etag, res.getEntityTag(), "Verify that the ETag value is different");
         }
