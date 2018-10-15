@@ -20,9 +20,12 @@ import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.auth.basic.BasicAuthFilter;
 import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.http.AgentAuthorizationFilter;
+import org.trellisldp.http.CacheControlFilter;
+import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebAcFilter;
+import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.webac.WebACService;
 
 /**
@@ -42,6 +45,9 @@ public class TrellisApplication extends ResourceConfig {
 
         register(ldpResource);
         register(new TrellisHttpFilter());
+        register(new CrossOriginResourceSharingFilter());
+        register(new CacheControlFilter());
+        register(new WebSubHeaderFilter());
         register(new AgentAuthorizationFilter(serviceBundler.getAgentService()));
         register(new OAuthFilter());
         register(new BasicAuthFilter());
