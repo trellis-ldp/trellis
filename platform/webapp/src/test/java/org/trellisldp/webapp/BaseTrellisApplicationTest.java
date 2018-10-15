@@ -13,28 +13,39 @@
  */
 package org.trellisldp.webapp;
 
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
+import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
+import static org.glassfish.jersey.client.HttpUrlConnectorProvider.SET_METHOD_WORKAROUND;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.webapp.AppUtils.CONFIG_WEBAPP_RDF_LOCATION;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.text.RandomStringGenerator;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
-@TestInstance(PER_CLASS)
-public class TrellisApplicationTest extends JerseyTest {
+/**
+ * Base application tests.
+ */
+public class BaseTrellisApplicationTest extends JerseyTest {
 
     private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
         .withinRange('a', 'z').build();
 
+    protected Client buildClient() {
+        final Client client = this.client();
+        client.property(CONNECT_TIMEOUT, 5000);
+        client.property(READ_TIMEOUT, 5000);
+        client.property(SET_METHOD_WORKAROUND, true);
+        return client;
+    }
+
     @Override
     protected Application configure() {
+        System.setProperty(CONFIG_HTTP_BASE_URL, "http://localhost:" + getPort() + "/");
         return new TrellisApplication();
     }
 
@@ -42,18 +53,13 @@ public class TrellisApplicationTest extends JerseyTest {
     public void before() throws Exception {
         super.setUp();
         final String id = "-" + generator.generate(5);
-        System.setProperty("trellis.rdf.location", System.getProperty("trellis.rdf.location") + id);
+        System.setProperty(CONFIG_WEBAPP_RDF_LOCATION, System.getProperty("trellis.rdf.location") + id);
     }
 
     @AfterAll
     public void after() throws Exception {
         super.tearDown();
-        System.clearProperty("trellis.rdf.location");
-    }
-
-    @Test
-    public void testSimple() {
-        final Response res = target().request().get();
-        assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response code!");
+        System.clearProperty(CONFIG_WEBAPP_RDF_LOCATION);
+        System.clearProperty(CONFIG_HTTP_BASE_URL);
     }
 }
