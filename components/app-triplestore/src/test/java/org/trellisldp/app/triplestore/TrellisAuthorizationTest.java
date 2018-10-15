@@ -13,68 +13,48 @@
  */
 package org.trellisldp.app.triplestore;
 
-import static io.dropwizard.testing.ConfigOverride.config;
-import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
-import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
-import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
-
-import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.testing.DropwizardTestSupport;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import javax.ws.rs.client.Client;
 
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.test.AbstractApplicationAuthTests;
 
 /**
  * Authorization tests.
  */
-public class TrellisAuthorizationTest extends AbstractApplicationAuthTests {
+@TestInstance(PER_CLASS)
+public class TrellisAuthorizationTest extends BaseTrellisApplicationTest {
 
-    private static final DropwizardTestSupport<AppConfiguration> APP
-        = new DropwizardTestSupport<AppConfiguration>(TrellisApplication.class,
-                resourceFilePath("trellis-config.yml"),
-                config("auth.basic.usersFile", resourceFilePath("users.auth")),
-                config("binaries", resourceFilePath("data") + "/binaries"),
-                config("mementos", resourceFilePath("data") + "/mementos"),
-                config("namespaces", resourceFilePath("data/namespaces.json")));
+    @Nested
+    @DisplayName("Trellis AuthZ Tests")
+    public class AuthorizationTests extends AbstractApplicationAuthTests {
 
-    private static final Client CLIENT;
+        @Override
+        public Client getClient() {
+            return CLIENT;
+        }
 
-    static {
-        APP.before();
-        CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client2");
-        CLIENT.property(CONNECT_TIMEOUT, 5000);
-        CLIENT.property(READ_TIMEOUT, 5000);
-    }
+        @Override
+        public String getBaseURL() {
+            return "http://localhost:" + APP.getLocalPort() + "/";
+        }
 
-    @Override
-    public Client getClient() {
-        return CLIENT;
-    }
+        @Override
+        public String getUser1Credentials() {
+            return "acoburn:secret";
+        }
 
-    @Override
-    public String getBaseURL() {
-        return "http://localhost:" + APP.getLocalPort() + "/";
-    }
+        @Override
+        public String getUser2Credentials() {
+            return "user:password";
+        }
 
-    @Override
-    public String getUser1Credentials() {
-        return "acoburn:secret";
-    }
-
-    @Override
-    public String getUser2Credentials() {
-        return "user:password";
-    }
-
-    @Override
-    public String getJwtSecret() {
-        return "EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA==";
-    }
-
-    @AfterAll
-    public static void cleanup() {
-        APP.after();
+        @Override
+        public String getJwtSecret() {
+            return "EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA==";
+        }
     }
 }
