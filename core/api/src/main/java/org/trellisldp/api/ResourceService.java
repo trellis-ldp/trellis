@@ -21,13 +21,18 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFTerm;
 
 /**
- * The ResourceService provides methods for creating, retrieving and manipulating
- * Trellis resources.
+ * The ResourceService provides methods for creating, retrieving and manipulating Trellis resources.
+ * 
+ * Implementations should take care to provide any initialization needed, in a constructor or methods managed by an
+ * external framework (e.g. using {@link PostConstruct}). This may or may not include actions in external systems like
+ * databases, which may be better managed elsewhere.
  *
  * @author acoburn
  */
