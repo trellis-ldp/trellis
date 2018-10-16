@@ -35,6 +35,6 @@ matrix:
       after_success: ./gradlew jacocoRootReport coveralls sonarqube
 
     # JDK 11
-    - jdk: oraclejdk11
+    - jdk: openjdk11
 
 script: ./gradlew clean check install
