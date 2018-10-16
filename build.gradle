@@ -336,6 +336,7 @@ subprojects { subproj ->
 
     test {
         useJUnitPlatform()
+        maxParallelForks = Runtime.runtime.availableProcessors() / 2
     }
 
     afterReleaseBuild.dependsOn docs
