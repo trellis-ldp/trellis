@@ -241,12 +241,10 @@ public class PatchHandler extends MutatingLdpHandler {
 
         // Collect the audit data
         getAuditUpdateData().forEachOrdered(immutable::add);
-        return handleResourceReplacement(mutable, immutable).thenCompose(future -> {
-                if (!ACL.equals(getRequest().getExt())) {
-                    return emitEvent(getInternalId(), AS.Update, getResource().getInteractionModel());
-                }
-                return completedFuture(null);
-            }).thenApply(future -> {
+        return handleResourceReplacement(mutable, immutable)
+            .thenCompose(future -> !ACL.equals(getRequest().getExt()) ?
+                    emitEvent(getInternalId(), AS.Update, getResource().getInteractionModel()) : completedFuture(null))
+            .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
                         getRequest().getHeaders().getAcceptableMediaTypes(), empty()).orElse(null);
                 final IRI profile = ofNullable(getProfile(getRequest().getHeaders().getAcceptableMediaTypes(),
