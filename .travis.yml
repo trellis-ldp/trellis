@@ -35,8 +35,8 @@ matrix:
     # JDK 8
     # The --parallel flag tends to work much better w/ jdk8 on Travis-CI
     - jdk: oraclejdk8
-      script: ./gradlew --parallel check install jacocoRootReport coveralls sonarqube
+      script: travis_retry ./gradlew --parallel check install jacocoRootReport coveralls sonarqube
 
     # JDK 11
     - jdk: openjdk11
-      script: ./gradlew check install
+      script: travis_retry ./gradlew --parallel check install
