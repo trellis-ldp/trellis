@@ -30,10 +30,8 @@ branches:
 
 matrix:
   fast_finish: true
-
   include:
     # JDK 8
-    # The --parallel flag tends to work much better w/ jdk8 on Travis-CI
     - jdk: oraclejdk8
       script: travis_retry ./gradlew --parallel check install jacocoRootReport coveralls sonarqube
 
