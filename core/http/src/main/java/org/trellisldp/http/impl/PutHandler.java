@@ -128,7 +128,7 @@ public class PutHandler extends MutatingLdpHandler {
                             modified, null));
             } else {
                 modified = getResource().getModified();
-                etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()), true);
+                etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()));
             }
             // Check the cache
             checkCache(modified, etag);
