@@ -38,7 +38,7 @@ public class NoInitTrellisApplicationTest extends TrellisApplicationTest {
     static {
         APP.before();
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client 2");
-        CLIENT.property(CONNECT_TIMEOUT, 5000);
-        CLIENT.property(READ_TIMEOUT, 5000);
+        CLIENT.property(CONNECT_TIMEOUT, 10000);
+        CLIENT.property(READ_TIMEOUT, 12000);
     }
 }

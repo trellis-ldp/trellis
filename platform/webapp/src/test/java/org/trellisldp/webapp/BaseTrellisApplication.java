@@ -37,8 +37,8 @@ public class BaseTrellisApplication extends JerseyTest {
 
     protected Client buildClient() {
         final Client client = this.client();
-        client.property(CONNECT_TIMEOUT, 5000);
-        client.property(READ_TIMEOUT, 5000);
+        client.property(CONNECT_TIMEOUT, 10000);
+        client.property(READ_TIMEOUT, 12000);
         client.property(SET_METHOD_WORKAROUND, true);
         return client;
     }

@@ -38,8 +38,8 @@ public class BaseTrellisApplication {
     public void setUp() {
         APP.before();
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
-        CLIENT.property(CONNECT_TIMEOUT, 5000);
-        CLIENT.property(READ_TIMEOUT, 5000);
+        CLIENT.property(CONNECT_TIMEOUT, 10000);
+        CLIENT.property(READ_TIMEOUT, 12000);
     }
 
     @AfterAll
