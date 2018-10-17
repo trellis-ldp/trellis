@@ -32,9 +32,8 @@ matrix:
   include:
     # JDK 8
     - jdk: oraclejdk8
-      after_success: ./gradlew jacocoRootReport coveralls sonarqube
+      script: ./gradlew --parallel check install jacocoRootReport coveralls sonarqube
 
     # JDK 11
     - jdk: openjdk11
-
-script: ./gradlew check install
+      script: ./gradlew --parallel check install
