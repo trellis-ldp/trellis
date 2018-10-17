@@ -18,7 +18,6 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static org.glassfish.jersey.test.TestProperties.CONTAINER_PORT;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,9 +40,6 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     @Override
     public Application configure() {
         init();
-
-        // Parallel tests require using random open ports
-        forceSet(CONTAINER_PORT, getRandomPort().toString());
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler));

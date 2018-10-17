@@ -20,7 +20,6 @@ import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static javax.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.ws.rs.client.Entity.entity;
-import static org.glassfish.jersey.test.TestProperties.CONTAINER_PORT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -55,9 +54,6 @@ public class TrellisHttpResourceForbiddenTest extends BaseTrellisHttpResourceTes
 
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
-
-        // Parallel tests require using random open ports
-        forceSet(CONTAINER_PORT, getRandomPort().toString());
 
         BASE_URL = getBaseUri().toString();
         final ResourceConfig config = new ResourceConfig();

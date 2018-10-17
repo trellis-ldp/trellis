@@ -18,7 +18,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
-import static org.glassfish.jersey.test.TestProperties.CONTAINER_PORT;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,11 +79,7 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     @Override
     public Application configure() {
 
-        // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
-
-        // Parallel tests require using random open ports
-        forceSet(CONTAINER_PORT, getRandomPort().toString());
 
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
