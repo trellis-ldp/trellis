@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static org.glassfish.jersey.test.TestProperties.CONTAINER_PORT;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -30,6 +31,9 @@ public class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest
 
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
+
+        // Parallel tests require using random open ports
+        forceSet(CONTAINER_PORT, getRandomPort().toString());
 
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);

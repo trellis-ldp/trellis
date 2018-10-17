@@ -22,6 +22,7 @@ import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static javax.ws.rs.core.SecurityContext.DIGEST_AUTH;
+import static org.glassfish.jersey.test.TestProperties.CONTAINER_PORT;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,11 +58,14 @@ public class TrellisHttpResourceUnauthorizedTest extends BaseTrellisHttpResource
     @Override
     public Application configure() {
 
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
+
+        // Parallel tests require using random open ports
+        forceSet(CONTAINER_PORT, getRandomPort().toString());
+
+        final String baseUri = getBaseUri().toString();
+        final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final WebAcFilter webacFilter = new WebAcFilter(mockAccessControlService, asList(BASIC_AUTH, DIGEST_AUTH),
                 "my-realm");

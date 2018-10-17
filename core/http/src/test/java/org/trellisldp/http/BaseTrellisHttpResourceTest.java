@@ -41,7 +41,10 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.net.ServerSocket;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -189,6 +192,15 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
+    }
+
+    protected static Integer getRandomPort() {
+        try {
+            final ServerSocket socket = new ServerSocket(0);
+            return socket.getLocalPort();
+        } catch (final IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     private void setUpBundler() {

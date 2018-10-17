@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static org.glassfish.jersey.test.TestProperties.CONTAINER_PORT;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -37,6 +38,10 @@ public class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceT
 
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
+
+        // Parallel tests require using random open ports
+        forceSet(CONTAINER_PORT, getRandomPort().toString());
+
         when(mockBundler.getAgentService()).thenReturn(new SimpleAgentService());
 
         final String baseUri = getBaseUri().toString();
