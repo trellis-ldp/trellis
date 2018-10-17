@@ -65,3 +65,7 @@ jar {
     }
 }
 
+test {
+    maxParallelForks = 1
+}
+
