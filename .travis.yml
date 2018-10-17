@@ -33,8 +33,8 @@ matrix:
   include:
     # JDK 8
     - jdk: oraclejdk8
-      script: travis_retry ./gradlew --parallel check install jacocoRootReport coveralls sonarqube
+      script: travis_retry ./gradlew check install jacocoRootReport coveralls sonarqube
 
     # JDK 11
     - jdk: openjdk11
-      script: travis_retry ./gradlew --parallel check install
+      script: travis_retry ./gradlew check install
