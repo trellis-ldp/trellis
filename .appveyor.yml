@@ -3,10 +3,10 @@ skip_tags: true
 skip_branch_with_pr: true
 
 build_script:
-    - gradlew.bat assemble
+    - appveyor-retry gradlew.bat assemble
 
 test_script:
-    - gradlew.bat check
+    - appveyor-retry gradlew.bat check
 
 environment:
     matrix:
