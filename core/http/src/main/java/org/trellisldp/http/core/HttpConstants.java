@@ -49,6 +49,9 @@ public final class HttpConstants {
     /** Configuration key defining whether to include dates in memento headers. **/
     public static final String CONFIG_HTTP_MEMENTO_HEADER_DATES = "trellis.http.memento.headerdates";
 
+    /** Configuration key defining whether to use weak ETags for RDF responses. **/
+    public static final String CONFIG_HTTP_WEAK_ETAG = "trellis.http.weak.etag";
+
     public static final String EXT = "ext";
 
     public static final String DATETIME = "datetime";

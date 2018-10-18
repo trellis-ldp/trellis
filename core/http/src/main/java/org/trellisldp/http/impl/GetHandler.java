@@ -39,6 +39,7 @@ import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -47,6 +48,7 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
@@ -292,7 +294,8 @@ public class GetHandler extends BaseLdpHandler {
                         .collect(toList()), null, null, null) : getRequest().getPrefer();
 
         // Check for a cache hit
-        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer), true);
+        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer),
+                getConfiguration().getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, true));
         checkCache(getResource().getModified(), etag);
 
         builder.tag(etag);
