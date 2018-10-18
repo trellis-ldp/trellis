@@ -8,7 +8,7 @@ ext {
 }
 
 dependencies {
-    api("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
+    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
 
     implementation("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
