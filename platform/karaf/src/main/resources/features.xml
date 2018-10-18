@@ -83,7 +83,7 @@
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
     <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
     <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-annotation/${metricsVersion}</bundle>
-    <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
+    <bundle dependency="true">mvn:jakarta.ws.rs/jakarta.ws.rs-api/${jaxrsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
@@ -249,7 +249,7 @@
     <bundle dependency="true">wrap:mvn:io.jsonwebtoken/jjwt-jackson/${jjwtVersion}</bundle>
     <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
-    <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
+    <bundle dependency="true">mvn:jakarta.ws.rs/jakarta.ws.rs-api/${jaxrsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
@@ -262,7 +262,7 @@
     <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
-    <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
+    <bundle dependency="true">mvn:jakarta.ws.rs/jakarta.ws.rs-api/${jaxrsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 

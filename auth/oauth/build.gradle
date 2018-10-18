@@ -9,7 +9,7 @@ ext {
 
 dependencies {
     api("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    api("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
 
     implementation("commons-io:commons-io:$commonsIoVersion")

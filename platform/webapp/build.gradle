@@ -3,7 +3,7 @@ apply plugin: 'war'
 description = 'Trellis Triplestore Application'
 
 dependencies {
-    compile("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    compile("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
     compile("org.apache.jena:jena-osgi:$jenaVersion")
     compile("org.apache.commons:commons-compress:$commonsCompressVersion")
     compile("org.apache.commons:commons-lang3:$commonsLangVersion")
