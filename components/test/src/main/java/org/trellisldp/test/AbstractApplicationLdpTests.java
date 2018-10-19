@@ -121,9 +121,6 @@ public abstract class AbstractApplicationLdpTests {
     @DisplayName("LDP Binary tests")
     public class BinaryTests extends LdpCommonTests implements LdpBinaryTests {
         private String resource;
-        private String container;
-        private EntityTag etag1;
-        private EntityTag etag2;
 
         @Override
         public void setResourceLocation(final String location) {
@@ -133,36 +130,6 @@ public abstract class AbstractApplicationLdpTests {
         @Override
         public String getResourceLocation() {
             return resource;
-        }
-
-        @Override
-        public void setContainerLocation(final String location) {
-            container = location;
-        }
-
-        @Override
-        public String getContainerLocation() {
-            return container;
-        }
-
-        @Override
-        public void setFirstETag(final EntityTag etag) {
-            etag1 = etag;
-        }
-
-        @Override
-        public EntityTag getFirstETag() {
-            return etag1;
-        }
-
-        @Override
-        public void setSecondETag(final EntityTag etag) {
-            etag2 = etag;
-        }
-
-        @Override
-        public EntityTag getSecondETag() {
-            return etag2;
         }
     }
 

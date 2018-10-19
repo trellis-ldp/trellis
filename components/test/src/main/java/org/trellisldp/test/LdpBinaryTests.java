@@ -14,12 +14,10 @@
 package org.trellisldp.test;
 
 import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.HttpHeaders.LINK;
-import static javax.ws.rs.core.Link.TYPE;
-import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -29,12 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.DIGEST;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
-import static org.trellisldp.test.TestUtils.getResourceAsString;
-import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
 
@@ -43,6 +39,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,61 +70,18 @@ public interface LdpBinaryTests extends CommonTests {
     String getResourceLocation();
 
     /**
-     * Set the location of the test container.
-     * @param location the location
-     */
-    void setContainerLocation(String location);
-
-    /**
-     * Get the location of the test container.
-     * @return the test container location
-     */
-    String getContainerLocation();
-
-    /**
-     * Get the first etag.
-     * @return the etag, may be null
-     */
-    EntityTag getFirstETag();
-
-    /**
-     * Set the first etag.
-     * @param etag the etag
-     */
-    void setFirstETag(EntityTag etag);
-
-    /**
-     * Get the second etag.
-     * @return the etag, may be null
-     */
-    EntityTag getSecondETag();
-
-    /**
-     * Set the second etag.
-     * @param etag the etag
-     */
-    void setSecondETag(EntityTag etag);
-
-    /**
      * Initialize Binary tests.
      */
     @BeforeAll
     @DisplayName("Initialize Binary tests")
     default void beforeAllTests() {
-        final String containerContent = getResourceAsString(BASIC_CONTAINER);
-
-        // POST an LDP-BC
-        try (final Response res = target().request()
-                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
-                .post(entity(containerContent, TEXT_TURTLE))) {
-            assertAll("Check LDP-BC response", checkRdfResponse(res, LDP.BasicContainer, null));
-            setContainerLocation(res.getLocation().toString());
-        }
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+            .withinRange('a', 'z').build();
 
         // POST an LDP-NR
-        try (final Response res = target(getContainerLocation()).request().post(entity(CONTENT, TEXT_PLAIN))) {
-            assertAll("Check LDP-NR response", checkNonRdfResponse(res, null));
-            setResourceLocation(res.getLocation().toString());
+        try (final Response res = target().request().header(SLUG, generator.generate(16) + "-LdpBinaryTests")
+                .post(entity(CONTENT, TEXT_PLAIN))) {
+            setResourceLocation(checkCreateResponseAssumptions(res, LDP.NonRDFSource));
         }
     }
 
@@ -137,13 +91,11 @@ public interface LdpBinaryTests extends CommonTests {
     @Test
     @DisplayName("Test fetching a binary resource")
     default void testGetBinary() {
-        // Fetch the new resource
+        // Fetch the resource
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertAll("Check binary resource", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
             assertEquals(CONTENT, readEntityAsString(res.getEntity()), "Check for matching content");
             assertFalse(res.getEntityTag().isWeak(), "Check for a strong ETag");
-            setFirstETag(res.getEntityTag());
-            assertNotEquals(getFirstETag(), getSecondETag(), "Check for different ETag values");
         }
     }
 
@@ -153,14 +105,15 @@ public interface LdpBinaryTests extends CommonTests {
     @Test
     @DisplayName("Test fetching a binary description")
     default void testGetBinaryDescription() {
+        final EntityTag etag = getETag(getResourceLocation());
+
         // Fetch the description
         try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
             assertAll("Check binary description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.size() >= 0L, "Assert that the graph isn't empty");
             assertTrue(res.getEntityTag().isWeak(), "Check for a weak ETag");
-            setSecondETag(res.getEntityTag());
-            assertNotEquals(getFirstETag(), getSecondETag(), "Check for different ETag values");
+            assertNotEquals(etag, res.getEntityTag(), "Check for different ETag values");
         }
     }
 
@@ -170,12 +123,17 @@ public interface LdpBinaryTests extends CommonTests {
     @Test
     @DisplayName("Test creating a new binary via POST")
     default void testPostBinary() {
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+            .withinRange('a', 'z').build();
+
         // POST an LDP-NR
-        try (final Response res = target(getContainerLocation()).request().post(entity(CONTENT, TEXT_PLAIN))) {
+        try (final Response res = target().request()
+                .header(SLUG, generator.generate(16) + "-LdpBinaryTests")
+                .post(entity(CONTENT, TEXT_PLAIN))) {
             assertAll("Check POSTing LDP-NR", checkNonRdfResponse(res, null));
-            final String location = res.getLocation().toString();
-            assertTrue(location.startsWith(getContainerLocation()), "Check the response location");
-            assertTrue(location.length() > getContainerLocation().length(), "Check for a nested response location");
+            final String resource = res.getLocation().toString();
+            assertTrue(resource.startsWith(getBaseURL()), "Check the response location");
+            assertTrue(resource.length() > getBaseURL().length(), "Check for a nested response location");
         }
     }
 
@@ -185,13 +143,17 @@ public interface LdpBinaryTests extends CommonTests {
     @Test
     @DisplayName("Test creating a new binary via POST with a digest header")
     default void testPostBinaryWithDigest() {
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+            .withinRange('a', 'z').build();
+
         // POST an LDP-NR
-        try (final Response res = target(getContainerLocation()).request()
-                .header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==").post(entity(CONTENT, TEXT_PLAIN))) {
+        try (final Response res = target().request().header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==")
+                .header(SLUG, generator.generate(16) + "-LdpBinaryTests")
+                .post(entity(CONTENT, TEXT_PLAIN))) {
             assertAll("Check POSTing LDP-NR with digest", checkNonRdfResponse(res, null));
             final String resource = res.getLocation().toString();
-            assertTrue(resource.startsWith(getContainerLocation()), "Check the response location");
-            assertTrue(resource.length() > getContainerLocation().length(), "Check for a nested response location");
+            assertTrue(resource.startsWith(getBaseURL()), "Check the response location");
+            assertTrue(resource.length() > getBaseURL().length(), "Check for a nested response location");
         }
     }
 
@@ -202,19 +164,18 @@ public interface LdpBinaryTests extends CommonTests {
     @DisplayName("Test modifying a binary's description via PATCH")
     default void testPatchBinaryDescription() {
         final RDF rdf = getInstance();
-        final EntityTag etag;
+        final EntityTag binaryETag = getETag(getResourceLocation());
+        final EntityTag descriptionETag;
+        final Long size;
 
         // Fetch the description
         try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
             assertAll("Check an LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(0L, g.size(), "Check for a non-empty graph");
-            etag = res.getEntityTag();
-            assertTrue(etag.isWeak(), "Check for a weak ETag");
-            assertNotEquals(getFirstETag(), etag, "Check for different ETag values");
+            size = g.size();
+            descriptionETag = res.getEntityTag();
+            assertTrue(descriptionETag.isWeak(), "Check for a weak ETag");
         }
-
-        meanwhile();
 
         // Patch the description
         try (final Response res = target(getResourceLocation()).request().method("PATCH",
@@ -223,21 +184,23 @@ public interface LdpBinaryTests extends CommonTests {
             assertAll("Check PATCHing LDP-NR description", checkRdfResponse(res, LDP.RDFSource, null));
         }
 
+        await().until(() -> !descriptionETag.equals(getETag(getResourceLocation())));
+
         // Fetch the new description
         try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
             assertAll("Check the new LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertEquals(1L, g.size(), "Check the graph size");
+            assertTrue(g.size() > size, "Check the graph size is greater than " + size);
             assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
-            assertNotEquals(etag, res.getEntityTag(), "Check that the ETag values are different");
+            assertNotEquals(descriptionETag, res.getEntityTag(), "Check that the ETag values are different");
         }
 
         // Verify that the binary is still accessible
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertAll("Check the LDP-NR", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
             assertEquals(CONTENT, readEntityAsString(res.getEntity()), "Check for an expected binary content value");
-            assertEquals(getFirstETag(), res.getEntityTag(), "Check that the ETag values are different");
+            assertEquals(binaryETag, res.getEntityTag(), "Check that the ETag values are the same");
         }
     }
 
@@ -249,10 +212,10 @@ public interface LdpBinaryTests extends CommonTests {
     default void testBinaryIsInContainer() {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target().request().get()) {
             assertAll("Check binary in container", checkRdfResponse(res, LDP.BasicContainer, null));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertTrue(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
+            assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
                         rdf.createIRI(getResourceLocation())), "Check for an ldp:contains triple");
         }
     }

@@ -18,6 +18,7 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.hasType;
@@ -72,6 +73,20 @@ public interface CommonTests {
      */
     default WebTarget target(final String url) {
         return getClient().target(url);
+    }
+
+    /**
+     * Check for a successful creation response.
+     * @param res the response
+     * @param ldpType the expected type
+     * @return the location of the new resource
+     */
+    default String checkCreateResponseAssumptions(final Response res, final IRI ldpType) {
+        assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                "Creation of " + ldpType + " appears not to be supported");
+        assumeTrue(getLinks(res).stream().anyMatch(hasType(ldpType)),
+                "New resource was not of the expected " + ldpType + " type");
+        return res.getLocation().toString();
     }
 
     /**

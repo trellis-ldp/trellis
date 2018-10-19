@@ -26,15 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
-import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
-import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
 import javax.ws.rs.core.EntityTag;
@@ -74,20 +72,6 @@ public interface LdpBasicContainerTests extends CommonTests {
     String getContainerLocation();
 
     /**
-     * Check for a successful creation response.
-     * @param res the response
-     * @param ldpType the expected type
-     * @return the location of the new resource
-     */
-    default String checkCreateResponseAssumptions(final Response res, final IRI ldpType) {
-        assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                "Creation of " + ldpType + " appears not to be supported");
-        assumeTrue(getLinks(res).stream().anyMatch(hasType(ldpType)),
-                "New resource was not of the expected " + ldpType + " type");
-        return res.getLocation().toString();
-    }
-
-    /**
      * Initialize Basic Containment tests.
      */
     @BeforeAll
@@ -99,7 +83,7 @@ public interface LdpBasicContainerTests extends CommonTests {
        final String containerContent = getResourceAsString(BASIC_CONTAINER);
         // POST an LDP-BC
         try (final Response res = target().request()
-                .header("Slug", generator.generate(16) + "-LdbBasicContainerTests")
+                .header(SLUG, generator.generate(16) + "-LdpBasicContainerTests")
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
             setContainerLocation(checkCreateResponseAssumptions(res, LDP.BasicContainer));
