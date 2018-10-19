@@ -84,6 +84,7 @@ import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
@@ -1096,7 +1097,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
-        final Response res = target(RESOURCE_PATH).request().header("Slug", "child")
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
@@ -1109,7 +1110,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     public void testPostBadSlug() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
-        final Response res = target(RESOURCE_PATH).request().header("Slug", "child/grandchild")
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child/grandchild")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
@@ -1117,7 +1118,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPostVersion() {
-        final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().header("Slug", "test")
+        final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().header(SLUG, "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
@@ -1125,7 +1126,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPostAcl() {
-        final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().header("Slug", "test")
+        final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().header(SLUG, "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
@@ -1303,7 +1304,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
                     any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "newresource")
             .post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
@@ -1316,8 +1317,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
                     any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
-            .header("Digest", "md5=blahblah").post(entity("some data.", TEXT_PLAIN_TYPE));
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "newresource")
+            .header(DIGEST, "md5=blahblah").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
@@ -1325,7 +1326,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     public void testPostUnparseableDigest() {
         final Response res = target(RESOURCE_PATH).request()
-            .header("Digest", "digest this, man!").post(entity("some data.", TEXT_PLAIN_TYPE));
+            .header(DIGEST, "digest this, man!").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
@@ -1335,8 +1336,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
                     any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header("Slug", "newresource")
-            .header("Digest", "uh=huh").post(entity("some data.", TEXT_PLAIN_TYPE));
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "newresource")
+            .header(DIGEST, "uh=huh").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
@@ -1346,8 +1347,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
                     any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header("Digest", "md5=BJozgIQwPzzVzSxvjQsWkA==")
-            .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
+        final Response res = target(RESOURCE_PATH).request().header(DIGEST, "md5=BJozgIQwPzzVzSxvjQsWkA==")
+            .header(SLUG, "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
@@ -1358,8 +1359,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
                     any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header("Digest", "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
-            .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
+        final Response res = target(RESOURCE_PATH).request().header(DIGEST, "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
+            .header(SLUG, "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
@@ -1371,8 +1372,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
                     any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request()
-            .header("Digest", "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
-            .header("Slug", "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
+            .header(DIGEST, "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
+            .header(SLUG, "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
@@ -1388,7 +1389,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPostSlash() {
-        final Response res = target(RESOURCE_PATH + "/").request().header("Slug", "test")
+        final Response res = target(RESOURCE_PATH + "/").request().header(SLUG, "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -1728,7 +1729,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPutBinaryWithInvalidDigest() {
-        final Response res = target(BINARY_PATH).request().header("Digest", "md5=blahblah")
+        final Response res = target(BINARY_PATH).request().header(DIGEST, "md5=blahblah")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
@@ -1736,7 +1737,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPutBinaryWithMd5Digest() {
-        final Response res = target(BINARY_PATH).request().header("Digest", "md5=BJozgIQwPzzVzSxvjQsWkA==")
+        final Response res = target(BINARY_PATH).request().header(DIGEST, "md5=BJozgIQwPzzVzSxvjQsWkA==")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -1745,7 +1746,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPutBinaryWithSha1Digest() {
-        final Response res = target(BINARY_PATH).request().header("Digest", "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
+        final Response res = target(BINARY_PATH).request().header(DIGEST, "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -1807,7 +1808,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     public void testPutBinaryWithSha256Digest() {
         final Response res = target(BINARY_PATH).request()
-            .header("Digest", "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
+            .header(DIGEST, "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
