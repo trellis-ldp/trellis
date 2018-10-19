@@ -74,8 +74,9 @@ public class HtmlSerializer implements RDFaWriterService {
     @Inject
     public HtmlSerializer(final NamespaceService namespaceService) {
         this(namespaceService, getConfiguration().get(CONFIG_RDFA_TEMPLATE),
-                getConfiguration().get(CONFIG_RDFA_CSS), getConfiguration().get(CONFIG_RDFA_JS),
-                getConfiguration().get(CONFIG_RDFA_ICON));
+                getConfiguration().getOrDefault(CONFIG_RDFA_CSS, "//www.trellisldp.org/assets/css/trellis.css"),
+                getConfiguration().getOrDefault(CONFIG_RDFA_JS, ""),
+                getConfiguration().getOrDefault(CONFIG_RDFA_ICON, "//www.trellisldp.org/assets/img/trellis.png"));
     }
 
     /**

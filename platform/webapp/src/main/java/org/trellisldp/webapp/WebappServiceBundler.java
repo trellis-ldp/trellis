@@ -13,7 +13,14 @@
  */
 package org.trellisldp.webapp;
 
+import static com.google.common.cache.CacheBuilder.newBuilder;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+
+import com.google.common.cache.Cache;
+
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.tamaya.Configuration;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -21,13 +28,13 @@ import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.io.JenaIOService;
-import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 
 /**
@@ -38,6 +45,8 @@ import org.trellisldp.triplestore.TriplestoreResourceService;
  * file-based storage for mementos and binaries. RDF processing makes use of Apache Jena.
  */
 public class WebappServiceBundler implements ServiceBundler {
+
+    private static final Configuration config = getConfiguration();
 
     private final AgentService agentService;
     private final MementoService mementoService;
@@ -52,13 +61,18 @@ public class WebappServiceBundler implements ServiceBundler {
      */
     public WebappServiceBundler() {
         final IdentifierService idService = AppUtils.loadFirst(IdentifierService.class);
+        final NamespaceService nsService = AppUtils.loadFirst(NamespaceService.class);
+        final Cache<String, String> cache = newBuilder()
+            .maximumSize(config.getOrDefault("trellis.webapp.cache.size", Long.class, 100L))
+            .expireAfterAccess(config.getOrDefault("trellis.webapp.cache.hours", Long.class, 24L), HOURS).build();
+        final TrellisCache profileCache = new TrellisCache(cache);
         final RDFConnection rdfConnection = AppUtils.getRDFConnection();
 
         eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);
         agentService = AppUtils.loadFirst(AgentService.class);
         binaryService = new FileBinaryService(idService);
         mementoService = new FileMementoService();
-        ioService = new JenaIOService(new NamespacesJsonContext());
+        ioService = new JenaIOService(nsService, null, profileCache);
         auditService = resourceService = new TriplestoreResourceService(rdfConnection, idService);
     }
 

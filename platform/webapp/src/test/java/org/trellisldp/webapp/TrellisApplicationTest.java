@@ -13,12 +13,15 @@
  */
 package org.trellisldp.webapp;
 
+import static java.util.Collections.singleton;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 import static org.glassfish.jersey.client.HttpUrlConnectorProvider.SET_METHOD_WORKAROUND;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.webapp.AppUtils.CONFIG_WEBAPP_RDF_LOCATION;
+
+import java.util.Set;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Application;
@@ -84,6 +87,11 @@ public class TrellisApplicationTest extends JerseyTest {
         @Override
         public String getBaseURL() {
             return "http://localhost:" + TrellisApplicationTest.this.getPort() + "/";
+        }
+
+        @Override
+        public Set<String> supportedJsonLdProfiles() {
+            return singleton("http://www.w3.org/ns/anno.jsonld");
         }
     }
 
