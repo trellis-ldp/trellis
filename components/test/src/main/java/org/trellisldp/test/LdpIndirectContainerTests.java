@@ -82,52 +82,16 @@ public interface LdpIndirectContainerTests extends CommonTests {
     String getMemberLocation();
 
     /**
-     * Get the location of a child resource.
-     * @return the location
-     */
-    String getChildLocation();
-
-    /**
-     * Set the location of a child resource.
-     * @param location the location
-     */
-    void setChildLocation(String location);
-
-    /**
      * Set the location of the first indirect container.
      * @param location the location
      */
-    void setFirstIndirectContainerLocation(String location);
+    void setIndirectContainerLocation(String location);
 
     /**
      * Get the location of the first indirect container.
      * @return the test container location
      */
-    String getFirstIndirectContainerLocation();
-
-    /**
-     * Set the location of the second indirect container.
-     * @param location the location
-     */
-    void setSecondIndirectContainerLocation(String location);
-
-    /**
-     * Get the location of the second indirect container.
-     * @return the test container location
-     */
-    String getSecondIndirectContainerLocation();
-
-    /**
-     * Set the location of the third indirect container.
-     * @param location the location
-     */
-    void setThirdIndirectContainerLocation(String location);
-
-    /**
-     * Get the location of the third indirect container.
-     * @return the test container location
-     */
-    String getThirdIndirectContainerLocation();
+    String getIndirectContainerLocation();
 
     /**
      * Set the location of the test container.
@@ -175,35 +139,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)),
                     "Expected LDP:IndirectContainer type not present in response");
 
-            setFirstIndirectContainerLocation(res.getLocation().toString());
-        }
-
-        final String content2 = getResourceAsString(INDIRECT_CONTAINER_MEMBER_SUBJECT)
-            + membershipResource(MEMBER_RESOURCE_HASH);
-
-        // POST an LDP-IC
-        try (final Response res = target(getContainerLocation()).request()
-                .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
-                .post(entity(content2, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of IndirectContainer appears to be unsupported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)),
-                    "Expected LDP:IndirectContainer type not present in response");
-
-            setSecondIndirectContainerLocation(res.getLocation().toString());
-        }
-
-        final String memberContent = getResourceAsString(SIMPLE_RESOURCE)
-            + "<> foaf:primaryTopic <#it> .";
-
-        // PUT an LDP-RS
-        try (final Response res = target(getSecondIndirectContainerLocation()).request().post(entity(memberContent,
-                        TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of RDFSource appears to be unsupported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)),
-                    "Expected LDP:RDFSource type not present in response");
-            setChildLocation(res.getLocation().toString());
+            setIndirectContainerLocation(res.getLocation().toString());
         }
 
         // PUT an LDP-RS
@@ -212,18 +148,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
                     "Creation of RDFSource appears to be unsupported");
             assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)),
                     "Expected LDP:RDFSource type not present in response");
-        }
-
-        setThirdIndirectContainerLocation(getContainerLocation() + "/other");
-
-        // PUT an LDP-IC
-        try (final Response res = target(getThirdIndirectContainerLocation()).request()
-                .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
-                .put(entity(content, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of RDFSource appears to be unsupported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.IndirectContainer)),
-                    "Expected LDP:IndirectContainer type not present in response");
         }
     }
 
@@ -234,14 +158,34 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @DisplayName("Test adding resource to the indirect container")
     default void testAddResourceWithMemberSubject() {
         final RDF rdf = getInstance();
+        final String content = getResourceAsString(INDIRECT_CONTAINER_MEMBER_SUBJECT)
+            + membershipResource(MEMBER_RESOURCE_HASH);
+        final String memberContent = getResourceAsString(SIMPLE_RESOURCE) + "<> foaf:primaryTopic <#it> .";
+        final String location;
+        final String child;
+
+        // POST an LDP-IC
+        try (final Response res = target(getContainerLocation()).request()
+                .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
+                .post(entity(content, TEXT_TURTLE))) {
+            assertAll("Check the LDP-IC", checkRdfResponse(res, LDP.IndirectContainer, null));
+            location = res.getLocation().toString();
+        }
+
+        // POST an LDP-RS
+        try (final Response res = target(location).request().post(entity(memberContent, TEXT_TURTLE))) {
+            assertAll("Check the LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
+            child = res.getLocation().toString();
+        }
+
         //Fetch the member resource
-        try (final Response res = target(getSecondIndirectContainerLocation()).request().get()) {
+        try (final Response res = target(location).request().get()) {
             assertAll("Check the member resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertTrue(g.contains(rdf.createIRI(getSecondIndirectContainerLocation()), LDP.contains,
-                        rdf.createIRI(getChildLocation())), "Check for an ldp:contains triple");
-            assertTrue(g.contains(rdf.createIRI(getSecondIndirectContainerLocation() + MEMBER_RESOURCE_HASH),
-                        LDP.member, rdf.createIRI(getChildLocation())), "Check for an ldp:member triple");
+            assertTrue(g.contains(rdf.createIRI(location), LDP.contains,
+                        rdf.createIRI(child)), "Check for an ldp:contains triple");
+            assertTrue(g.contains(rdf.createIRI(location + MEMBER_RESOURCE_HASH),
+                        LDP.member, rdf.createIRI(child)), "Check for an ldp:member triple");
         }
     }
 
@@ -273,10 +217,10 @@ public interface LdpIndirectContainerTests extends CommonTests {
         }
 
         // Fetch the container resource
-        try (final Response res = target(getFirstIndirectContainerLocation()).request().get()) {
+        try (final Response res = target(getIndirectContainerLocation()).request().get()) {
             assertAll("Check the container resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertFalse(g.contains(rdf.createIRI(getFirstIndirectContainerLocation()), LDP.contains, null),
+            assertFalse(g.contains(rdf.createIRI(getIndirectContainerLocation()), LDP.contains, null),
                     "Check for no ldp:contains property");
             etag4 = res.getEntityTag();
             assertTrue(etag4.isWeak(), "Check that ETag 4 is weak");
@@ -285,21 +229,21 @@ public interface LdpIndirectContainerTests extends CommonTests {
         meanwhile();
 
         // POST an LDP-RS child
-        try (final Response res = target(getFirstIndirectContainerLocation()).request()
+        try (final Response res = target(getIndirectContainerLocation()).request()
                 .post(entity(childContent, TEXT_TURTLE))) {
             assertAll("Check POSTing a child resource", checkRdfResponse(res, LDP.RDFSource, null));
             child1 = res.getLocation().toString();
-            assertTrue(child1.startsWith(getFirstIndirectContainerLocation()), "Check the Location header");
-            assertTrue(child1.length() > getFirstIndirectContainerLocation().length(), "Re-check the Location header");
+            assertTrue(child1.startsWith(getIndirectContainerLocation()), "Check the Location header");
+            assertTrue(child1.length() > getIndirectContainerLocation().length(), "Re-check the Location header");
         }
 
         // POST an LDP-RS child
-        try (final Response res = target(getFirstIndirectContainerLocation()).request()
+        try (final Response res = target(getIndirectContainerLocation()).request()
                 .post(entity(childContent, TEXT_TURTLE))) {
             assertAll("Check POSTing a child resource", checkRdfResponse(res, LDP.RDFSource, null));
             child2 = res.getLocation().toString();
-            assertTrue(child2.startsWith(getFirstIndirectContainerLocation()), "Check the Location header");
-            assertTrue(child2.length() > getFirstIndirectContainerLocation().length(), "Re-check the Location header");
+            assertTrue(child2.startsWith(getIndirectContainerLocation()), "Check the Location header");
+            assertTrue(child2.length() > getIndirectContainerLocation().length(), "Re-check the Location header");
         }
 
         // Fetch the member resource
@@ -315,10 +259,10 @@ public interface LdpIndirectContainerTests extends CommonTests {
         }
 
         // Fetch the container resource
-        try (final Response res = target(getFirstIndirectContainerLocation()).request().get()) {
+        try (final Response res = target(getIndirectContainerLocation()).request().get()) {
             assertAll("Check the container resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            final IRI identifier = rdf.createIRI(getFirstIndirectContainerLocation());
+            final IRI identifier = rdf.createIRI(getIndirectContainerLocation());
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)), "Check for first ldp:contains");
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)), "Check for second ldp:contains");
             etag5 = res.getEntityTag();
@@ -354,10 +298,10 @@ public interface LdpIndirectContainerTests extends CommonTests {
         }
 
         // Fetch the container resource
-        try (final Response res = target(getFirstIndirectContainerLocation()).request().get()) {
+        try (final Response res = target(getIndirectContainerLocation()).request().get()) {
             assertAll("Check the container resource", checkRdfResponse(res, LDP.IndirectContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            final IRI identifier = rdf.createIRI(getFirstIndirectContainerLocation());
+            final IRI identifier = rdf.createIRI(getIndirectContainerLocation());
             assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child1)),
                     "Check the first child isn't contained");
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)),
@@ -376,7 +320,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             + "INSERT { <> ldp:hasMemberRelation dc:relation } WHERE {}";
 
         // Patch the indirect container
-        try (final Response res = target(getFirstIndirectContainerLocation()).request()
+        try (final Response res = target(getIndirectContainerLocation()).request()
                 .method("PATCH", entity(updateContent, APPLICATION_SPARQL_UPDATE))) {
             assertAll("Check PATCHing the container resource", checkRdfResponse(res, LDP.IndirectContainer, null));
         }
@@ -397,12 +341,11 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test creating an indirect container via PUT")
     default void testCreateIndirectContainerViaPut() {
-        final String other2 = getContainerLocation() + "/other2";
         final String content = getResourceAsString(INDIRECT_CONTAINER)
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2);
 
         // PUT an LDP-IC
-        try (final Response res = target(other2).request()
+        try (final Response res = target(getContainerLocation() + "/indirectcontainer-put").request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertAll("Check PUTting an LDP-IC", checkRdfResponse(res, LDP.IndirectContainer, null));
@@ -415,11 +358,12 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating an indirect container via PUT")
     default void testUpdateIndirectContainerViaPut() {
+        final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString("/indirectContainerInverse.ttl")
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2);
 
         // PUT an LDP-IC
-        try (final Response res = target(getThirdIndirectContainerLocation()).request()
+        try (final Response res = target(location).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertAll("Check replacing an LDP-IC via PUT", checkRdfResponse(res, LDP.IndirectContainer, null));
@@ -432,12 +376,13 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating an indirect container with too many member-related properties")
     default void testUpdateIndirectContainerTooManyMemberProps() {
+        final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(INDIRECT_CONTAINER)
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2)
             + "<> ldp:isMemberOfRelation dc:isPartOf .";
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdIndirectContainerLocation()).request()
+        try (final Response res = target(location).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for a 4xx response");
@@ -452,11 +397,12 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating an indirect container with no ldp:insertedContentRelation property")
     default void testUpdateIndirectContainerNoICRProp() {
+        final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(DIRECT_CONTAINER)
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2);
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdIndirectContainerLocation()).request()
+        try (final Response res = target(location).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for a 4xx response");
@@ -471,12 +417,13 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating an indirect container with too many membership resources")
     default void testUpdateIndirectContainerMultipleMemberResources() {
+        final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(INDIRECT_CONTAINER)
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2)
             + membershipResource(getContainerLocation() + "/member3");
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdIndirectContainerLocation()).request()
+        try (final Response res = target(location).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for a 4xx response");
@@ -491,6 +438,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating an indirect container with no member relation property")
     default void testUpdateIndirectContainerMissingMemberRelation() {
+        final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
             + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
             + "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n"
@@ -501,7 +449,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             + "   dc:description \"This is an Indirect Container for testing.\"@eng .";
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdIndirectContainerLocation()).request()
+        try (final Response res = target(location).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Missing member property results in 4xx");
@@ -516,10 +464,11 @@ public interface LdpIndirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating an indirect container with no member resource")
     default void testUpdateIndirectContainerMissingMemberResource() {
+        final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(INDIRECT_CONTAINER);
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdIndirectContainerLocation()).request()
+        try (final Response res = target(location).request()
                 .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "no membershipResource results in 4xx");
@@ -571,5 +520,23 @@ public interface LdpIndirectContainerTests extends CommonTests {
      */
     default String membershipResource(final String iri) {
         return "<> ldp:membershipResource <" + iri + ">.\n";
+    }
+
+    /**
+     * Create a simple indirect container.
+     * @param memberLocation the member resource to use
+     * @return the location of the new LDP-IC
+     */
+    default String createSimpleIndirectContainer(final String memberLocation) {
+        final String content = getResourceAsString(INDIRECT_CONTAINER)
+            + membershipResource(getContainerLocation() + memberLocation);
+
+        // POST an LDP-DC
+        try (final Response res = target(getContainerLocation()).request()
+                .header(LINK, fromUri(LDP.IndirectContainer.getIRIString()).rel(TYPE).build())
+                .post(entity(content, TEXT_TURTLE))) {
+            assertAll("Check POSTing an LDP-IC", checkRdfResponse(res, LDP.IndirectContainer, null));
+            return res.getLocation().toString();
+        }
     }
 }

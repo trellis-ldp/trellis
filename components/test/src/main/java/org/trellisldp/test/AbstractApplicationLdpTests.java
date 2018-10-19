@@ -157,22 +157,9 @@ public abstract class AbstractApplicationLdpTests {
     @DisplayName("LDP Indirect Containment tests")
     public class IndirectContainmentTests extends LdpCommonTests implements LdpIndirectContainerTests {
 
-        private String child;
         private String container;
         private String member;
-        private String ic1;
-        private String ic2;
-        private String ic3;
-
-        @Override
-        public void setChildLocation(final String location) {
-            child = location;
-        }
-
-        @Override
-        public String getChildLocation() {
-            return child;
-        }
+        private String ic;
 
         @Override
         public void setContainerLocation(final String location) {
@@ -195,33 +182,13 @@ public abstract class AbstractApplicationLdpTests {
         }
 
         @Override
-        public void setFirstIndirectContainerLocation(final String location) {
-            ic1 = location;
+        public void setIndirectContainerLocation(final String location) {
+            ic = location;
         }
 
         @Override
-        public String getFirstIndirectContainerLocation() {
-            return ic1;
-        }
-
-        @Override
-        public void setSecondIndirectContainerLocation(final String location) {
-            ic2 = location;
-        }
-
-        @Override
-        public String getSecondIndirectContainerLocation() {
-            return ic2;
-        }
-
-        @Override
-        public void setThirdIndirectContainerLocation(final String location) {
-            ic3 = location;
-        }
-
-        @Override
-        public String getThirdIndirectContainerLocation() {
-            return ic3;
+        public String getIndirectContainerLocation() {
+            return ic;
         }
     }
 
