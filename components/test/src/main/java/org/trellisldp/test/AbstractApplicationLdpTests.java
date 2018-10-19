@@ -110,8 +110,7 @@ public abstract class AbstractApplicationLdpTests {
         private String child;
         private String container;
         private String member;
-        private String dc1;
-        private String dc2;
+        private String dc;
 
         @Override
         public void setChildLocation(final String location) {
@@ -144,23 +143,13 @@ public abstract class AbstractApplicationLdpTests {
         }
 
         @Override
-        public void setFirstDirectContainerLocation(final String location) {
-            dc1 = location;
+        public void setDirectContainerLocation(final String location) {
+            dc = location;
         }
 
         @Override
-        public String getFirstDirectContainerLocation() {
-            return dc1;
-        }
-
-        @Override
-        public void setSecondDirectContainerLocation(final String location) {
-            dc2 = location;
-        }
-
-        @Override
-        public String getSecondDirectContainerLocation() {
-            return dc2;
+        public String getDirectContainerLocation() {
+            return dc;
         }
     }
 
