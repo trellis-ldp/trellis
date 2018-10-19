@@ -68,6 +68,7 @@ public interface LdpDirectContainerTests extends CommonTests {
     String DIRECT_CONTAINER = "/directContainer.ttl";
     String SIMPLE_RESOURCE = "/simpleResource.ttl";
     String DIRECT_CONTAINER_INVERSE = "/directContainerInverse.ttl";
+    String DIRECT_CONTAINER_IS_PART_OF = "/directContainerIsPartOf.ttl";
 
     /**
      * Set the location of the test resource.
@@ -128,30 +129,6 @@ public interface LdpDirectContainerTests extends CommonTests {
      * @return the test container location
      */
     String getSecondDirectContainerLocation();
-
-    /**
-     * Set the location of the other direct container.
-     * @param location the location
-     */
-    void setThirdDirectContainerLocation(String location);
-
-    /**
-     * Get the location of the other direct container.
-     * @return the test container location
-     */
-    String getThirdDirectContainerLocation();
-
-    /**
-     * Set the location of the other direct container.
-     * @param location the location
-     */
-    void setFourthDirectContainerLocation(String location);
-
-    /**
-     * Get the location of the other direct container.
-     * @return the test container location
-     */
-    String getFourthDirectContainerLocation();
 
     /**
      * Initialize Direct Container tests.
@@ -224,28 +201,6 @@ public interface LdpDirectContainerTests extends CommonTests {
             setChildLocation(res.getLocation().toString());
         }
 
-        setThirdDirectContainerLocation(getContainerLocation() + "/other");
-
-        // PUT an LDP-DC
-        try (final Response res = target(getThirdDirectContainerLocation()).request()
-                .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
-                .put(entity(content, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()), dcUnsupported);
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)), notDcType);
-        }
-
-        final String directContainerInverse = getResourceAsString(DIRECT_CONTAINER_INVERSE)
-            + membershipResource(getMemberLocation());
-
-        // POST an LDP-DC
-        try (final Response res = target(getContainerLocation()).request()
-                .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
-                .post(entity(directContainerInverse, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()), dcUnsupported);
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.DirectContainer)), notDcType);
-
-            setFourthDirectContainerLocation(res.getLocation().toString());
-        }
     }
 
     /**
@@ -436,14 +391,15 @@ public interface LdpDirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating a direct container via PUT")
     default void testUpdateDirectContainerViaPut() {
+        final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString("/directContainerIsPartOf.ttl")
-            + membershipResource(getContainerLocation() + MEMBER_RESOURCE2);
+            + membershipResource(getContainerLocation() + MEMBER_RESOURCE1);
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdDirectContainerLocation()).request()
+        try (final Response res = target(dcLocation).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
-            assertAll("Check PATCHing a container resource", checkRdfResponse(res, LDP.DirectContainer, null));
+            assertAll("Check PUTting a container resource", checkRdfResponse(res, LDP.DirectContainer, null));
         }
     }
 
@@ -453,12 +409,13 @@ public interface LdpDirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating a direct container with too many member-related properties")
     default void testUpdateDirectContainerTooManyMemberProps() {
+        final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(DIRECT_CONTAINER)
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2)
             + "<> ldp:isMemberOfRelation dc:isPartOf .";
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdDirectContainerLocation()).request()
+        try (final Response res = target(dcLocation).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Confirm that a 4xx error is thrown");
@@ -473,12 +430,14 @@ public interface LdpDirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating a direct container with too many membership resources")
     default void testUpdateDirectContainerMultipleMemberResources() {
+        final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
+
         final String content = getResourceAsString("/directContainer.ttl")
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2)
             + membershipResource(getContainerLocation() + "/member3");
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdDirectContainerLocation()).request()
+        try (final Response res = target(dcLocation).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Confirm that a 4xx error is thrown");
@@ -493,6 +452,7 @@ public interface LdpDirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating a direct container with no member relation property")
     default void testUpdateDirectContainerMissingMemberRelation() {
+        final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
             + "PREFIX ldp: <http://www.w3.org/ns/ldp#> \n"
             + "PREFIX dc: <http://purl.org/dc/terms/> \n\n"
@@ -501,7 +461,7 @@ public interface LdpDirectContainerTests extends CommonTests {
             + "   dc:description \"This is a Direct Container for testing.\"@eng .";
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdDirectContainerLocation()).request()
+        try (final Response res = target(dcLocation).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Confirm that a 4xx error is returned");
@@ -516,10 +476,11 @@ public interface LdpDirectContainerTests extends CommonTests {
     @Test
     @DisplayName("Test updating a direct container with no member resource")
     default void testUpdateDirectContainerMissingMemberResource() {
+        final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString("/directContainer.ttl");
 
         // PUT an LDP-DC
-        try (final Response res = target(getThirdDirectContainerLocation()).request()
+        try (final Response res = target(dcLocation).request()
                 .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(content, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Verify that a 4xx status is returned");
@@ -535,19 +496,31 @@ public interface LdpDirectContainerTests extends CommonTests {
     @DisplayName("Test with inverse direct containment")
     default void testDirectContainerWithInverseMembership() {
         final RDF rdf = getInstance();
-        final String location;
-        // Create an LDP-RS
-        try (final Response res = target(getFourthDirectContainerLocation()).request()
-                .post(entity("", TEXT_TURTLE))) {
-            assertAll("Check creating an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
-            location = res.getLocation().toString();
+        final String dcLocation;
+        final String rsLocation;
+        final String directContainerInverse = getResourceAsString(DIRECT_CONTAINER_INVERSE)
+            + membershipResource(getMemberLocation());
+
+        // POST an LDP-DC
+        try (final Response res = target(getContainerLocation()).request()
+                .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
+                .post(entity(directContainerInverse, TEXT_TURTLE))) {
+            assertAll("Check creating an LDP-DC", checkRdfResponse(res, LDP.DirectContainer, null));
+
+            dcLocation = res.getLocation().toString();
         }
 
-        try (final Response res = target(location).request().get()) {
+        // Create an LDP-RS
+        try (final Response res = target(dcLocation).request().post(entity("", TEXT_TURTLE))) {
+            assertAll("Check creating an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
+            rsLocation = res.getLocation().toString();
+        }
+
+        try (final Response res = target(rsLocation).request().get()) {
             assertAll("Check the LDP-RS", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getMemberLocation());
-            assertTrue(g.contains(rdf.createIRI(location), DC.isPartOf, identifier),
+            assertTrue(g.contains(rdf.createIRI(rsLocation), DC.isPartOf, identifier),
                     "Check that dc:isPartOf is present in the graph");
         }
     }
@@ -595,5 +568,23 @@ public interface LdpDirectContainerTests extends CommonTests {
      */
     default String membershipResource(final String iri) {
         return "<> ldp:membershipResource <" + iri + ">.\n";
+    }
+
+    /**
+     * Create a simple direct container.
+     * @param memberResource the member resource to use
+     * @return the location of the new LDP-DC
+     */
+    default String createSimpleDirectContainer(final String memberResource) {
+        final String content = getResourceAsString(DIRECT_CONTAINER_IS_PART_OF)
+            + membershipResource(getContainerLocation() + memberResource);
+
+        // POST an LDP-DC
+        try (final Response res = target(getContainerLocation()).request()
+                .header(LINK, fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE).build())
+                .post(entity(content, TEXT_TURTLE))) {
+            assertAll("Check POSTing an LDP-DC", checkRdfResponse(res, LDP.DirectContainer, null));
+            return res.getLocation().toString();
+        }
     }
 }
