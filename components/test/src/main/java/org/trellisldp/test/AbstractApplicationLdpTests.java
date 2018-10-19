@@ -18,7 +18,6 @@ import static java.util.Collections.emptySet;
 import java.util.Set;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.core.EntityTag;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -56,10 +55,6 @@ public abstract class AbstractApplicationLdpTests {
     @DisplayName("RDF Serialization tests")
     public class RDFSerializationTests extends LdpCommonTests implements LdpRdfTests {
         private String resource;
-        private String annotation;
-        private String container;
-        private EntityTag etag1;
-        private EntityTag etag2;
 
         @Override
         public Set<String> supportedJsonLdProfiles() {
@@ -74,46 +69,6 @@ public abstract class AbstractApplicationLdpTests {
         @Override
         public String getResourceLocation() {
             return resource;
-        }
-
-        @Override
-        public void setAnnotationLocation(final String location) {
-            annotation = location;
-        }
-
-        @Override
-        public String getAnnotationLocation() {
-            return annotation;
-        }
-
-        @Override
-        public void setContainerLocation(final String location) {
-            container = location;
-        }
-
-        @Override
-        public String getContainerLocation() {
-            return container;
-        }
-
-        @Override
-        public void setFirstETag(final EntityTag etag) {
-            etag1 = etag;
-        }
-
-        @Override
-        public EntityTag getFirstETag() {
-            return etag1;
-        }
-
-        @Override
-        public void setSecondETag(final EntityTag etag) {
-            etag2 = etag;
-        }
-
-        @Override
-        public EntityTag getSecondETag() {
-            return etag2;
         }
     }
 

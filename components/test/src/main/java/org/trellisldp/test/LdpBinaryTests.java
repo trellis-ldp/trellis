@@ -39,7 +39,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -75,11 +74,9 @@ public interface LdpBinaryTests extends CommonTests {
     @BeforeAll
     @DisplayName("Initialize Binary tests")
     default void beforeAllTests() {
-        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
-            .withinRange('a', 'z').build();
 
         // POST an LDP-NR
-        try (final Response res = target().request().header(SLUG, generator.generate(16) + "-LdpBinaryTests")
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .post(entity(CONTENT, TEXT_PLAIN))) {
             setResourceLocation(checkCreateResponseAssumptions(res, LDP.NonRDFSource));
         }
@@ -123,12 +120,8 @@ public interface LdpBinaryTests extends CommonTests {
     @Test
     @DisplayName("Test creating a new binary via POST")
     default void testPostBinary() {
-        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
-            .withinRange('a', 'z').build();
-
         // POST an LDP-NR
-        try (final Response res = target().request()
-                .header(SLUG, generator.generate(16) + "-LdpBinaryTests")
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .post(entity(CONTENT, TEXT_PLAIN))) {
             assertAll("Check POSTing LDP-NR", checkNonRdfResponse(res, null));
             final String resource = res.getLocation().toString();
@@ -143,12 +136,9 @@ public interface LdpBinaryTests extends CommonTests {
     @Test
     @DisplayName("Test creating a new binary via POST with a digest header")
     default void testPostBinaryWithDigest() {
-        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
-            .withinRange('a', 'z').build();
-
         // POST an LDP-NR
         try (final Response res = target().request().header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==")
-                .header(SLUG, generator.generate(16) + "-LdpBinaryTests")
+                .header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .post(entity(CONTENT, TEXT_PLAIN))) {
             assertAll("Check POSTing LDP-NR with digest", checkNonRdfResponse(res, null));
             final String resource = res.getLocation().toString();

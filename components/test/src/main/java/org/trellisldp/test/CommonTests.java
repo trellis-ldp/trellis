@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -98,6 +99,17 @@ public interface CommonTests {
         try (final Response res = target(url).request().get()) {
             return res.getEntityTag();
         }
+    }
+
+    /**
+     * Get a randomized Slug header with an appropriate suffix.
+     * @param suffix the suffix
+     * @return a randomized header name
+     */
+    default String generateRandomValue(final String suffix) {
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+            .withinRange('a', 'z').build();
+        return generator.generate(16) + "-" + suffix;
     }
 
     /**

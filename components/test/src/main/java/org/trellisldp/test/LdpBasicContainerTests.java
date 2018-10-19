@@ -41,7 +41,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,15 +76,11 @@ public interface LdpBasicContainerTests extends CommonTests {
     @BeforeAll
     @DisplayName("Initialize Basic Containment tests")
     default void beforeAllTests() {
-        final RandomStringGenerator generator = new RandomStringGenerator.Builder()
-            .withinRange('a', 'z').build();
-
-       final String containerContent = getResourceAsString(BASIC_CONTAINER);
         // POST an LDP-BC
         try (final Response res = target().request()
-                .header(SLUG, generator.generate(16) + "-LdpBasicContainerTests")
+                .header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
-                .post(entity(containerContent, TEXT_TURTLE))) {
+                .post(entity(getResourceAsString(BASIC_CONTAINER), TEXT_TURTLE))) {
             setContainerLocation(checkCreateResponseAssumptions(res, LDP.BasicContainer));
         }
     }

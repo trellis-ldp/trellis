@@ -14,12 +14,10 @@
 package org.trellisldp.test;
 
 import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.HttpHeaders.LINK;
-import static javax.ws.rs.core.Link.TYPE;
-import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -27,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -35,7 +34,6 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.hasConstrainedBy;
-import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.test.TestUtils.readEntityAsJson;
 import static org.trellisldp.vocabulary.RDF.type;
@@ -84,54 +82,6 @@ public interface LdpRdfTests extends CommonTests {
     String getResourceLocation();
 
     /**
-     * Set the location of the annotation resource.
-     * @param location the location
-     */
-    void setAnnotationLocation(String location);
-
-    /**
-     * Get the location of the annotation resource.
-     * @return the test annotation location
-     */
-    String getAnnotationLocation();
-
-    /**
-     * Set the location of the test container.
-     * @param location the location
-     */
-    void setContainerLocation(String location);
-
-    /**
-     * Get the location of the test container.
-     * @return the test container location
-     */
-    String getContainerLocation();
-
-    /**
-     * Get the first etag.
-     * @return the etag
-     */
-    EntityTag getFirstETag();
-
-    /**
-     * Get the second etag.
-     * @return the etag
-     */
-    EntityTag getSecondETag();
-
-    /**
-     * Set the first etag.
-     * @param etag the etag
-     */
-    void setFirstETag(EntityTag etag);
-
-    /**
-     * Set the second etag.
-     * @param etag the etag
-     */
-    void setSecondETag(EntityTag etag);
-
-    /**
      * Return a set of valid JSON-LD profiles that the server supports.
      * @return the JSON-LD profiles
      */
@@ -143,29 +93,14 @@ public interface LdpRdfTests extends CommonTests {
     @BeforeAll
     @DisplayName("Initialize RDF tests")
     default void beforeAllTests() {
-        final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String content = getResourceAsString(SIMPLE_RESOURCE);
-        final String annotation = getResourceAsString(ANNOTATION_RESOURCE);
-
-        // POST an LDP-BC
-        try (final Response res = target().request()
-                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
-                .post(entity(containerContent, TEXT_TURTLE))) {
-            assertAll("Check for a LDP-BC", checkRdfResponse(res, LDP.BasicContainer, null));
-            setContainerLocation(res.getLocation().toString());
-        }
 
         // POST an LDP-RS
-        try (final Response res = target(getContainerLocation()).request().post(entity(content, TEXT_TURTLE))) {
-            assertAll("Check for an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
-            setResourceLocation(res.getLocation().toString());
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
+                .post(entity(content, TEXT_TURTLE))) {
+            setResourceLocation(checkCreateResponseAssumptions(res, LDP.RDFSource));
         }
 
-        // POST an LDP-RS
-        try (final Response res = target(getContainerLocation()).request().post(entity(annotation, TEXT_TURTLE))) {
-            assertAll("Check for an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
-            setAnnotationLocation(res.getLocation().toString());
-        }
     }
 
     /**
@@ -185,7 +120,9 @@ public interface LdpRdfTests extends CommonTests {
     @Test
     @DisplayName("Fetch the default JSON-LD serialization")
     default void testGetJsonLdDefault() {
-        try (final Response res = target(getAnnotationLocation()).request().accept("application/ld+json").get()) {
+        final String location = createAnnotationResource();
+
+        try (final Response res = target(location).request().accept("application/ld+json").get()) {
             assertAll("Check for an LDP-RS as JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final List<Map<String, Object>> obj = readEntityAsJson(res.getEntity(),
                     new TypeReference<List<Map<String, Object>>>(){});
@@ -203,7 +140,9 @@ public interface LdpRdfTests extends CommonTests {
     @Test
     @DisplayName("Fetch the expanded JSON-LD serialization")
     default void testGetJsonLdExpanded() {
-        try (final Response res = target(getAnnotationLocation()).request()
+        final String location = createAnnotationResource();
+
+        try (final Response res = target(location).request()
                 .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get()) {
             assertAll("Check for expanded JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final List<Map<String, Object>> obj = readEntityAsJson(res.getEntity(),
@@ -222,7 +161,9 @@ public interface LdpRdfTests extends CommonTests {
     @Test
     @DisplayName("Fetch the compacted JSON-LD serialization")
     default void testGetJsonLdCompacted() {
-        try (final Response res = target(getAnnotationLocation()).request()
+        final String location = createAnnotationResource();
+
+        try (final Response res = target(location).request()
                 .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get()) {
             assertAll("Check for compact JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final Map<String, Object> obj = readEntityAsJson(res.getEntity(),
@@ -244,14 +185,16 @@ public interface LdpRdfTests extends CommonTests {
         assumeTrue(supportedJsonLdProfiles().contains("http://www.w3.org/ns/anno.jsonld"),
                 "Support for the Web Annotation profile is not enabled.");
 
-        try (final Response res = target(getAnnotationLocation()).request()
+        final String location = createAnnotationResource();
+
+        try (final Response res = target(location).request()
                 .accept("application/ld+json; profile=\"http://www.w3.org/ns/anno.jsonld\"").get()) {
             assertAll("Check for custom JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
             final Map<String, Object> obj = readEntityAsJson(res.getEntity(),
                     new TypeReference<Map<String, Object>>(){});
             assertTrue(obj.containsKey("@context"), "Check for a @context property");
             assertEquals("http://www.w3.org/ns/anno.jsonld", obj.get("@context"), "Check the @context value");
-            assertEquals(getAnnotationLocation(), obj.get("id"), "Check the id value");
+            assertEquals(location, obj.get("id"), "Check the id value");
             assertEquals("Annotation", obj.get("type"), "Check the type value");
             assertEquals("http://example.org/post1", obj.get("body"), "Check the body value");
             assertEquals("http://example.org/page1", obj.get("target"), "Check the target value");
@@ -278,11 +221,12 @@ public interface LdpRdfTests extends CommonTests {
         final String content = getResourceAsString(SIMPLE_RESOURCE);
 
         // POST an LDP-RS
-        try (final Response res = target(getContainerLocation()).request().post(entity(content, TEXT_TURTLE))) {
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
+                    .post(entity(content, TEXT_TURTLE))) {
             assertAll("Check POSTing an RDF resource", checkRdfResponse(res, LDP.RDFSource, null));
             final String location = res.getLocation().toString();
-            assertTrue(location.startsWith(getContainerLocation()), "Check the Location header");
-            assertTrue(location.length() > getContainerLocation().length(), "Re-check the Location header");
+            assertTrue(location.startsWith(getBaseURL()), "Check the Location header");
+            assertTrue(location.length() > getBaseURL().length(), "Re-check the Location header");
         }
     }
 
@@ -304,9 +248,7 @@ public interface LdpRdfTests extends CommonTests {
                     "Check for a skos:prefLabel triple");
             assertTrue(g.contains(identifier, DC.subject, rdf.createIRI("http://example.org/subject/1")),
                     "Check for a dc:subject triple");
-            setFirstETag(res.getEntityTag());
-            assertTrue(getFirstETag().isWeak(), "Check that the first ETag is weak");
-            assertNotEquals(getFirstETag(), getSecondETag(), "Compare ETags 1 and 2");
+            assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
         }
     }
 
@@ -317,7 +259,7 @@ public interface LdpRdfTests extends CommonTests {
     @DisplayName("Test modifying an RDF document via PATCH")
     default void testPatchRDF() {
         final RDF rdf = getInstance();
-        meanwhile();
+        final EntityTag initialETag = getETag(getResourceLocation());
 
         // Patch the resource
         try (final Response res = target(getResourceLocation()).request().method("PATCH",
@@ -327,7 +269,7 @@ public interface LdpRdfTests extends CommonTests {
             assertAll("Check an LDP-RS resource", checkRdfResponse(res, LDP.RDFSource, null));
         }
 
-        meanwhile();
+        await().until(() -> !initialETag.equals(getETag(getResourceLocation())));
 
         // Fetch the updated resource
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
@@ -336,9 +278,8 @@ public interface LdpRdfTests extends CommonTests {
             assertEquals(4L, g.size(), "Check the graph size");
             assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
-            setSecondETag(res.getEntityTag());
-            assertTrue(getSecondETag().isWeak(), "Check that the ETag is weak");
-            assertNotEquals(getFirstETag(), getSecondETag(), "Compare the first and second ETags");
+            assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
+            assertNotEquals(initialETag, res.getEntityTag(), "Compare the first and second ETags");
         }
     }
 
@@ -350,10 +291,10 @@ public interface LdpRdfTests extends CommonTests {
     default void testRdfContainment() {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target().request().get()) {
             assertAll("Check a container resource", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
-            assertTrue(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
+            assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
                         rdf.createIRI(getResourceLocation())), "Check for an ldp:contains property");
         }
     }
@@ -368,7 +309,8 @@ public interface LdpRdfTests extends CommonTests {
             + "<> a \"skos concept\" .";
 
         // POST an LDP-RS
-        try (final Response res = target(getContainerLocation()).request().post(entity(rdf, TEXT_TURTLE))) {
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
+                .post(entity(rdf, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(),
                     "Semantically invalid RDF should throw a 4xx error");
             assertTrue(getLinks(res).stream().anyMatch(hasConstrainedBy(Trellis.InvalidRange)),
@@ -390,8 +332,22 @@ public interface LdpRdfTests extends CommonTests {
             + "   dc:subject <http://example.org/subject/1> .";
 
         // POST an LDP-RS
-        try (final Response res = target(getContainerLocation()).request().post(entity(rdf, TEXT_TURTLE))) {
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
+                .post(entity(rdf, TEXT_TURTLE))) {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Syntactically invalid RDF produces a 4xx");
+        }
+    }
+
+    /**
+     * Create an Annotation resource.
+     * @return the location of the new resource
+     */
+    default String createAnnotationResource() {
+        // POST an LDP-RS
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
+                .post(entity(getResourceAsString(ANNOTATION_RESOURCE), TEXT_TURTLE))) {
+            assertAll("Check for an LDP-RS", checkRdfResponse(res, LDP.RDFSource, null));
+            return res.getLocation().toString();
         }
     }
 }
