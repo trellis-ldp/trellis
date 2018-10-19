@@ -107,20 +107,9 @@ public abstract class AbstractApplicationLdpTests {
     @Nested
     @DisplayName("LDP Direct Containment tests")
     public class DirectContainmentTests extends LdpCommonTests implements LdpDirectContainerTests {
-        private String child;
         private String container;
         private String member;
         private String dc;
-
-        @Override
-        public void setChildLocation(final String location) {
-            child = location;
-        }
-
-        @Override
-        public String getChildLocation() {
-            return child;
-        }
 
         @Override
         public void setContainerLocation(final String location) {

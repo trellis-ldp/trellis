@@ -20,6 +20,7 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +37,6 @@ import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.hasConstrainedBy;
 import static org.trellisldp.test.TestUtils.hasType;
-import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
 import javax.ws.rs.core.EntityTag;
@@ -226,7 +226,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertTrue(etag4.isWeak(), "Check that ETag 4 is weak");
         }
 
-        meanwhile();
 
         // POST an LDP-RS child
         try (final Response res = target(getIndirectContainerLocation()).request()
@@ -270,12 +269,13 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertNotEquals(etag4, etag5, "Compare ETags 4 and 5");
         }
 
-        meanwhile();
-
         // Delete one of the child resources
         try (final Response res = target(child1).request().delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Verify that the DELETE succeeds");
         }
+
+        await().until(() -> !etag5.equals(getETag(getIndirectContainerLocation())));
+        await().until(() -> !etag2.equals(getETag(getMemberLocation())));
 
         // Try fetching the deleted resource
         try (final Response res = target(child1).request().get()) {

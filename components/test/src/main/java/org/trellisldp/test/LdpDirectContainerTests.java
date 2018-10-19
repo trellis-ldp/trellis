@@ -20,6 +20,7 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -37,7 +38,6 @@ import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.hasConstrainedBy;
 import static org.trellisldp.test.TestUtils.hasType;
-import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
 import javax.ws.rs.core.EntityTag;
@@ -82,18 +82,6 @@ public interface LdpDirectContainerTests extends CommonTests {
      * @return the test resource location
      */
     String getMemberLocation();
-
-    /**
-     * Get the location of a child resource.
-     * @return the location
-     */
-    String getChildLocation();
-
-    /**
-     * Set the location of a child resource.
-     * @param location the location
-     */
-    void setChildLocation(String location);
 
     /**
      * Set the location of the test container.
@@ -144,8 +132,6 @@ public interface LdpDirectContainerTests extends CommonTests {
 
         setMemberLocation(getContainerLocation() + MEMBER_RESOURCE1);
 
-        final String memberContent = getResourceAsString(SIMPLE_RESOURCE);
-
         // PUT an LDP-RS
         try (final Response res = target(getMemberLocation()).request().put(entity(containerContent, TEXT_TURTLE))) {
             assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
@@ -167,17 +153,6 @@ public interface LdpDirectContainerTests extends CommonTests {
             setDirectContainerLocation(res.getLocation().toString());
         }
 
-        // POST an LDP-RS
-        try (final Response res = target(getDirectContainerLocation()).request()
-                .post(entity(memberContent, TEXT_TURTLE))) {
-            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
-                    "Creation of RDFSource appears to be unsupported");
-            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)),
-                    "New resource was not of expected RDFSource type");
-
-            setChildLocation(res.getLocation().toString());
-        }
-
     }
 
     /**
@@ -187,14 +162,28 @@ public interface LdpDirectContainerTests extends CommonTests {
     @DisplayName("Test fetch a self-contained direct container")
     default void testSimpleDirectContainer() {
         final RDF rdf = getInstance();
+        final String memberContent = getResourceAsString(SIMPLE_RESOURCE);
+        final String child;
+
+        // POST an LDP-RS
+        try (final Response res = target(getDirectContainerLocation()).request()
+                .post(entity(memberContent, TEXT_TURTLE))) {
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of RDFSource appears to be unsupported");
+            assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)),
+                    "New resource was not of expected RDFSource type");
+
+            child = res.getLocation().toString();
+        }
+
         // Fetch the member resource
         try (final Response res = target(getDirectContainerLocation()).request().get()) {
             assertAll("Check the member resource", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getDirectContainerLocation()), LDP.contains,
-                        rdf.createIRI(getChildLocation())), "Verify an ldp:contains triple");
+                        rdf.createIRI(child)), "Verify an ldp:contains triple");
             assertTrue(g.contains(rdf.createIRI(getDirectContainerLocation() + MEMBER_RESOURCE_HASH), LDP.member,
-                        rdf.createIRI(getChildLocation())), "Verify a member triple");
+                        rdf.createIRI(child)), "Verify a member triple");
         }
     }
 
@@ -247,8 +236,6 @@ public interface LdpDirectContainerTests extends CommonTests {
             assertTrue(etag4.isWeak(), "Verify that the ETag is weak");
         }
 
-        meanwhile();
-
         // POST an LDP-RS child
         try (final Response res = target(dcLocation).request().post(entity(childContent, TEXT_TURTLE))) {
             assertAll("Check POSTing a child", checkRdfResponse(res, LDP.RDFSource, null));
@@ -264,6 +251,9 @@ public interface LdpDirectContainerTests extends CommonTests {
             assertTrue(child2.startsWith(dcLocation), "Check the Location header of the LDP-DC");
             assertTrue(child2.length() > dcLocation.length(), "Re-check the Location header");
         }
+
+        await().until(() -> !etag4.equals(getETag(dcLocation)));
+        await().until(() -> !etag1.equals(getETag(getMemberLocation())));
 
         // Fetch the member resource
         try (final Response res = target(getMemberLocation()).request().get()) {
@@ -289,12 +279,13 @@ public interface LdpDirectContainerTests extends CommonTests {
             assertNotEquals(etag4, etag5, "Check that ETags 4 and 5 are different");
         }
 
-        meanwhile();
-
         // Delete one of the child resources
         try (final Response res = target(child1).request().delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
         }
+
+        await().until(() -> !etag5.equals(getETag(dcLocation)));
+        await().until(() -> !etag2.equals(getETag(getMemberLocation())));
 
         // Try fetching the deleted resource
         try (final Response res = target(child1).request().get()) {
