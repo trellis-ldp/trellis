@@ -40,22 +40,10 @@ public interface AuthCommonTests extends CommonTests {
     String getPublicContainer();
 
     /**
-     * Set the public container location.
-     * @param location the location
-     */
-    void setPublicContainer(String location);
-
-    /**
      * Get the public container child location.
      * @return the location of the public container child
      */
     String getPublicContainerChild();
-
-    /**
-     * Set the public container child location.
-     * @param location the location
-     */
-    void setPublicContainerChild(String location);
 
     /**
      * Get the protected container location.
@@ -64,22 +52,10 @@ public interface AuthCommonTests extends CommonTests {
     String getProtectedContainer();
 
     /**
-     * Set the protected container location.
-     * @param location the location
-     */
-    void setProtectedContainer(String location);
-
-    /**
      * Get the protected container child location.
      * @return the location of the protected container child
      */
     String getProtectedContainerChild();
-
-    /**
-     * Set the protected container child location.
-     * @param location the location
-     */
-    void setProtectedContainerChild(String location);
 
     /**
      * Get the private container location.
@@ -88,22 +64,10 @@ public interface AuthCommonTests extends CommonTests {
     String getPrivateContainer();
 
     /**
-     * Set the private container location.
-     * @param location the location
-     */
-    void setPrivateContainer(String location);
-
-    /**
      * Get the private container child location.
      * @return the location of the private container child
      */
     String getPrivateContainerChild();
-
-    /**
-     * Set the private container child location.
-     * @param location the location
-     */
-    void setPrivateContainerChild(String location);
 
     /**
      * Get the default container location.
@@ -112,22 +76,10 @@ public interface AuthCommonTests extends CommonTests {
     String getDefaultContainer();
 
     /**
-     * Set the default container location.
-     * @param location the location
-     */
-    void setDefaultContainer(String location);
-
-    /**
      * Get the default container child location.
      * @return the location of the default container child
      */
     String getDefaultContainerChild();
-
-    /**
-     * Set the default container child location.
-     * @param location the location
-     */
-    void setDefaultContainerChild(String location);
 
     /**
      * Get the group container location.
@@ -136,20 +88,8 @@ public interface AuthCommonTests extends CommonTests {
     String getGroupContainer();
 
     /**
-     * Set the group container location.
-     * @param location the location
-     */
-    void setGroupContainer(String location);
-
-    /**
      * Get the group container child location.
      * @return the location of the group container child
      */
     String getGroupContainerChild();
-
-    /**
-     * Set the group container child location.
-     * @param location the location
-     */
-    void setGroupContainerChild(String location);
 }

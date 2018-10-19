@@ -168,18 +168,8 @@ public abstract class AbstractApplicationAuthTests {
         }
 
         @Override
-        public void setPublicContainer(final String location) {
-            this.publicContainer = location;
-        }
-
-        @Override
         public String getPublicContainerChild() {
             return publicContainerChild;
-        }
-
-        @Override
-        public void setPublicContainerChild(final String location) {
-            this.publicContainerChild = location;
         }
 
         @Override
@@ -188,18 +178,8 @@ public abstract class AbstractApplicationAuthTests {
         }
 
         @Override
-        public void setProtectedContainer(final String location) {
-            this.protectedContainer = location;
-        }
-
-        @Override
         public String getProtectedContainerChild() {
             return protectedContainerChild;
-        }
-
-        @Override
-        public void setProtectedContainerChild(final String location) {
-            this.protectedContainerChild = location;
         }
 
         @Override
@@ -208,18 +188,8 @@ public abstract class AbstractApplicationAuthTests {
         }
 
         @Override
-        public void setPrivateContainer(final String location) {
-            this.privateContainer = location;
-        }
-
-        @Override
         public String getPrivateContainerChild() {
             return privateContainerChild;
-        }
-
-        @Override
-        public void setPrivateContainerChild(final String location) {
-            this.privateContainerChild = location;
         }
 
         @Override
@@ -228,18 +198,8 @@ public abstract class AbstractApplicationAuthTests {
         }
 
         @Override
-        public void setDefaultContainer(final String location) {
-            this.defaultContainer = location;
-        }
-
-        @Override
         public String getDefaultContainerChild() {
             return defaultContainerChild;
-        }
-
-        @Override
-        public void setDefaultContainerChild(final String location) {
-            this.defaultContainerChild = location;
         }
 
         @Override
@@ -248,17 +208,47 @@ public abstract class AbstractApplicationAuthTests {
         }
 
         @Override
-        public void setGroupContainer(final String location) {
-            this.groupContainer = location;
-        }
-
-        @Override
         public String getGroupContainerChild() {
             return groupContainerChild;
         }
 
-        @Override
-        public void setGroupContainerChild(final String location) {
+        private void setPublicContainer(final String location) {
+            this.publicContainer = location;
+        }
+
+        private void setPublicContainerChild(final String location) {
+            this.publicContainerChild = location;
+        }
+
+        private void setProtectedContainer(final String location) {
+            this.protectedContainer = location;
+        }
+
+        private void setProtectedContainerChild(final String location) {
+            this.protectedContainerChild = location;
+        }
+
+        private void setPrivateContainer(final String location) {
+            this.privateContainer = location;
+        }
+
+        private void setPrivateContainerChild(final String location) {
+            this.privateContainerChild = location;
+        }
+
+        private void setDefaultContainer(final String location) {
+            this.defaultContainer = location;
+        }
+
+        private void setDefaultContainerChild(final String location) {
+            this.defaultContainerChild = location;
+        }
+
+        private void setGroupContainer(final String location) {
+            this.groupContainer = location;
+        }
+
+        private void setGroupContainerChild(final String location) {
             this.groupContainerChild = location;
         }
 
