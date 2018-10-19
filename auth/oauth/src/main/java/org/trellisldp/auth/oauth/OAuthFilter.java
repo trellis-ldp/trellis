@@ -106,7 +106,6 @@ public class OAuthFilter implements ContainerRequestFilter {
     }
 
     private Optional<Principal> authenticate(final String token) {
-        LOGGER.info("Token: {}", token);
         try {
             return authenticator.authenticate(token);
         } catch (final SecurityException ex) {
