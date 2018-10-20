@@ -46,6 +46,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.io.JenaIOService;
+import org.trellisldp.io.NoopProfileCache;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -55,8 +56,8 @@ import org.trellisldp.vocabulary.PROV;
  */
 public final class TestUtils {
 
-    private static final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(),
-            emptySet());
+    private static final IOService ioService = new JenaIOService(new NoopNamespaceService(), null,
+            new NoopProfileCache(), emptySet(), emptySet());
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
