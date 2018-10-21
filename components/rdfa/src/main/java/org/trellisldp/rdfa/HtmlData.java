@@ -78,9 +78,7 @@ class HtmlData {
         this.css = css;
         this.js = js;
         this.icon = nonNull(icon) ? icon : "//www.trellisldp.org/assets/img/trellis.png";
-        if (nonNull(namespaceService)) {
-            this.prefixMapping.setNsPrefixes(namespaceService.getNamespaces());
-        }
+        this.prefixMapping.setNsPrefixes(namespaceService.getNamespaces());
     }
 
     /**
