@@ -171,16 +171,16 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdCustomSerializerNoCache() throws UnsupportedEncodingException {
+    public void testJsonLdCustomSerializerNoopCache() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final IOService svc = new JenaIOService(mockNamespaceService, null, null,
+        final IOService svc = new JenaIOService(mockNamespaceService, null, new NoopProfileCache(),
                 "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/");
 
         svc.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
+        assertTrue(validateGraph(graph), "Not all triples present in output graph!");
     }
 
 

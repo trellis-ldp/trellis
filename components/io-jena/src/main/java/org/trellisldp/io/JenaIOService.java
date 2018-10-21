@@ -37,6 +37,7 @@ import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.RDFUtils.findFirst;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
@@ -87,6 +88,7 @@ import org.trellisldp.api.CacheService;
 import org.trellisldp.api.CacheService.TrellisProfileCache;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.RuntimeTrellisException;
 
@@ -126,7 +128,7 @@ public class JenaIOService implements IOService {
      * Create a serialization service.
      */
     public JenaIOService() {
-        this(null);
+        this(findFirst(NamespaceService.class).orElseGet(NoopNamespaceService::new));
     }
 
     /**
@@ -134,7 +136,7 @@ public class JenaIOService implements IOService {
      * @param namespaceService the namespace service
      */
     public JenaIOService(final NamespaceService namespaceService) {
-        this(namespaceService, null);
+        this(namespaceService, findFirst(RDFaWriterService.class).orElse(null));
     }
 
     /**
@@ -144,7 +146,7 @@ public class JenaIOService implements IOService {
      * @param htmlSerializer the HTML serializer service
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer) {
-        this(namespaceService, htmlSerializer, null);
+        this(namespaceService, htmlSerializer, new NoopProfileCache());
     }
 
     /**
@@ -189,6 +191,8 @@ public class JenaIOService implements IOService {
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
             final CacheService<String, String> cache, final Set<String> whitelist, final Set<String> whitelistDomains) {
+        requireNonNull(namespaceService, "The NamespaceService may not be null!");
+        requireNonNull(cache, "The CacheService may not be null!");
         this.nsService = namespaceService;
         this.htmlSerializer = htmlSerializer;
         this.cache = cache;
@@ -269,7 +273,7 @@ public class JenaIOService implements IOService {
     }
 
     private Boolean canUseCustomJsonLdProfile(final String profile) {
-        return nonNull(profile) && nonNull(cache);
+        return nonNull(profile);
     }
 
     private void writeJsonLd(final OutputStream output, final DatasetGraph graph, final IRI... profiles) {
@@ -327,16 +331,14 @@ public class JenaIOService implements IOService {
             RDFParser.source(input).lang(lang).base(base).parse(graph);
 
             // Check the graph for any new namespace definitions
-            if (nonNull(nsService)) {
-                final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
-                    .collect(toSet());
-                graph.getPrefixMapping().getNsPrefixMap().forEach((prefix, namespace) -> {
-                    if (!namespaces.contains(namespace)) {
-                        LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
-                        nsService.setPrefix(prefix, namespace);
-                    }
-                });
-            }
+            final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
+                .collect(toSet());
+            graph.getPrefixMapping().getNsPrefixMap().forEach((prefix, namespace) -> {
+                if (!namespaces.contains(namespace)) {
+                    LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
+                    nsService.setPrefix(prefix, namespace);
+                }
+            });
             return rdf.asGraph(graph).stream();
         } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
             throw new RuntimeTrellisException(ex);

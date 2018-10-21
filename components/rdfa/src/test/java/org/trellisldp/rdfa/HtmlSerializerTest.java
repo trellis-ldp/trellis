@@ -51,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 
 /**
@@ -87,6 +88,14 @@ public class HtmlSerializerTest {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
         assertThrows(UncheckedIOException.class, () -> service.write(getTriples(), mockOutputStream, ""),
                 "IOException in write operation doesn't cause failure!");
+    }
+
+    @Test
+    public void testDefaultSerializer() {
+        final RDFaWriterService svc = new HtmlSerializer();
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        svc.write(getTriples2(), out, "http://example.com/");
+        assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
@@ -127,22 +136,29 @@ public class HtmlSerializerTest {
     public void testHtmlSerializer5() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new HtmlSerializer(null, path,
+        final RDFaWriterService service4 = new HtmlSerializer(new NoopNamespaceService(), path,
                 "//www.trellisldp.org/assets/css/trellis.css", "", null);
 
         service4.write(getTriples2(), out, "http://example.com/");
-        final String html = new String(out.toByteArray(), UTF_8);
-        assertTrue(html.contains("<title>http://example.com/</title>"), "Title not in HTML!");
-        assertTrue(html.contains("_:B"), "bnode value not in HTML!");
-        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"),
-                "Geonames object IRI not in HTML!");
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">http://purl.org/dc/terms/spatial</a>"),
-                "dc:spatial predicate not in HTML!");
-        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">http://purl.org/dc/dcmitype/Text</a>"),
-                "dcmi type not in HTML output!");
-        assertTrue(html.contains("<a href=\"mailto:user@example.com\">mailto:user@example.com</a>"),
-                "email IRI not in output!");
-        assertTrue(html.contains("<h1>http://example.com/</h1>"), "Default title not in output!");
+        assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
+    }
+
+    private static Stream<Executable> checkHtmlWithoutNamespaces(final String html) {
+        return of(
+            () -> assertTrue(html.contains("<title>http://example.com/</title>"), "Title not in HTML!"),
+            () -> assertTrue(html.contains("_:B"), "bnode value not in HTML!"),
+            () -> assertTrue(
+                    html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"),
+                    "Geonames object IRI not in HTML!"),
+            () -> assertTrue(
+                    html.contains("<a href=\"http://purl.org/dc/terms/spatial\">http://purl.org/dc/terms/spatial</a>"),
+                    "dc:spatial predicate not in HTML!"),
+            () -> assertTrue(
+                    html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">http://purl.org/dc/dcmitype/Text</a>"),
+                    "dcmi type not in HTML output!"),
+            () -> assertTrue(html.contains("<a href=\"mailto:user@example.com\">mailto:user@example.com</a>"),
+                    "email IRI not in output!"),
+            () -> assertTrue(html.contains("<h1>http://example.com/</h1>"), "Default title not in output!"));
     }
 
     private static Stream<Executable> checkHtmlFromTriples(final String html) {

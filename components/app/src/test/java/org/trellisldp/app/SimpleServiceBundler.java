@@ -34,6 +34,7 @@ import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
+import org.trellisldp.io.NoopProfileCache;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 
 /**
@@ -45,8 +46,8 @@ public class SimpleServiceBundler implements ServiceBundler {
     private final MementoService mementoService = new NoopMementoService();
     private final EventService eventService = new NoopEventService();
     private final AgentService agentService = new SimpleAgentService();
-    private final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, null, emptySet(),
-            emptySet());
+    private final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, new NoopProfileCache(),
+            emptySet(), emptySet());
     private final BinaryService binaryService = new FileBinaryService(idService,
             resourceFilePath("data") + "/binaries", 2, 2);
     private final TriplestoreResourceService triplestoreService

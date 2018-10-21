@@ -15,9 +15,11 @@ package org.trellisldp.rdfa;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.trellisldp.api.RDFUtils.findFirst;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -39,6 +41,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Triple;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 
 /**
@@ -65,6 +68,13 @@ public class HtmlSerializer implements RDFaWriterService {
     private final List<String> css;
     private final List<String> js;
     private final String icon;
+
+    /**
+     * Create an HTML Serializer object.
+     */
+    public HtmlSerializer() {
+        this(findFirst(NamespaceService.class).orElseGet(NoopNamespaceService::new));
+    }
 
     /**
      * Create an HTML Serializer object.
@@ -106,6 +116,8 @@ public class HtmlSerializer implements RDFaWriterService {
     public HtmlSerializer(final NamespaceService namespaceService,
             final String template, final List<String> css,
             final List<String> js, final String icon) {
+        requireNonNull(namespaceService, "NamespaceService may not be null!");
+
         this.namespaceService = namespaceService;
         final String templatePath = ofNullable(template).orElse("org/trellisldp/rdfa/resource.mustache");
         final File tpl = new File(templatePath);
