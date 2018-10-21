@@ -72,6 +72,7 @@ public class HtmlSerializer implements RDFaWriterService {
     /**
      * Create an HTML Serializer object.
      */
+    @Inject
     public HtmlSerializer() {
         this(findFirst(NamespaceService.class).orElseGet(NoopNamespaceService::new));
     }
@@ -81,7 +82,6 @@ public class HtmlSerializer implements RDFaWriterService {
      *
      * @param namespaceService a namespace service
      */
-    @Inject
     public HtmlSerializer(final NamespaceService namespaceService) {
         this(namespaceService, getConfiguration().get(CONFIG_RDFA_TEMPLATE),
                 getConfiguration().getOrDefault(CONFIG_RDFA_CSS, "//www.trellisldp.org/assets/css/trellis.css"),
