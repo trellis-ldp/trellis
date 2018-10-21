@@ -37,6 +37,18 @@ jar {
         instruction 'Automatic-Module-Name', moduleName
         instruction 'Import-Package', '*'
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+        instruction 'Require-Capability', '''\
+            osgi.extender;
+                filter:="(osgi.extender=osgi.serviceloader.registrar)";
+                resolution:=optional,
+            osgi.extender;
+                filter:="(osgi.extender=osgi.serviceloader.processor)",
+            osgi.serviceloader;
+                filter:="(osgi.serviceloader=org.trellisldp.api.NamespaceService)";
+                resolution:=optional'''
+        instruction 'Provide-Capability', '''\
+            osgi.serviceloader;
+                osgi.serviceloader=org.trellisldp.api.RDFaWriterService'''
     }
 }
 
