@@ -23,7 +23,6 @@ dependencies {
 
     compile project(':trellis-constraint-rules')
     compile project(':trellis-io-jena')
-    compile project(':trellis-id')
     compile project(':trellis-api')
     compile project(':trellis-http')
     compile project(':trellis-vocabulary')

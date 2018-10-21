@@ -151,16 +151,6 @@ public class OSGiTest {
     }
 
     @Test
-    public void testIdInstallation() throws Exception {
-        assertFalse("trellis-id already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-id")));
-        featuresService.installFeature("trellis-id");
-        checkTrellisBundlesAreActive();
-        assertTrue("trellis-id not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-id")));
-    }
-
-    @Test
     public void testWebacInstallation() throws Exception {
         assertFalse("trellis-webac already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-webac")));

@@ -18,7 +18,6 @@ dependencies {
     compile project(':trellis-constraint-rules')
     compile project(':trellis-file')
     compile project(':trellis-http')
-    compile project(':trellis-id')
     compile project(':trellis-io-jena')
     compile project(':trellis-namespaces')
     compile project(':trellis-triplestore')

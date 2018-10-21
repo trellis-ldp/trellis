@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.id;
+package org.trellisldp.api;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.UUID.randomUUID;
@@ -20,29 +20,27 @@ import static java.util.stream.IntStream.rangeClosed;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
 
-import org.trellisldp.api.IdentifierService;
-
 /**
  * The IdentifierService provides a mechanism for creating new identifiers.
  *
  * @author acoburn
  */
-public class UUIDGenerator implements IdentifierService {
+public class DefaultIdentifierService implements IdentifierService {
 
     private final String defaultPrefix;
 
     /**
-     * Create a UUID Generator.
+     * Create a UUID-based IdentifierService.
      */
-    public UUIDGenerator() {
+    public DefaultIdentifierService() {
         this("");
     }
 
     /**
-     * Create a UUID Generator with a default prefix value.
+     * Create a UUID-based IdentifierService with a default prefix value.
      * @param prefix the prefix
      */
-    public UUIDGenerator(final String prefix) {
+    public DefaultIdentifierService(final String prefix) {
         this.defaultPrefix = prefix;
     }
 

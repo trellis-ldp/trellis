@@ -43,8 +43,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IdentifierService;
-import org.trellisldp.id.UUIDGenerator;
 
 /**
  * Test the file-based binary service.
@@ -59,7 +57,6 @@ public class FileBinaryServiceTest {
         .getParent();
 
     private static final IRI file = rdf.createIRI("file:///" + testDoc);
-    private final IdentifierService idService = new UUIDGenerator();
 
     @BeforeAll
     public static void setUpEverything() {
@@ -73,7 +70,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testFilePurge() {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream("Some data".getBytes(UTF_8));
         assertNull(service.setContent(fileIRI, inputStream).join(), "setContent didn't complete cleanly!");
@@ -85,21 +82,21 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testIdSupplier() {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertTrue(service.generateIdentifier().startsWith("file:///"), "Identifier has incorrect prefix!");
         assertNotEquals(service.generateIdentifier(), service.generateIdentifier(), "Identifiers are not unique!");
     }
 
     @Test
     public void testFileContent() {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertEquals("A test document.\n", service.getContent(file).thenApply(this::uncheckedToString).join(),
                 "Incorrect content when fetching from a file!");
     }
 
     @Test
     public void testFileContentSegment() {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertEquals(" tes", service.getContent(file, 1, 5).thenApply(this::uncheckedToString).join(),
                 "Incorrect segment when fetching from a file!");
         assertEquals("oc", service.getContent(file, 8, 10).thenApply(this::uncheckedToString).join(),
@@ -108,7 +105,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testFileContentSegmentBeyond() {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertEquals("", service.getContent(file, 1000, 1005).thenApply(this::uncheckedToString).join(),
                 "Incorrect out-of-range segment when fetching from a file!");
     }
@@ -116,7 +113,7 @@ public class FileBinaryServiceTest {
     @Test
     public void testSetFileContent() {
         final String contents = "A new file";
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
         assertNull(service.setContent(fileIRI, inputStream).join(), "Setting content didn't complete cleanly!");
@@ -126,7 +123,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testGetFileContentError() throws IOException {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         assertThrows(CompletionException.class, () -> service.getContent(fileIRI).join(),
                 "Fetching from invalid file should have thrown an exception!");
@@ -136,7 +133,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testBadAlgorithm() throws Exception {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertNull(service.calculateDigest(file, "BLAHBLAH").join(), "Unsupported algorithm should return null!");
     }
 
@@ -145,7 +142,7 @@ public class FileBinaryServiceTest {
         final InputStream throwingMockInputStream = mock(InputStream.class, inv -> {
                 throw new IOException("Expected error");
         });
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         assertAll(() -> service.setContent(fileIRI, throwingMockInputStream).handle((val, err) -> {
                 assertNotNull(err, "There should have been an error with the input stream!");
@@ -155,7 +152,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testBase64Digest() throws IOException {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertEquals("oZ1Y1O/8vs39RH31fh9lrA==", service.calculateDigest(file, "MD5").join(), "Bad MD5 digest!");
         assertEquals("QJuYLse9SK/As177lt+rSfixyH0=", service.calculateDigest(file, "SHA").join(), "Bad SHA digest!");
         assertEquals("QJuYLse9SK/As177lt+rSfixyH0=", service.calculateDigest(file, "SHA-1").join(), "Bad SHA1 digest!");
@@ -167,7 +164,7 @@ public class FileBinaryServiceTest {
     @Test
     @DisabledOnJre(JAVA_8)
     public void testJdk9Digests() throws IOException {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertEquals("FQgyH2yU2NhyMTZ7YDDKwV5vcWUBM1zq0uoIYUiHH+4=",
                 service.calculateDigest(file, "SHA3-256").join(), "Bad SHA3-256 digest!");
         assertEquals("746UDLrFXM61gzI0FnoVT2S0Z7EmQUfhHnoSYwkR2MHzbBe6j9rMigQBfR8ApZUA",
@@ -179,7 +176,7 @@ public class FileBinaryServiceTest {
     @Test
     @EnabledOnJre(JAVA_8)
     public void testJdk9DigestsOnJdk8() throws IOException {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertFalse(service.calculateDigest(file, "SHA3-256").handle(this::checkError).join(),
                 "SHA3-256 digest shouldn't be supported on JDK8!");
         assertFalse(service.calculateDigest(file, "SHA3-384").handle(this::checkError).join(),
@@ -190,7 +187,7 @@ public class FileBinaryServiceTest {
 
     @Test
     public void testBadIdentifier() {
-        final BinaryService service = new FileBinaryService(idService);
+        final BinaryService service = new FileBinaryService();
         assertFalse(service.getContent(rdf.createIRI("http://example.com/")).handle(this::checkError).join(),
                 "Shouldn't be able to fetch content from a bad IRI!");
     }

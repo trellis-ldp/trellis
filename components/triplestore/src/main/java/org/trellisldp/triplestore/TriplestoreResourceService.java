@@ -27,6 +27,7 @@ import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.findFirst;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
@@ -73,6 +74,7 @@ import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -100,6 +102,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
     private final Set<IRI> supportedIxnModels;
+
+    /**
+     * Create a triplestore-backed resource service.
+     * @param rdfConnection the connection to an RDF datastore
+     */
+    @Inject
+    public TriplestoreResourceService(final RDFConnection rdfConnection) {
+        this(rdfConnection, findFirst(IdentifierService.class).orElseGet(DefaultIdentifierService::new));
+    }
 
     /**
      * Create a triplestore-backed resource service.

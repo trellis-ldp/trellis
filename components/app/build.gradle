@@ -35,7 +35,6 @@ dependencies {
     testImplementation project(':trellis-triplestore')
     testImplementation project(':trellis-io-jena')
     testImplementation project(':trellis-file')
-    testImplementation project(':trellis-id')
 }
 
 jar {

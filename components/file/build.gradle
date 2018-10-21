@@ -30,7 +30,6 @@ dependencies {
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation project(':trellis-id')
 }
 
 jar {

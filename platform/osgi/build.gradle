@@ -56,7 +56,6 @@ dependencies {
     testCompile project(':trellis-constraint-rules')
     testCompile project(':trellis-event-serialization')
     testCompile project(':trellis-file')
-    testCompile project(':trellis-id')
     testCompile project(':trellis-jms')
     testCompile project(':trellis-kafka')
     testCompile project(':trellis-triplestore')
