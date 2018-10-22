@@ -117,7 +117,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param rdfConnection the connection to an RDF datastore
      * @param identifierService an ID supplier service
      */
-    @Inject
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
         super();
         requireNonNull(rdfConnection, "RDFConnection may not be null!");
