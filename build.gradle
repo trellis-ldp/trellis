@@ -10,35 +10,37 @@ plugins {
 
 ext {
 
-    /* Dependencies */
-    activationApiVersion = '1.2.0'
-    activeMqVersion = '5.15.6'
+    /* Core dependencies */
     commonsCodecVersion = '1.11'
-    commonsCompressVersion = '1.18'
     commonsIoVersion = '2.6'
     commonsLangVersion = '3.8.1'
     commonsRdfVersion = '0.5.0'
+    javaxAnnotationsVersion = '1.3.2'
+    javaxInjectVersion = '2.5.0-b62'
+    jaxrsVersion = '2.1.1'
+    metricsVersion = '4.0.3'
+    slf4jVersion = '1.7.25'
+    tamayaVersion = '0.3-incubating'
+
+    /* Wiring */
+    cdiApiVersion = '2.0.SP1'
+
+    /* Component dependencies */
+    activationApiVersion = '1.2.0'
+    activeMqVersion = '5.15.6'
+    commonsCompressVersion = '1.18'
     dropwizardVersion = '1.3.7'
     guavaVersion = '26.0-jre'
     jacksonVersion = '2.9.7'
-    javaxAnnotationsVersion = '1.3.2'
-    javaxInjectVersion = '2.5.0-b62'
     jaxbVersion = '2.3.1'
-    jaxrsVersion = '2.1.1'
     jenaVersion = '3.9.0'
     jerseyVersion = '2.27'
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.1'
     jjwtVersion = '0.10.5'
     kafkaVersion = '2.0.0'
-    metricsVersion = '4.0.3'
     mustacheVersion = '0.9.5'
     rabbitMqVersion = '5.4.3'
-    slf4jVersion = '1.7.25'
-    tamayaVersion = '0.3-incubating'
-
-    /* Wiring */
-    cdiApiVersion = '2.0.SP1'
 
     /* Testing */
     apiguardianVersion = '1.0.0'
