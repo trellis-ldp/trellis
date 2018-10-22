@@ -1,6 +1,7 @@
 apply plugin: 'application'
 apply plugin: 'distribution'
 apply plugin: 'nebula.ospackage-application'
+apply plugin: 'com.palantir.docker'
 
 description = 'Trellis Triplestore Application'
 mainClassName = 'org.trellisldp.app.triplestore.TrellisApplication'
@@ -59,6 +60,22 @@ buildDeb {
     preInstall file('src/deb/preInstall.sh')
     postInstall file('src/deb/postInstall.sh')
     preUninstall file('src/deb/preUninstall.sh')
+}
+
+docker {
+    name "trellisldp/trellis:${project.version}"
+    tags 'latest'
+    dockerfile file('src/docker/Dockerfile')
+    files tasks.distTar.outputs, './src/dist/etc/config.yml','./src/docker/command.sh'
+    buildArgs([BUILD_VERSION: project.version])
+    def gitLabels = ['git.url':'https://github.com/trellis-ldp/trellis']
+    try {
+        git = grgit.open()
+        gitLabels.put('git.commit', git.head().id);
+    } catch (all) { }
+    labels(gitLabels)
+    pull false
+    noCache false
 }
 
 signing {
