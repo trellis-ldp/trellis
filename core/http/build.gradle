@@ -35,7 +35,6 @@ dependencies {
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-event-serialization')
-    testImplementation project(':trellis-id')
     testImplementation project(':trellis-io-jena')
 
     testRuntimeClasspath("javax.xml.bind:jaxb-api:$jaxbVersion")

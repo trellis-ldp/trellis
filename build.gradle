@@ -77,7 +77,6 @@ ext {
             'trellis-event-serialization',
             'trellis-file',
             'trellis-http',
-            'trellis-id',
             'trellis-io-jena',
             'trellis-jms',
             'trellis-kafka',

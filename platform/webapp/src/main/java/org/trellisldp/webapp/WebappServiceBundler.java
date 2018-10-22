@@ -26,7 +26,6 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
-import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopEventService;
@@ -60,7 +59,6 @@ public class WebappServiceBundler implements ServiceBundler {
      * Create a new application service bundler.
      */
     public WebappServiceBundler() {
-        final IdentifierService idService = AppUtils.loadFirst(IdentifierService.class);
         final NamespaceService nsService = AppUtils.loadFirst(NamespaceService.class);
         final Cache<String, String> cache = newBuilder()
             .maximumSize(config.getOrDefault("trellis.webapp.cache.size", Long.class, 100L))
@@ -70,10 +68,10 @@ public class WebappServiceBundler implements ServiceBundler {
 
         eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);
         agentService = AppUtils.loadFirst(AgentService.class);
-        binaryService = new FileBinaryService(idService);
+        binaryService = new FileBinaryService();
         mementoService = new FileMementoService();
         ioService = new JenaIOService(nsService, null, profileCache);
-        auditService = resourceService = new TriplestoreResourceService(rdfConnection, idService);
+        auditService = resourceService = new TriplestoreResourceService(rdfConnection);
     }
 
     @Override

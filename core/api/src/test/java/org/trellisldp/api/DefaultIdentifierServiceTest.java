@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.id;
+package org.trellisldp.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -20,17 +20,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.IdentifierService;
 
 /**
  * @author acoburn
  */
-public class UUIDGeneratorTest {
+public class DefaultIdentifierServiceTest {
 
     @Test
     public void testSupplier() {
         final String prefix = "trellis:data/";
-        final Supplier<String> supplier = new UUIDGenerator().getSupplier(prefix);
+        final Supplier<String> supplier = new DefaultIdentifierService().getSupplier(prefix);
         final String id1 = supplier.get();
         final String id2 = supplier.get();
 
@@ -43,7 +42,7 @@ public class UUIDGeneratorTest {
     public void testGenerator() {
         final String prefix1 = "http://example.org/";
         final String prefix2 = "trellis:data/a/b/c/";
-        final IdentifierService svc = new UUIDGenerator();
+        final IdentifierService svc = new DefaultIdentifierService();
         final Supplier<String> gen1 = svc.getSupplier(prefix1);
         final Supplier<String> gen2 = svc.getSupplier(prefix2);
 
@@ -58,7 +57,7 @@ public class UUIDGeneratorTest {
 
     @Test
     public void testGenerator2() {
-        final IdentifierService svc = new UUIDGenerator();
+        final IdentifierService svc = new DefaultIdentifierService();
         final Supplier<String> gen = svc.getSupplier("", 4, 2);
 
         final String id = gen.get();
@@ -73,7 +72,7 @@ public class UUIDGeneratorTest {
 
     @Test
     public void testSupplier2() {
-        final Supplier<String> supplier = new UUIDGenerator().getSupplier();
+        final Supplier<String> supplier = new DefaultIdentifierService().getSupplier();
         final String id1 = supplier.get();
         final String id2 = supplier.get();
 

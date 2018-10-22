@@ -16,7 +16,6 @@ include ':trellis-audit'
 include ':trellis-constraint-rules'
 include ':trellis-event-serialization'
 include ':trellis-file'
-include ':trellis-id'
 include ':trellis-io-jena'
 include ':trellis-namespaces'
 include ':trellis-triplestore'
@@ -49,7 +48,6 @@ project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
 project(':trellis-constraint-rules').projectDir = "$rootDir/components/constraint-rules" as File
 project(':trellis-event-serialization').projectDir = "$rootDir/components/event-serialization" as File
 project(':trellis-file').projectDir = "$rootDir/components/file" as File
-project(':trellis-id').projectDir = "$rootDir/components/id" as File
 project(':trellis-io-jena').projectDir = "$rootDir/components/io-jena" as File
 project(':trellis-namespaces').projectDir = "$rootDir/components/namespaces" as File
 project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File

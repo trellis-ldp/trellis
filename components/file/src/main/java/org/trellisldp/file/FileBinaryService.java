@@ -35,6 +35,7 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
 import static org.apache.commons.lang3.StringUtils.stripStart;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.RDFUtils.findFirst;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +57,7 @@ import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 
 /**
@@ -104,10 +106,17 @@ public class FileBinaryService implements BinaryService {
 
     /**
      * Create a File-based Binary service.
+     */
+    @Inject
+    public FileBinaryService() {
+        this(findFirst(IdentifierService.class).orElseGet(DefaultIdentifierService::new));
+    }
+
+    /**
+     * Create a File-based Binary service.
      *
      * @param idService an identifier service
      */
-    @Inject
     public FileBinaryService(final IdentifierService idService) {
         this(idService, ConfigurationProvider.getConfiguration());
     }

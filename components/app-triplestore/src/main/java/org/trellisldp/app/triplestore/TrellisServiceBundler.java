@@ -25,9 +25,9 @@ import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
-import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
@@ -36,7 +36,6 @@ import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.app.TrellisCache;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
-import org.trellisldp.id.UUIDGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.namespaces.NamespacesJsonContext;
 import org.trellisldp.rdfa.HtmlSerializer;
@@ -65,11 +64,10 @@ public class TrellisServiceBundler implements ServiceBundler {
      * @param environment the dropwizard environment
      */
     public TrellisServiceBundler(final AppConfiguration config, final Environment environment) {
-        final IdentifierService idService = new UUIDGenerator();
         agentService = new SimpleAgentService();
         mementoService = new FileMementoService(config.getMementos());
-        auditService = resourceService = buildResourceService(idService, config, environment);
-        binaryService = buildBinaryService(idService, config);
+        auditService = resourceService = buildResourceService(config, environment);
+        binaryService = buildBinaryService(config);
         ioService = buildIoService(config);
         eventService = AppUtils.getNotificationService(config.getNotifications(), environment);
     }
@@ -109,13 +107,13 @@ public class TrellisServiceBundler implements ServiceBundler {
         return eventService;
     }
 
-    private static TriplestoreResourceService buildResourceService(final IdentifierService idService,
-            final AppConfiguration config, final Environment environment) {
+    private static TriplestoreResourceService buildResourceService(final AppConfiguration config,
+            final Environment environment) {
         final RDFConnection rdfConnection = AppUtils.getRDFConnection(config);
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
-        return new TriplestoreResourceService(rdfConnection, idService);
+        return new TriplestoreResourceService(rdfConnection);
     }
 
     private static IOService buildIoService(final AppConfiguration config) {
@@ -130,9 +128,9 @@ public class TrellisServiceBundler implements ServiceBundler {
                 config.getJsonld().getContextWhitelist(), config.getJsonld().getContextDomainWhitelist());
     }
 
-    private static BinaryService buildBinaryService(final IdentifierService idService, final AppConfiguration config) {
-        return new FileBinaryService(idService, config.getBinaries(), config.getBinaryHierarchyLevels(),
-                config.getBinaryHierarchyLength());
+    private static BinaryService buildBinaryService(final AppConfiguration config) {
+        return new FileBinaryService(new DefaultIdentifierService(), config.getBinaries(),
+                config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength());
     }
 }
 

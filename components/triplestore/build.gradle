@@ -21,7 +21,6 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("org.awaitility:awaitility:$awaitilityVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation project(':trellis-id');
     testImplementation project(':trellis-test');
 }
 

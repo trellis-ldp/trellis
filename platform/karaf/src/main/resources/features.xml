@@ -90,14 +90,6 @@
     <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
   </feature>
 
-  <feature name="trellis-id" version="${project.version}">
-    <details>Installs the Trellis ID generator service</details>
-
-    <feature dependency="true">trellis-api</feature>
-
-    <bundle>mvn:org.trellisldp/trellis-id/${project.version}</bundle>
-  </feature>
-
   <feature name="trellis-io-jena" version="${project.version}">
     <details>Installs the Jena-backed serialization service</details>
 
@@ -277,7 +269,6 @@
     <feature prerequisite="true">cxf-jaxrs-cdi</feature>
 
     <feature dependency="true">trellis-constraint-rules</feature>
-    <feature dependency="true">trellis-id</feature>
     <feature dependency="true">trellis-agent</feature>
     <feature dependency="true">trellis-file</feature>
     <feature dependency="true">trellis-namespaces</feature>
