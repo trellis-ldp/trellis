@@ -1,6 +1,6 @@
 {
   "name": "Embedded Test Broker",
-  "modelVersion": "6.1",
+  "modelVersion": "7.0",
   "authenticationproviders" : [{
     "name": "password",
     "type": "Plain",
@@ -14,12 +14,12 @@
     "protocols": [ "AMQP_0_9_1" ],
     "transports": [ "TCP" ],
     "virtualhostaliases": [{
-      "name": "${qpid.vhost}",
+      "name": "testing",
       "type": "nameAlias"
     }]
   }],
   "virtualhostnodes" : [{
-    "name": "${qpid.vhost}",
+    "name": "testing",
     "type": "Memory",
     "virtualHostInitialConfiguration": "{ \"type\": \"Memory\" }"
   }]

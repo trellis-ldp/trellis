@@ -33,11 +33,13 @@ import com.rabbitmq.client.Channel;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
-import org.apache.qpid.server.Broker;
-import org.apache.qpid.server.BrokerOptions;
+import org.apache.qpid.server.SystemLauncher;
+import org.apache.qpid.server.model.SystemConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +57,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class AmqpPublisherTest {
 
     private static final RDF rdf = new SimpleRDF();
-    private static final Broker broker = new Broker();
+    private static final SystemLauncher broker = new SystemLauncher();
 
     private final String exchangeName = "exchange";
     private final String queueName = "queue";
@@ -69,11 +71,11 @@ public class AmqpPublisherTest {
 
     @BeforeAll
     public static void initialize() throws Exception {
-        final BrokerOptions brokerOptions = new BrokerOptions();
-        brokerOptions.setConfigProperty("qpid.broker.defaultPreferenceStoreAttributes", "{\"type\": \"Noop\"}");
-        brokerOptions.setConfigProperty("qpid.vhost", "testing");
-        brokerOptions.setConfigurationStoreType("Memory");
-        brokerOptions.setStartupLoggedToSystemOut(true);
+        final Map<String, Object> brokerOptions = new HashMap<>();
+        brokerOptions.put("qpid.broker.defaultPreferenceStoreAttributes", "{\"type\": \"Noop\"}");
+        brokerOptions.put(SystemConfig.TYPE, "Memory");
+        brokerOptions.put(SystemConfig.STARTUP_LOGGED_TO_SYSTEM_OUT, true);
+        brokerOptions.put(SystemConfig.INITIAL_CONFIGURATION_LOCATION, SystemConfig.DEFAULT_INITIAL_CONFIG_LOCATION);
         broker.startup(brokerOptions);
     }
 

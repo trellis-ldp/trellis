@@ -51,7 +51,8 @@ ext {
     junitLauncherVersion = '1.3.1'
     logbackVersion = '1.2.3'
     mockitoVersion = '2.23.0'
-    qpidVersion = '6.1.6'
+    qpidVersion = '7.0.6'
+    sleepycatVersion = '18.3.1'
 
     /* OSGi */
     asmVersion = '6.2.1'
