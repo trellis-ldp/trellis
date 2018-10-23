@@ -20,6 +20,7 @@ import static org.trellisldp.api.RDFUtils.findFirst;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
@@ -71,10 +72,14 @@ public class AmqpPublisher implements EventService {
 
     /**
      * Create an AMQP publisher.
+     * @throws IOException in the event that an I/O related error occurs when connecting
+     * @throws GeneralSecurityException in the event that a security error occurs when connecting
+     * @throws URISyntaxException in the event that the connection URI is syntactically incorrect
+     * @throws TimeoutException in the event that the connection times out
      */
     @Inject
-    public AmqpPublisher() {
-        this(buildChannel());
+    public AmqpPublisher() throws IOException, GeneralSecurityException, URISyntaxException, TimeoutException {
+        this(buildConnection().createChannel());
     }
 
     /**
@@ -134,13 +139,10 @@ public class AmqpPublisher implements EventService {
         });
     }
 
-    private static Channel buildChannel() {
-        try {
-            final ConnectionFactory factory = new ConnectionFactory();
-            factory.setUri(config.get(CONFIG_AMQP_URI));
-            return factory.newConnection().createChannel();
-        } catch (final GeneralSecurityException | URISyntaxException | TimeoutException | IOException ex) {
-            throw new RuntimeTrellisException("Could not connect to AMQP cluster!", ex);
-        }
+    private static Connection buildConnection() throws IOException, GeneralSecurityException, URISyntaxException,
+            TimeoutException {
+        final ConnectionFactory factory = new ConnectionFactory();
+        factory.setUri(config.get(CONFIG_AMQP_URI));
+        return factory.newConnection();
     }
 }

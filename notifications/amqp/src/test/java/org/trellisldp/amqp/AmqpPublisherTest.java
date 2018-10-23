@@ -17,7 +17,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,12 +36,15 @@ import java.time.Instant;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
+import org.apache.qpid.server.Broker;
+import org.apache.qpid.server.BrokerOptions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -52,6 +55,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class AmqpPublisherTest {
 
     private static final RDF rdf = new SimpleRDF();
+    private static final Broker broker = new Broker();
 
     private final String exchangeName = "exchange";
     private final String queueName = "queue";
@@ -62,6 +66,21 @@ public class AmqpPublisherTest {
 
     @Mock
     private Event mockEvent;
+
+    @BeforeAll
+    public static void initialize() throws Exception {
+        final BrokerOptions brokerOptions = new BrokerOptions();
+        brokerOptions.setConfigProperty("qpid.broker.defaultPreferenceStoreAttributes", "{\"type\": \"Noop\"}");
+        brokerOptions.setConfigProperty("qpid.vhost", "testing");
+        brokerOptions.setConfigurationStoreType("Memory");
+        brokerOptions.setStartupLoggedToSystemOut(true);
+        broker.startup(brokerOptions);
+    }
+
+    @AfterAll
+    public static void cleanup() throws Exception {
+        broker.shutdown();
+    }
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -79,7 +98,7 @@ public class AmqpPublisherTest {
 
     @Test
     public void testDefaultService() {
-        assertThrows(RuntimeTrellisException.class, AmqpPublisher::new);
+        assertDoesNotThrow(() -> new AmqpPublisher());
     }
 
     @Test
