@@ -13,12 +13,7 @@
  */
 package org.trellisldp.app.triplestore;
 
-import static java.util.Optional.ofNullable;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.apache.jena.query.DatasetFactory.createTxnMem;
-import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
-import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
@@ -26,14 +21,12 @@ import static org.trellisldp.app.config.NotificationsConfiguration.Type.KAFKA;
 import io.dropwizard.lifecycle.AutoCloseableManager;
 import io.dropwizard.setup.Environment;
 
-import java.util.Optional;
 import java.util.Properties;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.trellisldp.api.EventService;
@@ -107,21 +100,6 @@ final class AppUtils {
         final String status = "notifications will be disabled";
         LOGGER.info("Using no-op event service: {}", status);
         return new NoopEventService();
-    }
-
-    public static RDFConnection getRDFConnection(final AppConfiguration config) {
-        final Optional<String> location = ofNullable(config.getResources());
-        if (location.isPresent()) {
-            final String loc = location.get();
-            if (loc.startsWith("http://") || loc.startsWith("https://")) {
-                // Remote
-                return connect(loc);
-            }
-            // TDB2
-            return connect(wrap(connectDatasetGraph(loc)));
-        }
-        // in-memory
-        return connect(createTxnMem());
     }
 
     private AppUtils() {

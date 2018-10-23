@@ -19,7 +19,6 @@ import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 
 import com.google.common.cache.Cache;
 
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.tamaya.Configuration;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
@@ -64,14 +63,13 @@ public class WebappServiceBundler implements ServiceBundler {
             .maximumSize(config.getOrDefault("trellis.webapp.cache.size", Long.class, 100L))
             .expireAfterAccess(config.getOrDefault("trellis.webapp.cache.hours", Long.class, 24L), HOURS).build();
         final TrellisCache profileCache = new TrellisCache(cache);
-        final RDFConnection rdfConnection = AppUtils.getRDFConnection();
 
         eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);
         agentService = AppUtils.loadFirst(AgentService.class);
         binaryService = new FileBinaryService();
         mementoService = new FileMementoService();
         ioService = new JenaIOService(nsService, null, profileCache);
-        auditService = resourceService = new TriplestoreResourceService(rdfConnection);
+        auditService = resourceService = new TriplestoreResourceService();
     }
 
     @Override

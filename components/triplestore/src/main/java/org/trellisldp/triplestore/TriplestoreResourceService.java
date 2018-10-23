@@ -24,7 +24,12 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
 import static org.apache.jena.graph.NodeFactory.createURI;
+import static org.apache.jena.query.DatasetFactory.createTxnMem;
+import static org.apache.jena.query.DatasetFactory.wrap;
+import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.apache.jena.system.Txn.executeWrite;
+import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.findFirst;
@@ -92,6 +97,9 @@ import org.trellisldp.vocabulary.XSD;
  */
 public class TriplestoreResourceService extends DefaultAuditService implements ResourceService {
 
+    /** The configuration key used to set where the RDF is stored. **/
+    public static final String CONFIG_TRIPLESTORE_RDF_LOCATION = "trellis.triplestore.rdf.location";
+
     private static final String PARENT = "parent";
     private static final String MODIFIED = "modified";
     private static final String MEMBER = "member";
@@ -105,9 +113,16 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     /**
      * Create a triplestore-backed resource service.
-     * @param rdfConnection the connection to an RDF datastore
      */
     @Inject
+    public TriplestoreResourceService() {
+        this(buildRDFConnection(getConfiguration().get(CONFIG_TRIPLESTORE_RDF_LOCATION)));
+    }
+
+    /**
+     * Create a triplestore-backed resource service.
+     * @param rdfConnection the connection to an RDF datastore
+     */
     public TriplestoreResourceService(final RDFConnection rdfConnection) {
         this(rdfConnection, findFirst(IdentifierService.class).orElseGet(DefaultIdentifierService::new));
     }
@@ -498,6 +513,27 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     @Override
     public Set<IRI> supportedInteractionModels() {
         return supportedIxnModels;
+    }
+
+    /**
+     * Build an RDF connection from a location value.
+     *
+     * @implNote A null value will create an in-memory RDF store, a file path will create
+     *           a TDB2 RDF store, and a URL will use a remote triplestore.
+     * @param location the location of the RDF
+     * @return a connection to the RDF store
+     */
+    public static RDFConnection buildRDFConnection(final String location) {
+        if (nonNull(location)) {
+            if (location.startsWith("http://") || location.startsWith("https://")) {
+                // Remote
+                return connect(location);
+            }
+            // TDB2
+            return connect(wrap(connectDatasetGraph(location)));
+        }
+        // in-memory
+        return connect(createTxnMem());
     }
 
     /**

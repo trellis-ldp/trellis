@@ -16,9 +16,11 @@ dependencies {
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     implementation("org.apache.jena:jena-osgi:$jenaVersion")
     implementation("org.apache.commons:commons-compress:$commonsCompressVersion")
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.awaitility:awaitility:$awaitilityVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-test');
@@ -34,6 +36,13 @@ jar {
         instruction 'Automatic-Module-Name', moduleName
         instruction 'Import-Package', '*'
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+        instruction 'Require-Capability', '''\
+            osgi.extender;
+                filter:="(osgi.extender=osgi.serviceloader.registrar)";
+                resolution:=optional'''
+        instruction 'Provide-Capability', '''\
+            osgi.serviceloader;
+                osgi.serviceloader=org.trellisldp.api.ResourceService'''
     }
 }
 

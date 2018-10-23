@@ -36,6 +36,7 @@ import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
+import java.io.File;
 import java.time.Instant;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -48,6 +49,8 @@ import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionLocal;
+import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,24 +96,21 @@ public class TriplestoreResourceServiceTest {
 
     @Test
     public void testIdentifierService() {
-        final ResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+        final ResourceService svc = new TriplestoreResourceService();
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier(), "Not unique identifiers!");
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier(), "Not unique identifiers!");
     }
 
     @Test
     public void testResourceNotFound() {
-        final ResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+        final ResourceService svc = new TriplestoreResourceService();
         assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).join(),
                 "Not a missing resource!");
     }
 
     @Test
     public void testNoRoot() {
-        final ResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+        final ResourceService svc = new TriplestoreResourceService();
 
         assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX)).join(), "Not a missing resource!");
     }
@@ -118,8 +118,7 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testInitializeRoot() {
         final Instant early = now();
-        final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+        final TriplestoreResourceService svc = new TriplestoreResourceService();
         svc.initialize();
 
         final Resource res = svc.get(root).join();
@@ -1117,6 +1116,40 @@ public class TriplestoreResourceServiceTest {
             }),
             svc.get(root).thenAccept(checkRoot(evenLater, 3L)),
             svc.get(root).thenAccept(checkPredates(evenLater4))).join();
+    }
+
+    @Test
+    public void testBuildRDFConnectionMemory() {
+
+        final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(null);
+        assertNotNull(rdfConnection, "Missing RDFConnection, using in-memory dataset!");
+        assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
+        assertTrue(rdfConnection instanceof RDFConnectionLocal, "Incorrect type");
+    }
+
+    @Test
+    public void testBuildRDFConnectionTDB() throws Exception {
+        final File dir = new File(new File(getClass().getResource("/logback-test.xml").toURI()).getParent(), "data");
+        final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(dir.getAbsolutePath());
+        assertNotNull(rdfConnection, "Missing RDFConnection, using local file!");
+        assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
+        assertTrue(rdfConnection instanceof RDFConnectionLocal, "Incorrect type");
+    }
+
+    @Test
+    public void testBuildRDFConnectionRemote() {
+        final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection("http://localhost/sparql");
+        assertNotNull(rdfConnection, "Missing RDFConnection, using local HTTP!");
+        assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
+        assertTrue(rdfConnection instanceof RDFConnectionRemote, "Incorrect type");
+    }
+
+    @Test
+    public void testBuildRDFConnectionRemoteHTTPS() {
+        final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection("https://localhost/sparql");
+        assertNotNull(rdfConnection, "Missing RDFConnection, using local HTTP!");
+        assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
+        assertTrue(rdfConnection instanceof RDFConnectionRemote, "Incorrect type");
     }
 
     private static Consumer<Resource> checkChild(final Instant time, final long properties, final long server,

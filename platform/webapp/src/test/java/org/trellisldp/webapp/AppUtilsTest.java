@@ -14,14 +14,10 @@
 package org.trellisldp.webapp;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.webapp.AppUtils.loadWithDefault;
 
-import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionLocal;
-import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;
@@ -50,57 +46,6 @@ public class AppUtilsTest {
         assertTrue(AppUtils.asCollection(null).isEmpty(), "check null input");
         assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("2"), "Check that 2 appears in collection");
         assertTrue(AppUtils.asCollection(" 1 ,   3 , 2, 8").contains("1"), "Check that 1 appears in collection");
-    }
-
-    @Test
-    public void testRDFConnectionMem() {
-        final RDFConnection conn = AppUtils.getRDFConnection();
-
-        assertNotNull(conn, "No connection found!");
-        assertTrue(conn instanceof RDFConnectionLocal, "Unexpected RDFConnection type!");
-        assertFalse(conn.isClosed(), "Connection closed prematurely!");
-    }
-
-    @Test
-    public void testRDFConnectionLocal() {
-        try {
-            System.setProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION, "./build/data");
-            final RDFConnection conn = AppUtils.getRDFConnection();
-
-            assertNotNull(conn, "No connection found!");
-            assertTrue(conn instanceof RDFConnectionLocal, "Unexpected RDFConnection type!");
-            assertFalse(conn.isClosed(), "Connection closed prematurely!");
-        } finally {
-            System.clearProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION);
-        }
-    }
-
-    @Test
-    public void testRDFConnectionRemote() {
-        try {
-            System.setProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION, "http://example.com");
-            final RDFConnection conn = AppUtils.getRDFConnection();
-
-            assertNotNull(conn, "No connection found!");
-            assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
-            assertFalse(conn.isClosed(), "Connection closed prematurely!");
-        } finally {
-            System.clearProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION);
-        }
-    }
-
-    @Test
-    public void testRDFConnectionRemoteSSL() {
-        try {
-            System.setProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION, "https://example.com");
-            final RDFConnection conn = AppUtils.getRDFConnection();
-
-            assertNotNull(conn, "No connection found!");
-            assertTrue(conn instanceof RDFConnectionRemote, "Unexpected RDFConnection type!");
-            assertFalse(conn.isClosed(), "Connection closed prematurely!");
-        } finally {
-            System.clearProperty(AppUtils.CONFIG_WEBAPP_RDF_LOCATION);
-        }
     }
 
     @Test

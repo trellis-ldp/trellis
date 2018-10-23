@@ -19,18 +19,12 @@ import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.jena.query.DatasetFactory.createTxnMem;
-import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
-import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -41,7 +35,6 @@ final class AppUtils {
 
     public static final String CONFIG_WEBAPP_CACHE_ENABLED = "trellis.webapp.cache.enabled";
     public static final String CONFIG_WEBAPP_CORS_ENABLED = "trellis.webapp.cors.enabled";
-    public static final String CONFIG_WEBAPP_RDF_LOCATION = "trellis.webapp.rdf.location";
 
     private static final Configuration config = ConfigurationProvider.getConfiguration();
 
@@ -70,16 +63,6 @@ final class AppUtils {
             return of(new CrossOriginResourceSharingFilter());
         }
         return empty();
-    }
-
-    public static RDFConnection getRDFConnection() {
-        final String location = config.get(CONFIG_WEBAPP_RDF_LOCATION);
-        if (isEmpty(location)) {
-            return connect(createTxnMem());
-        } else if (location.startsWith("http://") || location.startsWith("https://")) {
-            return connect(location);
-        }
-        return connect(wrap(connectDatasetGraph(location)));
     }
 
     private AppUtils() {

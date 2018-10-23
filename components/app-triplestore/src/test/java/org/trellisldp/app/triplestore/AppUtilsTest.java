@@ -14,7 +14,6 @@
 package org.trellisldp.app.triplestore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,13 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import io.dropwizard.configuration.YamlConfigurationFactory;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
-import java.io.File;
 import java.util.Properties;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -56,30 +51,6 @@ public class AppUtilsTest {
     public void setUp() {
         initMocks(this);
         when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
-    }
-
-    @Test
-    public void testGetRDFConnection() throws Exception {
-        final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
-                Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
-            .build(new File(getClass().getResource("/config1.yml").toURI()));
-
-        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using in-memory dataset!");
-        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
-
-        config.setResources("http://localhost/sparql");
-
-        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using local HTTP!");
-        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
-
-        config.setResources("https://localhost/sparql");
-        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using local HTTPS!");
-        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
-
-        final File dir = new File(new File(getClass().getResource("/data").toURI()), "resources");
-        config.setResources(dir.getAbsolutePath());
-        assertNotNull(AppUtils.getRDFConnection(config), "Missing RDFConnection, using local file!");
-        assertFalse(AppUtils.getRDFConnection(config).isClosed(), "RDFConnection has been closed!");
     }
 
     @Test

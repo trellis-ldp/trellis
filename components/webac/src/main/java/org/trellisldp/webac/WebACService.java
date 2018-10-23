@@ -27,6 +27,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.RDFUtils.findFirst;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toGraph;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -90,6 +91,14 @@ public class WebACService implements AccessControlService {
 
     /**
      * Create a WebAC-based authorization service.
+     */
+    @Inject
+    public WebACService() {
+        this(findFirst(ResourceService.class).orElse(null));
+    }
+
+    /**
+     * Create a WebAC-based authorization service.
      *
      * @param resourceService the resource service
      */
@@ -103,7 +112,6 @@ public class WebACService implements AccessControlService {
      * @param resourceService the resource service
      * @param cache a cache
      */
-    @Inject
     public WebACService(final ResourceService resourceService,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
         this(resourceService, cache, getConfiguration()

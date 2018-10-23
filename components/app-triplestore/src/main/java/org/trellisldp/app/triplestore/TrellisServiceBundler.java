@@ -109,7 +109,7 @@ public class TrellisServiceBundler implements ServiceBundler {
 
     private static TriplestoreResourceService buildResourceService(final AppConfiguration config,
             final Environment environment) {
-        final RDFConnection rdfConnection = AppUtils.getRDFConnection(config);
+        final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(config.getResources());
 
         // Health checks
         environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
