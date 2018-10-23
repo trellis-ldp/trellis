@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -75,5 +76,10 @@ public class KafkaPublisherTest {
         final List<ProducerRecord<String, String>> records = producer.history();
         assertEquals(1L, records.size(), "Incorrect total records size!");
         assertEquals(1L, records.stream().filter(r -> r.topic().equals(queueName)).count(), "Incorrect filtered size!");
+    }
+
+    @Test
+    public void testDefaultKafka() {
+        assertDoesNotThrow(() -> new KafkaPublisher());
     }
 }

@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -73,6 +75,11 @@ public class AmqpPublisherTest {
         when(mockEvent.getInbox()).thenReturn(empty());
         doNothing().when(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));
+    }
+
+    @Test
+    public void testDefaultService() {
+        assertThrows(RuntimeTrellisException.class, AmqpPublisher::new);
     }
 
     @Test

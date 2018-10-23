@@ -18,6 +18,7 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -38,8 +39,11 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.apache.activemq.broker.BrokerService;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -55,6 +59,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class JmsPublisherTest {
 
     private static final RDF rdf = new SimpleRDF();
+    private static final BrokerService BROKER = new BrokerService();
 
     private final String queueName = "queue";
 
@@ -77,6 +82,17 @@ public class JmsPublisherTest {
 
     @Mock
     private MessageProducer mockProducer;
+
+    @BeforeAll
+    public static void initialize() throws Exception {
+        BROKER.setPersistent(false);
+        BROKER.start();
+    }
+
+    @AfterAll
+    public static void cleanUp() throws Exception {
+        BROKER.stop();
+    }
 
     @BeforeEach
     public void setUp() throws JMSException {
@@ -104,6 +120,35 @@ public class JmsPublisherTest {
 
         verify(mockProducer).send(eq(mockMessage));
     }
+
+    @Test
+    public void testDefaultJms() throws JMSException {
+        assertDoesNotThrow(() -> new JmsPublisher());
+    }
+
+    @Test
+    public void testDefaultJmsWithUsername() throws JMSException {
+        try {
+            System.setProperty("trellis.jms.username", "user");
+            System.setProperty("trellis.jms.password", "pass");
+            assertDoesNotThrow(() -> new JmsPublisher());
+        } finally {
+            System.clearProperty("trellis.jms.username");
+            System.clearProperty("trellis.jms.password");
+        }
+    }
+
+    @Test
+    public void testDefaultJmsWithoutPass() throws JMSException {
+        try {
+            System.setProperty("trellis.jms.username", "user");
+            assertDoesNotThrow(() -> new JmsPublisher());
+        } finally {
+            System.clearProperty("trellis.jms.username");
+        }
+    }
+
+
 
     @Test
     public void testError() throws JMSException {

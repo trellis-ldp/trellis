@@ -103,6 +103,7 @@ public class TrellisApplicationTest implements MessageListener {
     @AfterAll
     public void cleanup() throws Exception {
         APP.after();
+        BROKER.stop();
     }
 
     @BeforeEach

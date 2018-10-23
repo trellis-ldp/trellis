@@ -14,15 +14,19 @@
 package org.trellisldp.kafka;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.findFirst;
+
+import java.util.Properties;
 
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.tamaya.ConfigurationProvider;
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -34,8 +38,9 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 public class KafkaPublisher implements EventService {
 
+    private static final Configuration config = getConfiguration();
     private static final Logger LOGGER = getLogger(KafkaPublisher.class);
-    private static ActivityStreamService service = findFirst(ActivityStreamService.class)
+    private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     /** The configuration key controlling the name of the kafka topic. **/
@@ -46,11 +51,18 @@ public class KafkaPublisher implements EventService {
 
     /**
      * Create a new Kafka Publisher.
-     * @param producer the producer
      */
     @Inject
+    public KafkaPublisher() {
+        this(buildProducer());
+    }
+
+    /**
+     * Create a new Kafka Publisher.
+     * @param producer the producer
+     */
     public KafkaPublisher(final Producer<String, String> producer) {
-        this(producer, ConfigurationProvider.getConfiguration().get(CONFIG_KAFKA_TOPIC));
+        this(producer, config.get(CONFIG_KAFKA_TOPIC));
     }
 
     /**
@@ -76,5 +88,23 @@ public class KafkaPublisher implements EventService {
                 new ProducerRecord<>(topic, event.getTarget().map(IRI::getIRIString).orElse(null),
                         message));
         });
+    }
+
+    private static Producer<String, String> buildProducer() {
+        final Properties p = new Properties();
+        p.setProperty("acks", config.getOrDefault("trellis.kafka.acks", "all"));
+        p.setProperty("batch.size", config.getOrDefault("trelis.kafka.batch.size", "16384"));
+        p.setProperty("retries", config.getOrDefault("trellis.kafka.retries", "0"));
+        p.setProperty("linger.ms", config.getOrDefault("trellis.kafka.linger.ms", "1"));
+        p.setProperty("buffer.memory", config.getOrDefault("trellis.kafka.buffer.memory", "33554432"));
+        config.getProperties().entrySet().stream().filter(e -> e.getKey().startsWith("trellis.kafka."))
+            .filter(e -> CONFIG_KAFKA_TOPIC.equals(e.getKey()))
+            .forEach(e -> p.setProperty(e.getKey().replaceFirst("^trellis.kafka.", ""), e.getValue()));
+
+        p.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        p.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        p.setProperty("bootstrap.servers", config.get("trellis.kafka.bootstrap.servers"));
+
+        return new KafkaProducer<>(p);
     }
 }

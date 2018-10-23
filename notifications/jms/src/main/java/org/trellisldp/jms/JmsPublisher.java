@@ -13,8 +13,10 @@
  */
 package org.trellisldp.jms;
 
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.findFirst;
 
@@ -25,7 +27,8 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.apache.tamaya.ConfigurationProvider;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -42,9 +45,18 @@ public class JmsPublisher implements EventService {
     /** The configuration key controlling the JMS queue name. **/
     public static final String CONFIG_JMS_QUEUE_NAME = "trellis.jms.queue";
 
-    private static final Logger LOGGER = getLogger(JmsPublisher.class);
+    /** The configuration key controlling the JMS broker URL. **/
+    public static final String CONFIG_JMS_URL = "trellis.jms.url";
 
-    private static ActivityStreamService service = findFirst(ActivityStreamService.class)
+    /** The configuration key controlling the JMS username. **/
+    public static final String CONFIG_JMS_USERNAME = "trellis.jms.username";
+
+    /** THe configuration key controlling the JMS password. **/
+    public static final String CONFIG_JMS_PASSWORD = "trellis.jms.password";
+
+    private static final Configuration config = getConfiguration();
+    private static final Logger LOGGER = getLogger(JmsPublisher.class);
+    private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     private final MessageProducer producer;
@@ -53,13 +65,20 @@ public class JmsPublisher implements EventService {
 
     /**
      * Create a new JMS Publisher.
-     * @param conn the connection
      * @throws JMSException when there is a connection error
      */
     @Inject
+    public JmsPublisher() throws JMSException {
+        this(buildJmsConnection());
+    }
+
+    /**
+     * Create a new JMS Publisher.
+     * @param conn the connection
+     * @throws JMSException when there is a connection error
+     */
     public JmsPublisher(final Connection conn) throws JMSException {
-        this(conn.createSession(false, AUTO_ACKNOWLEDGE),
-                ConfigurationProvider.getConfiguration().get(CONFIG_JMS_QUEUE_NAME));
+        this(conn.createSession(false, AUTO_ACKNOWLEDGE), config.get(CONFIG_JMS_QUEUE_NAME));
     }
 
     /**
@@ -89,5 +108,15 @@ public class JmsPublisher implements EventService {
                 LOGGER.error("Error writing to broker: {}", ex.getMessage());
             }
         });
+    }
+
+    private static Connection buildJmsConnection() throws JMSException {
+        final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
+                config.get(CONFIG_JMS_URL));
+        if (nonNull(config.get(CONFIG_JMS_USERNAME)) && nonNull(config.get(CONFIG_JMS_PASSWORD))) {
+            factory.setUserName(config.get(CONFIG_JMS_USERNAME));
+            factory.setPassword(config.get(CONFIG_JMS_PASSWORD));
+        }
+        return factory.createConnection();
     }
 }

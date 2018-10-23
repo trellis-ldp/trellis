@@ -20,8 +20,12 @@ import static org.trellisldp.api.RDFUtils.findFirst;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
@@ -39,8 +43,9 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 public class AmqpPublisher implements EventService {
 
+    private static final Configuration config = ConfigurationProvider.getConfiguration();
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
-    private static ActivityStreamService service = findFirst(ActivityStreamService.class)
+    private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     /** The configuration key controlling the AMQP exchange name. **/
@@ -55,6 +60,9 @@ public class AmqpPublisher implements EventService {
     /** The configuration key controlling whether publishing is immediate. **/
     public static final String CONFIG_AMQP_IMMEDIATE = "trellis.amqp.immediate";
 
+    /** The configuration key controlling the AMQP connection URI. **/
+    public static final String CONFIG_AMQP_URI = "trellis.amqp.uri";
+
     private final Channel channel;
     private final String exchangeName;
     private final String routingKey;
@@ -63,14 +71,17 @@ public class AmqpPublisher implements EventService {
 
     /**
      * Create an AMQP publisher.
-     * @param channel the channel
      */
     @Inject
-    public AmqpPublisher(final Channel channel) {
-        this(channel, ConfigurationProvider.getConfiguration());
+    public AmqpPublisher() {
+        this(buildChannel());
     }
 
-    private AmqpPublisher(final Channel channel, final Configuration config) {
+    /**
+     * Create an AMQP publisher.
+     * @param channel the channel
+     */
+    public AmqpPublisher(final Channel channel) {
         this(channel, config.get(CONFIG_AMQP_EXCHANGE_NAME), config.get(CONFIG_AMQP_ROUTING_KEY),
             config.getOrDefault(CONFIG_AMQP_MANDATORY, Boolean.class, true),
             config.getOrDefault(CONFIG_AMQP_IMMEDIATE, Boolean.class, false));
@@ -121,5 +132,15 @@ public class AmqpPublisher implements EventService {
                 LOGGER.error("Error writing to broker: {}", ex.getMessage());
             }
         });
+    }
+
+    private static Channel buildChannel() {
+        try {
+            final ConnectionFactory factory = new ConnectionFactory();
+            factory.setUri(config.get(CONFIG_AMQP_URI));
+            return factory.newConnection().createChannel();
+        } catch (final GeneralSecurityException | URISyntaxException | TimeoutException | IOException ex) {
+            throw new RuntimeTrellisException("Could not connect to AMQP cluster!", ex);
+        }
     }
 }
