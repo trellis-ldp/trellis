@@ -5,7 +5,6 @@ plugins {
     id 'com.palantir.docker' version '0.20.1' apply false
     id 'nebula.ospackage' version '5.0.4' apply false
     id 'net.researchgate.release' version '2.7.0'
-    id 'org.ajoberstar.grgit' version '2.3.0'
     id 'org.owasp.dependencycheck' version '3.3.2'
     id 'org.sonarqube' version '2.6.2'
 }
