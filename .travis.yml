@@ -18,6 +18,10 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
+stages:
+  - test
+  - deploy
+
 branches:
   only:
     - master
@@ -28,13 +32,20 @@ branches:
     # long-lived branches
     - /branch-.+/
 
-matrix:
-  fast_finish: true
+jobs:
   include:
     # JDK 8
-    - jdk: oraclejdk8
+    - stage: test
+      jdk: oraclejdk8
       script: travis_retry ./gradlew check install jacocoRootReport coveralls sonarqube
 
     # JDK 11
-    - jdk: openjdk11
+    - stage: test
+      jdk: openjdk11
       script: travis_retry ./gradlew check install
+
+    - stage: deploy
+      jdk: oraclejdk8
+      if: branch = master
+      script: ./gradlew clean publish
+
