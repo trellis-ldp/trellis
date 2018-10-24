@@ -46,6 +46,6 @@ jobs:
 
     - stage: deploy
       jdk: oraclejdk8
-      if: branch = master
+      if: branch = master AND type = push
       script: ./gradlew clean publish
 
