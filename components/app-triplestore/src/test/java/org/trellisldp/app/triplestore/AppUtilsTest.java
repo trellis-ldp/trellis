@@ -24,6 +24,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
+import java.net.ServerSocket;
 import java.util.Properties;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -111,7 +112,8 @@ public class AppUtilsTest {
     @Test
     public void testEventServiceJms() throws Exception {
         final NotificationsConfiguration c = new NotificationsConfiguration();
-        c.setConnectionString("tcp://localhost:61616");
+        final Integer port = new ServerSocket(0).getLocalPort();
+        c.setConnectionString("tcp://localhost:" + Integer.toString(port));
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.JMS);
         assertThrows(RuntimeTrellisException.class, () ->
