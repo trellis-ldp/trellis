@@ -46,6 +46,9 @@ jar {
 }
 
 test {
+    def port = Integer.toString(new ServerSocket(0).getLocalPort())
+    systemProperty 'qpid.amqp.port', port
     systemProperty 'derby.stream.error.file', "$buildDir/derby.log"
+    systemProperty 'trellis.amqp.uri', "amqp://guest:guest@localhost:${port}/testing"
 }
 
