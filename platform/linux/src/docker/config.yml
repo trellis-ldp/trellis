@@ -1,0 +1,82 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: 8080
+  requestLog:
+    appenders:
+      - type: console
+        target: stdout
+        threshold: INFO
+      - type: file
+        currentLogFilename: /opt/trellis/log/access.log
+        archive: true
+        archivedLogFilenamePattern: /opt/trellis/log/access-%i.log
+        archivedFileCount: 5
+        maxFileSize: 100K
+
+logging:
+  level: WARN
+  appenders:
+    - type: console
+      target: stdout
+      threshold: INFO
+    - type: file
+      currentLogFilename: /opt/trellis/log/trellis.log
+      archive: true
+      archivedLogFilenamePattern: /opt/trellis/log/trellis-%i.log
+      archivedFileCount: 5
+      maxFileSize: 100K
+  loggers:
+    org.trellisldp: INFO
+    io.dropwizard: INFO
+
+# This may refer to a remote Triplestore, e.g. https://example.org/sparql
+resources: /opt/trellis/data/rdf
+
+binaries: /opt/trellis/data/binaries
+
+mementos: /opt/trellis/data/mementos
+
+namespaces: /opt/trellis/data/namespaces.json
+
+# This may refer to a static base URL for resources. If left empty, the
+# base URL will reflect the Host header in the request.
+baseUrl:
+
+# This configuration will enable a WebSub "hub" header.
+hubUrl:
+
+auth:
+    adminUsers: []
+    webac:
+        enabled: true
+    jwt:
+        enabled: false
+        key: changeme
+    basic:
+        enabled: true
+        usersFile: /opt/trellis/etc/users.auth
+
+cors:
+    enabled: true
+    allowOrigin:
+        - "*"
+    maxAge: 180
+
+cache:
+    maxAge: 86400
+    mustRevalidate: true
+
+notifications:
+    enabled: false
+    type: JMS
+    topicName: "trellis"
+    connectionString: "tcp://localhost:61616"
+
+# JSON-LD configuration
+jsonld:
+    cacheSize: 100
+    cacheExpireHours: 24
+    contextWhitelist: []
+    contextDomainWhitelist: []
+

@@ -66,7 +66,7 @@ docker {
     name "trellisldp/trellis:${project.version}"
     tags 'latest'
     dockerfile file('src/docker/Dockerfile')
-    files tasks.distTar.outputs, './src/dist/etc/config.yml', './src/docker/command.sh'
+    files tasks.distTar.outputs, './src/docker/config.yml', './src/docker/command.sh'
     buildArgs([BUILD_VERSION: project.version])
     def gitLabels = ['git.url':'https://github.com/trellis-ldp/trellis']
     try {
