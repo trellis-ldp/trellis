@@ -37,12 +37,12 @@ jobs:
     # JDK 8
     - stage: test
       jdk: oraclejdk8
-      script: travis_retry ./gradlew check install jacocoRootReport coveralls sonarqube
+      script: travis_retry ./gradlew check install jacocoRootReport coveralls sonarqube -Pitests
 
     # JDK 11
     - stage: test
       jdk: openjdk11
-      script: travis_retry ./gradlew check install
+      script: travis_retry ./gradlew check install -Pitests
 
     # deploy JDK 8 builds
     - stage: deploy
