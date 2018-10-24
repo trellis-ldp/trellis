@@ -142,11 +142,15 @@ test {
     systemProperty 'karaf.ssh.port', randomPort()
     systemProperty 'karaf.rmiServer.port', randomPort()
     systemProperty 'karaf.rmiRegistry.port', randomPort()
+
+    enabled = project.hasProperty("itests")
 }
 
 tasks.test.dependsOn tasks.generateDependsFile
 
 rootProject.childProjects.findAll { n, p -> p != project }.each { n, p ->
-    tasks.test.dependsOn p.tasks.install
+    if (project.hasProperty("itests")) {
+        tasks.test.dependsOn p.tasks.install
+    }
 }
 
