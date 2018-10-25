@@ -58,8 +58,8 @@ import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
 import org.trellisldp.http.core.PATCH;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.http.core.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetHandler;
@@ -165,7 +165,7 @@ public class TrellisHttpResource {
      */
     @GET
     @Timed
-    public void getResource(@Suspended final AsyncResponse response, @BeanParam final LdpRequest request) {
+    public void getResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest request) {
         fetchResource(request).thenApply(ResponseBuilder::build).exceptionally(this::handleException)
             .thenApply(response::resume);
     }
@@ -180,7 +180,7 @@ public class TrellisHttpResource {
      */
     @HEAD
     @Timed
-    public void getResourceHeaders(@Suspended final AsyncResponse response, @BeanParam final LdpRequest request) {
+    public void getResourceHeaders(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest request) {
         fetchResource(request).thenApply(ResponseBuilder::build).exceptionally(this::handleException)
             .thenApply(response::resume);
     }
@@ -193,7 +193,7 @@ public class TrellisHttpResource {
      */
     @OPTIONS
     @Timed
-    public void options(@Suspended final AsyncResponse response, @BeanParam final LdpRequest req) {
+    public void options(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req) {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
@@ -213,7 +213,7 @@ public class TrellisHttpResource {
      */
     @PATCH
     @Timed
-    public void updateResource(@Suspended final AsyncResponse response, @BeanParam final LdpRequest req,
+    public void updateResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
             final String body) {
 
         final String urlBase = getBaseUrl(req);
@@ -233,7 +233,7 @@ public class TrellisHttpResource {
      */
     @DELETE
     @Timed
-    public void deleteResource(@Suspended final AsyncResponse response, @BeanParam final LdpRequest req) {
+    public void deleteResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req) {
 
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
@@ -253,7 +253,7 @@ public class TrellisHttpResource {
      */
     @POST
     @Timed
-    public void createResource(@Suspended final AsyncResponse response, @BeanParam final LdpRequest req,
+    public void createResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
             final File body) {
 
         final String urlBase = getBaseUrl(req);
@@ -282,8 +282,8 @@ public class TrellisHttpResource {
      */
     @PUT
     @Timed
-    public void setResource(@Suspended final AsyncResponse response, @BeanParam final LdpRequest req, final File body) {
-
+    public void setResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
+            final File body) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);
@@ -301,11 +301,11 @@ public class TrellisHttpResource {
         return completedFuture(MISSING_RESOURCE);
     }
 
-    private String getBaseUrl(final LdpRequest req) {
+    private String getBaseUrl(final TrellisRequest req) {
         return nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
     }
 
-    private CompletableFuture<ResponseBuilder> fetchResource(final LdpRequest req) {
+    private CompletableFuture<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), urlBase);

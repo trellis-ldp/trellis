@@ -69,8 +69,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.tamaya.Configuration;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
 import org.trellisldp.http.core.TimemapGenerator;
+import org.trellisldp.http.core.TrellisRequest;
 
 /**
  * @author acoburn
@@ -101,7 +101,7 @@ public final class MementoResource {
      * @param req the LDP request
      * @return a response builder object
      */
-    public ResponseBuilder getTimeMapBuilder(final List<Range<Instant>> mementos, final LdpRequest req,
+    public ResponseBuilder getTimeMapBuilder(final List<Range<Instant>> mementos, final TrellisRequest req,
             final String baseUrl) {
 
         final List<MediaType> acceptableTypes = req.getHeaders().getAcceptableMediaTypes();
@@ -143,7 +143,7 @@ public final class MementoResource {
      * @param baseUrl the base URL
      * @return a response builder object
      */
-    public ResponseBuilder getTimeGateBuilder(final List<Range<Instant>> mementos, final LdpRequest req,
+    public ResponseBuilder getTimeGateBuilder(final List<Range<Instant>> mementos, final TrellisRequest req,
             final String baseUrl) {
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         return status(FOUND)
@@ -192,7 +192,7 @@ public final class MementoResource {
         return link;
     }
 
-    private static String getBaseUrl(final String baseUrl, final LdpRequest req) {
+    private static String getBaseUrl(final String baseUrl, final TrellisRequest req) {
         return ofNullable(baseUrl).orElseGet(req::getBaseUrl);
     }
 

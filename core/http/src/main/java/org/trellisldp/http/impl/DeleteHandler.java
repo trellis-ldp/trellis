@@ -41,7 +41,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
@@ -61,7 +61,7 @@ public class DeleteHandler extends MutatingLdpHandler {
      * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public DeleteHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
+    public DeleteHandler(final TrellisRequest req, final ServiceBundler trellis, final String baseUrl) {
         super(req, trellis, baseUrl);
     }
 

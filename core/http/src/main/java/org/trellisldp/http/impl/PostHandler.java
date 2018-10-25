@@ -65,7 +65,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
@@ -95,7 +95,7 @@ public class PostHandler extends MutatingLdpHandler {
      * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PostHandler(final LdpRequest req, final IRI parentIdentifier, final String id, final File entity,
+    public PostHandler(final TrellisRequest req, final IRI parentIdentifier, final String id, final File entity,
             final ServiceBundler trellis, final String baseUrl) {
         super(req, trellis, baseUrl, entity);
 

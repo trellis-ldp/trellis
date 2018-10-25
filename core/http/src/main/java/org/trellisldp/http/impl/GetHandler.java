@@ -99,8 +99,8 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
 import org.trellisldp.http.core.Prefer;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.http.core.Version;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
@@ -126,7 +126,7 @@ public class GetHandler extends BaseLdpHandler {
      * @param isMemento true if the resource is a memento; false otherwise
      * @param baseUrl the base URL
      */
-    public GetHandler(final LdpRequest req, final ServiceBundler trellis, final Boolean isMemento,
+    public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final Boolean isMemento,
             final String baseUrl) {
         super(req, trellis, baseUrl);
         this.isMemento = isMemento;
@@ -386,7 +386,7 @@ public class GetHandler extends BaseLdpHandler {
             .thenApply(future -> builder.entity(stream));
     }
 
-    private InputStream getBinaryStream(final IRI dsid, final LdpRequest req) {
+    private InputStream getBinaryStream(final IRI dsid, final TrellisRequest req) {
         if (isNull(req.getRange())) {
             return getServices().getBinaryService().getContent(dsid).join();
         }

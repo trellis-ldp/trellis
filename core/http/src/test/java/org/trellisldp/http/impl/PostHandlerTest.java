@@ -67,7 +67,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testPostLdprs() throws IOException {
-        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
@@ -80,8 +80,8 @@ public class PostHandlerTest extends BaseTestHandler {
     @Test
     public void testBadAudit() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
-        when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
@@ -104,7 +104,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDefaultType2() throws IOException {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, DELETED_RESOURCE)).join().build();
@@ -116,7 +116,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDefaultType3() throws IOException {
-        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
@@ -128,8 +128,8 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDefaultType4() throws IOException {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
-        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
@@ -141,7 +141,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDefaultType5() throws IOException {
-        when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
+        when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
@@ -154,7 +154,7 @@ public class PostHandlerTest extends BaseTestHandler {
     @Test
     public void testUnsupportedType() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
-        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = assertThrows(BadRequestException.class, () ->
@@ -176,7 +176,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
         when(mockIoService.read(any(), eq(TURTLE), any())).thenAnswer(x -> Stream.of(triple));
-        when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
+        when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/simpleTriple.ttl", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
@@ -192,7 +192,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testBinaryEntity() throws IOException {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "new-resource");
         final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
@@ -206,8 +206,8 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testEntityWithDigest() throws IOException {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
-        when(mockLdpRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
 
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource-with-entity");
         final PostHandler handler = buildPostHandler("/simpleData.txt", "resource-with-entity", null);
@@ -221,8 +221,8 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testEntityBadDigest() {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
-        when(mockLdpRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
@@ -234,8 +234,8 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testBadDigest2() {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
-        when(mockLdpRequest.getDigest()).thenReturn(new Digest("foo", "blahblahblah"));
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("foo", "blahblahblah"));
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
@@ -247,11 +247,11 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testBadEntityDigest() {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
-        when(mockLdpRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
 
         final File entity = new File(new File(getClass().getResource("/simpleData.txt").getFile()).getParent());
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, null);
+        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler, null);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
                 handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
@@ -261,10 +261,11 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testEntityError() {
-        when(mockLdpRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
-        final PostHandler handler = new PostHandler(mockLdpRequest, root, "newresource", entity, mockBundler, baseUrl);
+        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler,
+                baseUrl);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
                 handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
@@ -276,7 +277,7 @@ public class PostHandlerTest extends BaseTestHandler {
     public void testError() throws IOException {
         when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")),
                     any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
-        when(mockLdpRequest.getContentType()).thenReturn("text/turtle");
+        when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", baseUrl);
 
@@ -287,7 +288,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl) {
         final File entity = new File(getClass().getResource(resourceName).getFile());
-        return new PostHandler(mockLdpRequest, root, id, entity, mockBundler, baseUrl);
+        return new PostHandler(mockTrellisRequest, root, id, entity, mockBundler, baseUrl);
     }
 
     private Stream<Executable> checkBinaryEntityResponse(final IRI identifier) {

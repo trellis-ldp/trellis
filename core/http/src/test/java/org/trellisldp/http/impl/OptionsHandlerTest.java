@@ -52,7 +52,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
     public void testOptionsLdprs() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockLdpRequest, mockBundler, false, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
@@ -66,7 +66,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
@@ -84,7 +84,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
     public void testOptionsLdpnr() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockLdpRequest, mockBundler, false, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
@@ -94,9 +94,9 @@ public class OptionsHandlerTest extends BaseTestHandler {
 
     @Test
     public void testOptionsAcl() {
-        when(mockLdpRequest.getExt()).thenReturn("acl");
+        when(mockTrellisRequest.getExt()).thenReturn("acl");
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
@@ -107,7 +107,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
 
     @Test
     public void testOptionsMemento() {
-        final OptionsHandler optionsHandler = new OptionsHandler(mockLdpRequest, mockBundler, true, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, true, null);
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");

@@ -69,8 +69,8 @@ import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
 import org.trellisldp.http.core.Prefer;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
@@ -98,7 +98,7 @@ public class PatchHandler extends MutatingLdpHandler {
      * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PatchHandler(final LdpRequest req, final String updateBody, final ServiceBundler trellis,
+    public PatchHandler(final TrellisRequest req, final String updateBody, final ServiceBundler trellis,
             final String baseUrl) {
         super(req, trellis, baseUrl);
 

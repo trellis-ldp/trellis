@@ -106,9 +106,9 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testGetLdprs() {
-        when(mockLdpRequest.getBaseUrl()).thenReturn("http://example.org");
+        when(mockTrellisRequest.getBaseUrl()).thenReturn("http://example.org");
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -138,10 +138,10 @@ public class GetHandlerTest extends BaseTestHandler {
     @Test
     public void testGetPreferLdprs() {
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(LD_PATCH));
-        when(mockLdpRequest.getPrefer())
+        when(mockTrellisRequest.getPrefer())
             .thenReturn(Prefer.valueOf("return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment"));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -158,7 +158,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testGetVersionedLdprs() {
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, true, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, true, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -192,7 +192,7 @@ public class GetHandlerTest extends BaseTestHandler {
         when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
                 .thenReturn(notModified());
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = assertThrows(WebApplicationException.class, () ->
                 unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
                 "Unexpected cache response for LDP-RS!").getResponse();
@@ -207,7 +207,7 @@ public class GetHandlerTest extends BaseTestHandler {
         when(mockRequest.evaluatePreconditions(eq(from(binaryTime)), any(EntityTag.class)))
                 .thenReturn(notModified());
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = assertThrows(WebApplicationException.class, () ->
                 unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
                 "Unexpected cache response for LDP-NR!").getResponse();
@@ -224,7 +224,7 @@ public class GetHandlerTest extends BaseTestHandler {
                 new SimpleEntry<>(SKOS.Concept.getIRIString(), "type"),
                 new SimpleEntry<>(inbox, "inbox")));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -239,7 +239,7 @@ public class GetHandlerTest extends BaseTestHandler {
     public void testNotAcceptableLdprs() {
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
 
         final Response res = assertThrows(NotAcceptableException.class, () ->
                 unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
@@ -250,9 +250,9 @@ public class GetHandlerTest extends BaseTestHandler {
     @Test
     public void testMinimalLdprs() {
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_LD_JSON_TYPE));
-        when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
+        when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -287,7 +287,7 @@ public class GetHandlerTest extends BaseTestHandler {
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(
                     MediaType.valueOf(APPLICATION_LD_JSON + "; profile=\"" + compacted.getIRIString() + "\"")));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
@@ -330,7 +330,7 @@ public class GetHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -348,7 +348,7 @@ public class GetHandlerTest extends BaseTestHandler {
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -359,9 +359,9 @@ public class GetHandlerTest extends BaseTestHandler {
     public void testGetBinaryDescription2() {
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockLdpRequest.getExt()).thenReturn(DESCRIPTION);
+        when(mockTrellisRequest.getExt()).thenReturn(DESCRIPTION);
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -389,7 +389,7 @@ public class GetHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 
@@ -410,9 +410,9 @@ public class GetHandlerTest extends BaseTestHandler {
     public void testGetAcl() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResource.hasAcl()).thenReturn(true);
-        when(mockLdpRequest.getExt()).thenReturn("acl");
+        when(mockTrellisRequest.getExt()).thenReturn("acl");
 
-        final GetHandler handler = new GetHandler(mockLdpRequest, mockBundler, false, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
             .join().build();
 

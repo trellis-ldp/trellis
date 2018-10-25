@@ -55,7 +55,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.Digest;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -82,7 +82,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    protected MutatingLdpHandler(final LdpRequest req, final ServiceBundler trellis, final String baseUrl) {
+    protected MutatingLdpHandler(final TrellisRequest req, final ServiceBundler trellis, final String baseUrl) {
         this(req, trellis, baseUrl, null);
     }
 
@@ -94,7 +94,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param baseUrl the base URL
      * @param entity the entity
      */
-    protected MutatingLdpHandler(final LdpRequest req, final ServiceBundler trellis,
+    protected MutatingLdpHandler(final TrellisRequest req, final ServiceBundler trellis,
             final String baseUrl, final File entity) {
         super(req, trellis, baseUrl);
         this.entity = entity;

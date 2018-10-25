@@ -28,7 +28,7 @@ import javax.ws.rs.core.UriInfo;
  *
  * @author acoburn
  */
-public class LdpRequest {
+public class TrellisRequest {
 
     @PathParam("path")
     private String path;

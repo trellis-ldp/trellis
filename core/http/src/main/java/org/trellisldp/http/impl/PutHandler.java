@@ -67,7 +67,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
@@ -94,7 +94,7 @@ public class PutHandler extends MutatingLdpHandler {
      * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PutHandler(final LdpRequest req, final File entity, final ServiceBundler trellis, final String baseUrl) {
+    public PutHandler(final TrellisRequest req, final File entity, final ServiceBundler trellis, final String baseUrl) {
         super(req, trellis, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         this.rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->

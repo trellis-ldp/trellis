@@ -49,7 +49,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 
 /**
  * @author acoburn
@@ -60,7 +60,7 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     private AsyncResponse mockResponse;
 
     @Mock
-    private LdpRequest mockLdpRequest;
+    private TrellisRequest mockTrellisRequest;
 
     @Mock
     private HttpHeaders mockHttpHeaders;
@@ -101,13 +101,13 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     public void testNoBaseURL() throws Exception {
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
 
-        when(mockLdpRequest.getPath()).thenReturn("resource");
-        when(mockLdpRequest.getBaseUrl()).thenReturn("http://my.example.com/");
-        when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getBaseUrl()).thenReturn("http://my.example.com/");
+        when(mockTrellisRequest.getHeaders()).thenReturn(mockHttpHeaders);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));
-        when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
+        when(mockTrellisRequest.getRequest()).thenReturn(mockRequest);
 
-        matcher.getResourceHeaders(mockResponse, mockLdpRequest);
+        matcher.getResourceHeaders(mockResponse, mockTrellisRequest);
         verify(mockResponse).resume(captor.capture());
 
         final Response res = captor.getValue();

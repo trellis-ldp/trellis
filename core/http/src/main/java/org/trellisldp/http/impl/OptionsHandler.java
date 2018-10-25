@@ -49,7 +49,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 
 /**
  * The OPTIONS response builder.
@@ -71,7 +71,7 @@ public class OptionsHandler extends BaseLdpHandler {
      * @param isMemento true if the resource is a memento; false otherwise
      * @param baseUrl the base URL
      */
-    public OptionsHandler(final LdpRequest req, final ServiceBundler trellis, final Boolean isMemento,
+    public OptionsHandler(final TrellisRequest req, final ServiceBundler trellis, final Boolean isMemento,
             final String baseUrl) {
         super(req, trellis, baseUrl);
         this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;

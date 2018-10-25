@@ -48,7 +48,7 @@ jobs:
     - stage: deploy
       jdk: oraclejdk8
       if: branch = master AND type = push
-      script: ./gradlew clean publish
+      script: ./gradlew publish
 
     # deploy to Docker hub
     - stage: deploy

@@ -72,7 +72,7 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testPatchNoSparql() {
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, null, mockBundler, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, null, mockBundler, null);
         final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.initialize(mockParent, mockResource),
                 "No exception thrown with a null input!").getResponse();
@@ -82,13 +82,13 @@ public class PatchHandlerTest extends BaseTestHandler {
     @Test
     public void testBadAudit() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         // will never store audit
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
-        final PatchHandler handler = new PatchHandler(mockLdpRequest, "", mockBundler, null);
+        final PatchHandler handler = new PatchHandler(mockTrellisRequest, "", mockBundler, null);
 
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.updateResource(handler.initialize(mockParent, mockResource))),
@@ -97,10 +97,10 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testPatchLdprs() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, baseUrl);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
             .join().build();
 
@@ -111,11 +111,11 @@ public class PatchHandlerTest extends BaseTestHandler {
     public void testEntity() {
         final Triple triple = rdf.createTriple(identifier, RDFS.label, rdf.createLiteral("A label"));
 
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(triple));
-        when(mockLdpRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
             .join().build();
 
@@ -127,11 +127,11 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testPreferRepresentation() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
-        when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
             .join().build();
 
@@ -147,13 +147,13 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testPreferHTMLRepresentation() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
-        when(mockLdpRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
-        when(mockLdpRequest.getHeaders().getAcceptableMediaTypes())
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
+        when(mockTrellisRequest.getHeaders().getAcceptableMediaTypes())
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
             .join().build();
 
@@ -169,11 +169,11 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testConflict() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockRequest.evaluatePreconditions(any(Date.class), any(EntityTag.class))).thenReturn(status(CONFLICT));
-        when(mockLdpRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
         final Response res = assertThrows(WebApplicationException.class, () ->
                 patchHandler.initialize(mockParent, mockResource), "No exception thrown for CONFLICT!").getResponse();
         assertEquals(CONFLICT, res.getStatusInfo(), "Incorrect response code!");
@@ -181,12 +181,12 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testError() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockResourceService.replace(eq(identifier), any(IRI.class), any(Dataset.class), any(), any()))
             .thenReturn(asyncException());
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend triggers an exception!");
@@ -194,10 +194,10 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testNoLdpRsSupport() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
         final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.initialize(mockParent, mockResource),
                 "No exception for an unsupported IXN model!").getResponse();
@@ -209,12 +209,12 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testError2() {
-        when(mockLdpRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockLdpRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
         doThrow(RuntimeTrellisException.class).when(mockIoService)
             .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
 
-        final PatchHandler patchHandler = new PatchHandler(mockLdpRequest, insert, mockBundler, baseUrl);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, baseUrl);
         final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource)).join(),
                 "No exception when the update triggers an error!").getResponse();

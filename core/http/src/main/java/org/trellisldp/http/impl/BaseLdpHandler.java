@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 
 /**
  * @author acoburn
@@ -53,7 +53,7 @@ class BaseLdpHandler {
     }
 
     private final String requestBaseUrl;
-    private final LdpRequest request;
+    private final TrellisRequest request;
     private final ServiceBundler services;
 
     private Resource resource;
@@ -65,7 +65,7 @@ class BaseLdpHandler {
      * @param services the Trellis service bundle
      * @param baseUrl the base URL
      */
-    protected BaseLdpHandler(final LdpRequest request, final ServiceBundler services, final String baseUrl) {
+    protected BaseLdpHandler(final TrellisRequest request, final ServiceBundler services, final String baseUrl) {
         this.requestBaseUrl = getRequestBaseUrl(request, baseUrl);
         this.request = request;
         this.services = services;
@@ -136,7 +136,7 @@ class BaseLdpHandler {
      * Get the LDP Request object.
      * @return the LDP request object
      */
-    protected LdpRequest getRequest() {
+    protected TrellisRequest getRequest() {
         return request;
     }
 
@@ -148,7 +148,7 @@ class BaseLdpHandler {
         return services;
     }
 
-    private static String getRequestBaseUrl(final LdpRequest req, final String baseUrl) {
+    private static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
         final String base = ofNullable(baseUrl).orElseGet(req::getBaseUrl);
         if (base.endsWith("/")) {
             return base;

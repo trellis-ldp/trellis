@@ -51,7 +51,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDelete() {
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, null);
         final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource)).join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect delete response!");
     }
@@ -59,13 +59,13 @@ public class DeleteHandlerTest extends BaseTestHandler {
     @Test
     public void testBadAudit() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockLdpRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
-        when(mockLdpRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         // will never store audit
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, null);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, null);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend reports an exception!");
@@ -74,7 +74,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     @Test
     public void testDeleteError() {
         when(mockResourceService.delete(any(IRI.class), any(IRI.class))).thenReturn(asyncException());
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend reports an exception!");
@@ -83,7 +83,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     @Test
     public void testDeletePersistenceSupport() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
         final Response res = assertThrows(WebApplicationException.class, () ->
                 handler.initialize(mockParent, mockResource)).getResponse();
         assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -96,8 +96,8 @@ public class DeleteHandlerTest extends BaseTestHandler {
     public void testDeleteACLError() {
         when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
             .thenReturn(asyncException());
-        when(mockLdpRequest.getExt()).thenReturn(ACL);
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
+        when(mockTrellisRequest.getExt()).thenReturn(ACL);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when an ACL couldn't be deleted!");
@@ -108,8 +108,8 @@ public class DeleteHandlerTest extends BaseTestHandler {
         when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
             .thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
-        when(mockLdpRequest.getExt()).thenReturn(ACL);
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
+        when(mockTrellisRequest.getExt()).thenReturn(ACL);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when an ACL audit stream couldn't be written!");
@@ -119,7 +119,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     public void testCache() {
         when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
                 .thenReturn(status(PRECONDITION_FAILED));
-        final DeleteHandler handler = new DeleteHandler(mockLdpRequest, mockBundler, baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
                 handler.initialize(mockParent, mockResource), "Unexpected response type!").getResponse();

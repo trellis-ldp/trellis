@@ -94,7 +94,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.http.core.LdpRequest;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -133,7 +133,7 @@ abstract class BaseTestHandler {
     protected Resource mockResource, mockParent;
 
     @Mock
-    protected LdpRequest mockLdpRequest;
+    protected TrellisRequest mockTrellisRequest;
 
     @Mock
     protected Request mockRequest;
@@ -162,11 +162,11 @@ abstract class BaseTestHandler {
 
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
 
-        when(mockLdpRequest.getSecurityContext()).thenReturn(mockSecurityContext);
-        when(mockLdpRequest.getRequest()).thenReturn(mockRequest);
-        when(mockLdpRequest.getPath()).thenReturn("");
-        when(mockLdpRequest.getBaseUrl()).thenReturn(baseUrl);
-        when(mockLdpRequest.getHeaders()).thenReturn(mockHttpHeaders);
+        when(mockTrellisRequest.getSecurityContext()).thenReturn(mockSecurityContext);
+        when(mockTrellisRequest.getRequest()).thenReturn(mockRequest);
+        when(mockTrellisRequest.getPath()).thenReturn("");
+        when(mockTrellisRequest.getBaseUrl()).thenReturn(baseUrl);
+        when(mockTrellisRequest.getHeaders()).thenReturn(mockHttpHeaders);
     }
 
     protected Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {
