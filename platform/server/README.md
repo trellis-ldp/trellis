@@ -68,7 +68,7 @@ Application health checks are available at `http://localhost:8081/healthcheck`
 ## Building Trellis
 
 1. Run `./gradlew assemble` to build the application or download one of the releases.
-2. Unpack the appropriate distribution in `./platform/linux/build/distributions`
+2. Unpack the appropriate distribution in `./platform/server/build/distributions`
 3. Start the application according to the steps above
 
 ## Configuration

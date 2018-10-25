@@ -93,7 +93,7 @@ ext {
     ]
 
     omitFromMavenPublishing = [
-        'trellis-linux',
+        'trellis-server',
         'trellis-webapp'
     ]
 }

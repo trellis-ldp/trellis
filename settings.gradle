@@ -25,7 +25,7 @@ include ':trellis-rdfa'
 
 include ':trellis-karaf'
 include ':trellis-osgi'
-include ':trellis-linux'
+include ':trellis-server'
 include ':trellis-test'
 include ':trellis-webapp'
 include ':trellis-app-triplestore'
@@ -58,5 +58,5 @@ project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
 
 project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
 project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File
-project(':trellis-linux').projectDir = "$rootDir/platform/linux" as File
+project(':trellis-server').projectDir = "$rootDir/platform/server" as File
 project(':trellis-webapp').projectDir = "$rootDir/platform/webapp" as File
