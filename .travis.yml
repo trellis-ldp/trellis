@@ -32,28 +32,33 @@ branches:
     # long-lived branches
     - /branch-.+/
 
+env:
+
 jobs:
   allow_failures:
-    # It is not crucial that SNAPSHOT artifacts are pushed to Sonatype
-    - name: "Publish to Sonatype"
+    - env: JOB=sonatype
+    - env: JOB=docker
 
   include:
     # JDK 8
     - name: "Java 8"
       stage: test
       jdk: oraclejdk8
+      env: JOB=check
       script: travis_retry ./gradlew check install jacocoRootReport coveralls sonarqube -Pitests
 
     # JDK 11
     - name: "Java 11"
       stage: test
       jdk: openjdk11
+      env: JOB=check
       script: travis_retry ./gradlew check install -Pitests
 
     # deploy JDK 8 builds to Sonatype
     - name: "Publish to Sonatype"
       stage: deploy
       jdk: oraclejdk8
+      env: JOB=sonatype
       if: branch = master AND type = push
       # Only automate the publication of SNAPSHOTS
       script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew publish ; fi
@@ -63,6 +68,7 @@ jobs:
       stage: deploy
       jdk: oraclejdk8
       if: branch = master AND type = push
+      env: JOB=docker
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       script: ./gradlew dockerPush
 
