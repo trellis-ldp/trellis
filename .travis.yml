@@ -33,6 +33,10 @@ branches:
     - /branch-.+/
 
 jobs:
+  allow_failures:
+    # It is not crucial that SNAPSHOT artifacts are pushed to Sonatype
+    - name: "Publish to Sonatype"
+
   include:
     # JDK 8
     - name: "Java 8"
