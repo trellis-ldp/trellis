@@ -142,6 +142,11 @@ public class JoiningResourceServiceTest {
         public Set<IRI> supportedInteractionModels() {
             return emptySet();
         }
+
+        @Override
+        public CompletableFuture<Void> touch(final IRI identifier) {
+            return completedFuture(null);
+        }
     }
 
     private static class TestResource implements Resource {

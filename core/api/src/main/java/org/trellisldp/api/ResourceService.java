@@ -20,6 +20,7 @@ import static org.trellisldp.api.RDFUtils.getInstance;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
@@ -116,6 +117,18 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
         }
         return term;
     }
+
+    /**
+     * Update the modification date of the provided resource.
+     *
+     * @apiNote there may be cases where the resource with the given identifier does not (yet) exist.
+     *          In those cases, the implementation should return a completed future as if the resource
+     *          existed. Exceptions should be thrown only if there is an error updating an existing resource.
+     * @param identifier the identifier of the resource
+     * @return a new completion stage that, when the stage completes normally, indicates that the
+     *         identified resource has been updated with a new modification date.
+     */
+    CompletableFuture<Void> touch(IRI identifier);
 
     /**
      * Return a collection of interaction models supported by this Resource Service.

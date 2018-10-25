@@ -511,6 +511,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
+    public CompletableFuture<Void> touch(final IRI identifier) {
+        return runAsync(() -> {
+            // TODO - implement this
+        });
+    }
+
+    @Override
     public Set<IRI> supportedInteractionModels() {
         return supportedIxnModels;
     }

@@ -209,8 +209,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 // If the parent's membership resource is different than the parent itself,
                 // notify about that membership resource, too (if it exists)
                 if (!Objects.equals(id, getParentMembershipResource())) {
-                    return emitMembershipUpdateEvent();
+                    return allOf(getServices().getResourceService().touch(id), emitMembershipUpdateEvent());
                 }
+                return getServices().getResourceService().touch(id);
             }
         }
         return completedFuture(null);
@@ -298,13 +299,14 @@ class MutatingLdpHandler extends BaseLdpHandler {
     private CompletableFuture<Void> emitMembershipUpdateEvent() {
         final IRI membershipResource = getParentMembershipResource();
         if (nonNull(membershipResource)) {
-            return getServices().getResourceService().get(membershipResource).thenAccept(res -> {
-                if (nonNull(res.getIdentifier())) {
-                    getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
-                                getSession().getAgent(), asList(PROV.Activity, AS.Update),
-                                asList(res.getInteractionModel())));
-                }
-            });
+            return allOf(getServices().getResourceService().touch(membershipResource),
+                getServices().getResourceService().get(membershipResource).thenAccept(res -> {
+                    if (nonNull(res.getIdentifier())) {
+                        getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
+                                    getSession().getAgent(), asList(PROV.Activity, AS.Update),
+                                    asList(res.getInteractionModel())));
+                    }
+                }));
         }
         return completedFuture(null);
     }
