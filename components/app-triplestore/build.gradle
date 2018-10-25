@@ -63,3 +63,6 @@ jar {
     }
 }
 
+test {
+    enabled = project.hasProperty("itests")
+}
