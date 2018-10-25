@@ -35,23 +35,27 @@ branches:
 jobs:
   include:
     # JDK 8
-    - stage: test
+    - name: "Java 8"
+      stage: test
       jdk: oraclejdk8
       script: travis_retry ./gradlew check install jacocoRootReport coveralls sonarqube -Pitests
 
     # JDK 11
-    - stage: test
+    - name: "Java 11"
+      stage: test
       jdk: openjdk11
       script: travis_retry ./gradlew check install -Pitests
 
     # deploy JDK 8 builds to Sonatype
-    - stage: deploy
+    - name: "Publish to Sonatype"
+      stage: deploy
       jdk: oraclejdk8
       if: branch = master AND type = push
       script: ./gradlew publish
 
     # deploy to Docker hub
-    - stage: deploy
+    - name: "Publish to Docker hub"
+      stage: deploy
       jdk: oraclejdk8
       if: branch = master AND type = push
       script:
