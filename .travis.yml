@@ -33,6 +33,7 @@ branches:
     - /branch-.+/
 
 env:
+  - JOB=check
 
 jobs:
   allow_failures:
@@ -44,14 +45,12 @@ jobs:
     - name: "Java 8"
       stage: test
       jdk: oraclejdk8
-      env: JOB=check
       script: travis_retry ./gradlew check install jacocoRootReport coveralls sonarqube -Pitests
 
     # JDK 11
     - name: "Java 11"
       stage: test
       jdk: openjdk11
-      env: JOB=check
       script: travis_retry ./gradlew check install -Pitests
 
     # deploy JDK 8 builds to Sonatype
