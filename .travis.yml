@@ -36,6 +36,8 @@ env:
   - JOB=check
 
 jobs:
+  fast_finish: true
+
   allow_failures:
     - env: JOB=sonatype
     - env: JOB=docker
