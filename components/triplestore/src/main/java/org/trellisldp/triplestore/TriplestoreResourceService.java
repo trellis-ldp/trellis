@@ -72,10 +72,8 @@ import org.apache.jena.sparql.modify.request.UpdateDataInsert;
 import org.apache.jena.sparql.modify.request.UpdateDeleteInsert;
 import org.apache.jena.sparql.modify.request.UpdateDeleteWhere;
 import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementMinus;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
-import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
@@ -100,9 +98,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     /** The configuration key used to set where the RDF is stored. **/
     public static final String CONFIG_TRIPLESTORE_RDF_LOCATION = "trellis.triplestore.rdf.location";
 
-    private static final String PARENT = "parent";
     private static final String MODIFIED = "modified";
-    private static final String MEMBER = "member";
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
@@ -228,76 +224,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         }
     }
 
-    /**
-     * This is equivalent to the SPARQL query below.
-     *
-     * <p><pre><code>
-     * WITH trellis:PreferServerManaged
-     *   DELETE { ?parent dc:modified ?modified }
-     *   INSERT { ?parent dc:modified TIME }
-     *   WHERE {
-     *     IDENTIFIER dc:isPartOf ?parent .
-     *     ?parent dc:modified ?modified .
-     *     MINUS { ?parent a ldp:RDFSource }
-     *     MINUS { ?parent a ldp:NonRDFSource }
-     * }
-     * </code></pre></p>
-     */
-    private Update getParentUpdateModificationRequest(final IRI identifier, final Literal time) {
-        final Var parent = Var.alloc(PARENT);
-        final Var modified = Var.alloc(MODIFIED);
-        final UpdateDeleteInsert modify = new UpdateDeleteInsert();
-        modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-        modify.getDeleteAcc().addTriple(triple(parent, rdf.asJenaNode(DC.modified), modified));
-        modify.getInsertAcc().addTriple(triple(parent, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
-        final ElementGroup eg = new ElementGroup();
-        final ElementPathBlock epb1 = new ElementPathBlock();
-        epb1.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), parent));
-        epb1.addTriple(triple(parent, rdf.asJenaNode(DC.modified), modified));
-        eg.addElement(epb1);
-        final ElementPathBlock epb2 = new ElementPathBlock();
-        epb2.addTriple(triple(parent, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.RDFSource)));
-        eg.addElement(new ElementMinus(epb2));
-        final ElementPathBlock epb3 = new ElementPathBlock();
-        epb3.addTriple(triple(parent, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
-        eg.addElement(new ElementMinus(epb3));
-        modify.setElement(eg);
-        return modify;
-    }
-
-    /**
-     * This is equivalent to the SPARQL below.
-     *
-     * <p><pre><code>
-     * WITH trellis:PreferServerManaged
-     *   DELETE { ?member dc:modified ?modified }
-     *   INSERT { ?member dc:modified TIME }
-     *   WHERE {
-     *     IDENTIFIER dc:isPartOf ?parent .
-     *     ?parent ldp:membershipResource ?member .
-     *     ?parent ldp:hasMemberRelation ?any .
-     *     ?member dc:modified ?modified
-     * }
-     * </code></pre></p>
-     */
-    private Update getMemberUpdateModificationRequest(final IRI identifier, final Literal time) {
-        final Var parent = Var.alloc(PARENT);
-        final Var modified = Var.alloc(MODIFIED);
-        final Var member = Var.alloc(MEMBER);
-        final Var any = Var.alloc("any");
-        final UpdateDeleteInsert modification = new UpdateDeleteInsert();
-        modification.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-        modification.getDeleteAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
-        modification.getInsertAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
-        final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), parent));
-        epb.addTriple(triple(parent, rdf.asJenaNode(LDP.membershipResource), member));
-        epb.addTriple(triple(parent, rdf.asJenaNode(LDP.hasMemberRelation), any));
-        epb.addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
-        modification.setElement(epb);
-        return modification;
-    }
-
     private Node getAclIRI(final IRI identifier) {
         return createURI(identifier.getIRIString() + "?ext=acl");
     }
@@ -320,21 +246,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      *   IDENTIFIER a ldp:NonRDFSource .
      *   IDENTIFIER dc:hasPart ?s .
      *   ?s ?p ?o .
-     * }
+     * };
      * DELETE WHERE { GRAPH trellis:PreferServerManaged { IDENTIFIER ?p ?o } };
      * INSERT DATA {
      *   GRAPH IDENTIFIER { ... }
      *   GRAPH IDENTIFIER?ext=acl { ... }
      *   GRAPH trellis:PreferServerManaged { ... }
      *   GRAPH IDENTIFIER?ext=audit { ... }
-     * };
-     * // this next clause happens first in an HTTP delete operation
-     * WITH trellis:PreferServerManaged
-     *   DELETE { ?parent dc:modified ?x }
-     *   INSERT { ?parent dc:modified TIME }
-     *   WHERE {
-     *     IDENTIFIER dc:isPartOf ?parent .
-     *     ?parent rdf:type ldp:Container
      * }
      * </code></pre></p>
      */
@@ -345,14 +263,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         dataset.add(PreferServerManaged, identifier, DC.modified, time);
 
         final UpdateRequest req = new UpdateRequest();
-        if (type == OperationType.DELETE) {
-            // Update the parent container's modified date
-            req.add(getParentUpdateModificationRequest(identifier, time));
-
-            // Likewise the member resource.
-            req.add(getMemberUpdateModificationRequest(identifier, time));
-        }
-
         req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(rdf.asJenaNode(identifier),
                                 SUBJECT, PREDICATE, OBJECT)))));
         req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(
@@ -366,15 +276,13 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(rdf.asJenaNode(PreferServerManaged),
                                 rdf.asJenaNode(identifier), PREDICATE, OBJECT)))));
 
+        final QuadDataAcc sink = new QuadDataAcc(synchronizedList(new ArrayList<>()));
         if (type == OperationType.DELETE) {
-            final QuadDataAcc sink = new QuadDataAcc(synchronizedList(new ArrayList<>()));
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
             dataset.getGraph(PreferAudit).ifPresent(g -> g.stream()
                     .map(t -> new Quad(getAuditIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
-            req.add(new UpdateDataInsert(sink));
         } else {
-            final QuadDataAcc sink = new QuadDataAcc(synchronizedList(new ArrayList<>()));
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
             dataset.getGraph(PreferUserManaged).ifPresent(g -> g.stream()
@@ -383,33 +291,36 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                     .map(t -> new Quad(getAclIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
             dataset.getGraph(PreferAudit).ifPresent(g -> g.stream()
                     .map(t -> new Quad(getAuditIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
-            req.add(new UpdateDataInsert(sink));
         }
+        req.add(new UpdateDataInsert(sink));
 
-        if (type == OperationType.CREATE) {
-            // Update the parent's modification date
-            req.add(getParentUpdateModificationRequest(identifier, time));
+        return req;
+    }
 
-            // Likewise update the member resource.
-            req.add(getMemberUpdateModificationRequest(identifier, time));
-
-        } else if (type != OperationType.DELETE) {
-            // Indirect containers member resources are _always_ updated.
-            final Var parent = Var.alloc(PARENT);
-            final Var modified = Var.alloc(MODIFIED);
-            final Var member = Var.alloc(MEMBER);
-            final UpdateDeleteInsert modify = new UpdateDeleteInsert();
-            modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
-            modify.getDeleteAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
-            modify.getInsertAcc().addTriple(triple(member, rdf.asJenaNode(DC.modified), rdf.asJenaNode(time)));
-            final ElementPathBlock epb = new ElementPathBlock();
-            epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), modified));
-            epb.addTriple(triple(parent, rdf.asJenaNode(LDP.membershipResource), member));
-            epb.addTriple(triple(parent, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
-            epb.addTriple(triple(member, rdf.asJenaNode(DC.modified), modified));
-            modify.setElement(epb);
-            req.add(modify);
-        }
+    /**
+     * This code is equivalent to the SPARQL query below.
+     *
+     * <p><pre><code>
+     * WITH trellis:PreferServerManaged
+     *   DELETE { IDENTIFIER dc:modified ?time }
+     *   INSERT { IDENTIFIER dc:modified TIME }
+     *   WHERE { IDENTIFIER dc:modified ?time } .
+     * </code></pre></p>
+     */
+    private UpdateRequest buildUpdateModificationRequest(final IRI identifier, final Literal time) {
+        final UpdateRequest req = new UpdateRequest();
+        final Var modified = Var.alloc(MODIFIED);
+        final UpdateDeleteInsert modify = new UpdateDeleteInsert();
+        modify.setWithIRI(rdf.asJenaNode(PreferServerManaged));
+        modify.getDeleteAcc().addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), modified));
+        modify.getInsertAcc().addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified),
+                    rdf.asJenaNode(time)));
+        final ElementGroup eg = new ElementGroup();
+        final ElementPathBlock epb = new ElementPathBlock();
+        epb.addTriple(triple(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.modified), modified));
+        eg.addElement(epb);
+        modify.setElement(eg);
+        req.add(modify);
         return req;
     }
 
@@ -512,8 +423,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public CompletableFuture<Void> touch(final IRI identifier) {
+        final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
         return runAsync(() -> {
-            // TODO - implement this
+            try {
+                rdfConnection.update(buildUpdateModificationRequest(identifier, time));
+            } catch (final Exception ex) {
+                LOGGER.error("Could not update data: {}", ex.getMessage());
+                throw new RuntimeTrellisException(ex);
+            }
         });
     }
 
