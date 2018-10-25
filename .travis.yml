@@ -44,9 +44,17 @@ jobs:
       jdk: openjdk11
       script: travis_retry ./gradlew check install -Pitests
 
-    # deploy JDK 8 builds
+    # deploy JDK 8 builds to Sonatype
     - stage: deploy
       jdk: oraclejdk8
       if: branch = master AND type = push
       script: ./gradlew clean publish
+
+    # deploy to Docker hub
+    - stage: deploy
+      jdk: oraclejdk8
+      if: branch = master AND type = push
+      script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - ./gradlew dockerPush
 
