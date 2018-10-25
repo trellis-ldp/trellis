@@ -436,4 +436,8 @@ configure(rootProject) {
     tasks.coveralls {
         dependsOn 'jacocoRootReport'
     }
+
+    task getVersion << {
+        println project.version
+    }
 }

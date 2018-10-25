@@ -51,14 +51,14 @@ jobs:
       stage: deploy
       jdk: oraclejdk8
       if: branch = master AND type = push
-      script: ./gradlew publish
+      # Only automate the publication of SNAPSHOTS
+      script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew publish ; fi
 
     # deploy to Docker hub
     - name: "Publish to Docker hub"
       stage: deploy
       jdk: oraclejdk8
       if: branch = master AND type = push
-      script:
-        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - ./gradlew dockerPush
+      before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      script: ./gradlew dockerPush
 
