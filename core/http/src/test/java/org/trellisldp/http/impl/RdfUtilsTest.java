@@ -71,7 +71,7 @@ public class RdfUtilsTest {
 
     private static final RDF rdf = getInstance();
     private static final IOService ioService = new JenaIOService();
-    private static final IRI identifier = rdf.createIRI("trellis:data/repository/resource");
+    private static final IRI identifier = rdf.createIRI("trellis:data/resource");
     private static final Quad QUAD1 = rdf.createQuad(Trellis.PreferAudit, identifier, DC.creator,
             rdf.createLiteral("me"));
     private static final Quad QUAD2 = rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.modified,
@@ -213,7 +213,7 @@ public class RdfUtilsTest {
 
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
 
-        final IRI subject = rdf.createIRI("http://example.org/repository/resource");
+        final IRI subject = rdf.createIRI("http://example.org/resource");
         final Graph graph = rdf.createGraph();
         graph.add(rdf.createTriple(subject, DC.title, literal));
         graph.add(rdf.createTriple(subject, DC.subject, bnode));

@@ -203,7 +203,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     private void setUpResourceService() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "repository/resource"))))
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource"))))
             .thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
         when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));

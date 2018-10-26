@@ -189,7 +189,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testGetDefaultType2() {
-        final Response res = target("repository/resource").request().get();
+        final Response res = target("resource").request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type: " + res.getMediaType());
@@ -576,7 +576,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     public void testGetTimeMapLinkDefaultFormat2() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
-        final Response res = target("repository/resource").queryParam("ext", "timemap").request().get();
+        final Response res = target("resource").queryParam("ext", "timemap").request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(MediaType.valueOf(APPLICATION_LINK_FORMAT), res.getMediaType(), "Incorrect content-type!");

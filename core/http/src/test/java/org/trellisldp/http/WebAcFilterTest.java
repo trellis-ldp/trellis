@@ -49,8 +49,6 @@ import org.trellisldp.vocabulary.ACL;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WebAcFilterTest {
 
-    private static final String REPO1 = "repo1";
-
     private static final Set<IRI> allModes = new HashSet<>();
 
     static {
@@ -79,7 +77,7 @@ public class WebAcFilterTest {
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
-        when(mockUriInfo.getPath()).thenReturn(REPO1);
+        when(mockUriInfo.getPath()).thenReturn("");
     }
 
     @Test

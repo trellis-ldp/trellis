@@ -685,7 +685,7 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(child, LDP.RDFSource, dataset, resource, null),
-                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful create operation!");
+                      svc.touch(resource), svc.touch(members)).join(), "Unsuccessful create operation!");
 
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater3, 1L, 3L, 1L)),
@@ -777,9 +777,8 @@ public class TriplestoreResourceServiceTest {
 
         final Instant evenLater2 = meanwhile();
 
-        assertDoesNotThrow(() ->
-                allOf(svc.create(members, LDP.RDFSource, dataset, root, null),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+        assertDoesNotThrow(() -> allOf(svc.create(members, LDP.RDFSource, dataset, root, null),
+                      svc.touch(root)).join(), "Unsuccessful membership resource create operation!");
 
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
@@ -1119,7 +1118,7 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(members, LDP.RDFSource, dataset, root, null),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                      svc.touch(root)).join(), "Unsuccessful member resource creation operation!");
 
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 1L, 0L)),
@@ -1140,7 +1139,7 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(child, LDP.RDFSource, dataset, resource, null),
-                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful create operation!");
+                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful child creation operation!");
 
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater3, 1L, 3L, 1L)),
