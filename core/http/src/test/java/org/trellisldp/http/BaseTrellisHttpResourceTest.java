@@ -229,6 +229,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
+        when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
                 rdf.createQuad(PreferServerManaged, identifier, DC.created,
