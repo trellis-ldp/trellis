@@ -121,9 +121,9 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
     /**
      * Update the modification date of the provided resource.
      *
-     * @apiNote there may be cases where the resource with the given identifier does not (yet) exist.
-     *          In those cases, the implementation should return a completed future as if the resource
-     *          existed. Exceptions should be thrown only if there is an error updating an existing resource.
+     * @apiNote In general, when this method is called, it can be expected that the target resource
+     *          will already exist. In cases where that resource does not already exist, an implementation
+     *          may choose to throw an exception, log an error or simply do nothing.
      * @param identifier the identifier of the resource
      * @return a new completion stage that, when the stage completes normally, indicates that the
      *         identified resource has been updated with a new modification date.
