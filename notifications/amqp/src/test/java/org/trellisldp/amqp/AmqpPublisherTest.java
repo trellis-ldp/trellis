@@ -18,6 +18,7 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -44,6 +45,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.mockito.Mock;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
@@ -99,6 +101,7 @@ public class AmqpPublisherTest {
     }
 
     @Test
+    @DisabledOnOs(WINDOWS)
     public void testDefaultService() {
         assertDoesNotThrow(() -> new AmqpPublisher());
     }
