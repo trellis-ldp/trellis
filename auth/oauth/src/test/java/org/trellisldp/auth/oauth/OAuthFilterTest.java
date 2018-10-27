@@ -272,13 +272,11 @@ public class OAuthFilterTest {
         }
     }
 
-    private Stream<Executable> checkSecurityContext(final SecurityContext ctx, final String webid) {
+    private static Stream<Executable> checkSecurityContext(final SecurityContext ctx, final String webid) {
         return of(
-                () -> assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(),
-                                   "Unexpected agent IRI!"),
-                () -> assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(),
-                                   "Unexpected scheme!"),
-                () -> assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!"),
-                () -> assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!"));
+                () -> assertEquals(webid, ctx.getUserPrincipal().getName(), "Unexpected agent IRI!"),
+                () -> assertEquals(OAuthFilter.SCHEME, ctx.getAuthenticationScheme(), "Unexpected scheme!"),
+                () -> assertFalse(ctx.isSecure(), "Unexpected secure flag!"),
+                () -> assertTrue(ctx.isUserInRole("some role"), "Not in user role!"));
     }
 }
