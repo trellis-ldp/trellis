@@ -90,8 +90,8 @@ public class BasicAuthFilterTest {
         try {
             System.setProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS, getAuthFile());
             final BasicAuthFilter filter = new BasicAuthFilter();
-            final String webid = "https://madison.example.com/profile/#me";
-            final String token = encodeCredentials("user", "password");
+            final String webid = "https://pat.example.com/profile/#me";
+            final String token = encodeCredentials("user2", "password2");
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
             filter.filter(mockContext);
             verify(mockContext).setSecurityContext(securityArgument.capture());
