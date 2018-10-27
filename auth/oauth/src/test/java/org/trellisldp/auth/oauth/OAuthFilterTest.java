@@ -19,8 +19,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
 import static java.util.Base64.getUrlDecoder;
 import static java.util.Date.from;
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -41,6 +43,7 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.spec.RSAPrivateKeySpec;
+import java.util.stream.Stream;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -49,6 +52,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -58,6 +62,9 @@ import org.mockito.Mock;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class OAuthFilterTest {
+
+    private static final String WEBID1 = "https://people.apache.org/~acoburn/#i";
+    private static final String WEBID2 = "https://user.example.com/#me";
 
     @Mock
     private ContainerRequestContext mockContext;
@@ -76,9 +83,8 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterAuth() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
-        final String token = Jwts.builder().setSubject(webid).signWith(key).compact();
+        final String token = Jwts.builder().setSubject(WEBID1).signWith(key).compact();
         final ContainerRequestContext mockCtx = mock(ContainerRequestContext.class);
         when(mockCtx.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
@@ -86,7 +92,7 @@ public class OAuthFilterTest {
         final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
         filter.filter(mockCtx);
         verify(mockCtx).setSecurityContext(securityArgument.capture());
-        assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals(WEBID1, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
         assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
@@ -94,15 +100,14 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterWebid() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
-        final String token = Jwts.builder().claim("webid", webid).signWith(key).compact();
+        final String token = Jwts.builder().claim("webid", WEBID2).signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
         final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
         filter.filter(mockContext);
         verify(mockContext).setSecurityContext(securityArgument.capture());
-        assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
         assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
@@ -110,9 +115,8 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterInvalidAuth() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         final String key = "BdEaIIfv67jl8mRL+/vnuf3RzfVfpkxtel8icx2B8uSudOcwVXr7zpwj92UtKCOkVGi2FaE+O4q55P3p7UE7Eg==";
-        final String token = Jwts.builder().setSubject(webid).signWith(hmacShaKeyFor(key.getBytes(UTF_8))).compact();
+        final String token = Jwts.builder().setSubject(WEBID1).signWith(hmacShaKeyFor(key.getBytes(UTF_8))).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
         final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(hmacShaKeyFor(key.replaceFirst("B", "A")
@@ -122,9 +126,8 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterExpiredJwt() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
-        final String token = Jwts.builder().claim("webid", webid).setExpiration(from(now().minusSeconds(10)))
+        final String token = Jwts.builder().claim("webid", WEBID1).setExpiration(from(now().minusSeconds(10)))
             .signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
@@ -134,23 +137,16 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterGenericWebid() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
-            final String token = Jwts.builder().claim("webid", webid)
-                .signWith(hmacShaKeyFor(getConfiguration()
+            final String token = Jwts.builder().claim("webid", WEBID1).signWith(hmacShaKeyFor(getConfiguration()
                             .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
-
             final OAuthFilter filter = new OAuthFilter();
             filter.filter(mockContext);
             verify(mockContext).setSecurityContext(securityArgument.capture());
-            assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
-            assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(),
-                    "Unexpected scheme!");
-            assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-            assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+            assertAll("Validate security context", checkSecurityContext(securityArgument.getValue(), WEBID1));
         } finally {
             System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET);
         }
@@ -158,23 +154,16 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterGenericJwtSecret() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
-            final String token = Jwts.builder().claim("webid", webid)
-                .signWith(hmacShaKeyFor(getConfiguration()
+            final String token = Jwts.builder().claim("webid", WEBID2).signWith(hmacShaKeyFor(getConfiguration()
                             .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BEARER " + token);
-
             final OAuthFilter filter = new OAuthFilter();
             filter.filter(mockContext);
             verify(mockContext).setSecurityContext(securityArgument.capture());
-            assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
-            assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(),
-                    "Unexpected scheme!");
-            assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-            assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+            assertAll("Validate security context", checkSecurityContext(securityArgument.getValue(), WEBID2));
         } finally {
             System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET);
         }
@@ -182,11 +171,10 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterNotBasicAuth() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
-            final String token = Jwts.builder().claim("webid", webid)
+            final String token = Jwts.builder().claim("webid", WEBID1)
                 .signWith(hmacShaKeyFor(getConfiguration()
                             .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
@@ -217,9 +205,8 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterGenericNoAuth() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#i";
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
-        final String token = Jwts.builder().claim("webid", webid).signWith(key).compact();
+        final String token = Jwts.builder().claim("webid", WEBID1).signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
         final OAuthFilter filter = new OAuthFilter();
@@ -228,7 +215,6 @@ public class OAuthFilterTest {
 
     @Test
     public void testFilterGenericJwks() throws Exception {
-        final String webid = "https://people.apache.org/~acoburn/#me";
         final BigInteger exponent = new BigInteger(1, getUrlDecoder().decode("VRPRBm9dCoAJfBbEz5oAHEz7Tnm0i0O6m5yj7N" +
             "wqAZOj9i4ZwgZ8VZQo88oxZQWNaYd1yKeoQhUsJija_vxQEPXO1Q2q6OqMcwTBH0wyGhIFp--z2dAyRlDVLUTQbJUXyqammdh7b16-i" +
             "gH-BB67jfolM-cw-O7YaN7GrxCCYX5bI38IipeYfcroeIUXdLYmmUdNy7c8P2_K4O-iHQ6A4AUtQRUOzt2FGOdmlGZihupI9YprshIy" +
@@ -244,14 +230,14 @@ public class OAuthFilterTest {
 
             final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
             final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis-test")
-                .setSubject(webid).signWith(key).compact();
+                .setSubject(WEBID2).signWith(key).compact();
 
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
             final OAuthFilter filter = new OAuthFilter();
             filter.filter(mockContext);
             verify(mockContext).setSecurityContext(securityArgument.capture());
-            assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+            assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         } finally {
             System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_JWK_URL);
         }
@@ -260,7 +246,6 @@ public class OAuthFilterTest {
     @Test
     public void testFilterGenericFederated() throws Exception {
         final String passphrase = "password";
-        final String webid = "https://people.apache.org/~acoburn/#me";
         try {
             final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_PATH, keystorePath);
@@ -272,18 +257,28 @@ public class OAuthFilterTest {
 
             final Key privateKey = ks.getKey("trellis", passphrase.toCharArray());
             final String token = Jwts.builder().setHeaderParam(JwsHeader.KEY_ID, "trellis")
-                .setSubject(webid).signWith(privateKey, SignatureAlgorithm.RS256).compact();
+                .setSubject(WEBID2).signWith(privateKey, SignatureAlgorithm.RS256).compact();
 
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
             final OAuthFilter filter = new OAuthFilter();
             filter.filter(mockContext);
             verify(mockContext).setSecurityContext(securityArgument.capture());
-            assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+            assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         } finally {
             System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_PATH);
             System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS);
             System.clearProperty(OAuthFilter.CONFIG_AUTH_OAUTH_KEYSTORE_IDS);
         }
+    }
+
+    private Stream<Executable> checkSecurityContext(final SecurityContext ctx, final String webid) {
+        return of(
+                () -> assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(),
+                                   "Unexpected agent IRI!"),
+                () -> assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(),
+                                   "Unexpected scheme!"),
+                () -> assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!"),
+                () -> assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!"));
     }
 }

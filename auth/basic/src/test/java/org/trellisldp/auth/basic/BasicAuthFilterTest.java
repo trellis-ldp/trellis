@@ -74,12 +74,12 @@ public class BasicAuthFilterTest {
     @Test
     public void testOtherCredentials() throws Exception {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
-        final String webid = "https://madison.example.com/profile/#me";
-        final String token = encodeCredentials("user", "password");
-        when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
+        when(mockContext.getHeaderString(AUTHORIZATION))
+            .thenReturn("Basic " + encodeCredentials("user", "password"));
         filter.filter(mockContext);
         verify(mockContext).setSecurityContext(securityArgument.capture());
-        assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals("https://madison.example.com/profile/#me",
+                securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
         assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
@@ -90,15 +90,15 @@ public class BasicAuthFilterTest {
         try {
             System.setProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS, getAuthFile());
             final BasicAuthFilter filter = new BasicAuthFilter();
-            final String webid = "https://pat.example.com/profile/#me";
-            final String token = encodeCredentials("user2", "password2");
-            when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
+            when(mockContext.getHeaderString(AUTHORIZATION))
+                .thenReturn("Basic " + encodeCredentials("user2", "password2"));
             filter.filter(mockContext);
             verify(mockContext).setSecurityContext(securityArgument.capture());
-            assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+            assertEquals("https://pat.example.com/profile/#me",
+                    securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
             assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
             assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-            assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+            assertTrue(securityArgument.getValue().isUserInRole("some other role"), "Not in user role!");
         } finally {
             System.clearProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS);
         }
