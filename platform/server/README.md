@@ -123,11 +123,8 @@ auth:
     adminUsers: []
     webac:
         enabled: true
-    anon:
-        enabled: true
     jwt:
         enabled: true
-        base64Encoded: false
         key: secret
     basic:
         enabled: true
@@ -138,9 +135,7 @@ auth:
 | ---- | ------- | ----------- |
 | adminUsers | (none) | A list of webIDs that should be given admin access for the purpose of authorization |
 | webac / enabled | true | Whether WebAC authorization is enabled |
-| anon / enabled | false | Whether anonymous authentication is enabled |
 | jwt / enabled | true | Whether jwt authentication is enabled |
-| jwt / base64Encoded | false | Whether the key is base64 encoded |
 | jwt / key | (none) | The signing key for JWT tokens |
 | basic / enabled | true | Whether basic authentication is enabled |
 | basic / usersFile | (none) | The path to a file where user credentials are stored |
