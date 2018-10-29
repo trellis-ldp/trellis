@@ -29,6 +29,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.apache.commons.lang3.Range.between;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.io.BufferedWriter;
@@ -52,6 +53,7 @@ import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.tamaya.ConfigurationProvider;
+import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 
@@ -63,6 +65,8 @@ public class FileMementoService implements MementoService {
 
     /** The configuration key controlling the base filesystem path for memento storage. **/
     public static final String CONFIG_FILE_MEMENTO_BASE_PATH = "trellis.file.memento.basepath";
+
+    private static final Logger LOGGER = getLogger(FileMementoService.class);
 
     private final File directory;
 
@@ -80,6 +84,7 @@ public class FileMementoService implements MementoService {
      */
     public FileMementoService(final String path) {
         requireNonNull(path, "Memento base path is undefined!");
+        LOGGER.info("Storing Mementos as files at {}", path);
         this.directory = new File(path);
         init();
     }

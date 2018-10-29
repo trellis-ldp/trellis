@@ -451,12 +451,15 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         if (nonNull(location)) {
             if (location.startsWith("http://") || location.startsWith("https://")) {
                 // Remote
+                LOGGER.info("Using remote Triplestore for persistence at {}", location);
                 return connect(location);
             }
             // TDB2
+            LOGGER.info("Using local TDB2 database at {}", location);
             return connect(wrap(connectDatasetGraph(location)));
         }
         // in-memory
+        LOGGER.info("Using an in-memory dataset for resources");
         return connect(createTxnMem());
     }
 
