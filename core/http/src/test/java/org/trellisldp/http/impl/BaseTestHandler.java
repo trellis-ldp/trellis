@@ -182,7 +182,7 @@ abstract class BaseTestHandler {
     }
 
     protected Stream<Executable> checkLdpType(final Response res, final IRI type) {
-        final Set<String> types = RdfUtils.ldpResourceTypes(type).map(IRI::getIRIString).collect(toSet());
+        final Set<String> types = HttpUtils.ldpResourceTypes(type).map(IRI::getIRIString).collect(toSet());
         final Set<String> responseTypes = res.getLinks().stream().filter(link -> TYPE.equals(link.getRel()))
             .map(link -> link.getUri().toString()).collect(toSet());
         return of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer,

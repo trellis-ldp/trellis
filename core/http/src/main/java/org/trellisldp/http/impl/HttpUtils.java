@@ -60,16 +60,14 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
- * RDF Utility functions.
+ * Http Utility functions.
  *
  * @author acoburn
  */
-public final class RdfUtils {
+public final class HttpUtils {
 
-    private static final Logger LOGGER = getLogger(RdfUtils.class);
-
+    private static final Logger LOGGER = getLogger(HttpUtils.class);
     private static final RDF rdf = getInstance();
-
     private static final Set<String> ignoredPreferences;
 
     static {
@@ -297,7 +295,7 @@ public final class RdfUtils {
             || LDP.DirectContainer.equals(ldpType) || LDP.IndirectContainer.equals(ldpType);
     }
 
-    private RdfUtils() {
+    private HttpUtils() {
         // prevent instantiation
     }
 }
