@@ -28,6 +28,7 @@ import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.findFirst;
+import static org.trellisldp.api.RDFUtils.getContainer;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toGraph;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -164,7 +165,7 @@ public class WebACService implements AccessControlService {
         final Set<IRI> modes = getModesFor(identifier, agent);
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
-            resourceService.getContainer(identifier).map(resourceService::get).map(CompletableFuture::join)
+            getContainer(identifier).map(resourceService::get).map(CompletableFuture::join)
                 .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
                 .map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
@@ -194,7 +195,7 @@ public class WebACService implements AccessControlService {
         if (resourceExists(res)) {
             return of(res);
         }
-        return resourceService.getContainer(identifier).flatMap(this::getNearestResource);
+        return getContainer(identifier).flatMap(this::getNearestResource);
     }
 
     private Predicate<Authorization> agentFilter(final IRI agent) {
@@ -245,7 +246,7 @@ public class WebACService implements AccessControlService {
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
-        return resourceService.getContainer(resource.getIdentifier()).map(resourceService::get)
+        return getContainer(resource.getIdentifier()).map(resourceService::get)
             .map(CompletableFuture::join).map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
     }
 

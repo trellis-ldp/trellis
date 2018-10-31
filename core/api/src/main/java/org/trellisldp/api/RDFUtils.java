@@ -92,6 +92,18 @@ public final class RDFUtils {
     }
 
     /**
+     * Get the structural-logical container for this resource.
+     *
+     * @param identifier the resource identifier
+     * @return a container, if one exists. Only the root resource would return empty here.
+     */
+    public static Optional<IRI> getContainer(final IRI identifier) {
+        final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
+        return Optional.of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
+                    .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(rdf::createIRI);
+    }
+
+    /**
      * Collect a stream of Triples into a Graph.
      *
      * @return a graph
