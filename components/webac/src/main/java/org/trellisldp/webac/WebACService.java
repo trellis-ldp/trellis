@@ -28,6 +28,7 @@ import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.findFirst;
+import static org.trellisldp.api.RDFUtils.getContainer;
 import static org.trellisldp.api.RDFUtils.getInstance;
 import static org.trellisldp.api.RDFUtils.toGraph;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -271,18 +272,6 @@ public class WebACService implements AccessControlService {
      */
     private static IRI cleanIdentifier(final IRI identifier) {
         return rdf.createIRI(cleanIdentifier(identifier.getIRIString()));
-    }
-
-    /**
-     * Get the structural-logical container for this resource.
-     *
-     * @param identifier the resource identifier
-     * @return a container, if one exists. Only the root resource would return empty here.
-     */
-    private static Optional<IRI> getContainer(final IRI identifier) {
-        final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
-        return of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
-                    .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(rdf::createIRI);
     }
 
     @TrellisAuthorizationCache

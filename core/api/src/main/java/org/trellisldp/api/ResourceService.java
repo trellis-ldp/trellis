@@ -13,7 +13,6 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Optional.of;
 import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.RDFUtils.getInstance;
@@ -44,9 +43,7 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
      *
      */
     default Optional<IRI> getContainer(final IRI identifier) {
-        final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
-        return of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
-                    .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(getInstance()::createIRI);
+        return RDFUtils.getContainer(identifier);
     }
 
     /**
