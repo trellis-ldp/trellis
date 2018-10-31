@@ -804,10 +804,6 @@ public class WebACServiceTest {
         when(mockResourceService.get(eq(rootIRI))).thenAnswer(inv -> completedFuture(mockRootResource));
         when(mockResourceService.get(eq(groupIRI))).thenAnswer(inv -> completedFuture(mockGroupResource));
         when(mockResourceService.get(eq(memberIRI))).thenAnswer(inv -> completedFuture(mockMemberResource));
-        when(mockResourceService.getContainer(nonexistentIRI)).thenReturn(of(resourceIRI));
-        when(mockResourceService.getContainer(resourceIRI)).thenReturn(of(childIRI));
-        when(mockResourceService.getContainer(childIRI)).thenReturn(of(parentIRI));
-        when(mockResourceService.getContainer(parentIRI)).thenReturn(of(rootIRI));
     }
 
     private Executable checkCannotRead(final IRI id) {
