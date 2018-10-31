@@ -14,7 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.stream.Stream;
 

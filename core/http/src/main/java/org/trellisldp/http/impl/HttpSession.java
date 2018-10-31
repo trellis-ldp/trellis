@@ -16,8 +16,8 @@ package org.trellisldp.http.impl;
 import static java.time.Instant.now;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static org.trellisldp.api.RDFUtils.TRELLIS_SCHEME;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_SCHEME;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
 
 import java.time.Instant;

@@ -21,7 +21,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.awaitility.Awaitility.await;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -16,7 +16,7 @@ package org.trellisldp.file;
 import static java.nio.file.Files.lines;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.io.File;

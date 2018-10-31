@@ -16,7 +16,7 @@ package org.trellisldp.kafka;
 import static java.util.Objects.requireNonNull;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.findFirst;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import java.util.Properties;
 

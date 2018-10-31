@@ -193,7 +193,7 @@ public interface Resource {
      * @return the RDF quads
      */
     default Dataset dataset() {
-        return stream().collect(RDFUtils.toDataset().concurrent());
+        return stream().collect(TrellisUtils.toDataset().concurrent());
     }
 
     /**

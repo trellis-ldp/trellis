@@ -35,7 +35,7 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
 import static org.apache.commons.lang3.StringUtils.stripStart;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.findFirst;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import java.io.File;
 import java.io.FileInputStream;

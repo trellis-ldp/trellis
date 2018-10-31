@@ -13,9 +13,9 @@
  */
 package org.trellisldp.api;
 
-import static org.trellisldp.api.RDFUtils.TRELLIS_BNODE_PREFIX;
-import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Optional;
 import java.util.Set;
@@ -43,7 +43,7 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
      *
      */
     default Optional<IRI> getContainer(final IRI identifier) {
-        return RDFUtils.getContainer(identifier);
+        return TrellisUtils.getContainer(identifier);
     }
 
     /**

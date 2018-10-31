@@ -63,11 +63,11 @@ public class JoiningResourceServiceTest {
                     testMutableService);
 
     private static IRI createIRI(final String value) {
-        return RDFUtils.getInstance().createIRI(value);
+        return TrellisUtils.getInstance().createIRI(value);
     }
 
     private static Quad createQuad(final BlankNodeOrIRI g, final BlankNodeOrIRI s, final IRI p, final RDFTerm o) {
-        return RDFUtils.getInstance().createQuad(g, s, p, o);
+        return TrellisUtils.getInstance().createQuad(g, s, p, o);
     }
 
     private static class TestableRetrievalService implements RetrievalService<Resource> {
@@ -152,7 +152,7 @@ public class JoiningResourceServiceTest {
     private static class TestResource implements Resource {
 
         private final Instant mod = now();
-        private final Dataset dataset = RDFUtils.getInstance().createDataset();
+        private final Dataset dataset = TrellisUtils.getInstance().createDataset();
         private final IRI id;
 
         public TestResource(final IRI id, final Quad... quads) {
@@ -304,7 +304,7 @@ public class JoiningResourceServiceTest {
         final Instant time = now();
         final IRI identifier = createIRI("trellis:identifier");
         final Quad quad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
-        final Dataset dataset = RDFUtils.getInstance().createDataset();
+        final Dataset dataset = TrellisUtils.getInstance().createDataset();
         dataset.add(quad);
 
         final Resource res = new JoiningResourceService.PersistableResource(identifier, LDP.Container, null, dataset);

@@ -18,10 +18,10 @@ import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.trellisldp.api.RDFUtils.getInstance;
-import static org.trellisldp.api.RDFUtils.toDataset;
-import static org.trellisldp.api.RDFUtils.toGraph;
-import static org.trellisldp.api.RDFUtils.toQuad;
+import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.toDataset;
+import static org.trellisldp.api.TrellisUtils.toGraph;
+import static org.trellisldp.api.TrellisUtils.toQuad;
 
 import java.util.Set;
 import java.util.stream.Collector;
@@ -41,7 +41,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class RDFUtilsTest {
+public class TrellisUtilsTest {
 
     private static final RDF rdf = getInstance();
     private static final Long size = 10000L;
@@ -82,7 +82,7 @@ public class RDFUtilsTest {
         final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toDataset());
 
-        final RDFUtils.DatasetCollector collector = toDataset();
+        final TrellisUtils.DatasetCollector collector = toDataset();
         assertEquals(dataset, collector.finisher().apply(dataset), "Dataset finisher returns the wrong object!");
     }
 

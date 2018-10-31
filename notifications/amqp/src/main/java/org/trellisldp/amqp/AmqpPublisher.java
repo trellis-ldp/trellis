@@ -16,7 +16,7 @@ package org.trellisldp.amqp;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.findFirst;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;

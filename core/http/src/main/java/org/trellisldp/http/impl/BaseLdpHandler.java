@@ -17,7 +17,7 @@ import static java.util.Date.from;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.time.Instant;
 import java.util.ArrayList;

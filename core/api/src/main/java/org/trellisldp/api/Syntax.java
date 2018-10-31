@@ -13,7 +13,7 @@
  */
 package org.trellisldp.api;
 
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Locale;
 

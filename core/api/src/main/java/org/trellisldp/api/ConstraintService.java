@@ -44,6 +44,6 @@ public interface ConstraintService {
      * @return any constraint violations on the graph
      */
     default Stream<ConstraintViolation> constrainedBy(IRI interactionModel, Graph graph) {
-        return constrainedBy(interactionModel, graph, RDFUtils.TRELLIS_DATA_PREFIX);
+        return constrainedBy(interactionModel, graph, TrellisUtils.TRELLIS_DATA_PREFIX);
     }
 }
