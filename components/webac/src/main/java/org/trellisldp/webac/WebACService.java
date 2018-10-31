@@ -164,7 +164,7 @@ public class WebACService implements AccessControlService {
         final Set<IRI> modes = getModesFor(identifier, agent);
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
-            resourceService.getContainer(identifier).map(resourceService::get).map(CompletableFuture::join)
+            getContainer(identifier).map(resourceService::get).map(CompletableFuture::join)
                 .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
                 .map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
@@ -194,7 +194,7 @@ public class WebACService implements AccessControlService {
         if (resourceExists(res)) {
             return of(res);
         }
-        return resourceService.getContainer(identifier).flatMap(this::getNearestResource);
+        return getContainer(identifier).flatMap(this::getNearestResource);
     }
 
     private Predicate<Authorization> agentFilter(final IRI agent) {
@@ -245,7 +245,7 @@ public class WebACService implements AccessControlService {
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
-        return resourceService.getContainer(resource.getIdentifier()).map(resourceService::get)
+        return getContainer(resource.getIdentifier()).map(resourceService::get)
             .map(CompletableFuture::join).map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
     }
 
@@ -271,6 +271,18 @@ public class WebACService implements AccessControlService {
      */
     private static IRI cleanIdentifier(final IRI identifier) {
         return rdf.createIRI(cleanIdentifier(identifier.getIRIString()));
+    }
+
+    /**
+     * Get the structural-logical container for this resource.
+     *
+     * @param identifier the resource identifier
+     * @return a container, if one exists. Only the root resource would return empty here.
+     */
+    private static Optional<IRI> getContainer(final IRI identifier) {
+        final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
+        return of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
+                    .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(rdf::createIRI);
     }
 
     @TrellisAuthorizationCache
