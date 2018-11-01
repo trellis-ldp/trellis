@@ -32,6 +32,11 @@ import org.apache.commons.rdf.api.Triple;
  *
  * @see <a href="https://www.w3.org/TR/ldp/">Linked Data Platform Specification</a>
  *
+ * @apiNote A common implementation pattern for this interface is to initialize the {@link Resource} object
+ *          with metadata such as {@link #getModified}, {@link #getInteractionModel} and other data fetched
+ *          by the accessors. The resource content, on the other hand, is often loaded on-demand via
+ *          the {@link #stream} method. This pattern tends to reduce the number of requests to the
+ *          persistence layer while also limiting the data held in memory for a given {@link Resource} object.
  * @author acoburn
  */
 public interface Resource {
