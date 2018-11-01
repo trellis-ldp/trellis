@@ -95,9 +95,9 @@ public class TriplestoreResource implements Resource {
     /**
      * Try to load a Trellis resource.
      *
-     * @implSpec This method will load a {@link Resource}, initializing the object with
-     *           all resource metadata: last-modified, ldp-type, etc. The resource
-     *           content is fetched on-demand via the {@link #stream()} method.
+     * @implSpec This method will load a {@link Resource}, initializing the object with all resource metadata
+     *           used with {@link #getModified}, {@link #getInteractionModel} and other data fetched by the accessors.
+     *           The resource content is fetched on demand via the {@link #stream} method.
      * @param rdfConnection the triplestore connector
      * @param identifier the identifier
      * @return a new completion stage with a {@link Resource}, if one exists
