@@ -41,8 +41,8 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
-import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
-import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
+import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
+import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 

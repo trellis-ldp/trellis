@@ -26,8 +26,8 @@ import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.RDFUtils.toQuad;
-import static org.trellisldp.http.impl.RdfUtils.skolemizeQuads;
-import static org.trellisldp.http.impl.RdfUtils.skolemizeTriples;
+import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
+import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -203,7 +203,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
         } else if (AS.Create.equals(activityType) || AS.Delete.equals(activityType)) {
             final IRI model = getParentModel();
             final IRI id = getParentIdentifier();
-            if (RdfUtils.isContainer(model)) {
+            if (HttpUtils.isContainer(model)) {
                 getServices().getEventService().emit(new SimpleEvent(getUrl(id),
                                 getSession().getAgent(), asList(PROV.Activity, AS.Update), asList(model)));
                 // If the parent's membership resource is different than the parent itself,
@@ -271,7 +271,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
         try {
             final InputStream input = new FileInputStream(entity);
             return getServices().getBinaryService().setContent(contentLocation, input, metadata)
-                .whenComplete(RdfUtils.closeInputStreamAsync(input));
+                .whenComplete(HttpUtils.closeInputStreamAsync(input));
         } catch (final IOException ex) {
             throw new WebApplicationException("Error saving binary content: " + ex.getMessage());
         }

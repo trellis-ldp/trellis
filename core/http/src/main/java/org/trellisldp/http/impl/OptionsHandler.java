@@ -34,7 +34,7 @@ import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.impl.RdfUtils.ldpResourceTypes;
+import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
