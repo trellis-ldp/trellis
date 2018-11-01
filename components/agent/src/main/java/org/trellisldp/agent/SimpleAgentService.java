@@ -14,7 +14,7 @@
 package org.trellisldp.agent;
 
 import static java.util.Optional.ofNullable;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;

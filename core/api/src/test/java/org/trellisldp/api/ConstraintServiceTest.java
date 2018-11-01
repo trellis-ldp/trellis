@@ -40,7 +40,7 @@ import org.trellisldp.vocabulary.RDFS;
  */
 public class ConstraintServiceTest {
 
-    private static final RDF rdf = RDFUtils.getInstance();
+    private static final RDF rdf = TrellisUtils.getInstance();
     private static final String INCORRECT_LDP_TYPES = "Incorrect number of LDP types found";
     private static final String INCORRECT_UNIQUE_LDP_TYPES = "Incorrect number of unique LDP types found";
     private static final String NO_LDP_RESOURCE = "ldp:Resource not among LDP types";
@@ -131,7 +131,7 @@ public class ConstraintServiceTest {
         final ConstraintService svc = mock(ConstraintService.class);
 
         doCallRealMethod().when(svc).constrainedBy(eq(LDP.RDFSource), any(Graph.class));
-        when(svc.constrainedBy(any(IRI.class), any(Graph.class), eq(RDFUtils.TRELLIS_DATA_PREFIX)))
+        when(svc.constrainedBy(any(IRI.class), any(Graph.class), eq(TrellisUtils.TRELLIS_DATA_PREFIX)))
             .thenAnswer(inv -> Stream.empty());
 
         assertEquals(0L, svc.constrainedBy(LDP.RDFSource, rdf.createGraph()).count(), "Unexpected constraint found");

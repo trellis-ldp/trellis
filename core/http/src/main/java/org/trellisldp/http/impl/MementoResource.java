@@ -34,7 +34,7 @@ import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.Range.between;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
-import static org.trellisldp.api.RDFUtils.findFirst;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;

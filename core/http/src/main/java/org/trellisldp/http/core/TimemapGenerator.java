@@ -15,7 +15,7 @@ package org.trellisldp.http.core;
 
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static org.trellisldp.api.RDFUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.DATETIME;
 import static org.trellisldp.http.core.HttpConstants.FROM;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO;

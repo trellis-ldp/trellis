@@ -40,12 +40,12 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 
 /**
- * The RDFUtils class provides a set of convenience methods related to
+ * The TrellisUtils class provides a set of convenience methods related to
  * generating and processing RDF objects.
  *
  * @author acoburn
  */
-public final class RDFUtils {
+public final class TrellisUtils {
 
     private static RDF rdf = findFirst(RDF.class)
         .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
@@ -212,7 +212,7 @@ public final class RDFUtils {
         }
     }
 
-    private RDFUtils() {
+    private TrellisUtils() {
         // prevent instantiation
     }
 }

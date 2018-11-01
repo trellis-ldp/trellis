@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
-import static org.trellisldp.api.RDFUtils.findFirst;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
