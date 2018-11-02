@@ -72,5 +72,5 @@ jobs:
       if: branch = master AND type = push
       env: JOB=docker
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      script: ./gradlew dockerPush
+      script: ./gradlew dockerPush dockerPushLatest
 
