@@ -217,7 +217,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
-        when(mockResourceService.getContainer(any(IRI.class))).thenCallRealMethod();
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.delete(any(IRI.class), any(IRI.class))).thenReturn(completedFuture(null));
         when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class),

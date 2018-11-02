@@ -192,19 +192,6 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testGetContainer() {
-        final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
-        svc.initialize();
-
-        assertFalse(svc.getContainer(root).isPresent(), "parent found for root container!");
-        assertTrue(svc.getContainer(resource).isPresent(), "no parent found for non-root!");
-        assertEquals(root, svc.getContainer(resource).get(), "incorrect resource parent!");
-        assertTrue(svc.getContainer(child).isPresent(), "no parent found for child!");
-        assertEquals(resource, svc.getContainer(child).get(), "incorrect child resource parent!");
-    }
-
-    @Test
     public void testPutLdpRs() throws Exception {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));

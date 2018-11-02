@@ -1442,7 +1442,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         when(mockResource.getContainer()).thenReturn(empty());
-        when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
 
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1460,7 +1459,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(childIdentifier));
         when(mockResource.getContainer()).thenReturn(empty());
-        when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
 
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1489,7 +1487,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
-        when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
 
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1508,7 +1505,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(childIdentifier));
-        when(mockResourceService.getContainer(identifier)).thenReturn(of(root));
 
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
