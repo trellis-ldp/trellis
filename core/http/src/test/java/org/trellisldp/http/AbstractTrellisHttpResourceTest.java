@@ -55,7 +55,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_LOCATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static org.apache.commons.lang3.Range.between;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -107,6 +106,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -595,10 +595,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     public void testGetTimeMapLink() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.list(eq(identifier))).thenReturn(completedFuture(asList(
-                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000)))));
+        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept(APPLICATION_LINK_FORMAT).get();
@@ -622,10 +620,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testGetTimeMapJsonCompact() throws IOException {
-        when(mockMementoService.list(eq(identifier))).thenReturn(completedFuture(asList(
-                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000)))));
+        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
@@ -668,10 +664,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testGetTimeMapJson() throws IOException {
-        when(mockMementoService.list(eq(identifier))).thenReturn(completedFuture(asList(
-                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000)))));
+        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#expanded\"").get();
@@ -941,10 +935,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testOptionsTimemap() {
-        when(mockMementoService.list(identifier)).thenReturn(completedFuture(asList(
-                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000)))));
+        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().options();
 
@@ -2317,7 +2309,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
                         .equals(l.getParams().get("from")) &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp + 1000))
+                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp))
                         .equals(l.getParams().get("until")) &&
                     APPLICATION_LINK_FORMAT.equals(l.getType()) &&
                     l.getUri().toString().equals(getBaseUrl() + path + "?ext=timemap")), "Missing valid timemap link!"),

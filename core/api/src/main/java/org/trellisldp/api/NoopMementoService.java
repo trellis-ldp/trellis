@@ -13,16 +13,15 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySortedSet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 
@@ -47,8 +46,8 @@ public class NoopMementoService implements MementoService {
     }
 
     @Override
-    public CompletableFuture<List<Range<Instant>>> list(final IRI identifier) {
-        return completedFuture(emptyList());
+    public CompletableFuture<SortedSet<Instant>> mementos(final IRI identifier) {
+        return completedFuture(emptySortedSet());
     }
 
     @Override

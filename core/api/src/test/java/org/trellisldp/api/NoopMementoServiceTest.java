@@ -70,7 +70,7 @@ public class NoopMementoServiceTest {
         testService.put(identifier, time, of(quad));
 
         assertEquals(MISSING_RESOURCE, testService.get(identifier, time).join(), "No-op service found a Memento!");
-        assertTrue(testService.list(identifier).join().isEmpty(), "No-op service found a list of Mementos!");
+        assertTrue(testService.mementos(identifier).join().isEmpty(), "No-op service found a list of Mementos!");
         assertNull(testService.delete(identifier, time).join(), "No-op service responded incorrectly to a delete!");
     }
 

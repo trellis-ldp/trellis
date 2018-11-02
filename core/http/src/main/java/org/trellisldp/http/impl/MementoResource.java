@@ -22,6 +22,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
+import static java.util.stream.Stream.empty;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.HttpMethod.OPTIONS;
@@ -32,7 +33,6 @@ import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.apache.commons.lang3.Range.between;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -64,7 +65,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.tamaya.Configuration;
@@ -101,7 +101,7 @@ public final class MementoResource {
      * @param req the LDP request
      * @return a response builder object
      */
-    public ResponseBuilder getTimeMapBuilder(final List<Range<Instant>> mementos, final TrellisRequest req,
+    public ResponseBuilder getTimeMapBuilder(final SortedSet<Instant> mementos, final TrellisRequest req,
             final String baseUrl) {
 
         final List<MediaType> acceptableTypes = req.getHeaders().getAcceptableMediaTypes();
@@ -143,7 +143,7 @@ public final class MementoResource {
      * @param baseUrl the base URL
      * @return a response builder object
      */
-    public ResponseBuilder getTimeGateBuilder(final List<Range<Instant>> mementos, final TrellisRequest req,
+    public ResponseBuilder getTimeGateBuilder(final SortedSet<Instant> mementos, final TrellisRequest req,
             final String baseUrl) {
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         return status(FOUND)
@@ -154,14 +154,18 @@ public final class MementoResource {
     }
 
     /**
-     * Retrieve all of the Memento-related link headers given a stream of Range objects.
+     * Retrieve all of the Memento-related link headers given a collection of datetimes.
      *
      * @param identifier the public identifier for the resource
-     * @param mementos a stream of memento values
+     * @param mementos a collection of memento values
      * @return a stream of link headers
      */
-    public static Stream<Link> getMementoLinks(final String identifier, final List<Range<Instant>> mementos) {
-        return concat(getTimeMap(identifier, mementos.stream()), mementos.stream().map(mementoToLink(identifier)));
+    public static Stream<Link> getMementoLinks(final String identifier, final SortedSet<Instant> mementos) {
+        if (mementos.isEmpty()) {
+            return empty();
+        }
+        return concat(getTimeMap(identifier, mementos.first(), mementos.last()),
+                mementos.stream().map(mementoToLink(identifier)));
     }
 
     /**
@@ -196,19 +200,16 @@ public final class MementoResource {
         return ofNullable(baseUrl).orElseGet(req::getBaseUrl);
     }
 
-    private static Stream<Link> getTimeMap(final String identifier, final Stream<Range<Instant>> mementos) {
-        return mementos.reduce((acc, x) -> between(acc.getMinimum(), x.getMaximum()))
-            .map(x -> Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
-                .param(FROM, ofInstant(x.getMinimum().minusNanos(1L).plusSeconds(1L), UTC).format(RFC_1123_DATE_TIME))
-                .param(UNTIL, ofInstant(x.getMaximum(), UTC).format(RFC_1123_DATE_TIME)).build())
-            // TODO use Optional::stream with JDK9
-            .map(Stream::of).orElseGet(Stream::empty);
+    private static Stream<Link> getTimeMap(final String identifier, final Instant from, final Instant until) {
+        return Stream.of(Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
+                .param(FROM, ofInstant(from.minusNanos(1L).plusSeconds(1L), UTC).format(RFC_1123_DATE_TIME))
+                .param(UNTIL, ofInstant(until, UTC).format(RFC_1123_DATE_TIME)).build());
     }
 
-    private static Function<Range<Instant>, Link> mementoToLink(final String identifier) {
-        return range ->
-            Link.fromUri(identifier + "?version=" + range.getMinimum().toEpochMilli()).rel(MEMENTO)
-                .param(DATETIME, ofInstant(range.getMinimum().minusNanos(1L).plusSeconds(1L), UTC)
+    private static Function<Instant, Link> mementoToLink(final String identifier) {
+        return time ->
+            Link.fromUri(identifier + "?version=" + time.toEpochMilli()).rel(MEMENTO)
+                .param(DATETIME, ofInstant(time.minusNanos(1L).plusSeconds(1L), UTC)
                         .format(RFC_1123_DATE_TIME)).build();
     }
 }

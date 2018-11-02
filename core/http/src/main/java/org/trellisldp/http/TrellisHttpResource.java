@@ -315,14 +315,14 @@ public class TrellisHttpResource {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
                 .thenApply(getHandler::initialize).thenApply(getHandler::standardHeaders)
-                .thenCombine(trellis.getMementoService().list(identifier), getHandler::addMementoHeaders)
+                .thenCombine(trellis.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
                 .thenCompose(getHandler::getRepresentation);
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.debug("Getting timemap resource: {}", req.getPath());
             return trellis.getResourceService().get(identifier)
-                .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) -> {
+                .thenCombine(trellis.getMementoService().mementos(identifier), (res, mementos) -> {
                     if (MISSING_RESOURCE.equals(res)) {
                         throw new NotFoundException();
                     }
@@ -333,7 +333,7 @@ public class TrellisHttpResource {
         } else if (nonNull(req.getDatetime())) {
             LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
             return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
-                .thenCombine(trellis.getMementoService().list(identifier), (res, mementos) -> {
+                .thenCombine(trellis.getMementoService().mementos(identifier), (res, mementos) -> {
                     if (MISSING_RESOURCE.equals(res)) {
                         throw new NotAcceptableException();
                     }
@@ -345,7 +345,7 @@ public class TrellisHttpResource {
         LOGGER.debug("Getting resource at: {}", identifier);
         return trellis.getResourceService().get(identifier).thenApply(getHandler::initialize)
             .thenApply(getHandler::standardHeaders)
-            .thenCombine(trellis.getMementoService().list(identifier), getHandler::addMementoHeaders)
+            .thenCombine(trellis.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
             .thenCompose(getHandler::getRepresentation);
     }
 

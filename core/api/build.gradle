@@ -9,7 +9,6 @@ ext {
 
 dependencies {
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
-    api("org.apache.commons:commons-lang3:$commonsLangVersion")
     api("javax.enterprise:cdi-api:${cdiApiVersion}")
 
     testImplementation project(':trellis-vocabulary')

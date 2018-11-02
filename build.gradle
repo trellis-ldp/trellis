@@ -14,7 +14,6 @@ ext {
     /* Core dependencies */
     commonsCodecVersion = '1.11'
     commonsIoVersion = '2.6'
-    commonsLangVersion = '3.8.1'
     commonsRdfVersion = '0.5.0'
     javaxAnnotationsVersion = '1.3.2'
     javaxInjectVersion = '2.5.0-b62'
@@ -313,7 +312,6 @@ subprojects { subproj ->
             links "https://docs.oracle.com/javase/8/docs/api/"
             links 'https://docs.oracle.com/javaee/7/api/'
             links 'https://trellis-ldp.github.io/trellis/apidocs/'
-            links 'https://commons.apache.org/proper/commons-lang/javadocs/api-3.8/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://activemq.apache.org/maven/5.15.6/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
@@ -367,7 +365,6 @@ configure(rootProject) {
             links "https://docs.oracle.com/javase/8/docs/api/"
             links 'https://docs.oracle.com/javaee/7/api/'
             links 'https://trellis-ldp.github.io/trellis/apidocs/'
-            links 'https://commons.apache.org/proper/commons-lang/javadocs/api-3.8/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://activemq.apache.org/maven/5.15.6/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'

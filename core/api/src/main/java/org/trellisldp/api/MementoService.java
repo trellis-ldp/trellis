@@ -14,11 +14,10 @@
 package org.trellisldp.api;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 
@@ -64,11 +63,11 @@ public interface MementoService {
     CompletableFuture<Resource> get(IRI identifier, Instant time);
 
     /**
-     * List all of the Mementos for a resource.
+     * Get the times for all of the Mementos of the given resource.
      * @param identifier the resource identifier
-     * @return the new completion stage containing a list of Memento dateTime ranges
+     * @return the new completion stage containing a collection of Memento dateTimes
      */
-    CompletableFuture<List<Range<Instant>>> list(IRI identifier);
+    CompletableFuture<SortedSet<Instant>> mementos(IRI identifier);
 
     /**
      * Delete a Memento resource.
