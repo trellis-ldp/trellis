@@ -16,7 +16,7 @@ package org.trellisldp.file;
 import static java.time.Instant.MAX;
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySortedSet;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -77,7 +77,7 @@ public class FileMementoServiceTest {
 
             final MementoService svc = new FileMementoService();
 
-            assertEquals(2L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             svc.get(identifier, now()).thenAccept(res -> assertEquals(time2, res.getModified(), "Incorrect date!"))
                 .join();
             svc.get(identifier, time).thenAccept(res -> assertEquals(time, res.getModified(), "Incorrect date!"))
@@ -105,7 +105,7 @@ public class FileMementoServiceTest {
 
             assertTrue(dir.exists(), "Resource directory doesn't exist!");
             assertTrue(dir.isDirectory(), "Invalid resource directory!");
-            assertTrue(svc.list(identifier).join().isEmpty(), "Resource directory isn't empty!");
+            assertTrue(svc.mementos(identifier).join().isEmpty(), "Resource directory isn't empty!");
             assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join(), "Wrong response for missing resource!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
@@ -125,7 +125,7 @@ public class FileMementoServiceTest {
             assertTrue(dir.exists(), "Resource directory doesn't exist!");
             assertTrue(dir.isDirectory(), "Invalid resource directory!");
             assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join(), "Wrong response for missing resource!");
-            assertTrue(svc.list(identifier).join().isEmpty(), "Memento list isn't empty!");
+            assertTrue(svc.mementos(identifier).join().isEmpty(), "Memento list isn't empty!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
@@ -145,19 +145,19 @@ public class FileMementoServiceTest {
 
             final MementoService svc = new FileMementoService();
 
-            assertTrue(svc.list(identifier).join().isEmpty(), "Memento list isn't empty!");
+            assertTrue(svc.mementos(identifier).join().isEmpty(), "Memento list isn't empty!");
             final File file = new File(getClass().getResource("/resource.nq").getFile());
             assertTrue(file.exists(), "Memento resource doesn't exist!");
             final Resource res = new FileResource(identifier, file);
             final Instant time = now();
             svc.put(identifier, time, res.stream()).join();
 
-            assertEquals(1L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(1L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             svc.put(identifier, time.plusSeconds(10), res.stream()).join();
-            assertEquals(2L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             assertNull(svc.delete(identifier, time.plusSeconds(15)).join(), "Error with Memento deletion (+15s)!");
             assertNull(svc.delete(identifier, time.plusSeconds(10)).join(), "Error with Memento deletion (+10s)!");
-            assertEquals(1L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(1L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
@@ -176,7 +176,7 @@ public class FileMementoServiceTest {
             System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
             final MementoService svc = new FileMementoService();
-            assertEquals(2L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             final File file = new File(getClass().getResource("/resource.nq").getFile());
             assertTrue(file.exists(), "Memento resource doesn't exist!");
             final Resource res = new FileResource(identifier, file);
@@ -184,12 +184,12 @@ public class FileMementoServiceTest {
             final Instant time = parse("2017-02-16T11:15:01Z");
             svc.put(identifier, time.plusSeconds(10), res.stream()).handle(this::assertError).join();
 
-            assertEquals(2L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             assertNull(svc.delete(identifier, time).handle(this::assertError).join(),
                     "Completion error deleting Memento!");
             assertNull(svc.delete(identifier, time.plusSeconds(10)).join(),
                     "Error deleting non-existent Memento (+10s)!");
-            assertEquals(2L, svc.list(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
@@ -209,10 +209,10 @@ public class FileMementoServiceTest {
 
             final MementoService svc = new FileMementoService();
 
-            assertTrue(svc.list(identifier).handle((m, err) -> {
+            assertTrue(svc.mementos(identifier).handle((m, err) -> {
                 assertNull(m, "There shouldn't be a value for an unreadable directory!");
                 assertNotNull(err, "There should have been an error with an unreadable directory!");
-                return emptyList();
+                return emptySortedSet();
             }).join().isEmpty(), "Memento list wasn't empty!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);

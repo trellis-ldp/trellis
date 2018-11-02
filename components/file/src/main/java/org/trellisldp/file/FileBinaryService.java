@@ -33,7 +33,6 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
-import static org.apache.commons.lang3.StringUtils.stripStart;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.findFirst;
 
@@ -228,7 +227,7 @@ public class FileBinaryService implements BinaryService {
     private File getFileFromIdentifier(final IRI identifier) {
         requireNonNull(identifier, "Identifier may not be null!");
         return of(identifier).map(IRI::getIRIString).filter(x -> x.startsWith("file:")).map(URI::create)
-            .map(URI::getSchemeSpecificPart).map(x -> stripStart(x, "/")).map(x -> new File(basePath, x))
+            .map(URI::getSchemeSpecificPart).map(x -> trimStart(x, "/")).map(x -> new File(basePath, x))
             .orElseThrow(() -> new IllegalArgumentException("Could not create File object from IRI: " + identifier));
     }
 
@@ -240,4 +239,12 @@ public class FileBinaryService implements BinaryService {
             throw new UncheckedIOException(ex);
         }
     }
+
+    private static String trimStart(final String str, final String trim) {
+        if (str.startsWith(trim)) {
+            return trimStart(str.substring(trim.length()), trim);
+        }
+        return str;
+    }
+
 }

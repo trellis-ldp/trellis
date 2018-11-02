@@ -18,11 +18,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySortedSet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.apache.commons.lang3.Range.between;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,6 +44,7 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNode;
@@ -253,18 +253,14 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(completedFuture(mockBinaryVersionedResource));
 
-        when(mockMementoService.list(any(IRI.class))).thenReturn(completedFuture(emptyList()));
-        when(mockMementoService.list(eq(identifier)))
-                .thenReturn(completedFuture(asList(
-                    between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                    between(ofEpochSecond(timestamp - 1000), time),
-                    between(time, ofEpochSecond(timestamp + 1000)))));
-        when(mockMementoService.list(eq(binaryIdentifier))).thenReturn(completedFuture(asList(
-                between(ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000)),
-                between(ofEpochSecond(timestamp - 1000), time),
-                between(time, ofEpochSecond(timestamp + 1000)))));
-        when(mockMementoService.list(eq(deletedIdentifier))).thenReturn(completedFuture(emptyList()));
-        when(mockMementoService.list(eq(userDeletedIdentifier))).thenReturn(completedFuture(emptyList()));
+        when(mockMementoService.mementos(any(IRI.class))).thenReturn(completedFuture(emptySortedSet()));
+        when(mockMementoService.mementos(eq(identifier)))
+                .thenReturn(completedFuture(new TreeSet<>(asList(
+                    ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
+        when(mockMementoService.mementos(eq(binaryIdentifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
+        when(mockMementoService.mementos(eq(deletedIdentifier))).thenReturn(completedFuture(emptySortedSet()));
+        when(mockMementoService.mementos(eq(userDeletedIdentifier))).thenReturn(completedFuture(emptySortedSet()));
         when(mockMementoService.put(any())).thenReturn(completedFuture(null));
     }
 

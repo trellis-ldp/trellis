@@ -80,6 +80,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -91,7 +92,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -240,7 +240,7 @@ public class GetHandler extends BaseLdpHandler {
      * @param mementos the list of memento ranges
      * @return the response builder
      */
-    public ResponseBuilder addMementoHeaders(final ResponseBuilder builder, final List<Range<Instant>> mementos) {
+    public ResponseBuilder addMementoHeaders(final ResponseBuilder builder, final SortedSet<Instant> mementos) {
         // Only show memento links for the user-managed graph (not ACL)
         if (!ACL.equals(getRequest().getExt())) {
             builder.link(getIdentifier(), "original timegate")

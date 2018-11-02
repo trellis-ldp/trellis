@@ -20,15 +20,11 @@ import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static java.time.Instant.now;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.sort;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.nonNull;
+import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.unmodifiableSortedSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static org.apache.commons.lang3.Range.between;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
@@ -39,9 +35,9 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -49,7 +45,6 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.tamaya.ConfigurationProvider;
@@ -117,15 +112,16 @@ public class FileMementoService implements MementoService {
             if (file.exists()) {
                 return new FileResource(identifier, file);
             }
-            return listMementos(identifier).stream().filter(range -> !range.getMinimum().isAfter(time))
-                    .max((t1, t2) -> t1.getMinimum().compareTo(t2.getMinimum()))
-                    .map(t -> getNquadsFile(resourceDir, t.getMinimum()))
-                    .map(f -> (Resource) new FileResource(identifier, f)).orElse(MISSING_RESOURCE);
+            final SortedSet<Instant> possible = listMementos(identifier).headSet(time);
+            if (possible.isEmpty()) {
+                return MISSING_RESOURCE;
+            }
+            return new FileResource(identifier, getNquadsFile(resourceDir, possible.last()));
         });
     }
 
     @Override
-    public CompletableFuture<List<Range<Instant>>> list(final IRI identifier) {
+    public CompletableFuture<SortedSet<Instant>> mementos(final IRI identifier) {
         return supplyAsync(() -> listMementos(identifier));
     }
 
@@ -147,13 +143,13 @@ public class FileMementoService implements MementoService {
         }
     }
 
-    private List<Range<Instant>> listMementos(final IRI identifier) {
+    private SortedSet<Instant> listMementos(final IRI identifier) {
         final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
         if (!resourceDir.exists()) {
-            return emptyList();
+            return emptySortedSet();
         }
 
-        final List<Instant> instants = new ArrayList<>();
+        final SortedSet<Instant> instants = new TreeSet<>();
         try (final Stream<Path> files = Files.list(resourceDir.toPath())) {
             files.map(Path::toString).filter(path -> path.endsWith(".nq")).map(FilenameUtils::getBaseName)
                 .map(Long::parseLong).map(Instant::ofEpochSecond).forEach(instants::add);
@@ -161,20 +157,7 @@ public class FileMementoService implements MementoService {
             throw new UncheckedIOException("Error fetching memento list for " + identifier, ex);
         }
 
-        sort(instants);
-
-        final List<Range<Instant>> versions = new ArrayList<>();
-        Instant last = null;
-        for (final Instant time : instants) {
-            if (nonNull(last)) {
-                versions.add(between(last, time));
-            }
-            last = time;
-        }
-        if (nonNull(last)) {
-            versions.add(between(last, now()));
-        }
-        return unmodifiableList(versions);
+        return unmodifiableSortedSet(instants);
     }
 
     private File getNquadsFile(final File dir, final Instant time) {
