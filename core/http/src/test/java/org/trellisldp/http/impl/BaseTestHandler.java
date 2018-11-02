@@ -232,7 +232,6 @@ abstract class BaseTestHandler {
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
-        when(mockResourceService.getContainer(any(IRI.class))).thenCallRealMethod();
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));

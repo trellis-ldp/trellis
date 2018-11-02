@@ -13,9 +13,11 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Optional.of;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.api.TrellisUtils.getInstance;
@@ -110,4 +112,15 @@ public class TrellisUtilsTest {
     private IRI getIRI() {
         return rdf.createIRI("ex:" + generator.generate(5));
     }
+
+    @Test
+    public void testGetContainer() {
+        final IRI root = rdf.createIRI("trellis:data/");
+        final IRI resource = rdf.createIRI("trellis:data/resource");
+        final IRI child = rdf.createIRI("trellis:data/resource/child");
+        assertEquals(of(root), TrellisUtils.getContainer(resource), "Resource parent isn't the root resource!");
+        assertEquals(of(resource), TrellisUtils.getContainer(child), "Child resource doesn't point to parent!");
+        assertFalse(TrellisUtils.getContainer(root).isPresent(), "Root resource has a parent!");
+    }
+
 }

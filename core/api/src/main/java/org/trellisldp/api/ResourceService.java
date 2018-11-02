@@ -17,7 +17,6 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,18 +32,6 @@ import org.apache.commons.rdf.api.RDFTerm;
  *           actions in external systems like databases, which may be better managed elsewhere.
  */
 public interface ResourceService extends MutableDataService<Resource>, ImmutableDataService<Resource> {
-
-    /**
-     * Get the identifier for the structurally-logical container for the resource.
-     *
-     * @apiNote The returned identifier is not guaranteed to exist.
-     * @param identifier the identifier
-     * @return an identifier for the structurally-logical container
-     *
-     */
-    default Optional<IRI> getContainer(final IRI identifier) {
-        return TrellisUtils.getContainer(identifier);
-    }
 
     /**
      * Skolemize a blank node.

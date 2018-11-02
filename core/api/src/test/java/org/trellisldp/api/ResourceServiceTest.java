@@ -13,7 +13,6 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -64,7 +63,6 @@ public class ResourceServiceTest {
         initMocks(this);
         doCallRealMethod().when(mockResourceService).skolemize(any());
         doCallRealMethod().when(mockResourceService).unskolemize(any());
-        doCallRealMethod().when(mockResourceService).getContainer(any());
         doCallRealMethod().when(mockResourceService).toInternal(any(), any());
         doCallRealMethod().when(mockResourceService).toExternal(any(), any());
 
@@ -101,16 +99,6 @@ public class ResourceServiceTest {
                 "Unskolemized resource IRI transformed into blank node!");
         assertFalse(mockResourceService.skolemize(rdf.createLiteral("Test2")) instanceof IRI,
                 "Unskolemized literal transformed into IRI!");
-    }
-
-    @Test
-    public void testGetContainer() {
-        final IRI root = rdf.createIRI("trellis:data/");
-        final IRI resource = rdf.createIRI("trellis:data/resource");
-        final IRI child = rdf.createIRI("trellis:data/resource/child");
-        assertEquals(of(root), mockResourceService.getContainer(resource), "Resource parent isn't the root resource!");
-        assertEquals(of(resource), mockResourceService.getContainer(child), "Child resource doesn't point to parent!");
-        assertFalse(mockResourceService.getContainer(root).isPresent(), "Root resource has a parent!");
     }
 
     @Test
