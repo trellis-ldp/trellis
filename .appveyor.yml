@@ -6,7 +6,7 @@ build_script:
     - appveyor-retry gradlew.bat assemble
 
 test_script:
-    - appveyor-retry gradlew.bat check
+    - appveyor-retry gradlew.bat check -Pitests
 
 environment:
     matrix:
