@@ -77,7 +77,7 @@ jobs:
     # deploy to AWS
     - name: "Publish JavaDocs"
       stage: deploy
-      jdk: oraclejdk11
+      jdk: oraclejdk8
       env: JOB=aws
       if: branch = master AND type = push
       script: ./gradlew apidocs
