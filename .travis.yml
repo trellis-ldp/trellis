@@ -41,6 +41,7 @@ jobs:
   allow_failures:
     - env: JOB=sonatype
     - env: JOB=docker
+    - env: JOB=aws
 
   include:
     # JDK 8
