@@ -87,7 +87,7 @@ jobs:
           secret_access_key: $AWS_SECRET_KEY
           bucket: $AWS_BUCKET
           skip_cleanup: true
-          local_dir: docs/apidocs
-          upload-dir: apidocs/trellis/$(./gradlew -q getVersion)
+          local_dir: docs/apidocs/$(./gradlew -q getVersion)
+          upload-dir: docs/trellis/$(./gradlew -q getVersion)/apidocs
           default_text_charset: 'utf-8'
 
