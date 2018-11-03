@@ -88,6 +88,6 @@ jobs:
           bucket: $AWS_BUCKET
           skip_cleanup: true
           local_dir: docs/apidocs
-          upload-dir: apidocs/trellis
+          upload-dir: apidocs/trellis/$(./gradlew -q getVersion)
           default_text_charset: 'utf-8'
 

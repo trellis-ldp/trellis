@@ -365,7 +365,7 @@ configure(rootProject) {
     task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
         failOnError false
         outputs.upToDateWhen { false }
-        destinationDir = new File(projectDir, "docs/apidocs/${version}")
+        destinationDir = new File(projectDir, "docs/apidocs/")
         title = "Trellis Linked Data Server Documentation"
         exclude '**/impl/*'
         exclude '**/*Tests.java'
