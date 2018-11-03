@@ -74,3 +74,20 @@ jobs:
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       script: ./gradlew dockerPush dockerPushLatest
 
+    # deploy to AWS
+    - name: "Publish JavaDocs"
+      stage: deploy
+      jdk: oraclejdk11
+      env: JOB=aws
+      if: branch = master AND type = push
+      script: ./gradlew apidocs
+      deploy:
+          provider: s3
+          access_key_id: $AWS_ACCESS_KEY
+          secret_access_key: $AWS_SECRET_KEY
+          bucket: $AWS_BUCKET
+          skip_cleanup: true
+          local_dir: docs/apidocs
+          upload-dir: apidocs/trellis
+          default_text_charset: 'utf-8'
+

@@ -309,16 +309,24 @@ subprojects { subproj ->
         classpath = files(sourceSets.main.compileClasspath)
         destinationDir = new File(projectDir, "docs/${version}")
         options {
+            tags = ["apiNote:a:API Note:",
+                    "implSpec:a:Implementation Requirements:",
+                    "implNote:a:Implementation Note:"]
             links "https://docs.oracle.com/javase/8/docs/api/"
             links 'https://docs.oracle.com/javaee/7/api/'
             links 'https://trellis-ldp.github.io/trellis/apidocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
+            links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/5.15.6/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
             links 'https://kafka.apache.org/20/javadoc/'
             links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
             links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
-            links 'https://www.dropwizard.io/1.3.7/dropwizard-core/apidocs/'
+            links 'https://www.dropwizard.io/1.3.5/dropwizard-core/apidocs/'
+        }
+
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
         }
     }
 
@@ -355,27 +363,36 @@ subprojects { subproj ->
 configure(rootProject) {
 
     task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
+        failOnError false
         outputs.upToDateWhen { false }
-        destinationDir = new File(projectDir, "docs/apidocs")
+        destinationDir = new File(projectDir, "docs/apidocs/${project.version}")
         title = "Trellis Linked Data Server Documentation"
         exclude '**/impl/*'
         exclude '**/*Tests.java'
         options {
+            tags = ["apiNote:a:API Note:",
+                    "implSpec:a:Implementation Requirements:",
+                    "implNote:a:Implementation Note:"]
             memberLevel = JavadocMemberLevel.PUBLIC
             links "https://docs.oracle.com/javase/8/docs/api/"
             links 'https://docs.oracle.com/javaee/7/api/'
             links 'https://trellis-ldp.github.io/trellis/apidocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
+            links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/5.15.6/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
             links 'https://kafka.apache.org/20/javadoc/'
             links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
             links 'https://metrics.dropwizard.io/4.0.0/apidocs/'
-            links 'https://www.dropwizard.io/1.3.7/dropwizard-core/apidocs/'
+            links 'https://www.dropwizard.io/1.3.5/dropwizard-core/apidocs/'
         }
 
         source subprojects.collect { project -> project.sourceSets.main.allJava }
         classpath = files(subprojects.collect { project -> project.sourceSets.main.compileClasspath })
+
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
     }
 
     sonarqube {
