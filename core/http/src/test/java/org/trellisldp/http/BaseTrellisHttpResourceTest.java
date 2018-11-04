@@ -261,7 +261,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
         when(mockMementoService.mementos(eq(deletedIdentifier))).thenReturn(completedFuture(emptySortedSet()));
         when(mockMementoService.mementos(eq(userDeletedIdentifier))).thenReturn(completedFuture(emptySortedSet()));
-        when(mockMementoService.put(any())).thenReturn(completedFuture(null));
+        when(mockMementoService.put(any(), any())).thenReturn(completedFuture(null));
     }
 
     private void setUpBinaryService() {

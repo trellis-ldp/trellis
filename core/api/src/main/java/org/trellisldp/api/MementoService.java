@@ -16,10 +16,8 @@ package org.trellisldp.api;
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 
 /**
  * An interface for a Memento subsystem. Mementos of {@link Resource}s may be made and retrieved using this service.
@@ -32,27 +30,14 @@ public interface MementoService {
 
     /**
      * Create a new Memento for a resource.
-     * @param identifier the resource identifier
-     * @param time the time of the Memento
-     * @param data the data to save
-     * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
-     * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
-     * the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
-     */
-    CompletableFuture<Void> put(IRI identifier, Instant time, Stream<? extends Quad> data);
-
-    /**
-     * Create a new Memento for a resource.
      * @param resource the resource
+     * @param time the time at which this Memento should be created
      * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
      * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    default CompletableFuture<Void> put(Resource resource) {
-        return put(resource.getIdentifier(), resource.getModified(), resource.stream());
-    }
+    CompletableFuture<Void> put(Resource resource, Instant time);
 
     /**
      * Fetch a Memento resource for the given time.
@@ -68,15 +53,4 @@ public interface MementoService {
      * @return the new completion stage containing a collection of Memento dateTimes
      */
     CompletableFuture<SortedSet<Instant>> mementos(IRI identifier);
-
-    /**
-     * Delete a Memento resource.
-     * @param identifier the resource identifier
-     * @param time the version at the given time
-     * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
-     * successfully deleted from the corresponding persistence layer. In the case of an unsuccessful write operation,
-     * the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
-     */
-    CompletableFuture<Void> delete(IRI identifier, Instant time);
 }

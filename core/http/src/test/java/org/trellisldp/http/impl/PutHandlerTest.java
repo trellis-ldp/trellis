@@ -276,7 +276,7 @@ public class PutHandlerTest extends BaseTestHandler {
     public void testMementoError() {
         final MementoService mockMementoService = mock(MementoService.class);
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
-        when(mockMementoService.put(any())).thenAnswer(inv -> runAsync(() -> {
+        when(mockMementoService.put(any(), any())).thenAnswer(inv -> runAsync(() -> {
             throw new RuntimeTrellisException("Expected error");
         }));
 
