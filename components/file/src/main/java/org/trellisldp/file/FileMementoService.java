@@ -15,7 +15,6 @@ package org.trellisldp.file;
 
 import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -46,7 +45,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
@@ -85,21 +83,27 @@ public class FileMementoService implements MementoService {
     }
 
     @Override
-    public CompletableFuture<Void> put(final IRI identifier, final Instant time, final Stream<? extends Quad> data) {
+    public CompletableFuture<Void> put(final Resource resource) {
+        return put(resource, resource.getModified());
+    }
+
+    CompletableFuture<Void> put(final Resource resource, final Instant time) {
         return runAsync(() -> {
-            final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+            final File resourceDir = FileUtils.getResourceDirectory(directory, resource.getIdentifier());
             if (!resourceDir.exists()) {
                 resourceDir.mkdirs();
             }
 
-            try (final BufferedWriter writer = newBufferedWriter(getNquadsFile(resourceDir, time).toPath(), UTF_8,
-                        CREATE, WRITE, TRUNCATE_EXISTING)) {
-                final Iterator<String> lineIter = data.map(FileUtils::serializeQuad).iterator();
+            try (final BufferedWriter writer = newBufferedWriter(
+                            getNquadsFile(resourceDir, time).toPath(), UTF_8, CREATE, WRITE,
+                            TRUNCATE_EXISTING)) {
+                final Iterator<String> lineIter = resource.stream().map(FileUtils::serializeQuad).iterator();
                 while (lineIter.hasNext()) {
                     writer.write(lineIter.next() + lineSeparator());
                 }
             } catch (final IOException ex) {
-                throw new UncheckedIOException("Error writing resource version for " + identifier.getIRIString(), ex);
+                throw new UncheckedIOException(
+                                "Error writing resource version for " + resource.getIdentifier().getIRIString(), ex);
             }
         });
     }
@@ -123,18 +127,6 @@ public class FileMementoService implements MementoService {
     @Override
     public CompletableFuture<SortedSet<Instant>> mementos(final IRI identifier) {
         return supplyAsync(() -> listMementos(identifier));
-    }
-
-    @Override
-    public CompletableFuture<Void> delete(final IRI identifier, final Instant time) {
-        return runAsync(() -> {
-            try {
-                deleteIfExists(getNquadsFile(FileUtils.getResourceDirectory(directory, identifier),
-                            time).toPath());
-            } catch (final IOException ex) {
-                throw new UncheckedIOException("Could not delete Memento for " + identifier + " at " + time, ex);
-            }
-        });
     }
 
     private void init() {

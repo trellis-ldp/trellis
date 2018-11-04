@@ -143,21 +143,18 @@ public class FileMementoServiceTest {
         try {
             System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, versionDir.getAbsolutePath());
 
-            final MementoService svc = new FileMementoService();
+            final FileMementoService svc = new FileMementoService();
 
             assertTrue(svc.mementos(identifier).join().isEmpty(), "Memento list isn't empty!");
             final File file = new File(getClass().getResource("/resource.nq").getFile());
             assertTrue(file.exists(), "Memento resource doesn't exist!");
             final Resource res = new FileResource(identifier, file);
             final Instant time = now();
-            svc.put(identifier, time, res.stream()).join();
+            svc.put(res, time).join();
 
             assertEquals(1L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-            svc.put(identifier, time.plusSeconds(10), res.stream()).join();
+            svc.put(res, time.plusSeconds(10)).join();
             assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-            assertNull(svc.delete(identifier, time.plusSeconds(15)).join(), "Error with Memento deletion (+15s)!");
-            assertNull(svc.delete(identifier, time.plusSeconds(10)).join(), "Error with Memento deletion (+10s)!");
-            assertEquals(1L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
@@ -175,20 +172,15 @@ public class FileMementoServiceTest {
         try {
             System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
-            final MementoService svc = new FileMementoService();
+            final FileMementoService svc = new FileMementoService();
             assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             final File file = new File(getClass().getResource("/resource.nq").getFile());
             assertTrue(file.exists(), "Memento resource doesn't exist!");
             final Resource res = new FileResource(identifier, file);
 
             final Instant time = parse("2017-02-16T11:15:01Z");
-            svc.put(identifier, time.plusSeconds(10), res.stream()).handle(this::assertError).join();
+            svc.put(res, time.plusSeconds(10)).handle(this::assertError).join();
 
-            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-            assertNull(svc.delete(identifier, time).handle(this::assertError).join(),
-                    "Completion error deleting Memento!");
-            assertNull(svc.delete(identifier, time.plusSeconds(10)).join(),
-                    "Error deleting non-existent Memento (+10s)!");
             assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
