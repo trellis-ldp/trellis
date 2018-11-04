@@ -83,7 +83,11 @@ public class FileMementoService implements MementoService {
     }
 
     @Override
-    public CompletableFuture<Void> put(final Resource resource, final Instant time) {
+    public CompletableFuture<Void> put(final Resource resource) {
+        return put(resource, resource.getModified());
+    }
+
+    CompletableFuture<Void> put(final Resource resource, final Instant time) {
         return runAsync(() -> {
             final File resourceDir = FileUtils.getResourceDirectory(directory, resource.getIdentifier());
             if (!resourceDir.exists()) {

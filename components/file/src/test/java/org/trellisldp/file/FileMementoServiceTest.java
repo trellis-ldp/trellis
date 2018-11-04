@@ -143,7 +143,7 @@ public class FileMementoServiceTest {
         try {
             System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, versionDir.getAbsolutePath());
 
-            final MementoService svc = new FileMementoService();
+            final FileMementoService svc = new FileMementoService();
 
             assertTrue(svc.mementos(identifier).join().isEmpty(), "Memento list isn't empty!");
             final File file = new File(getClass().getResource("/resource.nq").getFile());
@@ -172,7 +172,7 @@ public class FileMementoServiceTest {
         try {
             System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
 
-            final MementoService svc = new FileMementoService();
+            final FileMementoService svc = new FileMementoService();
             assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             final File file = new File(getClass().getResource("/resource.nq").getFile());
             assertTrue(file.exists(), "Memento resource doesn't exist!");

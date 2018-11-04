@@ -29,7 +29,7 @@ import org.apache.commons.rdf.api.IRI;
 public class NoopMementoService implements MementoService {
 
     @Override
-    public CompletableFuture<Void> put(final Resource resource, final Instant time) {
+    public CompletableFuture<Void> put(final Resource resource) {
         return completedFuture(null);
     }
 

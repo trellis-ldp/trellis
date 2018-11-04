@@ -31,13 +31,12 @@ public interface MementoService {
     /**
      * Create a new Memento for a resource.
      * @param resource the resource
-     * @param time the time at which this Memento should be created
      * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
      * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> put(Resource resource, Instant time);
+    CompletableFuture<Void> put(Resource resource);
 
     /**
      * Fetch a Memento resource for the given time.

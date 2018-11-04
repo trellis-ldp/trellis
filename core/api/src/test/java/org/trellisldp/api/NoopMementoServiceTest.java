@@ -16,8 +16,6 @@ package org.trellisldp.api;
 
 import static java.time.Instant.now;
 import static java.util.stream.Stream.of;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.getInstance;
@@ -31,6 +29,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -55,9 +54,7 @@ public class NoopMementoServiceTest {
 
     @Test
     public void testPutResourceNoop() {
-        testService.put(mockResource, time);
-        verify(mockResource, never().description("getIdentifier was called!")).getIdentifier();
-        verify(mockResource, never().description("getModified was called!")).getModified();
-        verify(mockResource, never().description("stream was never called!")).stream();
+        testService.put(mockResource);
+        Mockito.verifyZeroInteractions(mockResource);
     }
 }
