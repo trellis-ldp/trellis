@@ -36,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -99,7 +100,8 @@ public class ResourceTest {
     @Test
     public void testMissingResource() {
         assertNull(MISSING_RESOURCE.getIdentifier(), "Missing resource has an identifier!");
-        assertNull(MISSING_RESOURCE.getInteractionModel(), "Missing resource has an interaction model!");
+        assertEquals(Trellis.MissingResource, MISSING_RESOURCE.getInteractionModel(),
+                        "Missing resource has the wrong interaction model!");
         assertNull(MISSING_RESOURCE.getModified(), "Missing resource has a last modified date!");
         assertFalse(MISSING_RESOURCE.getContainer().isPresent(), "Missing resource has a parent resource!");
         assertEquals(0L, MISSING_RESOURCE.stream().count(), "Missing resource contains triples!");
@@ -109,7 +111,8 @@ public class ResourceTest {
     @Test
     public void testDeletedResource() {
         assertNull(DELETED_RESOURCE.getIdentifier(), "Deleted resource has an identifier!");
-        assertNull(DELETED_RESOURCE.getInteractionModel(), "Deleted resource has an interaction model!");
+        assertEquals(Trellis.DeletedResource, DELETED_RESOURCE.getInteractionModel(),
+                        "Deleted resource has an interaction model!");
         assertNull(DELETED_RESOURCE.getModified(), "Deleted resource has a modification date!");
         assertFalse(DELETED_RESOURCE.getContainer().isPresent(), "Deleted resource has a parent resource!");
         assertEquals(0L, DELETED_RESOURCE.stream().count(), "Deleted resource contains triples!");

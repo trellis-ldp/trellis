@@ -26,6 +26,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * The central resource abstraction for a Trellis-based linked data server.
@@ -53,7 +54,7 @@ public interface Resource {
 
             @Override
             public IRI getInteractionModel() {
-                return null;
+                return Trellis.MissingResource;
             }
 
             @Override
@@ -98,7 +99,7 @@ public interface Resource {
 
             @Override
             public IRI getInteractionModel() {
-                return null;
+                return Trellis.DeletedResource;
             }
 
             @Override

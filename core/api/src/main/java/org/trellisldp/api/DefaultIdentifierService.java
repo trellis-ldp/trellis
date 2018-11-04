@@ -20,11 +20,14 @@ import static java.util.stream.IntStream.rangeClosed;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
 
+import javax.enterprise.inject.Default;
+
 /**
  * The IdentifierService provides a mechanism for creating new identifiers.
  *
  * @author acoburn
  */
+@Default
 public class DefaultIdentifierService implements IdentifierService {
 
     private final String defaultPrefix;
