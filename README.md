@@ -19,7 +19,7 @@ It is modular, extensible and fast.
   * [Wiki](https://github.com/trellis-ldp/trellis/wiki)
   * [Configuration guide](https://github.com/trellis-ldp/trellis/wiki/Configuration-Guide)
   * [Mailing List](https://groups.google.com/group/trellis-ldp)
-  * [API Documentation](https://trellis-ldp.github.io/trellis/apidocs) (JavaDocs)
+  * [API Documentation](https://www.trellisldp.org/docs/trellis/current/apidocs/) (JavaDocs)
   * [Website](https://www.trellisldp.org)
 
 All source code is open source and licensed as Apache 2. Contributions are always welcome.

@@ -109,7 +109,7 @@ allprojects { subproj ->
     ext {
         vendor = 'Trellis LDP'
         homepage = 'https://www.trellisldp.org'
-        docURL = 'https://trellis-ldp.github.io/trellis/apidocs/'
+        docURL = 'https://www.trellisldp.org/docs/trellis/current/apidocs/'
         license = 'Apache 2'
 
         jacocoVersion = '0.8.2'
@@ -314,7 +314,6 @@ subprojects { subproj ->
                     "implNote:a:Implementation Note:"]
             links "https://docs.oracle.com/javase/8/docs/api/"
             links 'https://docs.oracle.com/javaee/7/api/'
-            links 'https://trellis-ldp.github.io/trellis/apidocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/5.15.6/apidocs/'
@@ -376,7 +375,6 @@ configure(rootProject) {
             memberLevel = JavadocMemberLevel.PUBLIC
             links "https://docs.oracle.com/javase/8/docs/api/"
             links 'https://docs.oracle.com/javaee/7/api/'
-            links 'https://trellis-ldp.github.io/trellis/apidocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/5.15.6/apidocs/'
