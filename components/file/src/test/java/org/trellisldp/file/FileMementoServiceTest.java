@@ -150,10 +150,10 @@ public class FileMementoServiceTest {
             assertTrue(file.exists(), "Memento resource doesn't exist!");
             final Resource res = new FileResource(identifier, file);
             final Instant time = now();
-            svc.put(res, time).join();
+            svc.put(res).join();
 
             assertEquals(1L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-            svc.put(res, time.plusSeconds(10)).join();
+            svc.put(res, res.getModified().plusSeconds(10)).join();
             assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);

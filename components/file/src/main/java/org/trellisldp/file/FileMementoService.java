@@ -87,7 +87,13 @@ public class FileMementoService implements MementoService {
         return put(resource, resource.getModified());
     }
 
-    CompletableFuture<Void> put(final Resource resource, final Instant time) {
+    /**
+     * Create a Memento from a resource at a particular time.
+     * @param resource the resource
+     * @param time the time to which the Memento corresponds
+     * @return the completion stage representing that the operation has completed
+     */
+    public CompletableFuture<Void> put(final Resource resource, final Instant time) {
         return runAsync(() -> {
             final File resourceDir = FileUtils.getResourceDirectory(directory, resource.getIdentifier());
             if (!resourceDir.exists()) {
