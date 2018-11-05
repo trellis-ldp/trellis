@@ -14,18 +14,21 @@
 package org.trellisldp.api;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.rdf.api.BlankNode;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
@@ -33,6 +36,7 @@ import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.vocabulary.LDP;
 
 /**
  * @author acoburn
@@ -65,6 +69,7 @@ public class ResourceServiceTest {
         doCallRealMethod().when(mockResourceService).unskolemize(any());
         doCallRealMethod().when(mockResourceService).toInternal(any(), any());
         doCallRealMethod().when(mockResourceService).toExternal(any(), any());
+        doCallRealMethod().when(mockResourceService).create(any(), any(), any(), any(), any());
 
         when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> completedFuture(mockResource));
     }
@@ -79,6 +84,19 @@ public class ResourceServiceTest {
     public void testRetrievalService() {
         assertEquals(mockResource, mockRetrievalService.get(existing).join(),
                 "Incorrect resource found by retrieval service!");
+    }
+
+    @Test
+    public void testDefaultCreate() {
+        final IRI root = rdf.createIRI("trellis:data/");
+        final Dataset dataset = rdf.createDataset();
+
+        when(mockResourceService.replace(eq(existing), eq(LDP.RDFSource), eq(dataset), eq(root), any()))
+            .thenReturn(completedFuture(null));
+
+        assertDoesNotThrow(() -> mockResourceService.create(existing, LDP.RDFSource, dataset, root, null).join());
+        verify(mockResourceService).replace(eq(existing), eq(LDP.RDFSource),
+                eq(dataset), eq(root), any());
     }
 
     @Test

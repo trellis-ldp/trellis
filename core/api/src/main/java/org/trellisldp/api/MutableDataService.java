@@ -30,6 +30,7 @@ public interface MutableDataService<U> extends RetrievalService<U> {
     /**
      * Create a resource in the server.
      *
+     * @implSpec the default implementation of this method is to proxy create requests to the {@link #replace} method.
      * @param identifier the identifier for the new resource
      * @param ixnModel the LDP interaction model for this resource
      * @param dataset the dataset to be persisted
@@ -40,7 +41,10 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> create(IRI identifier, IRI ixnModel, Dataset dataset, IRI container, Binary binary);
+    default CompletableFuture<Void> create(IRI identifier, IRI ixnModel, Dataset dataset, IRI container,
+                Binary binary) {
+        return replace(identifier, ixnModel, dataset, container, binary);
+    }
 
     /**
      * Replace a resource in the server.
