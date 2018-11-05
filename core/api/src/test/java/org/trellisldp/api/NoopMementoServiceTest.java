@@ -16,12 +16,16 @@ package org.trellisldp.api;
 
 import static java.time.Instant.now;
 import static java.util.stream.Stream.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
+import java.util.SortedSet;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -56,5 +60,15 @@ public class NoopMementoServiceTest {
     public void testPutResourceNoop() {
         testService.put(mockResource);
         Mockito.verifyZeroInteractions(mockResource);
+    }
+
+    @Test
+    public void testGetResource() {
+        assertEquals(MISSING_RESOURCE, testService.get(identifier, time).join());
+    }
+
+    @Test
+    public void testMementos() {
+        assertTrue(testService.mementos(identifier).thenApply(SortedSet::isEmpty).join());
     }
 }
