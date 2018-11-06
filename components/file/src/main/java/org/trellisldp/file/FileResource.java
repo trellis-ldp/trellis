@@ -14,28 +14,31 @@
 package org.trellisldp.file;
 
 import static java.nio.file.Files.lines;
+import static java.util.Optional.ofNullable;
+import static java.util.function.Predicate.isEqual;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Time;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -43,12 +46,11 @@ import org.trellisldp.vocabulary.Trellis;
  */
 public class FileResource implements Resource {
 
-    private static final RDF rdf = getInstance();
     private static final Logger LOGGER = getLogger(FileResource.class);
 
     private final File file;
     private final IRI identifier;
-    protected final Graph graph = rdf.createGraph();
+    private final Map<IRI, RDFTerm> data;
 
     /**
      * Create a resource backed by an NQuads file.
@@ -58,13 +60,7 @@ public class FileResource implements Resource {
     public FileResource(final IRI identifier, final File file) {
         this.identifier = identifier;
         this.file = file;
-        init();
-    }
-
-    private void init() {
-        try (final Stream<? extends Triple> triples = stream(Trellis.PreferServerManaged)) {
-            triples.forEach(graph::add);
-        }
+        this.data = init(identifier, file);
     }
 
     @Override
@@ -74,60 +70,44 @@ public class FileResource implements Resource {
 
     @Override
     public IRI getInteractionModel() {
-        return getObjectForPredicate(type).orElse(null);
+        return asIRI(type).orElse(null);
     }
 
     @Override
     public Instant getModified() {
-        return graph.stream(identifier, DC.modified, null).map(Triple::getObject).filter(Literal.class::isInstance)
-            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
+        return asLiteral(DC.modified).map(Instant::parse).orElse(null);
     }
 
     @Override
     public Optional<IRI> getContainer() {
-        return getObjectForPredicate(DC.isPartOf);
+        return asIRI(DC.isPartOf);
     }
 
     @Override
     public Optional<Binary> getBinary() {
-        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(IRI.class::isInstance)
-                .map(IRI.class::cast).findFirst().map(id -> new Binary(id,
-                        // Add a date
-                        graph.stream(id, DC.modified, null).map(Triple::getObject).filter(Literal.class::isInstance)
-                            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Instant::parse).findFirst()
-                            .orElse(null),
-                        // Add a MIMEtype
-                        graph.stream(id, DC.format, null).map(Triple::getObject).filter(Literal.class::isInstance)
-                            .map(Literal.class::cast).map(Literal::getLexicalForm).findFirst().orElse(null),
-                        // Add a size value
-                        graph.stream(id, DC.extent, null).map(Triple::getObject).filter(Literal.class::isInstance)
-                            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Long::parseLong).findFirst()
-                            .orElse(null)));
+        return asIRI(DC.hasPart).flatMap(id -> asLiteral(Time.hasTime).map(Instant::parse).map(time ->
+                    new Binary(id, time, asLiteral(DC.format).orElse(null),
+                               asLiteral(DC.extent).map(Long::parseLong).orElse(null))));
     }
 
     @Override
     public Optional<IRI> getMembershipResource() {
-        return getObjectForPredicate(LDP.membershipResource);
+        return asIRI(LDP.membershipResource);
     }
 
     @Override
     public Optional<IRI> getMemberRelation() {
-        return getObjectForPredicate(LDP.hasMemberRelation);
+        return asIRI(LDP.hasMemberRelation);
     }
 
     @Override
     public Optional<IRI> getInsertedContentRelation() {
-        return getObjectForPredicate(LDP.insertedContentRelation);
+        return asIRI(LDP.insertedContentRelation);
     }
 
     @Override
     public Optional<IRI> getMemberOfRelation() {
-        return getObjectForPredicate(LDP.isMemberOfRelation);
-    }
-
-    private Optional<IRI> getObjectForPredicate(final IRI predicate) {
-        return graph.stream(identifier, predicate, null).map(Triple::getObject).filter(IRI.class::isInstance)
-            .map(IRI.class::cast).findFirst();
+        return asIRI(LDP.isMemberOfRelation);
     }
 
     @Override
@@ -139,6 +119,27 @@ public class FileResource implements Resource {
 
     @Override
     public Stream<Quad> stream() {
+        return fetchContent(identifier, file);
+    }
+
+    private Optional<IRI> asIRI(final IRI predicate) {
+        return ofNullable(data.get(predicate)).filter(IRI.class::isInstance).map(IRI.class::cast);
+    }
+
+    private Optional<String> asLiteral(final IRI predicate) {
+        return ofNullable(data.get(predicate)).filter(Literal.class::isInstance).map(Literal.class::cast)
+            .map(Literal::getLexicalForm);
+    }
+
+    private static Map<IRI, RDFTerm> init(final IRI identifier, final File file) {
+        try (final Stream<? extends Triple> triples = fetchContent(identifier, file).filter(q ->
+                    q.getGraphName().filter(isEqual(Trellis.PreferServerManaged)).isPresent()).map(Quad::asTriple)) {
+            return triples.collect(toMap(t -> !t.getSubject().equals(identifier) && DC.modified.equals(t.getPredicate())
+                        ? Time.hasTime : t.getPredicate(), Triple::getObject));
+        }
+    }
+
+    private static Stream<Quad> fetchContent(final IRI identifier, final File file) {
         LOGGER.trace("Streaming quads for {}", identifier);
         try {
             return lines(file.toPath()).flatMap(FileUtils::parseQuad);
