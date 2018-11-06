@@ -17,6 +17,8 @@ import static java.time.Instant.MAX;
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
 import static java.util.Collections.emptySortedSet;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,20 +26,28 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
+import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.FOAF;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * Test a file-based memento service.
@@ -91,6 +101,84 @@ public class FileMementoServiceTest {
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
+    }
+
+    @Test
+    public void testPutBinary() {
+        final File dir = new File(getClass().getResource("/versions").getFile());
+        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+        final IRI identifier = rdf.createIRI("trellis:data/a-binary");
+        final IRI binaryId = rdf.createIRI("file:binary");
+        final IRI root = rdf.createIRI("trellis:data/");
+        final Instant time = now();
+        final Instant binaryTime = now().minusSeconds(10);
+        final String mimeType = "text/plain";
+        final Long size = 20L;
+
+        final Resource mockResource = mock(Resource.class);
+
+        when(mockResource.getIdentifier()).thenReturn(identifier);
+        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
+        when(mockResource.getModified()).thenReturn(time);
+        when(mockResource.getContainer()).thenReturn(of(root));
+        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
+                    rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title")),
+                    rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.isPartOf, root)));
+        when(mockResource.getBinary()).thenReturn(of(new Binary(binaryId, binaryTime, mimeType, size)));
+        when(mockResource.getMemberOfRelation()).thenReturn(empty());
+        when(mockResource.getMemberRelation()).thenReturn(empty());
+        when(mockResource.getMembershipResource()).thenReturn(empty());
+        when(mockResource.getInsertedContentRelation()).thenReturn(empty());
+
+        svc.put(mockResource).join();
+
+        final Resource res = svc.get(identifier, time).join();
+        assertEquals(identifier, res.getIdentifier());
+        assertEquals(time, res.getModified());
+        assertEquals(LDP.NonRDFSource, res.getInteractionModel());
+        assertFalse(res.getMemberOfRelation().isPresent());
+        assertFalse(res.getMemberRelation().isPresent());
+        assertFalse(res.getMembershipResource().isPresent());
+        assertFalse(res.getInsertedContentRelation().isPresent());
+        assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
+    }
+
+    @Test
+    public void testPutIndirectContainer() {
+        final File dir = new File(getClass().getResource("/versions").getFile());
+        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+        final IRI identifier = rdf.createIRI("trellis:data/a-resource");
+        final IRI member = rdf.createIRI("trellis:data/membership-resource");
+        final IRI root = rdf.createIRI("trellis:data/");
+        final Instant time = now();
+
+        final Resource mockResource = mock(Resource.class);
+
+        when(mockResource.getIdentifier()).thenReturn(identifier);
+        when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockResource.getModified()).thenReturn(time);
+        when(mockResource.getContainer()).thenReturn(of(root));
+        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
+                    rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title")),
+                    rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.isPartOf, root)));
+        when(mockResource.getBinary()).thenReturn(empty());
+        when(mockResource.getMemberOfRelation()).thenReturn(of(DC.isPartOf));
+        when(mockResource.getMemberRelation()).thenReturn(of(LDP.member));
+        when(mockResource.getMembershipResource()).thenReturn(of(member));
+        when(mockResource.getInsertedContentRelation()).thenReturn(of(FOAF.primaryTopic));
+
+        svc.put(mockResource).join();
+
+        final Resource res = svc.get(identifier, time).join();
+        assertEquals(identifier, res.getIdentifier());
+        assertEquals(time, res.getModified());
+        assertEquals(LDP.IndirectContainer, res.getInteractionModel());
+        assertEquals(of(DC.isPartOf), res.getMemberOfRelation());
+        assertEquals(of(LDP.member), res.getMemberRelation());
+        assertEquals(of(member), res.getMembershipResource());
+        assertEquals(of(FOAF.primaryTopic), res.getInsertedContentRelation());
+        assertFalse(res.getBinary().isPresent());
+        assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
     }
 
     @Test
