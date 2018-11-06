@@ -136,6 +136,14 @@ public class FileMementoServiceTest {
         assertEquals(identifier, res.getIdentifier());
         assertEquals(time, res.getModified());
         assertEquals(LDP.NonRDFSource, res.getInteractionModel());
+        assertEquals(of(root), res.getContainer());
+        assertTrue(res.getBinary().isPresent());
+        res.getBinary().ifPresent(b -> {
+            assertEquals(binaryId, b.getIdentifier());
+            assertEquals(binaryTime, b.getModified());
+            assertEquals(of(mimeType), b.getMimeType());
+            assertEquals(of(size), b.getSize());
+        });
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getMemberRelation().isPresent());
         assertFalse(res.getMembershipResource().isPresent());
@@ -177,6 +185,7 @@ public class FileMementoServiceTest {
         assertEquals(of(LDP.member), res.getMemberRelation());
         assertEquals(of(member), res.getMembershipResource());
         assertEquals(of(FOAF.primaryTopic), res.getInsertedContentRelation());
+        assertEquals(of(root), res.getContainer());
         assertFalse(res.getBinary().isPresent());
         assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
     }

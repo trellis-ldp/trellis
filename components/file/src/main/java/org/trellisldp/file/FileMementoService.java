@@ -196,10 +196,10 @@ public class FileMementoService implements MementoService {
             quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.hasPart, b.getIdentifier()));
             quads.add(rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.modified,
                         rdf.createLiteral(b.getModified().toString(), XSD.dateTime)));
-            b.getMimeType().ifPresent(mimeType -> rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
-                rdf.createLiteral(mimeType)));
-            b.getSize().ifPresent(size -> rdf.createQuad(PreferServerManaged, b.getIdentifier(),
-                        DC.extent, rdf.createLiteral(size.toString(), XSD.long_)));
+            b.getMimeType().map(mimeType -> rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
+                rdf.createLiteral(mimeType))).ifPresent(quads::add);
+            b.getSize().map(size -> rdf.createQuad(PreferServerManaged, b.getIdentifier(),
+                DC.extent, rdf.createLiteral(size.toString(), XSD.long_))).ifPresent(quads::add);
         });
 
         resource.getContainer()
