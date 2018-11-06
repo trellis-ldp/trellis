@@ -139,14 +139,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> create(final IRI id, final IRI ixnModel, final Dataset dataset, final IRI container,
-            final Binary binary) {
-        LOGGER.debug("Creating: {}", id);
-        return runAsync(() ->
-                createOrReplace(id, ixnModel, dataset, OperationType.CREATE, container, binary));
-    }
-
-    @Override
     public CompletableFuture<Void> delete(final IRI identifier, final IRI container) {
         LOGGER.debug("Deleting: {}", identifier);
         return runAsync(() -> {
@@ -165,7 +157,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     @Override
     public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel, final Dataset dataset, final IRI container,
             final Binary binary) {
-        LOGGER.debug("Updating: {}", id);
+        LOGGER.debug("Persisting: {}", id);
         return runAsync(() ->
                 createOrReplace(id, ixnModel, dataset, OperationType.REPLACE, container, binary));
     }
