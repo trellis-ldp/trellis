@@ -198,7 +198,9 @@ public interface Resource {
      * @return the RDF quads
      */
     default Dataset dataset() {
-        return stream().collect(TrellisUtils.toDataset().concurrent());
+        try (final Stream<? extends Quad> quads = stream()) {
+            return quads.collect(TrellisUtils.toDataset().concurrent());
+        }
     }
 
     /**
