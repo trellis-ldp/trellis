@@ -31,52 +31,54 @@ logging:
     io.dropwizard: INFO
 
 # This may refer to a remote Triplestore, e.g. https://example.org/sparql
-resources: /opt/trellis/data/rdf
+resources: ${TRELLIS_RESOURCES:-/opt/trellis/data/rdf}
 
-binaries: /opt/trellis/data/binaries
+binaries: ${TRELLIS_BINARIES:-/opt/trellis/data/binaries}
 
-mementos: /opt/trellis/data/mementos
+mementos: ${TRELLIS_MEMENTOS:-/opt/trellis/data/mementos}
 
-namespaces: /opt/trellis/data/namespaces.json
+namespaces: ${TRELLIS_NAMESPACES:-/opt/trellis/data/namespaces.json}
 
 # This may refer to a static base URL for resources. If left empty, the
 # base URL will reflect the Host header in the request.
-baseUrl:
+baseUrl: ${BASE_URL:-}
 
 # This configuration will enable a WebSub "hub" header.
-hubUrl:
+hubUrl: ${HUB_URL:-}
 
 auth:
     adminUsers: []
     webac:
-        enabled: true
+        enabled: ${TRELLIS_AUTH_WEBAC_ENABLED:-true}
+        cacheSize: ${TRELLIS_AUTH_WEBAC_CACHE_SIZE:-1000}
+        cacheExpireSeconds: ${TRELLIS_AUTH_WEBAC_CACHE_EXPIRE_SECONDS:-600}
     jwt:
-        enabled: false
-        key: changeme
+        enabled: ${TRELLIS_AUTH_JWT_ENABLED:-false}
+        key: ${TRELLIS_AUTH_JWT_KEY:-changeme}
     basic:
-        enabled: true
-        usersFile: /opt/trellis/etc/users.auth
+        enabled: ${TRELLIS_AUTH_BASIC_ENABLED:-true}
+        usersFile: ${TRELLIS_AUTH_BASIC_USERS_FILE:-/opt/trellis/etc/users.auth}
 
 cors:
-    enabled: true
+    enabled: ${TRELLIS_CORS_ENABLED:-true}
     allowOrigin:
         - "*"
-    maxAge: 180
+    maxAge: ${TRELLIS_CORS_MAX_AGE:-180}
 
 cache:
-    maxAge: 86400
-    mustRevalidate: true
+    maxAge: ${TRELLIS_CACHE_MAX_AGE:-86400}
+    mustRevalidate: ${TRELLIS_CACHE_MUST_REVALIDATE:-true}
 
 notifications:
-    enabled: false
-    type: JMS
-    topicName: "trellis"
-    connectionString: "tcp://localhost:61616"
+    enabled: ${TRELLIS_NOTIFICATIONS_ENABLED:-false}
+    type: ${TRELLIS_NOTIFICATIONS_TYPE:-JMS}
+    topicName: ${TRELLIS_NOTIFICATIONS_TOPIC_NAME:-trellis}
+    connectionString: ${TRELLIS_NOTIFICATIONS_CONNECTION_STRING:-tcp://localhost:61616}
 
 # JSON-LD configuration
 jsonld:
-    cacheSize: 100
-    cacheExpireHours: 24
+    cacheSize: ${TRELLIS_JSONLD_CACHE_SIZE:-100}
+    cacheExpireHours: ${TRELLIS_JSONLD_CACHE_EXPIRE_HOURS:-24}
     contextWhitelist: []
     contextDomainWhitelist: []
 

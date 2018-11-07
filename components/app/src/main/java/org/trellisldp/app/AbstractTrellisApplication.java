@@ -22,6 +22,9 @@ import static org.trellisldp.app.TrellisUtils.getCorsConfiguration;
 import static org.trellisldp.app.TrellisUtils.getWebacCache;
 
 import io.dropwizard.Application;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.util.ArrayList;
@@ -101,6 +104,14 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     @Override
     public String getName() {
         return "Trellis LDP";
+    }
+
+    @Override
+    public void initialize(final Bootstrap<T> bootstrap) {
+        // Allow configuration property substitution from environment variables
+        bootstrap.setConfigurationSourceProvider(
+                new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
+                    new EnvironmentVariableSubstitutor(false)));
     }
 
     @Override
