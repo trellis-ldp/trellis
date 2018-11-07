@@ -41,10 +41,10 @@ namespaces: ${TRELLIS_NAMESPACES:-/opt/trellis/data/namespaces.json}
 
 # This may refer to a static base URL for resources. If left empty, the
 # base URL will reflect the Host header in the request.
-baseUrl: ${BASE_URL:-}
+baseUrl: ${TRELLIS_BASE_URL:-}
 
 # This configuration will enable a WebSub "hub" header.
-hubUrl: ${HUB_URL:-}
+hubUrl: ${TRELLIS_HUB_URL:-}
 
 auth:
     adminUsers: []
@@ -54,7 +54,7 @@ auth:
         cacheExpireSeconds: ${TRELLIS_AUTH_WEBAC_CACHE_EXPIRE_SECONDS:-600}
     jwt:
         enabled: ${TRELLIS_AUTH_JWT_ENABLED:-false}
-        key: ${TRELLIS_AUTH_JWT_KEY:-changeme}
+        key: ${TRELLIS_AUTH_JWT_KEY:-}
     basic:
         enabled: ${TRELLIS_AUTH_BASIC_ENABLED:-true}
         usersFile: ${TRELLIS_AUTH_BASIC_USERS_FILE:-/opt/trellis/etc/users.auth}
