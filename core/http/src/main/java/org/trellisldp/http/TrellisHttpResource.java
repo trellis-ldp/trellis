@@ -32,6 +32,7 @@ import com.codahale.metrics.annotation.Timed;
 import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -55,6 +56,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.Triple;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
@@ -149,7 +151,9 @@ public class TrellisHttpResource {
             return trellis.getResourceService().create(id, LDP.BasicContainer, dataset.asDataset(), null, null);
         } else if (!res.hasAcl()) {
             LOGGER.info("Initializeing root ACL: {}", id);
-            res.stream(Trellis.PreferUserManaged).map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
+            try (final Stream<? extends Triple> triples = res.stream(Trellis.PreferUserManaged)) {
+                triples.map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
+            }
             return trellis.getResourceService().replace(res.getIdentifier(), res.getInteractionModel(),
                     dataset.asDataset(), null, null);
         }
