@@ -14,7 +14,9 @@
 package org.trellisldp.triplestore;
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
 import static org.apache.jena.graph.NodeFactory.createURI;
@@ -22,7 +24,6 @@ import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
@@ -44,8 +45,8 @@ import java.util.stream.Stream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
+import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaGraph;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
@@ -61,6 +62,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
+import org.trellisldp.vocabulary.Time;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -73,7 +75,7 @@ public class TriplestoreResource implements Resource {
 
     private final IRI identifier;
     private final RDFConnection rdfConnection;
-    private final JenaGraph graph = rdf.createGraph();
+    private final Map<IRI, RDFTerm> data = new HashMap<>();
     private final Map<IRI, Supplier<Stream<Quad>>> graphMapper = new HashMap<>();
 
     /**
@@ -85,7 +87,6 @@ public class TriplestoreResource implements Resource {
         this.identifier = identifier;
         this.rdfConnection = rdfConnection;
         graphMapper.put(Trellis.PreferUserManaged, this::fetchUserQuads);
-        graphMapper.put(Trellis.PreferServerManaged, this::fetchServerQuads);
         graphMapper.put(Trellis.PreferAudit, this::fetchAuditQuads);
         graphMapper.put(Trellis.PreferAccessControl, this::fetchAclQuads);
         graphMapper.put(LDP.PreferContainment, this::fetchContainmentQuads);
@@ -124,7 +125,7 @@ public class TriplestoreResource implements Resource {
     }
 
     protected Boolean isDeleted() {
-        return graph.contains(identifier, DC.type, Trellis.DeletedResource);
+        return asIRI(DC.type).filter(isEqual(Trellis.DeletedResource)).isPresent();
     }
 
     /**
@@ -176,15 +177,15 @@ public class TriplestoreResource implements Resource {
             final RDFNode s = qs.get("binarySubject");
             final RDFNode p = qs.get("binaryPredicate");
             final RDFNode o = qs.get("binaryObject");
-            nodesToTriple(s, p, o).ifPresent(graph::add);
-            graph.add(identifier, getPredicate(qs), getObject(qs));
+            nodesToTriple(s, p, o).ifPresent(t ->
+                data.put(DC.modified.equals(t.getPredicate()) ? Time.hasTime : t.getPredicate(), t.getObject()));
+            data.put(getPredicate(qs), getObject(qs));
         });
     }
 
     @Override
     public Optional<IRI> getContainer() {
-        return graph.stream(identifier, DC.isPartOf, null).map(Triple::getObject)
-            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
+        return asIRI(DC.isPartOf);
     }
 
     @Override
@@ -205,63 +206,44 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public IRI getInteractionModel() {
-        return graph.stream(identifier, RDF.type, null).map(Triple::getObject)
-            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst().orElse(null);
+        return asIRI(RDF.type).orElse(null);
     }
 
     @Override
     public Optional<IRI> getMembershipResource() {
-        return graph.stream(identifier, LDP.membershipResource, null).map(Triple::getObject)
-            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
+        return asIRI(LDP.membershipResource);
     }
 
     @Override
     public Optional<IRI> getMemberRelation() {
-        return graph.stream(identifier, LDP.hasMemberRelation, null).map(Triple::getObject)
-            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
+        return asIRI(LDP.hasMemberRelation);
     }
 
     @Override
     public Optional<IRI> getMemberOfRelation() {
-        return graph.stream(identifier, LDP.isMemberOfRelation, null).map(Triple::getObject)
-            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
+        return asIRI(LDP.isMemberOfRelation);
     }
 
     @Override
     public Optional<IRI> getInsertedContentRelation() {
-        return graph.stream(identifier, LDP.insertedContentRelation, null).map(Triple::getObject)
-            .filter(IRI.class::isInstance).map(IRI.class::cast).findFirst();
+        return asIRI(LDP.insertedContentRelation);
     }
 
     @Override
     public Optional<Binary> getBinary() {
-        return graph.stream(identifier, DC.hasPart, null).map(Triple::getObject).filter(IRI.class::isInstance)
-                .map(IRI.class::cast).findFirst().map(id -> {
-            final Instant date = graph.stream(id, DC.modified, null).map(Triple::getObject)
-                .filter(Literal.class::isInstance).map(Literal.class::cast).map(Literal::getLexicalForm)
-                .map(Instant::parse).findFirst().orElse(null);
-            final String mimeType = graph.stream(id, DC.format, null).map(Triple::getObject)
-                .filter(Literal.class::isInstance).map(Literal.class::cast).map(Literal::getLexicalForm)
-                .findFirst().orElse(null);
-            final Long size = graph.stream(id, DC.extent, null).map(Triple::getObject).filter(Literal.class::isInstance)
-                .map(Literal.class::cast).map(Literal::getLexicalForm).map(Long::parseLong).findFirst().orElse(null);
-            return new Binary(id, date, mimeType, size);
-        });
+        return asIRI(DC.hasPart).flatMap(id -> asLiteral(Time.hasTime).map(Instant::parse).map(time ->
+                    new Binary(id, time, asLiteral(DC.format).orElse(null),
+                        asLiteral(DC.extent).map(Long::parseLong).orElse(null))));
     }
 
     @Override
     public Instant getModified() {
-        return graph.stream(identifier, DC.modified, null).map(Triple::getObject).filter(Literal.class::isInstance)
-            .map(Literal.class::cast).map(Literal::getLexicalForm).map(Instant::parse).findFirst().orElse(null);
+        return asLiteral(DC.modified).map(Instant::parse).orElse(null);
     }
 
     @Override
     public Boolean hasAcl() {
         return fetchAclQuads().findAny().isPresent();
-    }
-
-    private Stream<Quad> fetchServerQuads() {
-        return graph.stream().map(toQuad(Trellis.PreferServerManaged));
     }
 
     /**
@@ -500,5 +482,14 @@ public class TriplestoreResource implements Resource {
      */
     private Stream<Quad> fetchUserQuads() {
         return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
+    }
+
+    private Optional<IRI> asIRI(final IRI predicate) {
+        return ofNullable(data.get(predicate)).filter(IRI.class::isInstance).map(IRI.class::cast);
+    }
+
+    private Optional<String> asLiteral(final IRI predicate) {
+        return ofNullable(data.get(predicate)).filter(Literal.class::isInstance).map(Literal.class::cast)
+            .map(Literal::getLexicalForm);
     }
 }

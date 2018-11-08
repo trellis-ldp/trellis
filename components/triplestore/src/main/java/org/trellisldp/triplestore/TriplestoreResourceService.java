@@ -272,8 +272,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         if (type == OperationType.DELETE) {
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
-            dataset.getGraph(PreferAudit).ifPresent(g -> g.stream()
-                    .map(t -> new Quad(getAuditIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
         } else {
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
