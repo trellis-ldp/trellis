@@ -92,6 +92,7 @@ import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ResourceTemplate;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -222,10 +223,8 @@ abstract class BaseTestHandler {
     private void setUpResourceService() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(allInteractionModels);
         when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(completedFuture(null));
-        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(completedFuture(null));
+        when(mockResourceService.create(any(ResourceTemplate.class))).thenReturn(completedFuture(null));
+        when(mockResourceService.replace(any(ResourceTemplate.class))).thenReturn(completedFuture(null));
         when(mockResourceService.delete(any(IRI.class), any(IRI.class))).thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());

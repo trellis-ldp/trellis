@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -65,6 +64,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryTemplate;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -193,7 +193,7 @@ public class PutHandler extends MutatingLdpHandler {
 
     private CompletableFuture<ResponseBuilder> handleResourceUpdate(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder, final IRI ldpType) {
-        final Binary binary;
+        final BinaryTemplate binary;
         final CompletableFuture<Void> persistPromise;
 
         // Add user-supplied data
@@ -208,7 +208,7 @@ public class PutHandler extends MutatingLdpHandler {
             persistPromise = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType)).thenAccept(future ->
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
-            binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
+            binary = new BinaryTemplate(binaryLocation, mimeType, getEntityLength());
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
@@ -222,7 +222,8 @@ public class PutHandler extends MutatingLdpHandler {
                         ofNullable(rdfSyntax).orElse(TURTLE));
             }
             LOGGER.trace("Successfully checked for constraint violations");
-            binary = ofNullable(getResource()).flatMap(Resource::getBinary).orElse(null);
+            binary = ofNullable(getResource()).flatMap(Resource::getBinary).map(BinaryTemplate::fromBinary)
+                .orElse(null);
             persistPromise = completedFuture(null);
         }
 
@@ -270,15 +271,17 @@ public class PutHandler extends MutatingLdpHandler {
             || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
     }
 
-    private CompletableFuture<Void> createOrReplace(final IRI ldpType, final TrellisDataset ds, final Binary b) {
+    private CompletableFuture<Void> createOrReplace(final IRI ldpType, final TrellisDataset ds,
+            final BinaryTemplate b) {
         final Resource resource = getResource();
         if (isNull(resource)) {
             LOGGER.debug("Creating new resource {}", internalId);
-            return getServices().getResourceService().create(internalId, ldpType, ds.asDataset(), null, b);
+            return getServices().getResourceService().create(new TrellisResourceTemplate(internalId, ldpType,
+                        ds.asDataset(), null, b));
         } else {
             LOGGER.debug("Replacing old resource {}", internalId);
-            return getServices().getResourceService().replace(internalId, ldpType, ds.asDataset(),
-                    resource.getContainer().orElse(null), b);
+            return getServices().getResourceService().replace(new TrellisResourceTemplate(internalId, ldpType,
+                        ds.asDataset(), resource.getContainer().orElse(null), b));
         }
     }
 

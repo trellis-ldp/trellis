@@ -71,6 +71,7 @@ import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ResourceTemplate;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.io.JenaIOService;
@@ -219,10 +220,8 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.delete(any(IRI.class), any(IRI.class))).thenReturn(completedFuture(null));
-        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(null));
-        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(null));
+        when(mockResourceService.replace(any(ResourceTemplate.class))).thenReturn(completedFuture(null));
+        when(mockResourceService.create(any(ResourceTemplate.class))).thenReturn(completedFuture(null));
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());

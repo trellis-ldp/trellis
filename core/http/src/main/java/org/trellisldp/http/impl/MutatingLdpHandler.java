@@ -50,6 +50,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
+import org.trellisldp.api.BinaryTemplate;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
@@ -282,9 +283,10 @@ class MutatingLdpHandler extends BaseLdpHandler {
         // update the resource
         return allOf(
                 getServices().getResourceService()
-                    .replace(getResource().getIdentifier(), getResource().getInteractionModel(),
-                        mutable.asDataset(), getResource().getContainer().orElse(null),
-                        getResource().getBinary().orElse(null)),
+                    .replace(new TrellisResourceTemplate(getResource().getIdentifier(),
+                        getResource().getInteractionModel(), mutable.asDataset(),
+                        getResource().getContainer().orElse(null),
+                        getResource().getBinary().map(BinaryTemplate::fromBinary).orElse(null))),
                 getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
     }
 

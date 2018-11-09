@@ -41,6 +41,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.ResourceTemplate;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.LDP;
 
@@ -94,8 +95,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDeleteACLError() {
-        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(asyncException());
+        when(mockResourceService.replace(any(ResourceTemplate.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
@@ -105,8 +105,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
 
     @Test
     public void testDeleteACLAuditError() {
-        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(completedFuture(null));
+        when(mockResourceService.replace(any(ResourceTemplate.class))).thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);

@@ -72,6 +72,7 @@ import org.trellisldp.http.impl.PatchHandler;
 import org.trellisldp.http.impl.PostHandler;
 import org.trellisldp.http.impl.PutHandler;
 import org.trellisldp.http.impl.TrellisDataset;
+import org.trellisldp.http.impl.TrellisResourceTemplate;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
@@ -148,14 +149,15 @@ public class TrellisHttpResource {
     private CompletableFuture<Void> initialize(final IRI id, final Resource res, final TrellisDataset dataset) {
         if (MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res)) {
             LOGGER.info("Initializing root container: {}", id);
-            return trellis.getResourceService().create(id, LDP.BasicContainer, dataset.asDataset(), null, null);
+            return trellis.getResourceService().create(new TrellisResourceTemplate(id, LDP.BasicContainer,
+                        dataset.asDataset(), null, null));
         } else if (!res.hasAcl()) {
             LOGGER.info("Initializeing root ACL: {}", id);
             try (final Stream<? extends Triple> triples = res.stream(Trellis.PreferUserManaged)) {
                 triples.map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
             }
-            return trellis.getResourceService().replace(res.getIdentifier(), res.getInteractionModel(),
-                    dataset.asDataset(), null, null);
+            return trellis.getResourceService().replace(new TrellisResourceTemplate(res.getIdentifier(),
+                        res.getInteractionModel(), dataset.asDataset(), null, null));
         }
         return completedFuture(null);
     }

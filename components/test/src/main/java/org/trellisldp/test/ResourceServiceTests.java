@@ -48,7 +48,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryTemplate;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.vocabulary.AS;
@@ -92,8 +92,8 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Creation Test", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.RDFSource, dataset,
-                    ROOT_CONTAINER, null).join(), "Check that the resource was successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.RDFSource,
+                    dataset, ROOT_CONTAINER, null)).join(), "Check that the resource was successfully created");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check resource stream", res.stream(Trellis.PreferUserManaged).map(toQuad(Trellis.PreferUserManaged))
                 .map(q -> () -> assertTrue(dataset.contains(q), "Verify that the quad is from the dataset: " + q)));
@@ -111,16 +111,16 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Replacement Test", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.RDFSource, dataset,
-                    ROOT_CONTAINER, null).join(), "Check that the LDP-RS was successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.RDFSource,
+                    dataset, ROOT_CONTAINER, null)).join(), "Check that the LDP-RS was successfully created");
 
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.prefLabel, rdf.createLiteral("preferred label"));
         dataset.add(Trellis.PreferUserManaged, identifier, SKOS.altLabel, rdf.createLiteral("alternate label"));
         dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
 
-        assertDoesNotThrow(() -> getResourceService().replace(identifier, LDP.RDFSource, dataset,
-                    ROOT_CONTAINER, null).join(), "Check that the LDP-RS was successfully replaced");
+        assertDoesNotThrow(() -> getResourceService().replace(new SimpleResourceTemplate(identifier, LDP.RDFSource,
+                    dataset, ROOT_CONTAINER, null)).join(), "Check that the LDP-RS was successfully replaced");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the replaced LDP-RS stream", res.stream(Trellis.PreferUserManaged)
                 .map(toQuad(Trellis.PreferUserManaged))
@@ -142,8 +142,8 @@ public interface ResourceServiceTests {
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(),
                 "Check that the resource doesn't exist");
 
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.RDFSource, dataset,
-                    ROOT_CONTAINER, null).join(), "Check that the resource was successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.RDFSource,
+                    dataset, ROOT_CONTAINER, null)).join(), "Check that the resource was successfully created");
         assertNotEquals(DELETED_RESOURCE, getResourceService().get(identifier).join(),
                 "Check that the resource isn't currently 'deleted'");
 
@@ -164,8 +164,8 @@ public interface ResourceServiceTests {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset0 = buildDataset(identifier, "Immutable Resource Test", SUBJECT2);
 
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.RDFSource, dataset0,
-                    ROOT_CONTAINER, null).join(), "Check the successful creation of an LDP-RS");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.RDFSource,
+                    dataset0, ROOT_CONTAINER, null)).join(), "Check the successful creation of an LDP-RS");
 
         final IRI audit1 = rdf.createIRI(TRELLIS_BNODE_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset1 = rdf.createDataset();
@@ -216,8 +216,8 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Create LDP-RS Test", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-RS");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.RDFSource, dataset,
-                    ROOT_CONTAINER, null).join(), "Check the creation of an LDP-RS");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.RDFSource,
+                    dataset, ROOT_CONTAINER, null)).join(), "Check the creation of an LDP-RS");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-RS resource", checkResource(res, identifier, LDP.RDFSource, time, dataset));
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user triple count");
@@ -237,11 +237,11 @@ public interface ResourceServiceTests {
 
         final Instant binaryTime = now();
         final IRI binaryLocation = rdf.createIRI("binary:location/" + getResourceService().generateIdentifier());
-        final Binary binary = new Binary(binaryLocation, binaryTime, "text/plain", 150L);
+        final BinaryTemplate binary = new BinaryTemplate(binaryLocation, "text/plain", 150L);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-NR");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.NonRDFSource, dataset,
-                    ROOT_CONTAINER, binary).join(), "Check the creation of an LDP-NR");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.NonRDFSource,
+                    dataset, ROOT_CONTAINER, binary)).join(), "Check the creation of an LDP-NR");
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-NR resource", checkResource(res, identifier, LDP.NonRDFSource, time, dataset));
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed count of the LDP-NR");
@@ -268,22 +268,22 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = buildDataset(identifier, "Container Test", SUBJECT0);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-C");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.Container, dataset0,
-                    ROOT_CONTAINER, null).join(), "Check that the LDP-C is created successfully");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.Container,
+                    dataset0, ROOT_CONTAINER, null)).join(), "Check that the LDP-C is created successfully");
 
         final IRI child1 = rdf.createIRI(base + "/child01");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check for no child1 resource");
-        assertDoesNotThrow(() -> getResourceService().create(child1, LDP.RDFSource, dataset1, identifier,
-                    null).join(), "Check that the first child was successfully created in the LDP-C");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child1, LDP.RDFSource, dataset1,
+                    identifier, null)).join(), "Check that the first child was successfully created in the LDP-C");
 
         final IRI child2 = rdf.createIRI(base + "/child02");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check for no child2 resource");
-        assertDoesNotThrow(() -> getResourceService().create(child2, LDP.RDFSource, dataset2, identifier,
-                    null).join(), "Check that the second child was successfully created in the LDP-C");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child2, LDP.RDFSource, dataset2,
+                    identifier, null)).join(), "Check that the second child was successfully created in the LDP-C");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-C resource", checkResource(res, identifier, LDP.Container, time, dataset0));
@@ -309,22 +309,22 @@ public interface ResourceServiceTests {
         final Dataset dataset0 = buildDataset(identifier, "Basic Container Test", SUBJECT0);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for a pre-existing LDP-BC");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.BasicContainer, dataset0,
-                    ROOT_CONTAINER, null).join(), "Check that creating an LDP-BC succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.BasicContainer,
+                    dataset0, ROOT_CONTAINER, null)).join(), "Check that creating an LDP-BC succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child11");
         final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check for no child1 resource");
-        assertDoesNotThrow(() -> getResourceService().create(child1, LDP.RDFSource, dataset1, identifier,
-                    null).join(), "Check that child1 is created");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child1, LDP.RDFSource, dataset1,
+                    identifier, null)).join(), "Check that child1 is created");
 
         final IRI child2 = rdf.createIRI(base + "/child12");
         final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check for no child2 resource");
-        assertDoesNotThrow(() -> getResourceService().create(child2, LDP.RDFSource, dataset2, identifier,
-                    null).join(), "Check that child2 is created");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child2, LDP.RDFSource, dataset2,
+                    identifier, null)).join(), "Check that child2 is created");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-BC resource", checkResource(res, identifier, LDP.BasicContainer, time, dataset0));
@@ -356,22 +356,22 @@ public interface ResourceServiceTests {
         dataset0.add(Trellis.PreferUserManaged, identifier, LDP.isMemberOfRelation, DC.isPartOf);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check that the DC doesn't exist");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.DirectContainer, dataset0,
-                    ROOT_CONTAINER, null).join(), "Check that creating the LDP-DC succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier, LDP.DirectContainer,
+                    dataset0, ROOT_CONTAINER, null)).join(), "Check that creating the LDP-DC succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = buildDataset(child1, "Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(), "Check that no child resource exists");
-        assertDoesNotThrow(() -> getResourceService().create(child1, LDP.RDFSource, dataset1, identifier,
-                    null).join(), "Check that the child resource is successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child1, LDP.RDFSource, dataset1,
+                    identifier, null)).join(), "Check that the child resource is successfully created");
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Child 2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(), "Check that no child2 resource exists");
-        assertDoesNotThrow(() -> getResourceService().create(child2, LDP.RDFSource, dataset2, identifier,
-                    null).join(), "Check that the child2 resource is successfully created");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child2, LDP.RDFSource, dataset2,
+                    identifier, null)).join(), "Check that the child2 resource is successfully created");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the resource", checkResource(res, identifier, LDP.DirectContainer, time, dataset0));
@@ -410,24 +410,25 @@ public interface ResourceServiceTests {
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(),
                 "Check for a missing resource");
-        assertDoesNotThrow(() -> getResourceService().create(identifier, LDP.IndirectContainer, dataset0,
-                    ROOT_CONTAINER, null).join(), "Check that creating a resource succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(identifier,
+                LDP.IndirectContainer, dataset0, ROOT_CONTAINER, null)).join(),
+                "Check that creating a resource succeeds");
 
         final IRI child1 = rdf.createIRI(base + "/child1");
         final Dataset dataset1 = buildDataset(child1, "Indirect Container Child 1", SUBJECT1);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child1).join(),
                 "Check that the child resource doesn't exist");
-        assertDoesNotThrow(() -> getResourceService().create(child1, LDP.RDFSource, dataset1, identifier,
-                    null).join(), "Check that creating a child resource succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child1, LDP.RDFSource,
+                    dataset1, identifier, null)).join(), "Check that creating a child resource succeeds");
 
         final IRI child2 = rdf.createIRI(base + "/child2");
         final Dataset dataset2 = buildDataset(child2, "Indirect Container Child 2", SUBJECT2);
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(child2).join(),
                 "Check that the child resource doesn't exist");
-        assertDoesNotThrow(() -> getResourceService().create(child2, LDP.RDFSource, dataset2, identifier,
-                    null).join(), "Check that creating the child resource succeeds");
+        assertDoesNotThrow(() -> getResourceService().create(new SimpleResourceTemplate(child2, LDP.RDFSource,
+                    dataset2, identifier, null)).join(), "Check that creating the child resource succeeds");
 
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the resource", checkResource(res, identifier, LDP.IndirectContainer, time, dataset0));

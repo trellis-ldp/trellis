@@ -57,6 +57,7 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.ResourceTemplate;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.core.Prefer;
@@ -122,7 +123,7 @@ public class PatchHandlerTest extends BaseTestHandler {
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
 
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
-        verify(mockResourceService).replace(eq(identifier), eq(LDP.RDFSource), any(Dataset.class), any(), any());
+        verify(mockResourceService).replace(any(ResourceTemplate.class));
     }
 
     @Test
@@ -183,8 +184,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     public void testError() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
-        when(mockResourceService.replace(eq(identifier), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(asyncException());
+        when(mockResourceService.replace(any(ResourceTemplate.class))).thenReturn(asyncException());
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
         assertThrows(CompletionException.class, () ->

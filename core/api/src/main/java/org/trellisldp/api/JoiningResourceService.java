@@ -72,15 +72,13 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public CompletableFuture<Void> create(final IRI id, final IRI ixnModel,
-            final Dataset dataset, final IRI container, final Binary binary) {
-        return mutableData.create(id, ixnModel, dataset, container, binary);
+    public CompletableFuture<Void> create(final ResourceTemplate template) {
+        return mutableData.create(template);
     }
 
     @Override
-    public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel,
-            final Dataset dataset, final IRI container, final Binary binary) {
-        return mutableData.replace(id, ixnModel, dataset, container, binary);
+    public CompletableFuture<Void> replace(final ResourceTemplate template) {
+        return mutableData.replace(template);
     }
 
     @Override

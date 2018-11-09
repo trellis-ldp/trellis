@@ -59,7 +59,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
@@ -76,11 +75,11 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.ResourceTemplate;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.ACL;
@@ -155,54 +154,49 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel, final Dataset dataset, final IRI container,
-            final Binary binary) {
-        LOGGER.debug("Persisting: {}", id);
-        return runAsync(() ->
-                createOrReplace(id, ixnModel, dataset, OperationType.REPLACE, container, binary));
+    public CompletableFuture<Void> replace(final ResourceTemplate template) {
+        LOGGER.debug("Persisting: {}", template.getIdentifier());
+        return runAsync(() -> createOrReplace(template));
     }
 
-    private void createOrReplace(final IRI identifier, final IRI ixnModel,
-                    final Dataset dataset, final OperationType type, final IRI container, final Binary binary) {
+    private void createOrReplace(final ResourceTemplate tpl) {
         final Instant eventTime = now();
+        final Dataset dataset = tpl.dataset();
 
         // Set the LDP type
-        dataset.add(PreferServerManaged, identifier, RDF.type, ixnModel);
+        dataset.add(PreferServerManaged, tpl.getIdentifier(), RDF.type, tpl.getInteractionModel());
 
         // Relocate some user-managed triples into the server-managed graph
-        if (LDP.DirectContainer.equals(ixnModel) || LDP.IndirectContainer.equals(ixnModel)) {
-            dataset.getGraph(PreferUserManaged).ifPresent(g -> {
-                g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t -> {
-                    // This allows for HTTP resource URL-based queries
-                    dataset.add(PreferServerManaged, identifier, LDP.member, getBaseIRI(t.getObject()));
-                    dataset.add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject());
-                });
-                g.stream(identifier, LDP.hasMemberRelation, null).findFirst().ifPresent(t -> dataset
-                                .add(PreferServerManaged, identifier, LDP.hasMemberRelation, t.getObject()));
-                g.stream(identifier, LDP.isMemberOfRelation, null).findFirst().ifPresent(t -> dataset
-                                .add(PreferServerManaged, identifier, LDP.isMemberOfRelation, t.getObject()));
-                dataset.add(PreferServerManaged, identifier, LDP.insertedContentRelation,
-                                g.stream(identifier, LDP.insertedContentRelation, null).map(Triple::getObject)
-                                                .findFirst().orElse(LDP.MemberSubject));
+        if (LDP.DirectContainer.equals(tpl.getInteractionModel())
+                || LDP.IndirectContainer.equals(tpl.getInteractionModel())) {
+            tpl.getMembershipResource().ifPresent(iri -> {
+                // This allows for HTTP resource URL-based queries
+                dataset.add(PreferServerManaged, tpl.getIdentifier(), LDP.member, getBaseIRI(iri));
+                dataset.add(PreferServerManaged, tpl.getIdentifier(), LDP.membershipResource, iri);
             });
+            tpl.getMemberRelation().ifPresent(iri ->
+                    dataset.add(PreferServerManaged, tpl.getIdentifier(), LDP.hasMemberRelation, iri));
+            tpl.getMemberOfRelation().ifPresent(iri ->
+                    dataset.add(PreferServerManaged, tpl.getIdentifier(), LDP.isMemberOfRelation, iri));
+            dataset.add(PreferServerManaged, tpl.getIdentifier(), LDP.insertedContentRelation,
+                    tpl.getInsertedContentRelation().orElse(LDP.MemberSubject));
         }
 
         // Set the parent relationship
-        if (nonNull(container)) {
-            dataset.add(PreferServerManaged, identifier, DC.isPartOf, container);
-        }
+        tpl.getContainer().ifPresent(parent ->
+                dataset.add(PreferServerManaged, tpl.getIdentifier(), DC.isPartOf, parent));
 
-        if (nonNull(binary)) {
-            dataset.add(PreferServerManaged, identifier, DC.hasPart, binary.getIdentifier());
+        tpl.getBinaryTemplate().ifPresent(binary -> {
+            dataset.add(PreferServerManaged, tpl.getIdentifier(), DC.hasPart, binary.getIdentifier());
             dataset.add(PreferServerManaged, binary.getIdentifier(), DC.modified,
-                    rdf.createLiteral(binary.getModified().toString(), XSD.dateTime));
+                    rdf.createLiteral(binary.getModified().orElse(eventTime).toString(), XSD.dateTime));
             binary.getMimeType().map(rdf::createLiteral).ifPresent(mimeType ->
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.format, mimeType));
             binary.getSize().map(size -> rdf.createLiteral(size.toString(), XSD.long_)).ifPresent(size ->
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.extent, size));
-        }
+        });
 
-        storeResource(identifier, dataset, eventTime, type);
+        storeResource(tpl.getIdentifier(), dataset, eventTime, OperationType.REPLACE);
     }
 
     private void storeResource(final IRI identifier, final Dataset dataset,

@@ -39,7 +39,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -61,6 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.ResourceTemplate;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.LDP;
@@ -262,8 +262,7 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(eq(identifier), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(asyncException());
+        when(mockResourceService.replace(any(ResourceTemplate.class))).thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
@@ -292,8 +291,7 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
-                    any(Dataset.class), any(), any())).thenReturn(asyncException());
+        when(mockResourceService.replace(any(ResourceTemplate.class))).thenReturn(asyncException());
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
         final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);

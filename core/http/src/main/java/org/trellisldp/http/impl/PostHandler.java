@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -62,7 +61,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryTemplate;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -167,7 +166,7 @@ public class PostHandler extends MutatingLdpHandler {
     private CompletableFuture<ResponseBuilder> handleResourceCreation(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder) {
 
-        final Binary binary;
+        final BinaryTemplate binary;
         final CompletableFuture<Void> persistPromise;
 
         // Add user-supplied data
@@ -182,7 +181,7 @@ public class PostHandler extends MutatingLdpHandler {
             persistPromise = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType)).thenAccept(future ->
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
-            binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
+            binary = new BinaryTemplate(binaryLocation, mimeType, getEntityLength());
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
@@ -201,8 +200,8 @@ public class PostHandler extends MutatingLdpHandler {
 
         return allOf(
                 persistPromise,
-                getServices().getResourceService().create(internalId, ldpType, mutable.asDataset(),
-                    parentIdentifier, binary),
+                getServices().getResourceService().create(new TrellisResourceTemplate(internalId, ldpType,
+                        mutable.asDataset(), parentIdentifier, binary)),
                 getServices().getResourceService().add(internalId, immutable.asDataset()))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {

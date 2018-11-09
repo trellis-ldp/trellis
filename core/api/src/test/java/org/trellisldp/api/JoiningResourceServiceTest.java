@@ -38,22 +38,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
-import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.RDFTerm;
+import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.JoiningResourceService.RetrievableResource;
 import org.trellisldp.vocabulary.LDP;
 
 public class JoiningResourceServiceTest {
 
-    private static final IRI testResourceId1 = createIRI("http://example.com/1");
-    private static final IRI testResourceId2 = createIRI("http://example.com/2");
-    private static final IRI testResourceId3 = createIRI("http://example.com/3");
+    private static final RDF rdf = TrellisUtils.getInstance();
+    private static final IRI testResourceId1 = rdf.createIRI("http://example.com/1");
+    private static final IRI testResourceId2 = rdf.createIRI("http://example.com/2");
+    private static final IRI testResourceId3 = rdf.createIRI("http://example.com/3");
 
-    private static IRI badId = createIRI("http://bad.com");
+    private static IRI badId = rdf.createIRI("http://bad.com");
 
     private final ImmutableDataService<Resource> testImmutableService = new TestableImmutableService();
 
@@ -61,14 +61,6 @@ public class JoiningResourceServiceTest {
 
     private final ResourceService testable = new TestableJoiningResourceService(testImmutableService,
                     testMutableService);
-
-    private static IRI createIRI(final String value) {
-        return TrellisUtils.getInstance().createIRI(value);
-    }
-
-    private static Quad createQuad(final BlankNodeOrIRI g, final BlankNodeOrIRI s, final IRI p, final RDFTerm o) {
-        return TrellisUtils.getInstance().createQuad(g, s, p, o);
-    }
 
     private static class TestableRetrievalService implements RetrievalService<Resource> {
 
@@ -106,17 +98,15 @@ public class JoiningResourceServiceTest {
                     implements MutableDataService<Resource> {
 
         @Override
-        public CompletableFuture<Void> create(final IRI id, final IRI ixnModel,
-                final Dataset dataset, final IRI container, final Binary binary) {
-            resources.put(id, new TestResource(id, dataset));
-            return isntBadId(id);
+        public CompletableFuture<Void> create(final ResourceTemplate template) {
+            resources.put(template.getIdentifier(), new TestResource(template.getIdentifier(), template.dataset()));
+            return isntBadId(template.getIdentifier());
         }
 
         @Override
-        public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel,
-                final Dataset dataset, final IRI container, final Binary binary) {
-            resources.replace(id, new TestResource(id, dataset));
-            return isntBadId(id);
+        public CompletableFuture<Void> replace(final ResourceTemplate template) {
+            resources.replace(template.getIdentifier(), new TestResource(template.getIdentifier(), template.dataset()));
+            return isntBadId(template.getIdentifier());
         }
 
         @Override
@@ -146,6 +136,72 @@ public class JoiningResourceServiceTest {
         @Override
         public CompletableFuture<Void> touch(final IRI identifier) {
             return completedFuture(null);
+        }
+    }
+
+    private static class TestResourceTemplate implements ResourceTemplate {
+
+        private final IRI id;
+        private final Dataset dataset;
+
+        public TestResourceTemplate(final IRI id, final Dataset dataset) {
+            this.id = id;
+            this.dataset = dataset;
+        }
+
+        @Override
+        public IRI getIdentifier() {
+            return id;
+        }
+
+        @Override
+        public IRI getInteractionModel() {
+            return null;
+        }
+
+        @Override
+        public Optional<IRI> getContainer() {
+            return empty();
+        }
+
+        @Override
+        public Optional<IRI> getMembershipResource() {
+            return empty();
+        }
+
+        @Override
+        public Optional<IRI> getMemberRelation() {
+            return empty();
+        }
+
+        @Override
+        public Optional<IRI> getMemberOfRelation() {
+            return empty();
+        }
+
+        @Override
+        public Optional<IRI> getInsertedContentRelation() {
+            return empty();
+        }
+
+        @Override
+        public Dataset dataset() {
+            return dataset;
+        }
+
+        @Override
+        public Stream<? extends Quad> stream() {
+            return dataset.stream();
+        }
+
+        @Override
+        public Stream<Map.Entry<String, String>> getExtraLinkRelations() {
+            return Stream.empty();
+        }
+
+        @Override
+        public Optional<BinaryTemplate> getBinaryTemplate() {
+            return empty();
         }
     }
 
@@ -196,24 +252,28 @@ public class JoiningResourceServiceTest {
         public Boolean hasAcl() {
             return false;
         }
-
     }
 
     @Test
     public void testRoundtripping() {
-        final Quad testQuad = createQuad(testResourceId1, testResourceId1, testResourceId1, badId);
+        final Dataset testDataset = rdf.createDataset();
+        final Quad testQuad = rdf.createQuad(testResourceId1, testResourceId1, testResourceId1, badId);
+        testDataset.add(testQuad);
+
         final Resource testResource = new TestResource(testResourceId1, testQuad);
-        assertNull(testable.create(testResourceId1, testResource.getInteractionModel(),
-                    testResource.dataset(), null, null).join(), "Couldn't create a resource!");
+        final ResourceTemplate testTemplate = new TestResourceTemplate(testResourceId1, testDataset);
+        assertNull(testable.create(testTemplate).join(), "Couldn't create a resource!");
         Resource retrieved = testable.get(testResourceId1).join();
         assertEquals(testResource.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
-        final Quad testQuad2 = createQuad(testResourceId1, badId, testResourceId1, badId);
+        final Dataset testDataset2 = rdf.createDataset();
+        final Quad testQuad2 = rdf.createQuad(testResourceId1, badId, testResourceId1, badId);
+        testDataset2.add(testQuad2);
         final Resource testResource2 = new TestResource(testResourceId1, testQuad2);
-        assertNull(testable.replace(testResourceId1, testResource2.getInteractionModel(),
-                        testResource2.dataset(), null, null).join(), "Couldn't replace resource!");
+        final ResourceTemplate testResourceTemplate2 = new TestResourceTemplate(testResourceId1, testDataset2);
+        assertNull(testable.replace(testResourceTemplate2).join(), "Couldn't replace resource!");
         retrieved = testable.get(testResourceId1).join();
         assertEquals(testResource2.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource2.stream().findFirst().get(), retrieved.stream().findFirst().get(),
@@ -225,13 +285,13 @@ public class JoiningResourceServiceTest {
 
     @Test
     public void testMergingBehavior() {
-        final Quad testMutableQuad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
-        final Quad testImmutableQuad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+        final Quad testMutableQuad = rdf.createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+        final Quad testImmutableQuad = rdf.createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testMutableResource = new TestResource(testResourceId2, testMutableQuad);
-        assertNull(testable.create(testResourceId2, testMutableResource.getInteractionModel(),
-                        testMutableResource.dataset(), null, null).join(), "Couldn't create a mutable resource!");
+        final ResourceTemplate testTemplate = new TestResourceTemplate(testResourceId2, testMutableResource.dataset());
+        assertNull(testable.create(testTemplate).join(), "Couldn't create a mutable resource!");
         final Resource testImmutableResource = new TestResource(testResourceId2, testImmutableQuad);
         assertNull(testable.add(testResourceId2, testImmutableResource.dataset()).join(),
                         "Couldn't create an immutable resource!");
@@ -249,17 +309,18 @@ public class JoiningResourceServiceTest {
 
     @Test
     public void testBadPersist() {
-        final Quad testQuad = createQuad(badId, testResourceId1, testResourceId1, badId);
-        final Resource testResource = new TestResource(badId, testQuad);
-        assertThrows(CompletionException.class, () -> testable.create(badId,
-                    testResource.getInteractionModel(), testResource.dataset(),
-                    null, null).join(), "Could create a resource when underlying services should reject it!");
+        final Dataset testDataset = rdf.createDataset();
+        final Quad testQuad = rdf.createQuad(badId, testResourceId1, testResourceId1, badId);
+        testDataset.add(testQuad);
+        final ResourceTemplate testTemplate = new TestResourceTemplate(badId, testDataset);
+        assertThrows(CompletionException.class, () -> testable.create(testTemplate).join(),
+                    "Could create a resource when underlying services should reject it!");
     }
 
     @Test
     public void testAppendSemantics() {
-        final Quad testFirstQuad = createQuad(testResourceId3, testResourceId2, testResourceId1, badId);
-        final Quad testSecondQuad = createQuad(testResourceId3, testResourceId2, testResourceId1, badId);
+        final Quad testFirstQuad = rdf.createQuad(testResourceId3, testResourceId2, testResourceId1, badId);
+        final Quad testSecondQuad = rdf.createQuad(testResourceId3, testResourceId2, testResourceId1, badId);
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testFirstResource = new TestResource(testResourceId3, testFirstQuad);
@@ -282,7 +343,7 @@ public class JoiningResourceServiceTest {
     @Test
     public void testRetrievableResource() {
         final Instant time = now();
-        final Quad quad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+        final Quad quad = rdf.createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
         final Resource mockMutable = mock(Resource.class);
 
         when(mockMutable.getInteractionModel()).thenReturn(LDP.RDFSource);
@@ -302,8 +363,8 @@ public class JoiningResourceServiceTest {
     @Test
     public void testPersistableResource() {
         final Instant time = now();
-        final IRI identifier = createIRI("trellis:identifier");
-        final Quad quad = createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
+        final IRI identifier = rdf.createIRI("trellis:identifier");
+        final Quad quad = rdf.createQuad(testResourceId2, testResourceId2, testResourceId1, badId);
         final Dataset dataset = TrellisUtils.getInstance().createDataset();
         dataset.add(quad);
 
