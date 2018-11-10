@@ -31,7 +31,8 @@ import org.apache.commons.rdf.api.RDFTerm;
  *           managed by an external framework (e.g. using {@code PostConstruct}). This may or may not include
  *           actions in external systems like databases, which may be better managed elsewhere.
  */
-public interface ResourceService extends MutableDataService<Resource>, ImmutableDataService<Resource> {
+public interface ResourceService extends MutableDataService<Resource, ResourceTemplate>,
+       ImmutableDataService<Resource> {
 
     /**
      * Skolemize a blank node.

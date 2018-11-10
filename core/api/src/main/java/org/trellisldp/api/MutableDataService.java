@@ -23,8 +23,9 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author ajs6f
  * @param <U> the type of resource that can be persisted by this service
+ * @param <V> the type of data used as a template for generating a resource
  */
-public interface MutableDataService<U> extends RetrievalService<U> {
+public interface MutableDataService<U, V> extends RetrievalService<U> {
 
     /**
      * Create a resource in the server.
@@ -36,7 +37,7 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    default CompletableFuture<Void> create(ResourceTemplate template) {
+    default CompletableFuture<Void> create(V template) {
         return replace(template);
     }
 
@@ -49,7 +50,7 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> replace(ResourceTemplate template);
+    CompletableFuture<Void> replace(V template);
 
     /**
      * Delete a resource from the server.

@@ -57,7 +57,7 @@ public class JoiningResourceServiceTest {
 
     private final ImmutableDataService<Resource> testImmutableService = new TestableImmutableService();
 
-    private final MutableDataService<Resource> testMutableService = new TestableMutableDataService();
+    private final MutableDataService<Resource, ResourceTemplate> testMutableService = new TestableMutableDataService();
 
     private final ResourceService testable = new TestableJoiningResourceService(testImmutableService,
                     testMutableService);
@@ -95,7 +95,7 @@ public class JoiningResourceServiceTest {
     }
 
     private static class TestableMutableDataService extends TestableRetrievalService
-                    implements MutableDataService<Resource> {
+                    implements MutableDataService<Resource, ResourceTemplate> {
 
         @Override
         public CompletableFuture<Void> create(final ResourceTemplate template) {
@@ -119,7 +119,7 @@ public class JoiningResourceServiceTest {
     private static class TestableJoiningResourceService extends JoiningResourceService {
 
         public TestableJoiningResourceService(final ImmutableDataService<Resource> immutableData,
-                        final MutableDataService<Resource> mutableData) {
+                        final MutableDataService<Resource, ResourceTemplate> mutableData) {
             super(mutableData, immutableData);
         }
 

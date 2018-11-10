@@ -39,13 +39,13 @@ public abstract class JoiningResourceService implements ResourceService {
 
     private final ImmutableDataService<Resource> immutableData;
 
-    private final MutableDataService<Resource> mutableData;
+    private final MutableDataService<Resource, ResourceTemplate> mutableData;
 
     /**
      * @param mutableData service in which to persist mutable data
      * @param immutableData service in which to persist immutable data
      */
-    public JoiningResourceService(final MutableDataService<Resource> mutableData,
+    public JoiningResourceService(final MutableDataService<Resource, ResourceTemplate> mutableData,
                     final ImmutableDataService<Resource> immutableData) {
         this.immutableData = immutableData;
         this.mutableData = mutableData;
