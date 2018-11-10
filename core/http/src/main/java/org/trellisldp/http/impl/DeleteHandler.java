@@ -134,7 +134,7 @@ public class DeleteHandler extends MutatingLdpHandler {
             final TrellisDataset immutable) {
 
         // When deleting just the ACL graph, keep the user managed triples intact
-        try (final Stream<? extends Triple> triples = getResource().stream(PreferUserManaged)) {
+        try (final Stream<Triple> triples = getResource().stream(PreferUserManaged)) {
             triples.map(toQuad(PreferUserManaged)).forEachOrdered(mutable::add);
         }
 

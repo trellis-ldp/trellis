@@ -321,7 +321,7 @@ public class GetHandler extends BaseLdpHandler {
         final StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(final OutputStream out) throws IOException {
-                try (final Stream<? extends Quad> stream = getResource().stream()) {
+                try (final Stream<Quad> stream = getResource().stream()) {
                     getServices().getIOService().write(stream.filter(filterWithPrefer(prefer))
                         .map(unskolemizeQuads(getServices().getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),

@@ -153,7 +153,7 @@ public class TrellisHttpResource {
                     .build(), dataset.asDataset());
         } else if (!res.hasAcl()) {
             LOGGER.info("Initializeing root ACL: {}", id);
-            try (final Stream<? extends Triple> triples = res.stream(Trellis.PreferUserManaged)) {
+            try (final Stream<Triple> triples = res.stream(Trellis.PreferUserManaged)) {
                 triples.map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
             }
             return trellis.getResourceService().replace(Metadata.builder(res).build(), dataset.asDataset());
@@ -299,7 +299,7 @@ public class TrellisHttpResource {
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
-    private CompletableFuture<? extends Resource> getParent(final IRI identifier) {
+    private CompletableFuture<Resource> getParent(final IRI identifier) {
         final Optional<IRI> parent = getContainer(identifier);
         if (parent.isPresent()) {
             return trellis.getResourceService().get(parent.get());
@@ -355,7 +355,7 @@ public class TrellisHttpResource {
             .thenCompose(getHandler::getRepresentation);
     }
 
-    private CompletableFuture<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {
+    private CompletableFuture<Resource> fetchTrellisResource(final IRI identifier, final Version version) {
         if (nonNull(version)) {
             return trellis.getMementoService().get(identifier, version.getInstant());
         }

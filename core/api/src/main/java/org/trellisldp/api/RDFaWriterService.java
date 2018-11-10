@@ -29,5 +29,5 @@ public interface RDFaWriterService {
      * @param output the output stream
      * @param subject the subject of the resource, may be {@code null}
      */
-    void write(Stream<? extends Triple> triples, OutputStream output, String subject);
+    void write(Stream<Triple> triples, OutputStream output, String subject);
 }

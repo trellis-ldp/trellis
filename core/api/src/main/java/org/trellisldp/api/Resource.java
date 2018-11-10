@@ -67,7 +67,7 @@ public interface Resource {
             }
 
             @Override
-            public Stream<? extends Quad> stream() {
+            public Stream<Quad> stream() {
                 return Stream.empty();
             }
 
@@ -102,7 +102,7 @@ public interface Resource {
             }
 
             @Override
-            public Stream<? extends Quad> stream() {
+            public Stream<Quad> stream() {
                 return Stream.empty();
             }
 
@@ -190,7 +190,7 @@ public interface Resource {
      *
      * @return the RDF quads
      */
-    Stream<? extends Quad> stream();
+    Stream<Quad> stream();
 
     /**
      * Retrieve the RDF Quads for a resource.
@@ -198,7 +198,7 @@ public interface Resource {
      * @return the RDF quads
      */
     default Dataset dataset() {
-        try (final Stream<? extends Quad> quads = stream()) {
+        try (final Stream<Quad> quads = stream()) {
             return quads.collect(TrellisUtils.toDataset().concurrent());
         }
     }
@@ -209,7 +209,7 @@ public interface Resource {
      * @param graphName the named graph
      * @return the RDF triples
      */
-    default Stream<? extends Triple> stream(IRI graphName) {
+    default Stream<Triple> stream(IRI graphName) {
         return stream(singleton(graphName));
     }
 
@@ -219,7 +219,7 @@ public interface Resource {
      * @param graphNames the named graphs
      * @return the RDF triples
      */
-    default Stream<? extends Triple> stream(Collection<IRI> graphNames) {
+    default Stream<Triple> stream(Collection<IRI> graphNames) {
         return stream().filter(quad -> quad.getGraphName().filter(graphNames::contains).isPresent())
             .map(Quad::asTriple);
     }

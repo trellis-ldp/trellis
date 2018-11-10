@@ -222,7 +222,7 @@ public class JenaIOService implements IOService {
     }
 
     @Override
-    public void write(final Stream<? extends Triple> triples, final OutputStream output, final RDFSyntax syntax,
+    public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax,
             final IRI... profiles) {
         requireNonNull(triples, "The triples stream may not be null!");
         requireNonNull(output, "The output stream may not be null!");
@@ -262,7 +262,7 @@ public class JenaIOService implements IOService {
         }
     }
 
-    private void writeHTML(final Stream<? extends Triple> triples, final OutputStream output, final String subject) {
+    private void writeHTML(final Stream<Triple> triples, final OutputStream output, final String subject) {
         if (nonNull(htmlSerializer)) {
             htmlSerializer.write(triples, output, subject);
         } else {
@@ -317,7 +317,7 @@ public class JenaIOService implements IOService {
     }
 
     @Override
-    public Stream<? extends Triple> read(final InputStream input, final RDFSyntax syntax, final String base) {
+    public Stream<Triple> read(final InputStream input, final RDFSyntax syntax, final String base) {
         requireNonNull(input, "The input stream may not be null!");
         requireNonNull(syntax, "The syntax value may not be null!");
 
@@ -337,7 +337,7 @@ public class JenaIOService implements IOService {
                     nsService.setPrefix(prefix, namespace);
                 }
             });
-            return rdf.asGraph(graph).stream();
+            return rdf.asGraph(graph).stream().map(Triple.class::cast);
         } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
             throw new RuntimeTrellisException(ex);
         }

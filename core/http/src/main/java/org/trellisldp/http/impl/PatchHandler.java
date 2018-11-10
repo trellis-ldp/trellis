@@ -181,7 +181,7 @@ public class PatchHandler extends MutatingLdpHandler {
         final List<Triple> triples;
         // Update existing graph
         try (final TrellisGraph graph = TrellisGraph.createGraph()) {
-            try (final Stream<? extends Triple> stream = getResource().stream(graphName)) {
+            try (final Stream<Triple> stream = getResource().stream(graphName)) {
                 stream.forEachOrdered(graph::add);
             }
             getServices().getIOService().update(graph.asGraph(), updateBody, syntax,
@@ -234,7 +234,7 @@ public class PatchHandler extends MutatingLdpHandler {
         }
 
         // When updating User or ACL triples, be sure to add the other category to the dataset
-        try (final Stream<? extends Triple> remaining = getResource().stream(otherGraph)) {
+        try (final Stream<Triple> remaining = getResource().stream(otherGraph)) {
             remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
         }
 

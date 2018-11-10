@@ -140,7 +140,7 @@ public class HtmlSerializer implements RDFaWriterService {
      * @param subject the subject
      */
     @Override
-    public void write(final Stream<? extends Triple> triples, final OutputStream out, final String subject) {
+    public void write(final Stream<Triple> triples, final OutputStream out, final String subject) {
         final Writer writer = new OutputStreamWriter(out, UTF_8);
         try {
             template

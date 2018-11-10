@@ -275,7 +275,7 @@ public class WebACService implements AccessControlService {
     public static class NoopAuthorizationCache implements CacheService<String, Set<IRI>> {
 
         @Override
-        public Set<IRI> get(final String key, final Function<? super String, ? extends Set<IRI>> f) {
+        public Set<IRI> get(final String key, final Function<String, Set<IRI>> f) {
             return f.apply(key);
         }
     }

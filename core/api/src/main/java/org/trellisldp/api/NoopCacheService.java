@@ -21,7 +21,7 @@ import java.util.function.Function;
 public class NoopCacheService<K, V> implements CacheService<K, V> {
 
     @Override
-    public V get(final K key, final Function<? super K, ? extends V> mappingFunction) {
+    public V get(final K key, final Function<K, V> mappingFunction) {
         return mappingFunction.apply(key);
     }
 }
