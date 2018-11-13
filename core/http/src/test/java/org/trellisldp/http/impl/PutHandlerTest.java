@@ -56,7 +56,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -68,8 +68,8 @@ import org.trellisldp.vocabulary.LDP;
  */
 public class PutHandlerTest extends BaseTestHandler {
 
-    private final Binary testBinary = Binary.builder(rdf.createIRI("file:///binary.txt")).mimeType("text/plain")
-        .build();
+    private final BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///binary.txt"))
+        .mimeType("text/plain").build();
 
     @Test
     public void testPutConflict() {
@@ -164,7 +164,7 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
@@ -176,7 +176,7 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testPutLdpNRDescription() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.RDFSource.getIRIString()).rel("type").build());
 
@@ -190,7 +190,7 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testPutLdpNRDescription2() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final PutHandler handler = buildPutHandler("/simpleLiteral.ttl", null);
@@ -211,7 +211,7 @@ public class PutHandlerTest extends BaseTestHandler {
 
     @Test
     public void testCache() {
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
                 .thenReturn(status(PRECONDITION_FAILED));
 

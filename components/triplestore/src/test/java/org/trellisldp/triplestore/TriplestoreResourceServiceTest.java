@@ -57,7 +57,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.vocabulary.AS;
@@ -247,7 +247,7 @@ public class TriplestoreResourceServiceTest {
 
         final IRI binaryIdentifier = rdf.createIRI("foo:binary");
         final Dataset dataset = rdf.createDataset();
-        final Binary binary = Binary.builder(binaryIdentifier).mimeType("text/plain").size(10L).build();
+        final BinaryMetadata binary = BinaryMetadata.builder(binaryIdentifier).mimeType("text/plain").size(10L).build();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
@@ -279,12 +279,12 @@ public class TriplestoreResourceServiceTest {
             svc.get(resource3).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource3, LDP.RDFSource, evenLater));
                 assertAll("Check resource stream", checkResourceStream(res, 1L, 0L, 1L, 0L, 0L));
-                assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!");
+                assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary metadata!");
             }),
             svc.get(root).thenAccept(checkRoot(later, 1L)),
             svc.get(root).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(res ->
-                assertFalse(res.getBinary().isPresent(), "unexpected binary metadata!")),
+                assertFalse(res.getBinaryMetadata().isPresent(), "unexpected binary metadata!")),
             svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 1L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater))).join();
     }
@@ -578,7 +578,8 @@ public class TriplestoreResourceServiceTest {
 
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 0L, 0L)),
-            svc.get(members).thenAccept(res -> assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!")),
+            svc.get(members).thenAccept(res -> assertFalse(res.getBinaryMetadata().isPresent(),
+                    "Unexpected binary metadata!")),
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 0L, 0L)),
             svc.get(resource).thenAccept(checkPredates(evenLater)),
             svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
@@ -1286,11 +1287,12 @@ public class TriplestoreResourceServiceTest {
             final Long size) {
         return Stream.of(
                 () -> assertNotNull(res, "Missing resource!"),
-                () -> assertTrue(res.getBinary().isPresent(), "missing binary metadata!"),
-                () -> assertEquals(identifier, res.getBinary().get().getIdentifier(), "Incorrect binary identifier!"),
-                () -> assertEquals(mimeType, res.getBinary().flatMap(Binary::getMimeType).orElse(null),
+                () -> assertTrue(res.getBinaryMetadata().isPresent(), "missing binary metadata!"),
+                () -> assertEquals(identifier, res.getBinaryMetadata().get().getIdentifier(),
+                                   "Incorrect binary identifier!"),
+                () -> assertEquals(mimeType, res.getBinaryMetadata().flatMap(BinaryMetadata::getMimeType).orElse(null),
                                    "Incorrect binary mimetype!"),
-                () -> assertEquals(size, res.getBinary().flatMap(Binary::getSize).orElse(null),
+                () -> assertEquals(size, res.getBinaryMetadata().flatMap(BinaryMetadata::getSize).orElse(null),
                                    "Incorrect binary size!"));
     }
 

@@ -23,8 +23,8 @@ import org.apache.commons.rdf.api.IRI;
  * An interface for a Memento subsystem. Mementos of {@link Resource}s may be made and retrieved using this service.
  * Mementos may also be recorded by other means, including by the persistence layer independently of Trellis, but unless
  * they are retrieved via this service, Trellis will not publish them as HTTP resources. Mementos of NonRDFSources (like
- * any other {@code Resource}) may also be made and retrieved here, but the associated {@link Binary}s are made (like
- * all {@code Binary}s) via a {@link BinaryService} implementation.
+ * any other {@link Resource}) may also be made and retrieved here, but the associated {@link java.io.InputStream}s are
+ * made (like all binary {@link java.io.InputStream}s) via a {@link BinaryService} implementation.
  */
 public interface MementoService {
 

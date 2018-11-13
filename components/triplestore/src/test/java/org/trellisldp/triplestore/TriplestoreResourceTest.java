@@ -170,7 +170,7 @@ public class TriplestoreResourceTest {
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        res.getBinary().ifPresent(b -> {
+        res.getBinaryMetadata().ifPresent(b -> {
             assertEquals(binaryIdentifier, b.getIdentifier(), "Incorrect binary identifier!");
             assertEquals(of(Long.parseLong(size)), b.getSize(), "Incorrect binary size!");
             assertEquals(of(mimeType), b.getMimeType(), "Incorrect binary mime type!");
@@ -297,7 +297,7 @@ public class TriplestoreResourceTest {
                 () -> assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!"),
                 () -> assertEquals(ldpType, res.getInteractionModel(), "Incorrect interaction model!"),
                 () -> assertEquals(parse(time), res.getModified(), "Incorrect modified date!"),
-                () -> assertEquals(hasBinary, res.getBinary().isPresent(), "Unexpected binary presence!"),
+                () -> assertEquals(hasBinary, res.getBinaryMetadata().isPresent(), "Unexpected binary presence!"),
                 () -> assertEquals(hasParent, res.getContainer().isPresent(), "Unexpected parent resource!"),
                 () -> assertEquals(hasAcl, res.hasAcl(), "Unexpected ACL presence!"));
     }

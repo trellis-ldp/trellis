@@ -47,7 +47,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -243,7 +243,7 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Create LDP-NR Test", SUBJECT2);
 
         final IRI binaryLocation = rdf.createIRI("binary:location/" + getResourceService().generateIdentifier());
-        final Binary binary = Binary.builder(binaryLocation).mimeType("text/plain").size(150L).build();
+        final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType("text/plain").size(150L).build();
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-NR");
         assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(identifier)
@@ -252,7 +252,7 @@ public interface ResourceServiceTests {
         final Resource res = getResourceService().get(identifier).join();
         assertAll("Check the LDP-NR resource", checkResource(res, identifier, LDP.NonRDFSource, time, dataset));
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed count of the LDP-NR");
-        res.getBinary().ifPresent(b -> {
+        res.getBinaryMetadata().ifPresent(b -> {
             assertEquals(binaryLocation, b.getIdentifier(), "Check the binary identifier");
             assertEquals(of("text/plain"), b.getMimeType(), "Check the binary mimeType");
             assertEquals(of(150L), b.getSize(), "Check the binary size");
@@ -486,7 +486,8 @@ public interface ResourceServiceTests {
                 () -> assertFalse(res.getModified().isBefore(time), "Check the modification time (1)"),
                 () -> assertFalse(res.getModified().isAfter(now()), "Check the modification time (2)"),
                 () -> assertFalse(res.hasAcl(), "Check for an ACL"),
-                () -> assertEquals(LDP.NonRDFSource.equals(ldpType), res.getBinary().isPresent(), "Check Binary"),
+                () -> assertEquals(LDP.NonRDFSource.equals(ldpType), res.getBinaryMetadata().isPresent(),
+                                   "Check Binary"),
                 () -> assertEquals(asList(LDP.DirectContainer, LDP.IndirectContainer).contains(ldpType),
                        res.getMembershipResource().isPresent(), "Check ldp:membershipResource"),
                 () -> assertEquals(asList(LDP.DirectContainer, LDP.IndirectContainer).contains(ldpType),

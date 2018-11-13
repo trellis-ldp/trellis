@@ -271,7 +271,7 @@ abstract class BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getContainer()).thenReturn(Optional.of(root));
         when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getBinary()).thenReturn(empty());
+        when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 

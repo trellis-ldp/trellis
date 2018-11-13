@@ -195,9 +195,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.extent, size));
         });
 
-        dataset.getGraph(PreferServerManaged).ifPresent(g ->
-                g.stream().forEach(t -> System.out.println("Triple: " + t)));
-
         storeResource(metadata.getIdentifier(), dataset, eventTime, type);
     }
 

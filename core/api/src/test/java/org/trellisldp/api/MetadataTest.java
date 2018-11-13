@@ -68,7 +68,7 @@ public class MetadataTest {
 
     @Test
     public void testMetadataBinary() {
-        final Binary binary = Binary.builder(rdf.createIRI("http://example.com/binary")).build();
+        final BinaryMetadata binary = BinaryMetadata.builder(rdf.createIRI("http://example.com/binary")).build();
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.NonRDFSource)
                 .container(root).binary(binary).build();

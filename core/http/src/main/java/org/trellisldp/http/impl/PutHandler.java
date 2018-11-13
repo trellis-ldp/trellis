@@ -62,7 +62,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
@@ -119,7 +119,7 @@ public class PutHandler extends MutatingLdpHandler {
             final Instant modified = getResource().getModified();
             final EntityTag etag;
 
-            if (getResource().getBinary().isPresent() &&
+            if (getResource().getBinaryMetadata().isPresent() &&
                     !ofNullable(getRequest().getContentType()).flatMap(RDFSyntax::byMediaType).isPresent()) {
                 etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", modified, null));
             } else {
@@ -205,7 +205,7 @@ public class PutHandler extends MutatingLdpHandler {
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
             metadata = metadataBuilder(internalId, ldpType, mutable)
-                .binary(Binary.builder(binaryLocation).mimeType(mimeType).size(getEntityLength()).build());
+                .binary(BinaryMetadata.builder(binaryLocation).mimeType(mimeType).size(getEntityLength()).build());
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
@@ -220,7 +220,7 @@ public class PutHandler extends MutatingLdpHandler {
             }
             LOGGER.trace("Successfully checked for constraint violations");
             metadata = metadataBuilder(internalId, ldpType, mutable);
-            ofNullable(getResource()).flatMap(Resource::getBinary).ifPresent(metadata::binary);
+            ofNullable(getResource()).flatMap(Resource::getBinaryMetadata).ifPresent(metadata::binary);
             persistPromise = completedFuture(null);
         }
 
@@ -237,7 +237,7 @@ public class PutHandler extends MutatingLdpHandler {
         LOGGER.trace("Successfully calculated and skolemized immutable data");
 
         ldpResourceTypes(effectiveLdpType(ldpType)).map(IRI::getIRIString)
-            .peek(type -> LOGGER.info("Adding link for type {}", type))
+            .peek(type -> LOGGER.debug("Adding link for type {}", type))
             .forEach(type -> builder.link(type, "type"));
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 

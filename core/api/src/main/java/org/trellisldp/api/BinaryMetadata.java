@@ -26,29 +26,29 @@ import org.apache.commons.rdf.api.IRI;
  * These interfaces assume it is the case that Non-RDF resources have an RDF description.
  *
  * <p>For those resources that are non-RDF resources (LDP-NR), the base {@link Resource} interface
- * will make a {@link Binary} object available. The binary content is not accessed directly
- * through the {@link Binary} class, but rather an identifier is returned, which may
+ * will make a {@link BinaryMetadata} object available. The binary content is not accessed directly
+ * through the {@link BinaryMetadata} class, but rather an identifier is returned, which may
  * be resolved by an external system.
  *
- * <p>The {@link Binary} class also provides access methods for the MIME Type and size of the
+ * <p>The {@link BinaryMetadata} class also provides access methods for the MIME Type and size of the
  * resource.
  *
  * @author acoburn
  */
-public final class Binary {
+public final class BinaryMetadata {
 
     private final IRI identifier;
     private final String mimeType;
     private final Long size;
 
     /**
-     * A simple Binary object.
+     * A simple BinaryMetadata object.
      *
      * @param identifier the identifier
      * @param mimeType the mimeType, may be {@code null}
      * @param size the size, may be {@code null}
      */
-    private Binary(final IRI identifier, final String mimeType, final Long size) {
+    private BinaryMetadata(final IRI identifier, final String mimeType, final Long size) {
         this.identifier = requireNonNull(identifier, "identifier may not be null!");
         this.mimeType = mimeType;
         this.size = size;
@@ -82,16 +82,16 @@ public final class Binary {
     }
 
     /**
-     * Get a mutable builder for a {@link Binary}.
+     * Get a mutable builder for a {@link BinaryMetadata}.
      * @param identifier the identifier
-     * @return a builder for a {@link Binary}
+     * @return a builder for a {@link BinaryMetadata}
      */
     public static Builder builder(final IRI identifier) {
         return new Builder(identifier);
     }
 
     /**
-     * A mutable buillder for a {@link Binary}.
+     * A mutable buillder for a {@link BinaryMetadata}.
      */
     public static final class Builder {
         private final IRI identifier;
@@ -99,7 +99,7 @@ public final class Binary {
         private Long size;
 
         /**
-         * Create a Binary builder with the provided identifier.
+         * Create a BinaryMetadata builder with the provided identifier.
          * @param identifier the identifier
          */
         private Builder(final IRI identifier) {
@@ -127,11 +127,11 @@ public final class Binary {
         }
 
         /**
-         * Build the Binary object, transitioning this builder to the built state.
-         * @return the built Binary
+         * Build the BinaryMetadata object, transitioning this builder to the built state.
+         * @return the built BinaryMetadata
          */
-        public Binary build() {
-            return new Binary(identifier, mimeType, size);
+        public BinaryMetadata build() {
+            return new BinaryMetadata(identifier, mimeType, size);
         }
     }
 }

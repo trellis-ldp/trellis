@@ -192,7 +192,7 @@ public class FileMementoService implements MementoService {
         quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.modified,
                     rdf.createLiteral(resource.getModified().toString(), XSD.dateTime)));
 
-        resource.getBinary().ifPresent(b -> {
+        resource.getBinaryMetadata().ifPresent(b -> {
             quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.hasPart, b.getIdentifier()));
             b.getMimeType().map(mimeType -> rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
                 rdf.createLiteral(mimeType))).ifPresent(quads::add);

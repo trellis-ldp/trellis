@@ -87,7 +87,7 @@ import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
@@ -98,8 +98,8 @@ import org.trellisldp.vocabulary.SKOS;
  */
 public class GetHandlerTest extends BaseTestHandler {
 
-    private Binary testBinary = Binary.builder(rdf.createIRI("file:///testResource.txt")).mimeType("text/plain")
-        .size(100L).build();
+    private BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///testResource.txt"))
+        .mimeType("text/plain").size(100L).build();
 
     @Test
     public void testGetLdprs() {
@@ -198,7 +198,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testCacheLdpNr() {
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
         when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
@@ -342,7 +342,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testGetBinaryDescription() {
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
@@ -354,7 +354,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testGetBinaryDescription2() {
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getExt()).thenReturn(DESCRIPTION);
 
@@ -382,7 +382,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testGetBinary() throws IOException {
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 

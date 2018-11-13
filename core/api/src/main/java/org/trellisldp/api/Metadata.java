@@ -32,7 +32,7 @@ public final class Metadata {
     private final IRI membershipResource;
     private final IRI memberOfRelation;
     private final IRI insertedContentRelation;
-    private final Binary binary;
+    private final BinaryMetadata binary;
 
     /**
      * A Metadata-bearing data structure for use with resource manipulation.
@@ -44,11 +44,11 @@ public final class Metadata {
      * @param memberRelation an LDP hasMemberRelation predicate, may be {@code null}
      * @param memberOfRelation an LDP isMemberOfRelation predicate, may be {@code null}
      * @param insertedContentRelation an LDP insertedContentRelation, may be {@code null}
-     * @param binary metadata about a Binary, may be {@code null}
+     * @param binary metadata about a BinaryMetadata, may be {@code null}
      */
     private Metadata(final IRI identifier, final IRI ixnModel, final IRI container, final IRI membershipResource,
             final IRI memberRelation, final IRI memberOfRelation, final IRI insertedContentRelation,
-            final Binary binary) {
+            final BinaryMetadata binary) {
         this.identifier = requireNonNull(identifier, "Identifier cannot be null!");
         this.ixnModel = requireNonNull(ixnModel, "Interaction model cannot be null!");
         this.container = container;
@@ -159,7 +159,7 @@ public final class Metadata {
      * @implSpec Otheer LDP resource types will always return an empty {@link Optional} value
      * @return the binary metadata
      */
-    public Optional<Binary> getBinary() {
+    public Optional<BinaryMetadata> getBinary() {
         return ofNullable(binary);
     }
 
@@ -174,7 +174,7 @@ public final class Metadata {
         private IRI membershipResource;
         private IRI memberOfRelation;
         private IRI insertedContentRelation;
-        private Binary binary;
+        private BinaryMetadata binary;
 
         /**
          * Create a Metadata builder with the provided identifier.
@@ -249,7 +249,7 @@ public final class Metadata {
          * @param binary the binary metadata
          * @return this builder
          */
-        public Builder binary(final Binary binary) {
+        public Builder binary(final BinaryMetadata binary) {
             this.binary = binary;
             return this;
         }

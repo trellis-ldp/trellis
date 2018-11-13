@@ -96,7 +96,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.Prefer;
@@ -148,7 +148,7 @@ public class GetHandler extends BaseLdpHandler {
         LOGGER.debug("Acceptable media types: {}", getRequest().getHeaders().getAcceptableMediaTypes());
 
         this.syntax = getSyntax(getServices().getIOService(),
-            getRequest().getHeaders().getAcceptableMediaTypes(), resource.getBinary()
+            getRequest().getHeaders().getAcceptableMediaTypes(), resource.getBinaryMetadata()
                 .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
                 .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM))).orElse(null);
 
@@ -178,7 +178,7 @@ public class GetHandler extends BaseLdpHandler {
                 builder.type(syntax.mediaType());
             }
 
-            model = getResource().getBinary().isPresent() && nonNull(syntax)
+            model = getResource().getBinaryMetadata().isPresent() && nonNull(syntax)
                 ? LDP.RDFSource : getResource().getInteractionModel();
             // Link headers from User data
             getResource().getExtraLinkRelations().collect(toMap(Entry::getKey, Entry::getValue))
@@ -204,7 +204,7 @@ public class GetHandler extends BaseLdpHandler {
      */
     public CompletableFuture<ResponseBuilder> getRepresentation(final ResponseBuilder builder) {
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
-        getResource().getBinary().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
+        getResource().getBinaryMetadata().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
             final String description = base + (base.contains("?") ? "&" : "?") + "ext=description";
             if (nonNull(syntax)) {
@@ -224,7 +224,7 @@ public class GetHandler extends BaseLdpHandler {
                 "<" + getIdentifier() + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"");
 
         // NonRDFSources responses (strong ETags, etc)
-        if (getResource().getBinary().isPresent() && isNull(syntax)) {
+        if (getResource().getBinaryMetadata().isPresent() && isNull(syntax)) {
             return getLdpNr(builder);
         }
 
@@ -356,7 +356,7 @@ public class GetHandler extends BaseLdpHandler {
         // Set last-modified to be the binary's last-modified value
         builder.lastModified(from(mod));
 
-        final IRI dsid = getResource().getBinary().map(Binary::getIdentifier).orElse(null);
+        final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);
         if (isNull(dsid)) {
             LOGGER.error("Could not access binary metadata for {}", getResource().getIdentifier());
             throw new WebApplicationException("Could not access binary metadata");

@@ -57,7 +57,7 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -230,8 +230,8 @@ public class TriplestoreResource implements Resource {
     }
 
     @Override
-    public Optional<Binary> getBinary() {
-        return asIRI(DC.hasPart).map(id -> Binary.builder(id).mimeType(asLiteral(DC.format).orElse(null))
+    public Optional<BinaryMetadata> getBinaryMetadata() {
+        return asIRI(DC.hasPart).map(id -> BinaryMetadata.builder(id).mimeType(asLiteral(DC.format).orElse(null))
                     .size(asLiteral(DC.extent).map(Long::parseLong).orElse(null)).build());
     }
 

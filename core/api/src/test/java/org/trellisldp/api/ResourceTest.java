@@ -58,7 +58,7 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).getInsertedContentRelation();
         doCallRealMethod().when(mockResource).stream(any(IRI.class));
         doCallRealMethod().when(mockResource).stream(anyCollection());
-        doCallRealMethod().when(mockResource).getBinary();
+        doCallRealMethod().when(mockResource).getBinaryMetadata();
         doCallRealMethod().when(mockResource).hasAcl();
         doCallRealMethod().when(mockResource).getExtraLinkRelations();
 
@@ -73,7 +73,7 @@ public class ResourceTest {
         assertFalse(mockResource.getMemberRelation().isPresent(), "Member relation unexpectedly present!");
         assertFalse(mockResource.getMemberOfRelation().isPresent(), "Member of relation unexpectedly present!");
         assertFalse(mockResource.getInsertedContentRelation().isPresent(), "Inserted content relation is present!");
-        assertFalse(mockResource.getBinary().isPresent(), "Binary is unexpectedly present!");
+        assertFalse(mockResource.getBinaryMetadata().isPresent(), "Binary is unexpectedly present!");
         assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent(), "Extra links unexpectedly present!");
         assertFalse(mockResource.hasAcl(), "ACL unexpectedly present!");
     }

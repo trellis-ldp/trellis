@@ -61,7 +61,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
@@ -183,7 +183,7 @@ public class PostHandler extends MutatingLdpHandler {
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier)
-                .binary(Binary.builder(binaryLocation).mimeType(mimeType).size(getEntityLength()).build());
+                .binary(BinaryMetadata.builder(binaryLocation).mimeType(mimeType).size(getEntityLength()).build());
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
