@@ -357,10 +357,6 @@ public class GetHandler extends BaseLdpHandler {
         builder.lastModified(from(mod));
 
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);
-        if (isNull(dsid)) {
-            LOGGER.error("Could not access binary metadata for {}", getResource().getIdentifier());
-            throw new WebApplicationException("Could not access binary metadata");
-        }
 
         // Add standard headers
         builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag)

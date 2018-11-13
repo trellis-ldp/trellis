@@ -154,7 +154,6 @@ public interface LdpBinaryTests extends CommonTests {
     @DisplayName("Test modifying a binary's description via PATCH")
     default void testPatchBinaryDescription() {
         final RDF rdf = getInstance();
-        final EntityTag binaryETag = getETag(getResourceLocation());
         final EntityTag descriptionETag;
         final Long size;
 
