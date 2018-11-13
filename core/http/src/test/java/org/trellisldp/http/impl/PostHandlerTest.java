@@ -55,6 +55,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.core.Digest;
 import org.trellisldp.vocabulary.DC;
@@ -187,7 +188,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
-        verify(mockResourceService).create(eq(identifier), eq(LDP.RDFSource), any(Dataset.class), any(), any());
+        verify(mockResourceService).create(any(Metadata.class), any(Dataset.class));
     }
 
     @Test
@@ -275,8 +276,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testError() throws IOException {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
+        when(mockResourceService.create(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", baseUrl);
@@ -294,7 +294,7 @@ public class PostHandlerTest extends BaseTestHandler {
     private Stream<Executable> checkBinaryEntityResponse(final IRI identifier) {
         return Stream.of(
                 () -> verify(mockResourceService, description("ResourceService::create not called!"))
-                            .create(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class), any(), any()),
+                            .create(any(Metadata.class), any(Dataset.class)),
                 () -> verify(mockIoService, never().description("entity shouldn't be read!")).read(any(), any(), any()),
                 () -> verify(mockBinaryService, description("content not set on binary service!"))
                             .setContent(iriArgument.capture(), any(InputStream.class), metadataArgument.capture()),

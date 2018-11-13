@@ -231,9 +231,8 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public Optional<Binary> getBinary() {
-        return asIRI(DC.hasPart).flatMap(id -> asLiteral(Time.hasTime).map(Instant::parse).map(time ->
-                    new Binary(id, time, asLiteral(DC.format).orElse(null),
-                        asLiteral(DC.extent).map(Long::parseLong).orElse(null))));
+        return asIRI(DC.hasPart).map(id -> Binary.builder(id).mimeType(asLiteral(DC.format).orElse(null))
+                    .size(asLiteral(DC.extent).map(Long::parseLong).orElse(null)).build());
     }
 
     @Override

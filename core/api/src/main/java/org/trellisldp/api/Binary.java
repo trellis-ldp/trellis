@@ -16,7 +16,6 @@ package org.trellisldp.api;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -36,27 +35,21 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public class Binary {
+public final class Binary {
 
     private final IRI identifier;
     private final String mimeType;
     private final Long size;
-    private final Instant modified;
 
     /**
      * A simple Binary object.
      *
      * @param identifier the identifier
-     * @param modified the modified date
      * @param mimeType the mimeType, may be {@code null}
      * @param size the size, may be {@code null}
      */
-    public Binary(final IRI identifier, final Instant modified, final String mimeType, final Long size) {
-        requireNonNull(identifier);
-        requireNonNull(modified);
-
-        this.identifier = identifier;
-        this.modified = modified;
+    private Binary(final IRI identifier, final String mimeType, final Long size) {
+        this.identifier = requireNonNull(identifier, "identifier may not be null!");
         this.mimeType = mimeType;
         this.size = size;
     }
@@ -89,11 +82,56 @@ public class Binary {
     }
 
     /**
-     * Retrieve the last-modified date of the binary.
-     *
-     * @return the last-modified date
+     * Get a mutable builder for a {@link Binary}.
+     * @param identifier the identifier
+     * @return a builder for a {@link Binary}
      */
-    public Instant getModified() {
-        return modified;
+    public static Builder builder(final IRI identifier) {
+        return new Builder(identifier);
+    }
+
+    /**
+     * A mutable buillder for a {@link Binary}.
+     */
+    public static final class Builder {
+        private final IRI identifier;
+        private String mimeType;
+        private Long size;
+
+        /**
+         * Create a Binary builder with the provided identifier.
+         * @param identifier the identifier
+         */
+        private Builder(final IRI identifier) {
+            this.identifier = requireNonNull(identifier, "Identifier cannot be null!");
+        }
+
+        /**
+         * Set the binary MIME type.
+         * @param mimeType the MIME type
+         * @return this builder
+         */
+        public Builder mimeType(final String mimeType) {
+            this.mimeType = mimeType;
+            return this;
+        }
+
+        /**
+         * Set the binary size.
+         * @param size the binary size
+         * @return this builder
+         */
+        public Builder size(final Long size) {
+            this.size = size;
+            return this;
+        }
+
+        /**
+         * Build the Binary object, transitioning this builder to the built state.
+         * @return the built Binary
+         */
+        public Binary build() {
+            return new Binary(identifier, mimeType, size);
+        }
     }
 }

@@ -23,7 +23,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * Metadata values used for resource composition.
  */
-public class Metadata {
+public final class Metadata {
 
     private final IRI identifier;
     private final IRI ixnModel;
@@ -60,18 +60,6 @@ public class Metadata {
     }
 
     /**
-     * A Metadata-bearing data structure for use with resource manipulation.
-     *
-     * @param r a resource
-     */
-    public Metadata(final Resource r) {
-        this(r.getIdentifier(), r.getInteractionModel(), r.getContainer().orElse(null),
-                        r.getMemberRelation().orElse(null), r.getMembershipResource().orElse(null),
-                        r.getMemberOfRelation().orElse(null), r.getInsertedContentRelation().orElse(null),
-                        r.getBinary().orElse(null));
-    }
-
-    /**
      * A mutable builder for a {@link Metadata} object.
      *
      * @param identifier the resource identifier
@@ -89,7 +77,8 @@ public class Metadata {
      */
     public static Builder builder(final Resource r) {
         return builder(r.getIdentifier()).interactionModel(r.getInteractionModel())
-                        .container(r.getContainer().orElse(null)).memberRelation(r.getMemberRelation().orElse(null))
+                        .container(r.getContainer().orElse(null))
+                        .memberRelation(r.getMemberRelation().orElse(null))
                         .membershipResource(r.getMembershipResource().orElse(null))
                         .memberOfRelation(r.getMemberOfRelation().orElse(null))
                         .insertedContentRelation(r.getInsertedContentRelation().orElse(null));
@@ -177,7 +166,7 @@ public class Metadata {
     /**
      * A mutable builder for a {@link Metadata} object.
      */
-    public static class Builder {
+    public static final class Builder {
         private final IRI identifier;
         private IRI ixnModel;
         private IRI container;
@@ -191,7 +180,7 @@ public class Metadata {
          * Create a Metadata builder with the provided identifier.
          * @param identifier the identifier
          */
-        public Builder(final IRI identifier) {
+        private Builder(final IRI identifier) {
             this.identifier = requireNonNull(identifier, "Identifier cannot be null!");
         }
 
@@ -267,10 +256,10 @@ public class Metadata {
 
         /**
          * Build the Metadata object, transitioning this builder to the built state.
-         * @return the built stream
+         * @return the built Metadata
          */
         public Metadata build() {
-            return new Metadata(identifier, ixnModel, container, memberRelation, membershipResource, memberOfRelation,
+            return new Metadata(identifier, ixnModel, container, membershipResource, memberRelation, memberOfRelation,
                             insertedContentRelation, binary);
         }
     }

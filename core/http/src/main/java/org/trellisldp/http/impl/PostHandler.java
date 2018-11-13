@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -63,6 +62,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -167,8 +167,8 @@ public class PostHandler extends MutatingLdpHandler {
     private CompletableFuture<ResponseBuilder> handleResourceCreation(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder) {
 
-        final Binary binary;
         final CompletableFuture<Void> persistPromise;
+        final Metadata.Builder metadata;
 
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
@@ -182,7 +182,8 @@ public class PostHandler extends MutatingLdpHandler {
             persistPromise = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType)).thenAccept(future ->
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
-            binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
+            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier)
+                .binary(Binary.builder(binaryLocation).mimeType(mimeType).size(getEntityLength()).build());
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
@@ -191,7 +192,7 @@ public class PostHandler extends MutatingLdpHandler {
             checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null), ldpType,
                     ofNullable(rdfSyntax).orElse(TURTLE));
 
-            binary = null;
+            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier);
             persistPromise = completedFuture(null);
         }
 
@@ -201,8 +202,7 @@ public class PostHandler extends MutatingLdpHandler {
 
         return allOf(
                 persistPromise,
-                getServices().getResourceService().create(internalId, ldpType, mutable.asDataset(),
-                    parentIdentifier, binary),
+                getServices().getResourceService().create(metadata.build(), mutable.asDataset()),
                 getServices().getResourceService().add(internalId, immutable.asDataset()))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {

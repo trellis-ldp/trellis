@@ -78,7 +78,6 @@ public class FileResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
         assertTrue(res.getBinary().isPresent(), "Missing binary metadata!");
         res.getBinary().ifPresent(binary -> {
-            assertEquals(parse("2017-02-16T11:17:00Z"), binary.getModified(), "Incorrect binary modification date!");
             assertEquals(of(10L), binary.getSize(), "Incorrect binary size!");
             assertEquals(of("text/plain"), binary.getMimeType(), "Incorrect binary mime type!");
             assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier(), "Incorrect binary id!");

@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.time.Instant.ofEpochSecond;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -74,7 +73,6 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,9 +98,8 @@ import org.trellisldp.vocabulary.SKOS;
  */
 public class GetHandlerTest extends BaseTestHandler {
 
-    private static final Instant binaryTime = ofEpochSecond(1496262750);
-
-    private Binary testBinary = new Binary(rdf.createIRI("file:///testResource.txt"), binaryTime, "text/plain", 100L);
+    private Binary testBinary = Binary.builder(rdf.createIRI("file:///testResource.txt")).mimeType("text/plain")
+        .size(100L).build();
 
     @Test
     public void testGetLdprs() {
@@ -204,7 +201,7 @@ public class GetHandlerTest extends BaseTestHandler {
         when(mockResource.getBinary()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
-        when(mockRequest.evaluatePreconditions(eq(from(binaryTime)), any(EntityTag.class)))
+        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
                 .thenReturn(notModified());
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
@@ -395,7 +392,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(-1, res.getLength(), "Incorrect response length!");
-        assertEquals(from(binaryTime), res.getLastModified(), "Incorrect content-type header!");
+        assertEquals(from(time), res.getLastModified(), "Incorrect content-type header!");
         assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE), "Incorrect content-type header!");
         assertTrue(res.getLinks().stream()
                 .anyMatch(link -> link.getRel().equals("describedby") &&

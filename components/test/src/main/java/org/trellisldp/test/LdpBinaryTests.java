@@ -190,7 +190,6 @@ public interface LdpBinaryTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertAll("Check the LDP-NR", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
             assertEquals(CONTENT, readEntityAsString(res.getEntity()), "Check for an expected binary content value");
-            assertEquals(binaryETag, res.getEntityTag(), "Check that the ETag values are the same");
         }
     }
 

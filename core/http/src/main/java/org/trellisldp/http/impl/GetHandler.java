@@ -349,12 +349,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private CompletableFuture<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
 
-        final Instant mod = getResource().getBinary().map(Binary::getModified).orElse(null);
-        if (isNull(mod)) {
-            LOGGER.error("Could not access binary metadata for {}", getResource().getIdentifier());
-            throw new WebApplicationException("Could not access binary metadata");
-        }
-
+        final Instant mod = getResource().getModified();
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", mod, null));
         checkCache(mod, etag);
 

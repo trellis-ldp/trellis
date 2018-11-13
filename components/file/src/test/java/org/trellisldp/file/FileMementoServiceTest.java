@@ -111,7 +111,6 @@ public class FileMementoServiceTest {
         final IRI binaryId = rdf.createIRI("file:binary");
         final IRI root = rdf.createIRI("trellis:data/");
         final Instant time = now();
-        final Instant binaryTime = now().minusSeconds(10);
         final String mimeType = "text/plain";
         final Long size = 20L;
 
@@ -124,7 +123,7 @@ public class FileMementoServiceTest {
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title")),
                     rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.isPartOf, root)));
-        when(mockResource.getBinary()).thenReturn(of(new Binary(binaryId, binaryTime, mimeType, size)));
+        when(mockResource.getBinary()).thenReturn(of(Binary.builder(binaryId).mimeType(mimeType).size(size).build()));
         when(mockResource.getMemberOfRelation()).thenReturn(empty());
         when(mockResource.getMemberRelation()).thenReturn(empty());
         when(mockResource.getMembershipResource()).thenReturn(empty());
@@ -140,7 +139,6 @@ public class FileMementoServiceTest {
         assertTrue(res.getBinary().isPresent());
         res.getBinary().ifPresent(b -> {
             assertEquals(binaryId, b.getIdentifier());
-            assertEquals(binaryTime, b.getModified());
             assertEquals(of(mimeType), b.getMimeType());
             assertEquals(of(size), b.getSize());
         });

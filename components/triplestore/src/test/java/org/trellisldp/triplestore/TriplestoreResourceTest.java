@@ -155,7 +155,6 @@ public class TriplestoreResourceTest {
 
     @Test
     public void testBinaryResource() {
-        final String binaryTime = "2018-01-10T14:02:00Z";
         final String size = "2560";
         final String mimeType = "image/jpeg";
         final IRI binaryIdentifier = rdf.createIRI("file:///binary");
@@ -163,8 +162,6 @@ public class TriplestoreResourceTest {
         dataset.add(Trellis.PreferServerManaged, identifier, DC.hasPart, binaryIdentifier);
         dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.extent, rdf.createLiteral(size, XSD.long_));
         dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.format, rdf.createLiteral(mimeType));
-        dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.modified,
-                rdf.createLiteral(binaryTime, XSD.dateTime));
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
 
@@ -175,7 +172,6 @@ public class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         res.getBinary().ifPresent(b -> {
             assertEquals(binaryIdentifier, b.getIdentifier(), "Incorrect binary identifier!");
-            assertEquals(parse(binaryTime), b.getModified(), "Incorrect binary modified date!");
             assertEquals(of(Long.parseLong(size)), b.getSize(), "Incorrect binary size!");
             assertEquals(of(mimeType), b.getMimeType(), "Incorrect binary mime type!");
         });

@@ -49,7 +49,9 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
@@ -60,6 +62,7 @@ import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.RDF;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * A common base class for PUT/POST requests.
@@ -277,15 +280,31 @@ class MutatingLdpHandler extends BaseLdpHandler {
         }
     }
 
+    protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final TrellisDataset mutable) {
+        final Metadata.Builder builder = Metadata.builder(identifier).interactionModel(ixnModel);
+        mutable.asDataset().getGraph(Trellis.PreferUserManaged).ifPresent(graph -> {
+            graph.stream(identifier, LDP.membershipResource, null).findFirst().map(Triple::getObject)
+                .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::membershipResource);
+            graph.stream(identifier, LDP.hasMemberRelation, null).findFirst().map(Triple::getObject)
+                .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::memberRelation);
+            graph.stream(identifier, LDP.isMemberOfRelation, null).findFirst().map(Triple::getObject)
+                .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::memberOfRelation);
+            graph.stream(identifier, LDP.insertedContentRelation, null).findFirst().map(Triple::getObject)
+                .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::insertedContentRelation);
+        });
+        return builder;
+    }
+
     protected CompletableFuture<Void> handleResourceReplacement(final TrellisDataset mutable,
             final TrellisDataset immutable) {
+        final Metadata.Builder metadata = metadataBuilder(getResource().getIdentifier(),
+                getResource().getInteractionModel(), mutable);
+        getResource().getContainer().ifPresent(metadata::container);
+        getResource().getBinary().ifPresent(metadata::binary);
         // update the resource
         return allOf(
-                getServices().getResourceService()
-                    .replace(getResource().getIdentifier(), getResource().getInteractionModel(),
-                        mutable.asDataset(), getResource().getContainer().orElse(null),
-                        getResource().getBinary().orElse(null)),
-                getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
+            getServices().getResourceService().replace(metadata.build(), mutable.asDataset()),
+            getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
     }
 
     protected Stream<Quad> getAuditUpdateData() {

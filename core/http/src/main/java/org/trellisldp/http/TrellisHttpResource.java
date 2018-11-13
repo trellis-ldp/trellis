@@ -59,6 +59,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.PATCH;
@@ -148,14 +149,14 @@ public class TrellisHttpResource {
     private CompletableFuture<Void> initialize(final IRI id, final Resource res, final TrellisDataset dataset) {
         if (MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res)) {
             LOGGER.info("Initializing root container: {}", id);
-            return trellis.getResourceService().create(id, LDP.BasicContainer, dataset.asDataset(), null, null);
+            return trellis.getResourceService().create(Metadata.builder(id).interactionModel(LDP.BasicContainer)
+                    .build(), dataset.asDataset());
         } else if (!res.hasAcl()) {
             LOGGER.info("Initializeing root ACL: {}", id);
             try (final Stream<? extends Triple> triples = res.stream(Trellis.PreferUserManaged)) {
                 triples.map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
             }
-            return trellis.getResourceService().replace(res.getIdentifier(), res.getInteractionModel(),
-                    dataset.asDataset(), null, null);
+            return trellis.getResourceService().replace(Metadata.builder(res).build(), dataset.asDataset());
         }
         return completedFuture(null);
     }
