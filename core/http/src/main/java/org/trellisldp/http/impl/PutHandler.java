@@ -236,9 +236,10 @@ public class PutHandler extends MutatingLdpHandler {
             .forEachOrdered(immutable::add);
         LOGGER.trace("Successfully calculated and skolemized immutable data");
 
-        ldpResourceTypes(effectiveLdpType(ldpType)).map(IRI::getIRIString)
-            .peek(type -> LOGGER.debug("Adding link for type {}", type))
-            .forEach(type -> builder.link(type, "type"));
+        ldpResourceTypes(effectiveLdpType(ldpType)).map(IRI::getIRIString).forEach(type -> {
+                LOGGER.debug("Adding link for type {}", type);
+                builder.link(type, "type");
+            });
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
         return allOf(

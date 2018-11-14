@@ -178,11 +178,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
                 .map(toQuad(graphName)).forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
-            LOGGER.error("Invalid RDF content: {}", ex.getMessage());
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
         } catch (final IOException ex) {
-            LOGGER.error("Error processing input", ex);
-            throw new WebApplicationException("Error processing input");
+            throw new WebApplicationException("Error processing input: " + ex.getMessage());
         }
     }
 

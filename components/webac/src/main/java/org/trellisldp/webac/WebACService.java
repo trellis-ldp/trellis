@@ -182,7 +182,6 @@ public class WebACService implements AccessControlService {
     private Set<IRI> getModesFor(final IRI identifier, final IRI agent) {
         return getNearestResource(identifier).map(resource -> getAllAuthorizationsFor(resource, false)
                 .filter(agentFilter(agent))).orElseGet(Stream::empty)
-            .peek(auth -> LOGGER.debug("Applying Authorization {} to {}", auth.getIdentifier(), identifier))
             .flatMap(auth -> auth.getMode().stream()).collect(toSet());
     }
 

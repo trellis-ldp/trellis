@@ -147,8 +147,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                 dataset.add(PreferServerManaged, metadata.getIdentifier(), RDF.type, LDP.Resource);
                 storeResource(metadata.getIdentifier(), dataset, eventTime, OperationType.DELETE);
             } catch (final Exception ex) {
-                LOGGER.error("Error deleting resource: {}", ex.getMessage());
-                throw new RuntimeTrellisException(ex);
+                throw new RuntimeTrellisException("Error deleting resource: " + metadata.getIdentifier(), ex);
             }
         });
     }
@@ -204,8 +203,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
         try {
             rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
         } catch (final Exception ex) {
-            LOGGER.error("Could not update data: {}", ex.getMessage());
-            throw new RuntimeTrellisException(ex);
+            throw new RuntimeTrellisException("Could not update data for " + identifier, ex);
         }
     }
 
@@ -398,8 +396,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
                         g.stream().forEach(t -> data.add(graphName, t.getSubject(), t.getPredicate(), t.getObject())));
                 executeWrite(rdfConnection, () -> rdfConnection.loadDataset(asJenaDataset(data)));
             } catch (final Exception ex) {
-                LOGGER.error("Error storing audit dataset: {}", ex.getMessage());
-                throw new RuntimeTrellisException(ex);
+                throw new RuntimeTrellisException("Error storing audit dataset for " + id, ex);
             }
         });
     }
@@ -411,8 +408,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             try {
                 rdfConnection.update(buildUpdateModificationRequest(identifier, time));
             } catch (final Exception ex) {
-                LOGGER.error("Could not update data: {}", ex.getMessage());
-                throw new RuntimeTrellisException(ex);
+                throw new RuntimeTrellisException("Could not update data for " + identifier, ex);
             }
         });
     }

@@ -239,8 +239,7 @@ public final class HttpUtils {
             try {
                 input.close();
             } catch (final IOException ex) {
-                LOGGER.error("Error closing input stream: {}", ex.getMessage());
-                throw new UncheckedIOException(ex);
+                throw new UncheckedIOException("Error closing input stream", ex);
             }
         };
     }

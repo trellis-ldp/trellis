@@ -215,7 +215,6 @@ public class PatchHandler extends MutatingLdpHandler {
         try {
             triples = updateGraph(syntax, graphName);
         } catch (final RuntimeTrellisException ex) {
-            LOGGER.warn("Invalid RDF: {}", ex.getMessage());
             throw new BadRequestException("Invalid RDF: " + ex.getMessage());
         }
 

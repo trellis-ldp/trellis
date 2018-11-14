@@ -193,9 +193,7 @@ public class FileBinaryService implements BinaryService {
                 parent.mkdirs();
                 copy(stream, file.toPath(), REPLACE_EXISTING);
             } catch (final IOException ex) {
-                LOGGER.error("Error while setting content: {}", ex.getMessage());
-                LOGGER.error("Error setting content", ex);
-                throw new UncheckedIOException(ex);
+                throw new UncheckedIOException("Error while setting content for " + identifier, ex);
             }
             return null;
         });
@@ -235,8 +233,7 @@ public class FileBinaryService implements BinaryService {
         try (final InputStream input = new FileInputStream(getFileFromIdentifier(identifier))) {
             return getEncoder().encodeToString(updateDigest(algorithm, input).digest());
         } catch (final IOException ex) {
-            LOGGER.error("Error computing digest", ex);
-            throw new UncheckedIOException(ex);
+            throw new UncheckedIOException("Error computing digest", ex);
         }
     }
 

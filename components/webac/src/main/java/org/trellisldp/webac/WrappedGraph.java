@@ -42,7 +42,6 @@ class WrappedGraph implements AutoCloseable {
         try {
             innerGraph.close();
         } catch (final Exception ex) {
-            LOGGER.error("Error closing graph: {}", ex.getMessage());
             throw new RuntimeTrellisException("Error closing graph", ex);
         }
     }

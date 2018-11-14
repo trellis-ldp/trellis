@@ -15,7 +15,6 @@ package org.trellisldp.http.impl;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Optional;
@@ -25,15 +24,12 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.slf4j.Logger;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
  */
 public class TrellisDataset implements AutoCloseable {
-
-    private static final Logger LOGGER = getLogger(TrellisDataset.class);
 
     private final Dataset dataset;
 
@@ -51,7 +47,6 @@ public class TrellisDataset implements AutoCloseable {
         try {
             dataset.close();
         } catch (final Exception ex) {
-            LOGGER.error("Error closing graph: {}", ex.getMessage());
             throw new RuntimeTrellisException("Error closing dataset", ex);
         }
     }

@@ -25,7 +25,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
-import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
@@ -37,7 +36,6 @@ import java.util.stream.Stream;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
-import org.slf4j.Logger;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.vocabulary.ACL;
@@ -65,8 +63,6 @@ import org.trellisldp.vocabulary.Trellis;
  * @author acoburn
  */
 public class LdpConstraints implements ConstraintService {
-
-    private static final Logger LOGGER = getLogger(LdpConstraints.class);
 
     // Identify those predicates that are prohibited in the given ixn model
     private static final Predicate<Triple> memberContainerConstraints = triple ->
@@ -169,7 +165,6 @@ public class LdpConstraints implements ConstraintService {
     public Stream<ConstraintViolation> constrainedBy(final IRI model, final Graph graph, final String domain) {
         return concat(graph.stream().flatMap(checkModelConstraints(model, domain)),
                 Stream.of(graph).filter(checkCardinality(model))
-                    .map(g -> new ConstraintViolation(Trellis.InvalidCardinality, g.stream().collect(toList()))))
-            .peek(x -> LOGGER.debug("Constraint violation: {}", x));
+                    .map(g -> new ConstraintViolation(Trellis.InvalidCardinality, g.stream().collect(toList()))));
     }
 }
