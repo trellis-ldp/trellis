@@ -13,18 +13,13 @@
  */
 package org.trellisldp.webac;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import org.apache.commons.rdf.api.Graph;
-import org.slf4j.Logger;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * A wrapped RDF graph.
  */
 class WrappedGraph implements AutoCloseable {
-
-    private static final Logger LOGGER = getLogger(WrappedGraph.class);
 
     private final Graph innerGraph;
 
