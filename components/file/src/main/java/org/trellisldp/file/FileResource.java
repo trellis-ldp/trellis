@@ -34,7 +34,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -84,10 +84,9 @@ public class FileResource implements Resource {
     }
 
     @Override
-    public Optional<Binary> getBinary() {
-        return asIRI(DC.hasPart).flatMap(id -> asLiteral(Time.hasTime).map(Instant::parse).map(time ->
-                    new Binary(id, time, asLiteral(DC.format).orElse(null),
-                               asLiteral(DC.extent).map(Long::parseLong).orElse(null))));
+    public Optional<BinaryMetadata> getBinaryMetadata() {
+        return asIRI(DC.hasPart).map(id -> BinaryMetadata.builder(id).mimeType(asLiteral(DC.format).orElse(null))
+                .size(asLiteral(DC.extent).map(Long::parseLong).orElse(null)).build());
     }
 
     @Override

@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.time.Instant.now;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -47,7 +46,6 @@ import java.io.File;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -64,7 +62,8 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -117,17 +116,13 @@ public class PutHandler extends MutatingLdpHandler {
 
         // Check the cache
         if (nonNull(getResource())) {
+            final Instant modified = getResource().getModified();
             final EntityTag etag;
-            final Instant modified;
-            final Optional<Instant> binaryModification = getResource().getBinary().map(Binary::getModified);
 
-            if (binaryModification.isPresent() &&
+            if (getResource().getBinaryMetadata().isPresent() &&
                     !ofNullable(getRequest().getContentType()).flatMap(RDFSyntax::byMediaType).isPresent()) {
-                modified = binaryModification.get();
-                etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY",
-                            modified, null));
+                etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", modified, null));
             } else {
-                modified = getResource().getModified();
                 etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()));
             }
             // Check the cache
@@ -193,7 +188,8 @@ public class PutHandler extends MutatingLdpHandler {
 
     private CompletableFuture<ResponseBuilder> handleResourceUpdate(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder, final IRI ldpType) {
-        final Binary binary;
+
+        final Metadata.Builder metadata;
         final CompletableFuture<Void> persistPromise;
 
         // Add user-supplied data
@@ -208,7 +204,8 @@ public class PutHandler extends MutatingLdpHandler {
             persistPromise = persistContent(binaryLocation, singletonMap(CONTENT_TYPE, mimeType)).thenAccept(future ->
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
-            binary = new Binary(binaryLocation, now(), mimeType, getEntityLength());
+            metadata = metadataBuilder(internalId, ldpType, mutable)
+                .binary(BinaryMetadata.builder(binaryLocation).mimeType(mimeType).size(getEntityLength()).build());
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
@@ -222,11 +219,13 @@ public class PutHandler extends MutatingLdpHandler {
                         ofNullable(rdfSyntax).orElse(TURTLE));
             }
             LOGGER.trace("Successfully checked for constraint violations");
-            binary = ofNullable(getResource()).flatMap(Resource::getBinary).orElse(null);
+            metadata = metadataBuilder(internalId, ldpType, mutable);
+            ofNullable(getResource()).flatMap(Resource::getBinaryMetadata).ifPresent(metadata::binary);
             persistPromise = completedFuture(null);
         }
 
         if (nonNull(getResource())) {
+            getResource().getContainer().ifPresent(metadata::container);
             LOGGER.debug("Resource {} found in persistence", getIdentifier());
             try (final Stream<? extends Triple> remaining = getResource().stream(otherGraph)) {
                 remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
@@ -244,7 +243,7 @@ public class PutHandler extends MutatingLdpHandler {
 
         return allOf(
                 persistPromise,
-                createOrReplace(ldpType, mutable, binary),
+                createOrReplace(metadata.build(), mutable),
                 getServices().getResourceService().add(internalId, immutable.asDataset()))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
@@ -270,15 +269,13 @@ public class PutHandler extends MutatingLdpHandler {
             || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
     }
 
-    private CompletableFuture<Void> createOrReplace(final IRI ldpType, final TrellisDataset ds, final Binary b) {
-        final Resource resource = getResource();
-        if (isNull(resource)) {
+    private CompletableFuture<Void> createOrReplace(final Metadata metadata, final TrellisDataset ds) {
+        if (isNull(getResource())) {
             LOGGER.debug("Creating new resource {}", internalId);
-            return getServices().getResourceService().create(internalId, ldpType, ds.asDataset(), null, b);
+            return getServices().getResourceService().create(metadata, ds.asDataset());
         } else {
             LOGGER.debug("Replacing old resource {}", internalId);
-            return getServices().getResourceService().replace(internalId, ldpType, ds.asDataset(),
-                    resource.getContainer().orElse(null), b);
+            return getServices().getResourceService().replace(metadata, ds.asDataset());
         }
     }
 

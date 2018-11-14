@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -154,8 +155,7 @@ public class DeleteHandler extends MutatingLdpHandler {
 
         // delete the resource
         return allOf(
-                getServices().getResourceService().delete(getResource().getIdentifier(),
-                    getResource().getContainer().orElse(null)),
+                getServices().getResourceService().delete(Metadata.builder(getResource()).build()),
                 getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
     }
 }

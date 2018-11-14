@@ -41,7 +41,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
@@ -111,7 +111,6 @@ public class FileMementoServiceTest {
         final IRI binaryId = rdf.createIRI("file:binary");
         final IRI root = rdf.createIRI("trellis:data/");
         final Instant time = now();
-        final Instant binaryTime = now().minusSeconds(10);
         final String mimeType = "text/plain";
         final Long size = 20L;
 
@@ -124,7 +123,8 @@ public class FileMementoServiceTest {
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title")),
                     rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.isPartOf, root)));
-        when(mockResource.getBinary()).thenReturn(of(new Binary(binaryId, binaryTime, mimeType, size)));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(BinaryMetadata.builder(binaryId).mimeType(mimeType)
+                    .size(size).build()));
         when(mockResource.getMemberOfRelation()).thenReturn(empty());
         when(mockResource.getMemberRelation()).thenReturn(empty());
         when(mockResource.getMembershipResource()).thenReturn(empty());
@@ -137,10 +137,9 @@ public class FileMementoServiceTest {
         assertEquals(time, res.getModified());
         assertEquals(LDP.NonRDFSource, res.getInteractionModel());
         assertEquals(of(root), res.getContainer());
-        assertTrue(res.getBinary().isPresent());
-        res.getBinary().ifPresent(b -> {
+        assertTrue(res.getBinaryMetadata().isPresent());
+        res.getBinaryMetadata().ifPresent(b -> {
             assertEquals(binaryId, b.getIdentifier());
-            assertEquals(binaryTime, b.getModified());
             assertEquals(of(mimeType), b.getMimeType());
             assertEquals(of(size), b.getSize());
         });
@@ -169,7 +168,7 @@ public class FileMementoServiceTest {
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title")),
                     rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.isPartOf, root)));
-        when(mockResource.getBinary()).thenReturn(empty());
+        when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getMemberOfRelation()).thenReturn(of(DC.isPartOf));
         when(mockResource.getMemberRelation()).thenReturn(of(LDP.member));
         when(mockResource.getMembershipResource()).thenReturn(of(member));
@@ -186,7 +185,7 @@ public class FileMementoServiceTest {
         assertEquals(of(member), res.getMembershipResource());
         assertEquals(of(FOAF.primaryTopic), res.getInsertedContentRelation());
         assertEquals(of(root), res.getContainer());
-        assertFalse(res.getBinary().isPresent());
+        assertFalse(res.getBinaryMetadata().isPresent());
         assertEquals(1L, res.stream(Trellis.PreferUserManaged).count());
     }
 

@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.time.Instant.ofEpochSecond;
 import static java.util.Collections.emptySet;
 import static java.util.Date.from;
 import static java.util.Optional.of;
@@ -39,13 +38,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.File;
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
@@ -59,8 +56,9 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.LDP;
@@ -70,9 +68,8 @@ import org.trellisldp.vocabulary.LDP;
  */
 public class PutHandlerTest extends BaseTestHandler {
 
-    private static final Instant binaryTime = ofEpochSecond(1496262750);
-
-    private final Binary testBinary = new Binary(rdf.createIRI("file:///binary.txt"), binaryTime, "text/plain", null);
+    private final BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///binary.txt"))
+        .mimeType("text/plain").build();
 
     @Test
     public void testPutConflict() {
@@ -167,7 +164,7 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
@@ -179,7 +176,7 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testPutLdpNRDescription() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.RDFSource.getIRIString()).rel("type").build());
 
@@ -193,7 +190,7 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testPutLdpNRDescription2() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final PutHandler handler = buildPutHandler("/simpleLiteral.ttl", null);
@@ -214,8 +211,8 @@ public class PutHandlerTest extends BaseTestHandler {
 
     @Test
     public void testCache() {
-        when(mockResource.getBinary()).thenReturn(of(testBinary));
-        when(mockRequest.evaluatePreconditions(eq(from(binaryTime)), any(EntityTag.class)))
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
+        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
                 .thenReturn(status(PRECONDITION_FAILED));
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
@@ -262,8 +259,7 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(eq(identifier), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(asyncException());
+        when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
 
@@ -292,8 +288,7 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")), any(IRI.class),
-                    any(Dataset.class), any(), any())).thenReturn(asyncException());
+        when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
 
         final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
         final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);

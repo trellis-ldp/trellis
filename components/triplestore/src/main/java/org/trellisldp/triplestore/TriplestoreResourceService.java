@@ -59,7 +59,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Query;
@@ -76,9 +75,9 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -139,14 +138,14 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> delete(final IRI identifier, final IRI container) {
-        LOGGER.debug("Deleting: {}", identifier);
+    public CompletableFuture<Void> delete(final Metadata metadata) {
+        LOGGER.debug("Deleting: {}", metadata.getIdentifier());
         return runAsync(() -> {
             try (final Dataset dataset = rdf.createDataset()) {
                 final Instant eventTime = now();
-                dataset.add(PreferServerManaged, identifier, DC.type, DeletedResource);
-                dataset.add(PreferServerManaged, identifier, RDF.type, LDP.Resource);
-                storeResource(identifier, dataset, eventTime, OperationType.DELETE);
+                dataset.add(PreferServerManaged, metadata.getIdentifier(), DC.type, DeletedResource);
+                dataset.add(PreferServerManaged, metadata.getIdentifier(), RDF.type, LDP.Resource);
+                storeResource(metadata.getIdentifier(), dataset, eventTime, OperationType.DELETE);
             } catch (final Exception ex) {
                 LOGGER.error("Error deleting resource: {}", ex.getMessage());
                 throw new RuntimeTrellisException(ex);
@@ -155,54 +154,48 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel, final Dataset dataset, final IRI container,
-            final Binary binary) {
-        LOGGER.debug("Persisting: {}", id);
+    public CompletableFuture<Void> replace(final Metadata metadata, final Dataset dataset) {
+        LOGGER.debug("Persisting: {}", metadata.getIdentifier());
         return runAsync(() ->
-                createOrReplace(id, ixnModel, dataset, OperationType.REPLACE, container, binary));
+                createOrReplace(metadata, dataset, OperationType.REPLACE));
     }
 
-    private void createOrReplace(final IRI identifier, final IRI ixnModel,
-                    final Dataset dataset, final OperationType type, final IRI container, final Binary binary) {
+    private void createOrReplace(final Metadata metadata, final Dataset dataset, final OperationType type) {
         final Instant eventTime = now();
 
         // Set the LDP type
-        dataset.add(PreferServerManaged, identifier, RDF.type, ixnModel);
+        dataset.add(PreferServerManaged, metadata.getIdentifier(), RDF.type, metadata.getInteractionModel());
 
         // Relocate some user-managed triples into the server-managed graph
-        if (LDP.DirectContainer.equals(ixnModel) || LDP.IndirectContainer.equals(ixnModel)) {
-            dataset.getGraph(PreferUserManaged).ifPresent(g -> {
-                g.stream(identifier, LDP.membershipResource, null).findFirst().ifPresent(t -> {
-                    // This allows for HTTP resource URL-based queries
-                    dataset.add(PreferServerManaged, identifier, LDP.member, getBaseIRI(t.getObject()));
-                    dataset.add(PreferServerManaged, identifier, LDP.membershipResource, t.getObject());
-                });
-                g.stream(identifier, LDP.hasMemberRelation, null).findFirst().ifPresent(t -> dataset
-                                .add(PreferServerManaged, identifier, LDP.hasMemberRelation, t.getObject()));
-                g.stream(identifier, LDP.isMemberOfRelation, null).findFirst().ifPresent(t -> dataset
-                                .add(PreferServerManaged, identifier, LDP.isMemberOfRelation, t.getObject()));
-                dataset.add(PreferServerManaged, identifier, LDP.insertedContentRelation,
-                                g.stream(identifier, LDP.insertedContentRelation, null).map(Triple::getObject)
-                                                .findFirst().orElse(LDP.MemberSubject));
-            });
+        metadata.getMembershipResource().ifPresent(member -> {
+            dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.member, getBaseIRI(member));
+            dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.membershipResource, member);
+        });
+
+        metadata.getMemberRelation().ifPresent(relation ->
+                dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.hasMemberRelation, relation));
+
+        metadata.getMemberOfRelation().ifPresent(relation ->
+                dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.isMemberOfRelation, relation));
+
+        if (asList(LDP.IndirectContainer, LDP.DirectContainer).contains(metadata.getInteractionModel())) {
+            dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.insertedContentRelation,
+                    metadata.getInsertedContentRelation().orElse(LDP.MemberSubject));
         }
 
         // Set the parent relationship
-        if (nonNull(container)) {
-            dataset.add(PreferServerManaged, identifier, DC.isPartOf, container);
-        }
+        metadata.getContainer().ifPresent(parent ->
+                dataset.add(PreferServerManaged, metadata.getIdentifier(), DC.isPartOf, parent));
 
-        if (nonNull(binary)) {
-            dataset.add(PreferServerManaged, identifier, DC.hasPart, binary.getIdentifier());
-            dataset.add(PreferServerManaged, binary.getIdentifier(), DC.modified,
-                    rdf.createLiteral(binary.getModified().toString(), XSD.dateTime));
+        metadata.getBinary().ifPresent(binary -> {
+            dataset.add(PreferServerManaged, metadata.getIdentifier(), DC.hasPart, binary.getIdentifier());
             binary.getMimeType().map(rdf::createLiteral).ifPresent(mimeType ->
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.format, mimeType));
             binary.getSize().map(size -> rdf.createLiteral(size.toString(), XSD.long_)).ifPresent(size ->
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.extent, size));
-        }
+        });
 
-        storeResource(identifier, dataset, eventTime, type);
+        storeResource(metadata.getIdentifier(), dataset, eventTime, type);
     }
 
     private void storeResource(final IRI identifier, final Dataset dataset,

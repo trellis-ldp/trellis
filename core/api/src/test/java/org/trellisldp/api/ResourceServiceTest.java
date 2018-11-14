@@ -69,7 +69,7 @@ public class ResourceServiceTest {
         doCallRealMethod().when(mockResourceService).unskolemize(any());
         doCallRealMethod().when(mockResourceService).toInternal(any(), any());
         doCallRealMethod().when(mockResourceService).toExternal(any(), any());
-        doCallRealMethod().when(mockResourceService).create(any(), any(), any(), any(), any());
+        doCallRealMethod().when(mockResourceService).create(any(), any());
 
         when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> completedFuture(mockResource));
     }
@@ -90,13 +90,12 @@ public class ResourceServiceTest {
     public void testDefaultCreate() {
         final IRI root = rdf.createIRI("trellis:data/");
         final Dataset dataset = rdf.createDataset();
+        final Metadata metadata = Metadata.builder(existing).container(root).interactionModel(LDP.RDFSource).build();
 
-        when(mockResourceService.replace(eq(existing), eq(LDP.RDFSource), eq(dataset), eq(root), any()))
-            .thenReturn(completedFuture(null));
+        when(mockResourceService.replace(eq(metadata), eq(dataset))).thenReturn(completedFuture(null));
 
-        assertDoesNotThrow(() -> mockResourceService.create(existing, LDP.RDFSource, dataset, root, null).join());
-        verify(mockResourceService).replace(eq(existing), eq(LDP.RDFSource),
-                eq(dataset), eq(root), any());
+        assertDoesNotThrow(() -> mockResourceService.create(metadata, dataset).join());
+        verify(mockResourceService).replace(eq(metadata), eq(dataset));
     }
 
     @Test

@@ -53,7 +53,7 @@ public class FileResourceTest {
         assertFalse(res.getMemberRelation().isPresent(), "Unexpected ldp:memberRelation value!");
         assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation value!");
         assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
-        assertFalse(res.getBinary().isPresent(), "Unexpected binary present!");
+        assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary present!");
         assertFalse(res.hasAcl(), "Unexpected ACL present!");
         assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment count!");
@@ -76,9 +76,8 @@ public class FileResourceTest {
         assertFalse(res.getMemberRelation().isPresent(), "Unexpected ldp:memberRelation value!");
         assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation value!");
         assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
-        assertTrue(res.getBinary().isPresent(), "Missing binary metadata!");
-        res.getBinary().ifPresent(binary -> {
-            assertEquals(parse("2017-02-16T11:17:00Z"), binary.getModified(), "Incorrect binary modification date!");
+        assertTrue(res.getBinaryMetadata().isPresent(), "Missing binary metadata!");
+        res.getBinaryMetadata().ifPresent(binary -> {
             assertEquals(of(10L), binary.getSize(), "Incorrect binary size!");
             assertEquals(of("text/plain"), binary.getMimeType(), "Incorrect binary mime type!");
             assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier(), "Incorrect binary id!");
@@ -122,7 +121,7 @@ public class FileResourceTest {
         res.getInsertedContentRelation().ifPresent(rel ->
                 assertEquals(DC.relation, rel, "Incorrect ldp:insertedContentRelation!"));
         assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation!");
-        assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!");
+        assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary metadata!");
         assertFalse(res.hasAcl(), "Unexpected ACL!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(6L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
@@ -147,7 +146,7 @@ public class FileResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation!");
         assertTrue(res.getMemberOfRelation().isPresent(), "Missing ldp:isMemberOfRelation!");
         res.getMemberOfRelation().ifPresent(rel -> assertEquals(DC.isPartOf, rel, "Incorrect ldp:isMemberOfRelation!"));
-        assertFalse(res.getBinary().isPresent(), "Unexpected binary metadata!");
+        assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary metadata!");
         assertFalse(res.hasAcl(), "Unexpected ACL!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(5L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");

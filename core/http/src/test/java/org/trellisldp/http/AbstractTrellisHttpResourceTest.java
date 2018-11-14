@@ -297,22 +297,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryMetadataError1() {
-        when(mockBinary.getModified()).thenReturn(null);
-        final Response res = target(BINARY_PATH).request().get();
-
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    public void testGetBinaryMetadataError2() {
-        when(mockBinary.getIdentifier()).thenReturn(null);
-        final Response res = target(BINARY_PATH).request().get();
-
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
     public void testGetBinaryDigestInvalid() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
 

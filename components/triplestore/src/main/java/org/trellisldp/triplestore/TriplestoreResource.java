@@ -57,12 +57,11 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
-import org.trellisldp.vocabulary.Time;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -177,8 +176,7 @@ public class TriplestoreResource implements Resource {
             final RDFNode s = qs.get("binarySubject");
             final RDFNode p = qs.get("binaryPredicate");
             final RDFNode o = qs.get("binaryObject");
-            nodesToTriple(s, p, o).ifPresent(t ->
-                data.put(DC.modified.equals(t.getPredicate()) ? Time.hasTime : t.getPredicate(), t.getObject()));
+            nodesToTriple(s, p, o).ifPresent(t -> data.put(t.getPredicate(), t.getObject()));
             data.put(getPredicate(qs), getObject(qs));
         });
     }
@@ -230,10 +228,9 @@ public class TriplestoreResource implements Resource {
     }
 
     @Override
-    public Optional<Binary> getBinary() {
-        return asIRI(DC.hasPart).flatMap(id -> asLiteral(Time.hasTime).map(Instant::parse).map(time ->
-                    new Binary(id, time, asLiteral(DC.format).orElse(null),
-                        asLiteral(DC.extent).map(Long::parseLong).orElse(null))));
+    public Optional<BinaryMetadata> getBinaryMetadata() {
+        return asIRI(DC.hasPart).map(id -> BinaryMetadata.builder(id).mimeType(asLiteral(DC.format).orElse(null))
+                    .size(asLiteral(DC.extent).map(Long::parseLong).orElse(null)).build());
     }
 
     @Override

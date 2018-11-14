@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -55,6 +54,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.core.Digest;
 import org.trellisldp.vocabulary.DC;
@@ -170,7 +170,6 @@ public class PostHandlerTest extends BaseTestHandler {
     @Test
     public void testRdfEntity() throws IOException {
         final String path = "newresource";
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
         final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
                         rdf.createLiteral("A title"));
 
@@ -187,21 +186,20 @@ public class PostHandlerTest extends BaseTestHandler {
 
         verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
-        verify(mockResourceService).create(eq(identifier), eq(LDP.RDFSource), any(Dataset.class), any(), any());
+        verify(mockResourceService).create(any(Metadata.class), any(Dataset.class));
     }
 
     @Test
     public void testBinaryEntity() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "new-resource");
         final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "new-resource"), res.getLocation(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
-        assertAll("Check Binary response", checkBinaryEntityResponse(identifier));
+        assertAll("Check Binary response", checkBinaryEntityResponse());
     }
 
     @Test
@@ -209,14 +207,13 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
 
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource-with-entity");
         final PostHandler handler = buildPostHandler("/simpleData.txt", "resource-with-entity", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "resource-with-entity"), res.getLocation(), "Incorrect Location hearder!");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
-        assertAll("Check Binary response", checkBinaryEntityResponse(identifier));
+        assertAll("Check Binary response", checkBinaryEntityResponse());
     }
 
     @Test
@@ -275,8 +272,7 @@ public class PostHandlerTest extends BaseTestHandler {
 
     @Test
     public void testError() throws IOException {
-        when(mockResourceService.create(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "newresource")),
-                    any(IRI.class), any(Dataset.class), any(), any())).thenReturn(asyncException());
+        when(mockResourceService.create(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", baseUrl);
@@ -291,10 +287,10 @@ public class PostHandlerTest extends BaseTestHandler {
         return new PostHandler(mockTrellisRequest, root, id, entity, mockBundler, baseUrl);
     }
 
-    private Stream<Executable> checkBinaryEntityResponse(final IRI identifier) {
+    private Stream<Executable> checkBinaryEntityResponse() {
         return Stream.of(
                 () -> verify(mockResourceService, description("ResourceService::create not called!"))
-                            .create(eq(identifier), eq(LDP.NonRDFSource), any(Dataset.class), any(), any()),
+                            .create(any(Metadata.class), any(Dataset.class)),
                 () -> verify(mockIoService, never().description("entity shouldn't be read!")).read(any(), any(), any()),
                 () -> verify(mockBinaryService, description("content not set on binary service!"))
                             .setContent(iriArgument.capture(), any(InputStream.class), metadataArgument.capture()),

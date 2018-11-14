@@ -63,11 +63,12 @@ import org.mockito.Mock;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -129,6 +130,9 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
 
+    protected static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)
+        .mimeType(BINARY_MIME_TYPE).size(BINARY_SIZE).build();
+
     @Mock
     protected ServiceBundler mockBundler;
 
@@ -153,9 +157,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     @Mock
     protected Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource,
               mockRootResource;
-
-    @Mock
-    protected Binary mockBinary;
 
     @Mock
     protected InputStream mockInputStream;
@@ -218,11 +219,9 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(null));
-        when(mockResourceService.delete(any(IRI.class), any(IRI.class))).thenReturn(completedFuture(null));
-        when(mockResourceService.replace(any(IRI.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(null));
-        when(mockResourceService.create(any(IRI.class), any(IRI.class), any(Dataset.class),
-                        any(), any())).thenReturn(completedFuture(null));
+        when(mockResourceService.delete(any(Metadata.class))).thenReturn(completedFuture(null));
+        when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
+        when(mockResourceService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
@@ -282,37 +281,32 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     private void setUpResources() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockVersionedResource.getModified()).thenReturn(time);
-        when(mockVersionedResource.getBinary()).thenReturn(empty());
+        when(mockVersionedResource.getBinaryMetadata()).thenReturn(empty());
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockBinaryVersionedResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryVersionedResource.getModified()).thenReturn(time);
-        when(mockBinaryVersionedResource.getBinary()).thenReturn(of(mockBinary));
+        when(mockBinaryVersionedResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryVersionedResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
-        when(mockBinaryResource.getBinary()).thenReturn(of(mockBinary));
+        when(mockBinaryResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-
-        when(mockBinary.getModified()).thenReturn(time);
-        when(mockBinary.getIdentifier()).thenReturn(binaryInternalIdentifier);
-        when(mockBinary.getMimeType()).thenReturn(of(BINARY_MIME_TYPE));
-        when(mockBinary.getSize()).thenReturn(of(BINARY_SIZE));
 
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getBinary()).thenReturn(empty());
+        when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockRootResource.getModified()).thenReturn(time);
-        when(mockRootResource.getBinary()).thenReturn(empty());
+        when(mockRootResource.getBinaryMetadata()).thenReturn(empty());
         when(mockRootResource.getIdentifier()).thenReturn(root);
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockRootResource.hasAcl()).thenReturn(true);

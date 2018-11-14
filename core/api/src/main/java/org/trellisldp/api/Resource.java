@@ -225,12 +225,12 @@ public interface Resource {
     }
 
     /**
-     * Retrieve a Binary for this resouce, if it is a LDP-NR.
+     * Retrieve a BinaryMetadata for this resouce, if it is a LDP-NR.
      *
      * @implSpec Other LDP resource types will always return an empty {@link Optional} value
-     * @return the binary object
+     * @return the binary metadata
      */
-    default Optional<Binary> getBinary() {
+    default Optional<BinaryMetadata> getBinaryMetadata() {
         return empty();
     }
 

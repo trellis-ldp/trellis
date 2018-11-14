@@ -40,13 +40,13 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
-import org.apache.commons.rdf.api.IRI;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.TrellisRequest;
@@ -146,16 +146,15 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
         when(mockRootResource.hasAcl()).thenReturn(false);
-        when(mockService.replace(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(completedFuture(null));
+        when(mockService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
 
         verify(mockService, never().description("When re-initializing the root ACL, create should not be called"))
-            .create(eq(root), any(IRI.class), any(Dataset.class), any(), any());
+            .create(any(Metadata.class), any(Dataset.class));
         verify(mockService, description("Use replace when re-initializing the root ACL"))
-            .replace(eq(root), any(IRI.class), any(Dataset.class), any(), any());
+            .replace(any(Metadata.class), any(Dataset.class));
         verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
     }
 
@@ -164,16 +163,15 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockService.create(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(completedFuture(null));
+        when(mockService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
 
         verify(mockService, description("Re-create a missing root resource on initialization"))
-            .create(eq(root), any(IRI.class), any(Dataset.class), any(), any());
+            .create(any(Metadata.class), any(Dataset.class));
         verify(mockService, never().description("Don't try to replace a non-existent root on initialization"))
-            .replace(eq(root), any(IRI.class), any(Dataset.class), any(), any());
+            .replace(any(Metadata.class), any(Dataset.class));
         verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
     }
 
@@ -182,25 +180,24 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
-        when(mockService.create(any(IRI.class), any(IRI.class), any(Dataset.class), any(), any()))
-            .thenReturn(completedFuture(null));
+        when(mockService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
         matcher.initialize();
 
         verify(mockService, description("A previously deleted root resource should be re-created upon initialization"))
-            .create(eq(root), any(IRI.class), any(Dataset.class), any(), any());
+            .create(any(Metadata.class), any(Dataset.class));
         verify(mockService, never().description("replace shouldn't be called when re-initializing a deleted root"))
-            .replace(eq(root), any(IRI.class), any(Dataset.class), any(), any());
+            .replace(any(Metadata.class), any(Dataset.class));
         verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
     }
 
     private Stream<Executable> verifyInteractions(final ResourceService svc) {
         return of(
                 () -> verify(svc, never().description("Don't re-initialize the root if it already exists"))
-                        .create(eq(root), any(IRI.class), any(Dataset.class), any(), any()),
+                        .create(any(Metadata.class), any(Dataset.class)),
                 () -> verify(svc, never().description("Don't re-initialize the root if it already exists"))
-                        .replace(eq(root), any(IRI.class), any(Dataset.class), any(), any()),
+                        .replace(any(Metadata.class), any(Dataset.class)),
                 () -> verify(svc, description("Verify that the root resource is fetched only once")).get(root));
     }
 }
