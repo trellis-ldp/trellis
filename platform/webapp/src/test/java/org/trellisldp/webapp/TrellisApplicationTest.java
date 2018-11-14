@@ -14,6 +14,8 @@
 package org.trellisldp.webapp;
 
 import static java.util.Collections.singleton;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 import static org.glassfish.jersey.client.HttpUrlConnectorProvider.SET_METHOD_WORKAROUND;
@@ -59,6 +61,7 @@ public class TrellisApplicationTest extends JerseyTest {
     @BeforeAll
     public void before() throws Exception {
         super.setUp();
+        setDefaultPollInterval(100L, MILLISECONDS);
     }
 
     @AfterAll
