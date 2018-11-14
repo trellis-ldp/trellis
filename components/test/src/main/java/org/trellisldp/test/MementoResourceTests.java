@@ -15,6 +15,7 @@ package org.trellisldp.test;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -100,11 +101,16 @@ public interface MementoResourceTests extends MementoCommonTests {
     @DisplayName("Test the presence of a datetime header for each memento")
     default void testMementoAcceptDateTimeHeader() {
         getMementos().forEach((memento, date) -> {
-            try (final Response res = target(getResourceLocation()).request().header(ACCEPT_DATETIME, date).get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful memento request");
-                final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
-                assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME),
-                        "Check that the memento-datetime header is correct");
+            try (final Response res1 = target(getResourceLocation()).request().header(ACCEPT_DATETIME, date).head()) {
+                assertEquals(REDIRECTION, res1.getStatusInfo().getFamily(), "Check for a redirection to the memento");
+                final String location = res1.getLocation().toString();
+                try (final Response res2 = target(location).request().header(ACCEPT_DATETIME, date).head()) {
+                    assertEquals(SUCCESSFUL, res2.getStatusInfo().getFamily(),
+                                    "Check for a successful memento request");
+                    final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
+                    assertEquals(zdt, ZonedDateTime.parse(res2.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME),
+                                    "Check that the memento-datetime header is correct");
+                }
             }
         });
     }
