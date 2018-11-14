@@ -17,6 +17,7 @@ import static java.lang.String.join;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -202,14 +203,14 @@ public final class MementoResource {
 
     private static Stream<Link> getTimeMap(final String identifier, final Instant from, final Instant until) {
         return Stream.of(Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
-                .param(FROM, ofInstant(from.minusNanos(1L).plusSeconds(1L), UTC).format(RFC_1123_DATE_TIME))
-                .param(UNTIL, ofInstant(until, UTC).format(RFC_1123_DATE_TIME)).build());
+                .param(FROM, ofInstant(from.truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                .param(UNTIL, ofInstant(until.truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME)).build());
     }
 
     private static Function<Instant, Link> mementoToLink(final String identifier) {
         return time ->
             Link.fromUri(identifier + "?version=" + time.toEpochMilli()).rel(MEMENTO)
-                .param(DATETIME, ofInstant(time.minusNanos(1L).plusSeconds(1L), UTC)
+                .param(DATETIME, ofInstant(time.truncatedTo(SECONDS), UTC)
                         .format(RFC_1123_DATE_TIME)).build();
     }
 }
