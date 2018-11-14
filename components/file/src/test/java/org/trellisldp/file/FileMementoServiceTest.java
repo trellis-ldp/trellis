@@ -41,6 +41,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
@@ -283,6 +284,7 @@ public class FileMementoServiceTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "AWSCodeBuild", matches = "true")
     public void testAccessUnreadable() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
 

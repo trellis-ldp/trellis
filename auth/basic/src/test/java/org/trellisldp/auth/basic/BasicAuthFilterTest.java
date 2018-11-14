@@ -36,6 +36,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -154,6 +155,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "AWSCodeBuild", matches = "true")
     public void testUnreadableFile() throws Exception {
         final File file = new File(getAuthFile());
         assumeTrue(file.setReadable(false));

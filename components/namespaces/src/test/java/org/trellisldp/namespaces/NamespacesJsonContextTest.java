@@ -28,6 +28,7 @@ import java.security.SecureRandom;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.trellisldp.vocabulary.JSONLD;
 
 /**
@@ -68,6 +69,7 @@ public class NamespacesJsonContextTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "AWSCodeBuild", matches = "true")
     public void testWriteError() throws Exception {
         final URL res = NamespacesJsonContext.class.getResource("/readonly.json");
 
