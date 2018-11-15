@@ -65,7 +65,7 @@ public class DefaultIdentifierService implements IdentifierService {
 
     private static String getId(final String prefix, final Integer hierarchy, final Integer length) {
         final String id = randomUUID().toString();
-        final String nodash = id.replaceAll("-", "");
+        final String nodash = id.replace("-", "");
         final StringJoiner joiner = new StringJoiner("/");
         rangeClosed(0, hierarchy - 1).forEach(x -> joiner.add(nodash.substring(x * length, (x + 1) * length)));
         joiner.add(id);
