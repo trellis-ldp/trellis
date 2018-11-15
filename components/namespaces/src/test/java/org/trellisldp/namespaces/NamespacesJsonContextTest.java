@@ -17,18 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.SecureRandom;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.trellisldp.vocabulary.JSONLD;
 
 /**
@@ -37,12 +33,6 @@ import org.trellisldp.vocabulary.JSONLD;
 public class NamespacesJsonContextTest {
 
     private static final String nsDoc = "/testNamespaces.json";
-
-    @AfterAll
-    public static void cleanUp() throws IOException {
-        final File readonly = new File(NamespacesJsonContext.class.getResource("/readonly.json").getFile());
-        readonly.setWritable(true);
-    }
 
     @Test
     public void testReadFromJson() {
@@ -69,21 +59,12 @@ public class NamespacesJsonContextTest {
     }
 
     @Test
-    @DisabledIfEnvironmentVariable(named = "AWSCodeBuild", matches = "true")
-    public void testWriteError() throws Exception {
-        final URL res = NamespacesJsonContext.class.getResource("/readonly.json");
-
-        try {
-            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, res.getPath());
-
-            final NamespacesJsonContext svc = new NamespacesJsonContext();
-            final File file = new File(res.toURI());
-            assumeTrue(file.setWritable(false), "Files couldn't be set as unwritable, so skipping this test!");
-            assertThrows(UncheckedIOException.class, () ->
-                    svc.setPrefix("ex", "http://example.com/"), "Set prefix on unwritable namespace file!");
-        } finally {
-            System.getProperties().remove(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
-        }
+    public void testWriteError() {
+        final URL res = NamespacesJsonContext.class.getResource(nsDoc);
+        final File file = new File(getClass().getResource(nsDoc).getFile());
+        final File nonexistent = new File(file.getParentFile(), "nonexistent/dir/file.json");
+        assertThrows(UncheckedIOException.class, () -> new NamespacesJsonContext(nonexistent.getAbsolutePath()),
+                    "Loaded namespaces from invalid file!");
     }
 
     @Test
