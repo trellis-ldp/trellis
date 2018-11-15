@@ -88,15 +88,16 @@ public class KafkaPublisher implements EventService {
     }
 
     private static Producer<String, String> buildProducer() {
+        final String prefix = "trellis.kafka.";
         final Properties p = new Properties();
-        p.setProperty("acks", config.getOrDefault("trellis.kafka.acks", "all"));
-        p.setProperty("batch.size", config.getOrDefault("trelis.kafka.batch.size", "16384"));
-        p.setProperty("retries", config.getOrDefault("trellis.kafka.retries", "0"));
-        p.setProperty("linger.ms", config.getOrDefault("trellis.kafka.linger.ms", "1"));
-        p.setProperty("buffer.memory", config.getOrDefault("trellis.kafka.buffer.memory", "33554432"));
-        config.getProperties().entrySet().stream().filter(e -> e.getKey().startsWith("trellis.kafka."))
-            .filter(e -> CONFIG_KAFKA_TOPIC.equals(e.getKey()))
-            .forEach(e -> p.setProperty(e.getKey().replaceFirst("^trellis.kafka.", ""), e.getValue()));
+        p.setProperty("acks", config.getOrDefault(prefix + "acks", "all"));
+        p.setProperty("batch.size", config.getOrDefault(prefix + "batch.size", "16384"));
+        p.setProperty("retries", config.getOrDefault(prefix + "retries", "0"));
+        p.setProperty("linger.ms", config.getOrDefault(prefix + "linger.ms", "1"));
+        p.setProperty("buffer.memory", config.getOrDefault(prefix + "buffer.memory", "33554432"));
+        config.getProperties().entrySet().stream().filter(e -> e.getKey().startsWith(prefix))
+            .filter(e -> !CONFIG_KAFKA_TOPIC.equals(e.getKey()))
+            .forEach(e -> p.setProperty(e.getKey().substring(prefix.length()), e.getValue()));
 
         p.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         p.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
