@@ -108,10 +108,9 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      */
     public WebAcFilter(final AccessControlService accessService, final List<String> challengeTypes,
             final String realm) {
-        requireNonNull(accessService, "Access Control service may not be null!");
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
-        this.accessService = accessService;
+        this.accessService = requireNonNull(accessService, "Access Control service may not be null!");
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
             .collect(toList());
     }

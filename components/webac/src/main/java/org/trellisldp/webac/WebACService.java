@@ -128,10 +128,8 @@ public class WebACService implements AccessControlService {
      */
     public WebACService(final ResourceService resourceService,
             final CacheService<String, Set<IRI>> cache, final Boolean checkMembershipResources) {
-        requireNonNull(resourceService, "A non-null ResourceService must be provided!");
-        requireNonNull(cache, "A non-null Cache must be provided!");
-        this.resourceService = resourceService;
-        this.cache = cache;
+        this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
+        this.cache = requireNonNull(cache, "A non-null Cache must be provided!");
         this.checkMembershipResources = checkMembershipResources;
     }
 

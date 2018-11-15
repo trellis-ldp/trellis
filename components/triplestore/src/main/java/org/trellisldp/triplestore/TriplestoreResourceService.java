@@ -129,10 +129,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
         super();
-        requireNonNull(rdfConnection, "RDFConnection may not be null!");
-        requireNonNull(identifierService, "IdentifierService may not be null!");
-        this.rdfConnection = rdfConnection;
-        this.supplier = identifierService.getSupplier();
+        this.rdfConnection = requireNonNull(rdfConnection, "RDFConnection may not be null!");
+        this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
         this.supportedIxnModels = unmodifiableSet(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                 LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer).stream().collect(toSet()));
     }

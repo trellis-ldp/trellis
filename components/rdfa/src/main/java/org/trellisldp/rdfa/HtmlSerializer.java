@@ -116,9 +116,7 @@ public class HtmlSerializer implements RDFaWriterService {
     public HtmlSerializer(final NamespaceService namespaceService,
             final String template, final List<String> css,
             final List<String> js, final String icon) {
-        requireNonNull(namespaceService, "NamespaceService may not be null!");
-
-        this.namespaceService = namespaceService;
+        this.namespaceService = requireNonNull(namespaceService, "NamespaceService may not be null!");
         final String templatePath = ofNullable(template).orElse("org/trellisldp/rdfa/resource.mustache");
         final File tpl = new File(templatePath);
         this.template = tpl.exists() ? mf.compile(templatePath) : mf.compile(getReader(templatePath), templatePath);

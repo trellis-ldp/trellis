@@ -63,9 +63,7 @@ public class NamespacesJsonContext implements NamespaceService {
      * @param path the path to the JSON file
      */
     public NamespacesJsonContext(final String path) {
-        requireNonNull(path, "Namespace path may not be empty!");
-
-        this.filePath = path;
+        this.filePath = requireNonNull(path, "Namespace path may not be empty!");
         this.data = read(path);
         init();
     }

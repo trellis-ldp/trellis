@@ -65,10 +65,8 @@ public class Authorization {
      * @param graph the RDF graph
      */
     public Authorization(final BlankNodeOrIRI identifier, final Graph graph) {
-        requireNonNull(identifier, "The Authorization identifier may not be null!");
+        this.identifier = requireNonNull(identifier, "The Authorization identifier may not be null!");
         requireNonNull(graph, "The input graph may not be null!");
-
-        this.identifier = identifier;
 
         this.dataMap.put(ACL.agent, new HashSet<>());
         this.dataMap.put(ACL.agentClass, new HashSet<>());

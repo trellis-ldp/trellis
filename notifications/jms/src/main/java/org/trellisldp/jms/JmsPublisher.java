@@ -88,10 +88,8 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a connection error
      */
     public JmsPublisher(final Session session, final String queueName) throws JMSException {
-        requireNonNull(session, "JMS Session may not be null!");
         requireNonNull(queueName, "JMS Queue name may not be null!");
-
-        this.session = session;
+        this.session = requireNonNull(session, "JMS Session may not be null!");
         this.producer = session.createProducer(session.createQueue(queueName));
     }
 

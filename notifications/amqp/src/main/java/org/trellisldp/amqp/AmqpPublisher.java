@@ -112,13 +112,10 @@ public class AmqpPublisher implements EventService {
      */
     public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey,
             final Boolean mandatory, final Boolean immediate) {
-        requireNonNull(channel, "AMQP Channel may not be null!");
-        requireNonNull(exchangeName, "AMQP exchange name may not be null!");
-        requireNonNull(routingKey, "AMQP routing key may not be null!");
+        this.channel = requireNonNull(channel, "AMQP Channel may not be null!");
+        this.exchangeName = requireNonNull(exchangeName, "AMQP exchange name may not be null!");
+        this.routingKey = requireNonNull(routingKey, "AMQP routing key may not be null!");
 
-        this.channel = channel;
-        this.exchangeName = exchangeName;
-        this.routingKey = routingKey;
         this.mandatory = ofNullable(mandatory).orElse(true);
         this.immediate = ofNullable(immediate).orElse(false);
     }

@@ -14,7 +14,6 @@
 package org.trellisldp.rdfa;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
@@ -71,13 +70,11 @@ class HtmlData {
      */
     public HtmlData(final NamespaceService namespaceService, final String subject, final List<Triple> triples,
             final List<String> css, final List<String> js, final String icon) {
-        requireNonNull(css, "The CSS list may not be null!");
-        requireNonNull(js, "The JS list may not be null!");
-        this.subject = nonNull(subject) ? subject : "";
+        this.css = requireNonNull(css, "The CSS list may not be null!");
+        this.js = requireNonNull(js, "The JS list may not be null!");
         this.triples = triples;
-        this.css = css;
-        this.js = js;
-        this.icon = nonNull(icon) ? icon : "//www.trellisldp.org/assets/img/trellis.png";
+        this.subject = ofNullable(subject).orElse("");
+        this.icon = ofNullable(icon).orElse("//www.trellisldp.org/assets/img/trellis.png");
         this.prefixMapping.setNsPrefixes(namespaceService.getNamespaces());
     }
 

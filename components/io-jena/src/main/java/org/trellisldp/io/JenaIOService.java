@@ -191,11 +191,9 @@ public class JenaIOService implements IOService {
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
             final CacheService<String, String> cache, final Set<String> whitelist, final Set<String> whitelistDomains) {
-        requireNonNull(namespaceService, "The NamespaceService may not be null!");
-        requireNonNull(cache, "The CacheService may not be null!");
-        this.nsService = namespaceService;
+        this.nsService = requireNonNull(namespaceService, "The NamespaceService may not be null!");
+        this.cache = requireNonNull(cache, "The CacheService may not be null!");
         this.htmlSerializer = htmlSerializer;
-        this.cache = cache;
         this.whitelist = whitelist;
         this.whitelistDomains = whitelistDomains;
 

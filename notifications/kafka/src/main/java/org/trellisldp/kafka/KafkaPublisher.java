@@ -71,11 +71,8 @@ public class KafkaPublisher implements EventService {
      * @param topic the name of the kafka topic
      */
     public KafkaPublisher(final Producer<String, String> producer, final String topic) {
-        requireNonNull(producer, "Kafka producer may not be null!");
-        requireNonNull(topic, "Kafka topic name may not be null!");
-
-        this.producer = producer;
-        this.topic = topic;
+        this.producer = requireNonNull(producer, "Kafka producer may not be null!");
+        this.topic = requireNonNull(topic, "Kafka topic name may not be null!");
     }
 
     @Override
