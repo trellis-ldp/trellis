@@ -13,6 +13,7 @@
  */
 package org.trellisldp.file;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static java.util.Objects.requireNonNull;
@@ -88,19 +89,20 @@ public class FileMementoService implements MementoService {
             if (!resourceDir.exists()) {
                 resourceDir.mkdirs();
             }
-            FileUtils.writeMemento(resourceDir, resource, time);
+            FileUtils.writeMemento(resourceDir, resource, time.truncatedTo(SECONDS));
         });
     }
 
     @Override
     public CompletableFuture<Resource> get(final IRI identifier, final Instant time) {
         return supplyAsync(() -> {
+            final Instant mementoTime = time.truncatedTo(SECONDS);
             final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
-            final File file = FileUtils.getNquadsFile(resourceDir, time);
+            final File file = FileUtils.getNquadsFile(resourceDir, mementoTime);
             if (file.exists()) {
                 return new FileResource(identifier, file);
             }
-            final SortedSet<Instant> possible = listMementos(identifier).headSet(time);
+            final SortedSet<Instant> possible = listMementos(identifier).headSet(mementoTime);
             if (possible.isEmpty()) {
                 return MISSING_RESOURCE;
             }
@@ -128,7 +130,8 @@ public class FileMementoService implements MementoService {
         final SortedSet<Instant> instants = new TreeSet<>();
         try (final Stream<Path> files = FileUtils.uncheckedList(resourceDir.toPath())) {
             files.map(Path::toString).filter(path -> path.endsWith(".nq")).map(FilenameUtils::getBaseName)
-                .map(Long::parseLong).map(Instant::ofEpochSecond).forEach(instants::add);
+                .map(Long::parseLong).map(Instant::ofEpochSecond).map(t -> t.truncatedTo(SECONDS))
+                .forEach(instants::add);
         }
 
         return unmodifiableSortedSet(instants);
