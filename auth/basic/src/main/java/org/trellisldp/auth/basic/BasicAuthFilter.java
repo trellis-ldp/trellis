@@ -13,8 +13,6 @@
  */
 package org.trellisldp.auth.basic;
 
-import static java.nio.file.Files.lines;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
@@ -105,15 +103,12 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     private Optional<Principal> authenticate(final String credentials) {
         return ofNullable(Credentials.parse(credentials)).flatMap(creds ->
             of(file).filter(File::exists).map(File::toPath).flatMap(path -> {
-                try (final Stream<String> lineStream = lines(path)) {
+                try (final Stream<String> lineStream = BasicAuthUtils.uncheckedLines(path)) {
                     return lineStream.map(String::trim).filter(line -> !line.startsWith("#"))
                         .map(line -> line.split(":", 3)).filter(x -> x.length == 3)
                         .filter(d -> d[0].trim().equals(creds.getUsername()) && d[1].trim().equals(creds.getPassword()))
                         .map(d -> d[2].trim()).findFirst().map(BasicPrincipal::new);
-                } catch (final IOException ex) {
-                    LOGGER.error("Error processing credentials file", ex);
                 }
-                return empty();
             }));
     }
 
