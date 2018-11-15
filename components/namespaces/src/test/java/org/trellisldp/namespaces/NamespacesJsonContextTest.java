@@ -60,7 +60,6 @@ public class NamespacesJsonContextTest {
 
     @Test
     public void testWriteError() {
-        final URL res = NamespacesJsonContext.class.getResource(nsDoc);
         final File file = new File(getClass().getResource(nsDoc).getFile());
         final File nonexistent = new File(file.getParentFile(), "nonexistent/dir/file.json");
         assertThrows(UncheckedIOException.class, () -> new NamespacesJsonContext(nonexistent.getAbsolutePath()),

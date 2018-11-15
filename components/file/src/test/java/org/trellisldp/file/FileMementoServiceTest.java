@@ -21,8 +21,6 @@ import static java.util.Optional.of;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -61,12 +59,6 @@ public class FileMementoServiceTest {
         if (vDir.exists()) {
             deleteDirectory(vDir);
         }
-
-        final File readonly = new File(FileMementoServiceTest.class.getResource(
-                    "/readonly/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
-
-        final File unreadable = new File(FileMementoServiceTest.class.getResource(
-                    "/unreadable/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
     }
 
     @Test
@@ -249,11 +241,5 @@ public class FileMementoServiceTest {
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
-    }
-
-    private Void assertError(final Object o, final Throwable err) {
-        assertNull(o, "There shouldn't be a value when an error is expected!");
-        assertNotNull(err, "There should have been an expected error!");
-        return null;
     }
 }

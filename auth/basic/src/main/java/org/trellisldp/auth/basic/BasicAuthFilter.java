@@ -19,7 +19,6 @@ import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
-import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,15 +33,11 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
 
-import org.slf4j.Logger;
-
 /**
  * A basic authentication filter using an Authorization HTTP header.
  */
 @Priority(AUTHENTICATION)
 public class BasicAuthFilter implements ContainerRequestFilter {
-
-    private static final Logger LOGGER = getLogger(BasicAuthFilter.class);
 
     /** The configuration key controlling the location of the basic auth credentials file. **/
     public static final String CONFIG_AUTH_BASIC_CREDENTIALS = "trellis.auth.basic.credentials";

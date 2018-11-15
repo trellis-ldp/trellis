@@ -20,7 +20,6 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -35,7 +34,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDF;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
@@ -51,7 +49,6 @@ public class FileMementoService implements MementoService {
     public static final String CONFIG_FILE_MEMENTO_BASE_PATH = "trellis.file.memento.basepath";
 
     private static final Logger LOGGER = getLogger(FileMementoService.class);
-    private static final RDF rdf = getInstance();
 
     private final File directory;
 
