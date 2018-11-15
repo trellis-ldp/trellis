@@ -19,6 +19,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
+import static org.awaitility.Duration.TWO_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -173,7 +174,8 @@ public interface LdpBinaryTests extends CommonTests {
             descriptionETag = res.getEntityTag();
             assertTrue(descriptionETag.isWeak(), "Check for a weak ETag");
         }
-
+        // wait for enough time so that the ETags will surely be different
+        await().pollDelay(TWO_SECONDS).until(() -> true);
         // Patch the description
         try (final Response res = target(descriptionLocation).request().method("PATCH",
                     entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
