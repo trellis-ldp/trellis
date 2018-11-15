@@ -14,8 +14,14 @@
 package org.trellisldp.file;
 
 import static java.io.File.separator;
+import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newBufferedWriter;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.empty;
@@ -25,9 +31,18 @@ import static org.apache.jena.riot.tokens.TokenizerFactory.makeTokenizerString;
 import static org.apache.jena.sparql.core.Quad.create;
 import static org.apache.jena.sparql.core.Quad.defaultGraphIRI;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.vocabulary.RDF.type;
+import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -40,6 +55,10 @@ import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.tokens.Token;
 import org.slf4j.Logger;
+import org.trellisldp.api.Resource;
+import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.XSD;
 
 /**
  * File-based utilities.
@@ -99,6 +118,51 @@ public final class FileUtils {
     }
 
     /**
+     * Fetch a stream of files in the provided directory path.
+     * @param path the directory path
+     * @return a stream of filenames
+     */
+    public static Stream<Path> uncheckedList(final Path path) {
+        try {
+            return Files.list(path);
+        } catch (final IOException ex) {
+            throw new UncheckedIOException("Error fetching file list", ex);
+        }
+    }
+
+    /**
+     * Write a Memento to a particular resource directory.
+     * @param resourceDir the resource directory
+     * @param resource the resource
+     * @param time the time for the memento
+     */
+    public static void writeMemento(final File resourceDir, final Resource resource,
+            final Instant time) {
+        try (final BufferedWriter writer = newBufferedWriter(
+                        getNquadsFile(resourceDir, time).toPath(), UTF_8, CREATE, WRITE,
+                        TRUNCATE_EXISTING)) {
+
+            try (final Stream<String> quads = generateServerManaged(resource).map(FileUtils::serializeQuad)) {
+                final Iterator<String> lineIter = quads.iterator();
+                while (lineIter.hasNext()) {
+                    writer.write(lineIter.next() + lineSeparator());
+                }
+            }
+
+            try (final Stream<String> quads = resource.stream().filter(FileUtils::notServerManaged)
+                    .map(FileUtils::serializeQuad)) {
+                final Iterator<String> lineiter = quads.iterator();
+                while (lineiter.hasNext()) {
+                    writer.write(lineiter.next() + lineSeparator());
+                }
+            }
+        } catch (final IOException ex) {
+            throw new UncheckedIOException(
+                            "Error writing resource version for " + resource.getIdentifier().getIRIString(), ex);
+        }
+    }
+
+    /**
      * Serialize an RDF Quad.
      * @param quad the quad
      * @return a serialization of the quad
@@ -106,6 +170,58 @@ public final class FileUtils {
     public static String serializeQuad(final Quad quad) {
         return quad.getSubject() + SEP + quad.getPredicate() + SEP + quad.getObject() + SEP
             + quad.getGraphName().map(g -> g + " .").orElse(".");
+    }
+
+    /**
+     * Get the nquads file for a given moment in time.
+     * @param dir the directory
+     * @param time the time
+     * @return the file
+     */
+    public static File getNquadsFile(final File dir, final Instant time) {
+        return new File(dir, Long.toString(time.getEpochSecond()) + ".nq");
+    }
+
+    private static Stream<Quad> generateServerManaged(final Resource resource) {
+        final List<Quad> quads = new ArrayList<>();
+
+        quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), type, resource.getInteractionModel()));
+        quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.modified,
+                    rdf.createLiteral(resource.getModified().toString(), XSD.dateTime)));
+
+        resource.getBinaryMetadata().ifPresent(b -> {
+            quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.hasPart, b.getIdentifier()));
+            b.getMimeType().map(mimeType -> rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
+                rdf.createLiteral(mimeType))).ifPresent(quads::add);
+            b.getSize().map(size -> rdf.createQuad(PreferServerManaged, b.getIdentifier(),
+                DC.extent, rdf.createLiteral(size.toString(), XSD.long_))).ifPresent(quads::add);
+        });
+
+        resource.getContainer()
+            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.isPartOf, iri))
+            .ifPresent(quads::add);
+
+        resource.getMemberOfRelation()
+            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.isMemberOfRelation, iri))
+            .ifPresent(quads::add);
+
+        resource.getMemberRelation()
+            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.hasMemberRelation, iri))
+            .ifPresent(quads::add);
+
+        resource.getMembershipResource()
+            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.membershipResource, iri))
+            .ifPresent(quads::add);
+
+        resource.getInsertedContentRelation()
+            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.insertedContentRelation, iri))
+            .ifPresent(quads::add);
+
+        return quads.stream();
+    }
+
+    private static Boolean notServerManaged(final Quad quad) {
+        return !quad.getGraphName().filter(isEqual(PreferServerManaged)).isPresent();
     }
 
     private FileUtils() {

@@ -13,34 +13,18 @@
  */
 package org.trellisldp.file;
 
-import static java.lang.System.lineSeparator;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.newBufferedWriter;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static java.util.function.Predicate.isEqual;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.vocabulary.RDF.type;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
@@ -51,15 +35,11 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.vocabulary.DC;
-import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.XSD;
 
 /**
  * A file-based versioning system.
@@ -111,29 +91,7 @@ public class FileMementoService implements MementoService {
             if (!resourceDir.exists()) {
                 resourceDir.mkdirs();
             }
-
-            try (final BufferedWriter writer = newBufferedWriter(
-                            getNquadsFile(resourceDir, time).toPath(), UTF_8, CREATE, WRITE,
-                            TRUNCATE_EXISTING)) {
-
-                try (final Stream<String> quads = generateServerManaged(resource).map(FileUtils::serializeQuad)) {
-                    final Iterator<String> lineIter = quads.iterator();
-                    while (lineIter.hasNext()) {
-                        writer.write(lineIter.next() + lineSeparator());
-                    }
-                }
-
-                try (final Stream<String> quads = resource.stream().filter(FileMementoService::notServerManaged)
-                        .map(FileUtils::serializeQuad)) {
-                    final Iterator<String> lineiter = quads.iterator();
-                    while (lineiter.hasNext()) {
-                        writer.write(lineiter.next() + lineSeparator());
-                    }
-                }
-            } catch (final IOException ex) {
-                throw new UncheckedIOException(
-                                "Error writing resource version for " + resource.getIdentifier().getIRIString(), ex);
-            }
+            FileUtils.writeMemento(resourceDir, resource, time);
         });
     }
 
@@ -141,7 +99,7 @@ public class FileMementoService implements MementoService {
     public CompletableFuture<Resource> get(final IRI identifier, final Instant time) {
         return supplyAsync(() -> {
             final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
-            final File file = getNquadsFile(resourceDir, time);
+            final File file = FileUtils.getNquadsFile(resourceDir, time);
             if (file.exists()) {
                 return new FileResource(identifier, file);
             }
@@ -149,7 +107,7 @@ public class FileMementoService implements MementoService {
             if (possible.isEmpty()) {
                 return MISSING_RESOURCE;
             }
-            return new FileResource(identifier, getNquadsFile(resourceDir, possible.last()));
+            return new FileResource(identifier, FileUtils.getNquadsFile(resourceDir, possible.last()));
         });
     }
 
@@ -171,59 +129,11 @@ public class FileMementoService implements MementoService {
         }
 
         final SortedSet<Instant> instants = new TreeSet<>();
-        try (final Stream<Path> files = Files.list(resourceDir.toPath())) {
+        try (final Stream<Path> files = FileUtils.uncheckedList(resourceDir.toPath())) {
             files.map(Path::toString).filter(path -> path.endsWith(".nq")).map(FilenameUtils::getBaseName)
                 .map(Long::parseLong).map(Instant::ofEpochSecond).forEach(instants::add);
-        } catch (final IOException ex) {
-            throw new UncheckedIOException("Error fetching memento list for " + identifier, ex);
         }
 
         return unmodifiableSortedSet(instants);
-    }
-
-    private static File getNquadsFile(final File dir, final Instant time) {
-        return new File(dir, Long.toString(time.getEpochSecond()) + ".nq");
-    }
-
-    private static Stream<Quad> generateServerManaged(final Resource resource) {
-        final List<Quad> quads = new ArrayList<>();
-
-        quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), type, resource.getInteractionModel()));
-        quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.modified,
-                    rdf.createLiteral(resource.getModified().toString(), XSD.dateTime)));
-
-        resource.getBinaryMetadata().ifPresent(b -> {
-            quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.hasPart, b.getIdentifier()));
-            b.getMimeType().map(mimeType -> rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
-                rdf.createLiteral(mimeType))).ifPresent(quads::add);
-            b.getSize().map(size -> rdf.createQuad(PreferServerManaged, b.getIdentifier(),
-                DC.extent, rdf.createLiteral(size.toString(), XSD.long_))).ifPresent(quads::add);
-        });
-
-        resource.getContainer()
-            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.isPartOf, iri))
-            .ifPresent(quads::add);
-
-        resource.getMemberOfRelation()
-            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.isMemberOfRelation, iri))
-            .ifPresent(quads::add);
-
-        resource.getMemberRelation()
-            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.hasMemberRelation, iri))
-            .ifPresent(quads::add);
-
-        resource.getMembershipResource()
-            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.membershipResource, iri))
-            .ifPresent(quads::add);
-
-        resource.getInsertedContentRelation()
-            .map(iri -> rdf.createQuad(PreferServerManaged, resource.getIdentifier(), LDP.insertedContentRelation, iri))
-            .ifPresent(quads::add);
-
-        return quads.stream();
-    }
-
-    private static Boolean notServerManaged(final Quad quad) {
-        return !quad.getGraphName().filter(isEqual(PreferServerManaged)).isPresent();
     }
 }

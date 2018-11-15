@@ -13,10 +13,15 @@
  */
 package org.trellisldp.file;
 
+import static java.time.Instant.now;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
+import java.io.File;
+import java.io.UncheckedIOException;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -25,6 +30,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -101,5 +107,22 @@ public class FileUtilsTest {
         assertEquals("<trellis:data/resource> <http://purl.org/dc/terms/subject> <http://example.org> .",
                 FileUtils.serializeQuad(quad),
                 "Triple isn't serialized properly!");
+    }
+
+    @Test
+    public void testListFilesBadDirectory() {
+        final File file = new File(getClass().getResource("/resource.nq").getFile());
+        final File dir = new File(file.getParentFile(), "nonexistent");
+        assertThrows(UncheckedIOException.class, () -> FileUtils.uncheckedList(dir.toPath()));
+    }
+
+    @Test
+    public void testWriteMementoBadDirectory() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final File file = new File(getClass().getResource("/resource.nq").getFile());
+        final Resource res = new FileResource(identifier, file);
+        final File dir = new File(file.getParentFile(), "nonexistent");
+
+        assertThrows(UncheckedIOException.class, () -> FileUtils.writeMemento(dir, res, now()));
     }
 }

@@ -16,7 +16,6 @@ package org.trellisldp.file;
 import static java.time.Instant.MAX;
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
-import static java.util.Collections.emptySortedSet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
@@ -25,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -41,7 +39,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
@@ -67,11 +64,9 @@ public class FileMementoServiceTest {
 
         final File readonly = new File(FileMementoServiceTest.class.getResource(
                     "/readonly/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
-        readonly.setWritable(true);
 
         final File unreadable = new File(FileMementoServiceTest.class.getResource(
                     "/unreadable/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
-        unreadable.setReadable(true);
     }
 
     @Test
@@ -251,58 +246,6 @@ public class FileMementoServiceTest {
             assertEquals(1L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
             svc.put(res, res.getModified().plusSeconds(10)).join();
             assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-        } finally {
-            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
-        }
-    }
-
-    @Test
-    public void testUnwritableVersionSystem() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final File dir = new File(getClass().getResource("/readonly").getFile());
-
-        final File readonly = new File(getClass().getResource(
-                    "/readonly/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
-        assumeTrue(readonly.setReadOnly(), "Unable to set directory read-only, skipping test!");
-
-        try {
-            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
-
-            final FileMementoService svc = new FileMementoService();
-            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-            final File file = new File(getClass().getResource("/resource.nq").getFile());
-            assertTrue(file.exists(), "Memento resource doesn't exist!");
-            final Resource res = new FileResource(identifier, file);
-
-            final Instant time = parse("2017-02-16T11:15:01Z");
-            svc.put(res, time.plusSeconds(10)).handle(this::assertError).join();
-
-            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-        } finally {
-            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
-        }
-    }
-
-    @Test
-    @DisabledIfEnvironmentVariable(named = "AWSCodeBuild", matches = "true")
-    public void testAccessUnreadable() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-
-        final File dir = new File(getClass().getResource("/unreadable").getFile());
-        final File unreadable = new File(getClass().getResource(
-                    "/unreadable/35/97/1a/f68d4d5afced3770fc13fb8e560dc253/").getFile());
-        assumeTrue(unreadable.setReadable(false), "Couldn't set directory as unreadable, skipping test!");
-
-        try {
-            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH, dir.getAbsolutePath());
-
-            final MementoService svc = new FileMementoService();
-
-            assertTrue(svc.mementos(identifier).handle((m, err) -> {
-                assertNull(m, "There shouldn't be a value for an unreadable directory!");
-                assertNotNull(err, "There should have been an error with an unreadable directory!");
-                return emptySortedSet();
-            }).join().isEmpty(), "Memento list wasn't empty!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
