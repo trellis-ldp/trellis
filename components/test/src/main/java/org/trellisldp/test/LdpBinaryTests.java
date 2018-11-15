@@ -13,17 +13,20 @@
  */
 package org.trellisldp.test;
 
+import static java.util.Objects.isNull;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
+import static org.awaitility.Duration.TWO_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.DIGEST;
@@ -157,26 +160,33 @@ public interface LdpBinaryTests extends CommonTests {
         final EntityTag descriptionETag;
         final Long size;
 
+        // Discover the location of the description
+        final String descriptionLocation = getDescription(getResourceLocation());
+        if (isNull(descriptionLocation)) {
+            fail("No describedby Link header!");
+        }
+
         // Fetch the description
-        try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
+        try (final Response res = target(descriptionLocation).request().accept("text/turtle").get()) {
             assertAll("Check an LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             size = g.size();
             descriptionETag = res.getEntityTag();
             assertTrue(descriptionETag.isWeak(), "Check for a weak ETag");
         }
-
+        // wait for enough time so that the ETags will surely be different
+        await().pollDelay(TWO_SECONDS).until(() -> true);
         // Patch the description
-        try (final Response res = target(getResourceLocation()).request().method("PATCH",
+        try (final Response res = target(descriptionLocation).request().method("PATCH",
                     entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE))) {
             assertAll("Check PATCHing LDP-NR description", checkRdfResponse(res, LDP.RDFSource, null));
         }
 
-        await().until(() -> !descriptionETag.equals(getETag(getResourceLocation())));
+        await().until(() -> !descriptionETag.equals(getETag(descriptionLocation)));
 
         // Fetch the new description
-        try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
+        try (final Response res = target(descriptionLocation).request().accept("text/turtle").get()) {
             assertAll("Check the new LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.size() > size, "Check the graph size is greater than " + size);

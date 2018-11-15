@@ -23,11 +23,13 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.hasType;
 
+import java.net.URI;
 import java.util.stream.Stream;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -74,6 +76,18 @@ public interface CommonTests {
      */
     default WebTarget target(final String url) {
         return getClient().target(url);
+    }
+
+    /**
+     * Get the describedby Link value, if one exists.
+     * @param url the URL
+     * @return the location of a description resource, or null if none is available
+     */
+    default String getDescription(final String url) {
+        try (final Response res = target(url).request().head()) {
+            return getLinks(res).stream().filter(link -> "describedby".equals(link.getRel()))
+                .map(Link::getUri).map(URI::toString).findFirst().orElse(null);
+        }
     }
 
     /**

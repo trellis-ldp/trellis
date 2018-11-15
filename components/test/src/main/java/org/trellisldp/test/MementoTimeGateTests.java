@@ -106,9 +106,17 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     @Test
     @DisplayName("Test normal redirection of a timegate request")
     default void testTimeGateRedirected() {
-        final Instant time = now();
-        try (final Response res = target(getResourceLocation()).request()
-                .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get()) {
+        final String date = RFC_1123_DATE_TIME.withZone(UTC).format(now());
+        final String location;
+        try (final Response res = target(getResourceLocation()).request().header(ACCEPT_DATETIME, date).head()) {
+            if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
+                location = res.getLocation().toString();
+            } else {
+                location = getResourceLocation();
+            }
+        }
+
+        try (final Response res = target(location).request().header(ACCEPT_DATETIME, date).head()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
             assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Check for a Memento-Datetime header");
         }

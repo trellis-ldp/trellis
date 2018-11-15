@@ -13,10 +13,12 @@
  */
 package org.trellisldp.test;
 
+import static java.util.Objects.isNull;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
@@ -60,7 +62,7 @@ public interface MementoBinaryTests extends MementoResourceTests {
     @DisplayName("Test the link canonical header")
     default void testCanonicalHeader() {
         getMementos().forEach((memento, date) -> {
-            try (final Response res = target(memento).request().get()) {
+            try (final Response res = target(memento).request().head()) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
                 assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("canonical"))
                         .anyMatch(link -> link.getUri().toString().equals(memento)),
@@ -79,7 +81,11 @@ public interface MementoBinaryTests extends MementoResourceTests {
     @DisplayName("Test the link canonical header")
     default void testCanonicalHeaderDescriptions() {
         getMementos().forEach((memento, date) -> {
-            try (final Response res = target(memento).request().accept("text/turtle").get()) {
+            final String description = getDescription(memento);
+            if (isNull(description)) {
+                fail("Could not find description link header!");
+            }
+            try (final Response res = target(description).request().accept("text/turtle").head()) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
                 assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("canonical"))
                         .anyMatch(link -> link.getUri().toString().equals(memento + "&ext=description")),

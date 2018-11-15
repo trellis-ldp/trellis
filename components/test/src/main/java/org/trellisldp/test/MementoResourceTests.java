@@ -15,6 +15,7 @@ package org.trellisldp.test;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -100,11 +101,21 @@ public interface MementoResourceTests extends MementoCommonTests {
     @DisplayName("Test the presence of a datetime header for each memento")
     default void testMementoAcceptDateTimeHeader() {
         getMementos().forEach((memento, date) -> {
-            try (final Response res = target(getResourceLocation()).request().header(ACCEPT_DATETIME, date).get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful memento request");
+            final String location;
+            try (final Response res = target(getResourceLocation()).request().header(ACCEPT_DATETIME, date).head()) {
+                if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
+                    location = res.getLocation().toString();
+                } else {
+                    location = getResourceLocation();
+                }
+            }
+
+            try (final Response res = target(location).request().header(ACCEPT_DATETIME, date).head()) {
+                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
+                                "Check for a successful memento request");
                 final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
                 assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME),
-                        "Check that the memento-datetime header is correct");
+                                "Check that the memento-datetime header is correct");
             }
         });
     }
