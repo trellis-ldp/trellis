@@ -33,5 +33,5 @@ public interface RetrievalService<T> {
      * @param identifier the resource identifier
      * @return the resource
      */
-    CompletableFuture<T> get(IRI identifier);
+    CompletableFuture<? extends T> get(IRI identifier);
 }

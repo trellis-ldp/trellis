@@ -299,7 +299,7 @@ public class TrellisHttpResource {
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
-    private CompletableFuture<Resource> getParent(final IRI identifier) {
+    private CompletableFuture<? extends Resource> getParent(final IRI identifier) {
         final Optional<IRI> parent = getContainer(identifier);
         if (parent.isPresent()) {
             return trellis.getResourceService().get(parent.get());
@@ -355,7 +355,7 @@ public class TrellisHttpResource {
             .thenCompose(getHandler::getRepresentation);
     }
 
-    private CompletableFuture<Resource> fetchTrellisResource(final IRI identifier, final Version version) {
+    private CompletableFuture<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {
         if (nonNull(version)) {
             return trellis.getMementoService().get(identifier, version.getInstant());
         }
