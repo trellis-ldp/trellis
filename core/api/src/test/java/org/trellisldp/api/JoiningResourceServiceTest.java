@@ -75,7 +75,7 @@ public class JoiningResourceServiceTest {
         protected final Map<IRI, Resource> resources = synchronizedMap(new HashMap<>());
 
         @Override
-        public CompletableFuture<? extends Resource> get(final IRI identifier) {
+        public CompletableFuture<Resource> get(final IRI identifier) {
             return completedFuture(resources.getOrDefault(identifier, MISSING_RESOURCE));
         }
 
@@ -181,8 +181,8 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
-        public Stream<? extends Quad> stream() {
-            return dataset.stream();
+        public Stream<Quad> stream() {
+            return dataset.stream().map(Quad.class::cast);
         }
 
         @Override

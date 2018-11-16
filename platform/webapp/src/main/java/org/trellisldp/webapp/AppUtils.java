@@ -43,7 +43,7 @@ final class AppUtils {
             .orElseThrow(() -> new RuntimeTrellisException("No loadable " + service.getName() + " on the classpath"));
     }
 
-    public static <T> T loadWithDefault(final Class<T> service, final Supplier<? extends T> other) {
+    public static <T> T loadWithDefault(final Class<T> service, final Supplier<T> other) {
         return of(load(service).iterator()).filter(Iterator::hasNext).map(Iterator::next).orElseGet(other);
     }
 

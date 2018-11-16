@@ -49,7 +49,7 @@ public class TrellisCache<K, V> implements CacheService<K, V> {
      * @param mapper the function for deriving the value
      * @return the value
      */
-    public V get(final K key, final Function<? super K, ? extends V> mapper) {
+    public V get(final K key, final Function<K, V> mapper) {
         try {
             return cache.get(key, () -> mapper.apply(key));
         } catch (final ExecutionException ex) {

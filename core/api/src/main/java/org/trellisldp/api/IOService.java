@@ -39,7 +39,7 @@ public interface IOService {
      * @param syntax the output format
      * @param profiles additional profile information used for output
      */
-    void write(Stream<? extends Triple> triples, OutputStream output, RDFSyntax syntax, IRI... profiles);
+    void write(Stream<Triple> triples, OutputStream output, RDFSyntax syntax, IRI... profiles);
 
     /**
      * Read an input stream into a stream of triples.
@@ -49,7 +49,7 @@ public interface IOService {
      * @param context the RDF context
      * @return a stream of triples
      */
-    Stream<? extends Triple> read(InputStream input, RDFSyntax syntax, String context);
+    Stream<Triple> read(InputStream input, RDFSyntax syntax, String context);
 
     /**
      * Apply a Sparql-Update operation over a Graph.

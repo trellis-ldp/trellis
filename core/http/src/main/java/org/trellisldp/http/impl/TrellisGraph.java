@@ -60,8 +60,8 @@ class TrellisGraph implements AutoCloseable {
      *
      * @return a stream of triples
      */
-    public Stream<? extends Triple> stream() {
-        return graph.stream();
+    public Stream<Triple> stream() {
+        return graph.stream().map(Triple.class::cast);
     }
 
     /**

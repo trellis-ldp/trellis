@@ -52,7 +52,7 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public CompletableFuture<? extends Resource> get(final IRI identifier) {
+    public CompletableFuture<Resource> get(final IRI identifier) {
         return mutableData.get(identifier).thenCombine(immutableData.get(identifier), (mutable, immutable) -> {
             if (MISSING_RESOURCE.equals(mutable) && MISSING_RESOURCE.equals(immutable)) {
                 return MISSING_RESOURCE;
@@ -120,8 +120,8 @@ public abstract class JoiningResourceService implements ResourceService {
         }
 
         @Override
-        public Stream<? extends Quad> stream() {
-            return dataset.stream();
+        public Stream<Quad> stream() {
+            return dataset.stream().map(Quad.class::cast);
         }
 
         @Override
@@ -174,7 +174,7 @@ public abstract class JoiningResourceService implements ResourceService {
         }
 
         @Override
-        public Stream<? extends Quad> stream() {
+        public Stream<Quad> stream() {
             return immutable == null ? mutable.stream() : concat(mutable.stream(), immutable.stream());
         }
 

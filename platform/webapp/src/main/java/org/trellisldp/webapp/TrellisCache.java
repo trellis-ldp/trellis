@@ -46,7 +46,7 @@ public class TrellisCache implements CacheService<String, String> {
      * @param mapper the function for deriving the value
      * @return the value
      */
-    public String get(final String key, final Function<? super String, ? extends String> mapper) {
+    public String get(final String key, final Function<String, String> mapper) {
         try {
             return cache.get(key, () -> mapper.apply(key));
         } catch (final ExecutionException ex) {

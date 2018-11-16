@@ -153,7 +153,7 @@ public class TrellisHttpResource {
                     .build(), dataset.asDataset());
         } else if (!res.hasAcl()) {
             LOGGER.info("Initializeing root ACL: {}", id);
-            try (final Stream<? extends Triple> triples = res.stream(Trellis.PreferUserManaged)) {
+            try (final Stream<Triple> triples = res.stream(Trellis.PreferUserManaged)) {
                 triples.map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
             }
             return trellis.getResourceService().replace(Metadata.builder(res).build(), dataset.asDataset());

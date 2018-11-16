@@ -111,7 +111,7 @@ public class FileResource implements Resource {
 
     @Override
     public Boolean hasAcl() {
-        try (final Stream<? extends Triple> triples = stream(Trellis.PreferAccessControl)) {
+        try (final Stream<Triple> triples = stream(Trellis.PreferAccessControl)) {
             return triples.findFirst().isPresent();
         }
     }
@@ -131,7 +131,7 @@ public class FileResource implements Resource {
     }
 
     private static Map<IRI, RDFTerm> init(final IRI identifier, final File file) {
-        try (final Stream<? extends Triple> triples = fetchContent(identifier, file).filter(q ->
+        try (final Stream<Triple> triples = fetchContent(identifier, file).filter(q ->
                     q.getGraphName().filter(isEqual(Trellis.PreferServerManaged)).isPresent()).map(Quad::asTriple)) {
             return triples.collect(toMap(t -> !t.getSubject().equals(identifier) && DC.modified.equals(t.getPredicate())
                         ? Time.hasTime : t.getPredicate(), Triple::getObject));

@@ -37,7 +37,7 @@ public interface CacheService<K, V> {
      * @param mappingFunction attempts to compute a mapping for the specified key
      * @return a value for that key or null
      */
-    V get(K key, Function<? super K, ? extends V> mappingFunction);
+    V get(K key, Function<K, V> mappingFunction);
 
     /**
      * A {@link CacheService} used for JSON-LD profiles.

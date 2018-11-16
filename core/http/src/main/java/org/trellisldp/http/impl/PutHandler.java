@@ -227,7 +227,7 @@ public class PutHandler extends MutatingLdpHandler {
         if (nonNull(getResource())) {
             getResource().getContainer().ifPresent(metadata::container);
             LOGGER.debug("Resource {} found in persistence", getIdentifier());
-            try (final Stream<? extends Triple> remaining = getResource().stream(otherGraph)) {
+            try (final Stream<Triple> remaining = getResource().stream(otherGraph)) {
                 remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
             }
         }
