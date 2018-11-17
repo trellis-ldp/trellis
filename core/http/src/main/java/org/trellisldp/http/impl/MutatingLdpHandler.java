@@ -273,11 +273,11 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     protected CompletableFuture<Void> persistContent(final IRI contentLocation, final BinaryMetadata metadata) {
+        final Map<String, String> md = new HashMap<>();
+        metadata.getSize().ifPresent(size -> md.put(CONTENT_LENGTH, size.toString()));
+        metadata.getMimeType().ifPresent(mimeType -> md.put(CONTENT_TYPE, mimeType));
         try {
             final InputStream input = new FileInputStream(entity);
-            final Map<String, String> md = new HashMap<>();
-            metadata.getSize().ifPresent(size -> md.put(CONTENT_LENGTH, size.toString()));
-            metadata.getMimeType().ifPresent(mimeType -> md.put(CONTENT_TYPE, mimeType));
             return getServices().getBinaryService().setContent(contentLocation, input, md)
                 .whenComplete(HttpUtils.closeInputStreamAsync(input));
         } catch (final IOException ex) {
