@@ -154,8 +154,9 @@ public interface ResourceServiceTests {
         assertDoesNotThrow(() -> getResourceService().delete(Metadata.builder(identifier)
                     .interactionModel(LDP.RDFSource).container(ROOT_CONTAINER).build()).join(),
                 "Check that the delete operation succeeded");
-        assertEquals(DELETED_RESOURCE, getResourceService().get(identifier).join(),
-                "Verify that the resource is marked as deleted");
+        final Resource resource = getResourceService().get(identifier).join();
+        assertTrue(DELETED_RESOURCE.equals(resource) || MISSING_RESOURCE.equals(resource),
+                        "Verify that the resource is marked as deleted or missing");
     }
 
     /**
