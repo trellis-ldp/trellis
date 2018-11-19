@@ -14,13 +14,10 @@
 package org.trellisldp.api;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptyMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -54,17 +51,6 @@ public class BinaryServiceTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        doCallRealMethod().when(mockBinaryService).setContent(any(), any());
-    }
-
-    @Test
-    public void testDefaultMethods() {
-        when(mockBinaryService.getContent(any())).thenReturn(completedFuture(mockInputStream));
-        mockBinaryService.setContent(identifier, mockInputStream);
-        verify(mockBinaryService).setContent(eq(identifier), eq(mockInputStream),
-                eq(emptyMap()));
-        assertEquals(mockInputStream, mockBinaryService.getContent(identifier).join(),
-                "getContent returns wrong input stream");
     }
 
     @Test

@@ -13,10 +13,7 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Collections.emptyMap;
-
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -51,26 +48,11 @@ public interface BinaryService {
     /**
      * Set the content for a binary object.
      *
-     * @param identifier the binary object identifier
+     * @param metadata the binary metadata
      * @param stream the content
      * @return the new completion stage
      */
-    default CompletableFuture<Void> setContent(IRI identifier, InputStream stream) {
-        return setContent(identifier, stream, emptyMap());
-    }
-
-    /**
-     * Set the content for a binary object.
-     *
-     * @param identifier the binary object identifier
-     * @param stream the content
-     * @param metadata any user metadata
-     * @return a new completion stage that, when the stage completes normally, indicates that the binary
-     * data were successfully stored in the corresponding persistence layer. In the case of an unsuccessful
-     * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
-     */
-    CompletableFuture<Void> setContent(IRI identifier, InputStream stream, Map<String, String> metadata);
+    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream);
 
     /**
      * Purge the content from its corresponding datastore.

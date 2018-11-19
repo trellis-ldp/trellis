@@ -273,7 +273,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
             .thenAnswer(x -> completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier)))
             .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
-        when(mockBinaryService.setContent(any(IRI.class), any(InputStream.class), any()))
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
             .thenAnswer(x -> completedFuture(null));
         when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
     }

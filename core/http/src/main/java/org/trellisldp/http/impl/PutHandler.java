@@ -201,7 +201,7 @@ public class PutHandler extends MutatingLdpHandler {
             // Persist the content
             final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
                 .size(getEntityLength()).build();
-            persistPromise = persistContent(binaryLocation, binary).thenAccept(future ->
+            persistPromise = persistContent(binary).thenAccept(future ->
                 LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
 
             metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);

@@ -20,8 +20,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_LENGTH;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
@@ -37,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -272,13 +268,10 @@ class MutatingLdpHandler extends BaseLdpHandler {
         }
     }
 
-    protected CompletableFuture<Void> persistContent(final IRI contentLocation, final BinaryMetadata metadata) {
-        final Map<String, String> md = new HashMap<>();
-        metadata.getSize().ifPresent(size -> md.put(CONTENT_LENGTH, size.toString()));
-        metadata.getMimeType().ifPresent(mimeType -> md.put(CONTENT_TYPE, mimeType));
+    protected CompletableFuture<Void> persistContent(final BinaryMetadata metadata) {
         try {
             final InputStream input = new FileInputStream(entity);
-            return getServices().getBinaryService().setContent(contentLocation, input, md)
+            return getServices().getBinaryService().setContent(metadata, input)
                 .whenComplete(HttpUtils.closeInputStreamAsync(input));
         } catch (final IOException ex) {
             throw new WebApplicationException("Error saving binary content: " + ex.getMessage());
