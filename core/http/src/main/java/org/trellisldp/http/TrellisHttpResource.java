@@ -29,7 +29,7 @@ import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 
 import com.codahale.metrics.annotation.Timed;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -260,7 +260,7 @@ public class TrellisHttpResource {
     @POST
     @Timed
     public void createResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
-            final File body) {
+            final InputStream body) {
 
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
@@ -289,7 +289,7 @@ public class TrellisHttpResource {
     @PUT
     @Timed
     public void setResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
-            final File body) {
+            final InputStream body) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);

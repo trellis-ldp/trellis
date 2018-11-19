@@ -33,6 +33,7 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.Link.TYPE;
+import static org.apache.commons.io.IOUtils.readLines;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -248,7 +249,11 @@ abstract class BaseTestHandler {
         when(mockBinaryService.getContent(any(IRI.class)))
             .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
-            .thenAnswer(x -> completedFuture(null));
+            .thenAnswer(inv -> {
+                readLines((InputStream) inv.getArguments()[1], UTF_8);
+                return completedFuture(null);
+            });
+        when(mockBinaryService.purgeContent(any(IRI.class))).thenAnswer(x -> completedFuture(null));
     }
 
     private void setUpBundler() {

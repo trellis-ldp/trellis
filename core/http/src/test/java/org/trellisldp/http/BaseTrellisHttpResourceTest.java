@@ -22,6 +22,7 @@ import static java.util.Collections.emptySortedSet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.io.IOUtils.readLines;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -264,7 +265,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     }
 
     private void setUpBinaryService() {
-        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
+        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA", "SHA-256")));
         when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("MD5")))
             .thenReturn(completedFuture("md5-digest"));
         when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("SHA")))
@@ -274,7 +275,11 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBinaryService.getContent(eq(binaryInternalIdentifier)))
             .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
-            .thenAnswer(x -> completedFuture(null));
+            .thenAnswer(inv -> {
+                readLines((InputStream) inv.getArguments()[1], UTF_8);
+                return completedFuture(null);
+            });
+        when(mockBinaryService.purgeContent(any(IRI.class))).thenAnswer(x -> completedFuture(null));
         when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
     }
 

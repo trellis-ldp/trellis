@@ -20,22 +20,22 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
-import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.DigestInputStream;
 import java.security.Principal;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -56,7 +56,6 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.core.Digest;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
@@ -73,8 +72,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(MutatingLdpHandler.class);
 
-    private final File entity;
+    private final InputStream entity;
     private final Session session;
+    private final Set<String> algorithms;
 
     private Resource parent;
 
@@ -98,11 +98,13 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param entity the entity
      */
     protected MutatingLdpHandler(final TrellisRequest req, final ServiceBundler trellis,
-            final String baseUrl, final File entity) {
+            final String baseUrl, final InputStream entity) {
         super(req, trellis, baseUrl);
         this.entity = entity;
         this.session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
             .map(getServices().getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
+        this.algorithms = trellis.getBinaryService().supportedAlgorithms().stream().map(String::toLowerCase)
+            .collect(toSet());
     }
 
     protected void setParent(final Resource parent) {
@@ -139,19 +141,54 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     /**
+     * Check the binary metadata for an invalid digest.
+     * @implNote If the request contains a digest algorithm, that algorithm will be compared in a
+     *           case-insensitive way to the algorithms supported by the BinaryService implementation. If the
+     *           algorithm is not among the supported algorithms, a 400 Bad Request exception will be thrown.
+     * @param binary the binary metadata
+     */
+    protected void checkForInvalidDigestAlgorithm(final BinaryMetadata binary) {
+        binary.getAlgorithm().map(String::toLowerCase).filter(alg -> !algorithms.contains(alg)).ifPresent(alg -> {
+                throw new BadRequestException("Invalid/unsupported algorithm provided for digest: " + alg);
+            });
+    }
+
+    /**
+     * Persist the binary content.
+     * @param binary the binary metadata
+     * @return the next completion stage. In general, the response will be {@code true}, but it may
+     *         be {@code false} if the request contains a digest value that does not match a server-computed
+     *         digest. For any persistence-layer failures, a {@code RuntimeException} may be thrown.
+     */
+    protected CompletableFuture<Boolean> persistBinary(final BinaryMetadata binary) {
+        return binary.getDigest().flatMap(digest -> binary.getAlgorithm().map(algorithm -> {
+            final DigestInputStream dis = new DigestInputStream(entity, getDigest(algorithm));
+            return getServices().getBinaryService().setContent(binary, dis).thenCompose(future -> {
+                final String serverComputed = getEncoder().encodeToString(dis.getMessageDigest().digest());
+                if (digest.equals(serverComputed)) {
+                    // the two digest values match
+                    LOGGER.debug("Successfully persisted digest-verified bitstream with content type {} to {}",
+                        binary.getMimeType().orElse(""), binary.getIdentifier());
+                    return completedFuture(true);
+                }
+                LOGGER.error("Supplied digest value does not match the server-computed digest: {} != {}",
+                        serverComputed, digest);
+                // Remove the binary from the backend persistence layer
+                return getServices().getBinaryService().purgeContent(binary.getIdentifier()).thenApply(val -> false);
+            }).whenComplete(HttpUtils.closeInputStreamAsync(dis));
+        })).orElseGet(() -> getServices().getBinaryService().setContent(binary, entity).thenApply(future -> {
+            LOGGER.debug("Successfully persisted bitstream with content type {} to {}",
+                binary.getMimeType().orElse(""), binary.getIdentifier());
+            return true;
+        }));
+    }
+
+    /**
      * Get the Trellis session for this interaction.
      * @return the session
      */
     protected Session getSession() {
         return session;
-    }
-
-    /**
-     * Get the length of the entity, if an entity is present.
-     * @return the length of an entity or null if non is present
-     */
-    protected Long getEntityLength() {
-        return ofNullable(entity).map(File::length).orElse(null);
     }
 
     /**
@@ -170,7 +207,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax,
             final TrellisDataset dataset) {
-        try (final InputStream input = new FileInputStream(entity)) {
+        try (final InputStream input = entity) {
             getServices().getIOService().read(input, syntax, getIdentifier())
                 .map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
@@ -242,40 +279,6 @@ class MutatingLdpHandler extends BaseLdpHandler {
             }).ifPresent(err -> {
                 throw new WebApplicationException(err.build());
             });
-    }
-
-    /**
-     * Check for a bad digest value.
-     * @param digest the digest header, if present
-     */
-    protected void checkForBadDigest(final Digest digest) {
-        if (nonNull(digest)) {
-            try (final InputStream input = new FileInputStream(entity)) {
-                final String d = getEncoder().encodeToString(updateDigest(getDigest(digest.getAlgorithm()), input)
-                        .digest());
-                if (!d.equals(digest.getDigest())) {
-                    LOGGER.error("Supplied digest value does not match the server-computed digest");
-                    throw new BadRequestException("Supplied digest value does not match the server-computed digest.");
-                }
-            } catch (final IllegalArgumentException ex) {
-                LOGGER.error("Invalid algorithm provided for digest. {} is not supported {}",
-                        digest.getAlgorithm(), ex.getMessage());
-                throw new BadRequestException("Invalid/unsupported algorithm provided for digest.");
-            } catch (final IOException ex) {
-                LOGGER.error("Error computing checksum on input", ex);
-                throw new WebApplicationException("Error computing checksum on input.");
-            }
-        }
-    }
-
-    protected CompletableFuture<Void> persistContent(final BinaryMetadata metadata) {
-        try {
-            final InputStream input = new FileInputStream(entity);
-            return getServices().getBinaryService().setContent(metadata, input)
-                .whenComplete(HttpUtils.closeInputStreamAsync(input));
-        } catch (final IOException ex) {
-            throw new WebApplicationException("Error saving binary content: " + ex.getMessage());
-        }
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final TrellisDataset mutable) {
