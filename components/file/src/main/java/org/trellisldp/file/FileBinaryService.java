@@ -43,7 +43,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -55,6 +54,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
@@ -181,18 +181,17 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<Void> setContent(final IRI identifier, final InputStream stream,
-            final Map<String, String> metadata) {
+    public CompletableFuture<Void> setContent(final BinaryMetadata metadata, final InputStream stream) {
         requireNonNull(stream, "InputStream may not be null!");
         return supplyAsync(() -> {
-            final File file = getFileFromIdentifier(identifier);
-            LOGGER.debug("Setting binary content for {} at {}", identifier.getIRIString(), file.getAbsolutePath());
+            final File file = getFileFromIdentifier(metadata.getIdentifier());
+            LOGGER.debug("Setting binary content for {} at {}", metadata.getIdentifier(), file.getAbsolutePath());
             try (final InputStream input = stream) {
                 final File parent = file.getParentFile();
                 parent.mkdirs();
                 copy(stream, file.toPath(), REPLACE_EXISTING);
             } catch (final IOException ex) {
-                throw new UncheckedIOException("Error while setting content for " + identifier, ex);
+                throw new UncheckedIOException("Error while setting content for " + metadata.getIdentifier(), ex);
             }
             return null;
         });

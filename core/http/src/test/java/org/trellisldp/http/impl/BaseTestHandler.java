@@ -55,7 +55,6 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -84,6 +83,7 @@ import org.mockito.Mock;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
@@ -149,7 +149,7 @@ abstract class BaseTestHandler {
     protected ArgumentCaptor<IRI> iriArgument;
 
     @Captor
-    protected ArgumentCaptor<Map<String, String>> metadataArgument;
+    protected ArgumentCaptor<BinaryMetadata> metadataArgument;
 
     @BeforeEach
     public void setUp() {
@@ -247,7 +247,7 @@ abstract class BaseTestHandler {
             .thenAnswer(x -> completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
         when(mockBinaryService.getContent(any(IRI.class)))
             .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
-        when(mockBinaryService.setContent(any(IRI.class), any(InputStream.class), any()))
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
             .thenAnswer(x -> completedFuture(null));
     }
 

@@ -112,7 +112,7 @@ public class PutHandlerTest extends BaseTestHandler {
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response type");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
 
-        verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
     }
 
@@ -128,7 +128,7 @@ public class PutHandlerTest extends BaseTestHandler {
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
 
-        verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
     }
 
@@ -307,7 +307,7 @@ public class PutHandlerTest extends BaseTestHandler {
         return Stream.of(
                 () -> assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource)),
                 () -> verify(mockBinaryService, never().description("Binary service shouldn't have been called!"))
-                             .setContent(any(IRI.class), any(InputStream.class)),
+                             .setContent(any(BinaryMetadata.class), any(InputStream.class)),
                 () -> verify(mockIoService, description("IOService should have been called with an RDF resource"))
                              .read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }
@@ -316,7 +316,7 @@ public class PutHandlerTest extends BaseTestHandler {
         return Stream.of(
                 () -> assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource)),
                 () -> verify(mockBinaryService, description("BinaryService should have been called to set content!"))
-                            .setContent(any(IRI.class), any(InputStream.class), any()),
+                            .setContent(any(BinaryMetadata.class), any(InputStream.class)),
                 () -> verify(mockIoService, never().description("IOService shouldn't have been called with a Binary!"))
                             .read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }

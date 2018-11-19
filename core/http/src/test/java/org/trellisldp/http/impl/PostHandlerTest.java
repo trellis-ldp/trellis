@@ -16,7 +16,7 @@ package org.trellisldp.http.impl;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static java.util.Optional.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -54,6 +54,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.core.Digest;
@@ -184,7 +185,7 @@ public class PostHandlerTest extends BaseTestHandler {
         assertEquals(create(baseUrl + path), res.getLocation(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
 
-        verify(mockBinaryService, never()).setContent(any(IRI.class), any(InputStream.class));
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
         verify(mockResourceService).create(any(Metadata.class), any(Dataset.class));
     }
@@ -293,8 +294,9 @@ public class PostHandlerTest extends BaseTestHandler {
                             .create(any(Metadata.class), any(Dataset.class)),
                 () -> verify(mockIoService, never().description("entity shouldn't be read!")).read(any(), any(), any()),
                 () -> verify(mockBinaryService, description("content not set on binary service!"))
-                            .setContent(iriArgument.capture(), any(InputStream.class), metadataArgument.capture()),
-                () -> assertEquals("text/plain", metadataArgument.getValue().get(CONTENT_TYPE), "Invalid content-type"),
-                () -> assertTrue(iriArgument.getValue().getIRIString().startsWith("file:///"), "Invalid binary ID!"));
+                            .setContent(metadataArgument.capture(), any(InputStream.class)),
+                () -> assertEquals(of("text/plain"), metadataArgument.getValue().getMimeType(), "Invalid content-type"),
+                () -> assertTrue(metadataArgument.getValue().getIdentifier().getIRIString().startsWith("file:///"),
+                                 "Invalid binary ID!"));
     }
 }
