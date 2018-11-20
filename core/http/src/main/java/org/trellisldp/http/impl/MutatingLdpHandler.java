@@ -44,6 +44,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -56,6 +57,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
+import org.trellisldp.http.core.Digest;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
@@ -145,42 +147,46 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @implNote If the request contains a digest algorithm, that algorithm will be compared in a
      *           case-insensitive way to the algorithms supported by the BinaryService implementation. If the
      *           algorithm is not among the supported algorithms, a 400 Bad Request exception will be thrown.
-     * @param binary the binary metadata
+     * @param digest the digest header value, may be {@code null}
      */
-    protected void checkForInvalidDigestAlgorithm(final BinaryMetadata binary) {
-        binary.getAlgorithm().map(String::toLowerCase).filter(alg -> !algorithms.contains(alg)).ifPresent(alg -> {
-                throw new BadRequestException("Invalid/unsupported algorithm provided for digest: " + alg);
-            });
+    protected void checkForInvalidDigestAlgorithm(final Digest digest) {
+        if (nonNull(digest) && !algorithms.contains(digest.getAlgorithm().toLowerCase())) {
+            throw new BadRequestException("Invalid algorithm provided for digest: " + digest.getAlgorithm());
+        }
     }
 
     /**
      * Persist the binary content.
      * @param binary the binary metadata
-     * @return the next completion stage. In general, the response will be {@code true}, but it may
-     *         be {@code false} if the request contains a digest value that does not match a server-computed
-     *         digest. For any persistence-layer failures, a {@code RuntimeException} may be thrown.
+     * @param digest the digest header value, may be {@code null}
+     * @return the next completion stage with information about the size of the resource that was persisted,
+     *         if relevant. In general, the {@code PersistenceResult::isSuccess} value will be {@code true};
+     *         however, if a digest value was supplied and the comparison failes, the value of {@code isSuccess}
+     *         will be {@code false}. For any persistence-layer failures, a {@code RuntimeException} may be thrown.
      */
-    protected CompletableFuture<Boolean> persistBinary(final BinaryMetadata binary) {
-        return binary.getDigest().flatMap(digest -> binary.getAlgorithm().map(algorithm -> {
-            final DigestInputStream dis = new DigestInputStream(entity, getDigest(algorithm));
+    protected CompletableFuture<PersistenceResult> persistBinary(final BinaryMetadata binary, final Digest digest) {
+        final CountingInputStream cis = new CountingInputStream(entity);
+        return ofNullable(digest).map(d -> {
+            final DigestInputStream dis = new DigestInputStream(cis, getDigest(d.getAlgorithm()));
             return getServices().getBinaryService().setContent(binary, dis).thenCompose(future -> {
                 final String serverComputed = getEncoder().encodeToString(dis.getMessageDigest().digest());
-                if (digest.equals(serverComputed)) {
+                if (d.getDigest().equals(serverComputed)) {
                     // the two digest values match
                     LOGGER.debug("Successfully persisted digest-verified bitstream with content type {} to {}",
-                        binary.getMimeType().orElse(""), binary.getIdentifier());
-                    return completedFuture(true);
+                        binary.getMimeType().orElse("(none)"), binary.getIdentifier());
+                    return completedFuture(new PersistenceResult(true, cis.getByteCount()));
                 }
                 LOGGER.error("Supplied digest value does not match the server-computed digest: {} != {}",
-                        serverComputed, digest);
+                        serverComputed, d.getDigest());
                 // Remove the binary from the backend persistence layer
-                return getServices().getBinaryService().purgeContent(binary.getIdentifier()).thenApply(val -> false);
-            }).whenComplete(HttpUtils.closeInputStreamAsync(dis));
-        })).orElseGet(() -> getServices().getBinaryService().setContent(binary, entity).thenApply(future -> {
+                return getServices().getBinaryService().purgeContent(binary.getIdentifier())
+                    .thenApply(val -> new PersistenceResult(false));
+            });
+        }).orElseGet(() -> getServices().getBinaryService().setContent(binary, entity).thenApply(future -> {
             LOGGER.debug("Successfully persisted bitstream with content type {} to {}",
-                binary.getMimeType().orElse(""), binary.getIdentifier());
-            return true;
-        }));
+                binary.getMimeType().orElse("(none)"), binary.getIdentifier());
+            return new PersistenceResult(true, cis.getByteCount());
+        })).whenComplete(HttpUtils.closeInputStreamAsync(cis));
     }
 
     /**

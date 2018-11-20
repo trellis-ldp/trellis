@@ -40,8 +40,6 @@ public final class BinaryMetadata {
     private final IRI identifier;
     private final String mimeType;
     private final Long size;
-    private final String digest;
-    private final String algorithm;
 
     /**
      * A simple BinaryMetadata object.
@@ -50,13 +48,10 @@ public final class BinaryMetadata {
      * @param mimeType the mimeType, may be {@code null}
      * @param size the size, may be {@code null}
      */
-    private BinaryMetadata(final IRI identifier, final String mimeType, final Long size, final String algorithm,
-            final String digest) {
+    private BinaryMetadata(final IRI identifier, final String mimeType, final Long size) {
         this.identifier = requireNonNull(identifier, "identifier may not be null!");
         this.mimeType = mimeType;
         this.size = size;
-        this.digest = digest;
-        this.algorithm = algorithm;
     }
 
     /**
@@ -87,24 +82,6 @@ public final class BinaryMetadata {
     }
 
     /**
-     * Retrieve the message digest of the binary, if known.
-     *
-     * @return the base64 encoded digest
-     */
-    public Optional<String> getDigest() {
-        return ofNullable(digest);
-    }
-
-    /**
-     * Retrieve the algorithm used to generate the digest, if known.
-     *
-     * @return the digest algorithm
-     */
-    public Optional<String> getAlgorithm() {
-        return ofNullable(algorithm);
-    }
-
-    /**
      * Get a mutable builder for a {@link BinaryMetadata}.
      * @param identifier the identifier
      * @return a builder for a {@link BinaryMetadata}
@@ -120,8 +97,6 @@ public final class BinaryMetadata {
         private final IRI identifier;
         private String mimeType;
         private Long size;
-        private String digest;
-        private String algorithm;
 
         /**
          * Create a BinaryMetadata builder with the provided identifier.
@@ -152,31 +127,11 @@ public final class BinaryMetadata {
         }
 
         /**
-         * Set the Digest algorithm.
-         * @param algorithm the digest algorithm
-         * @return this builder
-         */
-        public Builder algorithm(final String algorithm) {
-            this.algorithm = algorithm;
-            return this;
-        }
-
-        /**
-         * Set the Digest value.
-         * @param digest the digest value
-         * @return this builder
-         */
-        public Builder digest(final String digest) {
-            this.digest = digest;
-            return this;
-        }
-
-        /**
          * Build the BinaryMetadata object, transitioning this builder to the built state.
          * @return the built BinaryMetadata
          */
         public BinaryMetadata build() {
-            return new BinaryMetadata(identifier, mimeType, size, algorithm, digest);
+            return new BinaryMetadata(identifier, mimeType, size);
         }
     }
 }

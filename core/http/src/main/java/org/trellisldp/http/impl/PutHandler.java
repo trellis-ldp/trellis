@@ -189,23 +189,21 @@ public class PutHandler extends MutatingLdpHandler {
             final TrellisDataset immutable, final ResponseBuilder builder, final IRI ldpType) {
 
         final Metadata.Builder metadata;
-        final CompletableFuture<Boolean> persistPromise;
+        final BinaryMetadata.Builder binaryMetadata;
+        final CompletableFuture<PersistenceResult> persistPromise;
 
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
+            checkForInvalidDigestAlgorithm(getRequest().getDigest());
+
             final String mimeType = ofNullable(getRequest().getContentType()).orElse(APPLICATION_OCTET_STREAM);
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
-            final BinaryMetadata.Builder binaryBuilder = BinaryMetadata.builder(binaryLocation).mimeType(mimeType);
+            binaryMetadata = BinaryMetadata.builder(binaryLocation).mimeType(mimeType);
 
-            ofNullable(getRequest().getDigest())
-                .ifPresent(d -> binaryBuilder.algorithm(d.getAlgorithm()).digest(d.getDigest()));
-
-            final BinaryMetadata binary = binaryBuilder.build();
-            checkForInvalidDigestAlgorithm(binary);
-            persistPromise = persistBinary(binary);
-            metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);
+            persistPromise = persistBinary(binaryMetadata.build(), getRequest().getDigest());
+            metadata = metadataBuilder(internalId, ldpType, mutable);
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
@@ -219,9 +217,10 @@ public class PutHandler extends MutatingLdpHandler {
                         ofNullable(rdfSyntax).orElse(TURTLE));
             }
             LOGGER.trace("Successfully checked for constraint violations");
+            persistPromise = completedFuture(new PersistenceResult(true));
             metadata = metadataBuilder(internalId, ldpType, mutable);
+            binaryMetadata = null;
             ofNullable(getResource()).flatMap(Resource::getBinaryMetadata).ifPresent(metadata::binary);
-            persistPromise = completedFuture(true);
         }
 
         if (nonNull(getResource())) {
@@ -242,15 +241,20 @@ public class PutHandler extends MutatingLdpHandler {
             });
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
-        return persistPromise.thenCompose(success -> {
-            if (success) {
+        return persistPromise.thenCompose(result -> {
+            if (result.isSuccess()) {
+                if (nonNull(binaryMetadata)) {
+                    result.getSize().ifPresent(binaryMetadata::size);
+                    metadata.binary(binaryMetadata.build());
+                }
+
                 return allOf(
                         createOrReplace(metadata.build(), mutable),
                         getServices().getResourceService().add(internalId, immutable.asDataset()))
                     .thenCompose(future -> handleUpdateEvent(ldpType))
                     .thenApply(future -> decorateResponse(builder));
             }
-            return completedFuture(status(BAD_REQUEST));
+            throw new BadRequestException("Unable to save resource");
         });
     }
 

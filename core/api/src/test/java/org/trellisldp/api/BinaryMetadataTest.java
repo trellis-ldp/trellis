@@ -32,18 +32,13 @@ public class BinaryMetadataTest {
     private final Long size = 10L;
     private final String mimeType = "text/plain";
     private final IRI identifier = rdf.createIRI("trellis:data/resource");
-    private final String digest = "blahblahblah";
-    private final String algorithm = "MD5";
 
     @Test
     public void testBinaryMetadata() {
-        final BinaryMetadata binary = BinaryMetadata.builder(identifier).mimeType(mimeType).size(size)
-            .digest(digest).algorithm(algorithm).build();
+        final BinaryMetadata binary = BinaryMetadata.builder(identifier).mimeType(mimeType).size(size).build();
         assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
         assertEquals(of(mimeType), binary.getMimeType(), "MimeType did not match");
         assertEquals(of(size), binary.getSize(), "Size did not match");
-        assertEquals(of(digest), binary.getDigest(), "Digest did not match");
-        assertEquals(of(algorithm), binary.getAlgorithm(), "Algorithm did not match");
     }
 
     @Test
@@ -52,8 +47,6 @@ public class BinaryMetadataTest {
         assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
         assertFalse(binary.getMimeType().isPresent(), "MimeType was not absent");
         assertFalse(binary.getSize().isPresent(), "Size was not absent");
-        assertFalse(binary.getDigest().isPresent(), "Digest was not absent");
-        assertFalse(binary.getAlgorithm().isPresent(), "Algorithm was not absent");
     }
 
 }
