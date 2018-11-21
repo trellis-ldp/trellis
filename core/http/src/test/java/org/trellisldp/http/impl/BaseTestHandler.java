@@ -83,6 +83,7 @@ import org.mockito.Mock;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.EventService;
@@ -129,6 +130,9 @@ abstract class BaseTestHandler {
 
     @Mock
     protected BinaryService mockBinaryService;
+
+    @Mock
+    protected Binary mockBinary;
 
     @Mock
     protected Resource mockResource, mockParent;
@@ -239,16 +243,13 @@ abstract class BaseTestHandler {
     private void setUpBinaryService() {
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
-        when(mockBinaryService.calculateDigest(any(IRI.class), eq("MD5")))
-            .thenReturn(completedFuture("md5-digest"));
-        when(mockBinaryService.calculateDigest(any(IRI.class), eq("SHA")))
-            .thenReturn(completedFuture("sha1-digest"));
-        when(mockBinaryService.getContent(any(IRI.class), eq(3), eq(10)))
-            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
-        when(mockBinaryService.getContent(any(IRI.class)))
-            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
+        when(mockBinaryService.calculateDigest(any(IRI.class), eq("MD5"))).thenReturn(completedFuture("md5-digest"));
+        when(mockBinaryService.calculateDigest(any(IRI.class), eq("SHA"))).thenReturn(completedFuture("sha1-digest"));
+        when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
+        when(mockBinaryService.get(any(IRI.class))).thenReturn(completedFuture(mockBinary));
+        when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
-            .thenAnswer(x -> completedFuture(null));
+                        .thenAnswer(x -> completedFuture(null));
     }
 
     private void setUpBundler() {

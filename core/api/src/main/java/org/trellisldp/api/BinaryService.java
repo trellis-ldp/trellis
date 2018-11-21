@@ -25,17 +25,7 @@ import org.apache.commons.rdf.api.IRI;
  *
  * @author acoburn
  */
-public interface BinaryService {
-
-    /**
-     * Get the content of the binary object.
-     *
-     * @param identifier an identifier used for locating the binary object
-     * @param from the starting point of a range request
-     * @param to the ending point of a range request
-     * @return the new completion stage with the binary content
-     */
-    CompletableFuture<InputStream> getContent(IRI identifier, Integer from, Integer to);
+public interface BinaryService extends RetrievalService<Binary> {
 
     /**
      * Get the content of the binary object.
@@ -43,7 +33,8 @@ public interface BinaryService {
      * @param identifier an identifier used for locating the binary object
      * @return the new completion stage with the binary content
      */
-    CompletableFuture<InputStream> getContent(IRI identifier);
+    @Override
+    CompletableFuture<Binary> get(IRI identifier);
 
     /**
      * Set the content for a binary object.

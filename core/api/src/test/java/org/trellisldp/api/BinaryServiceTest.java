@@ -16,7 +16,7 @@ package org.trellisldp.api;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -46,6 +46,9 @@ public class BinaryServiceTest {
     private BinaryService mockBinaryService;
 
     @Mock
+    private Binary mockBinary;
+
+    @Mock
     private InputStream mockInputStream;
 
     @BeforeEach
@@ -55,9 +58,11 @@ public class BinaryServiceTest {
 
     @Test
     public void testGetContent() throws IOException {
-        when(mockBinaryService.getContent(eq(identifier), any(), any()))
-            .thenReturn(completedFuture(new ByteArrayInputStream("FooBar".getBytes(UTF_8))));
-        final InputStream content = mockBinaryService.getContent(identifier, 0, 6).join();
-        assertEquals("FooBar", IOUtils.toString(content, UTF_8), "Binary content did not match");
+        final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
+        when(mockBinaryService.get(eq(identifier))).thenReturn(completedFuture(mockBinary));
+        when(mockBinary.getContent(anyInt(), anyInt())).thenReturn(inputStream);
+        try (final InputStream content = mockBinaryService.get(identifier).thenApply(b -> b.getContent(0, 6)).join()) {
+            assertEquals("FooBar", IOUtils.toString(content, UTF_8), "Binary content did not match");
+        }
     }
 }

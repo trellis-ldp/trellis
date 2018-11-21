@@ -96,6 +96,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
@@ -379,10 +380,10 @@ public class GetHandler extends BaseLdpHandler {
 
     private InputStream getBinaryStream(final IRI dsid, final TrellisRequest req) {
         if (isNull(req.getRange())) {
-            return getServices().getBinaryService().getContent(dsid).join();
+            return getServices().getBinaryService().get(dsid).thenApply(Binary::getContent).join();
         }
-        return getServices().getBinaryService().getContent(dsid, req.getRange().getFrom(),
-                req.getRange().getTo()).join();
+        return getServices().getBinaryService().get(dsid)
+                        .thenApply(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo())).join();
     }
 
     private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {

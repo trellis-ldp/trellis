@@ -49,11 +49,11 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
-import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.DefaultIdentifierService;
@@ -142,30 +142,8 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<InputStream> getContent(final IRI identifier) {
-        return supplyAsync(() -> {
-            try {
-                return new FileInputStream(getFileFromIdentifier(identifier));
-            } catch (final IOException ex) {
-                throw new UncheckedIOException(ex);
-            }
-        });
-    }
-
-    @Override
-    public CompletableFuture<InputStream> getContent(final IRI identifier, final Integer from, final Integer to) {
-        requireNonNull(from, "From value cannot be null!");
-        requireNonNull(to, "To value cannot be null!");
-        return supplyAsync(() -> {
-            try {
-                final InputStream input = new FileInputStream(getFileFromIdentifier(identifier));
-                final long skipped = input.skip(from);
-                LOGGER.debug("Skipped {} bytes", skipped);
-                return new BoundedInputStream(input, to - from);
-            } catch (final IOException ex) {
-                throw new UncheckedIOException(ex);
-            }
-        });
+    public CompletableFuture<Binary> get(final IRI identifier) {
+        return supplyAsync(() -> new FileBinary(getFileFromIdentifier(identifier)));
     }
 
     @Override
