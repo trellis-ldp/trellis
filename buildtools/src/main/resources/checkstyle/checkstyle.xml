@@ -66,10 +66,12 @@
       <property name="severity" value="error"/>
     </module>
 
-    <!-- Check that finds import statements that use the * notation. -->
-    <module name="AvoidStarImport"/>
-    <!-- Checks for long lines. -->
+    <!-- Block import statements that use the * notation. -->
+    <module name="AvoidStarImport">
+      <property name="excludes" value="javax.ws.rs"/>
+    </module>
 
+    <!-- Checks for long lines. -->
     <module name="LineLength">
       <property name="max" value="120"/>
     </module>
