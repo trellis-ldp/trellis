@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -363,7 +364,9 @@ public class TrellisHttpResource {
     }
 
     private Response handleException(final Throwable err) {
-        LOGGER.debug("Trellis Error:", err);
+        if (!(err.getCause() instanceof BadRequestException)) {
+            LOGGER.error("Trellis Error:", err);
+        }
         return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
             .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err)).getResponse();
     }
