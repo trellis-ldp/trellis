@@ -364,7 +364,7 @@ public class TrellisHttpResource {
     }
 
     private Response handleException(final Throwable err) {
-        if (!(err instanceof BadRequestException)) {
+        if (!(err.getCause() instanceof BadRequestException)) {
             LOGGER.error("Trellis Error:", err);
         }
         return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
