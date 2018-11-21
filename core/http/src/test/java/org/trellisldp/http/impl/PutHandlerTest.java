@@ -41,8 +41,9 @@ import static org.mockito.Mockito.when;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
@@ -133,11 +134,11 @@ public class PutHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testPutError() {
+    public void testPutError() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
-        final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile() + ".non-existent-file");
+        final InputStream entity = getClass().getResource("/simpleTriple.ttl").openStream();
         final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
@@ -284,13 +285,13 @@ public class PutHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBinaryError() {
+    public void testBinaryError() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
 
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
+        final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
         final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);
 
         assertThrows(WebApplicationException.class, () ->
@@ -299,8 +300,12 @@ public class PutHandlerTest extends BaseTestHandler {
     }
 
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
-        return new PutHandler(mockTrellisRequest, new File(getClass().getResource(resourceName).getFile()), mockBundler,
-                baseUrl);
+        try {
+            return new PutHandler(mockTrellisRequest, getClass().getResource(resourceName).openStream(), mockBundler,
+                            baseUrl);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private Stream<Executable> checkRdfPut(final Response res) {

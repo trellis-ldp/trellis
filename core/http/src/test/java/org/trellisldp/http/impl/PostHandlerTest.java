@@ -39,7 +39,6 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletionException;
@@ -79,7 +78,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadAudit() {
+    public void testBadAudit() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -153,7 +152,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testUnsupportedType() {
+    public void testUnsupportedType() throws IOException {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
@@ -218,7 +217,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testEntityBadDigest() {
+    public void testEntityBadDigest() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
 
@@ -231,7 +230,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadDigest2() {
+    public void testBadDigest2() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("foo", "blahblahblah"));
 
@@ -244,11 +243,11 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadEntityDigest() {
+    public void testBadEntityDigest() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
 
-        final File entity = new File(new File(getClass().getResource("/simpleData.txt").getFile()).getParent());
+        final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
         final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler, null);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
@@ -258,10 +257,10 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testEntityError() {
+    public void testEntityError() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
+        final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
         final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler,
                 baseUrl);
 
@@ -283,8 +282,9 @@ public class PostHandlerTest extends BaseTestHandler {
                 "No exception thrown when the backend errors!");
     }
 
-    private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl) {
-        final File entity = new File(getClass().getResource(resourceName).getFile());
+    private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl)
+                    throws IOException {
+        final InputStream entity = getClass().getResource(resourceName).openStream();
         return new PostHandler(mockTrellisRequest, root, id, entity, mockBundler, baseUrl);
     }
 
