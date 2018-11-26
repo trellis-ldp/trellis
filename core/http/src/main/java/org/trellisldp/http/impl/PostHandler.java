@@ -175,8 +175,7 @@ public class PostHandler extends MutatingLdpHandler {
 
             // Persist the content
             final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType).build();
-            persistPromise = persistContent(binary).thenAccept(future ->
-                LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
+            persistPromise = persistContent(binary, getRequest().getDigest());
 
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
@@ -195,10 +194,9 @@ public class PostHandler extends MutatingLdpHandler {
         getServices().getAuditService().creation(internalId, getSession()).stream()
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
 
-        return allOf(
-                persistPromise,
+        return persistPromise.thenCompose(future -> allOf(
                 getServices().getResourceService().create(metadata.build(), mutable.asDataset()),
-                getServices().getResourceService().add(internalId, immutable.asDataset()))
+                getServices().getResourceService().add(internalId, immutable.asDataset())))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));

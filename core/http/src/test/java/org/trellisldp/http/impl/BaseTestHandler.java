@@ -33,6 +33,7 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.Link.TYPE;
+import static org.apache.commons.io.IOUtils.readLines;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -241,15 +242,19 @@ abstract class BaseTestHandler {
     }
 
     private void setUpBinaryService() {
+        when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
+        when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
         when(mockBinaryService.calculateDigest(any(IRI.class), eq("MD5"))).thenReturn(completedFuture("md5-digest"));
         when(mockBinaryService.calculateDigest(any(IRI.class), eq("SHA"))).thenReturn(completedFuture("sha1-digest"));
-        when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinaryService.get(any(IRI.class))).thenReturn(completedFuture(mockBinary));
-        when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
+        when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
-                        .thenAnswer(x -> completedFuture(null));
+            .thenAnswer(inv -> {
+                readLines((InputStream) inv.getArguments()[1], UTF_8);
+                return completedFuture(null);
+            });
     }
 
     private void setUpBundler() {
