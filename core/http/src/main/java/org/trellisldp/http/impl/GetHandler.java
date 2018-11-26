@@ -84,8 +84,8 @@ import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -143,7 +143,7 @@ public class GetHandler extends BaseLdpHandler {
         if (MISSING_RESOURCE.equals(resource)) {
             throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
-            throw new WebApplicationException(GONE);
+            throw new ClientErrorException(GONE);
         }
 
         LOGGER.debug("Acceptable media types: {}", getRequest().getHeaders().getAcceptableMediaTypes());

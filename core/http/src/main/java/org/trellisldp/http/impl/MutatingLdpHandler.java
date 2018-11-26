@@ -40,6 +40,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -233,7 +234,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 };
                 return err.entity(stream);
             }).ifPresent(err -> {
-                throw new WebApplicationException(err.build());
+                throw new ClientErrorException(err.build());
             });
     }
 

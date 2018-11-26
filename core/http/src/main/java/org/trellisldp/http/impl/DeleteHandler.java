@@ -32,8 +32,8 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -86,9 +86,9 @@ public class DeleteHandler extends MutatingLdpHandler {
             throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
             // Can't delete a non-existent resources
-            throw new WebApplicationException(GONE);
+            throw new ClientErrorException(GONE);
         } else if (!supportsInteractionModel(LDP.Resource)) {
-            throw new WebApplicationException(status(BAD_REQUEST)
+            throw new ClientErrorException(status(BAD_REQUEST)
                 .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
                 .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
         }

@@ -16,6 +16,8 @@ package org.trellisldp.http.impl;
 import static java.util.Date.from;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
+import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
@@ -25,8 +27,11 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.RedirectionException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
@@ -101,7 +106,13 @@ class BaseLdpHandler {
             throw new BadRequestException();
         }
         if (nonNull(builder)) {
-            throw new WebApplicationException(builder.build());
+            final Response res = builder.build();
+            if (CLIENT_ERROR.equals(res.getStatusInfo().getFamily())) {
+                throw new ClientErrorException(res);
+            } else if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
+                throw new RedirectionException(res);
+            }
+            throw new WebApplicationException(res);
         }
     }
 

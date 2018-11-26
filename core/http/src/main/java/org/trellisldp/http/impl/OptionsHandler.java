@@ -40,8 +40,8 @@ import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
@@ -88,7 +88,7 @@ public class OptionsHandler extends BaseLdpHandler {
         if (MISSING_RESOURCE.equals(resource)) {
             throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
-            throw new WebApplicationException(GONE);
+            throw new ClientErrorException(GONE);
         }
 
         setResource(resource);

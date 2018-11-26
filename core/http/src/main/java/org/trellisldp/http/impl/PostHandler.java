@@ -49,9 +49,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -127,13 +127,13 @@ public class PostHandler extends MutatingLdpHandler {
             throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(parent)) {
             // Can't POST to a deleted resource
-            throw new WebApplicationException(GONE);
+            throw new ClientErrorException(GONE);
         } else if (ACL.equals(getRequest().getExt())
                 || ldpResourceTypes(parent.getInteractionModel()).noneMatch(LDP.Container::equals)) {
             // Can't POST to an ACL resource or non-Container
             throw new NotAllowedException(GET, Stream.of(HEAD, OPTIONS, PATCH, PUT, DELETE).toArray(String[]::new));
         } else if (!MISSING_RESOURCE.equals(child) && !DELETED_RESOURCE.equals(child)) {
-            throw new WebApplicationException(CONFLICT);
+            throw new ClientErrorException(CONFLICT);
         } else if (!supportsInteractionModel(ldpType)) {
             throw new BadRequestException("Unsupported interaction model provided", status(BAD_REQUEST)
                 .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString()).build());

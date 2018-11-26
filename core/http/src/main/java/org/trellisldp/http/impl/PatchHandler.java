@@ -53,9 +53,9 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -125,7 +125,7 @@ public class PatchHandler extends MutatingLdpHandler {
             throw new NotFoundException();
         } else if (DELETED_RESOURCE.equals(resource)) {
             // Can't patch non-existent resources
-            throw new WebApplicationException(GONE);
+            throw new ClientErrorException(GONE);
         } else if (isNull(updateBody)) {
             LOGGER.error("Missing body for update: {}", resource.getIdentifier());
             throw new BadRequestException("Missing body for update");
@@ -230,7 +230,7 @@ public class PatchHandler extends MutatingLdpHandler {
         if (!violations.isEmpty()) {
             final ResponseBuilder err = status(CONFLICT);
             violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
-            throw new WebApplicationException(err.build());
+            throw new ClientErrorException(err.build());
         }
 
         // When updating User or ACL triples, be sure to add the other category to the dataset

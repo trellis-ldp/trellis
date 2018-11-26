@@ -33,11 +33,13 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NOT_MODIFIED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.notModified;
+import static javax.ws.rs.core.Response.serverError;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -194,6 +196,18 @@ public class GetHandlerTest extends BaseTestHandler {
                 unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
                 "Unexpected cache response for LDP-RS!").getResponse();
         assertEquals(NOT_MODIFIED, res.getStatusInfo(), "Incorrect Cache response!");
+    }
+
+    @Test
+    public void testCacheError() {
+        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
+                .thenReturn(serverError());
+
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
+                "Unexpected cache response for LDP-RS!").getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect Cache response!");
     }
 
     @Test

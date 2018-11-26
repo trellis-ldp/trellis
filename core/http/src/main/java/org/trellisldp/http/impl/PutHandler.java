@@ -48,8 +48,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
@@ -161,7 +161,7 @@ public class PutHandler extends MutatingLdpHandler {
         if (nonNull(getResource()) && !isBinaryDescription()
                 && ldpResourceTypes(ldpType).noneMatch(getResource().getInteractionModel()::equals)) {
             LOGGER.error("Cannot change the LDP type to {} for {}", ldpType, getIdentifier());
-            throw new WebApplicationException("Cannot change the LDP type to " + ldpType, status(CONFLICT).build());
+            throw new ClientErrorException("Cannot change the LDP type to " + ldpType, status(CONFLICT).build());
         }
 
         LOGGER.debug("Using LDP Type: {}", ldpType);
