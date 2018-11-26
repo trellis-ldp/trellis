@@ -20,7 +20,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
@@ -262,9 +261,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 });
             }).whenComplete(HttpUtils.closeInputStreamAsync(dis));
         } catch (final NoSuchAlgorithmException ex) {
-            return runAsync(() -> {
-                throw new BadRequestException("Unsupported algorithm", ex);
-            });
+            throw new BadRequestException("Unsupported algorithm", ex);
         }
     }
 

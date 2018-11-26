@@ -20,6 +20,7 @@ import static java.util.Optional.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.description;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -238,11 +240,8 @@ public class PostHandlerTest extends BaseTestHandler {
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .thenApply(ResponseBuilder::build)
-                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
-                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
-                    .getResponse()).join();
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
     }
 
@@ -257,6 +256,20 @@ public class PostHandlerTest extends BaseTestHandler {
                 unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))),
                 "No exception thrown when the backend errors!");
     }
+
+    @Test
+    public void testBadRdfInputStream() throws IOException {
+        final InputStream mockInputStream = mock(InputStream.class, inv -> {
+            throw new IOException("Expected exception");
+        });
+
+        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "bad-resource", mockInputStream,
+                mockBundler, null);
+        final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
+        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
+    }
+
 
     private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl)
                     throws IOException {
