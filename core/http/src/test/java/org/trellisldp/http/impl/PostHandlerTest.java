@@ -20,7 +20,6 @@ import static java.util.Optional.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -39,7 +38,6 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletionException;
@@ -48,6 +46,7 @@ import java.util.stream.Stream;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -79,7 +78,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadAudit() {
+    public void testBadAudit() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -153,7 +152,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testUnsupportedType() {
+    public void testUnsupportedType() throws IOException {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
@@ -218,57 +217,33 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testEntityBadDigest() {
+    public void testEntityBadDigest() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when there is a bad digest!").getResponse();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .thenApply(ResponseBuilder::build)
+                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
+                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
+                    .getResponse()).join();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
     }
 
     @Test
-    public void testBadDigest2() {
+    public void testBadDigest2() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("foo", "blahblahblah"));
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when there is an unsupported digest!").getResponse();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .thenApply(ResponseBuilder::build)
+                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
+                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
+                    .getResponse()).join();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
-    }
-
-    @Test
-    public void testBadEntityDigest() {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
-
-        final File entity = new File(new File(getClass().getResource("/simpleData.txt").getFile()).getParent());
-        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler, null);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when the entity itself is bad!").getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
-    }
-
-    @Test
-    public void testEntityError() {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".nonexistent-suffix");
-        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler,
-                baseUrl);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when the entity is non-existent!").getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -283,8 +258,9 @@ public class PostHandlerTest extends BaseTestHandler {
                 "No exception thrown when the backend errors!");
     }
 
-    private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl) {
-        final File entity = new File(getClass().getResource(resourceName).getFile());
+    private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl)
+                    throws IOException {
+        final InputStream entity = getClass().getResource(resourceName).openStream();
         return new PostHandler(mockTrellisRequest, root, id, entity, mockBundler, baseUrl);
     }
 

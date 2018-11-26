@@ -40,7 +40,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
@@ -91,7 +91,8 @@ public class PutHandler extends MutatingLdpHandler {
      * @param trellis the Trellis application bundle
      * @param baseUrl the base URL
      */
-    public PutHandler(final TrellisRequest req, final File entity, final ServiceBundler trellis, final String baseUrl) {
+    public PutHandler(final TrellisRequest req, final InputStream entity, final ServiceBundler trellis,
+                    final String baseUrl) {
         super(req, trellis, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         this.rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->
@@ -192,17 +193,13 @@ public class PutHandler extends MutatingLdpHandler {
 
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
-            // Check the expected digest value
-            checkForBadDigest(getRequest().getDigest());
             LOGGER.trace("Successfully checked for bad digest value");
             final String mimeType = ofNullable(getRequest().getContentType()).orElse(APPLICATION_OCTET_STREAM);
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
-            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
-                .size(getEntityLength()).build();
-            persistPromise = persistContent(binary).thenAccept(future ->
-                LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
+            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType).build();
+            persistPromise = persistContent(binary, getRequest().getDigest());
 
             metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
@@ -241,10 +238,9 @@ public class PutHandler extends MutatingLdpHandler {
             });
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
-        return allOf(
-                persistPromise,
+        return persistPromise.thenCompose(future -> allOf(
                 createOrReplace(metadata.build(), mutable),
-                getServices().getResourceService().add(internalId, immutable.asDataset()))
+                getServices().getResourceService().add(internalId, immutable.asDataset())))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }

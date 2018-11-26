@@ -22,6 +22,7 @@ import static java.util.Collections.emptySortedSet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.io.IOUtils.readLines;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -63,6 +64,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.EventService;
@@ -144,6 +146,9 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     @Mock
     protected BinaryService mockBinaryService;
+
+    @Mock
+    protected Binary mockBinary;
 
     @Mock
     protected AccessControlService mockAccessControlService;
@@ -269,12 +274,15 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
             .thenReturn(completedFuture("md5-digest"));
         when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("SHA")))
             .thenReturn(completedFuture("sha1-digest"));
-        when(mockBinaryService.getContent(eq(binaryInternalIdentifier), eq(3), eq(10)))
-            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
-        when(mockBinaryService.getContent(eq(binaryInternalIdentifier)))
-            .thenAnswer(x -> completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
+        when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenReturn(completedFuture(mockBinary));
+        when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
+        when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
-            .thenAnswer(x -> completedFuture(null));
+            .thenAnswer(inv -> {
+                readLines((InputStream) inv.getArguments()[1], UTF_8);
+                return completedFuture(null);
+            });
+        when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
     }
 

@@ -21,7 +21,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
@@ -41,8 +40,9 @@ import static org.mockito.Mockito.when;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
@@ -130,20 +130,6 @@ public class PutHandlerTest extends BaseTestHandler {
 
         verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
-    }
-
-    @Test
-    public void testPutError() {
-        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
-
-        final File entity = new File(getClass().getResource("/simpleTriple.ttl").getFile() + ".non-existent-file");
-        final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).join(),
-                "No exception when the entity stream doesn't exist!").getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -284,23 +270,28 @@ public class PutHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBinaryError() {
+    public void testBinaryError() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
+            .thenReturn(asyncException());
 
-        final File entity = new File(getClass().getResource("/simpleData.txt").getFile() + ".non-existent-suffix");
+        final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
         final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);
 
-        assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).join(),
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
                 "No exception when there's a problem with the backend binary service!");
     }
 
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
-        return new PutHandler(mockTrellisRequest, new File(getClass().getResource(resourceName).getFile()), mockBundler,
-                baseUrl);
+        try {
+            return new PutHandler(mockTrellisRequest, getClass().getResource(resourceName).openStream(), mockBundler,
+                            baseUrl);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private Stream<Executable> checkRdfPut(final Response res) {

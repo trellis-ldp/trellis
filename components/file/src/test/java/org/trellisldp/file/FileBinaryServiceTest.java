@@ -42,6 +42,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.junit.jupiter.api.condition.EnabledOnJre;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 
@@ -76,8 +77,8 @@ public class FileBinaryServiceTest {
         final InputStream inputStream = new ByteArrayInputStream("Some data".getBytes(UTF_8));
         assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
                 "setContent didn't complete cleanly!");
-        assertEquals("Some data", uncheckedToString(service.getContent(fileIRI).join()),
-                "incorrect value for getContent!");
+        assertEquals("Some data", uncheckedToString(service.get(fileIRI).thenApply(Binary::getContent).join()),
+                        "incorrect value for getContent!");
         assertNull(service.purgeContent(fileIRI).join(), "purgeContent didn't complete cleanly!");
         assertNull(service.purgeContent(fileIRI).join(), "purgeContent (2) didn't complete cleanly!");
     }
@@ -92,24 +93,27 @@ public class FileBinaryServiceTest {
     @Test
     public void testFileContent() {
         final BinaryService service = new FileBinaryService();
-        assertEquals("A test document.\n", service.getContent(file).thenApply(this::uncheckedToString).join(),
-                "Incorrect content when fetching from a file!");
+        assertEquals("A test document.\n",
+                        service.get(file).thenApply(Binary::getContent).thenApply(this::uncheckedToString).join(),
+                        "Incorrect content when fetching from a file!");
     }
 
     @Test
     public void testFileContentSegment() {
         final BinaryService service = new FileBinaryService();
-        assertEquals(" tes", service.getContent(file, 1, 5).thenApply(this::uncheckedToString).join(),
-                "Incorrect segment when fetching from a file!");
-        assertEquals("oc", service.getContent(file, 8, 10).thenApply(this::uncheckedToString).join(),
-                "Incorrect segment when fetching from a file!");
+        assertEquals(" tes",
+                        service.get(file).thenApply(b -> b.getContent(1, 5)).thenApply(this::uncheckedToString).join(),
+                        "Incorrect segment when fetching from a file!");
+        assertEquals("oc",
+                        service.get(file).thenApply(b -> b.getContent(8, 10)).thenApply(this::uncheckedToString).join(),
+                        "Incorrect segment when fetching from a file!");
     }
 
     @Test
     public void testFileContentSegmentBeyond() {
         final BinaryService service = new FileBinaryService();
-        assertEquals("", service.getContent(file, 1000, 1005).thenApply(this::uncheckedToString).join(),
-                "Incorrect out-of-range segment when fetching from a file!");
+        assertEquals("", service.get(file).thenApply(b -> b.getContent(1000, 1005)).thenApply(this::uncheckedToString)
+                        .join(), "Incorrect out-of-range segment when fetching from a file!");
     }
 
     @Test
@@ -119,19 +123,20 @@ public class FileBinaryServiceTest {
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
         assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
-                "Setting content didn't complete cleanly!");
-        assertEquals(contents, service.getContent(fileIRI).thenApply(this::uncheckedToString).join(),
-                "Fetching new content returned incorrect value!");
+                        "Setting content didn't complete cleanly!");
+        assertEquals(contents,
+                        service.get(fileIRI).thenApply(Binary::getContent).thenApply(this::uncheckedToString).join(),
+                        "Fetching new content returned incorrect value!");
     }
 
     @Test
     public void testGetFileContentError() throws IOException {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
-        assertThrows(CompletionException.class, () -> service.getContent(fileIRI).join(),
-                "Fetching from invalid file should have thrown an exception!");
-        assertThrows(CompletionException.class, () -> service.getContent(fileIRI, 0, 4).join(),
-                "Fetching binary segment from invalid file should have thrown an exception!");
+        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(Binary::getContent).join(),
+                        "Fetching from invalid file should have thrown an exception!");
+        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(b -> b.getContent(0, 4)).join(),
+                        "Fetching binary segment from invalid file should have thrown an exception!");
     }
 
     @Test
@@ -192,8 +197,8 @@ public class FileBinaryServiceTest {
     @Test
     public void testBadIdentifier() {
         final BinaryService service = new FileBinaryService();
-        assertFalse(service.getContent(rdf.createIRI("http://example.com/")).handle(this::checkError).join(),
-                "Shouldn't be able to fetch content from a bad IRI!");
+        assertFalse(service.get(rdf.createIRI("http://example.com/")).thenApply(Binary::getContent)
+                        .handle(this::checkError).join(), "Shouldn't be able to fetch content from a bad IRI!");
     }
 
     private Boolean checkError(final Object asyncValue, final Throwable err) {
