@@ -28,15 +28,6 @@ import org.apache.commons.rdf.api.IRI;
 public interface BinaryService extends RetrievalService<Binary> {
 
     /**
-     * Get the content of the binary object.
-     *
-     * @param identifier an identifier used for locating the binary object
-     * @return the new completion stage with the binary content
-     */
-    @Override
-    CompletableFuture<? extends Binary> get(IRI identifier);
-
-    /**
      * Set the content for a binary object.
      *
      * @param metadata the binary metadata

@@ -248,7 +248,7 @@ abstract class BaseTestHandler {
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
         when(mockBinaryService.calculateDigest(any(IRI.class), eq("MD5"))).thenReturn(completedFuture("md5-digest"));
         when(mockBinaryService.calculateDigest(any(IRI.class), eq("SHA"))).thenReturn(completedFuture("sha1-digest"));
-        when(mockBinaryService.get(any(IRI.class))).thenReturn(completedFuture(mockBinary));
+        when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
             .thenAnswer(inv -> {

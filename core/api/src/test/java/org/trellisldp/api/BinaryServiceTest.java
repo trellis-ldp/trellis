@@ -59,7 +59,7 @@ public class BinaryServiceTest {
     @Test
     public void testGetContent() throws IOException {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
-        when(mockBinaryService.get(eq(identifier))).thenReturn(completedFuture(mockBinary));
+        when(mockBinaryService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(anyInt(), anyInt())).thenReturn(inputStream);
         try (final InputStream content = mockBinaryService.get(identifier).thenApply(b -> b.getContent(0, 6)).join()) {
             assertEquals("FooBar", IOUtils.toString(content, UTF_8), "Binary content did not match");
