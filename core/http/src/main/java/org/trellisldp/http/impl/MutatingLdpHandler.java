@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Arrays.asList;
-import static java.util.Base64.getEncoder;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -31,9 +30,6 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -247,23 +243,19 @@ class MutatingLdpHandler extends BaseLdpHandler {
         if (isNull(digest)) {
             return persistContent(metadata);
         }
-        try {
-            final MessageDigest alg = MessageDigest.getInstance(digest.getAlgorithm());
-            final DigestInputStream dis = new DigestInputStream(entity, alg);
-            return getServices().getBinaryService().setContent(metadata, dis).thenCompose(future -> {
-                final String serverComputed = getEncoder().encodeToString(dis.getMessageDigest().digest());
-                if (digest.getDigest().equals(serverComputed)) {
-                    LOGGER.debug("Successfully persisted digest-verified bistream: {}", metadata.getIdentifier());
+        return getServices().getBinaryService().setContent(metadata, entity, digest.getAlgorithm().toUpperCase())
+            .thenCompose(serverComputed -> {
+                if (isNull(serverComputed)) {
+                    throw new BadRequestException("Unsupported algorithm: " + digest.getAlgorithm());
+                } else if (digest.getDigest().equals(serverComputed)) {
+                    LOGGER.debug("Successfully persisted digest-verified bitstream: {}", metadata.getIdentifier());
                     return completedFuture(null);
                 }
-                return getServices().getBinaryService().purgeContent(metadata.getIdentifier()).thenAccept(voyd -> {
+                return getServices().getBinaryService().purgeContent(metadata.getIdentifier()).thenAccept(future -> {
                     throw new BadRequestException("Supplied digest value does not match the server-computed digest: "
                             + serverComputed);
                 });
-            }).whenComplete(HttpUtils.closeInputStreamAsync(dis));
-        } catch (final NoSuchAlgorithmException ex) {
-            throw new BadRequestException("Unsupported algorithm", ex);
-        }
+            });
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final TrellisDataset mutable) {

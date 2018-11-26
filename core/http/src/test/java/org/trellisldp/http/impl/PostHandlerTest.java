@@ -234,14 +234,17 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadDigest2() throws IOException {
+    public void testBadDigest() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("foo", "blahblahblah"));
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .thenApply(ResponseBuilder::build)
+                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
+                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
+                    .getResponse()).join();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
     }
 

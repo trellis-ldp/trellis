@@ -21,6 +21,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -341,8 +342,9 @@ public class GetHandler extends BaseLdpHandler {
             final Optional<String> algorithm = getRequest().getWantDigest().getAlgorithms().stream()
                 .filter(getServices().getBinaryService().supportedAlgorithms()::contains).findFirst();
             if (algorithm.isPresent()) {
-                return getServices().getBinaryService().calculateDigest(dsid, algorithm.get())
-                    .thenApply(digest -> Optional.of(algorithm.get().toLowerCase() + "=" + digest));
+                final String alg = algorithm.filter(isEqual("SHA").negate()).orElse("SHA-1");
+                return getServices().getBinaryService().calculateDigest(dsid, alg)
+                    .thenApply(digest -> ofNullable(digest).map(d -> algorithm.get().toLowerCase() + "=" + d));
             }
         }
         return completedFuture(empty());

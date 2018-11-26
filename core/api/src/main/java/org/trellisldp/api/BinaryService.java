@@ -13,7 +13,14 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Base64.getEncoder;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,6 +42,30 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @return the new completion stage
      */
     CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream);
+
+    /**
+     * Set the content for a binary object using a digest algorithm.
+     *
+     * @implSpec The default implementation will compute a digest while processing the {@code InputStream}.
+     *           A {@code null} response value indicates that the digest algorithm is not supported. In the
+     *           case of a non-supported algorithm, the content will not be sent along to the binary service.
+     * @param metadata the binary metadata
+     * @param stream the context
+     * @param algorithm the digest algorithm
+     * @return the new completion stage containing the server-computed digest. A {@code null} value
+     *         can be understood to mean that the digest algorithm is unsupported.
+     */
+    default CompletableFuture<String> setContent(final BinaryMetadata metadata, final InputStream stream,
+            final String algorithm) {
+        try {
+            final DigestInputStream input = new DigestInputStream(stream, MessageDigest.getInstance(algorithm));
+            return setContent(metadata, input)
+                .thenApply(future -> getEncoder().encodeToString(input.getMessageDigest().digest()));
+        } catch (final NoSuchAlgorithmException ex) {
+            getLogger(BinaryService.class).warn("Unsupported algorithm: {}", ex.getMessage());
+            return completedFuture(null);
+        }
+    }
 
     /**
      * Purge the content from its corresponding datastore.

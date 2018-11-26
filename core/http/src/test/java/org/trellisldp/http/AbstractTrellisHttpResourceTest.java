@@ -344,8 +344,9 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryDigestError() throws IOException {
-        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("MD5"))).thenAnswer(inv ->
+    public void testGetBinaryDigestError() throws Exception {
+        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("MD5")))
+            .thenAnswer(inv ->
                 supplyAsync(() -> {
                     throw new RuntimeTrellisException("Expected exception");
                 }));

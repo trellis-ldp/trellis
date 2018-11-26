@@ -78,7 +78,7 @@ public class TrellisHttpResourceUnauthorizedTest extends BaseTrellisHttpResource
     }
 
     @BeforeEach
-    public void setUpMocks() {
+    public void setUpMocks() throws Exception {
         super.setUpMocks();
         when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> of(mockResource));
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
