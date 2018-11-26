@@ -14,7 +14,7 @@
 package org.trellisldp.http.core;
 
 import static java.lang.Long.parseLong;
-import static java.time.Instant.ofEpochMilli;
+import static java.time.Instant.ofEpochSecond;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -62,7 +62,7 @@ public class Version {
     private static Optional<Instant> parse(final String version) {
         if (nonNull(version)) {
             try {
-                return of(ofEpochMilli(parseLong(version.trim())));
+                return of(ofEpochSecond(parseLong(version.trim())));
             } catch (final NumberFormatException ex) {
                 LOGGER.warn("Unable to parse version string '{}': {}", version, ex.getMessage());
             }

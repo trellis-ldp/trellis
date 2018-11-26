@@ -25,9 +25,9 @@ public class VersionTest {
 
     @Test
     public void testVersion() {
-        final Version v = Version.valueOf("1493646202676");
-        assertEquals("2017-05-01T13:43:22.676Z", v.getInstant().toString(), "Check datetime string");
-        assertEquals("2017-05-01T13:43:22.676Z", v.toString(), "Check stringified version");
+        final Version v = Version.valueOf("1493646202");
+        assertEquals("2017-05-01T13:43:22Z", v.getInstant().toString(), "Check datetime string");
+        assertEquals("2017-05-01T13:43:22Z", v.toString(), "Check stringified version");
     }
 
     @Test

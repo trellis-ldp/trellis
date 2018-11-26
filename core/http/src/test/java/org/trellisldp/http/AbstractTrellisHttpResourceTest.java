@@ -247,7 +247,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 "Incorrect Memento-Datetime value!");
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")), "Missing rel=hub header!");
         assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH
-                                    + "?version=1496262729000"), "self")), "Missing rel=self header!");
+                                    + "?version=1496262729"), "self")), "Missing rel=self header!");
         assertFalse(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + RESOURCE_PATH), "self")),
                 "Unexpected versionless rel=self header");
         assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Missing Memento-Datetime header!");
@@ -370,7 +370,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testGetVersionNotFound() {
-        final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().get();
+        final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729").request().get();
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
@@ -637,13 +637,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                     x.containsKey("hasEnd")),
                 "Missing hasBeginning/hasEnd properties in timemap graph!");
         assertTrue(graph.stream().anyMatch(x -> x.containsKey("@id") &&
-                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000") &&
+                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729") &&
                     x.containsKey("hasTime")), "Missing hasTime property in timemap graph for version 1!");
         assertTrue(graph.stream().anyMatch(x -> x.containsKey("@id") &&
-                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000") &&
+                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729") &&
                     x.containsKey("hasTime")), "Missing hasTime property in timemap graph for version 2!");
         assertTrue(graph.stream().anyMatch(x -> x.containsKey("@id") &&
-                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000") &&
+                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729") &&
                     x.containsKey("hasTime")), "Missign hasTime property in timemap graph for version 3!");
     }
 
@@ -680,15 +680,15 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                     x.containsKey("http://www.w3.org/2006/time#hasEnd")),
                 "Missing hasBeginning/hasEnd properties in expanded JSON-LD!");
         assertTrue(obj.stream().anyMatch(x -> x.containsKey("@id") &&
-                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729000") &&
+                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496260729") &&
                     x.containsKey("http://www.w3.org/2006/time#hasTime")),
                 "Missing hasTime property in first memento!");
         assertTrue(obj.stream().anyMatch(x -> x.containsKey("@id") &&
-                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729000") &&
+                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496261729") &&
                     x.containsKey("http://www.w3.org/2006/time#hasTime")),
                 "Missing hasTime property in second memento!");
         assertTrue(obj.stream().anyMatch(x -> x.containsKey("@id") &&
-                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729000") &&
+                    x.get("@id").equals(getBaseUrl() + RESOURCE_PATH + "?version=1496262729") &&
                     x.containsKey("http://www.w3.org/2006/time#hasTime")),
                 "Missing hasTime property in third memento!");
     }
@@ -897,7 +897,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testOptionsVersionNotFound() {
-        final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729000").request().options();
+        final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729").request().options();
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
@@ -2276,16 +2276,16 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
                         .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496260729000")),
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496260729")),
                                  "Missing expected first rel=memento Link!"),
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
                         .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496261729000")),
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496261729")),
                                  "Missing expected second rel=memento Link!"),
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496262729000")),
+                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496262729")),
                                  "Missing expected third rel=memento Link!"),
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))

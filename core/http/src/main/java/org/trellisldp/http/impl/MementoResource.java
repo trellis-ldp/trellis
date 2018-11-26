@@ -148,7 +148,7 @@ public final class MementoResource {
             final String baseUrl) {
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         return status(FOUND)
-            .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().toEpochMilli()).build())
+            .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().getEpochSecond()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
             .links(getMementoLinks(identifier, mementos).map(MementoResource::filterLinkParams).toArray(Link[]::new))
             .header(VARY, ACCEPT_DATETIME);
@@ -209,7 +209,7 @@ public final class MementoResource {
 
     private static Function<Instant, Link> mementoToLink(final String identifier) {
         return time ->
-            Link.fromUri(identifier + "?version=" + time.toEpochMilli()).rel(MEMENTO)
+            Link.fromUri(identifier + "?version=" + time.getEpochSecond()).rel(MEMENTO)
                 .param(DATETIME, ofInstant(time.truncatedTo(SECONDS), UTC)
                         .format(RFC_1123_DATE_TIME)).build();
     }
