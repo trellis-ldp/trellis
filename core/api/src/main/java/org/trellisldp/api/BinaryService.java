@@ -34,7 +34,7 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @return the new completion stage with the binary content
      */
     @Override
-    CompletableFuture<Binary> get(IRI identifier);
+    CompletableFuture<? extends Binary> get(IRI identifier);
 
     /**
      * Set the content for a binary object.
