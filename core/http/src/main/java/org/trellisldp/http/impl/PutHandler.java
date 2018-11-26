@@ -199,8 +199,7 @@ public class PutHandler extends MutatingLdpHandler {
 
             // Persist the content
             final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType).build();
-            persistPromise = persistContent(binary).thenAccept(future ->
-                LOGGER.debug("Successfully persisted bitstream with content type {} to {}", mimeType, binaryLocation));
+            persistPromise = persistContent(binary, getRequest().getDigest());
 
             metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
@@ -239,10 +238,9 @@ public class PutHandler extends MutatingLdpHandler {
             });
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
-        return allOf(
-                persistPromise,
+        return persistPromise.thenCompose(future -> allOf(
                 createOrReplace(metadata.build(), mutable),
-                getServices().getResourceService().add(internalId, immutable.asDataset()))
+                getServices().getResourceService().add(internalId, immutable.asDataset())))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }

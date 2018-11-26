@@ -21,7 +21,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.status;
@@ -131,20 +130,6 @@ public class PutHandlerTest extends BaseTestHandler {
 
         verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
-    }
-
-    @Test
-    public void testPutError() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
-
-        final InputStream entity = getClass().getResource("/simpleTriple.ttl").openStream();
-        final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).join(),
-                "No exception when the entity stream doesn't exist!").getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
@@ -289,13 +274,14 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
+            .thenReturn(asyncException());
 
         final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
         final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null);
 
-        assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).join(),
+        assertThrows(CompletionException.class, () ->
+                unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
                 "No exception when there's a problem with the backend binary service!");
     }
 

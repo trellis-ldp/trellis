@@ -20,7 +20,6 @@ import static java.util.Optional.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -47,6 +46,7 @@ import java.util.stream.Stream;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -223,9 +223,11 @@ public class PostHandlerTest extends BaseTestHandler {
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when there is a bad digest!").getResponse();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .thenApply(ResponseBuilder::build)
+                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
+                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
+                    .getResponse()).join();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
     }
 
@@ -236,38 +238,12 @@ public class PostHandlerTest extends BaseTestHandler {
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when there is an unsupported digest!").getResponse();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .thenApply(ResponseBuilder::build)
+                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
+                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
+                    .getResponse()).join();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
-    }
-
-    @Test
-    public void testBadEntityDigest() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
-
-        final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
-        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler, null);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when the entity itself is bad!").getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
-    }
-
-    @Test
-    public void testEntityError() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-
-        final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
-        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "newresource", entity, mockBundler,
-                baseUrl);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when the entity is non-existent!").getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test

@@ -14,10 +14,13 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Arrays.asList;
+import static java.util.Base64.getEncoder;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
@@ -29,6 +32,9 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -51,6 +57,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
+import org.trellisldp.http.core.Digest;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
@@ -234,6 +241,31 @@ class MutatingLdpHandler extends BaseLdpHandler {
     protected CompletableFuture<Void> persistContent(final BinaryMetadata metadata) {
         return getServices().getBinaryService().setContent(metadata, entity)
                         .whenComplete(HttpUtils.closeInputStreamAsync(entity));
+    }
+
+    protected CompletableFuture<Void> persistContent(final BinaryMetadata metadata, final Digest digest) {
+        if (isNull(digest)) {
+            return persistContent(metadata);
+        }
+        try {
+            final MessageDigest alg = MessageDigest.getInstance(digest.getAlgorithm());
+            final DigestInputStream dis = new DigestInputStream(entity, alg);
+            return getServices().getBinaryService().setContent(metadata, dis).thenCompose(future -> {
+                final String serverComputed = getEncoder().encodeToString(dis.getMessageDigest().digest());
+                if (digest.getDigest().equals(serverComputed)) {
+                    LOGGER.debug("Successfully persisted digest-verified bistream: {}", metadata.getIdentifier());
+                    return completedFuture(null);
+                }
+                return getServices().getBinaryService().purgeContent(metadata.getIdentifier()).thenAccept(voyd -> {
+                    throw new BadRequestException("Supplied digest value does not match the server-computed digest: "
+                            + serverComputed);
+                });
+            }).whenComplete(HttpUtils.closeInputStreamAsync(dis));
+        } catch (final NoSuchAlgorithmException ex) {
+            return runAsync(() -> {
+                throw new BadRequestException("Unsupported algorithm", ex);
+            });
+        }
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final TrellisDataset mutable) {
