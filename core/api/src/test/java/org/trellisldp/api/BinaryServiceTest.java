@@ -48,9 +48,6 @@ public class BinaryServiceTest {
     @Mock
     private Binary mockBinary;
 
-    @Mock
-    private InputStream mockInputStream;
-
     @BeforeEach
     public void setUp() {
         initMocks(this);
