@@ -37,6 +37,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,6 +50,7 @@ import java.util.StringJoiner;
 import java.util.stream.Stream;
 import java.util.zip.CRC32;
 
+import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.jena.JenaRDF;
@@ -160,6 +162,21 @@ public final class FileUtils {
             throw new UncheckedIOException(
                             "Error writing resource version for " + resource.getIdentifier().getIRIString(), ex);
         }
+    }
+
+    /**
+     * Get a bounded inputstream.
+     * @param stream the input stream
+     * @param from the byte from which to start
+     * @param to the byte to which to read
+     * @throws IOException if an error occurs when skipping forward
+     * @return the bounded inputstream
+     */
+    public static InputStream getBoundedStream(final InputStream stream, final int from, final int to)
+            throws IOException {
+        final long skipped = stream.skip(from);
+        LOGGER.debug("Skipped {} bytes", skipped);
+        return new BoundedInputStream(stream, to - from);
     }
 
     /**

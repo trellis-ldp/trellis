@@ -99,6 +99,12 @@ public class FileBinaryServiceTest {
     }
 
     @Test
+    public void testSize() throws Exception {
+        final BinaryService service = new FileBinaryService();
+        assertEquals((Long) 17L, service.get(file).thenApply(Binary::getSize).join(), "Incorrect file size");
+    }
+
+    @Test
     public void testFileContentSegment() {
         final BinaryService service = new FileBinaryService();
         assertEquals(" tes",
@@ -154,6 +160,16 @@ public class FileBinaryServiceTest {
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         assertAll(() -> service.setContent(BinaryMetadata.builder(fileIRI).build(), throwingMockInputStream)
             .handle((val, err) -> {
+                assertNotNull(err, "There should have been an error with the input stream!");
+                return null;
+            }).join());
+    }
+
+    @Test
+    public void testGetFileSkipContentError() throws Exception {
+        final BinaryService service = new FileBinaryService();
+        final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
+        assertAll(() -> service.get(fileIRI).thenApply(binary -> binary.getContent(10, 20)).handle((val, err) -> {
                 assertNotNull(err, "There should have been an error with the input stream!");
                 return null;
             }).join());

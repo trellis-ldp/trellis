@@ -18,9 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 
@@ -114,6 +117,14 @@ public class FileUtilsTest {
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         final File dir = new File(file.getParentFile(), "nonexistent");
         assertThrows(UncheckedIOException.class, () -> FileUtils.uncheckedList(dir.toPath()));
+    }
+
+    @Test
+    public void testBadBoundedStream() throws IOException {
+        final InputStream badInput = mock(InputStream.class, inv -> {
+                throw new IOException("Expected exception");
+            });
+        assertThrows(IOException.class, () -> FileUtils.getBoundedStream(badInput, 4, 10));
     }
 
     @Test

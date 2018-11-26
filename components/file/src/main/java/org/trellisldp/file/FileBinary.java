@@ -14,8 +14,6 @@
 
 package org.trellisldp.file;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
-import org.apache.commons.io.input.BoundedInputStream;
-import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 
 /**
@@ -32,8 +28,6 @@ import org.trellisldp.api.Binary;
  *
  */
 public class FileBinary implements Binary {
-
-    private static final Logger LOGGER = getLogger(FileBinary.class);
 
     private final File file;
 
@@ -58,14 +52,10 @@ public class FileBinary implements Binary {
         }
     }
 
-    @SuppressWarnings("resource")
     @Override
     public InputStream getContent(final int from, final int to) {
         try {
-            final InputStream input = new FileInputStream(file);
-            final long skipped = input.skip(from);
-            LOGGER.debug("Skipped {} bytes", skipped);
-            return new BoundedInputStream(input, to - from);
+            return FileUtils.getBoundedStream(new FileInputStream(file), from, to);
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
