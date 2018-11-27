@@ -155,6 +155,16 @@ public class JenaIOServiceTest {
     }
 
     @Test
+    public void testJsonLdExpandedFlatSerializer() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, expanded, flattened);
+        final String output = out.toString("UTF-8");
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
+        assertAll("Check expanded serialization", checkFlattenedSerialization(output, graph));
+    }
+
+    @Test
     public void testJsonLdCustomSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
