@@ -365,7 +365,7 @@ public class JenaIOService implements IOService {
     }
 
     private static IRI mergeProfiles(final IRI... profiles) {
-        Boolean isExpanded = true;
+        Boolean isExpanded = false;
         Boolean isFlattened = false;
 
         for (final IRI uri : profiles) {
@@ -388,6 +388,6 @@ public class JenaIOService implements IOService {
     }
 
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {
-        return of(mergeProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
+        return of(mergeProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(RDFFormat.JSONLD);
     }
 }

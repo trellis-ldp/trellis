@@ -141,7 +141,7 @@ public class JenaIOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service3.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
+        assertAll("Check compact serialization", checkCompactSerialization(output, graph));
     }
 
     @Test
@@ -207,7 +207,7 @@ public class JenaIOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
+        assertAll("Check compact serialization", checkCompactSerialization(output, graph));
     }
 
     @Test
@@ -218,7 +218,7 @@ public class JenaIOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         myservice.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
+        assertAll("Check compact serialization", checkCompactSerialization(output, graph));
     }
 
     @Test
@@ -228,7 +228,7 @@ public class JenaIOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
+        assertAll("Check compact serialization", checkCompactSerialization(output, graph));
     }
 
     @Test
