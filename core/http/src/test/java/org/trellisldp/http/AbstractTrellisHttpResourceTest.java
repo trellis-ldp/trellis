@@ -163,19 +163,10 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        final List<Map<String, Object>> obj = MAPPER.readValue(entity,
-                new TypeReference<List<Map<String, Object>>>(){});
+        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertEquals(1L, obj.size(), "Incorrect JSON object structure!");
-
-        @SuppressWarnings("unchecked")
-        final List<Map<String, String>> titles = (List<Map<String, String>>) obj.get(0)
-                .get(DC.title.getIRIString());
-
-        final List<String> titleVals = titles.stream().map(x -> x.get("@value")).collect(toList());
-
-        assertEquals(1L, titleVals.size(), "Incorrect JSON title size");
-        assertTrue(titleVals.contains("A title"), "Incorrect JSON title value!");
+        assertAll("Check JSON-LD structure",
+                checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
     }
 
     @Test

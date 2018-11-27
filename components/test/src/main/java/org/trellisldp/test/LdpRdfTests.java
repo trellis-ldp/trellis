@@ -124,13 +124,12 @@ public interface LdpRdfTests extends CommonTests {
 
         try (final Response res = target(location).request().accept("application/ld+json").get()) {
             assertAll("Check for an LDP-RS as JSONLD", checkRdfResponse(res, LDP.RDFSource, APPLICATION_LD_JSON_TYPE));
-            final List<Map<String, Object>> obj = readEntityAsJson(res.getEntity(),
-                    new TypeReference<List<Map<String, Object>>>(){});
-            assertEquals(1L, obj.size(), "Check the JSON structure");
-            assertTrue(obj.get(0).containsKey("@id"), "Check for an @id key");
-            assertTrue(obj.get(0).containsKey("@type"), "Check for a @type key");
-            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasBody"), "Check for an oa:hasBody key");
-            assertTrue(obj.get(0).containsKey("http://www.w3.org/ns/oa#hasTarget"), "Check for an os:hasTarget key");
+            final Map<String, Object> obj = readEntityAsJson(res.getEntity(),
+                    new TypeReference<Map<String, Object>>(){});
+            assertTrue(obj.containsKey("@type"), "Check for a @type property");
+            assertTrue(obj.containsKey("@id"), "Check for an @id property");
+            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasTarget")), "Check for a hasTarget prop");
+            assertTrue(obj.keySet().stream().anyMatch(key -> key.endsWith("hasBody")), "Check for a hasBody property");
         }
     }
 
