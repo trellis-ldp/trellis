@@ -445,11 +445,6 @@ configure(rootProject) {
         jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
     }
 
-    buildScan {
-        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-        termsOfServiceAgree = 'yes'
-    }
-
     tasks.coveralls {
         dependsOn 'jacocoRootReport'
     }
