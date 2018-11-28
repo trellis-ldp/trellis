@@ -426,12 +426,12 @@ configure(rootProject) {
     }
 
     task jacocoRootReport(type: JacocoReport, dependsOn: jacocoMerge) {
-        sourceDirectories = files(subprojects
+        sourceDirectories.from(files(subprojects
                 .findAll { it.name in jacocoTestProjects }
-                .sourceSets.main.allSource.srcDirs)
-        classDirectories = files(subprojects
+                .sourceSets.main.allSource.srcDirs))
+        classDirectories.from(files(subprojects
                 .findAll { it.name in jacocoTestProjects }
-                .sourceSets.main.output)
+                .sourceSets.main.output))
         executionData jacocoMerge.destinationFile
         reports {
             html.enabled = true
