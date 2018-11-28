@@ -2,6 +2,7 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.20.0'
     id 'com.github.hierynomus.license' version '0.15.0'
     id 'com.github.kt3k.coveralls' version '2.8.2'
+    id 'com.gradle.build-scan' version '2.0.2'
     id 'com.palantir.docker' version '0.20.1' apply false
     id 'nebula.ospackage' version '5.1.0' apply false
     id 'net.researchgate.release' version '2.7.0'
@@ -443,6 +444,11 @@ configure(rootProject) {
     coveralls {
         sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
         jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
+    }
+
+    buildScan {
+        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+        termsOfServiceAgree = 'yes'
     }
 
     tasks.coveralls {
