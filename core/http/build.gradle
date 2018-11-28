@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'osgi'
+apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis HTTP API'
 
@@ -41,27 +41,5 @@ dependencies {
     testRuntimeClasspath("javax.xml.bind:jaxb-api:$jaxbVersion")
     testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
-}
-
-jar {
-    manifest {
-        description project.description
-        docURL project.docURL
-        vendor project.vendor
-        license project.license
-
-        instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '*'
-        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
-        instruction 'Require-Capability', '''\
-            osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",
-            osgi.serviceloader;
-                filter:="(osgi.serviceloader=org.trellisldp.api.AuditService)";
-                resolution:=optional; cardinality:=optional,
-            osgi.serviceloader;
-                filter:="(osgi.serviceloader=org.trellisldp.api.ConstraintService)";
-                resolution:=optional; cardinality:=multiple
-            '''
-    }
 }
 

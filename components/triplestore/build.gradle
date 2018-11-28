@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'osgi'
+apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis Triplestore'
 
@@ -24,25 +24,5 @@ dependencies {
     testImplementation("org.awaitility:awaitility:$awaitilityVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-test');
-}
-
-jar {
-    manifest {
-        description project.description
-        docURL project.docURL
-        vendor project.vendor
-        license project.license
-
-        instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '*'
-        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
-        instruction 'Require-Capability', '''\
-            osgi.extender;
-                filter:="(osgi.extender=osgi.serviceloader.registrar)";
-                resolution:=optional'''
-        instruction 'Provide-Capability', '''\
-            osgi.serviceloader;
-                osgi.serviceloader=org.trellisldp.api.ResourceService'''
-    }
 }
 

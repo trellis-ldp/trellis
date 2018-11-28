@@ -1,4 +1,5 @@
 rootProject.name = 'trellis'
+
 include ':trellis-api'
 include ':trellis-http'
 include ':trellis-vocabulary'

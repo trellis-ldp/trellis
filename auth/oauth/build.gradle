@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'osgi'
+apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis OAuth authentication filter'
 
@@ -28,18 +28,4 @@ dependencies {
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }
-
-jar {
-    manifest {
-        description project.description
-        docURL project.docURL
-        vendor project.vendor
-        license project.license
-
-        instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '*'
-        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
-    }
-}
-
 

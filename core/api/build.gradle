@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'osgi'
+apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis API'
 
@@ -19,24 +19,5 @@ dependencies {
     testImplementation("org.apache.commons:commons-compress:$commonsCompressVersion")
     testImplementation("org.slf4j:slf4j-api:$slf4jVersion")
     testImplementation project(':trellis-vocabulary')
-}
-
-jar {
-    manifest {
-        description project.description
-        docURL project.docURL
-        vendor project.vendor
-        license project.license
-
-        instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '*'
-        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
-        instruction 'Require-Capability', '''\
-            osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)",
-            osgi.serviceloader;
-                filter:="(osgi.serviceloader=org.apache.commons.rdf.api.RDF)";
-                resolution:=mandatory; cardinality:=at_least_one
-            '''
-    }
 }
 

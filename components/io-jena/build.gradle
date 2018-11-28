@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'osgi'
+apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis IO Module (Jena)'
 
@@ -22,33 +22,5 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-}
-
-jar {
-    manifest {
-        description project.description
-        docURL project.docURL
-        vendor project.vendor
-        license project.license
-
-        instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '*'
-        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
-        instruction 'Require-Capability', '''\
-            osgi.extender;
-                filter:="(osgi.extender=osgi.serviceloader.registrar)";
-                resolution:=optional,
-            osgi.extender;
-                filter:="(osgi.extender=osgi.serviceloader.processor)",
-            osgi.serviceloader;
-                filter:="(osgi.serviceloader=org.trellisldp.api.RDFaWriterService)";
-                resolution:=optional,
-            osgi.serviceloader;
-                filter:="(osgi.serviceloader=org.trellisldp.api.NamespaceService)";
-                resolution:=optional'''
-        instruction 'Provide-Capability', '''\
-            osgi.serviceloader;
-                osgi.serviceloader=org.trellisldp.api.IOService'''
-    }
 }
 

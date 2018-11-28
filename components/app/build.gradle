@@ -1,5 +1,4 @@
 apply plugin: 'java-library'
-apply plugin: 'osgi'
 
 description = 'Trellis Application'
 
@@ -39,13 +38,7 @@ dependencies {
 
 jar {
     manifest {
-        description project.description
-        vendor project.vendor
-        license project.license
-
-        instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '*'
-        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
+        attributes('Automatic-Module-Name': moduleName)
     }
 }
 
