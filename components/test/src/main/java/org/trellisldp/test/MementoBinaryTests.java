@@ -17,6 +17,7 @@ import static java.util.Objects.isNull;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -47,7 +48,7 @@ public interface MementoBinaryTests extends MementoResourceTests {
      */
     default Map<String, String> getMementos() {
         final Map<String, String> mementos = new HashMap<>();
-        try (final Response res = target(getBinaryLocation()).request().get()) {
+        try (final Response res = target(getBinaryLocation()).request().head()) {
             getLinks(res).stream().filter(link -> link.getRel().equals("memento"))
                 .filter(l -> l.getParams().containsKey("datetime"))
                 .forEach(link -> mementos.put(link.getUri().toString(), link.getParams().get("datetime")));
@@ -126,7 +127,7 @@ public interface MementoBinaryTests extends MementoResourceTests {
     @DisplayName("Test that memento resources are also LDP resources")
     default void testMementoLdpResource() {
         getMementos().forEach((memento, date) -> {
-            try (final Response res = target(memento).request().get()) {
+            try (final Response res = target(memento).request().head()) {
                 assertAll("Check LDP headers", checkMementoLdpHeaders(res, LDP.NonRDFSource));
             }
         });
@@ -139,7 +140,10 @@ public interface MementoBinaryTests extends MementoResourceTests {
     @DisplayName("Test that memento binary descriptions are also LDP resources")
     default void testMementoBinaryDescriptionLdpResource() {
         getMementos().forEach((memento, date) -> {
-            try (final Response res = target(memento).request().accept("text/turtle").get()) {
+            final String description = getDescription(memento);
+            assertNotNull(description, "No describedby Link header!");
+
+            try (final Response res = target(description).request().accept("text/turtle").head()) {
                 assertAll("Check LDP headers", checkMementoLdpHeaders(res, LDP.RDFSource));
             }
         });
