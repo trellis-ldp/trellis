@@ -256,7 +256,7 @@ public class GetHandler extends BaseLdpHandler {
         if (nonNull(getRequest().getVersion()) || nonNull(getRequest().getExt())) {
             final List<String> query = new ArrayList<>();
 
-            ofNullable(getRequest().getVersion()).map(Version::getInstant).map(Instant::toEpochMilli)
+            ofNullable(getRequest().getVersion()).map(Version::getInstant).map(Instant::getEpochSecond)
                 .map(x -> "version=" + x).ifPresent(query::add);
 
             if (ACL.equals(getRequest().getExt())) {
@@ -272,7 +272,7 @@ public class GetHandler extends BaseLdpHandler {
     private String getBaseBinaryIdentifier() {
         // Add the version parameter, if present
         return getIdentifier() + ofNullable(getRequest().getVersion()).map(Version::getInstant)
-            .map(Instant::toEpochMilli).map(x -> "?version=" + x).orElse("");
+            .map(Instant::getEpochSecond).map(x -> "?version=" + x).orElse("");
     }
 
     private void addAllowHeaders(final ResponseBuilder builder) {
