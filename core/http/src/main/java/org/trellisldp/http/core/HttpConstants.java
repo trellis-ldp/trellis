@@ -58,6 +58,9 @@ public final class HttpConstants {
     /** Configuration key defining whether to use weak ETags for RDF responses. **/
     public static final String CONFIG_HTTP_WEAK_ETAG = "trellis.http.weak.etag";
 
+    /** Configuration key defining the default JSON-LD profile. **/
+    public static final String CONFIG_HTTP_JSONLD_PROFILE = "trellis.http.jsonld.profile";
+
     /** The Trellis query parameter for extended features of a given resource. **/
     public static final String EXT = "ext";
 

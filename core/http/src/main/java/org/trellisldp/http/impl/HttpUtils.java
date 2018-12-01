@@ -22,8 +22,10 @@ import static java.util.function.Predicate.isEqual;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
 import static org.trellisldp.http.core.HttpConstants.DEFAULT_REPRESENTATION;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -281,7 +283,8 @@ public final class HttpUtils {
      * @return a profile IRI usable by the output streamer
      */
     public static IRI getDefaultProfile(final RDFSyntax syntax, final IRI identifier) {
-        return RDFA.equals(syntax) ? identifier : compacted;
+        return RDFA.equals(syntax) ? identifier
+            : ofNullable(getConfiguration().get(CONFIG_HTTP_JSONLD_PROFILE)).map(rdf::createIRI).orElse(compacted);
     }
 
     /**
