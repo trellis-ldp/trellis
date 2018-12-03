@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Arrays.asList;
+import static java.util.Base64.getEncoder;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -243,19 +244,23 @@ class MutatingLdpHandler extends BaseLdpHandler {
         if (isNull(digest)) {
             return persistContent(metadata);
         }
-        return getServices().getBinaryService().setContent(metadata, entity, digest.getAlgorithm().toUpperCase())
-            .thenCompose(serverComputed -> {
-                if (isNull(serverComputed)) {
-                    throw new BadRequestException("Unsupported algorithm: " + digest.getAlgorithm());
-                } else if (digest.getDigest().equals(serverComputed)) {
-                    LOGGER.debug("Successfully persisted digest-verified bitstream: {}", metadata.getIdentifier());
-                    return completedFuture(null);
-                }
-                return getServices().getBinaryService().purgeContent(metadata.getIdentifier()).thenAccept(future -> {
-                    throw new BadRequestException("Supplied digest value does not match the server-computed digest: "
-                            + serverComputed);
+        try {
+            return getServices().getBinaryService().setContent(metadata, entity, digest.getAlgorithm().toUpperCase())
+                .thenApply(getEncoder()::encodeToString).thenCompose(serverComputed -> {
+                    if (digest.getDigest().equals(serverComputed)) {
+                        LOGGER.debug("Successfully persisted digest-verified bitstream: {}", metadata.getIdentifier());
+                        return completedFuture(null);
+                    }
+                    return getServices().getBinaryService().purgeContent(metadata.getIdentifier())
+                        .thenAccept(future -> {
+                            throw new BadRequestException(
+                                    "Supplied digest value does not match the server-computed digest: "
+                                    + serverComputed);
+                    });
                 });
-            });
+        } catch (final IllegalArgumentException ex) {
+            throw new BadRequestException("Invalid digest algorithm: " + ex.getMessage());
+        }
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final TrellisDataset mutable) {

@@ -240,11 +240,8 @@ public class PostHandlerTest extends BaseTestHandler {
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
 
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .thenApply(ResponseBuilder::build)
-                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
-                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
-                    .getResponse()).join();
+        final Response res = assertThrows(BadRequestException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))).getResponse();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
     }
 
