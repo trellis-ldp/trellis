@@ -14,6 +14,8 @@
 package org.trellisldp.file;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Base64.getEncoder;
+import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,7 +43,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
-import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
@@ -146,12 +147,6 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testBadAlgorithm() throws Exception {
-        final BinaryService service = new FileBinaryService();
-        assertNull(service.calculateDigest(file, "BLAHBLAH").join(), "Unsupported algorithm should return null!");
-    }
-
-    @Test
     public void testSetFileContentError() throws Exception {
         final InputStream throwingMockInputStream = mock(InputStream.class, inv -> {
                 throw new IOException("Expected error");
@@ -178,11 +173,14 @@ public class FileBinaryServiceTest {
     @Test
     public void testBase64Digest() throws IOException {
         final BinaryService service = new FileBinaryService();
-        assertEquals("oZ1Y1O/8vs39RH31fh9lrA==", service.calculateDigest(file, "MD5").join(), "Bad MD5 digest!");
-        assertEquals("QJuYLse9SK/As177lt+rSfixyH0=", service.calculateDigest(file, "SHA").join(), "Bad SHA digest!");
-        assertEquals("QJuYLse9SK/As177lt+rSfixyH0=", service.calculateDigest(file, "SHA-1").join(), "Bad SHA1 digest!");
+        assertEquals("oZ1Y1O/8vs39RH31fh9lrA==",
+                service.calculateDigest(file, getDigest("MD5")).thenApply(getEncoder()::encodeToString).join(),
+                "Bad MD5 digest!");
+        assertEquals("QJuYLse9SK/As177lt+rSfixyH0=",
+                service.calculateDigest(file, getDigest("SHA-1")).thenApply(getEncoder()::encodeToString).join(),
+                "Bad SHA digest!");
         assertThrows(CompletionException.class, () ->
-                service.calculateDigest(rdf.createIRI("file:///" + randomFilename()), "MD5").join(),
+                service.calculateDigest(rdf.createIRI("file:///" + randomFilename()), getDigest("MD5")).join(),
                 "Computing digest on invalid file should throw an exception!");
     }
 
@@ -191,23 +189,14 @@ public class FileBinaryServiceTest {
     public void testJdk9Digests() throws IOException {
         final BinaryService service = new FileBinaryService();
         assertEquals("FQgyH2yU2NhyMTZ7YDDKwV5vcWUBM1zq0uoIYUiHH+4=",
-                service.calculateDigest(file, "SHA3-256").join(), "Bad SHA3-256 digest!");
+                service.calculateDigest(file, getDigest("SHA3-256")).thenApply(getEncoder()::encodeToString).join(),
+                "Bad SHA3-256 digest!");
         assertEquals("746UDLrFXM61gzI0FnoVT2S0Z7EmQUfhHnoSYwkR2MHzbBe6j9rMigQBfR8ApZUA",
-                service.calculateDigest(file, "SHA3-384").join(), "Bad SHA3-384 digest!");
+                service.calculateDigest(file, getDigest("SHA3-384")).thenApply(getEncoder()::encodeToString).join(),
+                "Bad SHA3-384 digest!");
         assertEquals("Ecu/R0kV4eL0J/VOpyVA2Lz0T6qsJj9ioQ+QorJDztJeMj6uhf6zqyhZnu9zMYiwrkX8U4oWiZMDT/0fWjOyYg==",
-                service.calculateDigest(file, "SHA3-512").join(), "Bad SHA3-512 digest!");
-    }
-
-    @Test
-    @EnabledOnJre(JAVA_8)
-    public void testJdk9DigestsOnJdk8() throws IOException {
-        final BinaryService service = new FileBinaryService();
-        assertFalse(service.calculateDigest(file, "SHA3-256").handle(this::checkError).join(),
-                "SHA3-256 digest shouldn't be supported on JDK8!");
-        assertFalse(service.calculateDigest(file, "SHA3-384").handle(this::checkError).join(),
-                "SHA3-384 digest shouldn't be supported on JDK8!");
-        assertFalse(service.calculateDigest(file, "SHA3-512").handle(this::checkError).join(),
-                "SHA3-512 digest shouldn't be supported on JDK8!");
+                service.calculateDigest(file, getDigest("SHA3-512")).thenApply(getEncoder()::encodeToString).join(),
+                "Bad SHA3-512 digest!");
     }
 
     @Test

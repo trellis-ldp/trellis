@@ -16,7 +16,6 @@ package org.trellisldp.api;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -49,14 +48,9 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @return the new completion stage containing the server-computed digest.
      */
     default CompletableFuture<byte[]> setContent(final BinaryMetadata metadata, final InputStream stream,
-            final String algorithm) {
-        try {
-            final DigestInputStream input = new DigestInputStream(stream, MessageDigest.getInstance(algorithm));
-            return setContent(metadata, input)
-                .thenApply(future -> input.getMessageDigest().digest());
-        } catch (final NoSuchAlgorithmException ex) {
-            throw new IllegalArgumentException("Invalid message digest", ex);
-        }
+            final MessageDigest algorithm) {
+        final DigestInputStream input = new DigestInputStream(stream, algorithm);
+        return setContent(metadata, input).thenApply(future -> input.getMessageDigest().digest());
     }
 
     /**
@@ -79,7 +73,7 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param algorithm the algorithm
      * @return the new completion stage containing a computed digest for the binary resource
      */
-    CompletableFuture<String> calculateDigest(IRI identifier, String algorithm);
+    CompletableFuture<byte[]> calculateDigest(IRI identifier, MessageDigest algorithm);
 
     /**
      * Get a list of supported algorithms.

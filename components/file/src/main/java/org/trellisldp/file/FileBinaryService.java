@@ -17,12 +17,10 @@ import static java.nio.file.Files.copy;
 import static java.nio.file.Files.delete;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Arrays.asList;
-import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD2;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
@@ -176,16 +174,8 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<String> calculateDigest(final IRI identifier, final String algorithm) {
-        return supplyAsync(() -> {
-            if (SHA.equals(algorithm)) {
-                return computeDigest(identifier, getDigest(SHA_1));
-            } else if (supportedAlgorithms().contains(algorithm)) {
-                return computeDigest(identifier, getDigest(algorithm));
-            }
-            LOGGER.warn("Algorithm not supported: {}", algorithm);
-            return null;
-        });
+    public CompletableFuture<byte[]> calculateDigest(final IRI identifier, final MessageDigest algorithm) {
+        return supplyAsync(() -> computeDigest(identifier, algorithm));
     }
 
     @Override
@@ -205,9 +195,9 @@ public class FileBinaryService implements BinaryService {
             .orElseThrow(() -> new IllegalArgumentException("Could not create File object from IRI: " + identifier));
     }
 
-    private String computeDigest(final IRI identifier, final MessageDigest algorithm) {
+    private byte[] computeDigest(final IRI identifier, final MessageDigest algorithm) {
         try (final InputStream input = new FileInputStream(getFileFromIdentifier(identifier))) {
-            return getEncoder().encodeToString(updateDigest(algorithm, input).digest());
+            return updateDigest(algorithm, input).digest();
         } catch (final IOException ex) {
             throw new UncheckedIOException("Error computing digest", ex);
         }
