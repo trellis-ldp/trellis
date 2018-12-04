@@ -101,6 +101,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -304,7 +305,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertEquals("md5=md5-digest", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
+        assertEquals("md5=Q29tcHV0ZWREaWdlc3Q=", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
         assertAll("Check Binary response", checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
@@ -316,7 +317,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "SHA").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertEquals("sha=sha1-digest", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
+        assertEquals("sha=Q29tcHV0ZWREaWdlc3Q=", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
         assertAll("Check Binary response", checkBinaryResponse(res));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
@@ -344,8 +345,9 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryDigestError() throws IOException {
-        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("MD5"))).thenAnswer(inv ->
+    public void testGetBinaryDigestError() throws Exception {
+        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), any(MessageDigest.class)))
+            .thenAnswer(inv ->
                 supplyAsync(() -> {
                     throw new RuntimeTrellisException("Expected exception");
                 }));

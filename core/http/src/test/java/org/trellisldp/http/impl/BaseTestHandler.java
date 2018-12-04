@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
@@ -53,6 +54,7 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -157,7 +159,7 @@ abstract class BaseTestHandler {
     protected ArgumentCaptor<BinaryMetadata> metadataArgument;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         initMocks(this);
 
         setUpBundler();
@@ -241,13 +243,13 @@ abstract class BaseTestHandler {
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
     }
 
-    private void setUpBinaryService() {
+    private void setUpBinaryService() throws Exception {
         when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
-        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
-        when(mockBinaryService.calculateDigest(any(IRI.class), eq("MD5"))).thenReturn(completedFuture("md5-digest"));
-        when(mockBinaryService.calculateDigest(any(IRI.class), eq("SHA"))).thenReturn(completedFuture("sha1-digest"));
+        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA-1")));
+        when(mockBinaryService.calculateDigest(any(IRI.class), any(MessageDigest.class)))
+            .thenReturn(completedFuture("computed-digest".getBytes()));
         when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
@@ -255,6 +257,7 @@ abstract class BaseTestHandler {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);
                 return completedFuture(null);
             });
+        doCallRealMethod().when(mockBinaryService).setContent(any(BinaryMetadata.class), any(InputStream.class), any());
     }
 
     private void setUpBundler() {

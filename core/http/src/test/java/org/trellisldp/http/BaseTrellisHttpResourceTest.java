@@ -18,6 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
+import static java.util.Base64.getDecoder;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -27,6 +28,7 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -42,6 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -186,7 +189,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     }
 
     @BeforeEach
-    public void setUpMocks() {
+    public void setUpMocks() throws Exception {
         setUpBundler();
         setUpResourceService();
         setUpMementoService();
@@ -268,12 +271,10 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockMementoService.put(any())).thenReturn(completedFuture(null));
     }
 
-    private void setUpBinaryService() {
-        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA")));
-        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("MD5")))
-            .thenReturn(completedFuture("md5-digest"));
-        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), eq("SHA")))
-            .thenReturn(completedFuture("sha1-digest"));
+    private void setUpBinaryService() throws Exception {
+        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA-1", "SHA")));
+        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), any(MessageDigest.class)))
+            .thenReturn(completedFuture(getDecoder().decode("Q29tcHV0ZWREaWdlc3Q=")));
         when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
@@ -284,6 +285,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
             });
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
+        doCallRealMethod().when(mockBinaryService).setContent(any(BinaryMetadata.class), any(InputStream.class), any());
     }
 
     private void setUpResources() {

@@ -11,13 +11,14 @@ dependencies {
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api("javax.enterprise:cdi-api:${cdiApiVersion}")
 
-    testImplementation project(':trellis-vocabulary')
     testImplementation("commons-io:commons-io:$commonsIoVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     testImplementation("org.apache.commons:commons-text:$commonsTextVersion")
     testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
     testImplementation("org.apache.commons:commons-compress:$commonsCompressVersion")
+    testImplementation("org.slf4j:slf4j-api:$slf4jVersion")
+    testImplementation project(':trellis-vocabulary')
 }
 
 jar {

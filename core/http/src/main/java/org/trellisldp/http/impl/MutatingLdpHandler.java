@@ -17,9 +17,11 @@ import static java.util.Arrays.asList;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
@@ -31,7 +33,6 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -248,21 +249,23 @@ class MutatingLdpHandler extends BaseLdpHandler {
             return persistContent(metadata);
         }
         try {
-            final MessageDigest alg = MessageDigest.getInstance(digest.getAlgorithm());
-            final DigestInputStream dis = new DigestInputStream(entity, alg);
-            return getServices().getBinaryService().setContent(metadata, dis).thenCompose(future -> {
-                final String serverComputed = getEncoder().encodeToString(dis.getMessageDigest().digest());
-                if (digest.getDigest().equals(serverComputed)) {
-                    LOGGER.debug("Successfully persisted digest-verified bistream: {}", metadata.getIdentifier());
-                    return completedFuture(null);
-                }
-                return getServices().getBinaryService().purgeContent(metadata.getIdentifier()).thenAccept(voyd -> {
-                    throw new BadRequestException("Supplied digest value does not match the server-computed digest: "
-                            + serverComputed);
+            final String alg = of(digest).map(Digest::getAlgorithm).map(String::toUpperCase)
+                .filter(isEqual("SHA").negate()).orElse("SHA-1");
+            return getServices().getBinaryService().setContent(metadata, entity, MessageDigest.getInstance(alg))
+                .thenApply(getEncoder()::encodeToString).thenCompose(serverComputed -> {
+                    if (digest.getDigest().equals(serverComputed)) {
+                        LOGGER.debug("Successfully persisted digest-verified bitstream: {}", metadata.getIdentifier());
+                        return completedFuture(null);
+                    }
+                    return getServices().getBinaryService().purgeContent(metadata.getIdentifier())
+                        .thenAccept(future -> {
+                            throw new BadRequestException(
+                                    "Supplied digest value does not match the server-computed digest: "
+                                    + serverComputed);
+                    });
                 });
-            }).whenComplete(HttpUtils.closeInputStreamAsync(dis));
         } catch (final NoSuchAlgorithmException ex) {
-            throw new BadRequestException("Unsupported algorithm", ex);
+            throw new BadRequestException("Invalid digest algorithm: " + ex.getMessage());
         }
     }
 

@@ -72,7 +72,7 @@ public class TrellisHttpResourceForbiddenTest extends BaseTrellisHttpResourceTes
     }
 
     @BeforeEach
-    public void setUpMocks() {
+    public void setUpMocks() throws Exception {
         super.setUpMocks();
         when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
