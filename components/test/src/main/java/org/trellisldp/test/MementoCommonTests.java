@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.test.TestUtils.getLinks;
@@ -96,6 +97,7 @@ public interface MementoCommonTests extends CommonTests {
         final String container;
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
+                .header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .post(entity(containerContent, TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
                     "Check for a valid response to POSTing an LDP-BC");

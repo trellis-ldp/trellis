@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.test.TestUtils.buildJwt;
@@ -89,6 +90,7 @@ public interface AuditTests extends CommonTests {
         // POST an LDP-BC
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel("type").build())
+                .header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .header(AUTHORIZATION, jwt).post(entity(containerContent, TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Confirm a successful POST response");
             container = res.getLocation().toString();

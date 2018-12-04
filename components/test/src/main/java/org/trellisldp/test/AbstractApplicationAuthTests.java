@@ -22,6 +22,7 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.test.TestUtils.buildJwt;
@@ -267,6 +268,7 @@ public abstract class AbstractApplicationAuthTests {
             // POST an LDP-BC
             try (final Response res = target().request()
                     .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
+                    .header(SLUG, generateRandomValue(getClass().getSimpleName()))
                     .header(AUTHORIZATION, jwt).post(entity(containerContent, TEXT_TURTLE))) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check response for Auth container");
                 container = res.getLocation().toString();

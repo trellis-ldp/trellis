@@ -26,6 +26,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.test.TestUtils.buildJwt;
 import static org.trellisldp.test.TestUtils.checkEventGraph;
@@ -128,6 +129,7 @@ public interface EventTests extends CommonTests {
         // POST an LDP-BC
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
+                .header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .header(AUTHORIZATION, jwt).post(entity(containerContent, TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Verify a successful LDP-BC POST response");
             setContainerLocation(res.getLocation().toString());

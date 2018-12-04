@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
@@ -116,6 +117,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
         // POST an LDP-BC
         try (final Response res = target().request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
+                .header(SLUG, generateRandomValue(getClass().getSimpleName()))
                 .post(entity(containerContent, TEXT_TURTLE))) {
             assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
                     "Creation of BasicContainer appears to be unsupported");
