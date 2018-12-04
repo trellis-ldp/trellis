@@ -72,6 +72,15 @@ public class FileBinaryServiceTest {
     }
 
     @Test
+    public void testSupportedAlgorithms() {
+        final BinaryService service = new FileBinaryService();
+        assertTrue(service.supportedAlgorithms().contains("SHA"));
+        assertTrue(service.supportedAlgorithms().contains("SHA-1"));
+        assertTrue(service.supportedAlgorithms().contains("SHA-256"));
+        assertTrue(service.supportedAlgorithms().contains("MD5"));
+    }
+
+    @Test
     public void testFilePurge() {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
