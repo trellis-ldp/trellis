@@ -354,9 +354,6 @@ public class GetHandler extends BaseLdpHandler {
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", mod, null));
         checkCache(mod, etag);
 
-        // Set last-modified to be the binary's last-modified value
-        builder.lastModified(from(mod));
-
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);
 
         // Add standard headers

@@ -209,7 +209,7 @@ public final class MementoResource {
 
     private static Function<Instant, Link> mementoToLink(final String identifier) {
         return time ->
-            Link.fromUri(identifier + "?version=" + time.getEpochSecond()).rel(MEMENTO)
+            Link.fromUri(identifier + "?version=" + time.truncatedTo(SECONDS).getEpochSecond()).rel(MEMENTO)
                 .param(DATETIME, ofInstant(time.truncatedTo(SECONDS), UTC)
                         .format(RFC_1123_DATE_TIME)).build();
     }

@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
@@ -106,6 +107,7 @@ public interface MementoResourceTests extends MementoCommonTests {
                 if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
                     location = res.getLocation().toString();
                 } else {
+                    assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()));
                     location = getResourceLocation();
                 }
             }
