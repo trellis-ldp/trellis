@@ -20,7 +20,6 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -388,6 +387,6 @@ public class JenaIOService implements IOService {
     }
 
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {
-        return of(mergeProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(RDFFormat.JSONLD);
+        return JSONLD_FORMATS.get(mergeProfiles(profiles));
     }
 }
