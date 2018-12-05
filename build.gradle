@@ -41,7 +41,7 @@ ext {
     jsonldVersion = '0.12.3'
     kafkaVersion = '2.0.0'
     mustacheVersion = '0.9.5'
-    rabbitMqVersion = '5.5.0'
+    rabbitMqVersion = '5.5.1'
 
     /* Testing */
     apiguardianVersion = '1.0.0'
@@ -53,19 +53,19 @@ ext {
     logbackVersion = '1.2.3'
     mockitoVersion = '2.23.4'
     qpidVersion = '7.0.6'
-    sleepycatVersion = '18.3.1'
+    sleepycatVersion = '18.3.12'
 
     /* OSGi */
-    asmVersion = '6.2.1'
+    asmVersion = '7.0'
     mustacheOsgiVersion = "${mustacheVersion}_4"
     jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = "${kafkaVersion}_1"
     karafVersion = '4.2.1'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
-    paxExamVersion = '4.12.0'
+    paxExamVersion = '4.13.0'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
-    spiflyVersion = '1.0.12'
+    spiflyVersion = '1.2'
     // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = '4.1.0'
 
@@ -75,6 +75,8 @@ ext {
             'trellis-api',
             'trellis-app',
             'trellis-app-triplestore',
+            'trellis-auth-oauth',
+            'trellis-auth-basic',
             'trellis-audit',
             'trellis-constraint-rules',
             'trellis-event-serialization',
@@ -114,7 +116,7 @@ allprojects { subproj ->
         license = 'Apache 2'
 
         jacocoVersion = '0.8.2'
-        checkstyleVersion = '8.12'
+        checkstyleVersion = '8.15'
     }
 
     jacoco.toolVersion = jacocoVersion
