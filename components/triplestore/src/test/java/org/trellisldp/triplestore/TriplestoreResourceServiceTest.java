@@ -639,7 +639,7 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, DC.subject);
 
-        final Instant evenLater = meanwhile();
+        final Instant later2 = meanwhile();
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource2).interactionModel(LDP.DirectContainer).container(root)
@@ -648,10 +648,10 @@ public class TriplestoreResourceServiceTest {
 
         allOf(
             svc.get(resource2).thenAccept(res -> {
-                assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, evenLater));
+                assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, later2));
                 assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 0L));
             }),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
+            svc.get(root).thenAccept(checkRoot(later2, 2L))).join();
 
         // Now add a membership resource
         dataset.clear();
@@ -659,49 +659,49 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("member resource"));
         dataset.add(Trellis.PreferUserManaged, members, DC.description, rdf.createLiteral("LDP-RS membership test"));
 
-        final Instant evenLater2 = meanwhile();
+        final Instant later3 = meanwhile();
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
                       svc.touch(root)).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater2, 2L, 1L, 0L)),
+            svc.get(members).thenAccept(checkMember(later3, 2L, 1L, 0L)),
             svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater2)),
-            svc.get(resource2).thenAccept(checkPredates(evenLater2)),
+            svc.get(resource).thenAccept(checkPredates(later3)),
+            svc.get(resource2).thenAccept(checkPredates(later3)),
             svc.get(resource2).thenAccept(res ->
                 assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 0L))),
-            svc.get(root).thenAccept(checkRoot(evenLater2, 3L))).join();
+            svc.get(root).thenAccept(checkRoot(later3, 3L))).join();
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("ldp-dc (1) child resource"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
-        final Instant evenLater3 = meanwhile();
+        final Instant later4 = meanwhile();
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
                       svc.touch(resource), svc.touch(members)).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater3, 1L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.DirectContainer, 4L, 1L, 1L)),
+            svc.get(child).thenAccept(checkChild(later4, 1L, 1L)),
+            svc.get(resource).thenAccept(checkResource(later2, LDP.DirectContainer, 4L, 1L, 1L)),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater3, 2L, 1L, 1L)),
+            svc.get(members).thenAccept(checkMember(later4, 2L, 1L, 1L)),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!")),
-            svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(checkPredates(evenLater3))).join();
+            svc.get(root).thenAccept(checkRoot(later3, 3L)),
+            svc.get(root).thenAccept(checkPredates(later4))).join();
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("ldp-dc (2) child resource"));
 
-        final Instant evenLater4 = meanwhile();
+        final Instant later5 = meanwhile();
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset),
@@ -709,20 +709,20 @@ public class TriplestoreResourceServiceTest {
 
         allOf(
             svc.get(child2).thenAccept(res -> {
-                assertAll("Check resource", checkResource(res, child2, LDP.RDFSource, evenLater4));
+                assertAll("Check resource", checkResource(res, child2, LDP.RDFSource, later5));
                 assertAll("Check resource stream", checkResourceStream(res, 1L, 0L, 1L, 0L, 0L));
             }),
             svc.get(resource2).thenAccept(res -> {
-                assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, evenLater4));
+                assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, later5));
                 assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(isEqual(rdf.createTriple(resource2, LDP.contains, child2))), "Missing contains triple!");
             }),
-            svc.get(members).thenAccept(checkMember(evenLater4, 2L, 1L, 2L)),
+            svc.get(members).thenAccept(checkMember(later5, 2L, 1L, 2L)),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, DC.subject, child2))), "Missing membership triple!")),
-            svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(checkPredates(evenLater4))).join();
+            svc.get(root).thenAccept(checkRoot(later3, 3L)),
+            svc.get(root).thenAccept(checkPredates(later5))).join();
     }
 
     @Test

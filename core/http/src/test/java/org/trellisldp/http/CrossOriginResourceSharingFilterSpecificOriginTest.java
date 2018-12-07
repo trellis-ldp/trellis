@@ -37,6 +37,9 @@ import org.junit.jupiter.api.Test;
  */
 public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCrossOriginResourceSharingFilterTest {
 
+    private static final String MAX_AGE = "180";
+    private static final String TRUE = "true";
+
     @Override
     public Application configure() {
         init();
@@ -70,7 +73,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin!");
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
+        assertEquals(TRUE, res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
         assertTrue(stream(res.getHeaderString("Access-Control-Expose-Headers").split(","))
                 .anyMatch("Accept-Patch"::equalsIgnoreCase), "Missing accept-patch in -Expose-Headers!");
         assertNull(res.getHeaderString("Access-Control-Max-Age"), "Unexpected -Max-Age header!");
@@ -86,7 +89,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
+        assertEquals(TRUE, res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
         assertTrue(stream(res.getHeaderString("Access-Control-Expose-Headers").split(","))
                 .anyMatch("Accept-Patch"::equalsIgnoreCase), "Missing Accept-Patch from -Expose-Headers!");
         assertNull(res.getHeaderString("Access-Control-Max-Age"), "Unexpected -Max-Age header!");
@@ -101,9 +104,9 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
             .header("Access-Control-Request-Headers", "Accept").options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertEquals(MAX_AGE, res.getHeaderString("Access-Control-Max-Age"), "Incorreect -Max-Age header!");
         assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
-        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"), "Incorreect -Max-Age header!");
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
+        assertEquals(TRUE, res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
         assertNull(res.getHeaderString("Access-Control-Expose-Headers"), "Unexpected -Expose-Headers header!");
         assertTrue(res.getHeaderString("Access-Control-Allow-Headers").contains("accept"),
                 "accept missing from Allow-Headers!");
@@ -121,8 +124,8 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
-        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"), "Incorrect -Max-Age header!");
+        assertEquals(TRUE, res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
+        assertEquals(MAX_AGE, res.getHeaderString("Access-Control-Max-Age"), "Incorrect -Max-Age header!");
         assertNull(res.getHeaderString("Access-Control-Expose-Headers"), "Unexpected -Expose-Headers header!");
 
         final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
@@ -142,8 +145,8 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
-        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"), "Incorrect -Max-Age header!");
+        assertEquals(TRUE, res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
+        assertEquals(MAX_AGE, res.getHeaderString("Access-Control-Max-Age"), "Incorrect -Max-Age header!");
         assertNull(res.getHeaderString("Access-Control-Allow-Headers"), "Unexpected -Allow-Headers header!");
         assertNull(res.getHeaderString("Access-Control-Expose-Headers"), "Unexpected -Expose-Headers header!");
         assertAll("Check the Allow-Methods values", checkAllowMethods(res, asList("HEAD", "GET", "PATCH", "PUT")));
@@ -157,8 +160,8 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(ORIGIN, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
-        assertEquals("180", res.getHeaderString("Access-Control-Max-Age"), "Incorrect -Max-Age header!");
-        assertEquals("true", res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
+        assertEquals(MAX_AGE, res.getHeaderString("Access-Control-Max-Age"), "Incorrect -Max-Age header!");
+        assertEquals(TRUE, res.getHeaderString("Access-Control-Allow-Credentials"), "Incorrect -Allow-Credentials!");
         assertNull(res.getHeaderString("Access-Control-Expose-Headers"), "Unexpected -Expose-Headers header!");
         assertNull(res.getHeaderString("Access-Control-Allow-Headers"), "Unexpected -Allow-Headers header!");
         assertAll("Check the Allow-Methods values", checkAllowMethods(res, asList("HEAD", "GET", "PATCH", "PUT")));

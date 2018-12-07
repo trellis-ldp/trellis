@@ -119,8 +119,8 @@ public interface LdpDirectContainerTests extends CommonTests {
 
         // POST an LDP-BC
         try (final Response res = target().request()
-                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .header(SLUG, generateRandomValue(getClass().getSimpleName()))
+                .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
             assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
                     "Creation of BasicContainer appears to be unsupported");

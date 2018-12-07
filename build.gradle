@@ -39,7 +39,7 @@ ext {
     jjwtVersion = '0.10.5'
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.3'
-    kafkaVersion = '2.1.0'
+    kafkaVersion = '2.0.0'
     mustacheVersion = '0.9.5'
     rabbitMqVersion = '5.5.1'
 
