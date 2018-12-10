@@ -132,8 +132,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @return a response builder promise
      */
     public CompletableFuture<ResponseBuilder> updateMemento(final ResponseBuilder builder) {
-        return getServices().getResourceService().get(getInternalId())
-            .thenCompose(getServices().getMementoService()::put)
+        return getServices().getMementoService().put(getServices().getResourceService(), getInternalId())
             .exceptionally(ex -> {
                     LOGGER.warn("Unable to store memento for {}: {}", getInternalId(), ex.getMessage());
                     return null;

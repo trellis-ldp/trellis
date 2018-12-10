@@ -29,9 +29,24 @@ import org.apache.commons.rdf.api.IRI;
 public interface MementoService {
 
     /**
+     * Create a new Memento for a resource, retrieved from a {@link ResourceService}.
+     * @param resourceService the resource service.
+     * @param identifier the identifier.
+     * @apiNote the default implementation of this method fetches a resource from a {@link ResourceService} that is
+     *          external to the Memento service. In the case that the two services are managed by the same persistence
+     *          layer, it may not be necessary to fetch a {@link Resource} from the persistence layer, in which case
+     *          this method can be overridden as a no-op method, e.g. {@code return completedFuture(null);}.
+     * @return a new completion stage that, when the stage completes normally, indicates that the Memento resource was
+     * successfully created in the corresponding persistence layer.
+     */
+    default CompletableFuture<Void> put(final ResourceService resourceService, final IRI identifier) {
+        return resourceService.get(identifier).thenCompose(this::put);
+    }
+
+    /**
      * Create a new Memento for a resource.
      * @param resource the resource
-     * @return a new completion stage that, when the stage completes normally, indicates that Memento resource was
+     * @return a new completion stage that, when the stage completes normally, indicates that the Memento resource was
      * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
      * the {@link CompletableFuture} will complete exceptionally and can be handled with
      * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.

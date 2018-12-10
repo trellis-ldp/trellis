@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.description;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -59,6 +60,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.LDP;
@@ -258,6 +260,7 @@ public class PutHandlerTest extends BaseTestHandler {
     public void testMementoError() {
         final MementoService mockMementoService = mock(MementoService.class);
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
+        doCallRealMethod().when(mockMementoService).put(any(ResourceService.class), any(IRI.class));
         when(mockMementoService.put(any())).thenAnswer(inv -> runAsync(() -> {
             throw new RuntimeTrellisException("Expected error");
         }));
