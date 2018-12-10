@@ -37,7 +37,6 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.BeanParam;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -51,8 +50,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -167,14 +171,19 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param request the request parameters
      * @param response the async response
+     * @param uriInfo the URI info
+     * @param secContext the security context
+     * @param headers the HTTP headers
+     * @param request the request
      */
     @GET
     @Timed
-    public void getResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest request) {
-        fetchResource(request).thenApply(ResponseBuilder::build).exceptionally(this::handleException)
-            .thenApply(response::resume);
+    public void getResource(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+            @Context final SecurityContext secContext) {
+        fetchResource(new TrellisRequest(request, uriInfo, headers, secContext))
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
     /**
@@ -182,26 +191,36 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param request the request parameters
      * @param response the async response
+     * @param uriInfo the URI info
+     * @param secContext the security context
+     * @param headers the HTTP headers
+     * @param request the request
      */
     @HEAD
     @Timed
-    public void getResourceHeaders(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest request) {
-        fetchResource(request).thenApply(ResponseBuilder::build).exceptionally(this::handleException)
-            .thenApply(response::resume);
+    public void getResourceHeaders(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+            @Context final SecurityContext secContext) {
+        fetchResource(new TrellisRequest(request, uriInfo, headers, secContext))
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
     /**
      * Perform an OPTIONS operation on an LDP Resource.
      *
      * @param response the async response
-     * @param req the request
+     * @param uriInfo the URI info
+     * @param secContext the security context
+     * @param headers the HTTP headers
+     * @param request the request
      */
     @OPTIONS
     @Timed
-    public void options(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req) {
-
+    public void options(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+            @Context final SecurityContext secContext) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, nonNull(req.getVersion()), urlBase);
@@ -215,14 +234,18 @@ public class TrellisHttpResource {
      * Perform a PATCH operation on an LDP Resource.
      *
      * @param response the async response
-     * @param req the request
+     * @param uriInfo the URI info
+     * @param secContext the security context
+     * @param headers the HTTP headers
+     * @param request the request
      * @param body the body
      */
     @PATCH
     @Timed
-    public void updateResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
-            final String body) {
-
+    public void updateResource(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+            @Context final SecurityContext secContext, final String body) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase);
@@ -236,12 +259,17 @@ public class TrellisHttpResource {
      * Perform a DELETE operation on an LDP Resource.
      *
      * @param response the async response
-     * @param req the request
+     * @param uriInfo the URI info
+     * @param secContext the security context
+     * @param headers the HTTP headers
+     * @param request the request
      */
     @DELETE
     @Timed
-    public void deleteResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req) {
-
+    public void deleteResource(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+            @Context final SecurityContext secContext) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, urlBase);
@@ -255,14 +283,18 @@ public class TrellisHttpResource {
      * Perform a POST operation on a LDP Resource.
      *
      * @param response the async response
-     * @param req the request
+     * @param uriInfo the URI info
+     * @param secContext the security context
+     * @param headers the HTTP headers
+     * @param request the request
      * @param body the body
      */
     @POST
     @Timed
-    public void createResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
-            final InputStream body) {
-
+    public void createResource(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+            @Context final SecurityContext secContext, final InputStream body) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
         final String identifier = ofNullable(req.getSlug())
@@ -284,13 +316,18 @@ public class TrellisHttpResource {
      * Perform a PUT operation on a LDP Resource.
      *
      * @param response the async response
-     * @param req the request
+     * @param uriInfo the URI info
+     * @param secContext the security context
+     * @param headers the HTTP headers
+     * @param request the request
      * @param body the body
      */
     @PUT
     @Timed
-    public void setResource(@Suspended final AsyncResponse response, @BeanParam final TrellisRequest req,
-            final InputStream body) {
+    public void setResource(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
+            @Context final SecurityContext secContext, final InputStream body) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);

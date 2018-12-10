@@ -13,10 +13,16 @@
  */
 package org.trellisldp.http.core;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
+import static java.util.Optional.ofNullable;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.HttpHeaders.LINK;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.http.core.HttpConstants.DIGEST;
+import static org.trellisldp.http.core.HttpConstants.PREFER;
+import static org.trellisldp.http.core.HttpConstants.RANGE;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
+import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Request;
@@ -30,59 +36,28 @@ import javax.ws.rs.core.UriInfo;
  */
 public class TrellisRequest {
 
-    @PathParam("path")
-    private String path;
+    private final UriInfo uriInfo;
 
-    @QueryParam("version")
-    private Version version;
+    private final HttpHeaders headers;
 
-    @QueryParam("ext")
-    private String ext;
+    private final Request request;
 
-    @QueryParam("subject")
-    private String subject;
+    private final SecurityContext secCtx;
 
-    @QueryParam("predicate")
-    private String predicate;
-
-    @QueryParam("object")
-    private String object;
-
-    @Context
-    private UriInfo uriInfo;
-
-    @Context
-    private HttpHeaders headers;
-
-    @Context
-    private Request request;
-
-    @Context
-    private SecurityContext secCtx;
-
-    @HeaderParam("Accept-Datetime")
-    private AcceptDatetime datetime;
-
-    @HeaderParam("Prefer")
-    private Prefer prefer;
-
-    @HeaderParam("Want-Digest")
-    private WantDigest wantDigest;
-
-    @HeaderParam("Range")
-    private Range range;
-
-    @HeaderParam("Link")
-    private Link link;
-
-    @HeaderParam("Content-Type")
-    private String contentType;
-
-    @HeaderParam("Slug")
-    private String slug;
-
-    @HeaderParam("Digest")
-    private Digest digest;
+    /**
+     * Bundle together some request contexts.
+     * @param request the Request object
+     * @param uriInfo the URI information
+     * @param headers the HTTP headers
+     * @param secCtx the security context
+     */
+    public TrellisRequest(final Request request, final UriInfo uriInfo, final HttpHeaders headers,
+            final SecurityContext secCtx) {
+        this.request = request;
+        this.uriInfo = uriInfo;
+        this.headers = headers;
+        this.secCtx = secCtx;
+    }
 
     /**
      * Get the Content-Type header.
@@ -90,7 +65,7 @@ public class TrellisRequest {
      * @return the Content-Type header
      */
     public String getContentType() {
-        return contentType;
+        return headers.getHeaderString(CONTENT_TYPE);
     }
 
     /**
@@ -99,7 +74,7 @@ public class TrellisRequest {
      * @return the value of the slug header
      */
     public String getSlug() {
-        return slug;
+        return headers.getHeaderString(SLUG);
     }
 
     /**
@@ -108,7 +83,7 @@ public class TrellisRequest {
      * @return the Link header
      */
     public Link getLink() {
-        return link;
+        return ofNullable(headers.getHeaderString(LINK)).map(Link::valueOf).orElse(null);
     }
 
     /**
@@ -117,7 +92,7 @@ public class TrellisRequest {
      * @return the accept-datetime header
      */
     public AcceptDatetime getDatetime() {
-        return datetime;
+        return ofNullable(headers.getHeaderString(ACCEPT_DATETIME)).map(AcceptDatetime::valueOf).orElse(null);
     }
 
     /**
@@ -126,7 +101,7 @@ public class TrellisRequest {
      * @return the Prefer header
      */
     public Prefer getPrefer() {
-        return prefer;
+        return ofNullable(headers.getHeaderString(PREFER)).map(Prefer::valueOf).orElse(null);
     }
 
     /**
@@ -135,7 +110,7 @@ public class TrellisRequest {
      * @return the Want-Digest header
      */
     public WantDigest getWantDigest() {
-        return wantDigest;
+        return ofNullable(headers.getHeaderString(WANT_DIGEST)).map(WantDigest::new).orElse(null);
     }
 
     /**
@@ -144,7 +119,7 @@ public class TrellisRequest {
      * @return the Digest header
      */
     public Digest getDigest() {
-        return digest;
+        return ofNullable(headers.getHeaderString(DIGEST)).map(Digest::valueOf).orElse(null);
     }
 
     /**
@@ -153,7 +128,7 @@ public class TrellisRequest {
      * @return the range header
      */
     public Range getRange() {
-        return range;
+        return ofNullable(headers.getHeaderString(RANGE)).map(Range::valueOf).orElse(null);
     }
 
     /**
@@ -162,7 +137,7 @@ public class TrellisRequest {
      * @return the path
      */
     public String getPath() {
-        return path;
+        return uriInfo.getPath();
     }
 
     /**
@@ -171,7 +146,7 @@ public class TrellisRequest {
      * @return the version query parameter
      */
     public Version getVersion() {
-        return version;
+        return ofNullable(uriInfo.getQueryParameters().getFirst("version")).map(Version::valueOf).orElse(null);
     }
 
     /**
@@ -180,7 +155,7 @@ public class TrellisRequest {
      * @return the ext query parameter
      */
     public String getExt() {
-        return ext;
+        return uriInfo.getQueryParameters().getFirst("ext");
     }
 
     /**
@@ -207,7 +182,7 @@ public class TrellisRequest {
      * @return the subject filter
      */
     public String getSubject() {
-        return subject;
+        return uriInfo.getQueryParameters().getFirst("subject");
     }
 
     /**
@@ -216,7 +191,7 @@ public class TrellisRequest {
      * @return the predicate filter
      */
     public String getPredicate() {
-        return predicate;
+        return uriInfo.getQueryParameters().getFirst("predicate");
     }
 
     /**
@@ -225,7 +200,7 @@ public class TrellisRequest {
      * @return the object filter
      */
     public String getObject() {
-        return object;
+        return uriInfo.getQueryParameters().getFirst("object");
     }
 
     /**
