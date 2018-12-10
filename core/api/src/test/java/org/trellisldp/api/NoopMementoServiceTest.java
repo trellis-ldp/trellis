@@ -15,9 +15,15 @@
 package org.trellisldp.api;
 
 import static java.time.Instant.now;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -33,7 +39,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -48,18 +53,40 @@ public class NoopMementoServiceTest {
     @Mock
     private Resource mockResource;
 
+    @Mock
+    private ResourceService mockResourceService;
+
+    @Mock
+    private MementoService mockMementoService;
+
     @BeforeEach
     public void setUp() {
         initMocks(this);
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.stream()).thenAnswer(inv -> of(quad));
+        doCallRealMethod().when(mockMementoService).put(any(ResourceService.class), any(IRI.class));
+        when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockMementoService.put(any(Resource.class))).thenReturn(completedFuture(null));
+    }
+
+    @Test
+    public void testPutDefaultMethod() {
+        mockMementoService.put(mockResourceService, identifier).join();
+        verify(mockResourceService).get(eq(identifier));
+        verify(mockMementoService).put(eq(mockResource));
+    }
+
+    @Test
+    public void testPutResourceServiceNoop() {
+        testService.put(mockResourceService, identifier).join();
+        verifyZeroInteractions(mockResourceService);
     }
 
     @Test
     public void testPutResourceNoop() {
-        testService.put(mockResource);
-        Mockito.verifyZeroInteractions(mockResource);
+        testService.put(mockResource).join();
+        verifyZeroInteractions(mockResource);
     }
 
     @Test
