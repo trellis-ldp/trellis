@@ -13,12 +13,21 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.time.ZonedDateTime.parse;
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.isEqual;
+import static java.util.stream.Collectors.toSet;
+import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
+import static javax.ws.rs.core.Response.notModified;
+import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -33,7 +42,9 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +54,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.RedirectionException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
@@ -295,6 +310,94 @@ public final class HttpUtils {
     public static Boolean isContainer(final IRI ldpType) {
         return LDP.Container.equals(ldpType) || LDP.BasicContainer.equals(ldpType)
             || LDP.DirectContainer.equals(ldpType) || LDP.IndirectContainer.equals(ldpType);
+    }
+
+    /**
+     * Check for a conditional operation.
+     * @param method the HTTP method
+     * @param ifModifiedSince the If-Modified-Since header
+     * @param modified the resource modification date
+     */
+    public static void checkIfModifiedSince(final String method, final String ifModifiedSince,
+            final Instant modified) {
+        if (isGetOrHead(method)) {
+            parseDate(ifModifiedSince).filter(d -> d.isAfter(modified.truncatedTo(SECONDS))).ifPresent(date -> {
+                throw new RedirectionException(notModified().build());
+            });
+        }
+    }
+
+    /**
+     * Check for a conditional operation.
+     * @param ifUnmodifiedSince the If-Unmodified-Since header
+     * @param modified the resource modification date
+     */
+    public static void checkIfUnmodifiedSince(final String ifUnmodifiedSince, final Instant modified) {
+        parseDate(ifUnmodifiedSince).filter(modified.truncatedTo(SECONDS)::isAfter).ifPresent(date -> {
+            throw new ClientErrorException(status(PRECONDITION_FAILED).build());
+        });
+    }
+
+    /**
+     * Check for a conditional operation.
+     * @param method the HTTP method
+     * @param ifMatch the If-Match header
+     * @param etag the resource etag
+     */
+    public static void checkIfMatch(final String method, final String ifMatch, final EntityTag etag) {
+        if (isNull(ifMatch)) {
+            return;
+        }
+        final Set<String> items = stream(ifMatch.split(",")).map(String::trim).collect(toSet());
+        if (items.contains("*")) {
+            return;
+        }
+        try {
+            if (etag.isWeak() || !items.stream().map(EntityTag::valueOf).anyMatch(isEqual(etag))) {
+                    throw new ClientErrorException(status(PRECONDITION_FAILED).build());
+            }
+        } catch (final IllegalArgumentException ex) {
+            throw new BadRequestException(ex);
+        }
+    }
+
+    /**
+     * Check for a conditional operation.
+     * @param method the HTTP method
+     * @param ifNoneMatch the If-None-Match header
+     * @param etag the resource etag
+     */
+    public static void checkIfNoneMatch(final String method, final String ifNoneMatch, final EntityTag etag) {
+        if (isNull(ifNoneMatch)) {
+            return;
+        }
+
+        final Set<String> items = stream(ifNoneMatch.split(",")).map(String::trim).collect(toSet());
+        if (isGetOrHead(method)) {
+            if (items.contains("*") || items.stream().map(EntityTag::valueOf)
+                    .anyMatch(e -> e.equals(etag) || e.equals(new EntityTag(etag.getValue(), !etag.isWeak())))) {
+                throw new RedirectionException(notModified().build());
+            }
+        } else {
+            if (items.contains("*") || items.stream().map(EntityTag::valueOf).anyMatch(isEqual(etag))) {
+                throw new ClientErrorException(status(PRECONDITION_FAILED).build());
+            }
+        }
+     }
+
+    private static boolean isGetOrHead(final String method) {
+        return "GET".equals(method) || "HEAD".equals(method);
+    }
+
+    private static Optional<Instant> parseDate(final String date) {
+        return ofNullable(date).map(String::trim).flatMap(d -> {
+            try {
+                return of(parse(d, RFC_1123_DATE_TIME));
+            } catch (final DateTimeException ex) {
+                LOGGER.debug("Ignoring invalid date ({}): {}", date, ex.getMessage());
+            }
+            return empty();
+        }).map(ZonedDateTime::toInstant);
     }
 
     private HttpUtils() {

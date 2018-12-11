@@ -67,6 +67,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.BlankNode;
@@ -159,6 +160,7 @@ abstract class BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn("");
         when(mockTrellisRequest.getBaseUrl()).thenReturn(baseUrl);
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
+        when(mockTrellisRequest.getHeaders()).thenReturn(new MultivaluedHashMap<>());
     }
 
     protected Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {

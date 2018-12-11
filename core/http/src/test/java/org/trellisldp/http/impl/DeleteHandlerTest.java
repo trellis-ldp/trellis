@@ -18,13 +18,10 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
-import static javax.ws.rs.core.Response.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
@@ -33,7 +30,6 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -111,16 +107,5 @@ public class DeleteHandlerTest extends BaseTestHandler {
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when an ACL audit stream couldn't be written!");
-    }
-
-    @Test
-    public void testCache() {
-        when(mockTrellisRequest.evaluatePreconditions(eq(time), any(EntityTag.class)))
-                .thenReturn(status(PRECONDITION_FAILED));
-        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.initialize(mockParent, mockResource), "Unexpected response type!").getResponse();
-        assertEquals(PRECONDITION_FAILED, res.getStatusInfo(), "Incorrect response type!");
     }
 }

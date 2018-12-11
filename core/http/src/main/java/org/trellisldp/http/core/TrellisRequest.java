@@ -13,8 +13,6 @@
  */
 package org.trellisldp.http.core;
 
-import static java.util.Date.from;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LINK;
@@ -26,17 +24,14 @@ import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 
 import java.security.Principal;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
@@ -46,8 +41,6 @@ import javax.ws.rs.core.UriInfo;
  * @author acoburn
  */
 public class TrellisRequest {
-
-    private final Request request;
 
     private final String path;
     private final String baseUrl;
@@ -77,16 +70,14 @@ public class TrellisRequest {
      */
     public TrellisRequest(final Request request, final UriInfo uriInfo, final HttpHeaders headers,
             final SecurityContext secCtx) {
-        this.request = request;
-
         // Extract header values
         this.headers = headers.getRequestHeaders();
         this.acceptableMediaTypes = headers.getAcceptableMediaTypes();
 
         // Extract URI values
         this.parameters = uriInfo.getQueryParameters();
-        this.path = uriInfo.getPath();
         this.baseUrl = uriInfo.getBaseUri().toString();
+        this.path = uriInfo.getPathParameters().getFirst("path");
 
         // Extract request method
         this.method = request.getMethod();
@@ -249,17 +240,11 @@ public class TrellisRequest {
     }
 
     /**
-     * Get the request value.
-     *
-     * @param time the time of the request
-     * @param etag an etag for the resource
-     * @return a request builder if the preconditions are not met; null otherwise
+     * Get all of the headers.
+     * @return the headers
      */
-    public ResponseBuilder evaluatePreconditions(final Instant time, final EntityTag etag) {
-        if (nonNull(request)) {
-            return request.evaluatePreconditions(from(time), etag);
-        }
-        return null;
+    public MultivaluedMap<String, String> getHeaders() {
+        return headers;
     }
 
     /**

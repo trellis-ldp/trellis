@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Stream.of;
@@ -107,7 +108,7 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     public void testNoBaseURL() throws Exception {
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
 
-        when(mockUriInfo.getPath()).thenReturn("resource");
+        when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>(singletonMap("path", "resource")));
         when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockHttpHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());

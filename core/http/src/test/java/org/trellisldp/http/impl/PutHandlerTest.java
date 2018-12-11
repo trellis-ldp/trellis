@@ -21,8 +21,6 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
-import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,7 +46,6 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -194,20 +191,6 @@ public class PutHandlerTest extends BaseTestHandler {
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check RDF PUT interactions", checkRdfPut(res));
-    }
-
-    @Test
-    public void testCache() {
-        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
-        when(mockTrellisRequest.evaluatePreconditions(eq(time), any(EntityTag.class)))
-                .thenReturn(status(PRECONDITION_FAILED));
-
-        final PutHandler handler = buildPutHandler("/simpleData.txt", null);
-
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).join(),
-                "No exception when the request precondition fails!").getResponse();
-        assertEquals(PRECONDITION_FAILED, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test

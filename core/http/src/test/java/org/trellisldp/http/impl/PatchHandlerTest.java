@@ -19,10 +19,8 @@ import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,12 +41,9 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.time.Instant;
 import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -166,19 +161,6 @@ public class PatchHandlerTest extends BaseTestHandler {
         assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
         assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
         assertAll("Check LDP type link headers", checkLdpType(res, LDP.RDFSource));
-    }
-
-    @Test
-    public void testConflict() {
-        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockTrellisRequest.evaluatePreconditions(any(Instant.class), any(EntityTag.class)))
-            .thenReturn(status(CONFLICT));
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
-
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                patchHandler.initialize(mockParent, mockResource), "No exception thrown for CONFLICT!").getResponse();
-        assertEquals(CONFLICT, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test
