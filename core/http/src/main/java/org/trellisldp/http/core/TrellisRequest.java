@@ -34,6 +34,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
@@ -48,24 +49,14 @@ public class TrellisRequest {
 
     private final Request request;
 
-    private final String contentType;
-    private final String slug;
-    private final Link link;
-    private final AcceptDatetime dateTime;
-    private final Prefer prefer;
-    private final WantDigest wantDigest;
-    private final Digest digest;
-    private final Range range;
     private final String path;
-    private final String ext;
-    private final Version version;
     private final String baseUrl;
-    private final String subject;
-    private final String predicate;
-    private final String object;
     private final String principalName;
-    private final List<MediaType> acceptableMediaTypes;
     private final String method;
+    private final List<MediaType> acceptableMediaTypes;
+
+    private final MultivaluedMap<String, String> headers;
+    private final MultivaluedMap<String, String> parameters;
 
     /**
      * Bundle together some request contexts.
@@ -89,25 +80,15 @@ public class TrellisRequest {
         this.request = request;
 
         // Extract header values
-        this.contentType = headers.getHeaderString(CONTENT_TYPE);
-        this.slug = headers.getHeaderString(SLUG);
-        this.link = ofNullable(headers.getHeaderString(LINK)).map(Link::valueOf).orElse(null);
-        this.dateTime = ofNullable(headers.getHeaderString(ACCEPT_DATETIME)).map(AcceptDatetime::valueOf).orElse(null);
-        this.prefer = ofNullable(headers.getHeaderString(PREFER)).map(Prefer::valueOf).orElse(null);
-        this.wantDigest = ofNullable(headers.getHeaderString(WANT_DIGEST)).map(WantDigest::new).orElse(null);
-        this.digest = ofNullable(headers.getHeaderString(DIGEST)).map(Digest::valueOf).orElse(null);
-        this.range = ofNullable(headers.getHeaderString(RANGE)).map(Range::valueOf).orElse(null);
+        this.headers = headers.getRequestHeaders();
         this.acceptableMediaTypes = headers.getAcceptableMediaTypes();
 
         // Extract URI values
+        this.parameters = uriInfo.getQueryParameters();
         this.path = uriInfo.getPath();
-        this.version = ofNullable(uriInfo.getQueryParameters().getFirst("version")).map(Version::valueOf).orElse(null);
-        this.ext = uriInfo.getQueryParameters().getFirst("ext");
         this.baseUrl = uriInfo.getBaseUri().toString();
-        this.subject = uriInfo.getQueryParameters().getFirst("subject");
-        this.predicate = uriInfo.getQueryParameters().getFirst("predicate");
-        this.object = uriInfo.getQueryParameters().getFirst("object");
 
+        // Extract request method
         this.method = request.getMethod();
 
         // Security context value
@@ -121,7 +102,7 @@ public class TrellisRequest {
      * @return the Content-Type header
      */
     public String getContentType() {
-        return contentType;
+        return headers.getFirst(CONTENT_TYPE);
     }
 
     /**
@@ -130,7 +111,7 @@ public class TrellisRequest {
      * @return the value of the slug header
      */
     public String getSlug() {
-        return slug;
+        return headers.getFirst(SLUG);
     }
 
     /**
@@ -139,7 +120,7 @@ public class TrellisRequest {
      * @return the Link header
      */
     public Link getLink() {
-        return link;
+        return ofNullable(headers.getFirst(LINK)).map(Link::valueOf).orElse(null);
     }
 
     /**
@@ -148,7 +129,7 @@ public class TrellisRequest {
      * @return the accept-datetime header
      */
     public AcceptDatetime getDatetime() {
-        return dateTime;
+        return ofNullable(headers.getFirst(ACCEPT_DATETIME)).map(AcceptDatetime::valueOf).orElse(null);
     }
 
     /**
@@ -157,7 +138,7 @@ public class TrellisRequest {
      * @return the Prefer header
      */
     public Prefer getPrefer() {
-        return prefer;
+        return ofNullable(headers.getFirst(PREFER)).map(Prefer::valueOf).orElse(null);
     }
 
     /**
@@ -166,7 +147,7 @@ public class TrellisRequest {
      * @return the Want-Digest header
      */
     public WantDigest getWantDigest() {
-        return wantDigest;
+        return ofNullable(headers.getFirst(WANT_DIGEST)).map(WantDigest::new).orElse(null);
     }
 
     /**
@@ -175,7 +156,7 @@ public class TrellisRequest {
      * @return the Digest header
      */
     public Digest getDigest() {
-        return digest;
+        return ofNullable(headers.getFirst(DIGEST)).map(Digest::valueOf).orElse(null);
     }
 
     /**
@@ -184,7 +165,7 @@ public class TrellisRequest {
      * @return the range header
      */
     public Range getRange() {
-        return range;
+        return ofNullable(headers.getFirst(RANGE)).map(Range::valueOf).orElse(null);
     }
 
     /**
@@ -202,7 +183,7 @@ public class TrellisRequest {
      * @return the version query parameter
      */
     public Version getVersion() {
-        return version;
+        return ofNullable(parameters.getFirst("version")).map(Version::valueOf).orElse(null);
     }
 
     /**
@@ -211,7 +192,7 @@ public class TrellisRequest {
      * @return the ext query parameter
      */
     public String getExt() {
-        return ext;
+        return parameters.getFirst("ext");
     }
 
     /**
@@ -220,7 +201,7 @@ public class TrellisRequest {
      * @return the subject filter
      */
     public String getSubject() {
-        return subject;
+        return parameters.getFirst("subject");
     }
 
     /**
@@ -229,7 +210,7 @@ public class TrellisRequest {
      * @return the predicate filter
      */
     public String getPredicate() {
-        return predicate;
+        return parameters.getFirst("predicate");
     }
 
     /**
@@ -238,7 +219,7 @@ public class TrellisRequest {
      * @return the object filter
      */
     public String getObject() {
-        return object;
+        return parameters.getFirst("object");
     }
 
     /**
