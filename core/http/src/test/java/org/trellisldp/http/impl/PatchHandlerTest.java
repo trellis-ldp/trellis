@@ -43,7 +43,7 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.BadRequestException;
@@ -151,7 +151,7 @@ public class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
-        when(mockTrellisRequest.getHeaders().getAcceptableMediaTypes())
+        when(mockTrellisRequest.getAcceptableMediaTypes())
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);
@@ -171,7 +171,8 @@ public class PatchHandlerTest extends BaseTestHandler {
     @Test
     public void testConflict() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockRequest.evaluatePreconditions(any(Date.class), any(EntityTag.class))).thenReturn(status(CONFLICT));
+        when(mockTrellisRequest.evaluatePreconditions(any(Instant.class), any(EntityTag.class)))
+            .thenReturn(status(CONFLICT));
         when(mockTrellisRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null);

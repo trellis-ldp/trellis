@@ -110,10 +110,9 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockUriInfo.getPath()).thenReturn("resource");
         when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
-        when(mockTrellisRequest.getHeaders()).thenReturn(mockHttpHeaders);
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));
 
-        matcher.getResourceHeaders(mockResponse, mockRequest, mockUriInfo, mockHttpHeaders, null);
+        matcher.getResourceHeaders(mockResponse, mockRequest, mockUriInfo, mockHttpHeaders);
         verify(mockResponse).resume(captor.capture());
 
         final Response res = captor.getValue();

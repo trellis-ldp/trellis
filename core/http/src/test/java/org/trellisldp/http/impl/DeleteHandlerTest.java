@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Collections.emptySet;
-import static java.util.Date.from;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
@@ -116,7 +115,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
 
     @Test
     public void testCache() {
-        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
+        when(mockTrellisRequest.evaluatePreconditions(eq(time), any(EntityTag.class)))
                 .thenReturn(status(PRECONDITION_FAILED));
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
 

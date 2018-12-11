@@ -149,10 +149,10 @@ public class GetHandler extends BaseLdpHandler {
             throw new ClientErrorException(GONE);
         }
 
-        LOGGER.debug("Acceptable media types: {}", getRequest().getHeaders().getAcceptableMediaTypes());
+        LOGGER.debug("Acceptable media types: {}", getRequest().getAcceptableMediaTypes());
 
         this.syntax = getSyntax(getServices().getIOService(),
-            getRequest().getHeaders().getAcceptableMediaTypes(), resource.getBinaryMetadata()
+            getRequest().getAcceptableMediaTypes(), resource.getBinaryMetadata()
                 .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
                 .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM))).orElse(null);
 
@@ -234,7 +234,7 @@ public class GetHandler extends BaseLdpHandler {
 
         // RDFSource responses (weak ETags, etc)
         final RDFSyntax rdfSyntax = ofNullable(syntax).orElse(TURTLE);
-        final IRI profile = getProfile(getRequest().getHeaders().getAcceptableMediaTypes(), rdfSyntax);
+        final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), rdfSyntax);
         return getLdpRs(builder, rdfSyntax, profile);
     }
 
@@ -317,7 +317,7 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         // Short circuit HEAD requests
-        if (HEAD.equals(getRequest().getRequest().getMethod())) {
+        if (HEAD.equals(getRequest().getMethod())) {
             return completedFuture(builder);
         }
 

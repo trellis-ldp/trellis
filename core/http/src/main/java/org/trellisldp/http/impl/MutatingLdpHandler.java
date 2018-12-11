@@ -35,7 +35,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -104,8 +103,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
             final String baseUrl, final InputStream entity) {
         super(req, trellis, baseUrl);
         this.entity = entity;
-        this.session = ofNullable(req.getSecurityContext().getUserPrincipal()).map(Principal::getName)
-            .map(getServices().getAgentService()::asAgent).map(HttpSession::new).orElseGet(HttpSession::new);
+        this.session = ofNullable(req.getPrincipalName()).map(getServices().getAgentService()::asAgent)
+                .map(HttpSession::new).orElseGet(HttpSession::new);
     }
 
     protected void setParent(final Resource parent) {

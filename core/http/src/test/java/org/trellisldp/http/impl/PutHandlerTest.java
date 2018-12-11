@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Collections.emptySet;
-import static java.util.Date.from;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static javax.ws.rs.core.Link.fromUri;
@@ -200,7 +199,7 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testCache() {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
-        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
+        when(mockTrellisRequest.evaluatePreconditions(eq(time), any(EntityTag.class)))
                 .thenReturn(status(PRECONDITION_FAILED));
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);

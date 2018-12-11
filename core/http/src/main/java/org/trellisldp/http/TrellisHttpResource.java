@@ -173,16 +173,14 @@ public class TrellisHttpResource {
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
      * @param response the async response
      * @param uriInfo the URI info
-     * @param secContext the security context
      * @param headers the HTTP headers
      * @param request the request
      */
     @GET
     @Timed
     public void getResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext) {
-        fetchResource(new TrellisRequest(request, uriInfo, headers, secContext))
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
+        fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
@@ -193,16 +191,14 @@ public class TrellisHttpResource {
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
      * @param response the async response
      * @param uriInfo the URI info
-     * @param secContext the security context
      * @param headers the HTTP headers
      * @param request the request
      */
     @HEAD
     @Timed
     public void getResourceHeaders(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext) {
-        fetchResource(new TrellisRequest(request, uriInfo, headers, secContext))
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
+        fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
@@ -211,16 +207,14 @@ public class TrellisHttpResource {
      *
      * @param response the async response
      * @param uriInfo the URI info
-     * @param secContext the security context
      * @param headers the HTTP headers
      * @param request the request
      */
     @OPTIONS
     @Timed
     public void options(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, nonNull(req.getVersion()), urlBase);

@@ -245,8 +245,8 @@ public class PatchHandler extends MutatingLdpHandler {
                     emitEvent(getInternalId(), AS.Update, getResource().getInteractionModel()) : completedFuture(null))
             .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
-                        getRequest().getHeaders().getAcceptableMediaTypes(), empty()).orElse(null);
-                final IRI profile = ofNullable(getProfile(getRequest().getHeaders().getAcceptableMediaTypes(),
+                        getRequest().getAcceptableMediaTypes(), empty()).orElse(null);
+                final IRI profile = ofNullable(getProfile(getRequest().getAcceptableMediaTypes(),
                             outputSyntax)).orElseGet(() -> getDefaultProfile(outputSyntax, getIdentifier()));
                 if (nonNull(preference)) {
                     final StreamingOutput stream = new StreamingOutput() {

@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.util.Date.from;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
@@ -100,7 +99,7 @@ class BaseLdpHandler {
     protected void checkCache(final Instant modified, final EntityTag etag) {
         ResponseBuilder builder = null;
         try {
-            builder = getRequest().getRequest().evaluatePreconditions(from(modified), etag);
+            builder = getRequest().evaluatePreconditions(modified, etag);
         } catch (final Exception ex) {
             LOGGER.warn("Error processing cache request: {}", ex.getMessage());
             throw new BadRequestException();
