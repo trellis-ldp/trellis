@@ -1913,7 +1913,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPutIfMatchMultiple() {
-        final Response res = target(BINARY_PATH).request().header("If-Match", "*, \"blah\"")
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+        final Response res = target(BINARY_PATH).request().header("If-Match", "\"blah\", \"" + etag + "\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");

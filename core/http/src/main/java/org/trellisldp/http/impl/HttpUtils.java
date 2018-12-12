@@ -373,12 +373,12 @@ public final class HttpUtils {
 
         final Set<String> items = stream(ifNoneMatch.split(",")).map(String::trim).collect(toSet());
         if (isGetOrHead(method)) {
-            if (items.contains("*") || items.stream().map(EntityTag::valueOf)
+            if ("*".equals(ifNoneMatch) || items.stream().map(EntityTag::valueOf)
                     .anyMatch(e -> e.equals(etag) || e.equals(new EntityTag(etag.getValue(), !etag.isWeak())))) {
                 throw new RedirectionException(notModified().build());
             }
         } else {
-            if (items.contains("*") || items.stream().map(EntityTag::valueOf).anyMatch(isEqual(etag))) {
+            if ("*".equals(ifNoneMatch) || items.stream().map(EntityTag::valueOf).anyMatch(isEqual(etag))) {
                 throw new ClientErrorException(status(PRECONDITION_FAILED).build());
             }
         }
