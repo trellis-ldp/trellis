@@ -18,7 +18,6 @@ import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
-import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.time.Instant;
@@ -30,7 +29,6 @@ import javax.ws.rs.core.EntityTag;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.slf4j.Logger;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
@@ -40,8 +38,6 @@ import org.trellisldp.http.core.TrellisRequest;
  * @author acoburn
  */
 class BaseLdpHandler {
-
-    private static final Logger LOGGER = getLogger(BaseLdpHandler.class);
 
     protected static final RDF rdf = getInstance();
 
@@ -92,7 +88,7 @@ class BaseLdpHandler {
      * @param etag the resource's etag
      */
     protected void checkCache(final Instant modified, final EntityTag etag) {
-        HttpUtils.checkIfMatch(getRequest().getMethod(), getRequest().getHeaders().getFirst(IF_MATCH), etag);
+        HttpUtils.checkIfMatch(getRequest().getHeaders().getFirst(IF_MATCH), etag);
         HttpUtils.checkIfUnmodifiedSince(getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE), modified);
         HttpUtils.checkIfNoneMatch(getRequest().getMethod(), getRequest().getHeaders().getFirst(IF_NONE_MATCH), etag);
         HttpUtils.checkIfModifiedSince(getRequest().getMethod(), getRequest().getHeaders().getFirst(IF_MODIFIED_SINCE),

@@ -340,11 +340,10 @@ public final class HttpUtils {
 
     /**
      * Check for a conditional operation.
-     * @param method the HTTP method
      * @param ifMatch the If-Match header
      * @param etag the resource etag
      */
-    public static void checkIfMatch(final String method, final String ifMatch, final EntityTag etag) {
+    public static void checkIfMatch(final String ifMatch, final EntityTag etag) {
         if (isNull(ifMatch)) {
             return;
         }
@@ -353,7 +352,7 @@ public final class HttpUtils {
             return;
         }
         try {
-            if (etag.isWeak() || !items.stream().map(EntityTag::valueOf).anyMatch(isEqual(etag))) {
+            if (etag.isWeak() || items.stream().map(EntityTag::valueOf).noneMatch(isEqual(etag))) {
                     throw new ClientErrorException(status(PRECONDITION_FAILED).build());
             }
         } catch (final IllegalArgumentException ex) {
