@@ -39,6 +39,7 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_ACCEPTABLE;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_MODIFIED;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_PRECONDITION_FAILED;
@@ -255,6 +256,113 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
         assertTrue(hasTimeGateLink(res, RESOURCE_PATH), "Missing rel=timegate link!");
         assertTrue(hasOriginalLink(res, RESOURCE_PATH), "Missing rel=original link!");
+    }
+
+    @Test
+    public void testGetNotModified() {
+        final Response res = target("").request().header("If-Modified-Since", "Wed, 12 Dec 2018 07:28:00 GMT").get();
+
+        assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetNotModifiedInvalidDate() {
+        final Response res = target("").request().header("If-Modified-Since", "Wed, 12 Dec 2017 07:28:00 GMT").get();
+
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetNotModifiedInvalidSyntax() {
+        final Response res = target("").request().header("If-Modified-Since", "Yesterday").get();
+
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfNoneMatchStar() {
+        final Response res = target("").request().header("If-None-Match", "*").get();
+
+        assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfMatchWeak() {
+        final String etag = target("").request().get().getEntityTag().getValue();
+
+        final Response res = target("").request().header("If-Match", "W/\"" + etag + "\"").get();
+
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfMatch() {
+        final String etag = target("").request().get().getEntityTag().getValue();
+
+        final Response res = target("").request().header("If-Match", "\"" + etag + "\"").get();
+
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfNoneMatchFoo() {
+        final Response res = target("").request().header("If-None-Match", "\"blah\"").get();
+
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfNoneMatch() {
+        final String etag = target("").request().get().getEntityTag().getValue();
+
+        final Response res = target("").request().header("If-None-Match", "\"" + etag + "\"").get();
+
+        assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfNoneMatchWeak() {
+        final String etag = target("").request().get().getEntityTag().getValue();
+
+        final Response res = target("").request().header("If-None-Match", "W/\"" + etag + "\"").get();
+
+        assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfMatchBinaryWeak() {
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+
+        final Response res = target(BINARY_PATH).request().header("If-Match", "W/\"" + etag + "\"").get();
+
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfMatchBinary() {
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+
+        final Response res = target(BINARY_PATH).request().header("If-Match", "\"" + etag + "\"").get();
+
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfNoneMatchBinary() {
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+
+        final Response res = target(BINARY_PATH).request().header("If-None-Match", "\"" + etag + "\"").get();
+
+        assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testGetIfNoneMatchWeakBinary() {
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+
+        final Response res = target(BINARY_PATH).request().header("If-None-Match", "W/\"" + etag + "\"").get();
+
+        assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
@@ -1735,6 +1843,90 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfMatchWeak() {
+        final String etag = target("").request().get().getEntityTag().getValue();
+
+        final Response res = target("").request().header("If-Match", "W/\"" + etag + "\"")
+            .put(entity("some different data.", TEXT_PLAIN_TYPE));
+
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfNoneMatchEtag() {
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+
+        final Response res = target(BINARY_PATH).request().header("If-None-Match", "\"" + etag + "\"")
+            .put(entity("some different data.", TEXT_PLAIN_TYPE));
+
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfNoneMatchRdfEtag() {
+        final String etag = target("").request().get().getEntityTag().getValue();
+
+        final Response res = target("").request().header("If-None-Match", "\"" + etag + "\"")
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfNoneMatchRdfWeakEtag() {
+        final String etag = target("").request().get().getEntityTag().getValue();
+
+        final Response res = target("").request().header("If-None-Match", "W/\"" + etag + "\"")
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfNoneMatchWeakEtag() {
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+
+        final Response res = target(BINARY_PATH).request().header("If-None-Match", "W/\"" + etag + "\"")
+            .put(entity("some different data.", TEXT_PLAIN_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfNoneMatch() {
+        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
+
+        final Response res = target(BINARY_PATH).request().header("If-None-Match", "\"foo\", \"bar\"")
+            .put(entity("some different data.", TEXT_PLAIN_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfMatchStar() {
+        final Response res = target(BINARY_PATH).request().header("If-Match", "*")
+            .put(entity("some different data.", TEXT_PLAIN_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfMatchMultiple() {
+        final Response res = target(BINARY_PATH).request().header("If-Match", "*, \"blah\"")
+            .put(entity("some different data.", TEXT_PLAIN_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
+    public void testPutIfNoneMatchStar() {
+        final Response res = target(BINARY_PATH).request().header("If-None-Match", "*")
+            .put(entity("some different data.", TEXT_PLAIN_TYPE));
+
+        assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test

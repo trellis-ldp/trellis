@@ -66,11 +66,9 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
-import javax.ws.rs.core.Request;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
@@ -143,15 +141,6 @@ abstract class BaseTestHandler {
     @Mock
     protected TrellisRequest mockTrellisRequest;
 
-    @Mock
-    protected Request mockRequest;
-
-    @Mock
-    protected HttpHeaders mockHttpHeaders;
-
-    @Mock
-    protected SecurityContext mockSecurityContext;
-
     @Captor
     protected ArgumentCaptor<IRI> iriArgument;
 
@@ -168,13 +157,10 @@ abstract class BaseTestHandler {
         setUpIoService();
         setUpResources();
 
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
-
-        when(mockTrellisRequest.getSecurityContext()).thenReturn(mockSecurityContext);
-        when(mockTrellisRequest.getRequest()).thenReturn(mockRequest);
         when(mockTrellisRequest.getPath()).thenReturn("");
         when(mockTrellisRequest.getBaseUrl()).thenReturn(baseUrl);
-        when(mockTrellisRequest.getHeaders()).thenReturn(mockHttpHeaders);
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(TEXT_TURTLE_TYPE));
+        when(mockTrellisRequest.getHeaders()).thenReturn(new MultivaluedHashMap<>());
     }
 
     protected Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {

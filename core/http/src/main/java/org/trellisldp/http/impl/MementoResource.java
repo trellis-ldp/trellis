@@ -105,7 +105,7 @@ public final class MementoResource {
     public ResponseBuilder getTimeMapBuilder(final SortedSet<Instant> mementos, final TrellisRequest req,
             final String baseUrl) {
 
-        final List<MediaType> acceptableTypes = req.getHeaders().getAcceptableMediaTypes();
+        final List<MediaType> acceptableTypes = req.getAcceptableMediaTypes();
         final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
         final List<Link> links = getMementoLinks(identifier, mementos).collect(toList());
 

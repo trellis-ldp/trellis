@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Stream.of;
@@ -31,13 +32,16 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
+import java.net.URI;
 import java.util.stream.Stream;
 
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -67,6 +71,9 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
     @Mock
     private Request mockRequest;
+
+    @Mock
+    private UriInfo mockUriInfo;
 
     @Captor
     private ArgumentCaptor<Response> captor;
@@ -101,13 +108,13 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     public void testNoBaseURL() throws Exception {
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
 
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
-        when(mockTrellisRequest.getBaseUrl()).thenReturn("http://my.example.com/");
-        when(mockTrellisRequest.getHeaders()).thenReturn(mockHttpHeaders);
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));
-        when(mockTrellisRequest.getRequest()).thenReturn(mockRequest);
+        when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>(singletonMap("path", "resource")));
+        when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
+        when(mockHttpHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));
 
-        matcher.getResourceHeaders(mockResponse, mockTrellisRequest);
+        matcher.getResourceHeaders(mockResponse, mockRequest, mockUriInfo, mockHttpHeaders);
         verify(mockResponse).resume(captor.capture());
 
         final Response res = captor.getValue();

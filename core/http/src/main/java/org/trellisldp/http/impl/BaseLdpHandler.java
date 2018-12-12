@@ -13,12 +13,11 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.util.Date.from;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
-import static org.slf4j.LoggerFactory.getLogger;
+import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
+import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
+import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
+import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.time.Instant;
@@ -26,17 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.RedirectionException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.slf4j.Logger;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
@@ -46,8 +38,6 @@ import org.trellisldp.http.core.TrellisRequest;
  * @author acoburn
  */
 class BaseLdpHandler {
-
-    private static final Logger LOGGER = getLogger(BaseLdpHandler.class);
 
     protected static final RDF rdf = getInstance();
 
@@ -98,22 +88,11 @@ class BaseLdpHandler {
      * @param etag the resource's etag
      */
     protected void checkCache(final Instant modified, final EntityTag etag) {
-        ResponseBuilder builder = null;
-        try {
-            builder = getRequest().getRequest().evaluatePreconditions(from(modified), etag);
-        } catch (final Exception ex) {
-            LOGGER.warn("Error processing cache request: {}", ex.getMessage());
-            throw new BadRequestException();
-        }
-        if (nonNull(builder)) {
-            final Response res = builder.build();
-            if (CLIENT_ERROR.equals(res.getStatusInfo().getFamily())) {
-                throw new ClientErrorException(res);
-            } else if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
-                throw new RedirectionException(res);
-            }
-            throw new WebApplicationException(res);
-        }
+        HttpUtils.checkIfMatch(getRequest().getHeaders().getFirst(IF_MATCH), etag);
+        HttpUtils.checkIfUnmodifiedSince(getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE), modified);
+        HttpUtils.checkIfNoneMatch(getRequest().getMethod(), getRequest().getHeaders().getFirst(IF_NONE_MATCH), etag);
+        HttpUtils.checkIfModifiedSince(getRequest().getMethod(), getRequest().getHeaders().getFirst(IF_MODIFIED_SINCE),
+                modified);
     }
 
     /**

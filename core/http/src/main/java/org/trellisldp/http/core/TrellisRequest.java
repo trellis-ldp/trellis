@@ -13,12 +13,24 @@
  */
 package org.trellisldp.http.core;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
+import static java.util.Optional.ofNullable;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.HttpHeaders.LINK;
+import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.http.core.HttpConstants.DIGEST;
+import static org.trellisldp.http.core.HttpConstants.PREFER;
+import static org.trellisldp.http.core.HttpConstants.RANGE;
+import static org.trellisldp.http.core.HttpConstants.SLUG;
+import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.Objects;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
@@ -30,59 +42,50 @@ import javax.ws.rs.core.UriInfo;
  */
 public class TrellisRequest {
 
-    @PathParam("path")
-    private String path;
+    private final String path;
+    private final String baseUrl;
+    private final String principalName;
+    private final String method;
+    private final List<MediaType> acceptableMediaTypes;
 
-    @QueryParam("version")
-    private Version version;
+    private final MultivaluedMap<String, String> headers;
+    private final MultivaluedMap<String, String> parameters;
 
-    @QueryParam("ext")
-    private String ext;
+    /**
+     * Bundle together some request contexts.
+     * @param request the Request object
+     * @param uriInfo the URI information
+     * @param headers the HTTP headers
+     */
+    public TrellisRequest(final Request request, final UriInfo uriInfo, final HttpHeaders headers) {
+        this(request, uriInfo, headers, null);
+    }
 
-    @QueryParam("subject")
-    private String subject;
+    /**
+     * Bundle together some request contexts.
+     * @param request the Request object
+     * @param uriInfo the URI information
+     * @param headers the HTTP headers
+     * @param secCtx the security context
+     */
+    public TrellisRequest(final Request request, final UriInfo uriInfo, final HttpHeaders headers,
+            final SecurityContext secCtx) {
+        // Extract header values
+        this.headers = headers.getRequestHeaders();
+        this.acceptableMediaTypes = headers.getAcceptableMediaTypes();
 
-    @QueryParam("predicate")
-    private String predicate;
+        // Extract URI values
+        this.parameters = uriInfo.getQueryParameters();
+        this.baseUrl = uriInfo.getBaseUri().toString();
+        this.path = uriInfo.getPathParameters().getFirst("path");
 
-    @QueryParam("object")
-    private String object;
+        // Extract request method
+        this.method = request.getMethod();
 
-    @Context
-    private UriInfo uriInfo;
-
-    @Context
-    private HttpHeaders headers;
-
-    @Context
-    private Request request;
-
-    @Context
-    private SecurityContext secCtx;
-
-    @HeaderParam("Accept-Datetime")
-    private AcceptDatetime datetime;
-
-    @HeaderParam("Prefer")
-    private Prefer prefer;
-
-    @HeaderParam("Want-Digest")
-    private WantDigest wantDigest;
-
-    @HeaderParam("Range")
-    private Range range;
-
-    @HeaderParam("Link")
-    private Link link;
-
-    @HeaderParam("Content-Type")
-    private String contentType;
-
-    @HeaderParam("Slug")
-    private String slug;
-
-    @HeaderParam("Digest")
-    private Digest digest;
+        // Security context value
+        this.principalName = ofNullable(secCtx).map(SecurityContext::getUserPrincipal)
+            .filter(Objects::nonNull).map(Principal::getName).orElse(null);
+    }
 
     /**
      * Get the Content-Type header.
@@ -90,7 +93,7 @@ public class TrellisRequest {
      * @return the Content-Type header
      */
     public String getContentType() {
-        return contentType;
+        return headers.getFirst(CONTENT_TYPE);
     }
 
     /**
@@ -99,7 +102,7 @@ public class TrellisRequest {
      * @return the value of the slug header
      */
     public String getSlug() {
-        return slug;
+        return headers.getFirst(SLUG);
     }
 
     /**
@@ -108,7 +111,7 @@ public class TrellisRequest {
      * @return the Link header
      */
     public Link getLink() {
-        return link;
+        return ofNullable(headers.getFirst(LINK)).map(Link::valueOf).orElse(null);
     }
 
     /**
@@ -117,7 +120,7 @@ public class TrellisRequest {
      * @return the accept-datetime header
      */
     public AcceptDatetime getDatetime() {
-        return datetime;
+        return ofNullable(headers.getFirst(ACCEPT_DATETIME)).map(AcceptDatetime::valueOf).orElse(null);
     }
 
     /**
@@ -126,7 +129,7 @@ public class TrellisRequest {
      * @return the Prefer header
      */
     public Prefer getPrefer() {
-        return prefer;
+        return ofNullable(headers.getFirst(PREFER)).map(Prefer::valueOf).orElse(null);
     }
 
     /**
@@ -135,7 +138,7 @@ public class TrellisRequest {
      * @return the Want-Digest header
      */
     public WantDigest getWantDigest() {
-        return wantDigest;
+        return ofNullable(headers.getFirst(WANT_DIGEST)).map(WantDigest::new).orElse(null);
     }
 
     /**
@@ -144,7 +147,7 @@ public class TrellisRequest {
      * @return the Digest header
      */
     public Digest getDigest() {
-        return digest;
+        return ofNullable(headers.getFirst(DIGEST)).map(Digest::valueOf).orElse(null);
     }
 
     /**
@@ -153,7 +156,7 @@ public class TrellisRequest {
      * @return the range header
      */
     public Range getRange() {
-        return range;
+        return ofNullable(headers.getFirst(RANGE)).map(Range::valueOf).orElse(null);
     }
 
     /**
@@ -171,7 +174,7 @@ public class TrellisRequest {
      * @return the version query parameter
      */
     public Version getVersion() {
-        return version;
+        return ofNullable(parameters.getFirst("version")).map(Version::valueOf).orElse(null);
     }
 
     /**
@@ -180,25 +183,7 @@ public class TrellisRequest {
      * @return the ext query parameter
      */
     public String getExt() {
-        return ext;
-    }
-
-    /**
-     * Get the request value.
-     *
-     * @return the request
-     */
-    public Request getRequest() {
-        return request;
-    }
-
-    /**
-     * Get the HTTP headers.
-     *
-     * @return the http headers
-     */
-    public HttpHeaders getHeaders() {
-        return headers;
+        return parameters.getFirst("ext");
     }
 
     /**
@@ -207,7 +192,7 @@ public class TrellisRequest {
      * @return the subject filter
      */
     public String getSubject() {
-        return subject;
+        return parameters.getFirst("subject");
     }
 
     /**
@@ -216,7 +201,7 @@ public class TrellisRequest {
      * @return the predicate filter
      */
     public String getPredicate() {
-        return predicate;
+        return parameters.getFirst("predicate");
     }
 
     /**
@@ -225,16 +210,7 @@ public class TrellisRequest {
      * @return the object filter
      */
     public String getObject() {
-        return object;
-    }
-
-    /**
-     * Get the security context.
-     *
-     * @return the security context
-     */
-    public SecurityContext getSecurityContext() {
-        return secCtx;
+        return parameters.getFirst("object");
     }
 
     /**
@@ -243,6 +219,40 @@ public class TrellisRequest {
      * @return the baseUrl as a string
      */
     public String getBaseUrl() {
-        return uriInfo.getBaseUri().toString();
+        return baseUrl;
+    }
+
+    /**
+     * Get the security context.
+     *
+     * @return the security context
+     */
+    public String getPrincipalName() {
+        return principalName;
+    }
+
+    /**
+     * Get the HTTP method.
+     * @return the method name
+     */
+    public String getMethod() {
+        return method;
+    }
+
+    /**
+     * Get all of the headers.
+     * @return the headers
+     */
+    public MultivaluedMap<String, String> getHeaders() {
+        return headers;
+    }
+
+    /**
+     * Get the HTTP headers.
+     *
+     * @return the http headers
+     */
+    public List<MediaType> getAcceptableMediaTypes() {
+        return acceptableMediaTypes;
     }
 }

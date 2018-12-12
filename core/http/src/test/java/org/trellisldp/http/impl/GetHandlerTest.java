@@ -33,13 +33,9 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
-import static javax.ws.rs.core.Response.Status.NOT_MODIFIED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.notModified;
-import static javax.ws.rs.core.Response.serverError;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -52,8 +48,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Syntax.LD_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
@@ -81,7 +75,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
@@ -187,45 +180,6 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testCache() {
-        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
-                .thenReturn(notModified());
-
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
-                "Unexpected cache response for LDP-RS!").getResponse();
-        assertEquals(NOT_MODIFIED, res.getStatusInfo(), "Incorrect Cache response!");
-    }
-
-    @Test
-    public void testCacheError() {
-        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
-                .thenReturn(serverError());
-
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
-                "Unexpected cache response for LDP-RS!").getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect Cache response!");
-    }
-
-    @Test
-    public void testCacheLdpNr() {
-        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
-        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
-        when(mockRequest.evaluatePreconditions(eq(from(time)), any(EntityTag.class)))
-                .thenReturn(notModified());
-
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
-                "Unexpected cache response for LDP-NR!").getResponse();
-        assertEquals(NOT_MODIFIED, res.getStatusInfo(), "Incorrect Cache response!");
-    }
-
-    @Test
     public void testExtraLinks() {
         final String inbox = "http://ldn.example.com/inbox";
         final String annService = "http://annotation.example.com/resource";
@@ -248,7 +202,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testNotAcceptableLdprs() {
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
 
@@ -260,7 +214,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
     @Test
     public void testMinimalLdprs() {
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_LD_JSON_TYPE));
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_LD_JSON_TYPE));
         when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
@@ -295,7 +249,7 @@ public class GetHandlerTest extends BaseTestHandler {
     public void testGetLdpc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(Stream.of(TURTLE, NTRIPLES, JSONLD).collect(toList()));
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(
                     MediaType.valueOf(APPLICATION_LD_JSON + "; profile=\"" + compacted.getIRIString() + "\"")));
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
@@ -339,7 +293,8 @@ public class GetHandlerTest extends BaseTestHandler {
     @Test
     public void testGetHTML() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
+        when(mockTrellisRequest.getAcceptableMediaTypes())
+            .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
@@ -398,7 +353,7 @@ public class GetHandlerTest extends BaseTestHandler {
     public void testGetBinary() throws IOException {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
