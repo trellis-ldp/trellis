@@ -15,6 +15,7 @@ package org.trellisldp.api;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Base64.getEncoder;
+import static java.util.Collections.emptyMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.io.IOUtils.readLines;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -30,6 +31,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
@@ -45,6 +48,7 @@ import org.mockito.Mock;
 public class BinaryServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
+    private static final Map<String, List<String>> headers = emptyMap();
 
     private final IRI identifier = rdf.createIRI("trellis:data/resource");
 
@@ -58,7 +62,7 @@ public class BinaryServiceTest {
     public void setUp() {
         initMocks(this);
         doCallRealMethod().when(mockBinaryService).setContent(any(BinaryMetadata.class),
-                any(InputStream.class), any(MessageDigest.class));
+                any(InputStream.class), any(MessageDigest.class), eq(headers));
     }
 
     @Test
@@ -74,12 +78,13 @@ public class BinaryServiceTest {
     @Test
     public void testSetContent() throws Exception {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class))).thenAnswer(inv -> {
-            readLines((InputStream) inv.getArguments()[1], UTF_8);
-            return completedFuture(null);
-        });
-        assertDoesNotThrow(mockBinaryService.setContent(BinaryMetadata.builder(identifier).build(), inputStream,
-                MessageDigest.getInstance("MD5")).thenApply(getEncoder()::encodeToString).thenAccept(digest ->
-            assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))::join);
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), eq(headers)))
+            .thenAnswer(inv -> {
+                readLines((InputStream) inv.getArguments()[1], UTF_8);
+                return completedFuture(null);
+            });
+        assertDoesNotThrow(mockBinaryService.setContent(BinaryMetadata.builder(identifier).build(),
+                inputStream, MessageDigest.getInstance("MD5"), headers).thenApply(getEncoder()::encodeToString)
+                .thenAccept(digest -> assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))::join);
     }
 }

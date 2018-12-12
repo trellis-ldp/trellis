@@ -110,7 +110,7 @@ public class PutHandlerTest extends BaseTestHandler {
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response type");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
 
-        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class), any());
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
     }
 
@@ -126,7 +126,7 @@ public class PutHandlerTest extends BaseTestHandler {
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
 
-        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class), any());
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
     }
 
@@ -259,7 +259,7 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), any()))
             .thenReturn(asyncException());
 
         final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
@@ -283,7 +283,7 @@ public class PutHandlerTest extends BaseTestHandler {
         return Stream.of(
                 () -> assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource)),
                 () -> verify(mockBinaryService, never().description("Binary service shouldn't have been called!"))
-                             .setContent(any(BinaryMetadata.class), any(InputStream.class)),
+                             .setContent(any(BinaryMetadata.class), any(InputStream.class), any()),
                 () -> verify(mockIoService, description("IOService should have been called with an RDF resource"))
                              .read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }
@@ -292,7 +292,7 @@ public class PutHandlerTest extends BaseTestHandler {
         return Stream.of(
                 () -> assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource)),
                 () -> verify(mockBinaryService, description("BinaryService should have been called to set content!"))
-                            .setContent(any(BinaryMetadata.class), any(InputStream.class)),
+                            .setContent(any(BinaryMetadata.class), any(InputStream.class), any()),
                 () -> verify(mockIoService, never().description("IOService shouldn't have been called with a Binary!"))
                             .read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }

@@ -186,7 +186,7 @@ public class PostHandlerTest extends BaseTestHandler {
         assertEquals(create(baseUrl + path), res.getLocation(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
 
-        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class), any());
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
         verify(mockResourceService).create(any(Metadata.class), any(Dataset.class));
     }
@@ -283,7 +283,7 @@ public class PostHandlerTest extends BaseTestHandler {
                             .create(any(Metadata.class), any(Dataset.class)),
                 () -> verify(mockIoService, never().description("entity shouldn't be read!")).read(any(), any(), any()),
                 () -> verify(mockBinaryService, description("content not set on binary service!"))
-                            .setContent(metadataArgument.capture(), any(InputStream.class)),
+                            .setContent(metadataArgument.capture(), any(InputStream.class), any()),
                 () -> assertEquals(of("text/plain"), metadataArgument.getValue().getMimeType(), "Invalid content-type"),
                 () -> assertTrue(metadataArgument.getValue().getIdentifier().getIRIString().startsWith("file:///"),
                                  "Invalid binary ID!"));

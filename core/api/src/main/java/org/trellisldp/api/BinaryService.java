@@ -16,6 +16,8 @@ package org.trellisldp.api;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,9 +36,10 @@ public interface BinaryService extends RetrievalService<Binary> {
      *
      * @param metadata the binary metadata
      * @param stream the content
+     * @param headers HTTP request headers
      * @return the new completion stage
      */
-    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream);
+    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream, Map<String, List<String>> headers);
 
     /**
      * Set the content for a binary object using a digest algorithm.
@@ -45,12 +48,13 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param metadata the binary metadata
      * @param stream the context
      * @param algorithm the digest algorithm
+     * @param headers HTTP request headers
      * @return the new completion stage containing the server-computed digest.
      */
     default CompletableFuture<byte[]> setContent(final BinaryMetadata metadata, final InputStream stream,
-            final MessageDigest algorithm) {
+            final MessageDigest algorithm, final Map<String, List<String>> headers) {
         final DigestInputStream input = new DigestInputStream(stream, algorithm);
-        return setContent(metadata, input).thenApply(future -> input.getMessageDigest().digest());
+        return setContent(metadata, input, headers).thenApply(future -> input.getMessageDigest().digest());
     }
 
     /**
