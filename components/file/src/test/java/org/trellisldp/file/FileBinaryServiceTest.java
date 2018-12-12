@@ -15,6 +15,7 @@ package org.trellisldp.file;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Base64.getEncoder;
+import static java.util.Collections.emptyMap;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,7 +86,7 @@ public class FileBinaryServiceTest {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream("Some data".getBytes(UTF_8));
-        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
+        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream, emptyMap()).join(),
                 "setContent didn't complete cleanly!");
         assertEquals("Some data", uncheckedToString(service.get(fileIRI).thenApply(Binary::getContent).join()),
                         "incorrect value for getContent!");
@@ -138,7 +139,7 @@ public class FileBinaryServiceTest {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
-        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
+        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream, emptyMap()).join(),
                         "Setting content didn't complete cleanly!");
         assertEquals(contents,
                         service.get(fileIRI).thenApply(Binary::getContent).thenApply(this::uncheckedToString).join(),
@@ -162,7 +163,7 @@ public class FileBinaryServiceTest {
         });
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
-        assertAll(() -> service.setContent(BinaryMetadata.builder(fileIRI).build(), throwingMockInputStream)
+        assertAll(() -> service.setContent(BinaryMetadata.builder(fileIRI).build(), throwingMockInputStream, emptyMap())
             .handle((val, err) -> {
                 assertNotNull(err, "There should have been an error with the input stream!");
                 return null;

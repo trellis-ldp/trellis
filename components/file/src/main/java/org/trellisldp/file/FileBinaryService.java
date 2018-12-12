@@ -41,6 +41,8 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -157,7 +159,8 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<Void> setContent(final BinaryMetadata metadata, final InputStream stream) {
+    public CompletableFuture<Void> setContent(final BinaryMetadata metadata, final InputStream stream,
+            final Map<String, List<String>> headers) {
         requireNonNull(stream, "InputStream may not be null!");
         return supplyAsync(() -> {
             final File file = getFileFromIdentifier(metadata.getIdentifier());

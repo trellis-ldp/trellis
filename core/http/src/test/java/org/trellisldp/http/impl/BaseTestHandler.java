@@ -238,12 +238,13 @@ abstract class BaseTestHandler {
             .thenReturn(completedFuture("computed-digest".getBytes()));
         when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), any()))
             .thenAnswer(inv -> {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);
                 return completedFuture(null);
             });
-        doCallRealMethod().when(mockBinaryService).setContent(any(BinaryMetadata.class), any(InputStream.class), any());
+        doCallRealMethod().when(mockBinaryService)
+            .setContent(any(BinaryMetadata.class), any(InputStream.class), any(), any());
     }
 
     private void setUpBundler() {

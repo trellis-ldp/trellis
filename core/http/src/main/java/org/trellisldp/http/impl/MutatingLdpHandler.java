@@ -238,7 +238,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     protected CompletableFuture<Void> persistContent(final BinaryMetadata metadata) {
-        return getServices().getBinaryService().setContent(metadata, entity)
+        return getServices().getBinaryService().setContent(metadata, entity, getRequest().getHeaders())
                         .whenComplete(HttpUtils.closeInputStreamAsync(entity));
     }
 
@@ -249,7 +249,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
         try {
             final String alg = of(digest).map(Digest::getAlgorithm).map(String::toUpperCase)
                 .filter(isEqual("SHA").negate()).orElse("SHA-1");
-            return getServices().getBinaryService().setContent(metadata, entity, MessageDigest.getInstance(alg))
+            return getServices().getBinaryService().setContent(metadata, entity, MessageDigest.getInstance(alg),
+                    getRequest().getHeaders())
                 .thenApply(getEncoder()::encodeToString).thenCompose(serverComputed -> {
                     if (digest.getDigest().equals(serverComputed)) {
                         LOGGER.debug("Successfully persisted digest-verified bitstream: {}", metadata.getIdentifier());
