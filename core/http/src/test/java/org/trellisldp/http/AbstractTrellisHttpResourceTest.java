@@ -1897,8 +1897,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     public void testPutIfNoneMatch() {
-        final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
-
         final Response res = target(BINARY_PATH).request().header("If-None-Match", "\"foo\", \"bar\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
