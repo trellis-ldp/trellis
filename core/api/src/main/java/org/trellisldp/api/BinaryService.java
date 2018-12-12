@@ -36,10 +36,10 @@ public interface BinaryService extends RetrievalService<Binary> {
      *
      * @param metadata the binary metadata
      * @param stream the content
-     * @param headers HTTP request headers
+     * @param hints any hints for storing the binary data
      * @return the new completion stage
      */
-    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream, Map<String, List<String>> headers);
+    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream, Map<String, List<String>> hints);
 
     /**
      * Set the content for a binary object using a digest algorithm.
@@ -48,13 +48,13 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param metadata the binary metadata
      * @param stream the context
      * @param algorithm the digest algorithm
-     * @param headers HTTP request headers
+     * @param hints any hints for storing the binary data
      * @return the new completion stage containing the server-computed digest.
      */
     default CompletableFuture<byte[]> setContent(final BinaryMetadata metadata, final InputStream stream,
-            final MessageDigest algorithm, final Map<String, List<String>> headers) {
+            final MessageDigest algorithm, final Map<String, List<String>> hints) {
         final DigestInputStream input = new DigestInputStream(stream, algorithm);
-        return setContent(metadata, input, headers).thenApply(future -> input.getMessageDigest().digest());
+        return setContent(metadata, input, hints).thenApply(future -> input.getMessageDigest().digest());
     }
 
     /**

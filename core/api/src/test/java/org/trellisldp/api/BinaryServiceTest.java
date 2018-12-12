@@ -48,7 +48,7 @@ import org.mockito.Mock;
 public class BinaryServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
-    private static final Map<String, List<String>> headers = emptyMap();
+    private static final Map<String, List<String>> hints = emptyMap();
 
     private final IRI identifier = rdf.createIRI("trellis:data/resource");
 
@@ -62,7 +62,7 @@ public class BinaryServiceTest {
     public void setUp() {
         initMocks(this);
         doCallRealMethod().when(mockBinaryService).setContent(any(BinaryMetadata.class),
-                any(InputStream.class), any(MessageDigest.class), eq(headers));
+                any(InputStream.class), any(MessageDigest.class), eq(hints));
     }
 
     @Test
@@ -78,13 +78,13 @@ public class BinaryServiceTest {
     @Test
     public void testSetContent() throws Exception {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), eq(headers)))
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), eq(hints)))
             .thenAnswer(inv -> {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);
                 return completedFuture(null);
             });
         assertDoesNotThrow(mockBinaryService.setContent(BinaryMetadata.builder(identifier).build(),
-                inputStream, MessageDigest.getInstance("MD5"), headers).thenApply(getEncoder()::encodeToString)
+                inputStream, MessageDigest.getInstance("MD5"), hints).thenApply(getEncoder()::encodeToString)
                 .thenAccept(digest -> assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))::join);
     }
 }
