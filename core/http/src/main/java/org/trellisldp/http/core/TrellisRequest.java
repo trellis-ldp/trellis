@@ -24,12 +24,17 @@ import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.SecurityContext;
@@ -49,7 +54,7 @@ public class TrellisRequest {
     private final List<MediaType> acceptableMediaTypes;
 
     private final MultivaluedMap<String, String> headers;
-    private final MultivaluedMap<String, String> parameters;
+    private final Map<String, String> parameters = new HashMap<>();
 
     /**
      * Bundle together some request contexts.
@@ -71,13 +76,14 @@ public class TrellisRequest {
     public TrellisRequest(final Request request, final UriInfo uriInfo, final HttpHeaders headers,
             final SecurityContext secCtx) {
         // Extract header values
-        this.headers = headers.getRequestHeaders();
-        this.acceptableMediaTypes = headers.getAcceptableMediaTypes();
+        this.acceptableMediaTypes = new ArrayList<>(headers.getAcceptableMediaTypes());
+        this.headers = new MultivaluedHashMap<String, String>(headers.getRequestHeaders());
 
         // Extract URI values
-        this.parameters = uriInfo.getQueryParameters();
         this.baseUrl = uriInfo.getBaseUri().toString();
         this.path = uriInfo.getPathParameters().getFirst("path");
+        uriInfo.getQueryParameters().forEach((key, values) ->
+                values.stream().findFirst().ifPresent(v -> parameters.put(key, v)));
 
         // Extract request method
         this.method = request.getMethod();
@@ -93,7 +99,7 @@ public class TrellisRequest {
      * @return the Content-Type header
      */
     public String getContentType() {
-        return headers.getFirst(CONTENT_TYPE);
+        return getFirst(CONTENT_TYPE).orElse(null);
     }
 
     /**
@@ -102,7 +108,7 @@ public class TrellisRequest {
      * @return the value of the slug header
      */
     public String getSlug() {
-        return headers.getFirst(SLUG);
+        return getFirst(SLUG).orElse(null);
     }
 
     /**
@@ -111,7 +117,7 @@ public class TrellisRequest {
      * @return the Link header
      */
     public Link getLink() {
-        return ofNullable(headers.getFirst(LINK)).map(Link::valueOf).orElse(null);
+        return getFirst(LINK).map(Link::valueOf).orElse(null);
     }
 
     /**
@@ -120,7 +126,7 @@ public class TrellisRequest {
      * @return the accept-datetime header
      */
     public AcceptDatetime getDatetime() {
-        return ofNullable(headers.getFirst(ACCEPT_DATETIME)).map(AcceptDatetime::valueOf).orElse(null);
+        return getFirst(ACCEPT_DATETIME).map(AcceptDatetime::valueOf).orElse(null);
     }
 
     /**
@@ -129,7 +135,7 @@ public class TrellisRequest {
      * @return the Prefer header
      */
     public Prefer getPrefer() {
-        return ofNullable(headers.getFirst(PREFER)).map(Prefer::valueOf).orElse(null);
+        return getFirst(PREFER).map(Prefer::valueOf).orElse(null);
     }
 
     /**
@@ -138,7 +144,7 @@ public class TrellisRequest {
      * @return the Want-Digest header
      */
     public WantDigest getWantDigest() {
-        return ofNullable(headers.getFirst(WANT_DIGEST)).map(WantDigest::new).orElse(null);
+        return getFirst(WANT_DIGEST).map(WantDigest::new).orElse(null);
     }
 
     /**
@@ -147,7 +153,7 @@ public class TrellisRequest {
      * @return the Digest header
      */
     public Digest getDigest() {
-        return ofNullable(headers.getFirst(DIGEST)).map(Digest::valueOf).orElse(null);
+        return getFirst(DIGEST).map(Digest::valueOf).orElse(null);
     }
 
     /**
@@ -156,7 +162,7 @@ public class TrellisRequest {
      * @return the range header
      */
     public Range getRange() {
-        return ofNullable(headers.getFirst(RANGE)).map(Range::valueOf).orElse(null);
+        return getFirst(RANGE).map(Range::valueOf).orElse(null);
     }
 
     /**
@@ -174,7 +180,7 @@ public class TrellisRequest {
      * @return the version query parameter
      */
     public Version getVersion() {
-        return ofNullable(parameters.getFirst("version")).map(Version::valueOf).orElse(null);
+        return ofNullable(parameters.get("version")).map(Version::valueOf).orElse(null);
     }
 
     /**
@@ -183,7 +189,7 @@ public class TrellisRequest {
      * @return the ext query parameter
      */
     public String getExt() {
-        return parameters.getFirst("ext");
+        return parameters.get("ext");
     }
 
     /**
@@ -192,7 +198,7 @@ public class TrellisRequest {
      * @return the subject filter
      */
     public String getSubject() {
-        return parameters.getFirst("subject");
+        return parameters.get("subject");
     }
 
     /**
@@ -201,7 +207,7 @@ public class TrellisRequest {
      * @return the predicate filter
      */
     public String getPredicate() {
-        return parameters.getFirst("predicate");
+        return parameters.get("predicate");
     }
 
     /**
@@ -210,7 +216,7 @@ public class TrellisRequest {
      * @return the object filter
      */
     public String getObject() {
-        return parameters.getFirst("object");
+        return parameters.get("object");
     }
 
     /**
@@ -241,6 +247,7 @@ public class TrellisRequest {
 
     /**
      * Get all of the headers.
+     * @implNote All header keys will be lower case
      * @return the headers
      */
     public MultivaluedMap<String, String> getHeaders() {
@@ -254,5 +261,9 @@ public class TrellisRequest {
      */
     public List<MediaType> getAcceptableMediaTypes() {
         return acceptableMediaTypes;
+    }
+
+    private Optional<String> getFirst(final String key) {
+        return ofNullable(headers.getFirst(key.toLowerCase()));
     }
 }

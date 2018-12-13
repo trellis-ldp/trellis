@@ -88,11 +88,13 @@ class BaseLdpHandler {
      * @param etag the resource's etag
      */
     protected void checkCache(final Instant modified, final EntityTag etag) {
-        HttpUtils.checkIfMatch(getRequest().getHeaders().getFirst(IF_MATCH), etag);
-        HttpUtils.checkIfUnmodifiedSince(getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE), modified);
-        HttpUtils.checkIfNoneMatch(getRequest().getMethod(), getRequest().getHeaders().getFirst(IF_NONE_MATCH), etag);
-        HttpUtils.checkIfModifiedSince(getRequest().getMethod(), getRequest().getHeaders().getFirst(IF_MODIFIED_SINCE),
-                modified);
+        HttpUtils.checkIfMatch(getRequest().getHeaders().getFirst(IF_MATCH.toLowerCase()), etag);
+        HttpUtils.checkIfUnmodifiedSince(getRequest().getHeaders()
+                .getFirst(IF_UNMODIFIED_SINCE.toLowerCase()), modified);
+        HttpUtils.checkIfNoneMatch(getRequest().getMethod(),
+                getRequest().getHeaders().getFirst(IF_NONE_MATCH.toLowerCase()), etag);
+        HttpUtils.checkIfModifiedSince(getRequest().getMethod(),
+                getRequest().getHeaders().getFirst(IF_MODIFIED_SINCE.toLowerCase()), modified);
     }
 
     /**
