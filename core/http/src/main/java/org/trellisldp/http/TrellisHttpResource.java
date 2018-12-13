@@ -47,6 +47,7 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.RedirectionException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
@@ -395,7 +396,7 @@ public class TrellisHttpResource {
     }
 
     private Response handleException(final Throwable err) {
-        if (!(err.getCause() instanceof ClientErrorException)) {
+        if (!(err.getCause() instanceof ClientErrorException || err.getCause() instanceof RedirectionException)) {
             LOGGER.error("Trellis Error:", err);
         }
         return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
