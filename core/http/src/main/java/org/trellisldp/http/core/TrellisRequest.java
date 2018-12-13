@@ -53,7 +53,7 @@ public class TrellisRequest {
     private final String method;
     private final List<MediaType> acceptableMediaTypes;
 
-    private final MultivaluedMap<String, String> headers;
+    private final MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
     private final Map<String, String> parameters = new HashMap<>();
 
     /**
@@ -77,7 +77,8 @@ public class TrellisRequest {
             final SecurityContext secCtx) {
         // Extract header values
         this.acceptableMediaTypes = new ArrayList<>(headers.getAcceptableMediaTypes());
-        this.headers = new MultivaluedHashMap<String, String>(headers.getRequestHeaders());
+        headers.getRequestHeaders().forEach((key, values) ->
+                values.forEach(v -> this.headers.add(key.toLowerCase(), v)));
 
         // Extract URI values
         this.baseUrl = uriInfo.getBaseUri().toString();
