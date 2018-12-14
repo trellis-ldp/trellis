@@ -171,7 +171,8 @@ public class PostHandler extends MutatingLdpHandler {
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
             final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
-            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
+            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService()
+                    .generateIdentifier(internalId.getIRIString()));
 
             // Persist the content
             final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType).build();

@@ -285,7 +285,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
                 return completedFuture(null);
             });
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
-        when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
+        when(mockBinaryService.generateIdentifier(anyString())).thenReturn(RANDOM_VALUE);
         doCallRealMethod().when(mockBinaryService)
             .setContent(any(BinaryMetadata.class), any(InputStream.class), any(), any());
     }

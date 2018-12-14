@@ -232,7 +232,7 @@ abstract class BaseTestHandler {
     private void setUpBinaryService() throws Exception {
         when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
-        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
+        when(mockBinaryService.generateIdentifier(any())).thenReturn("file:///" + randomUUID());
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA-1")));
         when(mockBinaryService.calculateDigest(any(IRI.class), any(MessageDigest.class)))
             .thenReturn(completedFuture("computed-digest".getBytes()));

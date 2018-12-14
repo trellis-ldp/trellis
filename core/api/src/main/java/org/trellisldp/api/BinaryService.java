@@ -89,7 +89,11 @@ public interface BinaryService extends RetrievalService<Binary> {
     /**
      * Get a new identifier.
      *
+     * @apiNote an implementation is free to ignore the {@code hint} parameter entirely. The HTTP
+     *          layer will provide the corresponding resource identifier, and in certain cases,
+     *          that information may be helpful to know where to place the binary in persistent storage.
+     * @param hint a hint about the new identifier to generate. This could be the
      * @return a new identifier
      */
-    String generateIdentifier();
+    String generateIdentifier(String hint);
 }

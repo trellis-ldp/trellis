@@ -97,8 +97,9 @@ public class FileBinaryServiceTest {
     @Test
     public void testIdSupplier() {
         final BinaryService service = new FileBinaryService();
-        assertTrue(service.generateIdentifier().startsWith("file:///"), "Identifier has incorrect prefix!");
-        assertNotEquals(service.generateIdentifier(), service.generateIdentifier(), "Identifiers are not unique!");
+        assertTrue(service.generateIdentifier(null).startsWith("file:///"), "Identifier has incorrect prefix!");
+        assertNotEquals(service.generateIdentifier("foo"), service.generateIdentifier("bar"),
+                "Identifiers are not unique!");
     }
 
     @Test

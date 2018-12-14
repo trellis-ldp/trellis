@@ -187,7 +187,7 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public String generateIdentifier() {
+    public String generateIdentifier(final String hint) {
         return idSupplier.get();
     }
 
