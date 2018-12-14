@@ -22,9 +22,9 @@ public class CacheConfiguration {
 
     private Integer maxAge = 86400;
 
-    private Boolean mustRevalidate = true;
+    private boolean mustRevalidate = true;
 
-    private Boolean noCache = false;
+    private boolean noCache = false;
 
     /**
      * Set the cache max-age value.
@@ -49,7 +49,7 @@ public class CacheConfiguration {
      * @param mustRevalidate the cache must-revalidate header value
      */
     @JsonProperty
-    public void setMustRevalidate(final Boolean mustRevalidate) {
+    public void setMustRevalidate(final boolean mustRevalidate) {
         this.mustRevalidate = mustRevalidate;
     }
 
@@ -58,7 +58,7 @@ public class CacheConfiguration {
      * @return the must-revalidate value
      */
     @JsonProperty
-    public Boolean getMustRevalidate() {
+    public boolean getMustRevalidate() {
         return mustRevalidate;
     }
 
@@ -67,7 +67,7 @@ public class CacheConfiguration {
      * @param noCache the no-cache header value
      */
     @JsonProperty
-    public void setNoCache(final Boolean noCache) {
+    public void setNoCache(final boolean noCache) {
         this.noCache = noCache;
     }
 
@@ -76,7 +76,7 @@ public class CacheConfiguration {
      * @return the no-cache value
      */
     @JsonProperty
-    public Boolean getNoCache() {
+    public boolean getNoCache() {
         return noCache;
     }
 }

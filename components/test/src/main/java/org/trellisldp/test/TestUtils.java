@@ -217,7 +217,7 @@ public final class TestUtils {
      * @param time an instant
      * @return true if it is now later than the provided instant; false otherwise
      */
-    public static Boolean isReallyLaterThan(final Instant time) {
+    public static boolean isReallyLaterThan(final Instant time) {
         final Instant t = now();
         return t.isAfter(time) && t.getEpochSecond() > time.getEpochSecond();
     }

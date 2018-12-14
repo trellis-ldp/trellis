@@ -184,7 +184,7 @@ public final class MementoResource {
      * @param filter whether to filter the memento parameters
      * @return a Link without Memento parameters, if desired; otherwise, the original link
      */
-    public static Link filterLinkParams(final Link link, final Boolean filter) {
+    public static Link filterLinkParams(final Link link, final boolean filter) {
         // from and until parameters can cause problems with downstream applications because they contain commas. This
         // method makes it possible to filter out those params, if desired. By default, they are not filtered out.
         if (filter) {

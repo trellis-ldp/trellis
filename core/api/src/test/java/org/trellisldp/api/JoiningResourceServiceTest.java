@@ -191,7 +191,7 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
-        public Boolean hasAcl() {
+        public boolean hasAcl() {
             return false;
         }
 

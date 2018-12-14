@@ -81,7 +81,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      * @param initialize true if the TrellisHttpResource object should be initialized; false otherwise
      * @return the LDP resource matcher
      */
-    protected Object getLdpComponent(final T config, final Boolean initialize) {
+    protected Object getLdpComponent(final T config, final boolean initialize) {
         final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(), config.getBaseUrl());
         if (initialize) {
             ldpResource.initialize();

@@ -37,5 +37,5 @@ public interface NamespaceService {
      * @param namespace the namespace
      * @return whether the new prefix was set
      */
-    Boolean setPrefix(String prefix, String namespace);
+    boolean setPrefix(String prefix, String namespace);
 }

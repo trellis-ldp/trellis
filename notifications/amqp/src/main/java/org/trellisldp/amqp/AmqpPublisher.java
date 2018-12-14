@@ -14,7 +14,6 @@
 package org.trellisldp.amqp;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.findFirst;
 
@@ -67,8 +66,8 @@ public class AmqpPublisher implements EventService {
     private final Channel channel;
     private final String exchangeName;
     private final String routingKey;
-    private final Boolean mandatory;
-    private final Boolean immediate;
+    private final boolean mandatory;
+    private final boolean immediate;
 
     /**
      * Create an AMQP publisher.
@@ -99,7 +98,7 @@ public class AmqpPublisher implements EventService {
      * @param routingKey the routing key
      */
     public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey) {
-        this(channel, exchangeName, routingKey, null, null);
+        this(channel, exchangeName, routingKey, true, false);
     }
 
     /**
@@ -111,13 +110,13 @@ public class AmqpPublisher implements EventService {
      * @param immediate the immediate setting
      */
     public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey,
-            final Boolean mandatory, final Boolean immediate) {
+            final boolean mandatory, final boolean immediate) {
         this.channel = requireNonNull(channel, "AMQP Channel may not be null!");
         this.exchangeName = requireNonNull(exchangeName, "AMQP exchange name may not be null!");
         this.routingKey = requireNonNull(routingKey, "AMQP routing key may not be null!");
 
-        this.mandatory = ofNullable(mandatory).orElse(true);
-        this.immediate = ofNullable(immediate).orElse(false);
+        this.mandatory = mandatory;
+        this.immediate = immediate;
     }
 
     @Override

@@ -110,7 +110,7 @@ public class FileResource implements Resource {
     }
 
     @Override
-    public Boolean hasAcl() {
+    public boolean hasAcl() {
         try (final Stream<Triple> triples = stream(Trellis.PreferAccessControl)) {
             return triples.findFirst().isPresent();
         }

@@ -282,7 +282,7 @@ public class PutHandler extends MutatingLdpHandler {
         return getServices().getAuditService().creation(internalId, getSession());
     }
 
-    private Boolean isBinaryDescription() {
+    private boolean isBinaryDescription() {
         return nonNull(getResource()) && LDP.NonRDFSource.equals(getResource().getInteractionModel())
             && nonNull(rdfSyntax);
     }

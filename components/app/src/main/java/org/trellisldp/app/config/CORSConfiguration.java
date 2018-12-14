@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class CORSConfiguration {
 
-    private Boolean enabled = false;
+    private boolean enabled = false;
 
     private List<String> origins = asList("*");
 
@@ -38,7 +38,7 @@ public class CORSConfiguration {
             "Memento-Datetime", "Preference-Applied", "Location",
             "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary");
 
-    private Boolean allowCredentials = true;
+    private boolean allowCredentials = true;
 
     private Integer maxAge = 180;
 
@@ -47,7 +47,7 @@ public class CORSConfiguration {
      * @return true if CORS is enabled; false otherwise
      */
     @JsonProperty
-    public Boolean getEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 
@@ -56,7 +56,7 @@ public class CORSConfiguration {
      * @param enabled true if CORS is enabled; false otherwise
      */
     @JsonProperty
-    public void setEnabled(final Boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -155,7 +155,7 @@ public class CORSConfiguration {
      * @return true if Allow-Credentials is set; false otherwise
      */
     @JsonProperty
-    public Boolean getAllowCredentials() {
+    public boolean getAllowCredentials() {
         return allowCredentials;
     }
 
@@ -164,7 +164,7 @@ public class CORSConfiguration {
      * @param allowCredentials true if Allow-Credentials should be included; false otherwise
      */
     @JsonProperty
-    public void setAllowCredentials(final Boolean allowCredentials) {
+    public void setAllowCredentials(final boolean allowCredentials) {
         this.allowCredentials = allowCredentials;
     }
 }

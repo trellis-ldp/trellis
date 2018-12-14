@@ -107,7 +107,7 @@ class LabelledTriple {
      *
      * @return true if the object is an IRI; false otherwise
      */
-    public Boolean getObjectIsIRI() {
+    public boolean getObjectIsIRI() {
         return triple.getObject() instanceof IRI;
     }
 }

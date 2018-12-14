@@ -170,7 +170,7 @@ abstract class BaseTestHandler {
     }
 
     private static Executable checkAllowHeader(final List<String> expected, final String actual, final String method) {
-        final Boolean expectation = expected.contains(method);
+        final boolean expectation = expected.contains(method);
         return () -> assertEquals(expectation, actual.contains(method), "Expecting method " + method + " to be "
                 + (expectation ? "present" : "absent"));
     }
@@ -184,7 +184,7 @@ abstract class BaseTestHandler {
     }
 
     private static Executable checkLdpType(final Set<String> expected, final Set<String> actual, final IRI type) {
-        final Boolean expectation = expected.contains(type);
+        final boolean expectation = expected.contains(type);
         return () -> assertEquals(expectation, actual.contains(type), "Expecting " + type + " to be "
                 + (expectation ? "present" : "absent"));
     }

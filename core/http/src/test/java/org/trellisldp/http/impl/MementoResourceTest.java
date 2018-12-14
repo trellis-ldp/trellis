@@ -38,7 +38,7 @@ public class MementoResourceTest {
     public void testFilteredMementoLink() {
         final Link link = fromUri("http://example.com/resource/memento/1").rel(MEMENTO)
             .param(DATETIME, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-        final Boolean filter = true;
+        final boolean filter = true;
         assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(DATETIME));
         assertFalse(MementoResource.filterLinkParams(link, filter).getParams().containsKey(DATETIME));
     }
@@ -48,7 +48,7 @@ public class MementoResourceTest {
         final Link link = fromUri("http://example.com/resource/timemap").rel(TIMEMAP)
             .param(FROM, ofInstant(now().minusSeconds(1000), UTC).format(RFC_1123_DATE_TIME))
             .param(UNTIL, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-        final Boolean filter = true;
+        final boolean filter = true;
         assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(FROM));
         assertFalse(MementoResource.filterLinkParams(link, filter).getParams().containsKey(FROM));
         assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(UNTIL));
@@ -60,7 +60,7 @@ public class MementoResourceTest {
         final Link link = fromUri("http://example.com/resource").rel(TYPE)
             .param(FROM, ofInstant(now().minusSeconds(1000), UTC).format(RFC_1123_DATE_TIME))
             .param(UNTIL, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-        final Boolean filter = true;
+        final boolean filter = true;
         assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(FROM));
         assertTrue(MementoResource.filterLinkParams(link, filter).getParams().containsKey(FROM));
         assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(UNTIL));

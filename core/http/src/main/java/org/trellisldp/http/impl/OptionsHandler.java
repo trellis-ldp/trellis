@@ -61,7 +61,7 @@ public class OptionsHandler extends BaseLdpHandler {
     private static final Logger LOGGER = getLogger(OptionsHandler.class);
 
     private final IRI graphName;
-    private final Boolean isMemento;
+    private final boolean isMemento;
 
     /**
      * An OPTIONS response builder.
@@ -71,7 +71,7 @@ public class OptionsHandler extends BaseLdpHandler {
      * @param isMemento true if the resource is a memento; false otherwise
      * @param baseUrl the base URL
      */
-    public OptionsHandler(final TrellisRequest req, final ServiceBundler trellis, final Boolean isMemento,
+    public OptionsHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
             final String baseUrl) {
         super(req, trellis, baseUrl);
         this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;

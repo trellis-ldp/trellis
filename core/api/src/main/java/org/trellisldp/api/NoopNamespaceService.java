@@ -31,7 +31,7 @@ public class NoopNamespaceService implements NamespaceService {
     }
 
     @Override
-    public Boolean setPrefix(final String prefix, final String namespace) {
+    public boolean setPrefix(final String prefix, final String namespace) {
         return true;
     }
 }

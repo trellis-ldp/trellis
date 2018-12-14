@@ -237,7 +237,7 @@ public final class FileUtils {
         return quads.stream();
     }
 
-    private static Boolean notServerManaged(final Quad quad) {
+    private static boolean notServerManaged(final Quad quad) {
         return !quad.getGraphName().filter(isEqual(PreferServerManaged)).isPresent();
     }
 

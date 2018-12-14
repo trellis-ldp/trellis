@@ -118,7 +118,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
 
-    private final Boolean isMemento;
+    private final boolean isMemento;
 
     private RDFSyntax syntax;
 
@@ -130,7 +130,7 @@ public class GetHandler extends BaseLdpHandler {
      * @param isMemento true if the resource is a memento; false otherwise
      * @param baseUrl the base URL
      */
-    public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final Boolean isMemento,
+    public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
             final String baseUrl) {
         super(req, trellis, baseUrl);
         this.isMemento = isMemento;

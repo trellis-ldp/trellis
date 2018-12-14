@@ -2368,12 +2368,12 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             .stream().map(Link::valueOf).collect(toList());
     }
 
-    private Boolean hasTimeGateLink(final Response res, final String path) {
+    private boolean hasTimeGateLink(final Response res, final String path) {
         return getLinks(res).stream().anyMatch(l ->
                 l.getRel().contains("timegate") && l.getUri().toString().equals(getBaseUrl() + path));
     }
 
-    private Boolean hasOriginalLink(final Response res, final String path) {
+    private boolean hasOriginalLink(final Response res, final String path) {
         return getLinks(res).stream().anyMatch(l ->
                 l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + path));
     }

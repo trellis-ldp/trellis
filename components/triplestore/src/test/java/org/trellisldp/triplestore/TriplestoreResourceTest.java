@@ -292,7 +292,7 @@ public class TriplestoreResourceTest {
     }
 
     private static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
-            final Boolean hasBinary, final Boolean hasAcl, final Boolean hasParent) {
+            final boolean hasBinary, final boolean hasAcl, final boolean hasParent) {
         return Stream.of(
                 () -> assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!"),
                 () -> assertEquals(ldpType, res.getInteractionModel(), "Incorrect interaction model!"),

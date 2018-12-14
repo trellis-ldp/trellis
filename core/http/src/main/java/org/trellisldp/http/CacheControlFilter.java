@@ -49,8 +49,8 @@ public class CacheControlFilter implements ContainerResponseFilter {
     private static final Configuration config = getConfiguration();
 
     private final Integer cacheAge;
-    private final Boolean revalidate;
-    private final Boolean noCache;
+    private final boolean revalidate;
+    private final boolean noCache;
 
     /**
      * Create a new CacheControl Decorator.
@@ -69,7 +69,7 @@ public class CacheControlFilter implements ContainerResponseFilter {
      * @param revalidate whether the cache must verify the status of stale resources
      * @param noCache whether to set the no-cache value
      */
-    public CacheControlFilter(final Integer cacheAge, final Boolean revalidate, final Boolean noCache) {
+    public CacheControlFilter(final Integer cacheAge, final boolean revalidate, final boolean noCache) {
         this.cacheAge = cacheAge;
         this.revalidate = revalidate;
         this.noCache = noCache;

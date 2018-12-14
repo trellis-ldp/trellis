@@ -50,7 +50,7 @@ public abstract class AbstractVocabularyTest {
 
     public abstract Class<?> vocabulary();
 
-    public Boolean isStrict() {
+    public boolean isStrict() {
         return true;
     }
 

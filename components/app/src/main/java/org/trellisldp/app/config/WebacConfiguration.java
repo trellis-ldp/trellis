@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class WebacConfiguration {
 
-    private Boolean enabled = true;
+    private boolean enabled = true;
     private Long cacheSize = 1000L;
     private Long cacheExpireSeconds = 600L;
 
@@ -29,7 +29,7 @@ public class WebacConfiguration {
      * @return true if basic auth is enabled; false otherwise
      */
     @JsonProperty
-    public Boolean getEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 
@@ -38,7 +38,7 @@ public class WebacConfiguration {
      * @param enabled true if basic auth is enabled; false otherwise
      */
     @JsonProperty
-    public void setEnabled(final Boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 

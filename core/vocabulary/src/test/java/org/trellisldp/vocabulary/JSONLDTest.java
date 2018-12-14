@@ -20,7 +20,7 @@ package org.trellisldp.vocabulary;
 public class JSONLDTest extends AbstractVocabularyTest {
 
     @Override
-    public Boolean isStrict() {
+    public boolean isStrict() {
         return false;
     }
 

@@ -119,11 +119,11 @@ public class TriplestoreResource implements Resource {
      * Test whether this resource exists.
      * @return true if this resource exists; false otherwise
      */
-    protected Boolean exists() {
+    protected boolean exists() {
         return nonNull(getModified()) && nonNull(getInteractionModel());
     }
 
-    protected Boolean isDeleted() {
+    protected boolean isDeleted() {
         return asIRI(DC.type).filter(isEqual(Trellis.DeletedResource)).isPresent();
     }
 
@@ -239,7 +239,7 @@ public class TriplestoreResource implements Resource {
     }
 
     @Override
-    public Boolean hasAcl() {
+    public boolean hasAcl() {
         return fetchAclQuads().findAny().isPresent();
     }
 

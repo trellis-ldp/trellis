@@ -102,7 +102,7 @@ class BaseLdpHandler {
      * @param interactionModel the interaction model
      * @return true if the interaction model is supported; false otherwise
      */
-    protected Boolean supportsInteractionModel(final IRI interactionModel) {
+    protected boolean supportsInteractionModel(final IRI interactionModel) {
         return getServices().getResourceService().supportedInteractionModels().contains(interactionModel);
     }
 
