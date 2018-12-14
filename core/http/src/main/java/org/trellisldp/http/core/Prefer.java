@@ -161,7 +161,7 @@ public class Prefer {
      *
      * @return true if the respond-async parameter was set; false otherwise
      */
-    public Boolean getRespondAsync() {
+    public boolean getRespondAsync() {
         return params.contains("respond-async");
     }
 

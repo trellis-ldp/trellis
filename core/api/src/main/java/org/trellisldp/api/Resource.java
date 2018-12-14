@@ -239,7 +239,7 @@ public interface Resource {
      *
      * @return true if this resource has and ACL resource; false otherwise
      */
-    default Boolean hasAcl() {
+    default boolean hasAcl() {
         return false;
     }
 

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class BasicAuthConfiguration {
 
-    private Boolean enabled = true;
+    private boolean enabled = true;
 
     private String usersFile;
 
@@ -29,7 +29,7 @@ public class BasicAuthConfiguration {
      * @return true if basic auth is enabled; false otherwise
      */
     @JsonProperty
-    public Boolean getEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 
@@ -38,7 +38,7 @@ public class BasicAuthConfiguration {
      * @param enabled true if basic auth is enabled; false otherwise
      */
     @JsonProperty
-    public void setEnabled(final Boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 

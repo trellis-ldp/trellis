@@ -88,7 +88,7 @@ public class WebACService implements AccessControlService {
 
     private final ResourceService resourceService;
     private final CacheService<String, Set<IRI>> cache;
-    private final Boolean checkMembershipResources;
+    private final boolean checkMembershipResources;
 
     /**
      * Create a WebAC-based authorization service.
@@ -127,7 +127,7 @@ public class WebACService implements AccessControlService {
      * @param checkMembershipResources whether to check membership resource permissions (default=false)
      */
     public WebACService(final ResourceService resourceService,
-            final CacheService<String, Set<IRI>> cache, final Boolean checkMembershipResources) {
+            final CacheService<String, Set<IRI>> cache, final boolean checkMembershipResources) {
         this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.cache = requireNonNull(cache, "A non-null Cache must be provided!");
         this.checkMembershipResources = checkMembershipResources;
@@ -155,7 +155,7 @@ public class WebACService implements AccessControlService {
         return join("||", identifier.getIRIString(), agent.getIRIString());
     }
 
-    private Boolean hasWritableMode(final Set<IRI> modes) {
+    private boolean hasWritableMode(final Set<IRI> modes) {
         return modes.contains(ACL.Write) || modes.contains(ACL.Append);
     }
 
@@ -183,7 +183,7 @@ public class WebACService implements AccessControlService {
             .flatMap(auth -> auth.getMode().stream()).collect(toSet());
     }
 
-    private Boolean resourceExists(final Resource res) {
+    private boolean resourceExists(final Resource res) {
         return !MISSING_RESOURCE.equals(res) && !DELETED_RESOURCE.equals(res);
     }
 
@@ -227,7 +227,7 @@ public class WebACService implements AccessControlService {
             }).collect(toList());
     }
 
-    private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final Boolean inherited) {
+    private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
         if (resource.hasAcl()) {
             try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).collect(toGraph()))) {

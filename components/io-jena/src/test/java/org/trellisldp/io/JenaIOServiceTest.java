@@ -492,7 +492,7 @@ public class JenaIOServiceTest {
 
     }
 
-    private static Boolean validateGraph(final Graph graph) {
+    private static boolean validateGraph(final Graph graph) {
         return getTriples().map(graph::contains).reduce(true, (acc, x) -> acc && x);
     }
 

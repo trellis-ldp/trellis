@@ -30,7 +30,7 @@ public class NotificationsConfiguration {
     }
 
     private String topic = "trellis";
-    private Boolean enabled = false;
+    private boolean enabled = false;
     private Type type = Type.NONE;
     private String connectionString;
     private Map<String, String> other = new HashMap<>();
@@ -40,7 +40,7 @@ public class NotificationsConfiguration {
      * @return true if notifications are enabled; false otherwise
      */
     @JsonProperty
-    public Boolean getEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 
@@ -49,7 +49,7 @@ public class NotificationsConfiguration {
      * @param enabled true if notifications are enabled; false otherwise
      */
     @JsonProperty
-    public void setEnabled(final Boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 

@@ -1320,7 +1320,7 @@ public class TriplestoreResourceServiceTest {
         return t2;
     }
 
-    private static Boolean isReallyLaterThan(final Instant time) {
+    private static boolean isReallyLaterThan(final Instant time) {
         final Instant t = now();
         return t.isAfter(time) && (t.toEpochMilli() > time.toEpochMilli() || t.getNano() > time.getNano());
     }

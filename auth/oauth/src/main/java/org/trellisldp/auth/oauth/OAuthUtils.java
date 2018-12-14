@@ -174,7 +174,7 @@ public final class OAuthUtils {
      * @param url the putative URL
      * @return true if the string looks like a URL; false otherwise
      */
-    private static Boolean isUrl(final String url) {
+    private static boolean isUrl(final String url) {
         return url.startsWith("http://") || url.startsWith("https://");
     }
 

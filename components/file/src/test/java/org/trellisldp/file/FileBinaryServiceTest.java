@@ -216,7 +216,7 @@ public class FileBinaryServiceTest {
                         .handle(this::checkError).join(), "Shouldn't be able to fetch content from a bad IRI!");
     }
 
-    private Boolean checkError(final Object asyncValue, final Throwable err) {
+    private boolean checkError(final Object asyncValue, final Throwable err) {
         assertNull(asyncValue, "The async value should be null!");
         assertNotNull(err, "There should be an async error!");
         return false;

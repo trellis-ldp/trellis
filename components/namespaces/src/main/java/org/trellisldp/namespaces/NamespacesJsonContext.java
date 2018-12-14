@@ -74,7 +74,7 @@ public class NamespacesJsonContext implements NamespaceService {
     }
 
     @Override
-    public Boolean setPrefix(final String prefix, final String namespace) {
+    public boolean setPrefix(final String prefix, final String namespace) {
         requireNonNull(prefix, "The prefix value may not be null!");
         requireNonNull(namespace, "The namespce value may not be null!");
 

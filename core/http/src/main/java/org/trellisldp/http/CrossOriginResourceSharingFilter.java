@@ -75,7 +75,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
     private final Set<String> allowedMethods;
     private final Set<String> allowedHeaders;
     private final Set<String> exposedHeaders;
-    private final Boolean credentials;
+    private final boolean credentials;
     private final Integer cacheSeconds;
 
     /**
@@ -106,7 +106,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
      * @param cacheSeconds set this to a value greater than zero to set the Access-Control-Max-Age header
      */
     public CrossOriginResourceSharingFilter(final Collection<String> origins, final Collection<String> allowedMethods,
-            final Collection<String> allowedHeaders, final Collection<String> exposedHeaders, final Boolean credentials,
+            final Collection<String> allowedHeaders, final Collection<String> exposedHeaders, final boolean credentials,
             final Integer cacheSeconds) {
         this.origins = new HashSet<>(origins);
         this.allowedMethods = new HashSet<>(allowedMethods);
@@ -130,7 +130,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         return handleSimpleRequest(req);
     }
 
-    private Boolean originMatches(final String origin) {
+    private boolean originMatches(final String origin) {
         return origins.contains(origin) || origins.contains("*");
     }
 

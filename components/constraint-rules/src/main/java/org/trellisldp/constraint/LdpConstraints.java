@@ -119,7 +119,7 @@ public class LdpConstraints implements ConstraintService {
     }
 
     // Verify that ldp:membershipResource and one of ldp:hasMemberRelation or ldp:isMemberOfRelation is present
-    private static Boolean hasMembershipProps(final Map<IRI, Long> data) {
+    private static boolean hasMembershipProps(final Map<IRI, Long> data) {
         return data.containsKey(LDP.membershipResource) &&
             data.getOrDefault(LDP.hasMemberRelation, 0L) + data.getOrDefault(LDP.isMemberOfRelation, 0L) == 1L;
     }

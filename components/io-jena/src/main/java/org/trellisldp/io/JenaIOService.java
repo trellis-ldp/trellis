@@ -269,7 +269,7 @@ public class JenaIOService implements IOService {
         }
     }
 
-    private Boolean canUseCustomJsonLdProfile(final String profile) {
+    private boolean canUseCustomJsonLdProfile(final String profile) {
         return nonNull(profile);
     }
 
@@ -364,8 +364,8 @@ public class JenaIOService implements IOService {
     }
 
     private static IRI mergeProfiles(final IRI... profiles) {
-        Boolean isExpanded = false;
-        Boolean isFlattened = false;
+        boolean isExpanded = false;
+        boolean isFlattened = false;
 
         for (final IRI uri : profiles) {
             if (compacted_flattened.equals(uri) || expanded_flattened.equals(uri)) {

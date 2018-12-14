@@ -163,7 +163,7 @@ public final class HttpUtils {
                     || notCompareWithString(quad.getObject(), object));
     }
 
-    private static Boolean notCompareWithString(final RDFTerm term, final String str) {
+    private static boolean notCompareWithString(final RDFTerm term, final String str) {
         return nonNull(str) && !str.isEmpty() && (term instanceof IRI && !((IRI) term).getIRIString().equals(str)
                     || term instanceof Literal && !((Literal) term).getLexicalForm().equals(str));
     }
@@ -307,7 +307,7 @@ public final class HttpUtils {
      * @param ldpType the LDP type to test
      * @return true if it is a type of LDP container
      */
-    public static Boolean isContainer(final IRI ldpType) {
+    public static boolean isContainer(final IRI ldpType) {
         return LDP.Container.equals(ldpType) || LDP.BasicContainer.equals(ldpType)
             || LDP.DirectContainer.equals(ldpType) || LDP.IndirectContainer.equals(ldpType);
     }

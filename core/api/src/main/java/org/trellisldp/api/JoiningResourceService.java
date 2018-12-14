@@ -135,7 +135,7 @@ public abstract class JoiningResourceService implements ResourceService {
         }
 
         @Override
-        public Boolean hasAcl() {
+        public boolean hasAcl() {
             throw new UnsupportedOperationException();
         }
     }
@@ -184,7 +184,7 @@ public abstract class JoiningResourceService implements ResourceService {
         }
 
         @Override
-        public Boolean hasAcl() {
+        public boolean hasAcl() {
             return mutable.hasAcl();
         }
     }
