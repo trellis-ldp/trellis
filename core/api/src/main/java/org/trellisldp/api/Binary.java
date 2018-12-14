@@ -25,7 +25,7 @@ public interface Binary {
     /**
      * @return the size in bytes of this {@link Binary}
      */
-    Long getSize();
+    long getSize();
 
     /**
      * @return the content of this {@link Binary}
