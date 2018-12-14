@@ -30,7 +30,7 @@ public interface IdentifierService {
      * @param length the length of each level of hierarchy
      * @return a String Supplier
      */
-    Supplier<String> getSupplier(String prefix, Integer hierarchy, Integer length);
+    Supplier<String> getSupplier(String prefix, int hierarchy, int length);
 
     /**
      * Get a Supplier that generates Strings with the provided prefix.

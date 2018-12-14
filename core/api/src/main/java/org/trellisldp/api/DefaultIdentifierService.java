@@ -45,7 +45,7 @@ public class DefaultIdentifierService implements IdentifierService {
     }
 
     @Override
-    public Supplier<String> getSupplier(final String prefix, final Integer hierarchy, final Integer length) {
+    public Supplier<String> getSupplier(final String prefix, final int hierarchy, final int length) {
 
         requireNonNull(prefix, "The Id prefix may not be null!");
         requireNonNull(hierarchy, "The hierarchy value may not be null!");
@@ -63,7 +63,7 @@ public class DefaultIdentifierService implements IdentifierService {
         return getSupplier(defaultPrefix);
     }
 
-    private static String getId(final String prefix, final Integer hierarchy, final Integer length) {
+    private static String getId(final String prefix, final int hierarchy, final int length) {
         final String id = randomUUID().toString();
         final String nodash = id.replace("-", "");
         final StringJoiner joiner = new StringJoiner("/");
