@@ -6,7 +6,6 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 [![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/09f8d4ae61764bd9a1fead16514b6db2)](https://www.codacy.com/app/Trellis-LDP/trellis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=trellis-ldp/trellis&amp;utm_campaign=Badge_Grade)
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
-[![DOI](https://zenodo.org/badge/77492072.svg)](https://zenodo.org/badge/latestdoi/77492072)
 
 Trellis is a rock-solid, enterprise-ready linked data server.
 The quickest way to get started with Trellis is to download the
@@ -23,6 +22,16 @@ It is modular, extensible and fast.
   * [Website](https://www.trellisldp.org)
 
 All source code is open source and licensed as Apache 2. Contributions are always welcome.
+
+## Docker Containers
+
+Docker containers for Trellis are published on [Docker Hub](https://hub.docker.com/u/trellisldp). Container environments are published with every commit to `master` and are available for stable releases starting with Trellis 0.8. More details are available on the [Trellis Wiki](https://github.com/trellis-ldp/trellis/wiki/Dockerized-Trellis).
+
+Docker pull command
+
+```
+docker pull trellisldp/trellis
+```
 
 ## Building Trellis
 
