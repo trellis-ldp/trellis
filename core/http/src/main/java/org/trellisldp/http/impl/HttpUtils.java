@@ -85,7 +85,7 @@ public final class HttpUtils {
 
     private static final Logger LOGGER = getLogger(HttpUtils.class);
     private static final RDF rdf = getInstance();
-    private static final String defaultJsonLdProfile = getConfiguration().get(CONFIG_HTTP_JSONLD_PROFILE);
+    private static final String DEFAULT_JSONLD_PROFILE = getConfiguration().get(CONFIG_HTTP_JSONLD_PROFILE);
     private static final Set<String> ignoredPreferences;
 
     static {
@@ -300,7 +300,7 @@ public final class HttpUtils {
      */
     public static IRI getDefaultProfile(final RDFSyntax syntax, final IRI identifier) {
         return RDFA.equals(syntax) ? identifier
-            : ofNullable(defaultJsonLdProfile).map(rdf::createIRI).orElse(compacted);
+            : ofNullable(DEFAULT_JSONLD_PROFILE).map(rdf::createIRI).orElse(compacted);
     }
 
     /**
