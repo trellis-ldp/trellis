@@ -117,6 +117,8 @@ import org.trellisldp.vocabulary.Memento;
 public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
+    private static final boolean defaultWeakEtags = getConfiguration()
+        .getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, true);
 
     private final boolean isMemento;
 
@@ -299,7 +301,7 @@ public class GetHandler extends BaseLdpHandler {
 
         // Check for a cache hit
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer),
-                getConfiguration().getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, true));
+                defaultWeakEtags);
         checkCache(getResource().getModified(), etag);
 
         builder.tag(etag);
