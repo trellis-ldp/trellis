@@ -31,6 +31,7 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.findFirst;
 
@@ -51,7 +52,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.tamaya.Configuration;
-import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
@@ -92,6 +92,7 @@ public class FileBinaryService implements BinaryService {
     public static final String CONFIG_FILE_BINARY_LENGTH = "trellis.file.binary.length";
 
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
+    private static final Configuration config = getConfiguration();
     private static final String SHA = "SHA";
     private static final Integer DEFAULT_HIERARCHY = 3;
     private static final Integer DEFAULT_LENGTH = 2;
@@ -117,7 +118,9 @@ public class FileBinaryService implements BinaryService {
      * @param idService an identifier service
      */
     public FileBinaryService(final IdentifierService idService) {
-        this(idService, ConfigurationProvider.getConfiguration());
+        this(idService, config.get(CONFIG_FILE_BINARY_BASE_PATH),
+                config.getOrDefault(CONFIG_FILE_BINARY_HIERARCHY, Integer.class, DEFAULT_HIERARCHY),
+                config.getOrDefault(CONFIG_FILE_BINARY_LENGTH, Integer.class, DEFAULT_LENGTH));
     }
 
     /**
@@ -133,12 +136,6 @@ public class FileBinaryService implements BinaryService {
         this.basePath = requireNonNull(basePath, CONFIG_FILE_BINARY_BASE_PATH + " configuration may not be null!");
         LOGGER.info("Storing binaries as files at {}", basePath);
         this.idSupplier = idService.getSupplier("file:///", hierarchy, length);
-    }
-
-    private FileBinaryService(final IdentifierService idService, final Configuration config) {
-        this(idService, config.get(CONFIG_FILE_BINARY_BASE_PATH),
-                config.getOrDefault(CONFIG_FILE_BINARY_HIERARCHY, Integer.class, DEFAULT_HIERARCHY),
-                config.getOrDefault(CONFIG_FILE_BINARY_LENGTH, Integer.class, DEFAULT_LENGTH));
     }
 
     @Override

@@ -35,6 +35,7 @@ import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.api.TrellisUtils.findFirst;
@@ -81,7 +82,7 @@ import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
-import org.apache.tamaya.ConfigurationProvider;
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.CacheService.TrellisProfileCache;
@@ -106,6 +107,7 @@ public class JenaIOService implements IOService {
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);
     private static final JenaRDF rdf = new JenaRDF();
+    private static final Configuration config = getConfiguration();
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
                 new SimpleEntry<>(compacted, JSONLD_COMPACT_FLAT),
                 new SimpleEntry<>(flattened, JSONLD_FLATTEN_FLAT),
@@ -159,9 +161,8 @@ public class JenaIOService implements IOService {
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
             @TrellisProfileCache final CacheService<String, String> cache) {
-        this(namespaceService, htmlSerializer, cache,
-                ConfigurationProvider.getConfiguration().getOrDefault(CONFIG_IO_JSONLD_PROFILES, ""),
-                ConfigurationProvider.getConfiguration().getOrDefault(CONFIG_IO_JSONLD_DOMAINS, ""));
+        this(namespaceService, htmlSerializer, cache, config.getOrDefault(CONFIG_IO_JSONLD_PROFILES, ""),
+                config.getOrDefault(CONFIG_IO_JSONLD_DOMAINS, ""));
     }
 
     /**
