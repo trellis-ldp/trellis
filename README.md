@@ -8,9 +8,10 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 
 Trellis is a rock-solid, enterprise-ready linked data server.
-The quickest way to get started with Trellis is to download the
-[latest release](https://www.trellisldp.org/download.html)
-and follow the installation instructions.
+The quickest way to get started with Trellis is to either use
+a pre-built docker container or download the
+[latest release](https://www.trellisldp.org/download.html),
+following the installation instructions.
 
 Trellis is built on existing [Web standards](https://github.com/trellis-ldp/trellis/wiki/Web-Standards).
 It is modular, extensible and fast.
@@ -25,7 +26,10 @@ All source code is open source and licensed as Apache 2. Contributions are alway
 
 ## Docker Containers
 
-Docker containers for Trellis are published on [Docker Hub](https://hub.docker.com/u/trellisldp). Container environments are published with every commit to `master` and are available for stable releases starting with Trellis 0.8. More details are available on the [Trellis Wiki](https://github.com/trellis-ldp/trellis/wiki/Dockerized-Trellis).
+Docker containers for Trellis are published on [Docker Hub](https://hub.docker.com/u/trellisldp).
+Container environments are published with every commit to `master` and are available for stable
+releases starting with Trellis 0.8. More details are available on the
+[Trellis Wiki](https://github.com/trellis-ldp/trellis/wiki/Dockerized-Trellis).
 
 Docker pull command
 
