@@ -64,7 +64,7 @@ buildDeb {
 
 docker {
     name "trellisldp/trellis:${project.version}"
-    tags 'latest'
+    tags 'latest', 'develop'
     dockerfile file('src/docker/Dockerfile')
     files tasks.distTar.outputs, './src/docker/config.yml', './src/docker/command.sh'
     buildArgs([BUILD_VERSION: project.version])

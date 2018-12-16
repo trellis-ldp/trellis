@@ -74,8 +74,8 @@ jobs:
       env: JOB=docker
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       # TODO uncomment this line just before the 0.8 release
-      # script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew dockerPush; else ./gradlew dockerPush dockerPushLatest; fi
-      script: ./gradlew dockerPush dockerPushLatest
+      # script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew dockerPush dockerPushDevelop; else ./gradlew dockerPush dockerPushLatest; fi
+      script: ./gradlew dockerPush dockerPushLatest dockerPushDevelop
 
     # deploy to AWS
     - name: "Publish JavaDocs"
