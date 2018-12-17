@@ -39,11 +39,6 @@ public class FileBinary implements Binary {
     }
 
     @Override
-    public long getSize() {
-        return file.length();
-    }
-
-    @Override
     public InputStream getContent() {
         try {
             return new FileInputStream(file);

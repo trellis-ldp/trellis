@@ -30,8 +30,7 @@ import org.apache.commons.rdf.api.IRI;
  * through the {@link BinaryMetadata} class, but rather an identifier is returned, which may
  * be resolved by an external system.
  *
- * <p>The {@link BinaryMetadata} class also provides access methods for the MIME Type and size of the
- * resource.
+ * <p>The {@link BinaryMetadata} class also provides access methods for the MIME Type of the resource.
  *
  * @author acoburn
  */
@@ -39,19 +38,16 @@ public final class BinaryMetadata {
 
     private final IRI identifier;
     private final String mimeType;
-    private final Long size;
 
     /**
      * A simple BinaryMetadata object.
      *
      * @param identifier the identifier
      * @param mimeType the mimeType, may be {@code null}
-     * @param size the size, may be {@code null}
      */
-    private BinaryMetadata(final IRI identifier, final String mimeType, final Long size) {
+    private BinaryMetadata(final IRI identifier, final String mimeType) {
         this.identifier = requireNonNull(identifier, "identifier may not be null!");
         this.mimeType = mimeType;
-        this.size = size;
     }
 
     /**
@@ -73,15 +69,6 @@ public final class BinaryMetadata {
     }
 
     /**
-     * Retrieve the size of the binary, if known.
-     *
-     * @return the binary size
-     */
-    public Optional<Long> getSize() {
-        return ofNullable(size);
-    }
-
-    /**
      * Get a mutable builder for a {@link BinaryMetadata}.
      * @param identifier the identifier
      * @return a builder for a {@link BinaryMetadata}
@@ -96,7 +83,6 @@ public final class BinaryMetadata {
     public static final class Builder {
         private final IRI identifier;
         private String mimeType;
-        private Long size;
 
         /**
          * Create a BinaryMetadata builder with the provided identifier.
@@ -117,21 +103,11 @@ public final class BinaryMetadata {
         }
 
         /**
-         * Set the binary size.
-         * @param size the binary size
-         * @return this builder
-         */
-        public Builder size(final Long size) {
-            this.size = size;
-            return this;
-        }
-
-        /**
          * Build the BinaryMetadata object, transitioning this builder to the built state.
          * @return the built BinaryMetadata
          */
         public BinaryMetadata build() {
-            return new BinaryMetadata(identifier, mimeType, size);
+            return new BinaryMetadata(identifier, mimeType);
         }
     }
 }

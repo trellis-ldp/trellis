@@ -100,7 +100,6 @@ public class FileMementoServiceTest {
         final IRI root = rdf.createIRI("trellis:data/");
         final Instant time = now();
         final String mimeType = "text/plain";
-        final Long size = 20L;
 
         final Resource mockResource = mock(Resource.class);
 
@@ -111,8 +110,8 @@ public class FileMementoServiceTest {
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title")),
                     rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.isPartOf, root)));
-        when(mockResource.getBinaryMetadata()).thenReturn(of(BinaryMetadata.builder(binaryId).mimeType(mimeType)
-                    .size(size).build()));
+        when(mockResource.getBinaryMetadata())
+            .thenReturn(of(BinaryMetadata.builder(binaryId).mimeType(mimeType).build()));
         when(mockResource.getMemberOfRelation()).thenReturn(empty());
         when(mockResource.getMemberRelation()).thenReturn(empty());
         when(mockResource.getMembershipResource()).thenReturn(empty());
@@ -129,7 +128,6 @@ public class FileMementoServiceTest {
         res.getBinaryMetadata().ifPresent(b -> {
             assertEquals(binaryId, b.getIdentifier());
             assertEquals(of(mimeType), b.getMimeType());
-            assertEquals(of(size), b.getSize());
         });
         assertFalse(res.getMemberOfRelation().isPresent());
         assertFalse(res.getMemberRelation().isPresent());

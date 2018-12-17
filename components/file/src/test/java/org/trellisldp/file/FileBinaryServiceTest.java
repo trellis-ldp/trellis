@@ -110,12 +110,6 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testSize() throws Exception {
-        final BinaryService service = new FileBinaryService();
-        assertEquals((Long) 17L, service.get(file).thenApply(Binary::getSize).join(), "Incorrect file size");
-    }
-
-    @Test
     public void testFileContentSegment() {
         final BinaryService service = new FileBinaryService();
         assertEquals(" tes",
