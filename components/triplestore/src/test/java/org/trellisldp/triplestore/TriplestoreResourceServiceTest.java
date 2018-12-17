@@ -247,7 +247,7 @@ public class TriplestoreResourceServiceTest {
 
         final IRI binaryIdentifier = rdf.createIRI("foo:binary");
         final Dataset dataset = rdf.createDataset();
-        final BinaryMetadata binary = BinaryMetadata.builder(binaryIdentifier).mimeType("text/plain").size(10L).build();
+        final BinaryMetadata binary = BinaryMetadata.builder(binaryIdentifier).mimeType("text/plain").build();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
@@ -261,7 +261,7 @@ public class TriplestoreResourceServiceTest {
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 1L, 0L)),
             svc.get(resource).thenAccept(res ->
-                assertAll("Check binary", checkBinary(res, binaryIdentifier, "text/plain", 10L))),
+                assertAll("Check binary", checkBinary(res, binaryIdentifier, "text/plain"))),
             svc.get(root).thenAccept(checkRoot(later, 1L))).join();
 
         final IRI resource3 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
@@ -1283,17 +1283,14 @@ public class TriplestoreResourceServiceTest {
                 () -> assertFalse(res.getModified().isAfter(now().plusMillis(5L)), "modification date in the future!"));
     }
 
-    private static Stream<Executable> checkBinary(final Resource res, final IRI identifier, final String mimeType,
-            final Long size) {
+    private static Stream<Executable> checkBinary(final Resource res, final IRI identifier, final String mimeType) {
         return Stream.of(
                 () -> assertNotNull(res, "Missing resource!"),
                 () -> assertTrue(res.getBinaryMetadata().isPresent(), "missing binary metadata!"),
                 () -> assertEquals(identifier, res.getBinaryMetadata().get().getIdentifier(),
                                    "Incorrect binary identifier!"),
                 () -> assertEquals(mimeType, res.getBinaryMetadata().flatMap(BinaryMetadata::getMimeType).orElse(null),
-                                   "Incorrect binary mimetype!"),
-                () -> assertEquals(size, res.getBinaryMetadata().flatMap(BinaryMetadata::getSize).orElse(null),
-                                   "Incorrect binary size!"));
+                                   "Incorrect binary mimetype!"));
     }
 
     private static Stream<Executable> checkResourceStream(final Resource res, final long userManaged,

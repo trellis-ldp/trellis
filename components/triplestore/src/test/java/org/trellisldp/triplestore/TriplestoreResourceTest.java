@@ -155,12 +155,10 @@ public class TriplestoreResourceTest {
 
     @Test
     public void testBinaryResource() {
-        final String size = "2560";
         final String mimeType = "image/jpeg";
         final IRI binaryIdentifier = rdf.createIRI("file:///binary");
         final JenaDataset dataset = buildLdpDataset(LDP.NonRDFSource);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.hasPart, binaryIdentifier);
-        dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.extent, rdf.createLiteral(size, XSD.long_));
         dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.format, rdf.createLiteral(mimeType));
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
@@ -172,7 +170,6 @@ public class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         res.getBinaryMetadata().ifPresent(b -> {
             assertEquals(binaryIdentifier, b.getIdentifier(), "Incorrect binary identifier!");
-            assertEquals(of(Long.parseLong(size)), b.getSize(), "Incorrect binary size!");
             assertEquals(of(mimeType), b.getMimeType(), "Incorrect binary mime type!");
         });
         assertAll("Check resource", checkResource(res, identifier, LDP.NonRDFSource, true, false, false));

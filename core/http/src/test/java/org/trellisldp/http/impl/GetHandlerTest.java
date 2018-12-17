@@ -94,7 +94,7 @@ import org.trellisldp.vocabulary.SKOS;
 public class GetHandlerTest extends BaseTestHandler {
 
     private BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///testResource.txt"))
-        .mimeType("text/plain").size(100L).build();
+        .mimeType("text/plain").build();
 
     @Test
     public void testGetLdprs() {

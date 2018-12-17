@@ -229,8 +229,8 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public Optional<BinaryMetadata> getBinaryMetadata() {
-        return asIRI(DC.hasPart).map(id -> BinaryMetadata.builder(id).mimeType(asLiteral(DC.format).orElse(null))
-                    .size(asLiteral(DC.extent).map(Long::parseLong).orElse(null)).build());
+        return asIRI(DC.hasPart).map(id ->
+                BinaryMetadata.builder(id).mimeType(asLiteral(DC.format).orElse(null)).build());
     }
 
     @Override

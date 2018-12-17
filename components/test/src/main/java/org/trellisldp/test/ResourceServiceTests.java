@@ -244,7 +244,7 @@ public interface ResourceServiceTests {
         final Dataset dataset = buildDataset(identifier, "Create LDP-NR Test", SUBJECT2);
 
         final IRI binaryLocation = rdf.createIRI("binary:location/" + getResourceService().generateIdentifier());
-        final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType("text/plain").size(150L).build();
+        final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType("text/plain").build();
 
         assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).join(), "Check for no pre-existing LDP-NR");
         assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(identifier)
@@ -256,7 +256,6 @@ public interface ResourceServiceTests {
         res.getBinaryMetadata().ifPresent(b -> {
             assertEquals(binaryLocation, b.getIdentifier(), "Check the binary identifier");
             assertEquals(of("text/plain"), b.getMimeType(), "Check the binary mimeType");
-            assertEquals(of(150L), b.getSize(), "Check the binary size");
         });
     }
 

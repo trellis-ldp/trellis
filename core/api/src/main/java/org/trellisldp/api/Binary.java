@@ -23,11 +23,6 @@ import java.io.InputStream;
 public interface Binary {
 
     /**
-     * @return the size in bytes of this {@link Binary}
-     */
-    long getSize();
-
-    /**
      * @return the content of this {@link Binary}
      */
     InputStream getContent();

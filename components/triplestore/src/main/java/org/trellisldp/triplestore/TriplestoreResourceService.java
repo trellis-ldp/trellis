@@ -188,8 +188,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
             dataset.add(PreferServerManaged, metadata.getIdentifier(), DC.hasPart, binary.getIdentifier());
             binary.getMimeType().map(rdf::createLiteral).ifPresent(mimeType ->
                     dataset.add(PreferServerManaged, binary.getIdentifier(), DC.format, mimeType));
-            binary.getSize().map(size -> rdf.createLiteral(size.toString(), XSD.long_)).ifPresent(size ->
-                    dataset.add(PreferServerManaged, binary.getIdentifier(), DC.extent, size));
         });
 
         storeResource(metadata.getIdentifier(), dataset, eventTime, type);

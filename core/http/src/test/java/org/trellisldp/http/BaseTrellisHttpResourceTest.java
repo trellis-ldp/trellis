@@ -105,8 +105,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     protected static final String BINARY_MIME_TYPE = "text/plain";
 
-    protected static final Long BINARY_SIZE = 100L;
-
     protected static final String RANDOM_VALUE = "randomValue";
 
     protected static final String RESOURCE_PATH = "resource";
@@ -136,7 +134,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
 
     protected static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)
-        .mimeType(BINARY_MIME_TYPE).size(BINARY_SIZE).build();
+        .mimeType(BINARY_MIME_TYPE).build();
 
     @Mock
     protected ServiceBundler mockBundler;

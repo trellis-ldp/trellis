@@ -210,8 +210,6 @@ public final class FileUtils {
             quads.add(rdf.createQuad(PreferServerManaged, resource.getIdentifier(), DC.hasPart, b.getIdentifier()));
             b.getMimeType().map(mimeType -> rdf.createQuad(PreferServerManaged, b.getIdentifier(), DC.format,
                 rdf.createLiteral(mimeType))).ifPresent(quads::add);
-            b.getSize().map(size -> rdf.createQuad(PreferServerManaged, b.getIdentifier(),
-                DC.extent, rdf.createLiteral(size.toString(), XSD.long_))).ifPresent(quads::add);
         });
 
         resource.getContainer()
