@@ -40,7 +40,7 @@ public class CORSConfiguration {
 
     private boolean allowCredentials = true;
 
-    private Integer maxAge = 180;
+    private int maxAge = 180;
 
     /**
      * Get whether CORS has been enabled.
@@ -137,7 +137,7 @@ public class CORSConfiguration {
      * @return the Max-Age header
      */
     @JsonProperty
-    public Integer getMaxAge() {
+    public int getMaxAge() {
         return maxAge;
     }
 
@@ -146,7 +146,7 @@ public class CORSConfiguration {
      * @param maxAge the max age
      */
     @JsonProperty
-    public void setMaxAge(final Integer maxAge) {
+    public void setMaxAge(final int maxAge) {
         this.maxAge = maxAge;
     }
 

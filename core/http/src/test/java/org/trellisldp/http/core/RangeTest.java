@@ -13,8 +13,8 @@
  */
 package org.trellisldp.http.core;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,8 +26,8 @@ public class RangeTest {
     @Test
     public void testRange() {
         final Range range = Range.valueOf("bytes=1-10");
-        assertTrue(range.getFrom().equals(1), "Check 'from' value");
-        assertTrue(range.getTo().equals(10), "Check 'to' value");
+        assertEquals(1, range.getFrom(), "Check 'from' value");
+        assertEquals(10, range.getTo(), "Check 'to' value");
     }
 
     @Test

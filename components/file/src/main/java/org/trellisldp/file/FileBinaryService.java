@@ -132,7 +132,7 @@ public class FileBinaryService implements BinaryService {
      * @param length the length of each level of hierarchy
      */
     public FileBinaryService(final IdentifierService idService, final String basePath,
-            final Integer hierarchy, final Integer length) {
+            final int hierarchy, final int length) {
         this.basePath = requireNonNull(basePath, CONFIG_FILE_BINARY_BASE_PATH + " configuration may not be null!");
         LOGGER.info("Storing binaries as files at {}", basePath);
         this.idSupplier = idService.getSupplier("file:///", hierarchy, length);

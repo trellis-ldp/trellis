@@ -42,7 +42,7 @@ public class TrellisConfigurationTest {
         assertEquals("Trellis", config.getDefaultName(), "Incorrect app name!");
 
         // Cache tests
-        assertEquals((Integer) 86400, config.getCache().getMaxAge(), "Incorrect cache/maxAge value!");
+        assertEquals(86400, config.getCache().getMaxAge(), "Incorrect cache/maxAge value!");
         assertFalse(config.getCache().getNoCache(), "Unexpected cache/noCache value!");
         assertTrue(config.getCache().getMustRevalidate(), "Missing cache/mustRevalidate value!");
 
@@ -149,7 +149,7 @@ public class TrellisConfigurationTest {
         assertTrue(config.getCors().getAllowMethods().contains("PUT"), "PUT not in CORS allow-methods!");
         assertTrue(config.getCors().getExposeHeaders().contains("Memento-Datetime"),
                 "memento-datetime missing from CORS expose-headers!");
-        assertEquals((Integer) 180, config.getCors().getMaxAge(), "Incorrect max-age value in CORS headers!");
+        assertEquals(180, config.getCors().getMaxAge(), "Incorrect max-age value in CORS headers!");
         assertTrue(config.getCors().getAllowCredentials(), "Incorrect allow-credentials setting in CORS headers!");
     }
 }

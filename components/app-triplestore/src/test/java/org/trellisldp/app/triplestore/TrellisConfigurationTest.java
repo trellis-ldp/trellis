@@ -42,7 +42,7 @@ public class TrellisConfigurationTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertEquals("Trellis", config.getDefaultName(), "Incorrect default name!");
-        assertEquals((Integer) 86400, config.getCache().getMaxAge(), "Incorrect maxAge!");
+        assertEquals(86400, config.getCache().getMaxAge(), "Incorrect maxAge!");
         assertTrue(config.getCache().getMustRevalidate(), "Incorrect cache/mustRevalidate value!");
         assertFalse(config.getCache().getNoCache(), "Incorrect cache/noCache value!");
         assertEquals((Long) 10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize value!");
@@ -52,8 +52,8 @@ public class TrellisConfigurationTest {
                 "Incorrect jsonld/contextWhitelist value!");
         assertNull(config.getResources(), "Unexpected resources value!");
         assertEquals("http://hub.example.com/", config.getHubUrl(), "Incorrect hub value!");
-        assertEquals((Integer) 2, config.getBinaryHierarchyLevels(), "Incorrect binaryHierarchyLevels value!");
-        assertEquals((Integer) 1, config.getBinaryHierarchyLength(), "Incorrect binaryHierarchyLength value!");
+        assertEquals(2, config.getBinaryHierarchyLevels(), "Incorrect binaryHierarchyLevels value!");
+        assertEquals(1, config.getBinaryHierarchyLength(), "Incorrect binaryHierarchyLength value!");
         assertEquals("my.cluster.node", config.any().get("cassandraAddress"), "Incorrect custom value!");
         assertEquals((Integer)245993, config.any().get("cassandraPort"), "Incorrect custom value (2)!");
         @SuppressWarnings("unchecked")
@@ -154,7 +154,7 @@ public class TrellisConfigurationTest {
         assertTrue(config.getCors().getAllowHeaders().contains("Link"), "Link not in CORS allow-headers!");
         assertTrue(config.getCors().getAllowMethods().contains("PATCH"), "PATCH not in CORS allow-methods!");
         assertTrue(config.getCors().getExposeHeaders().contains("Location"), "Location not in CORS expose-headers!");
-        assertEquals((Integer) 180, config.getCors().getMaxAge(), "incorrect max-age in CORS headers!");
+        assertEquals(180, config.getCors().getMaxAge(), "incorrect max-age in CORS headers!");
         assertTrue(config.getCors().getAllowCredentials(), "CORS allow-credentials not set!");
     }
 }

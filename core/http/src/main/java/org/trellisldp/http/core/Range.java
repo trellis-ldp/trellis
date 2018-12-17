@@ -15,11 +15,7 @@ package org.trellisldp.http.core;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.Optional;
 
 import org.slf4j.Logger;
 
@@ -32,9 +28,9 @@ public class Range {
 
     private static final Logger LOGGER = getLogger(Range.class);
 
-    private final Integer from;
+    private final int from;
 
-    private final Integer to;
+    private final int to;
 
     /**
      * Create a Range object.
@@ -42,7 +38,7 @@ public class Range {
      * @param from the from value
      * @param to the to value
      */
-    public Range(final Integer from, final Integer to) {
+    public Range(final int from, final int to) {
         this.from = from;
         this.to = to;
     }
@@ -52,7 +48,7 @@ public class Range {
      *
      * @return the byte offset
      */
-    public Integer getFrom() {
+    public int getFrom() {
         return from;
     }
 
@@ -61,7 +57,7 @@ public class Range {
      *
      * @return the byte end
      */
-    public Integer getTo() {
+    public int getTo() {
         return to;
     }
 
@@ -72,23 +68,23 @@ public class Range {
      * @return the Range object or null if the value is not parseable
      */
     public static Range valueOf(final String value) {
-        final Optional<Integer[]> vals = parse(value);
-        if (vals.isPresent()) {
-            return new Range(vals.get()[0], vals.get()[1]);
+        final int[] vals = parse(value);
+        if (vals.length == 2) {
+            return new Range(vals[0], vals[1]);
         }
         return null;
     }
 
-    private static Optional<Integer[]> parse(final String range) {
+    private static int[] parse(final String range) {
         if (nonNull(range) && range.startsWith("bytes=")) {
             final String[] parts = range.substring("bytes=".length()).split("-");
             if (parts.length == 2) {
                 try {
-                    final Integer[] ints = new Integer[2];
+                    final int[] ints = new int[2];
                     ints[0] = parseInt(parts[0]);
                     ints[1] = parseInt(parts[1]);
                     if (ints[1] > ints[0]) {
-                        return of(ints);
+                        return ints;
                     }
                     LOGGER.warn("Ignoring range request: {}", range);
                 } catch (final NumberFormatException ex) {
@@ -98,6 +94,6 @@ public class Range {
                 LOGGER.warn("Only simple range requests are supported! {}", range);
             }
         }
-        return empty();
+        return new int[0];
     }
 }

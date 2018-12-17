@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class CacheConfiguration {
 
-    private Integer maxAge = 86400;
+    private int maxAge = 86400;
 
     private boolean mustRevalidate = true;
 
@@ -31,7 +31,7 @@ public class CacheConfiguration {
      * @param maxAge the cache max age header value
      */
     @JsonProperty
-    public void setMaxAge(final Integer maxAge) {
+    public void setMaxAge(final int maxAge) {
         this.maxAge = maxAge;
     }
 
@@ -40,7 +40,7 @@ public class CacheConfiguration {
      * @return the cache max age header value
      */
     @JsonProperty
-    public Integer getMaxAge() {
+    public int getMaxAge() {
         return maxAge;
     }
 

@@ -76,7 +76,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
     private final Set<String> allowedHeaders;
     private final Set<String> exposedHeaders;
     private final boolean credentials;
-    private final Integer cacheSeconds;
+    private final int cacheSeconds;
 
     /**
      * Create a CORS filter with default values.
@@ -107,7 +107,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
      */
     public CrossOriginResourceSharingFilter(final Collection<String> origins, final Collection<String> allowedMethods,
             final Collection<String> allowedHeaders, final Collection<String> exposedHeaders, final boolean credentials,
-            final Integer cacheSeconds) {
+            final int cacheSeconds) {
         this.origins = new HashSet<>(origins);
         this.allowedMethods = new HashSet<>(allowedMethods);
         this.allowedHeaders = allowedHeaders.stream().map(String::toLowerCase)
@@ -210,7 +210,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
 
         // 6.2.8 Optionally add an Access-Control-Max-Age header
         if (cacheSeconds > 0) {
-            headers.put("Access-Control-Max-Age", cacheSeconds.toString());
+            headers.put("Access-Control-Max-Age", Integer.toString(cacheSeconds));
         }
 
         // 6.2.9 If this method is a simple method, this step may be skipped. Add one or more

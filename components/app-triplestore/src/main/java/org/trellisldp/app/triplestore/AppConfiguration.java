@@ -31,11 +31,9 @@ class AppConfiguration extends TrellisConfiguration {
     @NotNull
     private String namespaces;
 
-    @NotNull
-    private Integer levels = 3;
+    private int levels = 3;
 
-    @NotNull
-    private Integer length =  2;
+    private int length =  2;
 
     private String resourceLocation = null;
 
@@ -121,7 +119,7 @@ class AppConfiguration extends TrellisConfiguration {
      * @param length the character length of each hierarchy segment
      */
     @JsonProperty
-    public void setBinaryHierarchyLength(final Integer length) {
+    public void setBinaryHierarchyLength(final int length) {
         this.length = length;
     }
 
@@ -135,7 +133,7 @@ class AppConfiguration extends TrellisConfiguration {
      * @return the character length of each hierarchy segment
      */
     @JsonProperty
-    public Integer getBinaryHierarchyLength() {
+    public int getBinaryHierarchyLength() {
         return length;
     }
 
@@ -148,7 +146,7 @@ class AppConfiguration extends TrellisConfiguration {
      * @param levels the number of levels of hierarchy.
      */
     @JsonProperty
-    public void setBinaryHierarchyLevels(final Integer levels) {
+    public void setBinaryHierarchyLevels(final int levels) {
         this.levels = levels;
     }
 
@@ -161,7 +159,7 @@ class AppConfiguration extends TrellisConfiguration {
      * @return the number of levels of hierarchy.
      */
     @JsonProperty
-    public Integer getBinaryHierarchyLevels() {
+    public int getBinaryHierarchyLevels() {
         return levels;
     }
 }

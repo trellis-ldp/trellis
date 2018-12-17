@@ -112,7 +112,7 @@ public class AppUtilsTest {
     @Test
     public void testEventServiceJms() throws Exception {
         final NotificationsConfiguration c = new NotificationsConfiguration();
-        final Integer port = new ServerSocket(0).getLocalPort();
+        final int port = new ServerSocket(0).getLocalPort();
         c.setConnectionString("tcp://localhost:" + Integer.toString(port));
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.JMS);
