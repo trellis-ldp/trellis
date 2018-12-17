@@ -94,8 +94,8 @@ public class FileBinaryService implements BinaryService {
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
     private static final Configuration config = getConfiguration();
     private static final String SHA = "SHA";
-    private static final Integer DEFAULT_HIERARCHY = 3;
-    private static final Integer DEFAULT_LENGTH = 2;
+    private static final int DEFAULT_HIERARCHY = 3;
+    private static final int DEFAULT_LENGTH = 2;
 
     private static final Set<String> algorithms = asList(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512,
             SHA3_256, SHA3_384, SHA3_512).stream()

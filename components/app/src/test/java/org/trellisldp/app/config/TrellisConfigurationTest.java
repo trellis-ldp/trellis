@@ -47,8 +47,8 @@ public class TrellisConfigurationTest {
         assertTrue(config.getCache().getMustRevalidate(), "Missing cache/mustRevalidate value!");
 
         // JSON-LD tests
-        assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours");
-        assertEquals((Long) 10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize");
+        assertEquals(48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours");
+        assertEquals(10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize");
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty(), "Incorrect jsonld/contextDomainWhitelist");
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.com/context.json"),
                 "Incorrect jsonld/contextWhitelist value!");
@@ -115,8 +115,8 @@ public class TrellisConfigurationTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertTrue(config.getAuth().getWebac().getEnabled(), "WebAC should be enabled!");
-        assertEquals((Long) 200L, config.getAuth().getWebac().getCacheSize(), "Incorrect auth/webac/cacheSize");
-        assertEquals((Long) 15L, config.getAuth().getWebac().getCacheExpireSeconds(), "Bad auth/webac/cache expiry!");
+        assertEquals(200L, config.getAuth().getWebac().getCacheSize(), "Incorrect auth/webac/cacheSize");
+        assertEquals(15L, config.getAuth().getWebac().getCacheExpireSeconds(), "Bad auth/webac/cache expiry!");
         assertTrue(config.getAuth().getBasic().getEnabled(), "basic auth not enabled!");
         assertEquals("users.auth", config.getAuth().getBasic().getUsersFile(), "Incorrect basic users file!");
         assertEquals("trellis", config.getAuth().getRealm(), "Incorrect auth realm!");

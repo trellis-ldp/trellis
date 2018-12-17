@@ -32,11 +32,9 @@ public class JsonLdConfiguration {
     @NotNull
     private Set<String> whitelistDomains = emptySet();
 
-    @NotNull
-    private Long profileCacheSize = 100L;
+    private long profileCacheSize = 100L;
 
-    @NotNull
-    private Long profileCacheExpireHours = 24L;
+    private long profileCacheExpireHours = 24L;
 
     /**
      * Get the whitelist of custom JSON-LD profiles.
@@ -79,7 +77,7 @@ public class JsonLdConfiguration {
      * @return the json-ld profile cache expire time in hours
      */
     @JsonProperty
-    public Long getCacheExpireHours() {
+    public long getCacheExpireHours() {
         return profileCacheExpireHours;
     }
 
@@ -88,7 +86,7 @@ public class JsonLdConfiguration {
      * @param profileCacheExpireHours the json-ld profile cache expire time in hours.
      */
     @JsonProperty
-    public void setCacheExpireHours(final Long profileCacheExpireHours) {
+    public void setCacheExpireHours(final long profileCacheExpireHours) {
         this.profileCacheExpireHours = profileCacheExpireHours;
     }
 
@@ -97,7 +95,7 @@ public class JsonLdConfiguration {
      * @return the json-ld profile cache size
      */
     @JsonProperty
-    public Long getCacheSize() {
+    public long getCacheSize() {
         return profileCacheSize;
     }
 
@@ -106,7 +104,7 @@ public class JsonLdConfiguration {
      * @param profileCacheSize the size of the json-ld profile cache
      */
     @JsonProperty
-    public void setCacheSize(final Long profileCacheSize) {
+    public void setCacheSize(final long profileCacheSize) {
         this.profileCacheSize = profileCacheSize;
     }
 }

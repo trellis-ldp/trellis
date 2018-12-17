@@ -46,7 +46,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class TrellisUtilsTest {
 
     private static final RDF rdf = getInstance();
-    private static final Long size = 10000L;
+    private static final long size = 10000L;
     private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
         .withinRange('a', 'z').build();
 

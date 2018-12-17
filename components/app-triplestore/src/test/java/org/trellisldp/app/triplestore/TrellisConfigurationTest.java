@@ -45,8 +45,8 @@ public class TrellisConfigurationTest {
         assertEquals(86400, config.getCache().getMaxAge(), "Incorrect maxAge!");
         assertTrue(config.getCache().getMustRevalidate(), "Incorrect cache/mustRevalidate value!");
         assertFalse(config.getCache().getNoCache(), "Incorrect cache/noCache value!");
-        assertEquals((Long) 10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize value!");
-        assertEquals((Long) 48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours value!");
+        assertEquals(10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize value!");
+        assertEquals(48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours value!");
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty(), "Incorrect jsonld/contextDomainWhitelist");
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"),
                 "Incorrect jsonld/contextWhitelist value!");
@@ -114,8 +114,8 @@ public class TrellisConfigurationTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         assertTrue(config.getAuth().getWebac().getEnabled(), "WebAC wasn't enabled!");
-        assertEquals((Long) 100L, config.getAuth().getWebac().getCacheSize(), "Incorrect auth/webac/cacheSize value!");
-        assertEquals((Long) 10L, config.getAuth().getWebac().getCacheExpireSeconds(), "Incorrect webac cache expiry!");
+        assertEquals(100L, config.getAuth().getWebac().getCacheSize(), "Incorrect auth/webac/cacheSize value!");
+        assertEquals(10L, config.getAuth().getWebac().getCacheExpireSeconds(), "Incorrect webac cache expiry!");
         assertTrue(config.getAuth().getBasic().getEnabled(), "Missing basic auth support!");
         assertEquals("users.auth", config.getAuth().getBasic().getUsersFile(), "Incorrect basic auth users file!");
         assertEquals("trellis", config.getAuth().getRealm(), "Incorrect auth realm!");

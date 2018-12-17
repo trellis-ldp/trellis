@@ -21,8 +21,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class WebacConfiguration {
 
     private boolean enabled = true;
-    private Long cacheSize = 1000L;
-    private Long cacheExpireSeconds = 600L;
+    private long cacheSize = 1000L;
+    private long cacheExpireSeconds = 600L;
 
     /**
      * Get whether basic authentication has been enabled.
@@ -47,7 +47,7 @@ public class WebacConfiguration {
      * @return the maximum size of the cache (default=1000)
      */
     @JsonProperty
-    public Long getCacheSize() {
+    public long getCacheSize() {
         return cacheSize;
     }
 
@@ -56,7 +56,7 @@ public class WebacConfiguration {
      * @param cacheSize the size of the cache
      */
     @JsonProperty
-    public void setCacheSize(final Long cacheSize) {
+    public void setCacheSize(final long cacheSize) {
         this.cacheSize = cacheSize;
     }
 
@@ -65,7 +65,7 @@ public class WebacConfiguration {
      * @return the number of seconds after which an element expires (default=600)
      */
     @JsonProperty
-    public Long getCacheExpireSeconds() {
+    public long getCacheExpireSeconds() {
         return cacheExpireSeconds;
     }
 
@@ -74,7 +74,7 @@ public class WebacConfiguration {
      * @param cacheExpireSeconds the number of seconds after which an element expires
      */
     @JsonProperty
-    public void setCacheExpireSeconds(final Long cacheExpireSeconds) {
+    public void setCacheExpireSeconds(final long cacheExpireSeconds) {
         this.cacheExpireSeconds = cacheExpireSeconds;
     }
 }
