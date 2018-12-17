@@ -9,9 +9,8 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 
 Trellis is a rock-solid, enterprise-ready linked data server.
 The quickest way to get started with Trellis is to either use
-a pre-built docker container or download the
-[latest release](https://www.trellisldp.org/download.html),
-following the installation instructions.
+a pre-built [docker container](https://hub.docker.com/r/trellisldp/trellis) or download the
+[latest release](https://www.trellisldp.org/download.html).
 
 Trellis is built on existing [Web standards](https://github.com/trellis-ldp/trellis/wiki/Web-Standards).
 It is modular, extensible and fast.
@@ -54,5 +53,6 @@ $ ./gradlew install
   * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
   * [trellis-ui](https://github.com/trellis-ldp/trellis-ui) A JavaScript single page app for managing Trellis
   * [trellis-ext-db](https://github.com/trellis-ldp/trellis-ext-db) A Trellis application using a relational database for a persistence layer
+  * [trellis-ext-aws](https://github.com/trellis-ldp/trellis-ext-aws) A cloud-native Trellis application, designed to run in AWS
   * [camel-ldp-recipes](https://github.com/trellis-ldp/camel-ldp-recipes) Integration workflows built with [Apache Camel](https://camel.apache.org)
 
