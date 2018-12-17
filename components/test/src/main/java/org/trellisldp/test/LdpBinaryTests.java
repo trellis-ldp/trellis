@@ -158,7 +158,7 @@ public interface LdpBinaryTests extends CommonTests {
     default void testPatchBinaryDescription() {
         final RDF rdf = getInstance();
         final EntityTag descriptionETag;
-        final Long size;
+        final long size;
 
         // Discover the location of the description
         final String descriptionLocation = getDescription(getResourceLocation());
