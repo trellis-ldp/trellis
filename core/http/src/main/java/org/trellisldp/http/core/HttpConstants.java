@@ -61,6 +61,9 @@ public final class HttpConstants {
     /** Configuration key defining the default JSON-LD profile. **/
     public static final String CONFIG_HTTP_JSONLD_PROFILE = "trellis.http.jsonld.profile";
 
+    /** Configuration key defining whether to require precondition headers for PUT operations. **/
+    public static final String CONFIG_HTTP_PRECONDITION_REQUIRED = "trellis.http.precondition.required";
+
     /** The Trellis query parameter for extended features of a given resource. **/
     public static final String EXT = "ext";
 
@@ -90,6 +93,9 @@ public final class HttpConstants {
 
     /** The name of the HTTP verb used to update resources. **/
     public static final String PATCH = "PATCH";
+
+    /** The name of the HTTP response code for a Precondition Required error. **/
+    public static final int PRECONDITION_REQUIRED = 428;
 
     /** The name of the HTTP request header used to influence what information is included in responses. **/
     public static final String PREFER = "Prefer";

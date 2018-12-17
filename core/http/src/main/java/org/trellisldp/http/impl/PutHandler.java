@@ -20,6 +20,8 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Predicate.isEqual;
+import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
+import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
@@ -27,13 +29,16 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PRECONDITION_REQUIRED;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
+import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
@@ -76,6 +81,8 @@ import org.trellisldp.vocabulary.LDP;
 public class PutHandler extends MutatingLdpHandler {
 
     private static final Logger LOGGER = getLogger(PutHandler.class);
+    private static final boolean DEFAULT_PRECONDITION_REQUIRED = getConfiguration()
+        .getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class, false);
 
     private final IRI internalId;
     private final RDFSyntax rdfSyntax;
@@ -125,6 +132,8 @@ public class PutHandler extends MutatingLdpHandler {
                 etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()));
             }
             // Check the cache
+            checkRequiredPreconditions(DEFAULT_PRECONDITION_REQUIRED, getRequest().getHeaders().getFirst(IF_MATCH),
+                    getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE));
             checkCache(modified, etag);
         }
 

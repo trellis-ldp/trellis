@@ -36,6 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
 import static org.trellisldp.http.core.HttpConstants.DEFAULT_REPRESENTATION;
+import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
@@ -69,6 +70,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
@@ -85,7 +87,8 @@ public final class HttpUtils {
 
     private static final Logger LOGGER = getLogger(HttpUtils.class);
     private static final RDF rdf = getInstance();
-    private static final String DEFAULT_JSONLD_PROFILE = getConfiguration().get(CONFIG_HTTP_JSONLD_PROFILE);
+    private static final Configuration config = getConfiguration();
+    private static final String DEFAULT_JSONLD_PROFILE = config.get(CONFIG_HTTP_JSONLD_PROFILE);
     private static final Set<String> ignoredPreferences;
 
     static {
@@ -398,6 +401,19 @@ public final class HttpUtils {
             }
             return empty();
         }).map(ZonedDateTime::toInstant);
+    }
+
+    /**
+     * Check whether conditional requests are required.
+     * @param required whether conditional requests are required
+     * @param ifMatch the If-Match header
+     * @param ifUnmodifiedSince the If-Unmodified-Since header
+     */
+    public static void checkRequiredPreconditions(final boolean required, final String ifMatch,
+            final String ifUnmodifiedSince) {
+        if (required && isNull(ifMatch) && isNull(ifUnmodifiedSince)) {
+            throw new ClientErrorException(status(PRECONDITION_REQUIRED).build());
+        }
     }
 
     private HttpUtils() {

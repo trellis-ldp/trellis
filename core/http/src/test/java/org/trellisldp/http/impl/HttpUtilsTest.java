@@ -22,6 +22,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -36,6 +37,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
@@ -43,8 +45,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
 
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Graph;
@@ -265,5 +269,15 @@ public class HttpUtilsTest {
         assertThrows(UncheckedIOException.class, () ->
                 HttpUtils.closeInputStreamAsync(mockInputStream).accept(null, null),
                 "No exception on bad InputStream!");
+    }
+
+    @Test
+    public void testRequirePreconditions() {
+        assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(true, "*", null));
+        assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(true, null, "Mon, 17 Dec 2018 07:28:00 GMT"));
+        assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(false, null, null));
+        final Response res = assertThrows(ClientErrorException.class, () ->
+                HttpUtils.checkRequiredPreconditions(true, null, null)).getResponse();
+        assertEquals(PRECONDITION_REQUIRED, res.getStatus());
     }
 }
