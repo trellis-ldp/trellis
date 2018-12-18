@@ -118,7 +118,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
     private static final boolean DEFAULT_WEAK_ETAGS = getConfiguration()
-        .getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, true);
+        .getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, Boolean.TRUE);
 
     private final boolean isMemento;
 

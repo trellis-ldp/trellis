@@ -175,7 +175,8 @@ public final class MementoResource {
      * @return a Link without Memento parameters, if desired; otherwise, the original link
      */
     public static Link filterLinkParams(final Link link) {
-        return filterLinkParams(link, !config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, true));
+        return filterLinkParams(link,
+                !config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE));
     }
 
     /**

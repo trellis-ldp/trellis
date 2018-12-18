@@ -58,8 +58,8 @@ public class CacheControlFilter implements ContainerResponseFilter {
     @Inject
     public CacheControlFilter() {
         this(config.getOrDefault(CONFIG_HTTP_CACHE_AGE, Integer.class, 86400),
-             config.getOrDefault(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class, true),
-             config.getOrDefault(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class, false));
+             config.getOrDefault(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class, Boolean.TRUE),
+             config.getOrDefault(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class, Boolean.FALSE));
     }
 
     /**

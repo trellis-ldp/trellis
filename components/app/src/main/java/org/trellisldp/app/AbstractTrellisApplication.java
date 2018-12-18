@@ -122,7 +122,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Resource matchers
         environment.jersey().register(getLdpComponent(config, ConfigurationProvider.getConfiguration()
-                    .getOrDefault(CONFIG_APP_INITIALIZE_ROOT, Boolean.class, true)));
+                    .getOrDefault(CONFIG_APP_INITIALIZE_ROOT, Boolean.class, Boolean.TRUE)));
 
         // Authentication
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),

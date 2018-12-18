@@ -82,7 +82,7 @@ public class PutHandler extends MutatingLdpHandler {
 
     private static final Logger LOGGER = getLogger(PutHandler.class);
     private static final boolean DEFAULT_PRECONDITION_REQUIRED = getConfiguration()
-        .getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class, false);
+        .getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class, Boolean.FALSE);
 
     private final IRI internalId;
     private final RDFSyntax rdfSyntax;

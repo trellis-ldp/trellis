@@ -52,14 +52,14 @@ final class AppUtils {
     }
 
     public static Optional<CacheControlFilter> getCacheControlFilter() {
-        if (config.getOrDefault(CONFIG_WEBAPP_CACHE_ENABLED, Boolean.class, false)) {
+        if (config.getOrDefault(CONFIG_WEBAPP_CACHE_ENABLED, Boolean.class, Boolean.FALSE)) {
             return of(new CacheControlFilter());
         }
         return empty();
     }
 
     public static Optional<CrossOriginResourceSharingFilter> getCORSFilter() {
-        if (config.getOrDefault(CONFIG_WEBAPP_CORS_ENABLED, Boolean.class, false)) {
+        if (config.getOrDefault(CONFIG_WEBAPP_CORS_ENABLED, Boolean.class, Boolean.FALSE)) {
             return of(new CrossOriginResourceSharingFilter());
         }
         return empty();

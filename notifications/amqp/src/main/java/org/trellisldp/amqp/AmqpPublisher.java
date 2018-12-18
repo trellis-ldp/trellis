@@ -87,8 +87,8 @@ public class AmqpPublisher implements EventService {
      */
     public AmqpPublisher(final Channel channel) {
         this(channel, config.get(CONFIG_AMQP_EXCHANGE_NAME), config.get(CONFIG_AMQP_ROUTING_KEY),
-            config.getOrDefault(CONFIG_AMQP_MANDATORY, Boolean.class, true),
-            config.getOrDefault(CONFIG_AMQP_IMMEDIATE, Boolean.class, false));
+            config.getOrDefault(CONFIG_AMQP_MANDATORY, Boolean.class, Boolean.TRUE),
+            config.getOrDefault(CONFIG_AMQP_IMMEDIATE, Boolean.class, Boolean.FALSE));
     }
 
     /**

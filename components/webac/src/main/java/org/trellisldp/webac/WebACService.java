@@ -116,7 +116,7 @@ public class WebACService implements AccessControlService {
     public WebACService(final ResourceService resourceService,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
         this(resourceService, cache, getConfiguration()
-                .getOrDefault(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class, false));
+                .getOrDefault(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class, Boolean.FALSE));
     }
 
     /**
