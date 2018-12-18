@@ -16,11 +16,8 @@ package org.trellisldp.constraint;
 import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -119,27 +116,24 @@ public class LdpConstraints implements ConstraintService {
     }
 
     // Verify that ldp:membershipResource and one of ldp:hasMemberRelation or ldp:isMemberOfRelation is present
-    private static boolean hasMembershipProps(final Map<IRI, Long> data) {
-        return data.containsKey(LDP.membershipResource) &&
-            data.getOrDefault(LDP.hasMemberRelation, 0L) + data.getOrDefault(LDP.isMemberOfRelation, 0L) == 1L;
+    private static boolean hasMembershipProps(final Graph graph) {
+        return graph.contains(null, LDP.membershipResource, null)
+                && (graph.stream(null, LDP.hasMemberRelation, null).count()
+                    + graph.stream(null, LDP.isMemberOfRelation, null).count() == 1L);
     }
 
     // Verify that the cardinality of the `propertiesWithUriRange` properties. Keep any whose cardinality is > 1
     private static Predicate<Graph> checkCardinality(final IRI model) {
         return graph -> {
-            final Map<IRI, Long> cardinality = graph.stream()
-                .filter(triple -> propertiesWithUriRange.contains(triple.getPredicate()))
-                .collect(groupingBy(Triple::getPredicate, counting()));
-
             if (LDP.IndirectContainer.equals(model)) {
-                if (isNull(cardinality.get(LDP.insertedContentRelation)) || !hasMembershipProps(cardinality)) {
+                if (!graph.contains(null, LDP.insertedContentRelation, null) || !hasMembershipProps(graph)) {
                     return true;
                 }
-            } else if (LDP.DirectContainer.equals(model) && !hasMembershipProps(cardinality)) {
+            } else if (LDP.DirectContainer.equals(model) && !hasMembershipProps(graph)) {
                 return true;
             }
 
-            return cardinality.entrySet().stream().map(Map.Entry::getValue).anyMatch(val -> val > 1);
+            return propertiesWithUriRange.stream().anyMatch(p -> graph.stream(null, p, null).count() > 1);
         };
     }
 
