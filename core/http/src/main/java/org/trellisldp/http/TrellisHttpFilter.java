@@ -30,7 +30,6 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.EXT;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
-import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
@@ -47,7 +46,6 @@ import javax.ws.rs.ext.Provider;
 
 import org.trellisldp.http.core.AcceptDatetime;
 import org.trellisldp.http.core.Digest;
-import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.Range;
 import org.trellisldp.http.core.Version;
 
@@ -72,9 +70,6 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
             .ifPresent(x -> ctx.abortWith(status(BAD_REQUEST).build()));
 
         ofNullable(ctx.getHeaderString(SLUG)).filter(s -> s.contains(slash)).ifPresent(x ->
-            ctx.abortWith(status(BAD_REQUEST).build()));
-
-        ofNullable(ctx.getHeaderString(PREFER)).filter(x -> isNull(Prefer.valueOf(x))).ifPresent(x ->
             ctx.abortWith(status(BAD_REQUEST).build()));
 
         ofNullable(ctx.getHeaderString(RANGE)).filter(x -> isNull(Range.valueOf(x))).ifPresent(x ->

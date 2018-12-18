@@ -297,7 +297,7 @@ public class GetHandler extends BaseLdpHandler {
         final Prefer prefer = ACL.equals(getRequest().getExt()) ?
             new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
                     of(PreferUserManaged, LDP.PreferContainment, LDP.PreferMembership).map(IRI::getIRIString)
-                        .collect(toList()), null, null, null) : getRequest().getPrefer();
+                        .collect(toList()), null, null) : getRequest().getPrefer();
 
         // Check for a cache hit
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer),

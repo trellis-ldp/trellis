@@ -190,13 +190,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testScrewyPreferHeader() {
-        final Response res = target(RESOURCE_PATH).request().header("Prefer", "wait=just one minute").get();
-
-        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
     public void testScrewyAcceptDatetimeHeader() {
         final Response res = target(RESOURCE_PATH).request().header("Accept-Datetime",
                 "it's pathetic how we both").get();

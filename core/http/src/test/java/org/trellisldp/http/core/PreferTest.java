@@ -61,7 +61,6 @@ public class PreferTest {
         assertTrue(prefer.getInclude().isEmpty(), "Check that there are no includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits count is zero");
         assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -72,7 +71,6 @@ public class PreferTest {
         assertTrue(prefer.getOmit().isEmpty(), "Check omits is empty");
         assertFalse(prefer.getPreference().isPresent(), "Check preference type");
         assertFalse(prefer.getHandling().isPresent(), "Check handling type");
-        assertFalse(prefer.getWait().isPresent(), "Check wait value");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -84,7 +82,6 @@ public class PreferTest {
         assertFalse(prefer.getOmit().isEmpty(), "Check for omits");
         assertTrue(prefer.getOmit().contains("http://example.org/test"), "Check omit value");
         assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait value");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -96,7 +93,6 @@ public class PreferTest {
         assertFalse(prefer.getOmit().isEmpty(), "Check for omit values");
         assertTrue(prefer.getOmit().contains("http://example.org/test"), "Check omit value");
         assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait value");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -107,7 +103,6 @@ public class PreferTest {
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
         assertEquals(of("minimal"), prefer.getPreference(), "Check preference value");
         assertEquals(of("lenient"), prefer.getHandling(), "Check handling value");
-        assertFalse(prefer.getWait().isPresent(), "Check wait value");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -118,7 +113,6 @@ public class PreferTest {
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
         assertFalse(prefer.getPreference().isPresent(), "Check preference type");
         assertFalse(prefer.getHandling().isPresent(), "Check handling value");
-        assertFalse(prefer.getWait().isPresent(), "Check wait value");
         assertTrue(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -129,7 +123,6 @@ public class PreferTest {
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
         assertEquals(of("minimal"), prefer.getPreference(), "Check preference value");
         assertEquals(of("strict"), prefer.getHandling(), "Check handling value");
-        assertFalse(prefer.getWait().isPresent(), "Check wait value");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -140,18 +133,6 @@ public class PreferTest {
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
         assertEquals(of("minimal"), prefer.getPreference(), "Check preference type");
         assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait value");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
-    }
-
-    @Test
-    public void testPrefer10() {
-        final Prefer prefer = Prefer.valueOf("wait=4");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
-        assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
-        assertFalse(prefer.getPreference().isPresent(), "Check preference value");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertEquals((Integer)4, prefer.getWait().get(), "Check wait value");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -179,7 +160,6 @@ public class PreferTest {
         assertTrue(prefer.getInclude().contains("\"http://example.org/test"));
         assertTrue(prefer.getOmit().isEmpty(), "Check omits count is zero");
         assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -191,7 +171,6 @@ public class PreferTest {
         assertTrue(prefer.getInclude().contains("\""), "Check for weird quote in includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits count is zero");
         assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getWait().isPresent(), "Check wait");
         assertFalse(prefer.getRespondAsync(), "Check respond async");
     }
 
@@ -207,7 +186,6 @@ public class PreferTest {
                 () -> assertTrue(prefer.getInclude().contains(url), "Check includes value"),
                 () -> assertTrue(prefer.getOmit().isEmpty(), "Check omits count"),
                 () -> assertFalse(prefer.getHandling().isPresent(), "Check handling"),
-                () -> assertFalse(prefer.getWait().isPresent(), "Check wait"),
                 () -> assertFalse(prefer.getRespondAsync(), "Check respond async"));
     }
 }

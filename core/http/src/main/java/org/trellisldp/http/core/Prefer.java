@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.core;
 
-import static java.lang.Integer.parseInt;
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -62,13 +61,9 @@ public class Prefer {
 
     public static final String PREFER_HANDLING = "handling";
 
-    public static final String PREFER_WAIT = "wait";
-
     private final Optional<String> preference;
 
     private final Optional<String> handling;
-
-    private final Optional<Integer> wait;
 
     private final List<String> include;
 
@@ -84,16 +79,14 @@ public class Prefer {
      * @param omit a list of omit values
      * @param params single-valued parameters
      * @param handling the handling value
-     * @param wait the wait value
      */
     public Prefer(final String preference, final List<String> include, final List<String> omit,
-            final Set<String> params, final String handling, final Integer wait) {
+            final Set<String> params, final String handling) {
         this.preference = ofNullable(preference)
             .filter(isEqual(PREFER_MINIMAL).or(PREFER_REPRESENTATION::equals));
         this.include = ofNullable(include).orElseGet(Collections::emptyList);
         this.omit = ofNullable(omit).orElseGet(Collections::emptyList);
         this.handling = ofNullable(handling).filter(isEqual(PREFER_LENIENT).or(PREFER_STRICT::equals));
-        this.wait = ofNullable(wait);
         this.params = ofNullable(params).orElseGet(Collections::emptySet);
     }
 
@@ -114,17 +107,8 @@ public class Prefer {
                     params.add(x[0].trim());
                 }
             });
-            final String waitValue = data.get(PREFER_WAIT);
-            try {
-                Integer wait = null;
-                if (nonNull(waitValue)) {
-                    wait = parseInt(waitValue);
-                }
-                return new Prefer(data.get(PREFER_RETURN), parseParameter(data.get(PREFER_INCLUDE)),
-                        parseParameter(data.get(PREFER_OMIT)), params, data.get(PREFER_HANDLING), wait);
-            } catch (final NumberFormatException ex) {
-                LOGGER.warn("Cannot parse wait parameter value {}: {}", waitValue, ex.getMessage());
-            }
+            return new Prefer(data.get(PREFER_RETURN), parseParameter(data.get(PREFER_INCLUDE)),
+                        parseParameter(data.get(PREFER_OMIT)), params, data.get(PREFER_HANDLING));
         }
         return null;
     }
@@ -145,15 +129,6 @@ public class Prefer {
      */
     public Optional<String> getHandling() {
         return handling;
-    }
-
-    /**
-     * Get the value of the wait parameter, if set.
-     *
-     * @return the value of the wait parameter, if available
-     */
-    public Optional<Integer> getWait() {
-        return wait;
     }
 
     /**
