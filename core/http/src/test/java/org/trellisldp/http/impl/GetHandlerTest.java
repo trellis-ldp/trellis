@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.time.Instant.now;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -28,6 +29,7 @@ import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
+import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
@@ -54,6 +56,7 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
@@ -69,9 +72,12 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import javax.ws.rs.NotAcceptableException;
@@ -385,5 +391,26 @@ public class GetHandlerTest extends BaseTestHandler {
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check LDP type link headers", checkLdpType(res, LDP.RDFSource));
         assertAll("Check Allow headers", checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PATCH)));
+    }
+
+    @Test
+    public void testFilterLinkFromConfiguration() {
+        try {
+            System.setProperty(CONFIG_HTTP_MEMENTO_HEADER_DATES, "false");
+            final Instant time1 = now();
+            final Instant time2 = time1.plusSeconds(10L);
+            final SortedSet<Instant> mementos = new TreeSet<>();
+            mementos.add(time1);
+            mementos.add(time2);
+            final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, baseUrl);
+            final Response res = handler.addMementoHeaders(handler.standardHeaders(handler.initialize(mockResource)),
+                    mementos).build();
+
+            final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf)
+                .filter(link -> "memento".equals(link.getRel())).collect(toList());
+            assertEquals(2L, links.size());
+        } finally {
+            System.clearProperty(CONFIG_HTTP_MEMENTO_HEADER_DATES);
+        }
     }
 }

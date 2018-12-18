@@ -71,9 +71,10 @@ public class MementoResourceTest {
     public void testFilterLinkFromConfiguration() {
         try {
             System.setProperty(CONFIG_HTTP_MEMENTO_HEADER_DATES, "false");
+            final MementoResource mr = new MementoResource(null);
             final Link link = fromUri("http://example.com/resource/memento/1").rel(MEMENTO)
                 .param(DATETIME, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-            assertFalse(MementoResource.filterLinkParams(link).getParams().containsKey(DATETIME));
+            assertFalse(mr.filterLinkParams(link).getParams().containsKey(DATETIME));
         } finally {
             System.clearProperty(CONFIG_HTTP_MEMENTO_HEADER_DATES);
         }

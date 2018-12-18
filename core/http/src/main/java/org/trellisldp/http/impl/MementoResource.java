@@ -82,6 +82,8 @@ public final class MementoResource {
     private static final String TIMEMAP_PARAM = "?ext=timemap";
 
     private final ServiceBundler trellis;
+    private final boolean INCLUDE_MEMENTO_DATES = config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES,
+            Boolean.class, Boolean.TRUE);
     private final TimemapGenerator timemap = findFirst(TimemapGenerator.class)
         .orElseGet(() -> new TimemapGenerator() { });
 
@@ -110,7 +112,7 @@ public final class MementoResource {
         final List<Link> links = getMementoLinks(identifier, mementos).collect(toList());
 
         final ResponseBuilder builder = ok().link(identifier, ORIGINAL + " " + TIMEGATE);
-        builder.links(links.stream().map(MementoResource::filterLinkParams).toArray(Link[]::new))
+        builder.links(links.stream().map(this::filterLinkParams).toArray(Link[]::new))
             .link(Resource.getIRIString(), TYPE).link(RDFSource.getIRIString(), TYPE)
             .header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
@@ -132,8 +134,7 @@ public final class MementoResource {
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)
-            .entity(links.stream().map(MementoResource::filterLinkParams).map(Link::toString)
-                    .collect(joining(",\n")) + "\n");
+            .entity(links.stream().map(this::filterLinkParams).map(Link::toString).collect(joining(",\n")) + "\n");
     }
 
     /**
@@ -150,8 +151,17 @@ public final class MementoResource {
         return status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().getEpochSecond()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
-            .links(getMementoLinks(identifier, mementos).map(MementoResource::filterLinkParams).toArray(Link[]::new))
+            .links(getMementoLinks(identifier, mementos).map(this::filterLinkParams).toArray(Link[]::new))
             .header(VARY, ACCEPT_DATETIME);
+    }
+
+    /**
+     * Filter link parameters from a provided Link object, if configured to do so.
+     * @param link the link
+     * @return a Link without Memento parameters, if desired; otherwise, the original link
+     */
+    public Link filterLinkParams(final Link link) {
+        return filterLinkParams(link, !INCLUDE_MEMENTO_DATES);
     }
 
     /**
@@ -167,16 +177,6 @@ public final class MementoResource {
         }
         return concat(getTimeMap(identifier, mementos.first(), mementos.last()),
                 mementos.stream().map(mementoToLink(identifier)));
-    }
-
-    /**
-     * Filter link parameters from a provided Link object, if configured to do so.
-     * @param link the link
-     * @return a Link without Memento parameters, if desired; otherwise, the original link
-     */
-    public static Link filterLinkParams(final Link link) {
-        return filterLinkParams(link,
-                !config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE));
     }
 
     /**

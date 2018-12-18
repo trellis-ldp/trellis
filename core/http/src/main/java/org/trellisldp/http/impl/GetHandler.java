@@ -51,6 +51,7 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.core.HttpConstants.DIGEST;
@@ -98,6 +99,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
@@ -117,9 +119,12 @@ import org.trellisldp.vocabulary.Memento;
 public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
-    private static final boolean DEFAULT_WEAK_ETAGS = getConfiguration()
-        .getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, Boolean.TRUE);
+    private static final Configuration config = getConfiguration();
+    private static final boolean DEFAULT_WEAK_ETAGS = config.getOrDefault(CONFIG_HTTP_WEAK_ETAG,
+            Boolean.class, Boolean.TRUE);
 
+    private final boolean INCLUDE_MEMENTO_DATES = config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES,
+            Boolean.class, Boolean.TRUE);
     private final boolean isMemento;
 
     private RDFSyntax syntax;
@@ -251,7 +256,8 @@ public class GetHandler extends BaseLdpHandler {
         if (!ACL.equals(getRequest().getExt())) {
             builder.link(getIdentifier(), "original timegate")
                 .links(MementoResource.getMementoLinks(getIdentifier(), mementos)
-                        .map(MementoResource::filterLinkParams).toArray(Link[]::new));
+                        .map(link -> MementoResource.filterLinkParams(link, !INCLUDE_MEMENTO_DATES))
+                        .toArray(Link[]::new));
         }
         return builder;
     }
