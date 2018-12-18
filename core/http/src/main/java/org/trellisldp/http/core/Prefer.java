@@ -21,7 +21,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.joining;
-import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import org.slf4j.Logger;
 
 /**
  * A class representing an HTTP Prefer header.
@@ -42,8 +39,6 @@ import org.slf4j.Logger;
  * <a href="https://www.iana.org/assignments/http-parameters/http-parameters.xhtml#preferences">IANA values</a>
  */
 public class Prefer {
-
-    private static final Logger LOGGER = getLogger(Prefer.class);
 
     public static final String PREFER_REPRESENTATION = "representation";
 
