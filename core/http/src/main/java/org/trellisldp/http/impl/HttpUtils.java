@@ -31,10 +31,8 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
 import static org.trellisldp.http.core.HttpConstants.DEFAULT_REPRESENTATION;
 import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
@@ -86,7 +84,6 @@ public final class HttpUtils {
 
     private static final Logger LOGGER = getLogger(HttpUtils.class);
     private static final RDF rdf = getInstance();
-    private static final String DEFAULT_JSONLD_PROFILE = getConfiguration().get(CONFIG_HTTP_JSONLD_PROFILE);
     private static final Set<String> ignoredPreferences;
 
     static {
@@ -286,10 +283,12 @@ public final class HttpUtils {
      *
      * @param syntax the RDF syntax
      * @param identifier the resource identifier
+     * @param defaultJsonLdProfile a user-supplied default
      * @return a profile IRI usable by the output streamer
      */
-    public static IRI getDefaultProfile(final RDFSyntax syntax, final String identifier) {
-        return getDefaultProfile(syntax, rdf.createIRI(identifier));
+    public static IRI getDefaultProfile(final RDFSyntax syntax, final String identifier,
+            final String defaultJsonLdProfile) {
+        return getDefaultProfile(syntax, rdf.createIRI(identifier), defaultJsonLdProfile);
     }
 
     /**
@@ -297,11 +296,13 @@ public final class HttpUtils {
      *
      * @param syntax the RDF syntax
      * @param identifier the resource identifier
+     * @param defaultJsonLdProfile a user-supplied default
      * @return a profile IRI usable by the output streamer
      */
-    public static IRI getDefaultProfile(final RDFSyntax syntax, final IRI identifier) {
+    public static IRI getDefaultProfile(final RDFSyntax syntax, final IRI identifier,
+            final String defaultJsonLdProfile) {
         return RDFA.equals(syntax) ? identifier
-            : ofNullable(DEFAULT_JSONLD_PROFILE).map(rdf::createIRI).orElse(compacted);
+            : ofNullable(defaultJsonLdProfile).map(rdf::createIRI).orElse(compacted);
     }
 
     /**

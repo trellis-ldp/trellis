@@ -51,6 +51,7 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
@@ -123,6 +124,7 @@ public class GetHandler extends BaseLdpHandler {
     private final boolean weakEtags;
     private final boolean includeMementoDates;
     private final boolean isMemento;
+    private final String defaultJsonLdProfile;
 
     private RDFSyntax syntax;
 
@@ -142,7 +144,8 @@ public class GetHandler extends BaseLdpHandler {
     private GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
             final String baseUrl, final Configuration config) {
         this(req, trellis, isMemento, baseUrl, config.getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, Boolean.TRUE),
-                config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE));
+                config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE),
+                config.get(CONFIG_HTTP_JSONLD_PROFILE));
     }
 
     /**
@@ -154,13 +157,16 @@ public class GetHandler extends BaseLdpHandler {
      * @param baseUrl the base URL
      * @param weakEtags whether to use weak ETags for RDF responses
      * @param includeMementoDates whether to include date strings in memento link headers
+     * @param defaultJsonLdProfile a default json-ld profile
      */
     public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
-            final String baseUrl, final boolean weakEtags, final boolean includeMementoDates) {
+            final String baseUrl, final boolean weakEtags, final boolean includeMementoDates,
+            final String defaultJsonLdProfile) {
         super(req, trellis, baseUrl);
         this.isMemento = isMemento;
         this.weakEtags = weakEtags;
         this.includeMementoDates = includeMementoDates;
+        this.defaultJsonLdProfile = defaultJsonLdProfile;
     }
 
     /**
@@ -358,8 +364,8 @@ public class GetHandler extends BaseLdpHandler {
                         .map(unskolemizeQuads(getServices().getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
                                 getRequest().getObject()))
-                        .map(Quad::asTriple), out, syntax,
-                            ofNullable(profile).orElseGet(() -> getDefaultProfile(syntax, getIdentifier())));
+                        .map(Quad::asTriple), out, syntax, ofNullable(profile).orElseGet(() ->
+                                getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile)));
                 }
             }
         };
