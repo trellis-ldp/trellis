@@ -68,7 +68,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.tamaya.Configuration;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.http.core.TrellisRequest;
@@ -78,7 +77,6 @@ import org.trellisldp.http.core.TrellisRequest;
  */
 public final class MementoResource {
 
-    private static final Configuration config = getConfiguration();
     private static final String TIMEMAP_PARAM = "?ext=timemap";
 
     private final ServiceBundler trellis;
