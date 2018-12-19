@@ -23,11 +23,8 @@ import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.jsonwebtoken.JwsHeader;

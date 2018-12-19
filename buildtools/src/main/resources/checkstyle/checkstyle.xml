@@ -68,7 +68,7 @@
 
     <!-- Block import statements that use the * notation. -->
     <module name="AvoidStarImport">
-      <property name="excludes" value="javax.ws.rs,javax.ws.rs.core,org.junit.jupiter.api.Assertions"/>
+      <property name="excludes" value="javax.ws.rs,javax.ws.rs.core,org.junit.jupiter.api.Assertions,org.mockito.Mockito,org.mockito.ArgumentMatchers"/>
     </module>
 
     <!-- Checks for long lines. -->
