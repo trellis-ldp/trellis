@@ -14,10 +14,7 @@
 package org.trellisldp.file;
 
 import static java.time.Instant.now;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 

@@ -15,10 +15,7 @@ package org.trellisldp.auth.oauth;
 
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static io.jsonwebtoken.security.Keys.secretKeyFor;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;

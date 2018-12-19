@@ -14,10 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.time.Instant.now;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_SESSION_PREFIX;
 
 import java.time.Instant;

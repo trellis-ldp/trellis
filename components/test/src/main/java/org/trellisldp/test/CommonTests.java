@@ -15,9 +15,7 @@ package org.trellisldp.test;
 
 import static java.util.Objects.isNull;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.test.TestUtils.getLinks;

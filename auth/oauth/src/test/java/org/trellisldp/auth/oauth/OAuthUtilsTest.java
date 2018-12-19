@@ -14,9 +14,7 @@
 package org.trellisldp.auth.oauth;
 
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 import java.util.List;

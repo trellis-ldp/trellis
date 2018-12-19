@@ -15,9 +15,7 @@ package org.trellisldp.audit;
 
 import static java.time.Instant.now;
 import static java.util.Optional.of;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.RDF.type;

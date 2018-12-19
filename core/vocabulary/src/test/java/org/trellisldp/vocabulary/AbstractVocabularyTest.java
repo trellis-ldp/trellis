@@ -17,8 +17,7 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.graph.Node.ANY;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 

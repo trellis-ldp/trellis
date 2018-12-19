@@ -14,8 +14,7 @@
 package org.trellisldp.http.core;
 
 import static javax.ws.rs.core.Link.fromUri;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 

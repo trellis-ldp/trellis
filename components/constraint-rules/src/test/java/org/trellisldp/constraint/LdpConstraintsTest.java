@@ -18,9 +18,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.TURTLE;
 import static org.apache.jena.riot.RDFDataMgr.read;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.List;

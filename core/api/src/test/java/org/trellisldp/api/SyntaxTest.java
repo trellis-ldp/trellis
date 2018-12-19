@@ -13,9 +13,7 @@
  */
 package org.trellisldp.api;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.api.Syntax.LD_PATCH;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 

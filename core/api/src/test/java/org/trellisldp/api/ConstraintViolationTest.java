@@ -14,8 +14,7 @@
 package org.trellisldp.api;
 
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.vocabulary.Trellis.InvalidProperty;
 
 import org.apache.commons.rdf.api.RDF;

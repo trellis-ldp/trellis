@@ -16,9 +16,7 @@ package org.trellisldp.auth.oauth;
 import static java.time.Instant.now;
 import static java.util.Base64.getUrlDecoder;
 import static java.util.Date.from;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwsHeader;
