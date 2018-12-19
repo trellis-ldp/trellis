@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Triple;
-import org.apache.tamaya.Configuration;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
@@ -51,7 +50,6 @@ import org.trellisldp.api.RDFaWriterService;
 public class HtmlSerializer implements RDFaWriterService {
 
     private static final MustacheFactory mf = new DefaultMustacheFactory();
-    private static final Configuration config = getConfiguration();
 
     /** The configuration key controlling the HTML template to use. **/
     public static final String CONFIG_RDFA_TEMPLATE = "trellis.rdfa.template";
@@ -85,10 +83,10 @@ public class HtmlSerializer implements RDFaWriterService {
      * @param namespaceService a namespace service
      */
     public HtmlSerializer(final NamespaceService namespaceService) {
-        this(namespaceService, config.get(CONFIG_RDFA_TEMPLATE),
-                config.getOrDefault(CONFIG_RDFA_CSS, "//www.trellisldp.org/assets/css/trellis.css"),
-                config.getOrDefault(CONFIG_RDFA_JS, ""),
-                config.getOrDefault(CONFIG_RDFA_ICON, "//www.trellisldp.org/assets/img/trellis.png"));
+        this(namespaceService, getConfiguration().get(CONFIG_RDFA_TEMPLATE),
+                getConfiguration().getOrDefault(CONFIG_RDFA_CSS, "//www.trellisldp.org/assets/css/trellis.css"),
+                getConfiguration().getOrDefault(CONFIG_RDFA_JS, ""),
+                getConfiguration().getOrDefault(CONFIG_RDFA_ICON, "//www.trellisldp.org/assets/img/trellis.png"));
     }
 
     /**
