@@ -82,8 +82,7 @@ public final class MementoResource {
     private static final String TIMEMAP_PARAM = "?ext=timemap";
 
     private final ServiceBundler trellis;
-    private final boolean INCLUDE_MEMENTO_DATES = config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES,
-            Boolean.class, Boolean.TRUE);
+    private final boolean includeMementoDates;
     private final TimemapGenerator timemap = findFirst(TimemapGenerator.class)
         .orElseGet(() -> new TimemapGenerator() { });
 
@@ -93,7 +92,18 @@ public final class MementoResource {
      * @param trellis the Trellis application bundle
      */
     public MementoResource(final ServiceBundler trellis) {
+        this(trellis, getConfiguration().getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE));
+    }
+
+    /**
+     * Wrap a resource in some Memento-specific response builders.
+     *
+     * @param trellis the Trellis application bundle
+     * @param includeMementoDates whether to include memento dates in link headers
+     */
+    public MementoResource(final ServiceBundler trellis, final boolean includeMementoDates) {
         this.trellis = trellis;
+        this.includeMementoDates = includeMementoDates;
     }
 
     /**
@@ -161,7 +171,7 @@ public final class MementoResource {
      * @return a Link without Memento parameters, if desired; otherwise, the original link
      */
     public Link filterLinkParams(final Link link) {
-        return filterLinkParams(link, !INCLUDE_MEMENTO_DATES);
+        return filterLinkParams(link, !includeMementoDates);
     }
 
     /**

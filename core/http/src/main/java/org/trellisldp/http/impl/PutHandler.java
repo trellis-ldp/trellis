@@ -81,14 +81,13 @@ import org.trellisldp.vocabulary.LDP;
 public class PutHandler extends MutatingLdpHandler {
 
     private static final Logger LOGGER = getLogger(PutHandler.class);
-    private static final boolean DEFAULT_PRECONDITION_REQUIRED = getConfiguration()
-        .getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class, Boolean.FALSE);
 
     private final IRI internalId;
     private final RDFSyntax rdfSyntax;
     private final IRI heuristicType;
     private final IRI graphName;
     private final IRI otherGraph;
+    private final boolean preconditionRequired;
 
     /**
      * Create a builder for an LDP PUT response.
@@ -100,6 +99,21 @@ public class PutHandler extends MutatingLdpHandler {
      */
     public PutHandler(final TrellisRequest req, final InputStream entity, final ServiceBundler trellis,
                     final String baseUrl) {
+        this(req, entity, trellis, baseUrl, getConfiguration().getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED,
+                    Boolean.class, Boolean.FALSE));
+    }
+
+    /**
+     * Create a builder for an LDP PUT response.
+     *
+     * @param req the LDP request
+     * @param entity the entity
+     * @param trellis the Trellis application bundle
+     * @param baseUrl the base URL
+     * @param preconditionRequired whether preconditions are required for PUT operations
+     */
+    public PutHandler(final TrellisRequest req, final InputStream entity, final ServiceBundler trellis,
+                    final String baseUrl, final boolean preconditionRequired) {
         super(req, trellis, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         this.rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->
@@ -109,6 +123,7 @@ public class PutHandler extends MutatingLdpHandler {
         this.heuristicType = nonNull(req.getContentType()) && isNull(rdfSyntax) ? LDP.NonRDFSource : LDP.RDFSource;
         this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
         this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
+        this.preconditionRequired = preconditionRequired;
     }
 
     /**
@@ -132,7 +147,7 @@ public class PutHandler extends MutatingLdpHandler {
                 etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()));
             }
             // Check the cache
-            checkRequiredPreconditions(DEFAULT_PRECONDITION_REQUIRED, getRequest().getHeaders().getFirst(IF_MATCH),
+            checkRequiredPreconditions(preconditionRequired, getRequest().getHeaders().getFirst(IF_MATCH),
                     getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE));
             checkCache(modified, etag);
         }

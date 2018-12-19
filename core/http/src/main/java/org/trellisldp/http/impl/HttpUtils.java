@@ -70,7 +70,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
@@ -87,8 +86,7 @@ public final class HttpUtils {
 
     private static final Logger LOGGER = getLogger(HttpUtils.class);
     private static final RDF rdf = getInstance();
-    private static final Configuration config = getConfiguration();
-    private static final String DEFAULT_JSONLD_PROFILE = config.get(CONFIG_HTTP_JSONLD_PROFILE);
+    private static final String DEFAULT_JSONLD_PROFILE = getConfiguration().get(CONFIG_HTTP_JSONLD_PROFILE);
     private static final Set<String> ignoredPreferences;
 
     static {

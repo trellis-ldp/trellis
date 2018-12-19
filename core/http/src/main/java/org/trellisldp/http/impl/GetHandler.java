@@ -119,12 +119,9 @@ import org.trellisldp.vocabulary.Memento;
 public class GetHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(GetHandler.class);
-    private static final Configuration config = getConfiguration();
-    private static final boolean DEFAULT_WEAK_ETAGS = config.getOrDefault(CONFIG_HTTP_WEAK_ETAG,
-            Boolean.class, Boolean.TRUE);
 
-    private final boolean INCLUDE_MEMENTO_DATES = config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES,
-            Boolean.class, Boolean.TRUE);
+    private final boolean weakEtags;
+    private final boolean includeMementoDates;
     private final boolean isMemento;
 
     private RDFSyntax syntax;
@@ -139,8 +136,31 @@ public class GetHandler extends BaseLdpHandler {
      */
     public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
             final String baseUrl) {
+        this(req, trellis, isMemento, baseUrl, getConfiguration());
+    }
+
+    private GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
+            final String baseUrl, final Configuration config) {
+        this(req, trellis, isMemento, baseUrl, config.getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, Boolean.TRUE),
+                config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE));
+    }
+
+    /**
+     * A GET response builder.
+     *
+     * @param req the LDP request
+     * @param trellis the Trellis application bundle
+     * @param isMemento true if the resource is a memento; false otherwise
+     * @param baseUrl the base URL
+     * @param weakEtags whether to use weak ETags for RDF responses
+     * @param includeMementoDates whether to include date strings in memento link headers
+     */
+    public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
+            final String baseUrl, final boolean weakEtags, final boolean includeMementoDates) {
         super(req, trellis, baseUrl);
         this.isMemento = isMemento;
+        this.weakEtags = weakEtags;
+        this.includeMementoDates = includeMementoDates;
     }
 
     /**
@@ -256,7 +276,7 @@ public class GetHandler extends BaseLdpHandler {
         if (!ACL.equals(getRequest().getExt())) {
             builder.link(getIdentifier(), "original timegate")
                 .links(MementoResource.getMementoLinks(getIdentifier(), mementos)
-                        .map(link -> MementoResource.filterLinkParams(link, !INCLUDE_MEMENTO_DATES))
+                        .map(link -> MementoResource.filterLinkParams(link, !includeMementoDates))
                         .toArray(Link[]::new));
         }
         return builder;
@@ -307,7 +327,7 @@ public class GetHandler extends BaseLdpHandler {
 
         // Check for a cache hit
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer),
-                DEFAULT_WEAK_ETAGS);
+                weakEtags);
         checkCache(getResource().getModified(), etag);
 
         builder.tag(etag);
