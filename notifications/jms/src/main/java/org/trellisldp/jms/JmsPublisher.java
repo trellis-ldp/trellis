@@ -54,7 +54,6 @@ public class JmsPublisher implements EventService {
     /** THe configuration key controlling the JMS password. **/
     public static final String CONFIG_JMS_PASSWORD = "trellis.jms.password";
 
-    private static final Configuration config = getConfiguration();
     private static final Logger LOGGER = getLogger(JmsPublisher.class);
     private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
@@ -69,7 +68,11 @@ public class JmsPublisher implements EventService {
      */
     @Inject
     public JmsPublisher() throws JMSException {
-        this(buildJmsConnection());
+        this(getConfiguration());
+    }
+
+    private JmsPublisher(final Configuration config) throws JMSException {
+        this(buildJmsConnection(config).createSession(false, AUTO_ACKNOWLEDGE), config.get(CONFIG_JMS_QUEUE_NAME));
     }
 
     /**
@@ -78,7 +81,7 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a connection error
      */
     public JmsPublisher(final Connection conn) throws JMSException {
-        this(conn.createSession(false, AUTO_ACKNOWLEDGE), config.get(CONFIG_JMS_QUEUE_NAME));
+        this(conn.createSession(false, AUTO_ACKNOWLEDGE), getConfiguration().get(CONFIG_JMS_QUEUE_NAME));
     }
 
     /**
@@ -108,7 +111,7 @@ public class JmsPublisher implements EventService {
         });
     }
 
-    private static Connection buildJmsConnection() throws JMSException {
+    private static Connection buildJmsConnection(final Configuration config) throws JMSException {
         final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
                 config.get(CONFIG_JMS_URL));
         if (nonNull(config.get(CONFIG_JMS_USERNAME)) && nonNull(config.get(CONFIG_JMS_PASSWORD))) {

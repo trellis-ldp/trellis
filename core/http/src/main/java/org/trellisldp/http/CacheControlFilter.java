@@ -46,8 +46,6 @@ public class CacheControlFilter implements ContainerResponseFilter {
     /** The configuration key for setting a cache-control no-cache header. **/
     public static final String CONFIG_HTTP_CACHE_NOCACHE = "trellis.http.cache.nocache";
 
-    private static final Configuration config = getConfiguration();
-
     private final int cacheAge;
     private final boolean revalidate;
     private final boolean noCache;
@@ -57,6 +55,10 @@ public class CacheControlFilter implements ContainerResponseFilter {
      */
     @Inject
     public CacheControlFilter() {
+        this(getConfiguration());
+    }
+
+    private CacheControlFilter(final Configuration config) {
         this(config.getOrDefault(CONFIG_HTTP_CACHE_AGE, Integer.class, 86400),
              config.getOrDefault(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class, Boolean.TRUE),
              config.getOrDefault(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class, Boolean.FALSE));

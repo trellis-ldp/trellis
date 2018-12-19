@@ -38,7 +38,6 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 public class KafkaPublisher implements EventService {
 
-    private static final Configuration config = getConfiguration();
     private static final Logger LOGGER = getLogger(KafkaPublisher.class);
     private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
@@ -54,7 +53,11 @@ public class KafkaPublisher implements EventService {
      */
     @Inject
     public KafkaPublisher() {
-        this(buildProducer());
+        this(getConfiguration());
+    }
+
+    private KafkaPublisher(final Configuration config) {
+        this(buildProducer(config), config.get(CONFIG_KAFKA_TOPIC));
     }
 
     /**
@@ -62,7 +65,7 @@ public class KafkaPublisher implements EventService {
      * @param producer the producer
      */
     public KafkaPublisher(final Producer<String, String> producer) {
-        this(producer, config.get(CONFIG_KAFKA_TOPIC));
+        this(producer, getConfiguration().get(CONFIG_KAFKA_TOPIC));
     }
 
     /**
@@ -87,7 +90,7 @@ public class KafkaPublisher implements EventService {
         });
     }
 
-    private static Producer<String, String> buildProducer() {
+    private static Producer<String, String> buildProducer(final Configuration config) {
         final String prefix = "trellis.kafka.";
         final Properties p = new Properties();
         p.setProperty("acks", config.getOrDefault(prefix + "acks", "all"));

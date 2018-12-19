@@ -14,6 +14,7 @@
 package org.trellisldp.amqp;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.findFirst;
 
@@ -30,7 +31,6 @@ import java.util.concurrent.TimeoutException;
 import javax.inject.Inject;
 
 import org.apache.tamaya.Configuration;
-import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -43,7 +43,6 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 public class AmqpPublisher implements EventService {
 
-    private static final Configuration config = ConfigurationProvider.getConfiguration();
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
     private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
@@ -86,6 +85,10 @@ public class AmqpPublisher implements EventService {
      * @param channel the channel
      */
     public AmqpPublisher(final Channel channel) {
+        this(channel, getConfiguration());
+    }
+
+    private AmqpPublisher(final Channel channel, final Configuration config) {
         this(channel, config.get(CONFIG_AMQP_EXCHANGE_NAME), config.get(CONFIG_AMQP_ROUTING_KEY),
             config.getOrDefault(CONFIG_AMQP_MANDATORY, Boolean.class, Boolean.TRUE),
             config.getOrDefault(CONFIG_AMQP_IMMEDIATE, Boolean.class, Boolean.FALSE));
@@ -138,7 +141,7 @@ public class AmqpPublisher implements EventService {
     private static Connection buildConnection() throws IOException, GeneralSecurityException, URISyntaxException,
             TimeoutException {
         final ConnectionFactory factory = new ConnectionFactory();
-        factory.setUri(config.get(CONFIG_AMQP_URI));
+        factory.setUri(getConfiguration().get(CONFIG_AMQP_URI));
         return factory.newConnection();
     }
 }

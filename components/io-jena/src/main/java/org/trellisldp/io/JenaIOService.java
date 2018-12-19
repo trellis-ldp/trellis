@@ -81,6 +81,7 @@ import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
+import org.apache.tamaya.Configuration;
 import org.apache.tamaya.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
@@ -159,9 +160,13 @@ public class JenaIOService implements IOService {
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
             @TrellisProfileCache final CacheService<String, String> cache) {
-        this(namespaceService, htmlSerializer, cache,
-                ConfigurationProvider.getConfiguration().getOrDefault(CONFIG_IO_JSONLD_PROFILES, ""),
-                ConfigurationProvider.getConfiguration().getOrDefault(CONFIG_IO_JSONLD_DOMAINS, ""));
+        this(namespaceService, htmlSerializer, cache, ConfigurationProvider.getConfiguration());
+    }
+
+    private JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
+            final CacheService<String, String> cache, final Configuration config) {
+        this(namespaceService, htmlSerializer, cache, config.getOrDefault(CONFIG_IO_JSONLD_PROFILES, ""),
+                config.getOrDefault(CONFIG_IO_JSONLD_DOMAINS, ""));
     }
 
     /**

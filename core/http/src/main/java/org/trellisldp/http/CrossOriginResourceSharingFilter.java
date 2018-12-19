@@ -65,7 +65,6 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
     public static final String CONFIG_HTTP_CORS_MAX_AGE = "trellis.http.cors.maxage";
 
     private static final Logger LOGGER = getLogger(CrossOriginResourceSharingFilter.class);
-    private static final Configuration config = getConfiguration();
     private static final Set<String> simpleResponseHeaders = unmodifiableSet(new HashSet<>(asList("cache-control",
                     "content-language", "expires", "last-modified", "pragma")));
     private static final Set<String> simpleHeaders = unmodifiableSet(new HashSet<>(asList("accept-language",
@@ -83,6 +82,10 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
      */
     @Inject
     public CrossOriginResourceSharingFilter() {
+        this(getConfiguration());
+    }
+
+    private CrossOriginResourceSharingFilter(final Configuration config) {
         this(populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_ORIGIN, "*")),
              populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_METHODS,
                      "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE")),

@@ -62,7 +62,6 @@ public class OAuthFilter implements ContainerRequestFilter {
     public static final String SCHEME = "Bearer";
 
     private static final Logger LOGGER = getLogger(OAuthFilter.class);
-    private static final Configuration config = getConfiguration();
 
     private final Authenticator authenticator;
     private final String challenge;
@@ -80,7 +79,7 @@ public class OAuthFilter implements ContainerRequestFilter {
      * @param authenticator the authenticator
      */
     public OAuthFilter(final Authenticator authenticator) {
-        this(authenticator, config.getOrDefault(CONFIG_AUTH_REALM, "trellis"));
+        this(authenticator, getConfiguration().getOrDefault(CONFIG_AUTH_REALM, "trellis"));
     }
 
     /**
@@ -123,6 +122,7 @@ public class OAuthFilter implements ContainerRequestFilter {
     }
 
     private static Authenticator buildAuthenticator() {
+        final Configuration config = getConfiguration();
         final Authenticator jwksAuthenticator = OAuthUtils.buildAuthenticatorWithJwk(
                 config.get(CONFIG_AUTH_OAUTH_JWK_URL));
         if (nonNull(jwksAuthenticator)) {
