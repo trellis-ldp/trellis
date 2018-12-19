@@ -147,7 +147,7 @@ public final class TestUtils {
      * @return the resource as a string
      */
     public static String getResourceAsString(final String path) {
-        final InputStream is = CommonTests.class.getResourceAsStream(path);
+        final InputStream is = TestUtils.class.getResourceAsStream(path);
         if (nonNull(is)) {
             try {
                 return IOUtils.toString(is, UTF_8);
