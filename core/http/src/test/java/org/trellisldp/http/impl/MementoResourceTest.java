@@ -20,7 +20,6 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
 import static org.trellisldp.http.core.HttpConstants.DATETIME;
 import static org.trellisldp.http.core.HttpConstants.FROM;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO;
@@ -68,14 +67,9 @@ public class MementoResourceTest {
 
     @Test
     public void testFilterLinkFromConfiguration() {
-        try {
-            System.setProperty(CONFIG_HTTP_MEMENTO_HEADER_DATES, "false");
-            final MementoResource mr = new MementoResource(null);
-            final Link link = fromUri("http://example.com/resource/memento/1").rel(MEMENTO)
-                .param(DATETIME, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-            assertFalse(mr.filterLinkParams(link).getParams().containsKey(DATETIME));
-        } finally {
-            System.clearProperty(CONFIG_HTTP_MEMENTO_HEADER_DATES);
-        }
+        final MementoResource mr = new MementoResource(null, false);
+        final Link link = fromUri("http://example.com/resource/memento/1").rel(MEMENTO)
+            .param(DATETIME, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
+        assertFalse(mr.filterLinkParams(link).getParams().containsKey(DATETIME));
     }
 }

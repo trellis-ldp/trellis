@@ -29,14 +29,12 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PRECONDITION_REQUIRED;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
@@ -88,20 +86,6 @@ public class PutHandler extends MutatingLdpHandler {
     private final IRI graphName;
     private final IRI otherGraph;
     private final boolean preconditionRequired;
-
-    /**
-     * Create a builder for an LDP PUT response.
-     *
-     * @param req the LDP request
-     * @param entity the entity
-     * @param trellis the Trellis application bundle
-     * @param baseUrl the base URL
-     */
-    public PutHandler(final TrellisRequest req, final InputStream entity, final ServiceBundler trellis,
-                    final String baseUrl) {
-        this(req, entity, trellis, baseUrl, getConfiguration().getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED,
-                    Boolean.class, Boolean.FALSE));
-    }
 
     /**
      * Create a builder for an LDP PUT response.

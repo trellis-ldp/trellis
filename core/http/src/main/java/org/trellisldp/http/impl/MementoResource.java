@@ -34,11 +34,9 @@ import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
 import static org.trellisldp.http.core.HttpConstants.DATETIME;
 import static org.trellisldp.http.core.HttpConstants.FROM;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO;
@@ -83,15 +81,6 @@ public final class MementoResource {
     private final boolean includeMementoDates;
     private final TimemapGenerator timemap = findFirst(TimemapGenerator.class)
         .orElseGet(() -> new TimemapGenerator() { });
-
-    /**
-     * Wrap a resource in some Memento-specific response builders.
-     *
-     * @param trellis the Trellis application bundle
-     */
-    public MementoResource(final ServiceBundler trellis) {
-        this(trellis, getConfiguration().getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE));
-    }
 
     /**
      * Wrap a resource in some Memento-specific response builders.

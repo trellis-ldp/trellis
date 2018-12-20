@@ -26,14 +26,12 @@ import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
@@ -92,19 +90,6 @@ public class PatchHandler extends MutatingLdpHandler {
     private final RDFSyntax syntax;
     private final String preference;
     private final String defaultJsonLdProfile;
-
-    /**
-     * Create a handler for PATCH operations.
-     *
-     * @param req the LDP request
-     * @param updateBody the sparql update body
-     * @param trellis the Trellis application bundle
-     * @param baseUrl the base URL
-     */
-    public PatchHandler(final TrellisRequest req, final String updateBody, final ServiceBundler trellis,
-            final String baseUrl) {
-        this(req, updateBody, trellis, baseUrl, getConfiguration().get(CONFIG_HTTP_JSONLD_PROFILE));
-    }
 
     /**
      * Create a handler for PATCH operations.

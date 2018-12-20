@@ -42,7 +42,6 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -51,9 +50,6 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
@@ -100,7 +96,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
@@ -127,26 +122,6 @@ public class GetHandler extends BaseLdpHandler {
     private final String defaultJsonLdProfile;
 
     private RDFSyntax syntax;
-
-    /**
-     * A GET response builder.
-     *
-     * @param req the LDP request
-     * @param trellis the Trellis application bundle
-     * @param isMemento true if the resource is a memento; false otherwise
-     * @param baseUrl the base URL
-     */
-    public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
-            final String baseUrl) {
-        this(req, trellis, isMemento, baseUrl, getConfiguration());
-    }
-
-    private GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
-            final String baseUrl, final Configuration config) {
-        this(req, trellis, isMemento, baseUrl, config.getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, Boolean.TRUE),
-                config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE),
-                config.get(CONFIG_HTTP_JSONLD_PROFILE));
-    }
 
     /**
      * A GET response builder.
