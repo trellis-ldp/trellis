@@ -17,6 +17,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -25,6 +26,10 @@ import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PRECONDITION_REQUIRED;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 
 import com.codahale.metrics.annotation.Timed;
@@ -63,7 +68,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.tamaya.ConfigurationProvider;
+import org.apache.tamaya.Configuration;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
@@ -100,6 +105,10 @@ public class TrellisHttpResource {
 
     protected final ServiceBundler trellis;
     protected final String baseUrl;
+    protected final String defaultJsonLdProfile;
+    protected final boolean weakEtags;
+    protected final boolean includeMementoDates;
+    protected final boolean preconditionRequired;
 
     /**
      * Create a Trellis HTTP resource matcher.
@@ -108,7 +117,12 @@ public class TrellisHttpResource {
      */
     @Inject
     public TrellisHttpResource(final ServiceBundler trellis) {
-        this(trellis, ConfigurationProvider.getConfiguration().get(CONFIG_HTTP_BASE_URL));
+        this(trellis, getConfiguration());
+    }
+
+    private TrellisHttpResource(final ServiceBundler trellis, final
+            Configuration config) {
+        this(trellis, config.get(CONFIG_HTTP_BASE_URL), config);
     }
 
     /**
@@ -118,8 +132,17 @@ public class TrellisHttpResource {
      * @param baseUrl a base URL
      */
     public TrellisHttpResource(final ServiceBundler trellis, final String baseUrl) {
+        this(trellis, baseUrl, getConfiguration());
+    }
+
+    private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Configuration config) {
         this.baseUrl = baseUrl;
         this.trellis = trellis;
+        this.defaultJsonLdProfile = config.get(CONFIG_HTTP_JSONLD_PROFILE);
+        this.weakEtags = config.getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, Boolean.TRUE);
+        this.includeMementoDates = config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE);
+        this.preconditionRequired = config.getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class,
+                Boolean.FALSE);
     }
 
     /**
@@ -243,7 +266,7 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase);
+        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase, defaultJsonLdProfile);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)
@@ -325,7 +348,7 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase);
+        final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase, preconditionRequired);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)
@@ -347,7 +370,8 @@ public class TrellisHttpResource {
     private CompletableFuture<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), urlBase);
+        final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), urlBase, weakEtags,
+                includeMementoDates, defaultJsonLdProfile);
 
         // Fetch a memento
         if (nonNull(req.getVersion())) {
@@ -365,7 +389,7 @@ public class TrellisHttpResource {
                     if (MISSING_RESOURCE.equals(res)) {
                         throw new NotFoundException();
                     }
-                    return new MementoResource(trellis).getTimeMapBuilder(mementos, req, urlBase);
+                    return new MementoResource(trellis, includeMementoDates).getTimeMapBuilder(mementos, req, urlBase);
                 });
 
         // Fetch a timegate
@@ -376,7 +400,7 @@ public class TrellisHttpResource {
                     if (MISSING_RESOURCE.equals(res)) {
                         throw new NotAcceptableException();
                     }
-                    return new MementoResource(trellis).getTimeGateBuilder(mementos, req, urlBase);
+                    return new MementoResource(trellis, includeMementoDates).getTimeGateBuilder(mementos, req, urlBase);
                 });
         }
 
