@@ -44,8 +44,6 @@ import org.trellisldp.triplestore.TriplestoreResourceService;
  */
 public class WebappServiceBundler implements ServiceBundler {
 
-    private static final Configuration config = getConfiguration();
-
     private final AgentService agentService;
     private final MementoService mementoService;
     private final AuditService auditService;
@@ -58,6 +56,7 @@ public class WebappServiceBundler implements ServiceBundler {
      * Create a new application service bundler.
      */
     public WebappServiceBundler() {
+        final Configuration config = getConfiguration();
         final NamespaceService nsService = AppUtils.loadFirst(NamespaceService.class);
         final Cache<String, String> cache = newBuilder()
             .maximumSize(config.getOrDefault("trellis.webapp.cache.size", Long.class, 100L))
