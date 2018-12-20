@@ -77,7 +77,12 @@ public class AmqpPublisher implements EventService {
      */
     @Inject
     public AmqpPublisher() throws IOException, GeneralSecurityException, URISyntaxException, TimeoutException {
-        this(buildConnection().createChannel());
+        this(getConfiguration());
+    }
+
+    private AmqpPublisher(final Configuration config) throws IOException, GeneralSecurityException, URISyntaxException,
+            TimeoutException {
+        this(buildConnection(config.get(CONFIG_AMQP_URI)).createChannel(), config);
     }
 
     /**
@@ -138,10 +143,10 @@ public class AmqpPublisher implements EventService {
         });
     }
 
-    private static Connection buildConnection() throws IOException, GeneralSecurityException, URISyntaxException,
-            TimeoutException {
+    private static Connection buildConnection(final String uri) throws IOException, GeneralSecurityException,
+            URISyntaxException, TimeoutException {
         final ConnectionFactory factory = new ConnectionFactory();
-        factory.setUri(getConfiguration().get(CONFIG_AMQP_URI));
+        factory.setUri(uri);
         return factory.newConnection();
     }
 }
