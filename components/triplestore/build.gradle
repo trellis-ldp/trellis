@@ -8,7 +8,6 @@ ext {
 }
 
 dependencies {
-    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
     api project(':trellis-audit');
@@ -17,6 +16,7 @@ dependencies {
     implementation("org.apache.jena:jena-osgi:$jenaVersion")
     implementation("org.apache.commons:commons-compress:$commonsCompressVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")

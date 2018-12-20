@@ -17,7 +17,6 @@ dependencies {
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("com.sleepycat:je:$sleepycatVersion")
-    testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation("org.apache.qpid:qpid-broker:$qpidVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")

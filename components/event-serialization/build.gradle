@@ -8,7 +8,6 @@ ext {
 }
 
 dependencies {
-    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api project(':trellis-api')
 
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")

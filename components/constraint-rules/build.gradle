@@ -8,13 +8,10 @@ ext {
 }
 
 dependencies {
-    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api project(':trellis-api')
 
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }
