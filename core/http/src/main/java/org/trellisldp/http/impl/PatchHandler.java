@@ -97,11 +97,11 @@ public class PatchHandler extends MutatingLdpHandler {
      * @param req the LDP request
      * @param updateBody the sparql update body
      * @param trellis the Trellis application bundle
-     * @param baseUrl the base URL
      * @param defaultJsonLdProfile a user-supplied default JSON-LD profile
+     * @param baseUrl the base URL
      */
     public PatchHandler(final TrellisRequest req, final String updateBody, final ServiceBundler trellis,
-            final String baseUrl, final String defaultJsonLdProfile) {
+            final String defaultJsonLdProfile, final String baseUrl) {
         super(req, trellis, baseUrl);
 
         this.updateBody = updateBody;

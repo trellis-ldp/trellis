@@ -253,7 +253,7 @@ public class PutHandlerTest extends BaseTestHandler {
             .thenReturn(asyncException());
 
         final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
-        final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, null, false);
+        final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, false, null);
 
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
@@ -263,7 +263,7 @@ public class PutHandlerTest extends BaseTestHandler {
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
         try {
             return new PutHandler(mockTrellisRequest, getClass().getResource(resourceName).openStream(), mockBundler,
-                            baseUrl, false);
+                            false, baseUrl);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

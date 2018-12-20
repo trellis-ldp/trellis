@@ -89,7 +89,7 @@ public class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, baseUrl, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
             .join().build();
 
@@ -190,7 +190,7 @@ public class PatchHandlerTest extends BaseTestHandler {
         doThrow(RuntimeTrellisException.class).when(mockIoService)
             .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, baseUrl, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
         final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource)).join(),
                 "No exception when the update triggers an error!").getResponse();

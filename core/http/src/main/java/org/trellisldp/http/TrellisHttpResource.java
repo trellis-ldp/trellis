@@ -266,7 +266,7 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, urlBase, defaultJsonLdProfile);
+        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, defaultJsonLdProfile, urlBase);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)
@@ -348,7 +348,7 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PutHandler putHandler = new PutHandler(req, body, trellis, urlBase, preconditionRequired);
+        final PutHandler putHandler = new PutHandler(req, body, trellis, preconditionRequired, urlBase);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)
@@ -370,8 +370,8 @@ public class TrellisHttpResource {
     private CompletableFuture<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), urlBase, weakEtags,
-                includeMementoDates, defaultJsonLdProfile);
+        final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), weakEtags,
+                includeMementoDates, defaultJsonLdProfile, urlBase);
 
         // Fetch a memento
         if (nonNull(req.getVersion())) {

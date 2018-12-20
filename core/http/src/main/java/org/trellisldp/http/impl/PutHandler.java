@@ -93,11 +93,11 @@ public class PutHandler extends MutatingLdpHandler {
      * @param req the LDP request
      * @param entity the entity
      * @param trellis the Trellis application bundle
-     * @param baseUrl the base URL
      * @param preconditionRequired whether preconditions are required for PUT operations
+     * @param baseUrl the base URL
      */
     public PutHandler(final TrellisRequest req, final InputStream entity, final ServiceBundler trellis,
-                    final String baseUrl, final boolean preconditionRequired) {
+                    final boolean preconditionRequired, final String baseUrl) {
         super(req, trellis, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         this.rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->
