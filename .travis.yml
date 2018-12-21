@@ -48,14 +48,14 @@ jobs:
     - name: "Java 8"
       stage: test
       jdk: oraclejdk8
-      script: travis_retry ./gradlew check install jacocoRootReport -Pitests --scan
+      script: travis_retry ./gradlew check install jacocoRootReport --scan
       after_success: ./gradlew coveralls sonarqube
 
     # JDK 11
     - name: "Java 11"
       stage: test
       jdk: openjdk11
-      script: travis_retry ./gradlew check install -Pitests
+      script: travis_retry ./gradlew check install
 
     # deploy JDK 8 builds to Sonatype
     - name: "Publish to Sonatype"

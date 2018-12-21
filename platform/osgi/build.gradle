@@ -143,13 +143,13 @@ test {
     systemProperty 'karaf.rmiServer.port', randomPort()
     systemProperty 'karaf.rmiRegistry.port', randomPort()
 
-    enabled = project.hasProperty("itests")
+    enabled = project.hasProperty("osgi")
 }
 
 tasks.test.dependsOn tasks.generateDependsFile
 
 rootProject.childProjects.findAll { n, p -> p != project }.each { n, p ->
-    if (project.hasProperty("itests")) {
+    if (project.hasProperty("osgi")) {
         tasks.test.dependsOn p.tasks.install
     }
 }

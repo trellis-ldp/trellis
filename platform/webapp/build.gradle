@@ -43,7 +43,7 @@ dependencies {
 }
 
 test {
-    enabled = project.hasProperty("itests")
+    enabled = project.hasProperty("webapp")
 
     systemProperty 'trellis.auth.basic.credentials', "$buildDir/resources/test/users.auth"
     systemProperty 'trellis.auth.oauth.sharedsecret', 'EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA=='

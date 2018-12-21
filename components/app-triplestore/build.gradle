@@ -62,7 +62,3 @@ jar {
         instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
     }
 }
-
-test {
-    enabled = project.hasProperty("itests")
-}

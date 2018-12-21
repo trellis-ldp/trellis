@@ -85,12 +85,10 @@ ext {
             'trellis-jms',
             'trellis-kafka',
             'trellis-namespaces',
-            'trellis-osgi',
             'trellis-rdfa',
             'trellis-triplestore',
             'trellis-vocabulary',
-            'trellis-webac',
-            'trellis-webapp'
+            'trellis-webac'
     ]
 
     omitFromMavenPublishing = [
