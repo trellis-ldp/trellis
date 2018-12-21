@@ -58,7 +58,7 @@ public class BinaryServiceTest {
     public void setUp() {
         initMocks(this);
         doCallRealMethod().when(mockBinaryService).setContent(any(BinaryMetadata.class),
-                any(InputStream.class), any(MessageDigest.class), eq(hints));
+                any(InputStream.class), any(MessageDigest.class));
     }
 
     @Test
@@ -74,13 +74,15 @@ public class BinaryServiceTest {
     @Test
     public void testSetContent() throws Exception {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), eq(hints)))
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
             .thenAnswer(inv -> {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);
                 return completedFuture(null);
             });
-        assertDoesNotThrow(mockBinaryService.setContent(BinaryMetadata.builder(identifier).build(),
-                inputStream, MessageDigest.getInstance("MD5"), hints).thenApply(getEncoder()::encodeToString)
-                .thenAccept(digest -> assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))::join);
+        assertDoesNotThrow(mockBinaryService
+                        .setContent(BinaryMetadata.builder(identifier).build(), inputStream,
+                                        MessageDigest.getInstance("MD5"))
+                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString)
+                        .thenAccept(digest -> assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))::join);
     }
 }

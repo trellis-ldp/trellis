@@ -15,7 +15,6 @@ package org.trellisldp.file;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Base64.getEncoder;
-import static java.util.Collections.emptyMap;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.JRE.JAVA_8;
@@ -26,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.concurrent.CompletionException;
 
@@ -79,7 +79,7 @@ public class FileBinaryServiceTest {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream("Some data".getBytes(UTF_8));
-        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream, emptyMap()).join(),
+        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
                 "setContent didn't complete cleanly!");
         assertEquals("Some data", uncheckedToString(service.get(fileIRI).thenApply(Binary::getContent).join()),
                         "incorrect value for getContent!");
@@ -126,7 +126,7 @@ public class FileBinaryServiceTest {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
-        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream, emptyMap()).join(),
+        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
                         "Setting content didn't complete cleanly!");
         assertEquals(contents,
                         service.get(fileIRI).thenApply(Binary::getContent).thenApply(this::uncheckedToString).join(),
@@ -150,7 +150,7 @@ public class FileBinaryServiceTest {
         });
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
-        assertAll(() -> service.setContent(BinaryMetadata.builder(fileIRI).build(), throwingMockInputStream, emptyMap())
+        assertAll(() -> service.setContent(BinaryMetadata.builder(fileIRI).build(), throwingMockInputStream)
             .handle((val, err) -> {
                 assertNotNull(err, "There should have been an error with the input stream!");
                 return null;
@@ -170,12 +170,12 @@ public class FileBinaryServiceTest {
     @Test
     public void testBase64Digest() throws IOException {
         final BinaryService service = new FileBinaryService();
-        assertEquals("oZ1Y1O/8vs39RH31fh9lrA==",
-                service.calculateDigest(file, getDigest("MD5")).thenApply(getEncoder()::encodeToString).join(),
-                "Bad MD5 digest!");
-        assertEquals("QJuYLse9SK/As177lt+rSfixyH0=",
-                service.calculateDigest(file, getDigest("SHA-1")).thenApply(getEncoder()::encodeToString).join(),
-                "Bad SHA digest!");
+        assertEquals("oZ1Y1O/8vs39RH31fh9lrA==", service.calculateDigest(file, getDigest("MD5"))
+                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString).join(),
+                        "Bad MD5 digest!");
+        assertEquals("QJuYLse9SK/As177lt+rSfixyH0=", service.calculateDigest(file, getDigest("SHA-1"))
+                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString).join(),
+                        "Bad SHA digest!");
         assertThrows(CompletionException.class, () ->
                 service.calculateDigest(rdf.createIRI("file:///" + randomFilename()), getDigest("MD5")).join(),
                 "Computing digest on invalid file should throw an exception!");
@@ -186,14 +186,17 @@ public class FileBinaryServiceTest {
     public void testJdk9Digests() throws IOException {
         final BinaryService service = new FileBinaryService();
         assertEquals("FQgyH2yU2NhyMTZ7YDDKwV5vcWUBM1zq0uoIYUiHH+4=",
-                service.calculateDigest(file, getDigest("SHA3-256")).thenApply(getEncoder()::encodeToString).join(),
-                "Bad SHA3-256 digest!");
+                        service.calculateDigest(file, getDigest("SHA3-256")).thenApply(MessageDigest::digest)
+                                        .thenApply(getEncoder()::encodeToString).join(),
+                        "Bad SHA3-256 digest!");
         assertEquals("746UDLrFXM61gzI0FnoVT2S0Z7EmQUfhHnoSYwkR2MHzbBe6j9rMigQBfR8ApZUA",
-                service.calculateDigest(file, getDigest("SHA3-384")).thenApply(getEncoder()::encodeToString).join(),
-                "Bad SHA3-384 digest!");
+                        service.calculateDigest(file, getDigest("SHA3-384")).thenApply(MessageDigest::digest)
+                                        .thenApply(getEncoder()::encodeToString).join(),
+                        "Bad SHA3-384 digest!");
         assertEquals("Ecu/R0kV4eL0J/VOpyVA2Lz0T6qsJj9ioQ+QorJDztJeMj6uhf6zqyhZnu9zMYiwrkX8U4oWiZMDT/0fWjOyYg==",
-                service.calculateDigest(file, getDigest("SHA3-512")).thenApply(getEncoder()::encodeToString).join(),
-                "Bad SHA3-512 digest!");
+                        service.calculateDigest(file, getDigest("SHA3-512")).thenApply(MessageDigest::digest)
+                                        .thenApply(getEncoder()::encodeToString).join(),
+                        "Bad SHA3-512 digest!");
     }
 
     @Test

@@ -76,6 +76,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -355,6 +356,7 @@ public class GetHandler extends BaseLdpHandler {
             if (algorithm.isPresent()) {
                 final String alg = algorithm.filter(isEqual("SHA").negate()).orElse("SHA-1");
                 return getServices().getBinaryService().calculateDigest(dsid, getDigest(alg))
+                    .thenApply(MessageDigest::digest)
                     .thenApply(getEncoder()::encodeToString)
                     .thenApply(digest -> Optional.of(algorithm.get().toLowerCase() + "=" + digest));
             }

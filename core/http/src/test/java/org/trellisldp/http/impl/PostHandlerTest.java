@@ -275,7 +275,7 @@ public class PostHandlerTest extends BaseTestHandler {
                             .create(any(Metadata.class), any(Dataset.class)),
                 () -> verify(mockIoService, never().description("entity shouldn't be read!")).read(any(), any(), any()),
                 () -> verify(mockBinaryService, description("content not set on binary service!"))
-                            .setContent(metadataArgument.capture(), any(InputStream.class), any()),
+                            .setContent(metadataArgument.capture(), any(InputStream.class)),
                 () -> assertEquals(of("text/plain"), metadataArgument.getValue().getMimeType(), "Invalid content-type"),
                 () -> assertTrue(metadataArgument.getValue().getIdentifier().getIRIString().startsWith("file:///"),
                                  "Invalid binary ID!"));

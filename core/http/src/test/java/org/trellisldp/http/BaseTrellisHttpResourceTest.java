@@ -149,6 +149,9 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     protected Binary mockBinary;
 
     @Mock
+    protected MessageDigest mockDigest;
+
+    @Mock
     protected AccessControlService mockAccessControlService;
 
     @Mock
@@ -269,8 +272,9 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     private void setUpBinaryService() throws Exception {
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA-1", "SHA")));
+        when(mockDigest.digest()).thenReturn(getDecoder().decode("Q29tcHV0ZWREaWdlc3Q="));
         when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), any(MessageDigest.class)))
-            .thenReturn(completedFuture(getDecoder().decode("Q29tcHV0ZWREaWdlc3Q=")));
+            .thenReturn(completedFuture(mockDigest));
         when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
@@ -279,10 +283,15 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);
                 return completedFuture(null);
             });
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
+        .thenAnswer(inv -> {
+            readLines((InputStream) inv.getArguments()[1], UTF_8);
+            return completedFuture(null);
+        });
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
         doCallRealMethod().when(mockBinaryService)
-            .setContent(any(BinaryMetadata.class), any(InputStream.class), any(), any());
+            .setContent(any(BinaryMetadata.class), any(InputStream.class), any());
     }
 
     private void setUpResources() {
