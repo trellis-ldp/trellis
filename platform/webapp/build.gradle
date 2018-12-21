@@ -42,6 +42,10 @@ dependencies {
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
+sonarqube {
+    skipProject = true
+}
+
 test {
     enabled = project.hasProperty("webapp")
 
