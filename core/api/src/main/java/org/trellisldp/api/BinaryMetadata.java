@@ -13,9 +13,12 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -38,16 +41,19 @@ public final class BinaryMetadata {
 
     private final IRI identifier;
     private final String mimeType;
+    private final Map<String, List<String>> hints;
 
     /**
      * A simple BinaryMetadata object.
      *
      * @param identifier the identifier
      * @param mimeType the mimeType, may be {@code null}
+     * @param hints hints for persistence, may not be {@code null}
      */
-    private BinaryMetadata(final IRI identifier, final String mimeType) {
-        this.identifier = requireNonNull(identifier, "identifier may not be null!");
+    private BinaryMetadata(final IRI identifier, final String mimeType, final Map<String, List<String>> hints) {
+        this.identifier = requireNonNull(identifier, "Identifier may not be null!");
         this.mimeType = mimeType;
+        this.hints = requireNonNull(hints, "Hints may not be null!");
     }
 
     /**
@@ -69,6 +75,15 @@ public final class BinaryMetadata {
     }
 
     /**
+     * Retrieve any hints for persistence.
+     *
+     * @return the hints
+     */
+    public Map<String, List<String>> getHints() {
+        return hints;
+    }
+
+    /**
      * Get a mutable builder for a {@link BinaryMetadata}.
      * @param identifier the identifier
      * @return a builder for a {@link BinaryMetadata}
@@ -83,6 +98,7 @@ public final class BinaryMetadata {
     public static final class Builder {
         private final IRI identifier;
         private String mimeType;
+        private Map<String, List<String>> hints;
 
         /**
          * Create a BinaryMetadata builder with the provided identifier.
@@ -103,11 +119,21 @@ public final class BinaryMetadata {
         }
 
         /**
-         * Build the BinaryMetadata object, transitioning this builder to the built state.
+         * Set the hints for persistence.
+         * @param hints the hints, may not be {@code null}
+         * @return this builder
+         */
+        public Builder hints(final Map<String, List<String>> hints) {
+            this.hints = requireNonNull(hints, "Hints cannot be null!");
+            return this;
+        }
+
+        /**
+         * Build the BinaryMetadata object.
          * @return the built BinaryMetadata
          */
         public BinaryMetadata build() {
-            return new BinaryMetadata(identifier, mimeType);
+            return new BinaryMetadata(identifier, mimeType, hints == null ? emptyMap() : hints);
         }
     }
 }

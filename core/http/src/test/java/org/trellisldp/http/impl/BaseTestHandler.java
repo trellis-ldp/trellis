@@ -133,6 +133,9 @@ abstract class BaseTestHandler {
     protected Binary mockBinary;
 
     @Mock
+    protected MessageDigest mockDigest;
+
+    @Mock
     protected Resource mockResource, mockParent;
 
     @Mock
@@ -231,8 +234,9 @@ abstract class BaseTestHandler {
         when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
         when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA-1")));
+        when(mockDigest.digest()).thenReturn("computed-digest".getBytes(UTF_8));
         when(mockBinaryService.calculateDigest(any(IRI.class), any(MessageDigest.class)))
-            .thenReturn(completedFuture("computed-digest".getBytes()));
+            .thenReturn(completedFuture(mockDigest));
         when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), any()))
@@ -240,8 +244,13 @@ abstract class BaseTestHandler {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);
                 return completedFuture(null);
             });
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
+        .thenAnswer(inv -> {
+            readLines((InputStream) inv.getArguments()[1], UTF_8);
+            return completedFuture(null);
+        });
         doCallRealMethod().when(mockBinaryService)
-            .setContent(any(BinaryMetadata.class), any(InputStream.class), any(), any());
+            .setContent(any(BinaryMetadata.class), any(InputStream.class), any());
     }
 
     private void setUpBundler() {

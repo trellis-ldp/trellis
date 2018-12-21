@@ -174,7 +174,8 @@ public class PostHandler extends MutatingLdpHandler {
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
-            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType).build();
+            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
+                            .hints(getRequest().getHeaders()).build();
             persistPromise = persistContent(binary, getRequest().getDigest());
 
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary);

@@ -16,8 +16,6 @@ package org.trellisldp.api;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,6 +26,7 @@ import org.apache.commons.rdf.api.IRI;
  * the validity of binary content.
  *
  * @author acoburn
+ * @author ajs6f
  */
 public interface BinaryService extends RetrievalService<Binary> {
 
@@ -36,10 +35,9 @@ public interface BinaryService extends RetrievalService<Binary> {
      *
      * @param metadata the binary metadata
      * @param stream the content
-     * @param hints any hints for storing the binary data
      * @return the new completion stage
      */
-    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream, Map<String, List<String>> hints);
+    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream);
 
     /**
      * Set the content for a binary object using a digest algorithm.
@@ -48,13 +46,12 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param metadata the binary metadata
      * @param stream the context
      * @param algorithm the digest algorithm
-     * @param hints any hints for storing the binary data
      * @return the new completion stage containing the server-computed digest.
      */
-    default CompletableFuture<byte[]> setContent(final BinaryMetadata metadata, final InputStream stream,
-            final MessageDigest algorithm, final Map<String, List<String>> hints) {
+    default CompletableFuture<MessageDigest> setContent(final BinaryMetadata metadata, final InputStream stream,
+                    final MessageDigest algorithm) {
         final DigestInputStream input = new DigestInputStream(stream, algorithm);
-        return setContent(metadata, input, hints).thenApply(future -> input.getMessageDigest().digest());
+        return setContent(metadata, input).thenApply(future -> input.getMessageDigest());
     }
 
     /**
@@ -77,7 +74,7 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param algorithm the algorithm
      * @return the new completion stage containing a computed digest for the binary resource
      */
-    CompletableFuture<byte[]> calculateDigest(IRI identifier, MessageDigest algorithm);
+    CompletableFuture<MessageDigest> calculateDigest(IRI identifier, MessageDigest algorithm);
 
     /**
      * Get a list of supported algorithms.

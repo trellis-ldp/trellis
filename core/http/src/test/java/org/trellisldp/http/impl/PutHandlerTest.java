@@ -249,15 +249,16 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), any()))
+        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
             .thenReturn(asyncException());
 
-        final InputStream entity = getClass().getResource("/simpleData.txt").openStream();
-        final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, false, null);
+        try (final InputStream entity = getClass().getResource("/simpleData.txt").openStream()) {
+            final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, false, null);
 
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
-                "No exception when there's a problem with the backend binary service!");
+            assertThrows(CompletionException.class,
+                            () -> unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
+                            "No exception when there's a problem with the backend binary service!");
+        }
     }
 
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
@@ -282,7 +283,7 @@ public class PutHandlerTest extends BaseTestHandler {
         return Stream.of(
                 () -> assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource)),
                 () -> verify(mockBinaryService, description("BinaryService should have been called to set content!"))
-                            .setContent(any(BinaryMetadata.class), any(InputStream.class), any()),
+                            .setContent(any(BinaryMetadata.class), any(InputStream.class)),
                 () -> verify(mockIoService, never().description("IOService shouldn't have been called with a Binary!"))
                             .read(any(InputStream.class), any(RDFSyntax.class), anyString()));
     }

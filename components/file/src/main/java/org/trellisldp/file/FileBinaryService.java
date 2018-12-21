@@ -41,8 +41,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -159,8 +157,7 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<Void> setContent(final BinaryMetadata metadata, final InputStream stream,
-            final Map<String, List<String>> headers) {
+    public CompletableFuture<Void> setContent(final BinaryMetadata metadata, final InputStream stream) {
         requireNonNull(stream, "InputStream may not be null!");
         return supplyAsync(() -> {
             final File file = getFileFromIdentifier(metadata.getIdentifier());
@@ -177,7 +174,7 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<byte[]> calculateDigest(final IRI identifier, final MessageDigest algorithm) {
+    public CompletableFuture<MessageDigest> calculateDigest(final IRI identifier, final MessageDigest algorithm) {
         return supplyAsync(() -> computeDigest(identifier, algorithm));
     }
 
@@ -198,9 +195,9 @@ public class FileBinaryService implements BinaryService {
             .orElseThrow(() -> new IllegalArgumentException("Could not create File object from IRI: " + identifier));
     }
 
-    private byte[] computeDigest(final IRI identifier, final MessageDigest algorithm) {
+    private MessageDigest computeDigest(final IRI identifier, final MessageDigest algorithm) {
         try (final InputStream input = new FileInputStream(getFileFromIdentifier(identifier))) {
-            return updateDigest(algorithm, input).digest();
+            return updateDigest(algorithm, input);
         } catch (final IOException ex) {
             throw new UncheckedIOException("Error computing digest", ex);
         }
