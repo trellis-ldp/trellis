@@ -41,15 +41,3 @@ jar {
     }
 }
 
-publishing.publications {
-    maven(MavenPublication) {
-        artifact (file('build/cfg/main/org.trellisldp.namespaces.cfg')) {
-            classifier 'configuration'
-            extension 'cfg'
-        }
-        artifact (file('build/resources/main/defaultNamespaces.json')) {
-            classifier 'configuration'
-            extension 'json'
-        }
-    }
-}

@@ -4,13 +4,9 @@
   <feature name="trellis-api" version="${project.version}">
     <details>Installs the Trellis API bundle</details>
 
-    <feature dependency="true">aries-blueprint</feature>
-
+    <feature dependency="true">pax-cdi</feature>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-api/${project.version}</bundle>
   </feature>
@@ -38,15 +34,12 @@
 
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
-    <feature dependency="true">aries-blueprint</feature>
-    <feature dependency="true">pax-cdi</feature>
 
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-file/${project.version}</bundle>
-    <configfile finalname="/etc/org.trellisldp.file.cfg">mvn:org.trellisldp/trellis-file/${project.version}/cfg/configuration</configfile>
   </feature>
 
   <feature name="trellis-constraint-rules" version="${project.version}">
@@ -94,14 +87,12 @@
     <feature dependency="true">commons-rdf-jena</feature>
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
-    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-io-jena/${project.version}</bundle>
 
-    <configfile finalname="/etc/org.trellisldp.io.cfg">mvn:org.trellisldp/trellis-io-jena/${project.version}/cfg/configuration</configfile>
   </feature>
 
   <feature name="trellis-rdfa" version="${project.version}">
@@ -109,7 +100,6 @@
 
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
-    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
@@ -122,7 +112,6 @@
     <details>Installs the Trellis JSON-file-based Namespace service</details>
 
     <feature dependency="true">trellis-api</feature>
-    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
@@ -131,9 +120,6 @@
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-namespaces/${project.version}</bundle>
-
-    <configfile finalname="/etc/org.trellisldp.namespaces.cfg">mvn:org.trellisldp/trellis-namespaces/${project.version}/cfg/configuration</configfile>
-    <configfile finalname="/etc/org.trellisldp.namespaces.json">mvn:org.trellisldp/trellis-namespaces/${project.version}/json/configuration</configfile>
   </feature>
 
   <feature name="trellis-triplestore" version="${project.version}">
@@ -142,7 +128,6 @@
     <feature dependency="true">commons-rdf-jena</feature>
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
-    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.trellisldp/trellis-audit/${project.version}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
@@ -154,11 +139,7 @@
     <details>Installs the Trellis Vocabulary bundle</details>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
-
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-vocabulary/${project.version}</bundle>
   </feature>
@@ -168,7 +149,6 @@
 
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
-    <feature dependency="true">aries-blueprint</feature>
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
@@ -216,7 +196,6 @@
 
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">transaction</feature>
-    <feature dependency="true">aries-blueprint</feature>
     <feature dependency="true">activemq-client</feature>
 
     <bundle dependency="true">mvn:javax.jms/javax.jms-api/${jmsApiVersion}</bundle>
@@ -224,8 +203,6 @@
     <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
-
-    <configfile finalname="/etc/org.trellisldp.jms.cfg">mvn:org.trellisldp/trellis-jms/${project.version}/cfg/configuration</configfile>
   </feature>
 
   <feature name="trellis-auth-oauth" version="${project.version}">
@@ -257,26 +234,5 @@
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-auth-basic/${project.version}</bundle>
-  </feature>
-
-  <feature name="trellis-app-triplestore" version="${project.version}">
-    <details>Installs a complete triplestore-based Trellis application</details>
-
-    <feature prerequisite="true">http</feature>
-    <feature prerequisite="true">cxf</feature>
-    <feature prerequisite="true">cxf-jaxrs-cdi</feature>
-
-    <feature dependency="true">trellis-constraint-rules</feature>
-    <feature dependency="true">trellis-agent</feature>
-    <feature dependency="true">trellis-file</feature>
-    <feature dependency="true">trellis-namespaces</feature>
-    <feature dependency="true">trellis-io-jena</feature>
-    <feature dependency="true">trellis-http</feature>
-    <feature dependency="true">trellis-triplestore</feature>
-    <feature dependency="true">trellis-rdfa</feature>
-
-    <bundle>mvn:org.trellisldp/trellis-osgi/${project.version}</bundle>
-
-    <configfile finalname="/etc/org.trellisldp.osgi.cfg">mvn:org.trellisldp/trellis-osgi/${project.version}/cfg/configuration</configfile>
   </feature>
 </features>

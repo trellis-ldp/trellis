@@ -56,7 +56,6 @@ ext {
     sleepycatVersion = '18.3.12'
 
     /* OSGi */
-    asmVersion = '7.0'
     mustacheOsgiVersion = '0.9.5_4'
     jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = '2.0.0_1'
