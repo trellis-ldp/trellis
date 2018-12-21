@@ -13,8 +13,13 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -30,12 +35,14 @@ public class BinaryMetadataTest {
 
     private final String mimeType = "text/plain";
     private final IRI identifier = rdf.createIRI("trellis:data/resource");
+    private final Map<String, List<String>> hints = singletonMap("key", asList("val1", "val2"));
 
     @Test
     public void testBinaryMetadata() {
-        final BinaryMetadata binary = BinaryMetadata.builder(identifier).mimeType(mimeType).build();
+        final BinaryMetadata binary = BinaryMetadata.builder(identifier).mimeType(mimeType).hints(hints).build();
         assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
         assertEquals(of(mimeType), binary.getMimeType(), "MimeType did not match");
+        assertEquals(hints, binary.getHints(), "hints did not match");
     }
 
     @Test
@@ -43,5 +50,6 @@ public class BinaryMetadataTest {
         final BinaryMetadata binary = BinaryMetadata.builder(identifier).build();
         assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
         assertFalse(binary.getMimeType().isPresent(), "MimeType was not absent");
+        assertTrue(binary.getHints().isEmpty(), "Hints are not empty!");
     }
 }
