@@ -27,7 +27,7 @@ configurations {
 }
 
 sonarqube {
-    skipProject = true
+    skipProject = !project.hasProperty("osgi")
 }
 
 dependencies {

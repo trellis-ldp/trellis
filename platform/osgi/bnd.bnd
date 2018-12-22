@@ -15,5 +15,13 @@ Bundle-SCM:             url=https://github.com/trellis-ldp/trellis, \
 Import-Package:         org.trellisldp.triplestore, \
                         org.trellisldp.api, \
                         org.trellisldp.http, \
-                        org.apache.cxf.jaxrs, \
-                        *
+                        org.trellisldp.io, \
+                        org.trellisldp.agent, \
+                        org.trellisldp.constraint, \
+                        org.trellisldp.event, \
+                        org.trellisldp.file, \
+                        org.trellisldp.rdfa, \
+                        org.trellisldp.namespaces, \
+                        org.trellisldp.vocabulary, \
+                        org.trellisldp.webac, \
+                        org.apache.cxf.jaxrs

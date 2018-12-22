@@ -43,7 +43,7 @@ dependencies {
 }
 
 sonarqube {
-    skipProject = true
+    skipProject = !project.hasProperty("webapp")
 }
 
 test {

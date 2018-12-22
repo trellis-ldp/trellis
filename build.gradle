@@ -99,7 +99,7 @@ ext {
 
     omitFromMavenPublishing = [
         'trellis-server',
-        'trellis-osgi', // TODO - re-enable this once it is more stable
+        'trellis-osgi',
         'trellis-webapp'
     ]
 }
