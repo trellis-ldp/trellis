@@ -1,4 +1,4 @@
-apply plugin: 'osgi'
+apply plugin: 'biz.aQute.bnd.builder'
 
 description = """Trellis OSGi"""
 
@@ -101,25 +101,6 @@ task generateDependsFile {
         finally {
             outputStream.close()
         }
-    }
-}
-
-jar {
-    manifest {
-        description project.description
-        docURL project.docURL
-        vendor project.vendor
-        license project.license
-
-        instruction 'Automatic-Module-Name', moduleName
-        instruction 'Import-Package', '''\
-            org.trellisldp.triplestore,
-            org.trellisldp.api,
-            org.trellisldp.http,
-            org.apache.cxf.jaxrs,
-            *
-            '''
-        instruction 'Export-Package', "${moduleName};version=${projectOsgiVersion}"
     }
 }
 
