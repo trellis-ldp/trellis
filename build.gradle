@@ -64,7 +64,6 @@ ext {
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
     paxExamVersion = '4.13.1'
-    projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
     spiflyVersion = '1.2'
     // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = '4.1.0'
