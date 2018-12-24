@@ -33,6 +33,7 @@ sonarqube {
 dependencies {
     compile("org.apache.jena:jena-osgi:$jenaVersion")
     compile("org.apache.commons:commons-compress:$commonsCompressVersion")
+    compile("javax.xml.bind:jaxb-api:$jaxbVersion")
     compile project(':trellis-api')
     compile project(':trellis-http')
     compile project(':trellis-io-jena')

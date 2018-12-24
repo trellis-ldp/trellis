@@ -5,6 +5,7 @@ description = 'Trellis Namespace Manageer'
 
 ext {
     moduleName = 'org.trellisldp.namespaces'
+    testModules = ['org.apache.commons.rdf.simple', 'tamaya.core', 'org.trellisldp.vocabulary']
 }
 
 dependencies {
@@ -20,4 +21,3 @@ dependencies {
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation project(':trellis-vocabulary')
 }
-

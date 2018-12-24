@@ -5,6 +5,7 @@ description = 'Trellis File-based service implementations'
 
 ext {
     moduleName = 'org.trellisldp.file'
+    testModules = ['tamaya.core']
 }
 
 dependencies {
@@ -23,10 +24,7 @@ dependencies {
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    //Note JSON-LD is transitive dependency, but the version can be managed here
-    testImplementation("com.github.jsonld-java:jsonld-java:$jsonldVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }
-

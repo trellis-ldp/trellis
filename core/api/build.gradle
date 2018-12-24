@@ -5,6 +5,7 @@ description = 'Trellis API'
 
 ext {
     moduleName = 'org.trellisldp.api'
+    testModules = ['org.trellisldp.vocabulary', 'org.apache.commons.rdf.jena']
 }
 
 dependencies {
@@ -19,7 +20,8 @@ dependencies {
     }
     testImplementation("org.apache.jena:jena-arq:$jenaVersion")
     testImplementation("org.apache.commons:commons-text:$commonsTextVersion")
-    testImplementation("org.slf4j:slf4j-api:$slf4jVersion")
     testImplementation project(':trellis-vocabulary')
+
+    testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 

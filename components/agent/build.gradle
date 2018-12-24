@@ -5,6 +5,7 @@ description = 'Trellis Agent'
 
 ext {
     moduleName = 'org.trellisldp.agent'
+    testModules = ['org.apache.commons.rdf.simple']
 }
 
 dependencies {
@@ -15,4 +16,3 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
 }
-

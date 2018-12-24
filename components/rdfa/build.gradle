@@ -5,6 +5,7 @@ description = 'Trellis RDFa Module'
 
 ext {
     moduleName = 'org.trellisldp.rdfa'
+    testModules = ['org.apache.commons.rdf.jena', 'tamaya.core']
 }
 
 dependencies {
@@ -21,6 +22,7 @@ dependencies {
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
     testImplementation("org.apache.jena:jena-arq:$jenaVersion")
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }

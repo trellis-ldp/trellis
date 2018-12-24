@@ -42,6 +42,7 @@ jobs:
     - env: JOB=sonatype
     - env: JOB=docker
     - env: JOB=aws
+    - env: JOB=jpms
 
   include:
     # JDK 8
@@ -56,6 +57,13 @@ jobs:
       stage: test
       jdk: openjdk11
       script: travis_retry ./gradlew check install
+
+    # JDK 11 (modules)
+    - name: "Java 11 (modules)"
+      stage: test
+      jdk: openjdk11
+      env: JOB=jpms
+      script: ./gradlew clean check install --continue -Pjpms
 
     # deploy JDK 8 builds to Sonatype
     - name: "Publish to Sonatype"

@@ -5,6 +5,7 @@ description = 'Trellis HTTP API'
 
 ext {
     moduleName = 'org.trellisldp.http'
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent']
 }
 
 dependencies {
@@ -18,13 +19,13 @@ dependencies {
 
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
+    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    testImplementation("com.google.guava:guava:$guavaVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
@@ -38,8 +39,21 @@ dependencies {
     testImplementation project(':trellis-event-serialization')
     testImplementation project(':trellis-io-jena')
 
-    testRuntimeClasspath("javax.xml.bind:jaxb-api:$jaxbVersion")
     testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
+if (project.sourceCompatibility.isJava11Compatible()) {
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-opens', "$moduleName/org.trellisldp.http.impl=org.junit.platform.commons",
+                '--add-opens', "$moduleName/org.trellisldp.http.impl=org.mockito",
+                '--add-opens', "$moduleName/org.trellisldp.http.core=org.junit.platform.commons",
+                '--add-opens', "$moduleName/org.trellisldp.http.core=org.mockito",
+                '--add-opens', "java.base/java.net=jersey.client",
+            ]
+        }
+    }
+}

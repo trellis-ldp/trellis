@@ -5,6 +5,7 @@ description = 'Trellis Audit'
 
 ext {
     moduleName = 'org.trellisldp.audit'
+    testModules = ['org.apache.commons.rdf.simple']
 }
 
 dependencies {
@@ -15,4 +16,3 @@ dependencies {
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
 }
-

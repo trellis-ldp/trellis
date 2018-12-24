@@ -11,6 +11,16 @@ dependencies {
     compile project(':trellis-app-triplestore')
 
     runtime("javax.xml.bind:jaxb-api:$jaxbVersion")
+
+    if (project.sourceCompatibility.isJava11Compatible()) {
+        runtime("io.dropwizard:dropwizard-core:$dropwizardVersion")
+        runtime("io.dropwizard:dropwizard-metrics:$dropwizardVersion")
+        runtime("io.dropwizard:dropwizard-http2:$dropwizardVersion")
+
+        runtime("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+        runtime("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+        runtime("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    }
 }
 
 ospackage {

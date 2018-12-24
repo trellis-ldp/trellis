@@ -5,6 +5,7 @@ description = 'Trellis WebAC Module'
 
 ext {
     moduleName = 'org.trellisldp.webac'
+    testModules = ['org.apache.commons.rdf.jena', 'tamaya.core']
 }
 
 dependencies {
@@ -26,4 +27,3 @@ dependencies {
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-triplestore')
 }
-

@@ -5,6 +5,7 @@ description = 'Trellis Basic authentication filter'
 
 ext {
     moduleName = 'org.trellisldp.auth.basic'
+    testModules = ['tamaya.core']
 }
 
 dependencies {
@@ -14,8 +15,8 @@ dependencies {
 
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
 
-    testRuntime("javax.xml.bind:jaxb-api:$jaxbVersion")
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")

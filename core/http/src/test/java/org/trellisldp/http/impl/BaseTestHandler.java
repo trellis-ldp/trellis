@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
@@ -105,8 +104,8 @@ abstract class BaseTestHandler {
     protected static final String baseUrl = "http://example.org/";
     protected static final RDF rdf = getInstance();
     protected static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-    protected static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource,
-            LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
+    protected static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
+            LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
     protected static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
     protected static final Instant time = ofEpochSecond(1496262729);
 

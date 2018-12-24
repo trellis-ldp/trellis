@@ -5,6 +5,7 @@ description = 'Trellis Notifications (Kafka)'
 
 ext {
     moduleName = 'org.trellisldp.kafka'
+    testModules = ['tamaya.core', 'org.trellisldp.vocabulary', 'org.trellisldp.event', 'org.apache.commons.rdf.simple']
 }
 
 dependencies {

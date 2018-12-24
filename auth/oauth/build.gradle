@@ -8,18 +8,19 @@ ext {
 }
 
 dependencies {
-    api("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
 
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
-    implementation("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
-    implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
+    implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    implementation("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
 
-    testRuntime("javax.xml.bind:jaxb-api:$jaxbVersion")
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -28,4 +29,3 @@ dependencies {
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }
-

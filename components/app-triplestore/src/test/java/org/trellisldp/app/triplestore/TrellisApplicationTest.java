@@ -251,9 +251,9 @@ public class TrellisApplicationTest implements MessageListener {
                 config("notifications.type", "JMS"),
                 config("notifications.connectionString", "vm://localhost"),
                 config("auth.basic.usersFile", resourceFilePath("users.auth")),
-                config("binaries", resourceFilePath("data") + "/binaries"),
-                config("mementos", resourceFilePath("data") + "/mementos"),
-                config("namespaces", resourceFilePath("data/namespaces.json")));
+                config("binaries", resourceFilePath("app-data") + "/binaries"),
+                config("mementos", resourceFilePath("app-data") + "/mementos"),
+                config("namespaces", resourceFilePath("app-data/namespaces.json")));
     }
 
     private Graph convertToGraph(final Message msg) {

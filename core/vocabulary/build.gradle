@@ -5,6 +5,7 @@ description = 'Trellis Vocabularies'
 
 ext {
     moduleName = 'org.trellisldp.vocabulary'
+    testModules = ['org.apache.commons.rdf.jena']
 }
 
 dependencies {
@@ -19,4 +20,3 @@ dependencies {
 
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
 }
-

@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
@@ -121,14 +120,14 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     protected static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
     protected static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
     protected static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
-    protected static final Set<IRI> allInteractionModels = newHashSet(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
-            LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
+    protected static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
+                LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
 
     protected static final String BASE_URL = "http://example.org/";
 
     protected static final String HUB = "http://hub.example.org/";
 
-    protected static final Set<IRI> allModes = newHashSet(ACL.Append, ACL.Control, ACL.Read, ACL.Write);
+    protected static final Set<IRI> allModes = new HashSet<>(asList(ACL.Append, ACL.Control, ACL.Read, ACL.Write));
 
     protected static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)
         .mimeType(BINARY_MIME_TYPE).build();

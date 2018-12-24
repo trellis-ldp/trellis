@@ -2,6 +2,10 @@ apply plugin: 'java-library'
 
 description = """Common tests for Trellis components"""
 
+ext {
+    moduleName = 'org.trellisldp.test'
+}
+
 sonarqube {
     skipProject = true
 }
@@ -11,13 +15,20 @@ dependencies {
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("org.apache.commons:commons-text:$commonsTextVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: "org.apache.jena", module: "jena-osgi"
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
     implementation("org.apache.jena:jena-arq:$jenaVersion")
-    implementation("org.awaitility:awaitility:$awaitilityVersion")
+    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
+    implementation("org.awaitility:awaitility:$awaitilityVersion") {
+        exclude group: 'org.hamcrest', module: 'hamcrest-library'
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
+    }
+    implementation("org.hamcrest:hamcrest:$hamcrestVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     implementation project(':trellis-api')
     implementation project(':trellis-http')
@@ -26,6 +37,13 @@ dependencies {
 
     runtime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    testCompile("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+}
+
+jar {
+    manifest {
+        attributes('Automatic-Module-Name': moduleName)
+    }
 }
 

@@ -6,12 +6,17 @@ ext {
     moduleName = 'org.trellisldp.app.triplestore'
 }
 
+configurations.all {
+    exclude group: 'javax.el', module: 'javax.el-api'
+    exclude group: 'com.google.code.findbugs', module: 'jsr305'
+}
+
 dependencies {
-    compile("com.github.jsonld-java:jsonld-java:$jsonldVersion")
+    compile("com.github.jsonld-java:jsonld-java:$jsonldVersion") {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient-osgi'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore-osgi'
+    }
     compile("commons-codec:commons-codec:$commonsCodecVersion")
-    compile("io.dropwizard:dropwizard-core:$dropwizardVersion")
-    compile("io.dropwizard:dropwizard-metrics:$dropwizardVersion")
-    compile("io.dropwizard:dropwizard-http2:$dropwizardVersion")
     compile("javax.activation:javax.activation-api:$activationApiVersion")
     compile("javax.jms:javax.jms-api:$jmsApiVersion")
     compile("org.apache.activemq:activemq-client:$activeMqVersion")
@@ -20,6 +25,10 @@ dependencies {
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
     compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
+    compile("javax.jms:javax.jms-api:$jmsApiVersion")
+    compile("javax.xml.bind:jaxb-api:$jaxbVersion")
+    compile("javax.validation:validation-api:$validationVersion")
+    compile("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
@@ -29,6 +38,7 @@ dependencies {
     compile project(':trellis-io-jena')
     compile project(':trellis-api')
     compile project(':trellis-http')
+    compile project(':trellis-app')
     compile project(':trellis-vocabulary')
     compile project(':trellis-file')
     compile project(':trellis-namespaces')
@@ -40,19 +50,24 @@ dependencies {
     compile project(':trellis-jms')
     compile project(':trellis-rdfa')
     compile project(':trellis-kafka')
-    compile project(':trellis-app')
     compile project(':trellis-auth-oauth')
     compile project(':trellis-auth-basic')
 
-    runtime ("javax.xml.bind:jaxb-api:$jaxbVersion")
+    compile("io.dropwizard:dropwizard-core:$dropwizardVersion")
+    compile("io.dropwizard:dropwizard-metrics:$dropwizardVersion")
+    compile("io.dropwizard:dropwizard-http2:$dropwizardVersion")
 
-    testCompile("io.dropwizard:dropwizard-client:$dropwizardVersion")
-    testCompile("io.dropwizard:dropwizard-testing:$dropwizardVersion")
-    testCompile("org.apache.activemq:activemq-broker:$activeMqVersion")
-    testCompile("org.awaitility:awaitility:$awaitilityVersion")
+    testCompile("org.awaitility:awaitility:$awaitilityVersion") {
+        exclude group: "org.hamcrest", module: 'hamcrest-core'
+        exclude group: 'org.hamcrest', module: 'hamcrest-library'
+    }
+    testCompile("org.hamcrest:hamcrest:$hamcrestVersion")
     testCompile("ch.qos.logback:logback-classic:$logbackVersion")
     testCompile("org.mockito:mockito-core:$mockitoVersion")
     testCompile project(':trellis-test')
+    testCompile("io.dropwizard:dropwizard-client:$dropwizardVersion")
+    testCompile("io.dropwizard:dropwizard-testing:$dropwizardVersion")
+    testCompile("org.apache.activemq:activemq-broker:$activeMqVersion")
 }
 
 jar {
@@ -60,3 +75,4 @@ jar {
         attributes('Automatic-Module-Name': moduleName)
     }
 }
+

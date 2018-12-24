@@ -3,8 +3,13 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis Notifications (JMS)'
 
+configurations {
+    activemq
+}
+
 ext {
     moduleName = 'org.trellisldp.jms'
+    testModules = ['tamaya.core', 'org.trellisldp.vocabulary', 'org.trellisldp.event', 'org.apache.commons.rdf.simple']
 }
 
 dependencies {
@@ -17,11 +22,37 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.apache.activemq:activemq-broker:$activeMqVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-event-serialization')
     testImplementation project(':trellis-vocabulary')
+
+    activemq("org.apache.activemq:activemq-broker:$activeMqVersion") {
+        exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
+        exclude group: "org.apache.activemq", module: "activemq-client"
+    }
+
+    if (!project.sourceCompatibility.isJava11Compatible()) {
+        testImplementation("org.apache.activemq:activemq-broker:$activeMqVersion")
+    }
 }
 
+if (project.sourceCompatibility.isJava11Compatible()) {
+    compileTestJava {
+        doFirst {
+            options.compilerArgs += [
+                '--patch-module', "activemq.client=" + files(configurations.activemq).asPath,
+            ]
+        }
+    }
+
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--patch-module', "activemq.client=" + files(configurations.activemq).asPath,
+            ]
+        }
+    }
+}

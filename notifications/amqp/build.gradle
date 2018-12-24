@@ -3,8 +3,13 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis Notifications (AMQP)'
 
+configurations {
+    qpid
+}
+
 ext {
     moduleName = 'org.trellisldp.amqp'
+    testModules = ['tamaya.core', 'org.trellisldp.vocabulary', 'org.trellisldp.event', 'org.apache.commons.rdf.simple']
 }
 
 dependencies {
@@ -18,11 +23,28 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("com.sleepycat:je:$sleepycatVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
-    testImplementation("org.apache.qpid:qpid-broker:$qpidVersion")
     testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-event-serialization')
     testImplementation project(':trellis-vocabulary')
+
+    qpid "org.apache.qpid:qpid-broker:$qpidVersion"
+
+    if (!project.sourceCompatibility.isJava11Compatible()) {
+        testImplementation("org.apache.qpid:qpid-broker:$qpidVersion")
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group.startsWith('com.fasterxml.jackson.')) {
+            details.useVersion jacksonVersion
+            details.because 'Jackson modules should use a consistent version'
+        }
+        if (details.requested.group == 'com.sleepycat') {
+            details.useVersion sleepycatVersion
+        }
+    }
 }
 
 test {
@@ -32,3 +54,24 @@ test {
     systemProperty 'trellis.amqp.uri', "amqp://guest:guest@localhost:${port}/testing"
 }
 
+if (project.sourceCompatibility.isJava11Compatible()) {
+    compileTestJava {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            options.compilerArgs += [
+                '--add-reads', "$moduleName=ALL-UNNAMED",
+            ]
+            classpath = files(configurations.qpid)
+        }
+    }
+
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-reads', "$moduleName=ALL-UNNAMED",
+            ]
+            classpath = files(configurations.qpid)
+        }
+    }
+}
