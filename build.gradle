@@ -68,11 +68,6 @@ ext {
     // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = '4.1.0'
 
-    /* SCM */
-    scmConnection = 'scm:git:https://github.com/trellis-ldp/trellis'
-    scmDeveloperConnection = 'scm:git:https://github.com/trellis-ldp/trellis.git'
-    scmUrl = 'https://github.com/trellis-ldp/trellis'
-
     jacocoTestProjects = [
             'trellis-agent',
             'trellis-amqp',
