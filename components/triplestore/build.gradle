@@ -13,8 +13,8 @@ dependencies {
     api project(':trellis-audit');
 
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
-    implementation("org.apache.jena:jena-osgi:$jenaVersion")
-    implementation("org.apache.commons:commons-compress:$commonsCompressVersion")
+    implementation("org.apache.jena:jena-rdfconnection:$jenaVersion")
+    implementation("org.apache.jena:jena-tdb2:$jenaVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')

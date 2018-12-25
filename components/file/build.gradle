@@ -13,10 +13,7 @@ dependencies {
 
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
-    // Required transitively via jena-osgi
-    implementation("org.apache.commons:commons-compress:$commonsCompressVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
-    implementation("org.apache.jena:jena-osgi:$jenaVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')

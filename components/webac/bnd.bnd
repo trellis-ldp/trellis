@@ -16,10 +16,10 @@ Require-Capability:     osgi.extender; \
                             filter:="(osgi.extender=osgi.serviceloader.processor)", \
                         osgi.extender; \
                             filter:="(osgi.extender=osgi.serviceloader.registrar)"; \
-                            resolution:=optional
+                            resolution:=optional, \
                         osgi.serviceloader; \
                             filter:="(osgi.serviceloader=org.trellisldp.api.ResourceService)"; \
-                            resolution:=mandatory; \
+                            resolution:=mandatory
 Provide-Capability:     osgi.serviceloader; \
                             osgi.serviceloader=org.trellisldp.api.AccessControlService
 

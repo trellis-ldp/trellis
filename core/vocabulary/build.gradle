@@ -11,8 +11,6 @@ dependencies {
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
 
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
-    testImplementation("org.apache.jena:jena-osgi:$jenaVersion")
-    testImplementation("org.apache.commons:commons-compress:$commonsCompressVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")

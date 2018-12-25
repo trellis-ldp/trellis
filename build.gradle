@@ -147,6 +147,19 @@ allprojects { subproj ->
             signTag = true
         }
     }
+
+    configurations.all {
+        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
+        resolutionStrategy.dependencySubstitution {
+            substitute module("org.apache.jena:jena-osgi") with module("org.apache.jena:jena-arq:$jenaVersion")
+        }
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group.startsWith('com.fasterxml.jackson.')) {
+                details.useVersion jacksonVersion
+                details.because 'Jackson modules should use a consistent version'
+            }
+        }
+    }
 }
 
 subprojects { subproj ->

@@ -5,8 +5,9 @@ description = 'Trellis Triplestore Application'
 dependencies {
     compile("com.google.guava:guava:$guavaVersion")
     compile("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
-    compile("org.apache.jena:jena-osgi:$jenaVersion")
-    compile("org.apache.commons:commons-compress:$commonsCompressVersion")
+    compile("org.apache.jena:jena-arq:$jenaVersion")
+    compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
+    compile("org.apache.jena:jena-tdb2:$jenaVersion")
     compile("org.apache.tamaya:tamaya-api:$tamayaVersion")
     compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     compile("org.glassfish.jersey.core:jersey-server:$jerseyVersion")

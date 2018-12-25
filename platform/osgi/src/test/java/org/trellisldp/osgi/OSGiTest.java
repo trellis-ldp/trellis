@@ -154,10 +154,16 @@ public class OSGiTest {
     public void testWebacInstallation() throws Exception {
         assertFalse("trellis-webac already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
+        featuresService.installFeature("trellis-triplestore");
         featuresService.installFeature("trellis-webac");
         checkTrellisBundlesAreActive();
         assertTrue("trellis-webac not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
+        featuresService.uninstallFeature("trellis-webac");
+        featuresService.uninstallFeature("trellis-triplestore");
+        if (featuresService.isInstalled(featuresService.getFeature("trellis-audit"))) {
+            featuresService.uninstallFeature("trellis-audit");
+        }
     }
 
     @Test

@@ -12,8 +12,7 @@ dependencies {
     api project(':trellis-api')
 
     implementation("com.github.spullara.mustache.java:compiler:$mustacheVersion")
-    implementation("org.apache.commons:commons-compress:$commonsCompressVersion")
-    implementation("org.apache.jena:jena-osgi:$jenaVersion")
+    implementation("org.apache.jena:jena-arq:$jenaVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation project(':trellis-vocabulary')
 
