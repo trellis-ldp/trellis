@@ -15,10 +15,14 @@ package org.trellisldp.jms;
 
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.of;
+import static java.util.ServiceLoader.load;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.findFirst;
+
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
 import javax.inject.Inject;
 import javax.jms.Connection;
@@ -55,11 +59,11 @@ public class JmsPublisher implements EventService {
     public static final String CONFIG_JMS_PASSWORD = "trellis.jms.password";
 
     private static final Logger LOGGER = getLogger(JmsPublisher.class);
-    private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
+    private static final ActivityStreamService service = of(load(ActivityStreamService.class))
+        .map(ServiceLoader::iterator).filter(Iterator::hasNext).map(Iterator::next)
         .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     private final MessageProducer producer;
-
     private final Session session;
 
     /**

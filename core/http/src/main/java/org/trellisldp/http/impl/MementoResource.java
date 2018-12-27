@@ -20,6 +20,7 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
@@ -34,7 +35,6 @@ import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.core.HttpConstants.DATETIME;
@@ -53,8 +53,10 @@ import static org.trellisldp.vocabulary.LDP.Resource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -76,11 +78,11 @@ import org.trellisldp.http.core.TrellisRequest;
 public final class MementoResource {
 
     private static final String TIMEMAP_PARAM = "?ext=timemap";
+    private static final TimemapGenerator timemap = of(load(TimemapGenerator.class)).map(ServiceLoader::iterator)
+        .filter(Iterator::hasNext).map(Iterator::next).orElseGet(() -> new TimemapGenerator() { });
 
     private final ServiceBundler trellis;
     private final boolean includeMementoDates;
-    private final TimemapGenerator timemap = findFirst(TimemapGenerator.class)
-        .orElseGet(() -> new TimemapGenerator() { });
 
     /**
      * Wrap a resource in some Memento-specific response builders.

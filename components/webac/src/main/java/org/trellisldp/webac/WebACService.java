@@ -22,6 +22,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
+import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
@@ -29,15 +30,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 import static org.trellisldp.webac.WrappedGraph.wrap;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -95,7 +97,8 @@ public class WebACService implements AccessControlService {
      */
     @Inject
     public WebACService() {
-        this(findFirst(ResourceService.class).orElse(null));
+        this(of(load(ResourceService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
+                .map(Iterator::next).orElse(null));
     }
 
     /**

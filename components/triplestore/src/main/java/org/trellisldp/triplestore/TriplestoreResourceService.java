@@ -20,6 +20,8 @@ import static java.util.Collections.synchronizedList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.of;
+import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
@@ -32,7 +34,6 @@ import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
@@ -48,6 +49,8 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -119,7 +122,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param rdfConnection the connection to an RDF datastore
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection) {
-        this(rdfConnection, findFirst(IdentifierService.class).orElseGet(DefaultIdentifierService::new));
+        this(rdfConnection, of(load(IdentifierService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
+                .map(Iterator::next).orElseGet(DefaultIdentifierService::new));
     }
 
     /**

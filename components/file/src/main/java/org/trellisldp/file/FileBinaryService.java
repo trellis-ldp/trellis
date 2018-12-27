@@ -19,6 +19,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
+import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
@@ -32,7 +33,6 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,6 +41,8 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.security.MessageDigest;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -106,7 +108,8 @@ public class FileBinaryService implements BinaryService {
      */
     @Inject
     public FileBinaryService() {
-        this(findFirst(IdentifierService.class).orElseGet(DefaultIdentifierService::new));
+        this(of(load(IdentifierService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
+                .map(Iterator::next).orElseGet(DefaultIdentifierService::new));
     }
 
     /**

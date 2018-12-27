@@ -85,8 +85,7 @@ public final class TrellisUtils {
      * @param <T> the class of the service type
      * @return the first service provider or empty Optional if no service providers are located
      */
-    public static <T> Optional<T> findFirst(final Class<T> service) {
-        // TODO - JDK9 replace with ServiceLoader::findFirst
+    private static <T> Optional<T> findFirst(final Class<T> service) {
         return Optional.of(ServiceLoader.load(service)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
             .map(Iterator::next);
     }

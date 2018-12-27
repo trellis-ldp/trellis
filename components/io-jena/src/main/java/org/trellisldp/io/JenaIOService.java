@@ -20,7 +20,9 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -37,7 +39,6 @@ import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
-import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
@@ -50,8 +51,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -393,5 +397,9 @@ public class JenaIOService implements IOService {
 
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {
         return JSONLD_FORMATS.get(mergeProfiles(profiles));
+    }
+
+    private static <T> Optional<T> findFirst(final Class<T> service) {
+        return of(load(service)).map(ServiceLoader::iterator).filter(Iterator::hasNext).map(Iterator::next);
     }
 }
