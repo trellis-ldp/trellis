@@ -12,7 +12,11 @@ dependencies {
 
     implementation project(':trellis-vocabulary')
 
-    testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
+    testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
+        exclude group: 'org.apache.jena', module: 'jena-osgi'
+        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
+    }
+    testImplementation("org.apache.jena:jena-arq:$jenaVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }
 
