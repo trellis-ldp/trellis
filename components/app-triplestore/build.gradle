@@ -15,11 +15,15 @@ dependencies {
     compile("javax.activation:javax.activation-api:$activationApiVersion")
     compile("javax.jms:javax.jms-api:$jmsApiVersion")
     compile("org.apache.activemq:activemq-client:$activeMqVersion")
-    compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
+    compile("org.apache.jena:jena-arq:$jenaVersion")
     compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
     compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
+    compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
+        exclude group: 'org.apache.jena', module: 'jena-osgi'
+        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
+    }
 
     compile project(':trellis-constraint-rules')
     compile project(':trellis-io-jena')

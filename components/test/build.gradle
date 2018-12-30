@@ -12,7 +12,11 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     implementation("org.apache.commons:commons-text:$commonsTextVersion")
-    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion")
+    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
+        exclude group: "org.apache.jena", module: "jena-osgi"
+        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
+    }
+    implementation("org.apache.jena:jena-arq:$jenaVersion")
     implementation("org.awaitility:awaitility:$awaitilityVersion")
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     implementation project(':trellis-api')
