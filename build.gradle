@@ -35,7 +35,7 @@ ext {
     guavaVersion = '27.0.1-jre'
     jacksonVersion = '2.9.8'
     jaxbVersion = '2.3.1'
-    jenaVersion = '3.9.0'
+    jenaVersion = '3.10.0'
     jerseyVersion = '2.27'
     jjwtVersion = '0.10.5'
     jmsApiVersion = '2.0.1'
