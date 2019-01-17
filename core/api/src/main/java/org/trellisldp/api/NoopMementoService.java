@@ -19,7 +19,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
 import java.util.SortedSet;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -29,22 +29,22 @@ import org.apache.commons.rdf.api.IRI;
 public class NoopMementoService implements MementoService {
 
     @Override
-    public CompletableFuture<Void> put(final ResourceService resourceService, final IRI identifier) {
+    public CompletionStage<Void> put(final ResourceService resourceService, final IRI identifier) {
         return completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> put(final Resource resource) {
+    public CompletionStage<Void> put(final Resource resource) {
         return completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Resource> get(final IRI identifier, final Instant time) {
+    public CompletionStage<Resource> get(final IRI identifier, final Instant time) {
         return completedFuture(MISSING_RESOURCE);
     }
 
     @Override
-    public CompletableFuture<SortedSet<Instant>> mementos(final IRI identifier) {
+    public CompletionStage<SortedSet<Instant>> mementos(final IRI identifier) {
         return completedFuture(emptySortedSet());
     }
 }

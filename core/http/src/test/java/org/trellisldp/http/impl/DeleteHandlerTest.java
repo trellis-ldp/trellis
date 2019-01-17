@@ -46,7 +46,8 @@ public class DeleteHandlerTest extends BaseTestHandler {
     @Test
     public void testDelete() {
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, null);
-        final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect delete response!");
     }
 

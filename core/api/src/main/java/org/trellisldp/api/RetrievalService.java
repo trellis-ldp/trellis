@@ -14,7 +14,7 @@
 
 package org.trellisldp.api;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -33,5 +33,5 @@ public interface RetrievalService<T> {
      * @param identifier the resource identifier
      * @return the resource
      */
-    CompletableFuture<? extends T> get(IRI identifier);
+    CompletionStage<? extends T> get(IRI identifier);
 }

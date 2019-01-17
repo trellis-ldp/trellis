@@ -45,7 +45,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -151,7 +151,7 @@ public class PostHandler extends MutatingLdpHandler {
      * @param builder the response builder
      * @return the response builder
      */
-    public CompletableFuture<ResponseBuilder> createResource(final ResponseBuilder builder) {
+    public CompletionStage<ResponseBuilder> createResource(final ResponseBuilder builder) {
         LOGGER.debug("Creating resource as {}", getIdentifier());
 
         final TrellisDataset mutable = TrellisDataset.createDataset();
@@ -162,10 +162,10 @@ public class PostHandler extends MutatingLdpHandler {
             .whenComplete((a, b) -> immutable.close());
     }
 
-    private CompletableFuture<ResponseBuilder> handleResourceCreation(final TrellisDataset mutable,
+    private CompletionStage<ResponseBuilder> handleResourceCreation(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder) {
 
-        final CompletableFuture<Void> persistPromise;
+        final CompletionStage<Void> persistPromise;
         final Metadata.Builder metadata;
 
         // Add user-supplied data
@@ -196,8 +196,8 @@ public class PostHandler extends MutatingLdpHandler {
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
 
         return persistPromise.thenCompose(future -> allOf(
-                getServices().getResourceService().create(metadata.build(), mutable.asDataset()),
-                getServices().getResourceService().add(internalId, immutable.asDataset())))
+                getServices().getResourceService().create(metadata.build(), mutable.asDataset()).toCompletableFuture(),
+                getServices().getResourceService().add(internalId, immutable.asDataset()).toCompletableFuture()))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));

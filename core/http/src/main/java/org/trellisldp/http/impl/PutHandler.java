@@ -47,7 +47,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -150,7 +150,7 @@ public class PutHandler extends MutatingLdpHandler {
      * @param builder the response builder
      * @return the response builder
      */
-    public CompletableFuture<ResponseBuilder> setResource(final ResponseBuilder builder) {
+    public CompletionStage<ResponseBuilder> setResource(final ResponseBuilder builder) {
         LOGGER.debug("Setting resource as {}", getIdentifier());
 
         final IRI ldpType = isBinaryDescription() ? LDP.NonRDFSource : ofNullable(getRequest().getLink())
@@ -193,11 +193,11 @@ public class PutHandler extends MutatingLdpHandler {
         return super.getIdentifier() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : "");
     }
 
-    private CompletableFuture<ResponseBuilder> handleResourceUpdate(final TrellisDataset mutable,
+    private CompletionStage<ResponseBuilder> handleResourceUpdate(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder, final IRI ldpType) {
 
         final Metadata.Builder metadata;
-        final CompletableFuture<Void> persistPromise;
+        final CompletionStage<Void> persistPromise;
 
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
@@ -248,8 +248,8 @@ public class PutHandler extends MutatingLdpHandler {
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
         return persistPromise.thenCompose(future -> allOf(
-                createOrReplace(metadata.build(), mutable),
-                getServices().getResourceService().add(internalId, immutable.asDataset())))
+                createOrReplace(metadata.build(), mutable).toCompletableFuture(),
+                getServices().getResourceService().add(internalId, immutable.asDataset()).toCompletableFuture()))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }
@@ -261,7 +261,7 @@ public class PutHandler extends MutatingLdpHandler {
         return builder;
     }
 
-    private CompletableFuture<Void> handleUpdateEvent(final IRI ldpType) {
+    private CompletionStage<Void> handleUpdateEvent(final IRI ldpType) {
         if (!ACL.equals(getRequest().getExt())) {
             return emitEvent(getInternalId(), isNull(getResource()) ? AS.Create : AS.Update, ldpType);
         }
@@ -274,7 +274,7 @@ public class PutHandler extends MutatingLdpHandler {
             || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
     }
 
-    private CompletableFuture<Void> createOrReplace(final Metadata metadata, final TrellisDataset ds) {
+    private CompletionStage<Void> createOrReplace(final Metadata metadata, final TrellisDataset ds) {
         if (isNull(getResource())) {
             LOGGER.debug("Creating new resource {}", internalId);
             return getServices().getResourceService().create(metadata, ds.asDataset());

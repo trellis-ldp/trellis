@@ -14,7 +14,7 @@
 
 package org.trellisldp.api;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.Dataset;
 
@@ -34,10 +34,10 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param dataset the dataset to be persisted
      * @return a new completion stage that, when the stage completes normally, indicates that the supplied data were
      * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
-     * the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
+     * the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
      */
-    default CompletableFuture<Void> create(Metadata metadata, Dataset dataset) {
+    default CompletionStage<Void> create(Metadata metadata, Dataset dataset) {
         return replace(metadata, dataset);
     }
 
@@ -48,10 +48,10 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param dataset the dataset to be persisted
      * @return a new completion stage that, when the stage completes normally, indicates that the supplied data
      * were successfully stored in the corresponding persistence layer. In the case of an unsuccessful write operation,
-     * the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
+     * the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> replace(Metadata metadata, Dataset dataset);
+    CompletionStage<Void> replace(Metadata metadata, Dataset dataset);
 
     /**
      * Delete a resource from the server.
@@ -59,9 +59,9 @@ public interface MutableDataService<U> extends RetrievalService<U> {
      * @param metadata metadata for the resource
      * @return a new completion stage that, when the stage completes normally, indicates that the resource
      * was successfully deleted from the corresponding persistence layer. In the case of an unsuccessful delete
-     * operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
+     * operation, the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> delete(Metadata metadata);
+    CompletionStage<Void> delete(Metadata metadata);
 
 }

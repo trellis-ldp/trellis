@@ -68,7 +68,7 @@ public class PutHandlerTest extends BaseTestHandler {
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
 
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).join(),
+                handler.setResource(handler.initialize(mockParent, mockResource)).toCompletableFuture().join(),
                 "No exception when trying to invalidly change IXN models!").getResponse();
         assertEquals(CONFLICT, res.getStatusInfo(), "Incorrect response code!");
     }
@@ -95,7 +95,8 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response type");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
@@ -111,7 +112,8 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
@@ -127,7 +129,8 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check Binary PUT interactions", checkBinaryPut(res));
@@ -141,7 +144,8 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check Binary PUT interactions", checkBinaryPut(res));
@@ -155,7 +159,8 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.RDFSource.getIRIString()).rel("type").build());
 
         final PutHandler handler = buildPutHandler("/simpleLiteral.ttl", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check RDF PUT interactions", checkRdfPut(res));
@@ -168,7 +173,8 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final PutHandler handler = buildPutHandler("/simpleLiteral.ttl", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check RDF PUT interactions", checkRdfPut(res));
@@ -177,7 +183,8 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testPutLdpResourceEmpty() {
         final PutHandler handler = buildPutHandler("/emptyData.txt", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check RDF PUT interactions", checkRdfPut(res));
@@ -190,7 +197,8 @@ public class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
-        final Response res = handler.setResource(handler.initialize(mockParent, mockResource)).join().build();
+        final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check RDF PUT interactions", checkRdfPut(res));
@@ -204,7 +212,7 @@ public class PutHandlerTest extends BaseTestHandler {
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
         final Response res = assertThrows(BadRequestException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).join(),
+                handler.setResource(handler.initialize(mockParent, mockResource)).toCompletableFuture().join(),
                 "No exception when the interaction model isn't supported!").getResponse();
 
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
@@ -239,7 +247,7 @@ public class PutHandlerTest extends BaseTestHandler {
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
-            .thenCompose(handler::updateMemento).join().build();
+            .thenCompose(handler::updateMemento).toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
     }

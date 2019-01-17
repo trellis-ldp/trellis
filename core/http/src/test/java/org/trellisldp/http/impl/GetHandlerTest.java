@@ -101,7 +101,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response type!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
@@ -134,7 +134,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response status!");
         assertEquals("text/ldpatch", res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
@@ -151,7 +151,7 @@ public class GetHandlerTest extends BaseTestHandler {
     public void testGetVersionedLdprs() {
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, true, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
@@ -190,7 +190,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertTrue(res.getLinks().stream().anyMatch(hasType(SKOS.Concept)), "Missing extra type link header!");
@@ -218,7 +218,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
@@ -254,7 +254,7 @@ public class GetHandlerTest extends BaseTestHandler {
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
         assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
@@ -297,7 +297,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
@@ -315,7 +315,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertAll("Check binary description", checkBinaryDescription(res));
     }
@@ -328,7 +328,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertAll("Check binary description", checkBinaryDescription(res));
     }
@@ -356,7 +356,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(-1, res.getLength(), "Incorrect response length!");
@@ -379,7 +379,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check LDP type link headers", checkLdpType(res, LDP.RDFSource));

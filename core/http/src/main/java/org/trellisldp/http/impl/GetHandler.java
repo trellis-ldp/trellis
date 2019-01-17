@@ -83,7 +83,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.SortedSet;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
@@ -215,7 +215,7 @@ public class GetHandler extends BaseLdpHandler {
      * @param builder the response builder
      * @return the response builder
      */
-    public CompletableFuture<ResponseBuilder> getRepresentation(final ResponseBuilder builder) {
+    public CompletionStage<ResponseBuilder> getRepresentation(final ResponseBuilder builder) {
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
         getResource().getBinaryMetadata().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
@@ -300,7 +300,7 @@ public class GetHandler extends BaseLdpHandler {
         }
     }
 
-    private CompletableFuture<ResponseBuilder> getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax,
+    private CompletionStage<ResponseBuilder> getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax,
             final IRI profile) {
         final Prefer prefer = ACL.equals(getRequest().getExt()) ?
             new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
@@ -348,7 +348,7 @@ public class GetHandler extends BaseLdpHandler {
         return completedFuture(builder.entity(stream));
     }
 
-    private CompletableFuture<Optional<String>> computeInstanceDigest(final IRI dsid) {
+    private CompletionStage<Optional<String>> computeInstanceDigest(final IRI dsid) {
         // Add instance digests, if Requested and supported
         if (nonNull(getRequest().getWantDigest())) {
             final Optional<String> algorithm = getRequest().getWantDigest().getAlgorithms().stream()
@@ -364,7 +364,7 @@ public class GetHandler extends BaseLdpHandler {
         return completedFuture(empty());
     }
 
-    private CompletableFuture<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
+    private CompletionStage<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
 
         final Instant mod = getResource().getModified();
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", mod, null));
@@ -381,7 +381,7 @@ public class GetHandler extends BaseLdpHandler {
             @Override
             public void write(final OutputStream out) throws IOException {
                 // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
-                try (final InputStream binary = getBinaryStream(dsid, getRequest())) {
+                try (final InputStream binary = getBinaryStream(dsid, getRequest()).toCompletableFuture().join()) {
                     IOUtils.copy(binary, out);
                 }
             }
@@ -391,12 +391,12 @@ public class GetHandler extends BaseLdpHandler {
             .thenApply(future -> builder.entity(stream));
     }
 
-    private InputStream getBinaryStream(final IRI dsid, final TrellisRequest req) {
+    private CompletionStage<InputStream> getBinaryStream(final IRI dsid, final TrellisRequest req) {
         if (isNull(req.getRange())) {
-            return getServices().getBinaryService().get(dsid).thenApply(Binary::getContent).join();
+            return getServices().getBinaryService().get(dsid).thenApply(Binary::getContent);
         }
         return getServices().getBinaryService().get(dsid)
-                        .thenApply(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo())).join();
+                        .thenApply(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo()));
     }
 
     private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {

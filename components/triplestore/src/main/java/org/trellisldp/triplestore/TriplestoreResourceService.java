@@ -52,7 +52,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -140,7 +140,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> delete(final Metadata metadata) {
+    public CompletionStage<Void> delete(final Metadata metadata) {
         LOGGER.debug("Deleting: {}", metadata.getIdentifier());
         return runAsync(() -> {
             try (final Dataset dataset = rdf.createDataset()) {
@@ -155,7 +155,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> replace(final Metadata metadata, final Dataset dataset) {
+    public CompletionStage<Void> replace(final Metadata metadata, final Dataset dataset) {
         LOGGER.debug("Persisting: {}", metadata.getIdentifier());
         return runAsync(() ->
                 createOrReplace(metadata, dataset, OperationType.REPLACE));
@@ -378,7 +378,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Resource> get(final IRI identifier) {
+    public CompletionStage<Resource> get(final IRI identifier) {
         return TriplestoreResource.findResource(rdfConnection, identifier);
     }
 
@@ -388,7 +388,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
+    public CompletionStage<Void> add(final IRI id, final Dataset dataset) {
         return runAsync(() -> {
             final IRI graphName = rdf.createIRI(id.getIRIString() + "?ext=audit");
             try (final Dataset data = rdf.createDataset()) {
@@ -402,7 +402,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     }
 
     @Override
-    public CompletableFuture<Void> touch(final IRI identifier) {
+    public CompletionStage<Void> touch(final IRI identifier) {
         final Literal time = rdf.createLiteral(now().toString(), XSD.dateTime);
         return runAsync(() -> {
             try {

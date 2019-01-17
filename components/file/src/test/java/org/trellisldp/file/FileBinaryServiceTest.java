@@ -79,12 +79,14 @@ public class FileBinaryServiceTest {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream("Some data".getBytes(UTF_8));
-        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
-                "setContent didn't complete cleanly!");
-        assertEquals("Some data", uncheckedToString(service.get(fileIRI).thenApply(Binary::getContent).join()),
-                        "incorrect value for getContent!");
-        assertNull(service.purgeContent(fileIRI).join(), "purgeContent didn't complete cleanly!");
-        assertNull(service.purgeContent(fileIRI).join(), "purgeContent (2) didn't complete cleanly!");
+        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream)
+                .toCompletableFuture().join(), "setContent didn't complete cleanly!");
+        assertEquals("Some data", uncheckedToString(service.get(fileIRI).thenApply(Binary::getContent)
+                .toCompletableFuture().join()), "incorrect value for getContent!");
+        assertNull(service.purgeContent(fileIRI).toCompletableFuture().join(),
+                "purgeContent didn't complete cleanly!");
+        assertNull(service.purgeContent(fileIRI).toCompletableFuture().join(),
+                "purgeContent (2) didn't complete cleanly!");
     }
 
     @Test
@@ -98,7 +100,8 @@ public class FileBinaryServiceTest {
     public void testFileContent() {
         final BinaryService service = new FileBinaryService();
         assertEquals("A test document.\n",
-                        service.get(file).thenApply(Binary::getContent).thenApply(this::uncheckedToString).join(),
+                        service.get(file).thenApply(Binary::getContent).thenApply(this::uncheckedToString)
+                        .toCompletableFuture().join(),
                         "Incorrect content when fetching from a file!");
     }
 
@@ -106,18 +109,18 @@ public class FileBinaryServiceTest {
     public void testFileContentSegment() {
         final BinaryService service = new FileBinaryService();
         assertEquals(" tes",
-                        service.get(file).thenApply(b -> b.getContent(1, 5)).thenApply(this::uncheckedToString).join(),
-                        "Incorrect segment when fetching from a file!");
+                        service.get(file).thenApply(b -> b.getContent(1, 5)).thenApply(this::uncheckedToString)
+                        .toCompletableFuture().join(), "Incorrect segment when fetching from a file!");
         assertEquals("oc",
-                        service.get(file).thenApply(b -> b.getContent(8, 10)).thenApply(this::uncheckedToString).join(),
-                        "Incorrect segment when fetching from a file!");
+                        service.get(file).thenApply(b -> b.getContent(8, 10)).thenApply(this::uncheckedToString)
+                        .toCompletableFuture().join(), "Incorrect segment when fetching from a file!");
     }
 
     @Test
     public void testFileContentSegmentBeyond() {
         final BinaryService service = new FileBinaryService();
         assertEquals("", service.get(file).thenApply(b -> b.getContent(1000, 1005)).thenApply(this::uncheckedToString)
-                        .join(), "Incorrect out-of-range segment when fetching from a file!");
+                        .toCompletableFuture().join(), "Incorrect out-of-range segment when fetching from a file!");
     }
 
     @Test
@@ -126,21 +129,22 @@ public class FileBinaryServiceTest {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
-        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream).join(),
-                        "Setting content didn't complete cleanly!");
+        assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream)
+                .toCompletableFuture().join(), "Setting content didn't complete cleanly!");
         assertEquals(contents,
-                        service.get(fileIRI).thenApply(Binary::getContent).thenApply(this::uncheckedToString).join(),
-                        "Fetching new content returned incorrect value!");
+                        service.get(fileIRI).thenApply(Binary::getContent).thenApply(this::uncheckedToString)
+                        .toCompletableFuture().join(), "Fetching new content returned incorrect value!");
     }
 
     @Test
     public void testGetFileContentError() throws IOException {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
-        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(Binary::getContent).join(),
-                        "Fetching from invalid file should have thrown an exception!");
-        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(b -> b.getContent(0, 4)).join(),
-                        "Fetching binary segment from invalid file should have thrown an exception!");
+        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(Binary::getContent)
+                .toCompletableFuture().join(), "Fetching from invalid file should have thrown an exception!");
+        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(b -> b.getContent(0, 4))
+                .toCompletableFuture().join(),
+                "Fetching binary segment from invalid file should have thrown an exception!");
     }
 
     @Test
@@ -154,7 +158,7 @@ public class FileBinaryServiceTest {
             .handle((val, err) -> {
                 assertNotNull(err, "There should have been an error with the input stream!");
                 return null;
-            }).join());
+            }).toCompletableFuture().join());
     }
 
     @Test
@@ -164,21 +168,21 @@ public class FileBinaryServiceTest {
         assertAll(() -> service.get(fileIRI).thenApply(binary -> binary.getContent(10, 20)).handle((val, err) -> {
                 assertNotNull(err, "There should have been an error with the input stream!");
                 return null;
-            }).join());
+            }).toCompletableFuture().join());
     }
 
     @Test
     public void testBase64Digest() throws IOException {
         final BinaryService service = new FileBinaryService();
         assertEquals("oZ1Y1O/8vs39RH31fh9lrA==", service.calculateDigest(file, getDigest("MD5"))
-                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString).join(),
-                        "Bad MD5 digest!");
+                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString)
+                        .toCompletableFuture().join(), "Bad MD5 digest!");
         assertEquals("QJuYLse9SK/As177lt+rSfixyH0=", service.calculateDigest(file, getDigest("SHA-1"))
-                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString).join(),
-                        "Bad SHA digest!");
+                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString)
+                        .toCompletableFuture().join(), "Bad SHA digest!");
         assertThrows(CompletionException.class, () ->
-                service.calculateDigest(rdf.createIRI("file:///" + randomFilename()), getDigest("MD5")).join(),
-                "Computing digest on invalid file should throw an exception!");
+                service.calculateDigest(rdf.createIRI("file:///" + randomFilename()), getDigest("MD5"))
+                .toCompletableFuture().join(), "Computing digest on invalid file should throw an exception!");
     }
 
     @Test
@@ -187,15 +191,15 @@ public class FileBinaryServiceTest {
         final BinaryService service = new FileBinaryService();
         assertEquals("FQgyH2yU2NhyMTZ7YDDKwV5vcWUBM1zq0uoIYUiHH+4=",
                         service.calculateDigest(file, getDigest("SHA3-256")).thenApply(MessageDigest::digest)
-                                        .thenApply(getEncoder()::encodeToString).join(),
+                                        .thenApply(getEncoder()::encodeToString).toCompletableFuture().join(),
                         "Bad SHA3-256 digest!");
         assertEquals("746UDLrFXM61gzI0FnoVT2S0Z7EmQUfhHnoSYwkR2MHzbBe6j9rMigQBfR8ApZUA",
                         service.calculateDigest(file, getDigest("SHA3-384")).thenApply(MessageDigest::digest)
-                                        .thenApply(getEncoder()::encodeToString).join(),
+                                        .thenApply(getEncoder()::encodeToString).toCompletableFuture().join(),
                         "Bad SHA3-384 digest!");
         assertEquals("Ecu/R0kV4eL0J/VOpyVA2Lz0T6qsJj9ioQ+QorJDztJeMj6uhf6zqyhZnu9zMYiwrkX8U4oWiZMDT/0fWjOyYg==",
                         service.calculateDigest(file, getDigest("SHA3-512")).thenApply(MessageDigest::digest)
-                                        .thenApply(getEncoder()::encodeToString).join(),
+                                        .thenApply(getEncoder()::encodeToString).toCompletableFuture().join(),
                         "Bad SHA3-512 digest!");
     }
 
@@ -203,7 +207,8 @@ public class FileBinaryServiceTest {
     public void testBadIdentifier() {
         final BinaryService service = new FileBinaryService();
         assertFalse(service.get(rdf.createIRI("http://example.com/")).thenApply(Binary::getContent)
-                        .handle(this::checkError).join(), "Shouldn't be able to fetch content from a bad IRI!");
+                        .handle(this::checkError).toCompletableFuture().join(),
+                        "Shouldn't be able to fetch content from a bad IRI!");
     }
 
     private boolean checkError(final Object asyncValue, final Throwable err) {

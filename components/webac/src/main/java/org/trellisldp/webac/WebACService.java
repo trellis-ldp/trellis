@@ -42,6 +42,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -166,9 +167,9 @@ public class WebACService implements AccessControlService {
         final Set<IRI> modes = getModesFor(identifier, agent);
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
-            getContainer(identifier).map(resourceService::get).map(CompletableFuture::join)
-                .flatMap(Resource::getMembershipResource).map(WebACService::cleanIdentifier)
-                .map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
+            getContainer(identifier).map(resourceService::get).map(CompletionStage::toCompletableFuture)
+                .map(CompletableFuture::join).flatMap(Resource::getMembershipResource)
+                .map(WebACService::cleanIdentifier).map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
                     }
@@ -191,7 +192,7 @@ public class WebACService implements AccessControlService {
     }
 
     private Optional<Resource> getNearestResource(final IRI identifier) {
-        final Resource res = resourceService.get(identifier).join();
+        final Resource res = resourceService.get(identifier).toCompletableFuture().join();
         if (resourceExists(res)) {
             return of(res);
         }
@@ -219,7 +220,7 @@ public class WebACService implements AccessControlService {
                     .map(Triple::getObject)) {
                 return triples.anyMatch(agent::equals);
             }
-        }).join();
+        }).toCompletableFuture().join();
     }
 
     private List<Authorization> getAuthorizationFromGraph(final Graph graph) {
@@ -247,7 +248,8 @@ public class WebACService implements AccessControlService {
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
         return getContainer(resource.getIdentifier()).map(resourceService::get)
-            .map(CompletableFuture::join).map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
+            .map(CompletionStage::toCompletableFuture).map(CompletableFuture::join)
+            .map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
     }
 
     /**

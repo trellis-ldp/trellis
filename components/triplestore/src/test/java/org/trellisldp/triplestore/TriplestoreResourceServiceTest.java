@@ -98,15 +98,16 @@ public class TriplestoreResourceServiceTest {
     @Test
     public void testResourceNotFound() {
         final ResourceService svc = new TriplestoreResourceService();
-        assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).join(),
-                "Not a missing resource!");
+        assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).toCompletableFuture()
+                .join(), "Not a missing resource!");
     }
 
     @Test
     public void testNoRoot() {
         final ResourceService svc = new TriplestoreResourceService();
 
-        assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX)).join(), "Not a missing resource!");
+        assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX)).toCompletableFuture().join(),
+                "Not a missing resource!");
     }
 
     @Test
@@ -115,7 +116,7 @@ public class TriplestoreResourceServiceTest {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
         svc.initialize();
 
-        final Resource res = svc.get(root).join();
+        final Resource res = svc.get(root).toCompletableFuture().join();
         assertAll("Check resource", checkResource(res, root, LDP.BasicContainer, early));
         assertAll("Check resource stream", checkResourceStream(res, 0L, 5L, 0L, 0L, 0L));
     }
@@ -131,7 +132,7 @@ public class TriplestoreResourceServiceTest {
         final TriplestoreResourceService svc = new TriplestoreResourceService(rdfConnection);
         svc.initialize();
 
-        final Resource res = svc.get(root).join();
+        final Resource res = svc.get(root).toCompletableFuture().join();
         assertAll("Check resource", checkResource(res, root, LDP.BasicContainer, early));
         assertAll("Check resource stream", checkResourceStream(res, 0L, 0L, 0L, 0L, 0L));
     }
@@ -143,14 +144,14 @@ public class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
 
-        final Resource res1 = svc.get(root).join();
+        final Resource res1 = svc.get(root).toCompletableFuture().join();
         assertAll("Check resource", checkResource(res1, root, LDP.BasicContainer, early));
         assertAll("Check resource stream", checkResourceStream(res1, 0L, 5L, 0L, 0L, 0L));
 
         final Dataset data = rdf.createDataset();
         svc.get(root).thenAccept(res ->
                 res.stream().filter(q -> !q.getGraphName().filter(Trellis.PreferServerManaged::equals).isPresent())
-                            .forEach(data::add)).join();
+                            .forEach(data::add)).toCompletableFuture().join();
         data.add(Trellis.PreferUserManaged, root, RDFS.label, rdf.createLiteral("Resource Label"));
         data.add(Trellis.PreferUserManaged, root, RDFS.seeAlso, rdf.createIRI("http://example.com"));
         data.add(Trellis.PreferUserManaged, root, LDP.inbox, rdf.createIRI("http://ldn.example.com/"));
@@ -159,9 +160,9 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertDoesNotThrow(() -> svc.replace(builder(root).interactionModel(LDP.BasicContainer).build(), data).join(),
-                "Unsuccessful replace operation!");
-        final Resource res2 = svc.get(root).join();
+        assertDoesNotThrow(() -> svc.replace(builder(root).interactionModel(LDP.BasicContainer).build(), data)
+                .toCompletableFuture().join(), "Unsuccessful replace operation!");
+        final Resource res2 = svc.get(root).toCompletableFuture().join();
         assertAll("Check resource", checkResource(res2, root, LDP.BasicContainer, later));
         assertAll("Check resource stream", checkResourceStream(res2, 4L, 5L, 1L, 0L, 0L));
     }
@@ -176,14 +177,15 @@ public class TriplestoreResourceServiceTest {
 
         assertThrows(ExecutionException.class, () ->
                 svc.create(builder(resource).interactionModel(LDP.RDFSource).container(root).build(),
-                    rdf.createDataset()).get(),
+                    rdf.createDataset()).toCompletableFuture().get(),
                 "No (create) exception with dropped backend connection!");
-        assertThrows(ExecutionException.class, () -> svc.add(resource, rdf.createDataset()).get(),
+        assertThrows(ExecutionException.class, () -> svc.add(resource, rdf.createDataset()).toCompletableFuture().get(),
                 "No (add) exception with dropped backend connection!");
         assertThrows(ExecutionException.class, () ->
-                svc.delete(builder(resource).interactionModel(LDP.RDFSource).container(root).build()).get(),
+                svc.delete(builder(resource).interactionModel(LDP.RDFSource).container(root).build())
+                .toCompletableFuture().get(),
                 "No (delete) exception with dropped backend connection!");
-        assertThrows(ExecutionException.class, () -> svc.touch(resource).get(),
+        assertThrows(ExecutionException.class, () -> svc.touch(resource).toCompletableFuture().get(),
                 "No (touch) exception with dropped backend connection!");
     }
 
@@ -203,12 +205,13 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-            svc.create(builder(resource).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-            svc.touch(root)).join(), "Unsuccessful create operation!");
+            svc.create(builder(resource).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                .toCompletableFuture(),
+            svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.RDFSource, 1L, 3L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.RDFSource, 1L, 3L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
     }
 
     @Test
@@ -224,12 +227,13 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-            svc.create(builder(resource).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-            svc.touch(root)).join(), "Unsuccessful create operation!");
+            svc.create(builder(resource).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                .toCompletableFuture(),
+            svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.RDFSource, 1L, 1L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.RDFSource, 1L, 1L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
     }
 
     @Test
@@ -248,14 +252,14 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() -> allOf(
               svc.create(builder(resource).interactionModel(LDP.NonRDFSource).container(root).binary(binary).build(),
-                  dataset),
-              svc.touch(root)).join(), "Unsuccessful create operation!");
+                  dataset).toCompletableFuture(),
+              svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 1L, 0L)),
+            svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 1L, 0L)).toCompletableFuture(),
             svc.get(resource).thenAccept(res ->
-                assertAll("Check binary", checkBinary(res, binaryIdentifier, "text/plain"))),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+                assertAll("Check binary", checkBinary(res, binaryIdentifier, "text/plain"))).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         final IRI resource3 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
         dataset.clear();
@@ -265,21 +269,21 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() ->
-                svc.create(builder(resource3).interactionModel(LDP.RDFSource).build(), dataset).join(),
-                "Unsuccessful create operation!");
+                svc.create(builder(resource3).interactionModel(LDP.RDFSource).build(), dataset).toCompletableFuture()
+                .join(), "Unsuccessful create operation!");
 
         allOf(
             svc.get(resource3).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource3, LDP.RDFSource, evenLater));
                 assertAll("Check resource stream", checkResourceStream(res, 1L, 0L, 1L, 0L, 0L));
                 assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary metadata!");
-            }),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(evenLater)),
+            }).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater)).toCompletableFuture(),
             svc.get(root).thenAccept(res ->
-                assertFalse(res.getBinaryMetadata().isPresent(), "unexpected binary metadata!")),
-            svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater))).join();
+                assertFalse(res.getBinaryMetadata().isPresent(), "unexpected binary metadata!")).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later, LDP.NonRDFSource, 1L, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater)).toCompletableFuture()).join();
     }
 
     @Test
@@ -300,12 +304,13 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-                svc.create(builder(resource).interactionModel(LDP.Container).container(root).build(), dataset),
-                svc.touch(root)).join(), "Unsuccessful create operation!");
+                svc.create(builder(resource).interactionModel(LDP.Container).container(root).build(), dataset)
+                    .toCompletableFuture(),
+                svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.Container, 3L, 3L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.Container, 3L, 3L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add a child resource
         dataset.clear();
@@ -315,14 +320,15 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-            svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-            svc.touch(resource)).join(), "Unsuccessful create operation!");
+            svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                .toCompletableFuture(),
+            svc.touch(resource).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater, 1L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 1L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(evenLater))).join();
+            svc.get(child).thenAccept(checkChild(evenLater, 1L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater)).toCompletableFuture()).join();
 
         // Now update that child resource
         dataset.clear();
@@ -334,14 +340,14 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() -> svc.replace(builder(child).interactionModel(LDP.RDFSource).container(resource).build(),
-                    dataset).join(),
+                    dataset).toCompletableFuture().join(),
                 "Unsuccessful create operation!");
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 3L, 2L)),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 1L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(evenLater2)),
-            svc.get(resource).thenAccept(checkPredates(evenLater2))).join();
+            svc.get(child).thenAccept(checkChild(evenLater2, 3L, 2L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 3L, 3L, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater2)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater2)).toCompletableFuture()).join();
     }
 
     @Test
@@ -361,13 +367,14 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-              svc.create(builder(resource).interactionModel(LDP.Container).container(root).build(), dataset1),
-              svc.add(resource, dataset2),
-              svc.touch(root)).join(), "Unsuccessful create operation!");
+              svc.create(builder(resource).interactionModel(LDP.Container).container(root).build(), dataset1)
+                .toCompletableFuture(),
+              svc.add(resource, dataset2).toCompletableFuture(),
+              svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 2L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 2L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
     }
 
     @Test
@@ -384,12 +391,13 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-              svc.create(builder(resource).interactionModel(LDP.Container).container(root).build(), dataset),
-              svc.touch(root)).join(), "Unsuccessful create operation!");
+              svc.create(builder(resource).interactionModel(LDP.Container).container(root).build(), dataset)
+                  .toCompletableFuture(),
+              svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 1L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.Container, 2L, 1L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add a child resource
         dataset.clear();
@@ -400,14 +408,15 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-              svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-              svc.touch(resource)).join(), "Unsuccessful create operation!");
+              svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                .toCompletableFuture(),
+              svc.touch(resource).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater, 2L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 2L, 1L, 1L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(evenLater))).join();
+            svc.get(child).thenAccept(checkChild(evenLater, 2L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater, LDP.Container, 2L, 1L, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater)).toCompletableFuture()).join();
 
         // Now delete the child resource
         final BlankNode bnode = rdf.createBlankNode();
@@ -419,14 +428,16 @@ public class TriplestoreResourceServiceTest {
         final Instant preDelete = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.delete(builder(child).interactionModel(LDP.RDFSource).container(resource).build()),
-                      svc.touch(resource)).join(), "Unsuccessful delete operation!");
+                allOf(svc.delete(builder(child).interactionModel(LDP.RDFSource).container(resource).build())
+                        .toCompletableFuture(),
+                      svc.touch(resource).toCompletableFuture()).join(), "Unsuccessful delete operation!");
 
         allOf(
-            svc.get(child).thenAccept(res -> assertEquals(DELETED_RESOURCE, res, "Incorrect resource object!")),
-            svc.get(resource).thenAccept(checkResource(preDelete, LDP.Container, 2L, 1L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(preDelete))).join();
+            svc.get(child).thenAccept(res -> assertEquals(DELETED_RESOURCE, res, "Incorrect resource object!"))
+                .toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(preDelete, LDP.Container, 2L, 1L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(preDelete)).toCompletableFuture()).join();
     }
 
     @Test
@@ -443,12 +454,13 @@ public class TriplestoreResourceServiceTest {
         final Instant later = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-              svc.create(builder(resource).interactionModel(LDP.BasicContainer).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+              svc.create(builder(resource).interactionModel(LDP.BasicContainer).container(root).build(), dataset)
+                .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.BasicContainer, 3L, 0L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.BasicContainer, 3L, 0L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add a child resource
         dataset.clear();
@@ -459,14 +471,16 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(resource)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(resource).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater, 2L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 0L, 1L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(evenLater))).join();
+            svc.get(child).thenAccept(checkChild(evenLater, 2L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 0L, 1L))
+                .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater)).toCompletableFuture()).join();
 
         // Now update the child resource
         dataset.clear();
@@ -477,15 +491,16 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() -> svc.replace(builder(child).interactionModel(LDP.RDFSource).container(resource).build(),
-                    dataset).join(),
+                    dataset).toCompletableFuture().join(),
                 "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 2L, 2L)),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 0L, 1L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater2)),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
+            svc.get(child).thenAccept(checkChild(evenLater2, 2L, 2L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 0L, 1L))
+                .toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater2)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater2)).toCompletableFuture()).join();
     }
 
     @Test
@@ -505,12 +520,12 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource).interactionModel(LDP.DirectContainer).membershipResource(resource)
-                        .memberRelation(DC.relation).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                        .memberRelation(DC.relation).container(root).build(), dataset).toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 0L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 0L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -519,11 +534,12 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(resource)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(resource).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater, 1L, 0L)),
+            svc.get(child).thenAccept(checkChild(evenLater, 1L, 0L)).toCompletableFuture(),
             svc.get(resource).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource, LDP.DirectContainer, evenLater));
                 assertAll("Check resource stream", checkResourceStream(res, 5L, 0L, 0L, 1L, 1L));
@@ -531,9 +547,9 @@ public class TriplestoreResourceServiceTest {
                     .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!");
                 assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(resource, DC.relation, child))), "Missing membership triple!");
-            }),
-            svc.get(root).thenAccept(checkRoot(later, 1L)),
-            svc.get(root).thenAccept(checkPredates(evenLater))).join();
+            }).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater)).toCompletableFuture()).join();
     }
 
     @Test
@@ -552,12 +568,12 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() -> allOf(
                 svc.create(builder(resource).interactionModel(LDP.DirectContainer).container(root)
-                    .memberRelation(DC.relation).membershipResource(members).build(), dataset),
-                svc.touch(root)).join(), "Unsuccessful create operation!");
+                    .memberRelation(DC.relation).membershipResource(members).build(), dataset).toCompletableFuture(),
+                svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 0L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 0L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add a membership resource
         dataset.clear();
@@ -566,16 +582,17 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater, 1L, 0L, 0L)),
+            svc.get(members).thenAccept(checkMember(evenLater, 1L, 0L, 0L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertFalse(res.getBinaryMetadata().isPresent(),
-                    "Unexpected binary metadata!")),
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 0L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater)),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
+                    "Unexpected binary metadata!")).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 0L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -584,19 +601,24 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(members).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
+                "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.DirectContainer, 4L, 0L, 1L)),
+            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.DirectContainer, 4L, 0L, 1L))
+                .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 0L, 1L)),
+                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!"))
+                    .toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 0L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
-                    .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!")),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
-            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
+                    .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!"))
+                    .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater2)).toCompletableFuture()).join();
     }
 
     @Test
@@ -616,12 +638,12 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource).interactionModel(LDP.DirectContainer).container(root)
-                        .membershipResource(members).memberRelation(DC.relation).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                    .membershipResource(members).memberRelation(DC.relation).build(), dataset).toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 1L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 1L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         dataset.clear();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
@@ -636,15 +658,15 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource2).interactionModel(LDP.DirectContainer).container(root)
-                        .membershipResource(members).memberRelation(DC.subject).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                        .membershipResource(members).memberRelation(DC.subject).build(), dataset).toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
             svc.get(resource2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, later2));
                 assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 0L));
-            }),
-            svc.get(root).thenAccept(checkRoot(later2, 2L))).join();
+            }).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later2, 2L)).toCompletableFuture()).join();
 
         // Now add a membership resource
         dataset.clear();
@@ -655,17 +677,18 @@ public class TriplestoreResourceServiceTest {
         final Instant later3 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(members).thenAccept(checkMember(later3, 2L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(later3)),
-            svc.get(resource2).thenAccept(checkPredates(later3)),
+            svc.get(members).thenAccept(checkMember(later3, 2L, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 4L, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(later3)).toCompletableFuture(),
+            svc.get(resource2).thenAccept(checkPredates(later3)).toCompletableFuture(),
             svc.get(resource2).thenAccept(res ->
-                assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 0L))),
-            svc.get(root).thenAccept(checkRoot(later3, 3L))).join();
+                assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 0L))).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later3, 3L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -675,19 +698,23 @@ public class TriplestoreResourceServiceTest {
         final Instant later4 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(resource), svc.touch(members)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(resource).toCompletableFuture(), svc.touch(members).toCompletableFuture()).join(),
+                "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(later4, 1L, 1L)),
-            svc.get(resource).thenAccept(checkResource(later2, LDP.DirectContainer, 4L, 1L, 1L)),
+            svc.get(child).thenAccept(checkChild(later4, 1L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later2, LDP.DirectContainer, 4L, 1L, 1L)).toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(later4, 2L, 1L, 1L)),
+                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!"))
+                    .toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(later4, 2L, 1L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
-                    .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!")),
-            svc.get(root).thenAccept(checkRoot(later3, 3L)),
-            svc.get(root).thenAccept(checkPredates(later4))).join();
+                    .anyMatch(isEqual(rdf.createTriple(members, DC.relation, child))), "Missing membership triple!"))
+                    .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later3, 3L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(later4)).toCompletableFuture()).join();
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
@@ -697,25 +724,28 @@ public class TriplestoreResourceServiceTest {
         final Instant later5 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset),
-                      svc.touch(members), svc.touch(resource2)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(members).toCompletableFuture(), svc.touch(resource2).toCompletableFuture()).join(),
+                "Unsuccessful create operation!");
 
         allOf(
             svc.get(child2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, child2, LDP.RDFSource, later5));
                 assertAll("Check resource stream", checkResourceStream(res, 1L, 0L, 1L, 0L, 0L));
-            }),
+            }).toCompletableFuture(),
             svc.get(resource2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, later5));
                 assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(isEqual(rdf.createTriple(resource2, LDP.contains, child2))), "Missing contains triple!");
-            }),
-            svc.get(members).thenAccept(checkMember(later5, 2L, 1L, 2L)),
+            }).toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(later5, 2L, 1L, 2L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
-                    .anyMatch(isEqual(rdf.createTriple(members, DC.subject, child2))), "Missing membership triple!")),
-            svc.get(root).thenAccept(checkRoot(later3, 3L)),
-            svc.get(root).thenAccept(checkPredates(later5))).join();
+                    .anyMatch(isEqual(rdf.createTriple(members, DC.subject, child2))), "Missing membership triple!"))
+                    .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later3, 3L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(later5)).toCompletableFuture()).join();
     }
 
     @Test
@@ -736,12 +766,13 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource).interactionModel(LDP.DirectContainer).container(root)
-                        .membershipResource(members).memberOfRelation(DC.relation).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                        .membershipResource(members).memberOfRelation(DC.relation).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 1L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 1L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-DC"));
@@ -753,15 +784,16 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource2).interactionModel(LDP.DirectContainer).container(root)
-                        .membershipResource(members).memberOfRelation(DC.subject).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                        .membershipResource(members).memberOfRelation(DC.subject).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
             svc.get(resource2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, evenLater));
                 assertAll("Check resource stream", checkResourceStream(res, 3L, 0L, 1L, 0L, 0L));
-            }),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
+            }).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture()).join();
 
         // Now add a membership resource
         dataset.clear();
@@ -771,17 +803,18 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() -> allOf(
-                    svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-                    svc.touch(root)).join(), "Unsuccessful membership resource create operation!");
+                svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                    .toCompletableFuture(),
+                svc.touch(root).toCompletableFuture()).join(), "Unsuccessful membership resource create operation!");
 
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater2)),
-            svc.get(resource2).thenAccept(checkPredates(evenLater2)),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later, LDP.DirectContainer, 5L, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater2)).toCompletableFuture(),
+            svc.get(resource2).thenAccept(checkPredates(evenLater2)).toCompletableFuture(),
             svc.get(resource2).thenAccept(res ->
-                assertAll("Check resource stream", checkResourceStream(res, 3L, 0L, 1L, 0L, 0L))),
-            svc.get(root).thenAccept(checkRoot(evenLater2, 3L))).join();
+                assertAll("Check resource stream", checkResourceStream(res, 3L, 0L, 1L, 0L, 0L))).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater2, 3L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-dc
         dataset.clear();
@@ -791,21 +824,24 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater3 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(resource)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(resource).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
             svc.get(child).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, child, LDP.RDFSource, evenLater3));
                 assertAll("Check resource stream", checkResourceStream(res, 1L, 0L, 1L, 1L, 0L));
-            }),
-            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.DirectContainer, 5L, 1L, 1L)),
+            }).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.DirectContainer, 5L, 1L, 1L))
+                .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)),
-            svc.get(members).thenAccept(checkPredates(evenLater3)),
-            svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(checkPredates(evenLater3))).join();
+                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!"))
+                    .toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)).toCompletableFuture(),
+            svc.get(members).thenAccept(checkPredates(evenLater3)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater2, 3L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater3)).toCompletableFuture()).join();
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
@@ -815,24 +851,25 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater4 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset),
-                      svc.touch(resource2)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(resource2).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
             svc.get(child2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, child2, LDP.RDFSource, evenLater4));
                 assertAll("Check resource stream", checkResourceStream(res, 1L, 0L, 1L, 1L, 0L));
-            }),
+            }).toCompletableFuture(),
             svc.get(resource2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, evenLater4));
                 assertAll("Check resource stream", checkResourceStream(res, 3L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment)
                     .anyMatch(isEqual(rdf.createTriple(resource2, LDP.contains, child2))), "Missing contains triple!");
-            }),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)),
-            svc.get(members).thenAccept(checkPredates(evenLater4)),
-            svc.get(root).thenAccept(checkRoot(evenLater2, 3L)),
-            svc.get(root).thenAccept(checkPredates(evenLater4))).join();
+            }).toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)).toCompletableFuture(),
+            svc.get(members).thenAccept(checkPredates(evenLater4)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater2, 3L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater4)).toCompletableFuture()).join();
     }
 
     @Test
@@ -860,12 +897,13 @@ public class TriplestoreResourceServiceTest {
         assertDoesNotThrow(() -> allOf(
             svc.create(builder(resource).interactionModel(LDP.IndirectContainer).container(root)
                 .membershipResource(members).memberRelation(RDFS.label)
-                .insertedContentRelation(SKOS.prefLabel).build(), dataset),
-            svc.touch(root)).join(), "Unsuccessful create operation!");
+                .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
+            svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 4L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 4L, 0L))
+                .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add a membership resource
         final BlankNode bnode1 = rdf.createBlankNode();
@@ -879,14 +917,15 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater, 1L, 4L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 4L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater)),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
+            svc.get(members).thenAccept(checkMember(evenLater, 1L, 4L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 4L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-dc
         final BlankNode bnode2 = rdf.createBlankNode();
@@ -900,19 +939,24 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(members).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
+                "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 7L, 4L, 1L)),
+            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 3L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 7L, 4L, 1L))
+                    .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 4L, 1L)),
+                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!"))
+                    .toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 4L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
-                    .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing member triple!")),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
-            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
+                    .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing member triple!"))
+                    .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater2)).toCompletableFuture()).join();
     }
 
     @Test
@@ -935,12 +979,12 @@ public class TriplestoreResourceServiceTest {
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource).interactionModel(LDP.IndirectContainer).container(root)
                         .membershipResource(members).memberRelation(RDFS.label)
-                        .insertedContentRelation(LDP.MemberSubject).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                        .insertedContentRelation(LDP.MemberSubject).build(), dataset).toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 1L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 1L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add a membership resource
         final BlankNode bnode = rdf.createBlankNode();
@@ -952,14 +996,15 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater)),
-            svc.get(members).thenAccept(checkMember(evenLater, 1L, 2L, 0L)),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater)).toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater, 1L, 2L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-dc
         final Literal label = rdf.createLiteral("label1");
@@ -970,19 +1015,24 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(members).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
+                "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 5L, 1L, 1L)),
+            svc.get(child).thenAccept(checkChild(evenLater2, 1L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 5L, 1L, 1L))
+                .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 2L, 1L)),
+                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!"))
+                    .toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 2L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
-                    .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, child))), "Missing membership triple!")),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
-            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
+                    .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, child))), "Missing membership triple!"))
+                    .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater2)).toCompletableFuture()).join();
     }
 
     @Test
@@ -1005,12 +1055,12 @@ public class TriplestoreResourceServiceTest {
         assertDoesNotThrow(() -> allOf(
                 svc.create(builder(resource).interactionModel(LDP.IndirectContainer).container(root)
                     .membershipResource(members).memberRelation(RDFS.label)
-                    .insertedContentRelation(SKOS.prefLabel).build(), dataset),
-                svc.touch(root)).join(), "Unsuccessful create operation!");
+                    .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
+                svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 2L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 2L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         // Now add a membership resource
         dataset.clear();
@@ -1023,14 +1073,15 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 2L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater)),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
+            svc.get(members).thenAccept(checkMember(evenLater, 1L, 3L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 2L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-dc
         final Literal label1 = rdf.createLiteral("Label", "en");
@@ -1043,23 +1094,27 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(members).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
+                "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 2L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 2L, 1L)),
+            svc.get(child).thenAccept(checkChild(evenLater2, 2L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 2L, 1L))
+                    .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 2L)),
+                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!"))
+                    .toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 2L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> {
                 assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label2))), "Missing member triple (1)!");
                 assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label1))), "Missing member triple (2)!");
-            }),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L)),
-            svc.get(root).thenAccept(checkPredates(evenLater2))).join();
+            }).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater2)).toCompletableFuture()).join();
     }
 
     @Test
@@ -1084,12 +1139,12 @@ public class TriplestoreResourceServiceTest {
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource).interactionModel(LDP.IndirectContainer).container(root)
                         .membershipResource(members).memberRelation(RDFS.label)
-                        .insertedContentRelation(SKOS.prefLabel).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                        .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 3L, 0L)),
-            svc.get(root).thenAccept(checkRoot(later, 1L))).join();
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 3L, 0L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-IC"));
@@ -1103,15 +1158,15 @@ public class TriplestoreResourceServiceTest {
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(resource2).interactionModel(LDP.IndirectContainer).container(root)
                         .membershipResource(members).memberRelation(RDFS.label)
-                        .insertedContentRelation(SKOS.prefLabel).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful create operation!");
+                        .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
+                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
         allOf(
             svc.get(resource2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource2, LDP.IndirectContainer, evenLater));
                 assertAll("Check resource stream", checkResourceStream(res, 4L, 0L, 1L, 0L, 0L));
-            }),
-            svc.get(root).thenAccept(checkRoot(evenLater, 2L))).join();
+            }).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 2L)).toCompletableFuture()).join();
 
         // Now add a membership resource
         dataset.clear();
@@ -1121,17 +1176,18 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater2 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset),
-                      svc.touch(root)).join(), "Unsuccessful member resource creation operation!");
+            allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
+                    .toCompletableFuture(),
+                  svc.touch(root).toCompletableFuture()).join(), "Unsuccessful member resource creation operation!");
 
         allOf(
-            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)),
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 3L, 0L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater2)),
-            svc.get(resource2).thenAccept(checkPredates(evenLater2)),
+            svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 3L, 0L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater2)).toCompletableFuture(),
+            svc.get(resource2).thenAccept(checkPredates(evenLater2)).toCompletableFuture(),
             svc.get(resource2).thenAccept(res ->
-                assertAll("Check resource stream", checkResourceStream(res, 4L, 0L, 1L, 0L, 0L))),
-            svc.get(root).thenAccept(checkRoot(evenLater, 3L))).join();
+                assertAll("Check resource stream", checkResourceStream(res, 4L, 0L, 1L, 0L, 0L))).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 3L)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-ic
         final Literal label = rdf.createLiteral("first label");
@@ -1142,19 +1198,24 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater3 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset),
-                      svc.touch(members), svc.touch(resource)).join(), "Unsuccessful child creation operation!");
+                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(members).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
+                "Unsuccessful child creation operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater3, 1L, 1L)),
-            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 3L, 1L)),
+            svc.get(child).thenAccept(checkChild(evenLater3, 1L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 3L, 1L))
+                    .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!")),
-            svc.get(members).thenAccept(checkMember(evenLater3, 1L, 1L, 1L)),
+                    .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing contains triple!"))
+                    .toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater3, 1L, 1L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
-                    .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing membership triple!")),
-            svc.get(root).thenAccept(checkRoot(evenLater, 3L)),
-            svc.get(root).thenAccept(checkPredates(evenLater3))).join();
+                    .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing membership triple!"))
+                    .toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 3L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater3)).toCompletableFuture()).join();
 
         // Now add the child resources to the ldp-ic
         final Literal label2 = rdf.createLiteral("second label");
@@ -1168,33 +1229,37 @@ public class TriplestoreResourceServiceTest {
         final Instant evenLater4 = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset),
-                      svc.touch(members), svc.touch(resource2)).join(), "Unsuccessful create operation!");
+                allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset)
+                        .toCompletableFuture(),
+                      svc.touch(members).toCompletableFuture(), svc.touch(resource2).toCompletableFuture()).join(),
+                "Unsuccessful create operation!");
 
         allOf(
             svc.get(child2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, child2, LDP.RDFSource, evenLater4));
                 assertAll("Check resource stream", checkResourceStream(res, 1L, 0L, 3L, 0L, 0L));
-            }),
-            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 3L, 1L)),
-            svc.get(resource).thenAccept(checkPredates(evenLater4)),
+            }).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 3L, 1L))
+                .toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(evenLater4)).toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing containment triple!")),
+                .anyMatch(isEqual(rdf.createTriple(resource, LDP.contains, child))), "Missing containment triple!"))
+                .toCompletableFuture(),
             svc.get(resource2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource2, LDP.IndirectContainer, evenLater4));
                 assertAll("Check resource stream", checkResourceStream(res, 4L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment).anyMatch(isEqual(rdf.createTriple(resource2, LDP.contains,
                                     child2))), "Missing containment triple!");
-            }),
-            svc.get(members).thenAccept(checkMember(evenLater4, 1L, 1L, 2L)),
+            }).toCompletableFuture(),
+            svc.get(members).thenAccept(checkMember(evenLater4, 1L, 1L, 2L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> {
                 assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label))), "Missing member triple (1)!");
                 assertTrue(res.stream(LDP.PreferMembership)
                     .anyMatch(isEqual(rdf.createTriple(members, RDFS.label, label2))), "Missing member triple (2)!");
-            }),
-            svc.get(root).thenAccept(checkRoot(evenLater, 3L)),
-            svc.get(root).thenAccept(checkPredates(evenLater4))).join();
+            }).toCompletableFuture(),
+            svc.get(root).thenAccept(checkRoot(evenLater, 3L)).toCompletableFuture(),
+            svc.get(root).thenAccept(checkPredates(evenLater4)).toCompletableFuture()).join();
     }
 
     @Test

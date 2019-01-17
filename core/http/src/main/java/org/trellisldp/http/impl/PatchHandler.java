@@ -48,7 +48,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -157,7 +157,7 @@ public class PatchHandler extends MutatingLdpHandler {
      * @param builder the Trellis response builder
      * @return a response builder promise
      */
-    public CompletableFuture<ResponseBuilder> updateResource(final ResponseBuilder builder) {
+    public CompletionStage<ResponseBuilder> updateResource(final ResponseBuilder builder) {
         LOGGER.debug("Updating {} via PATCH", getIdentifier());
 
         // Add the LDP link types
@@ -210,7 +210,7 @@ public class PatchHandler extends MutatingLdpHandler {
         return ldpResourceTypes(ldpType).map(IRI::getIRIString);
     }
 
-    private CompletableFuture<ResponseBuilder> assembleResponse(final TrellisDataset mutable,
+    private CompletionStage<ResponseBuilder> assembleResponse(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder) {
 
         // Put triples in buffer, short-circuit on exception

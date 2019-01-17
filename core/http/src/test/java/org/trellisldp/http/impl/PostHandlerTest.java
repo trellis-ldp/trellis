@@ -64,7 +64,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
@@ -89,7 +90,8 @@ public class PostHandlerTest extends BaseTestHandler {
     @Test
     public void testDefaultType1() throws IOException {
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
@@ -101,7 +103,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, DELETED_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, DELETED_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
@@ -113,7 +116,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
@@ -126,7 +130,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
@@ -138,7 +143,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
@@ -152,8 +158,8 @@ public class PostHandlerTest extends BaseTestHandler {
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = assertThrows(BadRequestException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join(),
-                "No exception thrown when the IXN model isn't supported!").getResponse();
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join(), "No exception thrown when the IXN model isn't supported!").getResponse();
 
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
         assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -172,7 +178,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/simpleTriple.ttl", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + path), res.getLocation(), "Incorrect Location header!");
@@ -188,7 +195,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "new-resource"), res.getLocation(), "Incorrect Location header!");
@@ -202,7 +210,8 @@ public class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "resource-with-entity", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join().build();
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
 
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "resource-with-entity"), res.getLocation(), "Incorrect Location hearder!");
@@ -221,7 +230,7 @@ public class PostHandlerTest extends BaseTestHandler {
                 .thenApply(ResponseBuilder::build)
                 .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
                     .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
-                    .getResponse()).join();
+                    .getResponse()).toCompletableFuture().join();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
     }
 
@@ -258,7 +267,8 @@ public class PostHandlerTest extends BaseTestHandler {
         final PostHandler handler = new PostHandler(mockTrellisRequest, root, "bad-resource", mockInputStream,
                 mockBundler, null);
         final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).join()).getResponse();
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).toCompletableFuture().join())
+            .getResponse();
         assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
     }
 
