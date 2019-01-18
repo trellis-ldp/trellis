@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -37,7 +37,7 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param stream the content
      * @return the new completion stage
      */
-    CompletableFuture<Void> setContent(BinaryMetadata metadata, InputStream stream);
+    CompletionStage<Void> setContent(BinaryMetadata metadata, InputStream stream);
 
     /**
      * Set the content for a binary object using a digest algorithm.
@@ -48,7 +48,7 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param algorithm the digest algorithm
      * @return the new completion stage containing the server-computed digest.
      */
-    default CompletableFuture<MessageDigest> setContent(final BinaryMetadata metadata, final InputStream stream,
+    default CompletionStage<MessageDigest> setContent(final BinaryMetadata metadata, final InputStream stream,
                     final MessageDigest algorithm) {
         final DigestInputStream input = new DigestInputStream(stream, algorithm);
         return setContent(metadata, input).thenApply(future -> input.getMessageDigest());
@@ -60,10 +60,10 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param identifier the binary object identifier
      * @return a new completion stage that, when the stage completes normally, indicates that the binary data
      *         were successfully deleted from the corresponding persistence layer. In the case of an unsuccessful
-     *         operation, the {@link CompletableFuture} will complete exceptionally and can be handled with
-     *         {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
+     *         operation, the {@link CompletionStage} will complete exceptionally and can be handled with
+     *         {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> purgeContent(IRI identifier);
+    CompletionStage<Void> purgeContent(IRI identifier);
 
     /**
      * Calculate the digest for a binary object.
@@ -74,7 +74,7 @@ public interface BinaryService extends RetrievalService<Binary> {
      * @param algorithm the algorithm
      * @return the new completion stage containing a computed digest for the binary resource
      */
-    CompletableFuture<MessageDigest> calculateDigest(IRI identifier, MessageDigest algorithm);
+    CompletionStage<MessageDigest> calculateDigest(IRI identifier, MessageDigest algorithm);
 
     /**
      * Get a list of supported algorithms.

@@ -91,7 +91,7 @@ public class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
     }
@@ -106,7 +106,7 @@ public class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
 
@@ -122,7 +122,7 @@ public class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
@@ -144,7 +144,7 @@ public class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .join().build();
+            .toCompletableFuture().join().build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
@@ -192,8 +192,8 @@ public class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
         final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource)).join(),
-                "No exception when the update triggers an error!").getResponse();
+                patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join(), "No exception when the update triggers an error!").getResponse();
         assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
     }
 }

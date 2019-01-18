@@ -18,7 +18,7 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
@@ -112,7 +112,7 @@ public interface ResourceService extends MutableDataService<Resource>, Immutable
      * @return a new completion stage that, when the stage completes normally, indicates that the
      *         identified resource has been updated with a new modification date.
      */
-    CompletableFuture<Void> touch(IRI identifier);
+    CompletionStage<Void> touch(IRI identifier);
 
     /**
      * Return a collection of interaction models supported by this Resource Service.

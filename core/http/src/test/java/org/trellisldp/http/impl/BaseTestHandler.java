@@ -57,8 +57,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -188,9 +188,9 @@ abstract class BaseTestHandler {
         return () -> assertEquals(expectation, actual.contains(type), "Expecting " + type + " to be "
                 + (expectation ? "present" : "absent"));
     }
-    protected void unwrapAsyncError(final CompletableFuture async) {
+    protected void unwrapAsyncError(final CompletionStage async) {
         try {
-            async.join();
+            async.toCompletableFuture().join();
         } catch (final CompletionException ex) {
             if (ex.getCause() instanceof WebApplicationException) {
                 throw (WebApplicationException) ex.getCause();
@@ -207,7 +207,7 @@ abstract class BaseTestHandler {
         return hasLink(iri, TYPE);
     }
 
-    protected static CompletableFuture<Void> asyncException() {
+    protected static CompletionStage<Void> asyncException() {
         return runAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
         });

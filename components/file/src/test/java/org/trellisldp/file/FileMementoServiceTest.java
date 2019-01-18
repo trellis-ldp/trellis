@@ -73,17 +73,18 @@ public class FileMementoServiceTest {
 
             final MementoService svc = new FileMementoService();
 
-            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(2L, svc.mementos(identifier).toCompletableFuture().join().size(),
+                    "Incorrect count of Mementos!");
             svc.get(identifier, now()).thenAccept(res -> assertEquals(time2, res.getModified(), "Incorrect date!"))
-                .join();
+                .toCompletableFuture().join();
             svc.get(identifier, time).thenAccept(res -> assertEquals(time, res.getModified(), "Incorrect date!"))
-                .join();
-            assertEquals(MISSING_RESOURCE, svc.get(identifier, parse("2015-02-16T10:00:00Z")).join(),
-                    "Wrong response for a missing resource!");
+                .toCompletableFuture().join();
+            assertEquals(MISSING_RESOURCE, svc.get(identifier, parse("2015-02-16T10:00:00Z"))
+                .toCompletableFuture().join(), "Wrong response for a missing resource!");
             svc.get(identifier, time2).thenAccept(res -> assertEquals(time2, res.getModified(), "Incorrect date!"))
-                .join();
+                .toCompletableFuture().join();
             svc.get(identifier, MAX).thenAccept(res -> assertEquals(time2, res.getModified(), "Incorrect date!"))
-                .join();
+                .toCompletableFuture().join();
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
@@ -115,9 +116,9 @@ public class FileMementoServiceTest {
         when(mockResource.getMembershipResource()).thenReturn(empty());
         when(mockResource.getInsertedContentRelation()).thenReturn(empty());
 
-        svc.put(mockResource).join();
+        svc.put(mockResource).toCompletableFuture().join();
 
-        final Resource res = svc.get(identifier, time).join();
+        final Resource res = svc.get(identifier, time).toCompletableFuture().join();
         assertEquals(identifier, res.getIdentifier());
         assertEquals(time, res.getModified());
         assertEquals(LDP.NonRDFSource, res.getInteractionModel());
@@ -158,9 +159,9 @@ public class FileMementoServiceTest {
         when(mockResource.getMembershipResource()).thenReturn(of(member));
         when(mockResource.getInsertedContentRelation()).thenReturn(of(FOAF.primaryTopic));
 
-        svc.put(mockResource).join();
+        svc.put(mockResource).toCompletableFuture().join();
 
-        final Resource res = svc.get(identifier, time).join();
+        final Resource res = svc.get(identifier, time).toCompletableFuture().join();
         assertEquals(identifier, res.getIdentifier());
         assertEquals(time, res.getModified());
         assertEquals(LDP.IndirectContainer, res.getInteractionModel());
@@ -185,8 +186,10 @@ public class FileMementoServiceTest {
 
             assertTrue(dir.exists(), "Resource directory doesn't exist!");
             assertTrue(dir.isDirectory(), "Invalid resource directory!");
-            assertTrue(svc.mementos(identifier).join().isEmpty(), "Resource directory isn't empty!");
-            assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join(), "Wrong response for missing resource!");
+            assertTrue(svc.mementos(identifier).toCompletableFuture().join().isEmpty(),
+                    "Resource directory isn't empty!");
+            assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).toCompletableFuture().join(),
+                    "Wrong response for missing resource!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
@@ -204,8 +207,10 @@ public class FileMementoServiceTest {
 
             assertTrue(dir.exists(), "Resource directory doesn't exist!");
             assertTrue(dir.isDirectory(), "Invalid resource directory!");
-            assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).join(), "Wrong response for missing resource!");
-            assertTrue(svc.mementos(identifier).join().isEmpty(), "Memento list isn't empty!");
+            assertEquals(MISSING_RESOURCE, svc.get(identifier, now()).toCompletableFuture().join(),
+                    "Wrong response for missing resource!");
+            assertTrue(svc.mementos(identifier).toCompletableFuture().join().isEmpty(),
+                    "Memento list isn't empty!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }
@@ -225,15 +230,18 @@ public class FileMementoServiceTest {
 
             final FileMementoService svc = new FileMementoService();
 
-            assertTrue(svc.mementos(identifier).join().isEmpty(), "Memento list isn't empty!");
+            assertTrue(svc.mementos(identifier).toCompletableFuture().join().isEmpty(),
+                    "Memento list isn't empty!");
             final File file = new File(getClass().getResource("/resource.nq").getFile());
             assertTrue(file.exists(), "Memento resource doesn't exist!");
             final Resource res = new FileResource(identifier, file);
-            svc.put(res).join();
+            svc.put(res).toCompletableFuture().join();
 
-            assertEquals(1L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
-            svc.put(res, res.getModified().plusSeconds(10)).join();
-            assertEquals(2L, svc.mementos(identifier).join().size(), "Incorrect count of Mementos!");
+            assertEquals(1L, svc.mementos(identifier).toCompletableFuture().join().size(),
+                    "Incorrect count of Mementos!");
+            svc.put(res, res.getModified().plusSeconds(10)).toCompletableFuture().join();
+            assertEquals(2L, svc.mementos(identifier).toCompletableFuture().join().size(),
+                    "Incorrect count of Mementos!");
         } finally {
             System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_BASE_PATH);
         }

@@ -36,7 +36,7 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -130,7 +130,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param builder the Trellis response builder
      * @return a response builder promise
      */
-    public CompletableFuture<ResponseBuilder> updateMemento(final ResponseBuilder builder) {
+    public CompletionStage<ResponseBuilder> updateMemento(final ResponseBuilder builder) {
         return getServices().getMementoService().put(getServices().getResourceService(), getInternalId())
             .exceptionally(ex -> {
                     LOGGER.warn("Unable to store memento for {}: {}", getInternalId(), ex.getMessage());
@@ -184,7 +184,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param resourceType the resource type
      * @return the next completion stage
      */
-    protected CompletableFuture<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
+    protected CompletionStage<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
         // Always notify about updates for the resource in question
         getServices().getEventService().emit(new SimpleEvent(getUrl(identifier), getSession().getAgent(),
                     asList(PROV.Activity, activityType), asList(resourceType)));
@@ -203,7 +203,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 // If the parent's membership resource is different than the parent itself,
                 // notify about that membership resource, too (if it exists)
                 if (!Objects.equals(id, getParentMembershipResource())) {
-                    return allOf(getServices().getResourceService().touch(id), emitMembershipUpdateEvent());
+                    return allOf(getServices().getResourceService().touch(id).toCompletableFuture(),
+                            emitMembershipUpdateEvent().toCompletableFuture());
                 }
                 return getServices().getResourceService().touch(id);
             }
@@ -237,12 +238,12 @@ class MutatingLdpHandler extends BaseLdpHandler {
             });
     }
 
-    protected CompletableFuture<Void> persistContent(final BinaryMetadata metadata) {
+    protected CompletionStage<Void> persistContent(final BinaryMetadata metadata) {
         return getServices().getBinaryService().setContent(metadata, entity)
                         .whenComplete(HttpUtils.closeInputStreamAsync(entity));
     }
 
-    protected CompletableFuture<Void> persistContent(final BinaryMetadata metadata, final Digest digest) {
+    protected CompletionStage<Void> persistContent(final BinaryMetadata metadata, final Digest digest) {
         if (isNull(digest)) {
             return persistContent(metadata);
         }
@@ -283,7 +284,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
         return builder;
     }
 
-    protected CompletableFuture<Void> handleResourceReplacement(final TrellisDataset mutable,
+    protected CompletionStage<Void> handleResourceReplacement(final TrellisDataset mutable,
             final TrellisDataset immutable) {
         final Metadata.Builder metadata = metadataBuilder(getResource().getIdentifier(),
                 getResource().getInteractionModel(), mutable);
@@ -291,8 +292,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
         getResource().getBinaryMetadata().ifPresent(metadata::binary);
         // update the resource
         return allOf(
-            getServices().getResourceService().replace(metadata.build(), mutable.asDataset()),
-            getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
+            getServices().getResourceService().replace(metadata.build(), mutable.asDataset()).toCompletableFuture(),
+            getServices().getResourceService().add(getResource().getIdentifier(),
+                immutable.asDataset()).toCompletableFuture());
     }
 
     protected Stream<Quad> getAuditUpdateData() {
@@ -303,17 +305,17 @@ class MutatingLdpHandler extends BaseLdpHandler {
     /*
      * Emit update events for the membership resource, if it exists.
      */
-    private CompletableFuture<Void> emitMembershipUpdateEvent() {
+    private CompletionStage<Void> emitMembershipUpdateEvent() {
         final IRI membershipResource = getParentMembershipResource();
         if (nonNull(membershipResource)) {
-            return allOf(getServices().getResourceService().touch(membershipResource),
+            return allOf(getServices().getResourceService().touch(membershipResource).toCompletableFuture(),
                 getServices().getResourceService().get(membershipResource).thenAccept(res -> {
                     if (nonNull(res.getIdentifier())) {
                         getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
                                     getSession().getAgent(), asList(PROV.Activity, AS.Update),
                                     asList(res.getInteractionModel())));
                     }
-                }));
+                }).toCompletableFuture());
         }
         return completedFuture(null);
     }

@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
@@ -51,7 +51,7 @@ public class ResourceServiceTest {
 
     private static class MyRetrievalService implements RetrievalService<Resource> {
         @Override
-        public CompletableFuture<Resource> get(final IRI id) {
+        public CompletionStage<Resource> get(final IRI id) {
             return completedFuture(mockResource);
         }
     }
@@ -71,12 +71,13 @@ public class ResourceServiceTest {
     @Test
     public void testRetrievalService2() {
         final RetrievalService<Resource> svc = new MyRetrievalService();
-        assertEquals(mockResource, svc.get(existing).join(), "Incorrect resource returned by retrieval service!");
+        assertEquals(mockResource, svc.get(existing).toCompletableFuture().join(),
+                "Incorrect resource returned by retrieval service!");
     }
 
     @Test
     public void testRetrievalService() {
-        assertEquals(mockResource, mockRetrievalService.get(existing).join(),
+        assertEquals(mockResource, mockRetrievalService.get(existing).toCompletableFuture().join(),
                 "Incorrect resource found by retrieval service!");
     }
 
@@ -88,7 +89,7 @@ public class ResourceServiceTest {
 
         when(mockResourceService.replace(eq(metadata), eq(dataset))).thenReturn(completedFuture(null));
 
-        assertDoesNotThrow(() -> mockResourceService.create(metadata, dataset).join());
+        assertDoesNotThrow(() -> mockResourceService.create(metadata, dataset).toCompletableFuture().join());
         verify(mockResourceService).replace(eq(metadata), eq(dataset));
     }
 

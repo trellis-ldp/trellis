@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
@@ -71,11 +71,11 @@ public class JoiningResourceServiceTest {
         protected final Map<IRI, Resource> resources = synchronizedMap(new HashMap<>());
 
         @Override
-        public CompletableFuture<Resource> get(final IRI identifier) {
+        public CompletionStage<Resource> get(final IRI identifier) {
             return completedFuture(resources.getOrDefault(identifier, MISSING_RESOURCE));
         }
 
-        protected CompletableFuture<Void> isntBadId(final IRI identifier) {
+        protected CompletionStage<Void> isntBadId(final IRI identifier) {
             return runAsync(() -> {
                 if (identifier.equals(badId)) {
                     throw new RuntimeTrellisException("Expected Exception");
@@ -89,7 +89,7 @@ public class JoiningResourceServiceTest {
                     implements ImmutableDataService<Resource> {
 
         @Override
-        public CompletableFuture<Void> add(final IRI identifier, final Dataset dataset) {
+        public CompletionStage<Void> add(final IRI identifier, final Dataset dataset) {
             resources.compute(identifier, (id, old) -> {
                 final TestResource newRes = new TestResource(id, dataset);
                 return old == null ? newRes : new RetrievableResource(old, newRes);
@@ -102,19 +102,19 @@ public class JoiningResourceServiceTest {
                     implements MutableDataService<Resource> {
 
         @Override
-        public CompletableFuture<Void> create(final Metadata metadata, final Dataset dataset) {
+        public CompletionStage<Void> create(final Metadata metadata, final Dataset dataset) {
             resources.put(metadata.getIdentifier(), new TestResource(metadata.getIdentifier(), dataset));
             return isntBadId(metadata.getIdentifier());
         }
 
         @Override
-        public CompletableFuture<Void> replace(final Metadata metadata, final Dataset dataset) {
+        public CompletionStage<Void> replace(final Metadata metadata, final Dataset dataset) {
             resources.replace(metadata.getIdentifier(), new TestResource(metadata.getIdentifier(), dataset));
             return isntBadId(metadata.getIdentifier());
         }
 
         @Override
-        public CompletableFuture<Void> delete(final Metadata metadata) {
+        public CompletionStage<Void> delete(final Metadata metadata) {
             resources.remove(metadata.getIdentifier());
             return isntBadId(metadata.getIdentifier());
         }
@@ -138,7 +138,7 @@ public class JoiningResourceServiceTest {
         }
 
         @Override
-        public CompletableFuture<Void> touch(final IRI identifier) {
+        public CompletionStage<Void> touch(final IRI identifier) {
             return completedFuture(null);
         }
     }
@@ -198,8 +198,8 @@ public class JoiningResourceServiceTest {
         final Quad testQuad = createQuad(testResourceId1, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(testResourceId1, testQuad);
         assertNull(testable.create(Metadata.builder(testResourceId1).interactionModel(LDP.RDFSource).build(),
-                    testResource.dataset()).join(), "Couldn't create a resource!");
-        Resource retrieved = testable.get(testResourceId1).join();
+                    testResource.dataset()).toCompletableFuture().join(), "Couldn't create a resource!");
+        Resource retrieved = testable.get(testResourceId1).toCompletableFuture().join();
         assertEquals(testResource.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
@@ -207,15 +207,16 @@ public class JoiningResourceServiceTest {
         final Quad testQuad2 = createQuad(testResourceId1, badId, testResourceId1, badId);
         final Resource testResource2 = new TestResource(testResourceId1, testQuad2);
         assertNull(testable.replace(Metadata.builder(testResource2).interactionModel(LDP.RDFSource).build(),
-                    testResource2.dataset()).join(), "Couldn't replace resource!");
-        retrieved = testable.get(testResourceId1).join();
+                    testResource2.dataset()).toCompletableFuture().join(), "Couldn't replace resource!");
+        retrieved = testable.get(testResourceId1).toCompletableFuture().join();
         assertEquals(testResource2.getIdentifier(), retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         assertEquals(testResource2.stream().findFirst().get(), retrieved.stream().findFirst().get(),
                         "Resource was retrieved with wrong data!");
 
-        assertNull(testable.delete(Metadata.builder(testResourceId1).interactionModel(LDP.RDFSource).build()).join(),
-                        "Couldn't delete resource!");
-        assertEquals(MISSING_RESOURCE, testable.get(testResourceId1).join(), "Found resource after deleting it!");
+        assertNull(testable.delete(Metadata.builder(testResourceId1).interactionModel(LDP.RDFSource).build())
+                .toCompletableFuture().join(), "Couldn't delete resource!");
+        assertEquals(MISSING_RESOURCE, testable.get(testResourceId1).toCompletableFuture().join(),
+                        "Found resource after deleting it!");
     }
 
     @Test
@@ -225,13 +226,13 @@ public class JoiningResourceServiceTest {
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testMutableResource = new TestResource(testResourceId2, testMutableQuad);
-        assertNull(testable.create(Metadata.builder(testMutableResource).build(), testMutableResource.dataset()).join(),
-                    "Couldn't create a resource!");
+        assertNull(testable.create(Metadata.builder(testMutableResource).build(), testMutableResource.dataset())
+                .toCompletableFuture().join(), "Couldn't create a resource!");
         final Resource testImmutableResource = new TestResource(testResourceId2, testImmutableQuad);
-        assertNull(testable.add(testResourceId2, testImmutableResource.dataset()).join(),
+        assertNull(testable.add(testResourceId2, testImmutableResource.dataset()).toCompletableFuture().join(),
                         "Couldn't create an immutable resource!");
 
-        final Resource retrieved = testable.get(testResourceId2).join();
+        final Resource retrieved = testable.get(testResourceId2).toCompletableFuture().join();
         assertEquals(testMutableResource.getIdentifier(), retrieved.getIdentifier(),
                         "Resource was retrieved with wrong ID!");
         final Dataset quads = retrieved.dataset();
@@ -247,8 +248,8 @@ public class JoiningResourceServiceTest {
         final Quad testQuad = createQuad(badId, testResourceId1, testResourceId1, badId);
         final Resource testResource = new TestResource(badId, testQuad);
         assertThrows(CompletionException.class, () ->
-                testable.create(Metadata.builder(testResource).build(), testResource.dataset()).join(),
-                "Could create a resource when underlying services should reject it!");
+                testable.create(Metadata.builder(testResource).build(), testResource.dataset()).toCompletableFuture()
+                .join(), "Could create a resource when underlying services should reject it!");
     }
 
     @Test
@@ -258,13 +259,13 @@ public class JoiningResourceServiceTest {
 
         // store some data in mutable and immutable sides under the same resource ID
         final Resource testFirstResource = new TestResource(testResourceId3, testFirstQuad);
-        assertNull(testable.add(testResourceId3, testFirstResource.dataset()).join(),
+        assertNull(testable.add(testResourceId3, testFirstResource.dataset()).toCompletableFuture().join(),
                         "Couldn't create an immutable resource!");
         final Resource testSecondResource = new TestResource(testResourceId3, testSecondQuad);
-        assertNull(testable.add(testResourceId3, testSecondResource.dataset()).join(),
+        assertNull(testable.add(testResourceId3, testSecondResource.dataset()).toCompletableFuture().join(),
                         "Couldn't add to an immutable resource!");
 
-        final Resource retrieved = testable.get(testResourceId3).join();
+        final Resource retrieved = testable.get(testResourceId3).toCompletableFuture().join();
         assertEquals(testResourceId3, retrieved.getIdentifier(), "Resource was retrieved with wrong ID!");
         final Dataset quads = retrieved.dataset();
         assertTrue(quads.contains(testFirstQuad), "Resource was retrieved without its immutable data!");

@@ -14,7 +14,7 @@
 
 package org.trellisldp.api;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -35,9 +35,9 @@ public interface ImmutableDataService<T> extends RetrievalService<T> {
      * @param dataset a dataset to persist
      * @return a new completion stage that, when the stage completes normally, indicates that the supplied data
      * were successfully stored in the corresponding persistence layer. In the case of an unsuccessful write operation,
-     * the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
+     * the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> add(IRI identifier, Dataset dataset);
+    CompletionStage<Void> add(IRI identifier, Dataset dataset);
 
 }

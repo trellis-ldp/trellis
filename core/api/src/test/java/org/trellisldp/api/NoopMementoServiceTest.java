@@ -67,30 +67,30 @@ public class NoopMementoServiceTest {
 
     @Test
     public void testPutDefaultMethod() {
-        mockMementoService.put(mockResourceService, identifier).join();
+        mockMementoService.put(mockResourceService, identifier).toCompletableFuture().join();
         verify(mockResourceService).get(eq(identifier));
         verify(mockMementoService).put(eq(mockResource));
     }
 
     @Test
     public void testPutResourceServiceNoop() {
-        testService.put(mockResourceService, identifier).join();
+        testService.put(mockResourceService, identifier).toCompletableFuture().join();
         verifyZeroInteractions(mockResourceService);
     }
 
     @Test
     public void testPutResourceNoop() {
-        testService.put(mockResource).join();
+        testService.put(mockResource).toCompletableFuture().join();
         verifyZeroInteractions(mockResource);
     }
 
     @Test
     public void testGetResource() {
-        assertEquals(MISSING_RESOURCE, testService.get(identifier, time).join());
+        assertEquals(MISSING_RESOURCE, testService.get(identifier, time).toCompletableFuture().join());
     }
 
     @Test
     public void testMementos() {
-        assertTrue(testService.mementos(identifier).thenApply(SortedSet::isEmpty).join());
+        assertTrue(testService.mementos(identifier).thenApply(SortedSet::isEmpty).toCompletableFuture().join());
     }
 }

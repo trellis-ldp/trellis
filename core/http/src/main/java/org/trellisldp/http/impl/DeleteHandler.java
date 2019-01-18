@@ -29,7 +29,7 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
@@ -108,7 +108,7 @@ public class DeleteHandler extends MutatingLdpHandler {
      * @param builder the Trellis response builder
      * @return a response builder promise
      */
-    public CompletableFuture<ResponseBuilder> deleteResource(final ResponseBuilder builder) {
+    public CompletionStage<ResponseBuilder> deleteResource(final ResponseBuilder builder) {
 
         LOGGER.debug("Deleting {}", getIdentifier());
 
@@ -121,7 +121,7 @@ public class DeleteHandler extends MutatingLdpHandler {
             .whenComplete((a, b) -> mutable.close());
     }
 
-    private CompletableFuture<Void> handleDeletion(final TrellisDataset mutable,
+    private CompletionStage<Void> handleDeletion(final TrellisDataset mutable,
             final TrellisDataset immutable) {
         if (ACL.equals(getRequest().getExt())) {
             return handleAclDeletion(mutable, immutable);
@@ -130,7 +130,7 @@ public class DeleteHandler extends MutatingLdpHandler {
                 emitEvent(getInternalId(), AS.Delete, LDP.Resource));
     }
 
-    private CompletableFuture<Void> handleAclDeletion(final TrellisDataset mutable,
+    private CompletionStage<Void> handleAclDeletion(final TrellisDataset mutable,
             final TrellisDataset immutable) {
 
         // When deleting just the ACL graph, keep the user managed triples intact
@@ -147,7 +147,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         return handleResourceReplacement(mutable, immutable);
     }
 
-    private CompletableFuture<Void> handleResourceDeletion(final TrellisDataset immutable) {
+    private CompletionStage<Void> handleResourceDeletion(final TrellisDataset immutable) {
         // Collect the audit data
         getServices().getAuditService().deletion(getResource().getIdentifier(), getSession()).stream()
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))
@@ -155,7 +155,8 @@ public class DeleteHandler extends MutatingLdpHandler {
 
         // delete the resource
         return allOf(
-                getServices().getResourceService().delete(Metadata.builder(getResource()).build()),
-                getServices().getResourceService().add(getResource().getIdentifier(), immutable.asDataset()));
+            getServices().getResourceService().delete(Metadata.builder(getResource()).build()).toCompletableFuture(),
+            getServices().getResourceService().add(getResource().getIdentifier(),
+                immutable.asDataset()).toCompletableFuture());
     }
 }

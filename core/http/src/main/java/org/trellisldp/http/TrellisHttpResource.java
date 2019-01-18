@@ -36,7 +36,7 @@ import com.codahale.metrics.annotation.Timed;
 
 import java.io.InputStream;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -171,11 +171,11 @@ public class TrellisHttpResource {
                     LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
                     LOGGER.debug("Error auto-initializing Trellis", err);
                     return null;
-                }).join();
+                }).toCompletableFuture().join();
         }
     }
 
-    private CompletableFuture<Void> initialize(final IRI id, final Resource res, final TrellisDataset dataset) {
+    private CompletionStage<Void> initialize(final IRI id, final Resource res, final TrellisDataset dataset) {
         if (MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res)) {
             LOGGER.info("Initializing root container: {}", id);
             return trellis.getResourceService().create(Metadata.builder(id).interactionModel(LDP.BasicContainer)
@@ -355,7 +355,7 @@ public class TrellisHttpResource {
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
     }
 
-    private CompletableFuture<? extends Resource> getParent(final IRI identifier) {
+    private CompletionStage<? extends Resource> getParent(final IRI identifier) {
         final Optional<IRI> parent = getContainer(identifier);
         if (parent.isPresent()) {
             return trellis.getResourceService().get(parent.get());
@@ -367,7 +367,7 @@ public class TrellisHttpResource {
         return nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
     }
 
-    private CompletableFuture<ResponseBuilder> fetchResource(final TrellisRequest req) {
+    private CompletionStage<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), weakEtags,
@@ -412,7 +412,7 @@ public class TrellisHttpResource {
             .thenCompose(getHandler::getRepresentation);
     }
 
-    private CompletableFuture<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {
+    private CompletionStage<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {
         if (nonNull(version)) {
             return trellis.getMementoService().get(identifier, version.getInstant());
         }

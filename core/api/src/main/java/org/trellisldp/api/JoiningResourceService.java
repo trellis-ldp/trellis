@@ -20,7 +20,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -52,7 +52,7 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public CompletableFuture<Resource> get(final IRI identifier) {
+    public CompletionStage<Resource> get(final IRI identifier) {
         return mutableData.get(identifier).thenCombine(immutableData.get(identifier), (mutable, immutable) -> {
             if (MISSING_RESOURCE.equals(mutable) && MISSING_RESOURCE.equals(immutable)) {
                 return MISSING_RESOURCE;
@@ -67,22 +67,22 @@ public abstract class JoiningResourceService implements ResourceService {
     }
 
     @Override
-    public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
+    public CompletionStage<Void> add(final IRI id, final Dataset dataset) {
         return immutableData.add(id, dataset);
     }
 
     @Override
-    public CompletableFuture<Void> create(final Metadata metadata, final Dataset dataset) {
+    public CompletionStage<Void> create(final Metadata metadata, final Dataset dataset) {
         return mutableData.create(metadata, dataset);
     }
 
     @Override
-    public CompletableFuture<Void> replace(final Metadata metadata, final Dataset dataset) {
+    public CompletionStage<Void> replace(final Metadata metadata, final Dataset dataset) {
         return mutableData.replace(metadata, dataset);
     }
 
     @Override
-    public CompletableFuture<Void> delete(final Metadata metadata) {
+    public CompletionStage<Void> delete(final Metadata metadata) {
         return mutableData.delete(metadata);
     }
 

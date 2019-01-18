@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.enterprise.inject.Alternative;
@@ -73,7 +73,7 @@ public class FileMementoService implements MementoService {
     }
 
     @Override
-    public CompletableFuture<Void> put(final Resource resource) {
+    public CompletionStage<Void> put(final Resource resource) {
         return put(resource, resource.getModified());
     }
 
@@ -83,7 +83,7 @@ public class FileMementoService implements MementoService {
      * @param time the time to which the Memento corresponds
      * @return the completion stage representing that the operation has completed
      */
-    public CompletableFuture<Void> put(final Resource resource, final Instant time) {
+    public CompletionStage<Void> put(final Resource resource, final Instant time) {
         return runAsync(() -> {
             final File resourceDir = FileUtils.getResourceDirectory(directory, resource.getIdentifier());
             if (!resourceDir.exists()) {
@@ -94,7 +94,7 @@ public class FileMementoService implements MementoService {
     }
 
     @Override
-    public CompletableFuture<Resource> get(final IRI identifier, final Instant time) {
+    public CompletionStage<Resource> get(final IRI identifier, final Instant time) {
         return supplyAsync(() -> {
             final Instant mementoTime = time.truncatedTo(SECONDS);
             final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
@@ -111,7 +111,7 @@ public class FileMementoService implements MementoService {
     }
 
     @Override
-    public CompletableFuture<SortedSet<Instant>> mementos(final IRI identifier) {
+    public CompletionStage<SortedSet<Instant>> mementos(final IRI identifier) {
         return supplyAsync(() -> listMementos(identifier));
     }
 

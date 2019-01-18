@@ -44,7 +44,7 @@ import java.security.MessageDigest;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -143,12 +143,12 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<Binary> get(final IRI identifier) {
+    public CompletionStage<Binary> get(final IRI identifier) {
         return supplyAsync(() -> new FileBinary(getFileFromIdentifier(identifier)));
     }
 
     @Override
-    public CompletableFuture<Void> purgeContent(final IRI identifier) {
+    public CompletionStage<Void> purgeContent(final IRI identifier) {
         return supplyAsync(() -> {
             try {
                 delete(getFileFromIdentifier(identifier).toPath());
@@ -160,7 +160,7 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<Void> setContent(final BinaryMetadata metadata, final InputStream stream) {
+    public CompletionStage<Void> setContent(final BinaryMetadata metadata, final InputStream stream) {
         requireNonNull(stream, "InputStream may not be null!");
         return supplyAsync(() -> {
             final File file = getFileFromIdentifier(metadata.getIdentifier());
@@ -177,7 +177,7 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<MessageDigest> calculateDigest(final IRI identifier, final MessageDigest algorithm) {
+    public CompletionStage<MessageDigest> calculateDigest(final IRI identifier, final MessageDigest algorithm) {
         return supplyAsync(() -> computeDigest(identifier, algorithm));
     }
 

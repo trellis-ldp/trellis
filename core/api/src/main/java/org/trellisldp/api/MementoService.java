@@ -15,7 +15,7 @@ package org.trellisldp.api;
 
 import java.time.Instant;
 import java.util.SortedSet;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -39,7 +39,7 @@ public interface MementoService {
      * @return a new completion stage that, when the stage completes normally, indicates that the Memento resource was
      * successfully created in the corresponding persistence layer.
      */
-    default CompletableFuture<Void> put(final ResourceService resourceService, final IRI identifier) {
+    default CompletionStage<Void> put(final ResourceService resourceService, final IRI identifier) {
         return resourceService.get(identifier).thenCompose(this::put);
     }
 
@@ -48,10 +48,10 @@ public interface MementoService {
      * @param resource the resource
      * @return a new completion stage that, when the stage completes normally, indicates that the Memento resource was
      * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
-     * the {@link CompletableFuture} will complete exceptionally and can be handled with
-     * {@link CompletableFuture#handle}, {@link CompletableFuture#exceptionally} or similar methods.
+     * the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
      */
-    CompletableFuture<Void> put(Resource resource);
+    CompletionStage<Void> put(Resource resource);
 
     /**
      * Fetch a Memento resource for the given time.
@@ -59,12 +59,12 @@ public interface MementoService {
      * @param time the requested time
      * @return the new completion stage, containing the fetched resource
      */
-    CompletableFuture<Resource> get(IRI identifier, Instant time);
+    CompletionStage<Resource> get(IRI identifier, Instant time);
 
     /**
      * Get the times for all of the Mementos of the given resource.
      * @param identifier the resource identifier
      * @return the new completion stage containing a collection of Memento dateTimes
      */
-    CompletableFuture<SortedSet<Instant>> mementos(IRI identifier);
+    CompletionStage<SortedSet<Instant>> mementos(IRI identifier);
 }

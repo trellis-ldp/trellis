@@ -62,7 +62,8 @@ public class BinaryServiceTest {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
         when(mockBinaryService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(anyInt(), anyInt())).thenReturn(inputStream);
-        try (final InputStream content = mockBinaryService.get(identifier).thenApply(b -> b.getContent(0, 6)).join()) {
+        try (final InputStream content = mockBinaryService.get(identifier)
+                .thenApply(b -> b.getContent(0, 6)).toCompletableFuture().join()) {
             assertEquals("FooBar", IOUtils.toString(content, UTF_8), "Binary content did not match");
         }
     }
@@ -79,6 +80,7 @@ public class BinaryServiceTest {
                         .setContent(BinaryMetadata.builder(identifier).build(), inputStream,
                                         MessageDigest.getInstance("MD5"))
                         .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString)
-                        .thenAccept(digest -> assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))::join);
+                        .thenAccept(digest -> assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))
+                        .toCompletableFuture()::join);
     }
 }
