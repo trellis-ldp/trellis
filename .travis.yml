@@ -63,7 +63,7 @@ jobs:
       stage: test
       jdk: openjdk11
       env: JOB=jpms
-      script: ./gradlew clean check install --continue -Pjpms
+      script: travis_retry ./gradlew clean check install -Pjpms
 
     # deploy JDK 8 builds to Sonatype
     - name: "Publish to Sonatype"
