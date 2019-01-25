@@ -44,12 +44,12 @@ ext {
     jsonldVersion = '0.12.3'
     kafkaVersion = '2.0.0'
     mustacheVersion = '0.9.5'
-    rabbitMqVersion = '5.5.2'
+    rabbitMqVersion = '5.6.0'
     validationVersion = '2.0.1.Final'
 
     /* Testing */
     apiguardianVersion = '1.0.0'
-    awaitilityVersion = '3.1.5'
+    awaitilityVersion = '3.1.6'
     bouncycastleVersion = '1.60'
     commonsTextVersion = '1.6'
     junitVersion = '5.3.2'
