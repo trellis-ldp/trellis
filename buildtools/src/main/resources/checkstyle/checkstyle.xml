@@ -96,6 +96,18 @@
       <property name="checkHtml" value="true"/>
     </module>
 
+    <module name="MethodName">
+      <property name="severity" value="error"/>
+    </module>
+
+    <module name="ParameterName">
+      <property name="severity" value="error"/>
+    </module>
+
+    <module name="LocalVariableName">
+      <property name="severity" value="error"/>
+    </module>
+
     <module name="LocalFinalVariableName">
       <!-- Validates identifiers for local final variables against the
       expression "^[a-z][a-zA-Z0-9]*$". -->
