@@ -33,7 +33,7 @@ public interface MementoService {
      * @param resourceService the resource service.
      * @param identifier the identifier.
      * @implSpec The default implementation of this method fetches a resource from a {@link ResourceService} that is
-     * external to the Memento service. 
+     * external to the Memento service.
      * @implNote In the case that the two services are managed by the same persistence layer, it may not be
      * necessary to fetch a {@link Resource} from the persistence layer, in which case this method can be
      * overridden as a no-op method, e.g. {@code return completedFuture(null);}.
