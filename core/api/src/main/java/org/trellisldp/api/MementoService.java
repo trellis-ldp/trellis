@@ -34,10 +34,10 @@ public interface MementoService {
      * @param identifier the identifier.
      * @implSpec The default implementation of this method fetches a resource from a {@link ResourceService} that is
      * external to the Memento service. 
-     * @implNotes In the case that the two services are managed by the same persistence layer, it may not be
+     * @implNote In the case that the two services are managed by the same persistence layer, it may not be
      * necessary to fetch a {@link Resource} from the persistence layer, in which case this method can be
      * overridden as a no-op method, e.g. {@code return completedFuture(null);}.
-     * @apiSpec An implementation may choose to store a new Memento only when this method is called,
+     * @implSpec An implementation may choose to store a new Memento only when this method is called,
      * or at other times as well, e.g. when {@link ResourceService::replace} is called.
      * @return a new completion stage that, when the stage completes normally, indicates that the Memento resource was
      * successfully created in the corresponding persistence layer.
