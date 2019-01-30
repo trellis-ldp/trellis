@@ -81,9 +81,8 @@ jobs:
       if: branch = master AND type = push
       env: JOB=docker
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      # TODO uncomment this line just before the 0.8 release
-      # script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew dockerPush dockerPushDevelop; else ./gradlew dockerPush dockerPushLatest; fi
-      script: ./gradlew dockerPush dockerPushLatest dockerPushDevelop
+      # Note: for maintenance branches, remove the dockerPushLatest task
+      script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew dockerPush dockerPushDevelop; else ./gradlew dockerPush dockerPushLatest; fi
 
     # deploy to AWS
     - name: "Publish JavaDocs"
