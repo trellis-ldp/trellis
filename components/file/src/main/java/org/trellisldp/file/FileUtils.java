@@ -176,7 +176,7 @@ public final class FileUtils {
             throws IOException {
         final long skipped = stream.skip(from);
         LOGGER.debug("Skipped {} bytes", skipped);
-        return new BoundedInputStream(stream, to - from);
+        return new BoundedInputStream(stream, (long) to - from);
     }
 
     /**
