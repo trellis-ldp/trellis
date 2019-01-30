@@ -17,15 +17,15 @@ module org.trellisldp.rdfa {
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.vocabulary;
 
+    requires com.github.mustachejava;
     requires org.apache.commons.rdf.api;
     requires org.apache.jena.arq;
     requires javax.inject;
     requires tamaya.api;
-    requires compiler;
 
     uses org.trellisldp.api.NamespaceService;
 
-    opens org.trellisldp.rdfa to compiler;
+    opens org.trellisldp.rdfa to com.github.mustachejava;
 
     provides org.trellisldp.api.RDFaWriterService
         with org.trellisldp.rdfa.HtmlSerializer;
