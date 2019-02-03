@@ -1,0 +1,528 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.trellisldp.webdav;
+
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Predicate.isEqual;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.GONE;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.status;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.jena.util.SplitIRI.localnameXML;
+import static org.apache.jena.util.SplitIRI.namespaceXML;
+import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.getContainer;
+import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.toQuad;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.webdav.Depth.DEPTH.INFINITY;
+import static org.trellisldp.webdav.Depth.DEPTH.ONE;
+import static org.trellisldp.webdav.Depth.DEPTH.ZERO;
+import static org.trellisldp.webdav.impl.WebDAVUtils.copy;
+import static org.trellisldp.webdav.impl.WebDAVUtils.depth1Copy;
+import static org.trellisldp.webdav.impl.WebDAVUtils.recursiveCopy;
+import static org.trellisldp.webdav.impl.WebDAVUtils.recursiveDelete;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.RedirectionException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Literal;
+import org.apache.commons.rdf.api.Quad;
+import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.Triple;
+import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.slf4j.Logger;
+import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.Metadata;
+import org.trellisldp.api.Resource;
+import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
+import org.trellisldp.webdav.impl.DavMultiStatus;
+import org.trellisldp.webdav.impl.DavProp;
+import org.trellisldp.webdav.impl.DavPropFind;
+import org.trellisldp.webdav.impl.DavPropStat;
+import org.trellisldp.webdav.impl.DavPropertyUpdate;
+import org.trellisldp.webdav.impl.DavRemove;
+import org.trellisldp.webdav.impl.DavResponse;
+import org.trellisldp.webdav.impl.DavSet;
+import org.trellisldp.webdav.impl.TrellisDataset;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+@ApplicationScoped
+@Path("{path: .*}")
+public class TrellisWebDAV {
+
+    private static final String DAV = "DAV:";
+    private static final int MULTI_STATUS = 207;
+    private static final RDF rdf = getInstance();
+    private static final Logger LOGGER = getLogger(TrellisWebDAV.class);
+
+    private final ServiceBundler services;
+    private final String baseUrl;
+
+    /**
+     * Create a Trellis HTTP resource matcher.
+     *
+     * @param services the Trellis application bundle
+     */
+    @Inject
+    public TrellisWebDAV(final ServiceBundler services) {
+        this(services, getConfiguration());
+    }
+
+    private TrellisWebDAV(final ServiceBundler services, final Configuration config) {
+        this(services, config.get(CONFIG_HTTP_BASE_URL));
+    }
+
+    /**
+     * Create a Trellis HTTP resource matcher.
+     *
+     * @param services the Trellis application bundle
+     * @param baseUrl the base URL
+     */
+    public TrellisWebDAV(final ServiceBundler services, final String baseUrl) {
+        this.services = services;
+        this.baseUrl = baseUrl;
+    }
+
+    /**
+     * Copy a resource.
+     * @param response the async response
+     * @param request the request
+     * @param uriInfo the URI info
+     * @param headers the headers
+     */
+    @COPY
+    @Timed
+    public void copyResource(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final IRI destination = getDestination(headers, getBaseUrl(req));
+        // Default is recursive copy as per RFC-4918
+        final Depth.DEPTH depth = ofNullable(headers.getHeaderString("Depth"))
+            .map(Depth::new).map(Depth::getDepth).orElse(INFINITY);
+        getParent(destination).thenCombine(services.getResourceService().get(destination), this::checkResources)
+            .thenCompose(parent -> services.getResourceService().touch(parent.getIdentifier()))
+            .thenCompose(future -> services.getResourceService().get(identifier))
+            .thenApply(this::checkResource)
+            .thenCompose(res -> copyTo(res, depth, destination))
+            .thenApply(future -> status(NO_CONTENT).build())
+            .exceptionally(this::handleException).thenApply(response::resume);
+    }
+
+    /**
+     * Move a resource.
+     * @param response the async response
+     * @param request the request
+     * @param uriInfo the URI info
+     * @param headers the headers
+     */
+    @MOVE
+    @Timed
+    public void moveResource(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final IRI destination = getDestination(headers, getBaseUrl(req));
+        getParent(destination)
+            .thenCombine(services.getResourceService().get(destination), this::checkResources)
+            .thenCompose(parent -> services.getResourceService().touch(parent.getIdentifier()))
+            .thenCompose(future -> services.getResourceService().get(identifier))
+            .thenApply(this::checkResource)
+            // Note: all MOVE operations are recursive (Depth: infinity), hence recursiveCopy
+            .thenAccept(res -> recursiveCopy(services.getResourceService(), res, destination))
+            .thenAccept(future -> recursiveDelete(services.getResourceService(), identifier))
+            .thenCompose(future -> services.getResourceService().delete(Metadata.builder(identifier)
+                    .interactionModel(LDP.Resource).build()))
+            .thenApply(future -> status(NO_CONTENT).build())
+            .exceptionally(this::handleException).thenApply(response::resume);
+    }
+
+    /**
+     * Get properties for a resource.
+     * @param response the response
+     * @param request the request
+     * @param uriInfo the URI info
+     * @param headers the headers
+     * @param propfind the propfind
+     */
+    @PROPFIND
+    @Consumes({APPLICATION_XML})
+    @Produces({APPLICATION_XML})
+    @Timed
+    public void getProperties(@Suspended final AsyncResponse response, @Context final Request request,
+            @Context final UriInfo uriInfo, @Context final HttpHeaders headers, final DavPropFind propfind) {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final String location = getBaseUrl(req) + req.getPath();
+        services.getResourceService().get(identifier)
+            .thenApply(this::checkResource)
+            .thenApply(propertiesToMultiStatus(location, propfind))
+            .thenApply(multistatus -> status(MULTI_STATUS).entity(multistatus).build())
+            .exceptionally(this::handleException).thenApply(response::resume);
+    }
+
+    /**
+     * Update properties on a resource.
+     * @param response the async response
+     * @param request the request
+     * @param uriInfo the URI info
+     * @param headers the headers
+     * @param propertyUpdate the property update request
+     */
+    @PROPPATCH
+    @Consumes({APPLICATION_XML})
+    @Produces({APPLICATION_XML})
+    @Timed
+    public void updateProperties(@Suspended final AsyncResponse response,
+            @Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers, final DavPropertyUpdate propertyUpdate) {
+
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final String location = getBaseUrl(req) + req.getPath();
+        services.getResourceService().get(identifier)
+            .thenApply(this::checkResource)
+            .thenCompose(resourceToMultiStatus(identifier, location, propertyUpdate))
+            .thenApply(multistatus -> status(MULTI_STATUS).entity(multistatus).build())
+            .exceptionally(this::handleException).thenApply(response::resume);
+    }
+
+    private static Function<Element, Stream<Quad>> elementToQuads(final IRI identifier) {
+        return el -> {
+            if (nonNull(el.getNamespaceURI())) {
+                final Stream.Builder<Quad> builder = Stream.builder();
+                final IRI predicate = rdf.createIRI(el.getNamespaceURI() + el.getLocalName());
+                // iterate over child nodes
+                Node node = el.getFirstChild();
+                while (nonNull(node)) {
+                    if (Node.TEXT_NODE == node.getNodeType() && !isBlank(node.getNodeValue())) {
+                        builder.accept(rdf.createQuad(Trellis.PreferUserManaged, identifier,
+                                    predicate, rdf.createLiteral(node.getNodeValue())));
+                    } else if (Node.ELEMENT_NODE == node.getNodeType()
+                            && nonNull(node.getNamespaceURI())) {
+                        builder.accept(rdf.createQuad(Trellis.PreferUserManaged, identifier,
+                                    predicate,
+                                    rdf.createIRI(node.getNamespaceURI() + node.getLocalName())));
+                    }
+                    node = node.getNextSibling();
+                }
+                return builder.build();
+            }
+            return Stream.empty();
+        };
+    }
+
+    private CompletionStage<? extends Resource> getParent(final IRI identifier) {
+        final Optional<IRI> parent = getContainer(identifier);
+        if (parent.isPresent()) {
+            return services.getResourceService().get(parent.get());
+        }
+        return completedFuture(MISSING_RESOURCE);
+    }
+
+    private IRI getDestination(final HttpHeaders headers, final String baseUrl) {
+        final String destination = headers.getHeaderString("Destination");
+        if (isNull(destination)) {
+            throw new BadRequestException("Missing Destination header");
+        } else if (!destination.startsWith(baseUrl)) {
+            throw new BadRequestException("Out-of-domain Destination!");
+        }
+        return services.getResourceService().toInternal(rdf.createIRI(destination), baseUrl);
+    }
+
+    private Resource checkResources(final Resource from, final Resource to) {
+        if (MISSING_RESOURCE.equals(from)) {
+            throw new NotFoundException();
+        } else if (DELETED_RESOURCE.equals(from)) {
+            throw new ClientErrorException(GONE);
+        } else if (exists(to)) {
+            throw new ClientErrorException(CONFLICT);
+        }
+        return from;
+    }
+
+    private Resource checkResource(final Resource res) {
+        if (MISSING_RESOURCE.equals(res)) {
+            throw new NotFoundException();
+        } else if (DELETED_RESOURCE.equals(res)) {
+            throw new ClientErrorException(GONE);
+        }
+        return res;
+    }
+
+    private Response handleException(final Throwable err) {
+        if (!(err.getCause() instanceof ClientErrorException || err.getCause() instanceof RedirectionException)) {
+            LOGGER.error("Trellis Error:", err);
+        }
+        return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
+            .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err)).getResponse();
+    }
+
+    private Function<Resource, CompletionStage<DavMultiStatus>> resourceToMultiStatus(final IRI identifier,
+            final String location, final DavPropertyUpdate propertyUpdate) {
+        return resource -> {
+            final TrellisDataset dataset = TrellisDataset.createDataset();
+            final Set<IRI> removeProperties = getRemoveProperties(propertyUpdate);
+            final DavMultiStatus multistatus = new DavMultiStatus();
+            final DavResponse response = new DavResponse();
+            final Set<IRI> modifiedProperties = new HashSet<>();
+            response.setHref(location);
+            // Keep any ACL data
+            try (final Stream<Triple> stream = resource.stream(Trellis.PreferAccessControl)) {
+                stream.map(toQuad(Trellis.PreferAccessControl)).forEach(dataset::add);
+            }
+            // Filter out any removable properties
+            try (final Stream<Triple> stream = resource.stream(Trellis.PreferUserManaged)) {
+                stream.forEach(triple -> {
+                    if (removeProperties.contains(triple.getPredicate())) {
+                        modifiedProperties.add(triple.getPredicate());
+                    } else {
+                        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, identifier, triple.getPredicate(),
+                                    triple.getObject()));
+                    }
+                });
+            }
+            ofNullable(propertyUpdate.getSet()).map(DavSet::getProp).map(DavProp::getNodes)
+                .orElseGet(Collections::emptyList).stream()
+                .flatMap(elementToQuads(identifier))
+                .forEach(quad -> {
+                    modifiedProperties.add(quad.getPredicate());
+                    dataset.add(quad);
+                });
+
+            final Document doc = getDocument();
+            response.setPropStats(modifiedProperties.stream().map(predicate -> {
+                final DavPropStat stat = new DavPropStat();
+                final DavProp prop = new DavProp();
+                prop.setNodes(singletonList(doc.createElementNS(namespaceXML(predicate.getIRIString()),
+                                localnameXML(predicate.getIRIString()))));
+                stat.setProp(prop);
+                stat.setStatus("HTTP/1.1 200 OK");
+                return stat;
+            }).collect(toList()));
+            multistatus.setDescription("Response to property update request");
+            multistatus.setResponses(singletonList(response));
+
+            return services.getResourceService()
+                .replace(Metadata.builder(resource).build(), dataset.asDataset())
+                .whenComplete((a, b) -> dataset.close())
+                .thenApply(future -> multistatus);
+        };
+    }
+
+    private static Document getDocument() {
+        try {
+            final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setIgnoringComments(true);
+            factory.setIgnoringElementContentWhitespace(true);
+            factory.setExpandEntityReferences(false);
+            factory.setFeature(FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+            return factory.newDocumentBuilder().newDocument();
+        } catch (final ParserConfigurationException ex) {
+            throw new RuntimeTrellisException(ex);
+        }
+    }
+
+    private Function<Resource, DavMultiStatus> propertiesToMultiStatus(final String location,
+            final DavPropFind propfind) {
+
+        final Set<IRI> properties = getProperties(propfind);
+        final boolean allprops = nonNull(propfind.getAllProp());
+        final boolean propname = nonNull(propfind.getPropName());
+
+        return res -> {
+            final DavMultiStatus multistatus = new DavMultiStatus();
+            final DavProp prop = new DavProp();
+            final DavPropStat propstat = new DavPropStat();
+            final DavResponse response = new DavResponse();
+            response.setHref(location);
+            prop.setNodes(getPropertyElements(res, properties, allprops, propname));
+
+            propstat.setProp(prop);
+            propstat.setStatus("HTTP/1.1 200 OK");
+            response.setDescription("PROPFIND request for " + location);
+            response.setPropStats(singletonList(propstat));
+
+            multistatus.setResponses(singletonList(response));
+            multistatus.setDescription("Response to property find request");
+            return multistatus;
+        };
+    }
+
+    private CompletionStage<Void> copyTo(final Resource resource, final Depth.DEPTH depth, final IRI destination) {
+        if (ZERO.equals(depth)) {
+            return copy(services.getResourceService(), resource, destination);
+        } else if (ONE.equals(depth)) {
+            return depth1Copy(services.getResourceService(), resource, destination);
+        }
+        return recursiveCopy(services.getResourceService(), resource, destination);
+    }
+
+    private String getBaseUrl(final TrellisRequest req) {
+        return nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+    }
+
+    private static Set<IRI> getProperties(final DavPropFind propfind) {
+        return ofNullable(propfind.getProp()).map(DavProp::getNodes)
+            .orElseGet(Collections::emptyList).stream()
+            .filter(el -> nonNull(el.getNamespaceURI()))
+            .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName()))
+            .collect(toSet());
+    }
+
+    private static Set<IRI> getRemoveProperties(final DavPropertyUpdate propertyUpdate) {
+        final DavRemove remove = propertyUpdate.getRemove();
+        final DavSet set = propertyUpdate.getSet();
+        final Set<IRI> props = new HashSet<>();
+        if (nonNull(remove)) {
+             props.addAll(ofNullable(remove.getProp()).map(DavProp::getNodes).orElseGet(Collections::emptyList)
+                    .stream().filter(el -> nonNull(el.getNamespaceURI()))
+                    .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet()));
+        }
+        // Note: also clear any set properties before adding them back
+        if (nonNull(set)) {
+             props.addAll(ofNullable(set.getProp()).map(DavProp::getNodes).orElseGet(Collections::emptyList)
+                    .stream().filter(el -> nonNull(el.getNamespaceURI()))
+                    .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet()));
+        }
+        return props;
+    }
+
+    private static Element getContentTypeElement(final Document doc, final Resource res, final boolean propname) {
+        final Element el = doc.createElementNS(DAV, "getcontenttype");
+        if (!propname) {
+            el.setTextContent(res.getBinaryMetadata().flatMap(BinaryMetadata::getMimeType)
+                .orElse("text/turtle"));
+        }
+        return el;
+    }
+
+    private static Element getLastModifiedElement(final Document doc, final Resource res, final boolean propname) {
+        final Element el = doc.createElementNS(DAV, "getlastmodified");
+        if (!propname) {
+            el.setTextContent(ofInstant(res.getModified().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME));
+        }
+        return el;
+    }
+
+    private static Optional<Element> getResourceTypeElement(final Document doc, final Resource res,
+            final boolean propname) {
+        if (!propname && res.getInteractionModel().getIRIString().endsWith("Container")) {
+            final Element el = doc.createElementNS(DAV, "resourcetype");
+            el.appendChild(doc.createElementNS(DAV, "collection"));
+            return of(el);
+        }
+        return empty();
+    }
+
+    private static Function<Quad, Element> quadToElement(final Document doc, final boolean propname) {
+        return quad -> {
+            if (quad.getObject() instanceof Literal) {
+                final Element el = doc.createElementNS(namespaceXML(quad.getPredicate().getIRIString()),
+                            localnameXML(quad.getPredicate().getIRIString()));
+                if (!propname) {
+                    el.setTextContent(((Literal) quad.getObject()).getLexicalForm());
+                }
+                return el;
+            } else if (quad.getObject() instanceof IRI) {
+                final Element el = doc.createElementNS(namespaceXML(quad.getPredicate().getIRIString()),
+                            localnameXML(quad.getPredicate().getIRIString()));
+                if (!propname) {
+                    el.setTextContent(((IRI) quad.getObject()).getIRIString());
+                }
+                return el;
+            }
+            return null;
+        };
+    }
+
+    private static List<Element> getPropertyElements(final Resource res, final Set<IRI> properties,
+            final boolean allproperties, final boolean propname) {
+
+        final Document doc = getDocument();
+        final List<Element> allProperties = new ArrayList<>();
+        getResourceTypeElement(doc, res, propname).ifPresent(allProperties::add);
+        allProperties.add(getContentTypeElement(doc, res, propname));
+        allProperties.add(getLastModifiedElement(doc, res, propname));
+
+        try (final Stream<Quad> stream = res.stream()) {
+            final List<Element> elements = stream
+                .filter(q -> q.getGraphName().filter(isEqual(Trellis.PreferAccessControl).negate()).isPresent())
+                .filter(q -> allproperties || properties.contains(q.getPredicate()))
+                .map(quadToElement(doc, propname)).filter(Objects::nonNull).collect(toList());
+            allProperties.addAll(elements);
+        }
+        return allProperties;
+    }
+
+    private static boolean exists(final Resource res) {
+        return !MISSING_RESOURCE.equals(res) && !DELETED_RESOURCE.equals(res);
+    }
+}
