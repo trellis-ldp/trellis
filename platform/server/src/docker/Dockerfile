@@ -1,6 +1,6 @@
 # On OpenJDK 8 Slim Debian Image
 
-FROM openjdk:8-jre
+FROM openjdk:8-jre-alpine
 LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 
 ADD trellis-*.tar /opt
