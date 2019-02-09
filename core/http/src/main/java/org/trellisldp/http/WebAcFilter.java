@@ -118,14 +118,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
         final String path = ctx.getUriInfo().getPath();
-        final Object session = ctx.getProperty(SESSION_PROPERTY);
-        final Session s;
-        if (nonNull(session)) {
-            s = (Session) session;
-        } else {
-            s = new HttpSession();
-            ctx.setProperty(SESSION_PROPERTY, s);
-        }
+        final Session s = getOrCreateSession(ctx);
         final String method = ctx.getMethod();
 
         final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + path), s);
@@ -149,6 +142,16 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             res.getHeaders().add(LINK, fromUri(req.getUriInfo().getAbsolutePathBuilder()
                     .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(HttpConstants.ACL).build());
         }
+    }
+
+    protected Session getOrCreateSession(final ContainerRequestContext ctx) {
+        final Object session = ctx.getProperty(SESSION_PROPERTY);
+        if (nonNull(session)) {
+            return (Session) session;
+        }
+        final Session s = new HttpSession();
+        ctx.setProperty(SESSION_PROPERTY, s);
+        return s;
     }
 
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
