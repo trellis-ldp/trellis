@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
@@ -82,9 +81,7 @@ public class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("FOO");
 
         final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
-
-        assertThrows(NotAllowedException.class, () -> filter.filter(mockContext),
-                "No exception thrown with unexpected method!");
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Exception thrown with unknown method!");
     }
 
     @Test
