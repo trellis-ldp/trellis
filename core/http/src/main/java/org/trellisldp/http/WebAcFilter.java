@@ -50,7 +50,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpConstants;
-import org.trellisldp.http.impl.HttpSession;
+import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.Trellis;
 
