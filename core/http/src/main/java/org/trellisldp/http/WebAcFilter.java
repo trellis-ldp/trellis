@@ -22,8 +22,6 @@ import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.status;
 import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -38,7 +36,6 @@ import java.util.Set;
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -141,8 +138,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             verifyCanWrite(modes, s, path);
         } else if (appendable.contains(method)) {
             verifyCanAppend(modes, s, path);
-        } else {
-            throw new NotAllowedException(status(METHOD_NOT_ALLOWED).build());
         }
     }
 
@@ -156,7 +151,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         }
     }
 
-    private void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
+    protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Append) && !modes.contains(ACL.Write)) {
             LOGGER.warn("User: {} cannot Append to {}", session.getAgent(), path);
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
@@ -168,7 +163,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         LOGGER.debug("User: {} can append to {}", session.getAgent(), path);
     }
 
-    private void verifyCanControl(final Set<IRI> modes, final Session session, final String path) {
+    protected void verifyCanControl(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Control)) {
             LOGGER.warn("User: {} cannot Control {}", session.getAgent(), path);
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
@@ -180,7 +175,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         LOGGER.debug("User: {} can control {}", session.getAgent(), path);
     }
 
-    private void verifyCanWrite(final Set<IRI> modes, final Session session, final String path) {
+    protected void verifyCanWrite(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Write)) {
             LOGGER.warn("User: {} cannot Write to {}", session.getAgent(), path);
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
@@ -192,7 +187,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         LOGGER.debug("User: {} can write to {}", session.getAgent(), path);
     }
 
-    private void verifyCanRead(final Set<IRI> modes, final Session session, final String path) {
+    protected void verifyCanRead(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Read)) {
             LOGGER.warn("User: {} cannot Read from {}", session.getAgent(), path);
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
