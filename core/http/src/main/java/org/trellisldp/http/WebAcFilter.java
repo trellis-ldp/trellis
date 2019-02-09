@@ -81,7 +81,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
 
-    private final AccessControlService accessService;
+    protected final AccessControlService accessService;
     private final List<String> challenges;
 
     /**
