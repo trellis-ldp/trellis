@@ -14,6 +14,7 @@
 package org.trellisldp.api;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
@@ -29,8 +30,8 @@ public class NoopAccessControlService implements AccessControlService {
 
     private static final RDF rdf = getInstance();
     private static final String URI = "http://www.w3.org/ns/auth/acl#";
-    private static final Set<IRI> modes = asList("Control", "Read", "Write", "Append").stream()
-        .map(mode -> URI + mode).map(rdf::createIRI).collect(toSet());
+    private static final Set<IRI> modes = unmodifiableSet(asList("Control", "Read", "Write", "Append")
+            .stream().map(mode -> URI + mode).map(rdf::createIRI).collect(toSet()));
 
     @Override
     public Set<IRI> getAccessModes(final IRI identifier, final Session session) {
