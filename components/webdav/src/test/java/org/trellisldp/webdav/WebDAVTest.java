@@ -76,14 +76,15 @@ import org.trellisldp.api.AgentService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.NoopAccessControlService;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.api.Session;
 import org.trellisldp.http.TrellisHttpResource;
+import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -119,7 +120,7 @@ public class WebDAVTest extends JerseyTest {
     private static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
                 LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
 
-    private static final Set<IRI> allModes = new HashSet<>(asList(ACL.Append, ACL.Control, ACL.Read, ACL.Write));
+    private static final AccessControlService accessControlService = new NoopAccessControlService();
 
     @Mock
     private ServiceBundler mockBundler;
@@ -129,9 +130,6 @@ public class WebDAVTest extends JerseyTest {
 
     @Mock
     private BinaryService mockBinaryService;
-
-    @Mock
-    private AccessControlService mockAccessControlService;
 
     @Mock
     private AgentService mockAgentService;
@@ -159,7 +157,6 @@ public class WebDAVTest extends JerseyTest {
         setUpBundler();
         setUpResourceService();
         setUpResources();
-        when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
     }
 
     @Override
@@ -175,8 +172,9 @@ public class WebDAVTest extends JerseyTest {
         config.register(new TrellisWebDAVRequestFilter(mockBundler));
         config.register(new TrellisWebDAVResponseFilter());
         config.register(new TrellisWebDAV(mockBundler, baseUri));
-        config.register(new TrellisWebDAVAuthzFilter(mockAccessControlService));
+        config.register(new TrellisWebDAVAuthzFilter(accessControlService));
         config.register(new TrellisHttpResource(mockBundler, baseUri));
+        config.register(new WebAcFilter(accessControlService));
         return config;
     }
 

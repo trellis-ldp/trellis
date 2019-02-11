@@ -165,6 +165,8 @@ public class TrellisWebDAV {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final IRI destination = getDestination(headers, getBaseUrl(req));
         // Default is recursive copy as per RFC-4918
+        // TODO add notifications for each new resource
+        // TODO add mementos for each new resource
         final Depth.DEPTH depth = ofNullable(headers.getHeaderString("Depth"))
             .map(Depth::new).map(Depth::getDepth).orElse(INFINITY);
         getParent(destination).thenCombine(services.getResourceService().get(destination), this::checkResources)
@@ -190,6 +192,8 @@ public class TrellisWebDAV {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final IRI destination = getDestination(headers, getBaseUrl(req));
+        // TODO add notifications for each new resource and for each deleted resource
+        // TODO add mementos for each new resource
         getParent(destination)
             .thenCombine(services.getResourceService().get(destination), this::checkResources)
             .thenCompose(parent -> services.getResourceService().touch(parent.getIdentifier()))
@@ -221,6 +225,7 @@ public class TrellisWebDAV {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final String location = getBaseUrl(req) + req.getPath();
+        // TODO add depth1 fetch for the identified resource
         services.getResourceService().get(identifier)
             .thenApply(this::checkResource)
             .thenApply(propertiesToMultiStatus(location, propfind))
@@ -247,6 +252,8 @@ public class TrellisWebDAV {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final String location = getBaseUrl(req) + req.getPath();
+        // TODO add notification for updated resource
+        // TODO add memento for updated resource
         services.getResourceService().get(identifier)
             .thenApply(this::checkResource)
             .thenCompose(resourceToMultiStatus(identifier, location, propertyUpdate))
