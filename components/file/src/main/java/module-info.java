@@ -17,7 +17,6 @@ module org.trellisldp.file {
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.vocabulary;
 
-    requires org.apache.commons.codec;
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;

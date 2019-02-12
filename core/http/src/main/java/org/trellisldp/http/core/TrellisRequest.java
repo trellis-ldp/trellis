@@ -17,11 +17,9 @@ import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
-import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 
 import java.security.Principal;
 import java.util.List;
@@ -130,24 +128,6 @@ public class TrellisRequest {
      */
     public Prefer getPrefer() {
         return ofNullable(headers.getFirst(PREFER)).map(Prefer::valueOf).orElse(null);
-    }
-
-    /**
-     * Get the Want-Digest header.
-     *
-     * @return the Want-Digest header
-     */
-    public WantDigest getWantDigest() {
-        return ofNullable(headers.getFirst(WANT_DIGEST)).map(WantDigest::new).orElse(null);
-    }
-
-    /**
-     * Get the Digest header.
-     *
-     * @return the Digest header
-     */
-    public Digest getDigest() {
-        return ofNullable(headers.getFirst(DIGEST)).map(Digest::valueOf).orElse(null);
     }
 
     /**

@@ -56,7 +56,6 @@ import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
-import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES;
@@ -101,7 +100,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response type!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
@@ -121,7 +120,6 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE), "Unexpected Vary: range header!");
-        assertFalse(varies.contains(WANT_DIGEST), "Unexpected Vary: want-digest header!");
         assertTrue(varies.contains(ACCEPT_DATETIME), "Unexpected Vary: accept-datetime header!");
         assertTrue(varies.contains(PREFER), "Unexpected Vary: prefer header!");
     }
@@ -134,7 +132,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response status!");
         assertEquals("text/ldpatch", res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
@@ -151,7 +149,7 @@ public class GetHandlerTest extends BaseTestHandler {
     public void testGetVersionedLdprs() {
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, true, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
@@ -174,7 +172,6 @@ public class GetHandlerTest extends BaseTestHandler {
         final List<Object> varies = res.getHeaders().get(VARY);
         assertTrue(varies.contains(PREFER), "Missing Vary: prefer header!");
         assertFalse(varies.contains(RANGE), "Unexpected Vary: range header!");
-        assertFalse(varies.contains(WANT_DIGEST), "Unexpected Vary: want-digest header!");
         assertFalse(varies.contains(ACCEPT_DATETIME), "Unexpected Vary: accept-datetime header!");
     }
 
@@ -190,7 +187,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertTrue(res.getLinks().stream().anyMatch(hasType(SKOS.Concept)), "Missing extra type link header!");
@@ -206,7 +203,7 @@ public class GetHandlerTest extends BaseTestHandler {
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
 
         final Response res = assertThrows(NotAcceptableException.class, () ->
-                unwrapAsyncError(handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))),
+                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource))),
                 "No error thrown when given an unaccepable media type!").getResponse();
         assertEquals(NOT_ACCEPTABLE, res.getStatusInfo(), "Incorrect response code!");
     }
@@ -218,7 +215,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
@@ -241,7 +238,6 @@ public class GetHandlerTest extends BaseTestHandler {
         assertTrue(varies.contains(ACCEPT_DATETIME), "Missing Vary: accept-datetime header!");
         assertTrue(varies.contains(PREFER), "Missing Vary: prefer header!");
         assertFalse(varies.contains(RANGE), "Unexpected Vary: range header!");
-        assertFalse(varies.contains(WANT_DIGEST), "Unexpected Vary: want-digest header!");
     }
 
     @Test
@@ -254,7 +250,7 @@ public class GetHandlerTest extends BaseTestHandler {
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
 
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
         assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
@@ -286,7 +282,6 @@ public class GetHandlerTest extends BaseTestHandler {
         assertTrue(varies.contains(ACCEPT_DATETIME), "Missing Vary: accept-datetime header!");
         assertTrue(varies.contains(PREFER), "Missing Vary: prefer header!");
         assertFalse(varies.contains(RANGE), "Unexpected Vary: range header!");
-        assertFalse(varies.contains(WANT_DIGEST), "Unexpected Vary: want-digest header!");
     }
 
     @Test
@@ -297,7 +292,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
@@ -315,7 +310,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertAll("Check binary description", checkBinaryDescription(res));
     }
@@ -328,7 +323,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertAll("Check binary description", checkBinaryDescription(res));
     }
@@ -356,7 +351,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(-1, res.getLength(), "Incorrect response length!");
@@ -379,7 +374,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-            .toCompletableFuture().join().build();
+            .build();
 
         assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
         assertAll("Check LDP type link headers", checkLdpType(res, LDP.RDFSource));

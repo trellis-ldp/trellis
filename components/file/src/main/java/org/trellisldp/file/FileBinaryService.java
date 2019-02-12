@@ -16,34 +16,19 @@ package org.trellisldp.file;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.delete;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD2;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA3_256;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA3_384;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA3_512;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.security.MessageDigest;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
@@ -61,24 +46,6 @@ import org.trellisldp.api.IdentifierService;
 
 /**
  * A {@link BinaryService} implementation that stores LDP-NR resources as files on a local filesystem.
- *
- * <p>This service supports the following digest algorithms:
- * <ul>
- * <li>MD5</li>
- * <li>MD2</li>
- * <li>SHA</li>
- * <li>SHA-1</li>
- * <li>SHA-256</li>
- * <li>SHA-384</li>
- * <li>SHA-512</li>
- * </ul>
- *
- * <p>When running under JDK 9+, the following additional digest algorithms are supported:
- * <ul>
- * <li>SHA3-256</li>
- * <li>SHA3-384</li>
- * <li>SHA3-512</li>
- * </ul>
  */
 public class FileBinaryService implements BinaryService {
 
@@ -92,13 +59,8 @@ public class FileBinaryService implements BinaryService {
     public static final String CONFIG_FILE_BINARY_LENGTH = "trellis.file.binary.length";
 
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
-    private static final String SHA = "SHA";
     private static final int DEFAULT_HIERARCHY = 3;
     private static final int DEFAULT_LENGTH = 2;
-
-    private static final Set<String> algorithms = asList(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512,
-            SHA3_256, SHA3_384, SHA3_512).stream()
-        .collect(toSet());
 
     private final String basePath;
     private final Supplier<String> idSupplier;
@@ -177,16 +139,6 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletionStage<MessageDigest> calculateDigest(final IRI identifier, final MessageDigest algorithm) {
-        return supplyAsync(() -> computeDigest(identifier, algorithm));
-    }
-
-    @Override
-    public Set<String> supportedAlgorithms() {
-        return algorithms;
-    }
-
-    @Override
     public String generateIdentifier() {
         return idSupplier.get();
     }
@@ -196,14 +148,6 @@ public class FileBinaryService implements BinaryService {
         return of(identifier).map(IRI::getIRIString).filter(x -> x.startsWith("file:")).map(URI::create)
             .map(URI::getSchemeSpecificPart).map(x -> trimStart(x, "/")).map(x -> new File(basePath, x))
             .orElseThrow(() -> new IllegalArgumentException("Could not create File object from IRI: " + identifier));
-    }
-
-    private MessageDigest computeDigest(final IRI identifier, final MessageDigest algorithm) {
-        try (final InputStream input = new FileInputStream(getFileFromIdentifier(identifier))) {
-            return updateDigest(algorithm, input);
-        } catch (final IOException ex) {
-            throw new UncheckedIOException("Error computing digest", ex);
-        }
     }
 
     private static String trimStart(final String str, final String trim) {

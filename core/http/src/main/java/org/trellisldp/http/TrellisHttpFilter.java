@@ -27,7 +27,6 @@ import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.EXT;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
@@ -45,7 +44,6 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
 import org.trellisldp.http.core.AcceptDatetime;
-import org.trellisldp.http.core.Digest;
 import org.trellisldp.http.core.Range;
 import org.trellisldp.http.core.Version;
 
@@ -82,9 +80,6 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
                 ctx.abortWith(status(BAD_REQUEST).build());
             }
         });
-
-        ofNullable(ctx.getHeaderString(DIGEST)).filter(x -> isNull(Digest.valueOf(x))).ifPresent(x ->
-            ctx.abortWith(status(BAD_REQUEST).build()));
 
         ofNullable(ctx.getUriInfo().getQueryParameters().getFirst("version")).ifPresent(x -> {
             // Check well-formedness

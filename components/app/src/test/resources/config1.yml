@@ -77,7 +77,6 @@ cors:
         - "PATCH"
     allowHeaders:
         - "Content-Type"
-        - "Want-Digest"
         - "Link"
     exposeHeaders:
         - "Link"

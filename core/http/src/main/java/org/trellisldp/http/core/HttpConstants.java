@@ -73,9 +73,6 @@ public final class HttpConstants {
     /** The Trellis ext parameter value used for accessing the description of an LDP-NR. **/
     public static final String DESCRIPTION = "description";
 
-    /** The name of the HTTP response header used to communicate instance digest values. **/
-    public static final String DIGEST = "Digest";
-
     /** The Memento link parameter indicating the beginning range of a TimeMap. **/
     public static final String FROM = "from";
 
@@ -117,9 +114,6 @@ public final class HttpConstants {
 
     /** The Memento link relation for TimeMap resources. **/
     public static final String TIMEMAP = "timemap";
-
-    /** The name of the HTTP request header used to request an instance digest. **/
-    public static final String WANT_DIGEST = "Want-Digest";
 
     /** The Memento link parameter indicating the ending range of a TimeMap. **/
     public static final String UNTIL = "until";

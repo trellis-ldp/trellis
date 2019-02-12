@@ -21,6 +21,7 @@ import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
@@ -68,14 +69,12 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
-import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES;
@@ -92,7 +91,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -380,42 +378,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryDigestInvalid() throws IOException {
-        final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
-
-        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertNull(res.getHeaderString(DIGEST), "Unexpected Digest header!");
-        assertAll("Check Binary response", checkBinaryResponse(res));
-
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity, "Incorrect entity value!");
-    }
-
-    @Test
-    public void testGetBinaryDigestMd5() throws IOException {
-        final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
-
-        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertEquals("md5=Q29tcHV0ZWREaWdlc3Q=", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
-        assertAll("Check Binary response", checkBinaryResponse(res));
-
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity, "Incorrect entity value!");
-    }
-
-    @Test
-    public void testGetBinaryDigestSha1() throws IOException {
-        final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "SHA").get();
-
-        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertEquals("sha=Q29tcHV0ZWREaWdlc3Q=", res.getHeaderString(DIGEST), "Incorrect Digest header value!");
-        assertAll("Check Binary response", checkBinaryResponse(res));
-
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        assertEquals("Some input stream", entity, "Incorrect entity value!");
-    }
-
-    @Test
     public void testGetBinaryRange() throws IOException {
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=3-10").get();
 
@@ -432,17 +394,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockBinary.getContent()).thenReturn(mockInputStream);
         when(mockInputStream.skip(anyLong())).thenThrow(new IOException());
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=300-400").get();
-        assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    public void testGetBinaryDigestError() throws Exception {
-        when(mockBinaryService.calculateDigest(eq(binaryInternalIdentifier), any(MessageDigest.class)))
-            .thenAnswer(inv ->
-                supplyAsync(() -> {
-                    throw new RuntimeTrellisException("Expected exception");
-                }));
-        final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "MD5").get();
         assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");
     }
 
@@ -485,7 +436,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Missing Memento-Datetime header!");
         assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant(),
                 "Incorrect Memento-Datetime header value!");
-        assertAll("Check Vary headers", checkVary(res, asList(RANGE, WANT_DIGEST)));
+        assertAll("Check Vary headers", checkVary(res, singletonList(RANGE)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertEquals("Some input stream", entity, "Incorrect entity value!");
@@ -1374,73 +1325,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostBinaryWithInvalidDigest() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header(SLUG, "newresource")
-            .header(DIGEST, "md5=blahblah").post(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    public void testPostUnparseableDigest() {
-        final Response res = target(RESOURCE_PATH).request()
-            .header(DIGEST, "digest this, man!").post(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    public void testPostBinaryWithInvalidDigestType() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header(SLUG, "newresource")
-            .header(DIGEST, "uh=huh").post(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    public void testPostBinaryWithMd5Digest() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header(DIGEST, "md5=BJozgIQwPzzVzSxvjQsWkA==")
-            .header(SLUG, "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
-    }
-
-    @Test
-    public void testPostBinaryWithSha1Digest() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request().header(DIGEST, "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
-            .header(SLUG, "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
-    }
-
-    @Test
-    public void testPostBinaryWithSha256Digest() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
-                    any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        final Response res = target(RESOURCE_PATH).request()
-            .header(DIGEST, "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
-            .header(SLUG, "newresource").post(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
-    }
-
-    @Test
     public void testPostTimeMap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1785,32 +1669,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutBinaryWithInvalidDigest() {
-        final Response res = target(BINARY_PATH).request().header(DIGEST, "md5=blahblah")
-            .put(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    public void testPutBinaryWithMd5Digest() {
-        final Response res = target(BINARY_PATH).request().header(DIGEST, "md5=BJozgIQwPzzVzSxvjQsWkA==")
-            .put(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
-    }
-
-    @Test
-    public void testPutBinaryWithSha1Digest() {
-        final Response res = target(BINARY_PATH).request().header(DIGEST, "sha=3VWEuvPnAM6riDQJUu4TG7A4Ots=")
-            .put(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
-    }
-
-    @Test
     public void testPutBinaryToACL() {
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request()
             .put(entity("some data.", TEXT_PLAIN_TYPE));
@@ -1943,16 +1801,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    public void testPutBinaryWithSha256Digest() {
-        final Response res = target(BINARY_PATH).request()
-            .header(DIGEST, "sha-256=voCCIRTNXosNlEgQ/7IuX5dFNvFQx5MfG/jy1AKiLMU=")
-            .put(entity("some data.", TEXT_PLAIN_TYPE));
-
-        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource));
     }
 
     @Test
@@ -2404,7 +2252,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     private Stream<Executable> checkVary(final Response res, final List<String> vary) {
         final List<String> vheaders = res.getStringHeaders().get(VARY);
-        return Stream.of(RANGE, WANT_DIGEST, ACCEPT_DATETIME, PREFER).map(header -> vary.contains(header)
+        return Stream.of(RANGE, ACCEPT_DATETIME, PREFER).map(header -> vary.contains(header)
                 ? () -> assertTrue(vheaders.contains(header), "Missing Vary header: " + header)
                 : () -> assertFalse(vheaders.contains(header), "Unexpected Vary header: " + header));
     }
@@ -2470,7 +2318,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 () -> assertTrue(res.getMediaType().isCompatible(TEXT_PLAIN_TYPE), "Incompatible content-type!"),
                 () -> assertNotNull(res.getHeaderString(ACCEPT_RANGES), "Missing Accept-Ranges header!"),
                 () -> assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!"),
-                () -> assertAll("Check Vary header", checkVary(res, asList(RANGE, WANT_DIGEST, ACCEPT_DATETIME))),
+                () -> assertAll("Check Vary header", checkVary(res, asList(RANGE, ACCEPT_DATETIME))),
                 () -> assertAll("Check allowed methods",
                                 checkAllowedMethods(res, asList(PUT, DELETE, GET, HEAD, OPTIONS))),
                 () -> assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.NonRDFSource)));

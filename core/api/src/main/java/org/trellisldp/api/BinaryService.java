@@ -14,9 +14,6 @@
 package org.trellisldp.api;
 
 import java.io.InputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.IRI;
@@ -40,21 +37,6 @@ public interface BinaryService extends RetrievalService<Binary> {
     CompletionStage<Void> setContent(BinaryMetadata metadata, InputStream stream);
 
     /**
-     * Set the content for a binary object using a digest algorithm.
-     *
-     * @implSpec The default implementation will compute a digest while processing the {@code InputStream}.
-     * @param metadata the binary metadata
-     * @param stream the context
-     * @param algorithm the digest algorithm
-     * @return the new completion stage containing the server-computed digest.
-     */
-    default CompletionStage<MessageDigest> setContent(final BinaryMetadata metadata, final InputStream stream,
-                    final MessageDigest algorithm) {
-        final DigestInputStream input = new DigestInputStream(stream, algorithm);
-        return setContent(metadata, input).thenApply(future -> input.getMessageDigest());
-    }
-
-    /**
      * Purge the content from its corresponding datastore.
      *
      * @param identifier the binary object identifier
@@ -64,24 +46,6 @@ public interface BinaryService extends RetrievalService<Binary> {
      *         {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
      */
     CompletionStage<Void> purgeContent(IRI identifier);
-
-    /**
-     * Calculate the digest for a binary object.
-     *
-     * @apiNote As per RFC 3230, the digest value is calculated over the entire resource,
-     *          not just the HTTP payload.
-     * @param identifier the identifier
-     * @param algorithm the algorithm
-     * @return the new completion stage containing a computed digest for the binary resource
-     */
-    CompletionStage<MessageDigest> calculateDigest(IRI identifier, MessageDigest algorithm);
-
-    /**
-     * Get a list of supported algorithms.
-     *
-     * @return the supported digest algorithms
-     */
-    Set<String> supportedAlgorithms();
 
     /**
      * Get a new identifier.

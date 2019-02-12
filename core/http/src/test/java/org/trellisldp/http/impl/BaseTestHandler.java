@@ -50,7 +50,6 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -130,9 +129,6 @@ abstract class BaseTestHandler {
 
     @Mock
     protected Binary mockBinary;
-
-    @Mock
-    protected MessageDigest mockDigest;
 
     @Mock
     protected Resource mockResource, mockParent;
@@ -232,24 +228,13 @@ abstract class BaseTestHandler {
         when(mockBinary.getContent(eq(3), eq(10))).thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent()).thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
-        when(mockBinaryService.supportedAlgorithms()).thenReturn(new HashSet<>(asList("MD5", "SHA-1")));
-        when(mockDigest.digest()).thenReturn("computed-digest".getBytes(UTF_8));
-        when(mockBinaryService.calculateDigest(any(IRI.class), any(MessageDigest.class)))
-            .thenReturn(completedFuture(mockDigest));
         when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class), any()))
-            .thenAnswer(inv -> {
-                readLines((InputStream) inv.getArguments()[1], UTF_8);
-                return completedFuture(null);
-            });
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
         .thenAnswer(inv -> {
             readLines((InputStream) inv.getArguments()[1], UTF_8);
             return completedFuture(null);
         });
-        doCallRealMethod().when(mockBinaryService)
-            .setContent(any(BinaryMetadata.class), any(InputStream.class), any());
     }
 
     private void setUpBundler() {

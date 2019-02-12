@@ -143,7 +143,7 @@ public class TrellisConfigurationTest {
 
         assertTrue(config.getCors().getEnabled(), "CORS not enabled!");
         assertTrue(config.getCors().getAllowOrigin().contains("*"), "'*' not in CORS allow-origin!");
-        assertTrue(config.getCors().getAllowHeaders().contains("Want-Digest"), "want-digest not in CORS allow-headers");
+        assertTrue(config.getCors().getAllowHeaders().contains("Link"), "Link not in CORS allow-headers");
         assertTrue(config.getCors().getAllowMethods().contains("PUT"), "PUT not in CORS allow-methods!");
         assertTrue(config.getCors().getExposeHeaders().contains("Memento-Datetime"),
                 "memento-datetime missing from CORS expose-headers!");

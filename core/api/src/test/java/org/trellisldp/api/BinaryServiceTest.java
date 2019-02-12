@@ -14,9 +14,7 @@
 package org.trellisldp.api;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Base64.getEncoder;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.apache.commons.io.IOUtils.readLines;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -25,7 +23,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
@@ -53,8 +50,6 @@ public class BinaryServiceTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        doCallRealMethod().when(mockBinaryService).setContent(any(BinaryMetadata.class),
-                any(InputStream.class), any(MessageDigest.class));
     }
 
     @Test
@@ -66,21 +61,5 @@ public class BinaryServiceTest {
                 .thenApply(b -> b.getContent(0, 6)).toCompletableFuture().join()) {
             assertEquals("FooBar", IOUtils.toString(content, UTF_8), "Binary content did not match");
         }
-    }
-
-    @Test
-    public void testSetContent() throws Exception {
-        final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
-        when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
-            .thenAnswer(inv -> {
-                readLines((InputStream) inv.getArguments()[1], UTF_8);
-                return completedFuture(null);
-            });
-        assertDoesNotThrow(mockBinaryService
-                        .setContent(BinaryMetadata.builder(identifier).build(), inputStream,
-                                        MessageDigest.getInstance("MD5"))
-                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString)
-                        .thenAccept(digest -> assertEquals("8yom4qOoqjOM13tuEmPFNQ==", digest))
-                        .toCompletableFuture()::join);
     }
 }
