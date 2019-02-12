@@ -32,10 +32,6 @@ public final class Trellis {
     /* Classes */
     public static final IRI ConstraintViolation = createIRI(getNamespace() + "ConstraintViolation");
     public static final IRI DeletedResource = createIRI(getNamespace() + "DeletedResource");
-    public static final IRI BinaryUploadService = createIRI(getNamespace() + "BinaryUploadService");
-
-    /* Properties */
-    public static final IRI multipartUploadService = createIRI(getNamespace() + "multipartUploadService");
 
     /* Named Individuals */
     public static final IRI AdministratorAgent = createIRI(getNamespace() + "AdministratorAgent");
