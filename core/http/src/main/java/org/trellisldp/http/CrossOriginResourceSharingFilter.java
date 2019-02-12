@@ -90,7 +90,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
              populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_METHODS,
                      "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE")),
              populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_HEADERS,
-                     "Content-Type,Link,Accept,Accept-DateTIme,Prefer,Slug,Origin")),
+                     "Content-Type,Link,Accept,Accept-DateTime,Prefer,Slug,Origin")),
              populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_EXPOSE_HEADERS,
                      "Content-Type,Link,Memento-Datetime,Preference-Applied,Location,Accept-Patch,Accept-Post," +
                      "Accept-Ranges,ETag,Vary")),
