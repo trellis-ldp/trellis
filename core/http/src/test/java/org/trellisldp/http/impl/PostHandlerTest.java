@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -50,7 +49,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.core.Digest;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
@@ -185,7 +183,7 @@ public class PostHandlerTest extends BaseTestHandler {
         assertEquals(create(baseUrl + path), res.getLocation(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
 
-        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class), any());
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
         verify(mockResourceService).create(any(Metadata.class), any(Dataset.class));
     }
@@ -202,48 +200,6 @@ public class PostHandlerTest extends BaseTestHandler {
         assertEquals(create(baseUrl + "new-resource"), res.getLocation(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
         assertAll("Check Binary response", checkBinaryEntityResponse());
-    }
-
-    @Test
-    public void testEntityWithDigest() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "1VOyRwUXW1CPdC5nelt7GQ=="));
-
-        final PostHandler handler = buildPostHandler("/simpleData.txt", "resource-with-entity", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "resource-with-entity"), res.getLocation(), "Incorrect Location hearder!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
-        assertAll("Check Binary response", checkBinaryEntityResponse());
-    }
-
-    @Test
-    public void testEntityBadDigest() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("md5", "blahblah"));
-
-        final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
-
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .thenApply(ResponseBuilder::build)
-                .exceptionally(err -> of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
-                    .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err))
-                    .getResponse()).toCompletableFuture().join();
-        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
-    }
-
-    @Test
-    public void testBadDigest() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-        when(mockTrellisRequest.getDigest()).thenReturn(new Digest("foo", "blahblahblah"));
-
-        final PostHandler handler = buildPostHandler("/simpleData.txt", "bad-digest", null);
-
-        final Response res = assertThrows(BadRequestException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))).getResponse();
-        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
     }
 
     @Test

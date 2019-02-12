@@ -14,10 +14,7 @@
 package org.trellisldp.file;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Base64.getEncoder;
-import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
@@ -25,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.concurrent.CompletionException;
 
@@ -36,7 +32,6 @@ import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
@@ -63,15 +58,6 @@ public class FileBinaryServiceTest {
     @AfterAll
     public static void cleanUp() {
         System.clearProperty(FileBinaryService.CONFIG_FILE_BINARY_BASE_PATH);
-    }
-
-    @Test
-    public void testSupportedAlgorithms() {
-        final BinaryService service = new FileBinaryService();
-        assertTrue(service.supportedAlgorithms().contains("SHA"));
-        assertTrue(service.supportedAlgorithms().contains("SHA-1"));
-        assertTrue(service.supportedAlgorithms().contains("SHA-256"));
-        assertTrue(service.supportedAlgorithms().contains("MD5"));
     }
 
     @Test
@@ -169,38 +155,6 @@ public class FileBinaryServiceTest {
                 assertNotNull(err, "There should have been an error with the input stream!");
                 return null;
             }).toCompletableFuture().join());
-    }
-
-    @Test
-    public void testBase64Digest() throws IOException {
-        final BinaryService service = new FileBinaryService();
-        assertEquals("oZ1Y1O/8vs39RH31fh9lrA==", service.calculateDigest(file, getDigest("MD5"))
-                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString)
-                        .toCompletableFuture().join(), "Bad MD5 digest!");
-        assertEquals("QJuYLse9SK/As177lt+rSfixyH0=", service.calculateDigest(file, getDigest("SHA-1"))
-                        .thenApply(MessageDigest::digest).thenApply(getEncoder()::encodeToString)
-                        .toCompletableFuture().join(), "Bad SHA digest!");
-        assertThrows(CompletionException.class, () ->
-                service.calculateDigest(rdf.createIRI("file:///" + randomFilename()), getDigest("MD5"))
-                .toCompletableFuture().join(), "Computing digest on invalid file should throw an exception!");
-    }
-
-    @Test
-    @DisabledOnJre(JAVA_8)
-    public void testJdk9Digests() throws IOException {
-        final BinaryService service = new FileBinaryService();
-        assertEquals("FQgyH2yU2NhyMTZ7YDDKwV5vcWUBM1zq0uoIYUiHH+4=",
-                        service.calculateDigest(file, getDigest("SHA3-256")).thenApply(MessageDigest::digest)
-                                        .thenApply(getEncoder()::encodeToString).toCompletableFuture().join(),
-                        "Bad SHA3-256 digest!");
-        assertEquals("746UDLrFXM61gzI0FnoVT2S0Z7EmQUfhHnoSYwkR2MHzbBe6j9rMigQBfR8ApZUA",
-                        service.calculateDigest(file, getDigest("SHA3-384")).thenApply(MessageDigest::digest)
-                                        .thenApply(getEncoder()::encodeToString).toCompletableFuture().join(),
-                        "Bad SHA3-384 digest!");
-        assertEquals("Ecu/R0kV4eL0J/VOpyVA2Lz0T6qsJj9ioQ+QorJDztJeMj6uhf6zqyhZnu9zMYiwrkX8U4oWiZMDT/0fWjOyYg==",
-                        service.calculateDigest(file, getDigest("SHA3-512")).thenApply(MessageDigest::digest)
-                                        .thenApply(getEncoder()::encodeToString).toCompletableFuture().join(),
-                        "Bad SHA3-512 digest!");
     }
 
     @Test

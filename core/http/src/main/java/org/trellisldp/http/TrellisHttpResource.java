@@ -379,7 +379,7 @@ public class TrellisHttpResource {
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
                 .thenApply(getHandler::initialize).thenApply(getHandler::standardHeaders)
                 .thenCombine(trellis.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
-                .thenCompose(getHandler::getRepresentation);
+                .thenApply(getHandler::getRepresentation);
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
@@ -409,7 +409,7 @@ public class TrellisHttpResource {
         return trellis.getResourceService().get(identifier).thenApply(getHandler::initialize)
             .thenApply(getHandler::standardHeaders)
             .thenCombine(trellis.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
-            .thenCompose(getHandler::getRepresentation);
+            .thenApply(getHandler::getRepresentation);
     }
 
     private CompletionStage<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {

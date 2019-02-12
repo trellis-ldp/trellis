@@ -23,9 +23,7 @@ import static org.awaitility.Duration.TWO_SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
-import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
@@ -128,23 +126,6 @@ public interface LdpBinaryTests extends CommonTests {
     }
 
     /**
-     * Test creating a new binary via POST with a digest header.
-     */
-    @Test
-    @DisplayName("Test creating a new binary via POST with a digest header")
-    default void testPostBinaryWithDigest() {
-        // POST an LDP-NR
-        try (final Response res = target().request().header(DIGEST, "md5=bUMuG430lSc5B2PWyoNIgA==")
-                .header(SLUG, generateRandomValue(getClass().getSimpleName()))
-                .post(entity(CONTENT, TEXT_PLAIN))) {
-            assertAll("Check POSTing LDP-NR with digest", checkNonRdfResponse(res, null));
-            final String resource = res.getLocation().toString();
-            assertTrue(resource.startsWith(getBaseURL()), "Check the response location");
-            assertTrue(resource.length() > getBaseURL().length(), "Check for a nested response location");
-        }
-    }
-
-    /**
      * Test modifying a binary's description via PATCH.
      */
     @Test
@@ -209,46 +190,6 @@ public interface LdpBinaryTests extends CommonTests {
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
                         rdf.createIRI(getResourceLocation())), "Check for an ldp:contains triple");
-        }
-    }
-
-    /**
-     * Test that the SHA digest is generated.
-     */
-    @Test
-    @DisplayName("Test that the SHA digest is generated")
-    default void testBinaryWantDigestSha() {
-        // Test the SHA-1 algorithm
-        try (final Response res = target(getResourceLocation()).request().header(WANT_DIGEST, "SHA,MD5").get()) {
-            assertAll("Check binary with SHA-1 digest", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
-            assertEquals("sha=Z5pg2cWB1IqkKKMjh57cQKAeKp0=", res.getHeaderString(DIGEST), "Check the SHA digest value");
-        }
-    }
-
-    /**
-     * Test that the SHA-256 digest is generated.
-     */
-    @Test
-    @DisplayName("Test that the SHA-256 digest is generated")
-    default void testBinaryWantDigestSha256() {
-        // Test the SHA-256 algorithm
-        try (final Response res = target(getResourceLocation()).request().header(WANT_DIGEST, "SHA-256").get()) {
-            assertAll("Check binary with SHA-256 digest", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
-            assertEquals("sha-256=wZXqBpAjgZLSoADF419CRpJCurDcagOwnb/8VAiiQXA=", res.getHeaderString(DIGEST),
-                    "Check the SHA-256 digest value");
-        }
-    }
-
-    /**
-     * Test that an unknown digest is ignored.
-     */
-    @Test
-    @DisplayName("Test that an unknown digest is ignored")
-    default void testBinaryWantDigestUnknown() {
-        // Test an unknown digest algorithm
-        try (final Response res = target(getResourceLocation()).request().header(WANT_DIGEST, "FOO").get()) {
-            assertAll("Check binary with unknown digest", checkNonRdfResponse(res, TEXT_PLAIN_TYPE));
-            assertNull(res.getHeaderString(DIGEST), "Check that no Digest header is present");
         }
     }
 }

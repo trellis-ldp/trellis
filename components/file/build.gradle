@@ -12,7 +12,6 @@ dependencies {
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
 
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'

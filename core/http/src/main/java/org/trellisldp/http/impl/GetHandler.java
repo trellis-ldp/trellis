@@ -14,15 +14,11 @@
 package org.trellisldp.http.impl;
 
 import static java.lang.String.join;
-import static java.util.Base64.getEncoder;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -40,7 +36,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
-import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -51,14 +46,12 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
-import static org.trellisldp.http.core.HttpConstants.DIGEST;
 import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
-import static org.trellisldp.http.core.HttpConstants.WANT_DIGEST;
 import static org.trellisldp.http.core.Prefer.PREFER_MINIMAL;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.core.Prefer.PREFER_RETURN;
@@ -76,12 +69,10 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.SortedSet;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
@@ -215,7 +206,7 @@ public class GetHandler extends BaseLdpHandler {
      * @param builder the response builder
      * @return the response builder
      */
-    public CompletionStage<ResponseBuilder> getRepresentation(final ResponseBuilder builder) {
+    public ResponseBuilder getRepresentation(final ResponseBuilder builder) {
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
         getResource().getBinaryMetadata().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
@@ -300,7 +291,7 @@ public class GetHandler extends BaseLdpHandler {
         }
     }
 
-    private CompletionStage<ResponseBuilder> getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax,
+    private ResponseBuilder getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax,
             final IRI profile) {
         final Prefer prefer = ACL.equals(getRequest().getExt()) ?
             new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
@@ -323,12 +314,12 @@ public class GetHandler extends BaseLdpHandler {
                     .orElse(PREFER_REPRESENTATION)));
 
         if (ofNullable(prefer).flatMap(Prefer::getPreference).filter(PREFER_MINIMAL::equals).isPresent()) {
-            return completedFuture(builder.status(NO_CONTENT));
+            return builder.status(NO_CONTENT);
         }
 
         // Short circuit HEAD requests
         if (HEAD.equals(getRequest().getMethod())) {
-            return completedFuture(builder);
+            return builder;
         }
 
         // Stream the rdf content
@@ -345,26 +336,10 @@ public class GetHandler extends BaseLdpHandler {
                 }
             }
         };
-        return completedFuture(builder.entity(stream));
+        return builder.entity(stream);
     }
 
-    private CompletionStage<Optional<String>> computeInstanceDigest(final IRI dsid) {
-        // Add instance digests, if Requested and supported
-        if (nonNull(getRequest().getWantDigest())) {
-            final Optional<String> algorithm = getRequest().getWantDigest().getAlgorithms().stream()
-                .filter(getServices().getBinaryService().supportedAlgorithms()::contains).findFirst();
-            if (algorithm.isPresent()) {
-                final String alg = algorithm.filter(isEqual("SHA").negate()).orElse("SHA-1");
-                return getServices().getBinaryService().calculateDigest(dsid, getDigest(alg))
-                    .thenApply(MessageDigest::digest)
-                    .thenApply(getEncoder()::encodeToString)
-                    .thenApply(digest -> Optional.of(algorithm.get().toLowerCase() + "=" + digest));
-            }
-        }
-        return completedFuture(empty());
-    }
-
-    private CompletionStage<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
+    private ResponseBuilder getLdpNr(final ResponseBuilder builder) {
 
         final Instant mod = getResource().getModified();
         final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", mod, null));
@@ -373,7 +348,7 @@ public class GetHandler extends BaseLdpHandler {
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);
 
         // Add standard headers
-        builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag)
+        builder.header(VARY, RANGE).header(ACCEPT_RANGES, "bytes").tag(etag)
             .header(ALLOW, isMemento ? join(",", GET, HEAD, OPTIONS) : join(",", GET, HEAD, OPTIONS, PUT, DELETE));
 
         // Stream the binary content
@@ -387,8 +362,7 @@ public class GetHandler extends BaseLdpHandler {
             }
         };
 
-        return computeInstanceDigest(dsid).thenAccept(digest -> digest.ifPresent(d -> builder.header(DIGEST, d)))
-            .thenApply(future -> builder.entity(stream));
+        return builder.entity(stream);
     }
 
     private CompletionStage<InputStream> getBinaryStream(final IRI dsid, final TrellisRequest req) {

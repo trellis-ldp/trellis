@@ -108,7 +108,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
 
         final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
             .collect(toList());
-        assertEquals(9L, headers.size(), "Incorrect count of -Allow-Headers values!");
+        assertEquals(7L, headers.size(), "Incorrect count of -Allow-Headers values!");
         assertTrue(headers.contains("accept"), "accept missing from -Allow-Headers!");
         assertTrue(headers.contains("link"), "link missing from -Allow-Headers!");
         assertTrue(headers.contains("content-type"), "content-type missing from -Allow-Headers!");
