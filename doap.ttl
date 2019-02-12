@@ -42,11 +42,6 @@
             dc:identifier "memento" ;
             rdfs:seeAlso <https://tools.ietf.org/html/rfc7089> ] ,
         [ a doap:Specification ;
-            doap:name "Instance Digests"@en ;
-            doap:description "RFC 3230: Instance Digests in HTTP"@en ;
-            dc:identifier "digest" ;
-            rdfs:seeAlso <https://tools.ietf.org/html/rfc3230> ] ,
-        [ a doap:Specification ;
             doap:name "Web Access Control"@en ;
             doap:description "SOLID WebAC: Authorization and Access Control"@en ;
             dc:identifier "webac" ;
