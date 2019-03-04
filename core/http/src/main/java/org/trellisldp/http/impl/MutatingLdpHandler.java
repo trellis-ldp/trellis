@@ -51,6 +51,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
+import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.http.core.SimpleEvent;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;

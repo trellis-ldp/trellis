@@ -35,7 +35,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.slf4j.Logger;
 import org.trellisldp.api.AgentService;
-import org.trellisldp.http.impl.HttpSession;
+import org.trellisldp.http.core.HttpSession;
 
 /**
  * A {@link ContainerRequestFilter} that converts a {@link java.security.Principal} into an
