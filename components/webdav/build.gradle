@@ -1,0 +1,57 @@
+apply plugin: 'java-library'
+apply plugin: 'biz.aQute.bnd.builder'
+
+description = 'Trellis WebDAV API'
+
+ext {
+    moduleName = 'org.trellisldp.webdav'
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent']
+}
+
+dependencies {
+    api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    api("javax.enterprise:cdi-api:${cdiApiVersion}")
+    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    api("org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion")
+    api project(':trellis-api')
+
+    implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+    implementation("commons-io:commons-io:$commonsIoVersion")
+    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
+    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.apache.jena:jena-core:$jenaVersion")
+    implementation project(':trellis-http')
+    implementation project(':trellis-vocabulary')
+
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation project(':trellis-agent')
+    testImplementation project(':trellis-audit')
+    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-io-jena')
+
+    testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
+    testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
+    testRuntimeClasspath("org.glassfish.jaxb:jaxb-runtime:2.3.0")
+}
+
+if (project.sourceCompatibility.isJava11Compatible()) {
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-opens', "java.base/java.net=jersey.client",
+            ]
+        }
+    }
+}
