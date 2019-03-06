@@ -468,19 +468,18 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("label"));
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
-        final Instant evenLater = meanwhile();
+        final Instant later2 = meanwhile();
 
-        assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
-                        .toCompletableFuture(),
-                      svc.touch(resource).toCompletableFuture()).join(), "Unsuccessful create operation!");
+        assertDoesNotThrow(() -> allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource)
+                        .build(), dataset).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
+                "Unsuccessful create operation (basic containment)!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater, 2L, 1L)).toCompletableFuture(),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 0L, 1L))
+            svc.get(child).thenAccept(checkChild(later2, 2L, 1L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later2, LDP.BasicContainer, 3L, 0L, 1L))
                 .toCompletableFuture(),
             svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
-            svc.get(root).thenAccept(checkPredates(evenLater)).toCompletableFuture()).join();
+            svc.get(root).thenAccept(checkPredates(later2)).toCompletableFuture()).join();
 
         // Now update the child resource
         dataset.clear();
@@ -488,19 +487,19 @@ public class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, child, RDFS.seeAlso, rdf.createIRI("http://www.example.com/"));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("a label"));
 
-        final Instant evenLater2 = meanwhile();
+        final Instant later3 = meanwhile();
 
         assertDoesNotThrow(() -> svc.replace(builder(child).interactionModel(LDP.RDFSource).container(resource).build(),
                     dataset).toCompletableFuture().join(),
                 "Unsuccessful create operation!");
 
         allOf(
-            svc.get(child).thenAccept(checkChild(evenLater2, 2L, 2L)).toCompletableFuture(),
-            svc.get(resource).thenAccept(checkResource(evenLater, LDP.BasicContainer, 3L, 0L, 1L))
+            svc.get(child).thenAccept(checkChild(later3, 2L, 2L)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkResource(later2, LDP.BasicContainer, 3L, 0L, 1L))
                 .toCompletableFuture(),
-            svc.get(resource).thenAccept(checkPredates(evenLater2)).toCompletableFuture(),
+            svc.get(resource).thenAccept(checkPredates(later3)).toCompletableFuture(),
             svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
-            svc.get(root).thenAccept(checkPredates(evenLater2)).toCompletableFuture()).join();
+            svc.get(root).thenAccept(checkPredates(later3)).toCompletableFuture()).join();
     }
 
     @Test
@@ -701,7 +700,7 @@ public class TriplestoreResourceServiceTest {
                 allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
                         .toCompletableFuture(),
                       svc.touch(resource).toCompletableFuture(), svc.touch(members).toCompletableFuture()).join(),
-                "Unsuccessful create operation!");
+                "Unsuccessful create operation (multiple/primary direct containment)!");
 
         allOf(
             svc.get(child).thenAccept(checkChild(later4, 1L, 1L)).toCompletableFuture(),
@@ -723,11 +722,10 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later5 = meanwhile();
 
-        assertDoesNotThrow(() ->
-                allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2).build(), dataset)
-                        .toCompletableFuture(),
+        assertDoesNotThrow(() -> allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2)
+                        .build(), dataset).toCompletableFuture(),
                       svc.touch(members).toCompletableFuture(), svc.touch(resource2).toCompletableFuture()).join(),
-                "Unsuccessful create operation!");
+                "Unsuccessful create operation (Multiple/secondary direct containment)!");
 
         allOf(
             svc.get(child2).thenAccept(res -> {
@@ -894,14 +892,12 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertDoesNotThrow(() -> allOf(
-            svc.create(builder(resource).interactionModel(LDP.IndirectContainer).container(root)
-                .membershipResource(members).memberRelation(RDFS.label)
+        assertDoesNotThrow(() -> allOf(svc.create(builder(resource).interactionModel(LDP.IndirectContainer)
+                .container(root).memberRelation(RDFS.label).membershipResource(members)
                 .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
-            svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
+            svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation (indirect containment)!");
 
-        allOf(
-            svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 4L, 0L))
+        allOf(svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 7L, 4L, 0L))
                 .toCompletableFuture(),
             svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
@@ -918,8 +914,8 @@ public class TriplestoreResourceServiceTest {
 
         assertDoesNotThrow(() ->
                 allOf(svc.create(builder(members).interactionModel(LDP.RDFSource).container(root).build(), dataset)
-                        .toCompletableFuture(),
-                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
+                        .toCompletableFuture(), svc.touch(root).toCompletableFuture()).join(),
+                "Unsuccessful create operation (indirect containment)!");
 
         allOf(
             svc.get(members).thenAccept(checkMember(evenLater, 1L, 4L, 0L)).toCompletableFuture(),
@@ -1056,7 +1052,8 @@ public class TriplestoreResourceServiceTest {
                 svc.create(builder(resource).interactionModel(LDP.IndirectContainer).container(root)
                     .membershipResource(members).memberRelation(RDFS.label)
                     .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
-                svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
+                svc.touch(root).toCompletableFuture()).join(),
+                "Unsuccessful create operation (multiple indirect containment)!");
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 4L, 2L, 0L)).toCompletableFuture(),
@@ -1136,11 +1133,11 @@ public class TriplestoreResourceServiceTest {
 
         final Instant later = meanwhile();
 
-        assertDoesNotThrow(() ->
-                allOf(svc.create(builder(resource).interactionModel(LDP.IndirectContainer).container(root)
-                        .membershipResource(members).memberRelation(RDFS.label)
+        assertDoesNotThrow(() -> allOf(svc.create(builder(resource).interactionModel(LDP.IndirectContainer)
+                        .container(root).membershipResource(members).memberRelation(RDFS.label)
                         .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
-                      svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
+                      svc.touch(root).toCompletableFuture()).join(),
+                "Unsuccessful create operation (multiple indirect containment)!");
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 3L, 0L)).toCompletableFuture(),
