@@ -115,21 +115,18 @@ public class OSGiTest {
     @Test
     public void testAuditAndTriplestoreInstallation() throws Exception {
         // test these two together because trellis-triplestore depends on trellis-audit
-        assertFalse("trellis-audit already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
-        featuresService.installFeature("trellis-audit");
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-audit"))) {
+            featuresService.installFeature("trellis-audit");
+        }
         assertTrue("trellis-audit not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
-        featuresService.uninstallFeature("trellis-audit");
-        assertFalse("trellis-audit still installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
 
-        assertFalse("trellis-triplestore already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
-        featuresService.installFeature("trellis-triplestore");
-        checkTrellisBundlesAreActive();
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-triplestore"))) {
+            featuresService.installFeature("trellis-triplestore");
+        }
         assertTrue("trellis-triplestore not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-triplestore")));
+        checkTrellisBundlesAreActive();
     }
 
     @Test
@@ -137,7 +134,6 @@ public class OSGiTest {
         assertFalse("trellis-http already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-http")));
         featuresService.installFeature("trellis-http");
-        checkTrellisBundlesAreActive();
         assertTrue("trellis-http not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-http")));
     }

@@ -64,10 +64,12 @@ ext {
     sleepycatVersion = '18.3.12'
 
     /* OSGi */
-    mustacheOsgiVersion = '0.9.5_4'
+    javaxElVersion = '2.2.4'
+    javaxInterceptorVersion = '1.2.2'
     jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = '2.0.0_1'
     karafVersion = '4.2.1'
+    mustacheOsgiVersion = '0.9.5_4'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
     paxExamVersion = '4.13.1'

@@ -6,6 +6,8 @@
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:javax.enterprise/cdi-api/${cdiApiVersion}</bundle>
+    <bundle dependency="true">mvn:javax.el/javax.el-api/${javaxElVersion}</bundle>
+    <bundle dependency="true">mvn:javax.interceptor/javax.interceptor-api/${javaxInterceptorVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-api/${project.version}</bundle>
