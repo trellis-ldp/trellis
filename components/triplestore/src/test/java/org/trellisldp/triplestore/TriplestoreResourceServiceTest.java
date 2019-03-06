@@ -1094,7 +1094,7 @@ public class TriplestoreResourceServiceTest {
                 allOf(svc.create(builder(child).interactionModel(LDP.RDFSource).container(resource).build(), dataset)
                         .toCompletableFuture(),
                       svc.touch(members).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
-                "Unsuccessful create operation!");
+                "Unsuccessful create operation (indirect container child)!");
 
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 2L, 1L)).toCompletableFuture(),
@@ -1137,7 +1137,7 @@ public class TriplestoreResourceServiceTest {
                         .container(root).membershipResource(members).memberRelation(RDFS.label)
                         .insertedContentRelation(SKOS.prefLabel).build(), dataset).toCompletableFuture(),
                       svc.touch(root).toCompletableFuture()).join(),
-                "Unsuccessful create operation (multiple indirect containment)!");
+                "Unsuccessful create operation (multiple indirect containment 2)!");
 
         allOf(
             svc.get(resource).thenAccept(checkResource(later, LDP.IndirectContainer, 5L, 3L, 0L)).toCompletableFuture(),
@@ -1146,8 +1146,8 @@ public class TriplestoreResourceServiceTest {
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-IC"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
-        dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.insertedContentRelation, SKOS.prefLabel);
+        dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
 
         final Instant evenLater = meanwhile();
