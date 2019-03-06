@@ -56,6 +56,7 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).getBinaryMetadata();
         doCallRealMethod().when(mockResource).hasAcl();
         doCallRealMethod().when(mockResource).getExtraLinkRelations();
+        doCallRealMethod().when(mockResource).dataset();
 
         when(mockResource.stream()).thenAnswer((x) -> empty());
     }
@@ -82,6 +83,7 @@ public class ResourceTest {
 
         assertEquals(1L, mockResource.stream(prefer).count(), "Resource stream has wrong number of triples!");
         assertEquals(1L, mockResource.stream(singleton(prefer)).count(), "Resource has wrong number of triples!");
+        assertEquals(2L, mockResource.dataset().size());
     }
 
     @Test

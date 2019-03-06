@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.rdf.api.BlankNode;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFTerm;
 
@@ -31,7 +32,55 @@ import org.apache.commons.rdf.api.RDFTerm;
  *           managed by an external framework (e.g. using {@code PostConstruct}). This may or may not include
  *           actions in external systems like databases, which may be better managed elsewhere.
  */
-public interface ResourceService extends MutableDataService<Resource>, ImmutableDataService<Resource> {
+public interface ResourceService extends RetrievalService<Resource> {
+
+    /**
+     * Create a resource in the server.
+     *
+     * @implSpec the default implementation of this method is to proxy create requests to the {@link #replace} method.
+     * @param metadata metadata for the new resource
+     * @param dataset the dataset to be persisted
+     * @return a new completion stage that, when the stage completes normally, indicates that the supplied data were
+     * successfully created in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
+     */
+    default CompletionStage<Void> create(Metadata metadata, Dataset dataset) {
+        return replace(metadata, dataset);
+    }
+
+    /**
+     * Replace a resource in the server.
+     *
+     * @param metadata metadata for the resource
+     * @param dataset the dataset to be persisted
+     * @return a new completion stage that, when the stage completes normally, indicates that the supplied data
+     * were successfully stored in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
+     */
+    CompletionStage<Void> replace(Metadata metadata, Dataset dataset);
+
+    /**
+     * Delete a resource from the server.
+     *
+     * @param metadata metadata for the resource
+     * @return a new completion stage that, when the stage completes normally, indicates that the resource
+     * was successfully deleted from the corresponding persistence layer. In the case of an unsuccessful delete
+     * operation, the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
+     */
+    CompletionStage<Void> delete(Metadata metadata);
+
+    /**
+     * @param identifier the identifier under which to persist a dataset
+     * @param dataset a dataset to persist
+     * @return a new completion stage that, when the stage completes normally, indicates that the supplied data
+     * were successfully stored in the corresponding persistence layer. In the case of an unsuccessful write operation,
+     * the {@link CompletionStage} will complete exceptionally and can be handled with
+     * {@link CompletionStage#handle}, {@link CompletionStage#exceptionally} or similar methods.
+     */
+    CompletionStage<Void> add(IRI identifier, Dataset dataset);
 
     /**
      * Skolemize a blank node.
