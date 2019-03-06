@@ -1,5 +1,5 @@
 Automatic-Module-Name:  ${project.ext.moduleName}
-Export-Package:         ${project.ext.moduleName}
+Export-Package:         ${project.ext.moduleName},${project.ext.moduleName}.xml
 
 Bundle-Vendor:          ${project.vendor}
 Bundle-Version:         ${project.version}

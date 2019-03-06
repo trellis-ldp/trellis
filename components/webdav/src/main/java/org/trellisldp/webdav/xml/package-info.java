@@ -13,8 +13,8 @@
  */
 
 /**
- * WebDAV API implementation for Trellis.
+ * WebDAV XML API implementation for Trellis.
  *
- * <p>This package provides a WebDAV API for Trellis.
+ * <p>This package models the WebDAV xml structures.
  */
-package org.trellisldp.webdav;
+package org.trellisldp.webdav.xml;

@@ -11,13 +11,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.webdav.impl;
+package org.trellisldp.webdav.xml;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * A PROPFIND propname class.
+ * A PROPPATCH update class.
  */
-@XmlRootElement(name = "propname", namespace = "DAV:")
-public class DavPropName {
+@XmlRootElement(name = "remove", namespace = "DAV:")
+public class DavRemove {
+
+    private DavProp prop;
+
+    /**
+     * Get the prop element.
+     * @return the prop element
+     */
+    @XmlElement(name = "prop", namespace = "DAV:")
+    public DavProp getProp() {
+        return prop;
+    }
+
+    /**
+     * Set the prop element.
+     * @param prop the set element
+     */
+    public void setProp(final DavProp prop) {
+        this.prop = prop;
+    }
 }

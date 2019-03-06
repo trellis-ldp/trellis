@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.webdav.impl;
+package org.trellisldp.webdav.xml;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * A PROPFIND allprop class.
+ * A PROPFIND propname class.
  */
-@XmlRootElement(name = "allprop", namespace = "DAV:")
-public class DavAllProp {
+@XmlRootElement(name = "propname", namespace = "DAV:")
+public class DavPropName {
 }
