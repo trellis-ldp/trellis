@@ -58,6 +58,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -80,6 +81,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -190,11 +192,15 @@ public class WebDAVTest extends JerseyTest {
 
         initMocks(this);
 
-        final String baseUri = getBaseUri().toString();
-
         final ResourceConfig config = new ResourceConfig();
 
         try {
+            // Use a random free port for testing
+            final String port = Integer.toString(new ServerSocket(0).getLocalPort());
+            forceSet(TestProperties.CONTAINER_PORT, port);
+
+            final String baseUri = "http://localhost:" + port + "/";
+
             System.setProperty(CONFIG_HTTP_BASE_URL, baseUri);
             config.register(new DebugExceptionMapper());
             config.register(new TrellisWebDAVRequestFilter(mockBundler));
@@ -203,6 +209,8 @@ public class WebDAVTest extends JerseyTest {
             config.register(new TrellisWebDAVAuthzFilter(accessControlService));
             config.register(new TrellisHttpResource(mockBundler));
             config.register(new WebAcFilter(accessControlService));
+        } catch (final IOException ex) {
+            throw new RuntimeTrellisException("Could not acquire free port!", ex);
         } finally {
             System.clearProperty(CONFIG_HTTP_BASE_URL);
         }
