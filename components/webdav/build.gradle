@@ -18,12 +18,10 @@ dependencies {
     api project(':trellis-api')
 
     implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")
-    implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation("org.apache.jena:jena-core:$jenaVersion")
+    implementation("org.apache.jena:jena-arq:$jenaVersion")
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
 
@@ -42,7 +40,8 @@ dependencies {
 
     testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
     testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
-    testRuntimeClasspath("org.glassfish.jaxb:jaxb-runtime:2.3.0")
+    // This uses a JPMS-compatible version of jaxb (2.3 won't work)
+    testRuntimeClasspath("org.glassfish.jaxb:jaxb-runtime:2.4.0-b180830.0438")
 }
 
 if (project.sourceCompatibility.isJava11Compatible()) {
@@ -51,6 +50,8 @@ if (project.sourceCompatibility.isJava11Compatible()) {
         doFirst {
             jvmArgs += [
                 '--add-opens', "java.base/java.net=jersey.client",
+                '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.junit.platform.commons",
+                '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.mockito",
             ]
         }
     }
