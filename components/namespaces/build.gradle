@@ -5,7 +5,7 @@ description = 'Trellis Namespace Manageer'
 
 ext {
     moduleName = 'org.trellisldp.namespaces'
-    testModules = ['org.apache.commons.rdf.simple', 'tamaya.core', 'org.trellisldp.vocabulary']
+    testModules = ['org.apache.commons.rdf.simple', 'smallrye.config', 'org.trellisldp.vocabulary']
 }
 
 dependencies {
@@ -13,11 +13,11 @@ dependencies {
     api project(':trellis-api')
 
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation project(':trellis-vocabulary')
 }

@@ -21,7 +21,7 @@ import static java.util.Base64.getUrlDecoder;
 import static java.util.Date.from;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -133,8 +133,9 @@ public class OAuthFilterTest {
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
-            final String token = Jwts.builder().claim("webid", WEBID1).signWith(hmacShaKeyFor(getConfiguration()
-                            .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
+            final String token = Jwts.builder().claim("webid", WEBID1).signWith(hmacShaKeyFor(getConfig()
+                            .getValue(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET, String.class).getBytes(UTF_8)))
+                            .compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
             final OAuthFilter filter = new OAuthFilter();
             filter.filter(mockContext);
@@ -150,8 +151,9 @@ public class OAuthFilterTest {
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
-            final String token = Jwts.builder().claim("webid", WEBID2).signWith(hmacShaKeyFor(getConfiguration()
-                            .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
+            final String token = Jwts.builder().claim("webid", WEBID2).signWith(hmacShaKeyFor(getConfig()
+                            .getValue(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET, String.class).getBytes(UTF_8)))
+                            .compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BEARER " + token);
             final OAuthFilter filter = new OAuthFilter();
             filter.filter(mockContext);
@@ -168,8 +170,9 @@ public class OAuthFilterTest {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
             final String token = Jwts.builder().claim("webid", WEBID1)
-                .signWith(hmacShaKeyFor(getConfiguration()
-                            .get(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET).getBytes(UTF_8))).compact();
+                .signWith(hmacShaKeyFor(getConfig()
+                            .getValue(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET, String.class).getBytes(UTF_8)))
+                            .compact();
             when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
 
             final OAuthFilter filter = new OAuthFilter();

@@ -22,7 +22,7 @@ import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
@@ -45,7 +45,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
@@ -91,12 +91,12 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      */
     @Inject
     public WebAcFilter(final AccessControlService accessService) {
-        this(accessService, getConfiguration());
+        this(accessService, getConfig());
     }
 
-    private WebAcFilter(final AccessControlService accessService, final Configuration config) {
-        this(accessService, asList(config.getOrDefault(CONFIG_AUTH_CHALLENGES, "").split(",")),
-                config.getOrDefault(CONFIG_AUTH_REALM, "trellis"));
+    private WebAcFilter(final AccessControlService accessService, final Config config) {
+        this(accessService, asList(config.getOptionalValue(CONFIG_AUTH_CHALLENGES, String.class).orElse("").split(",")),
+                config.getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"));
     }
 
     /**

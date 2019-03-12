@@ -85,8 +85,8 @@ import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
-import org.apache.tamaya.Configuration;
-import org.apache.tamaya.ConfigurationProvider;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.CacheService.TrellisProfileCache;
@@ -164,13 +164,13 @@ public class JenaIOService implements IOService {
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
             @TrellisProfileCache final CacheService<String, String> cache) {
-        this(namespaceService, htmlSerializer, cache, ConfigurationProvider.getConfiguration());
+        this(namespaceService, htmlSerializer, cache, ConfigProvider.getConfig());
     }
 
     private JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final Configuration config) {
-        this(namespaceService, htmlSerializer, cache, config.getOrDefault(CONFIG_IO_JSONLD_PROFILES, ""),
-                config.getOrDefault(CONFIG_IO_JSONLD_DOMAINS, ""));
+            final CacheService<String, String> cache, final Config config) {
+        this(namespaceService, htmlSerializer, cache, config.getOptionalValue(CONFIG_IO_JSONLD_PROFILES, String.class)
+                .orElse(""), config.getOptionalValue(CONFIG_IO_JSONLD_DOMAINS, String.class).orElse(""));
     }
 
     /**

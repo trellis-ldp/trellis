@@ -20,7 +20,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Triple;
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
@@ -88,14 +88,16 @@ public class HtmlSerializer implements RDFaWriterService {
      * @param namespaceService a namespace service
      */
     public HtmlSerializer(final NamespaceService namespaceService) {
-        this(namespaceService, getConfiguration());
+        this(namespaceService, getConfig());
     }
 
-    private HtmlSerializer(final NamespaceService namespaceService, final Configuration config) {
-        this(namespaceService, config.get(CONFIG_RDFA_TEMPLATE),
-                config.getOrDefault(CONFIG_RDFA_CSS, "//www.trellisldp.org/assets/css/trellis.css"),
-                config.getOrDefault(CONFIG_RDFA_JS, ""),
-                config.getOrDefault(CONFIG_RDFA_ICON, "//www.trellisldp.org/assets/img/trellis.png"));
+    private HtmlSerializer(final NamespaceService namespaceService, final Config config) {
+        this(namespaceService, config.getOptionalValue(CONFIG_RDFA_TEMPLATE, String.class).orElse(null),
+                config.getOptionalValue(CONFIG_RDFA_CSS, String.class)
+                    .orElse("//www.trellisldp.org/assets/css/trellis.css"),
+                config.getOptionalValue(CONFIG_RDFA_JS, String.class).orElse(""),
+                config.getOptionalValue(CONFIG_RDFA_ICON, String.class)
+                    .orElse("//www.trellisldp.org/assets/img/trellis.png"));
     }
 
     /**

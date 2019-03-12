@@ -5,7 +5,7 @@ description = 'Trellis HTTP API'
 
 ext {
     moduleName = 'org.trellisldp.http'
-    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent']
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent', 'smallrye.config']
 }
 
 dependencies {
@@ -20,14 +20,14 @@ dependencies {
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")

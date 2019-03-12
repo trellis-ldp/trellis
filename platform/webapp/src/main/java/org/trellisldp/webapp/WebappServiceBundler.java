@@ -15,11 +15,11 @@ package org.trellisldp.webapp;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.concurrent.TimeUnit.HOURS;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import com.google.common.cache.Cache;
 
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
@@ -56,11 +56,12 @@ public class WebappServiceBundler implements ServiceBundler {
      * Create a new application service bundler.
      */
     public WebappServiceBundler() {
-        final Configuration config = getConfiguration();
+        final Config config = getConfig();
         final NamespaceService nsService = AppUtils.loadFirst(NamespaceService.class);
         final Cache<String, String> cache = newBuilder()
-            .maximumSize(config.getOrDefault("trellis.webapp.cache.size", Long.class, 100L))
-            .expireAfterAccess(config.getOrDefault("trellis.webapp.cache.hours", Long.class, 24L), HOURS).build();
+            .maximumSize(config.getOptionalValue("trellis.webapp.cache.size", Long.class).orElse(100L))
+            .expireAfterAccess(config.getOptionalValue("trellis.webapp.cache.hours", Long.class).orElse(24L), HOURS)
+            .build();
         final TrellisCache profileCache = new TrellisCache(cache);
 
         eventService = AppUtils.loadWithDefault(EventService.class, NoopEventService::new);

@@ -25,7 +25,7 @@ module org.trellisldp.triplestore {
 
     requires javax.inject;
     requires slf4j.api;
-    requires tamaya.api;
+    requires microprofile.config.api;
 
     provides org.trellisldp.api.ResourceService
         with org.trellisldp.triplestore.TriplestoreResourceService;
@@ -34,5 +34,4 @@ module org.trellisldp.triplestore {
         with org.trellisldp.triplestore.TriplestoreResourceService;
 
     uses org.trellisldp.api.IdentifierService;
-    uses org.apache.tamaya.spi.ConfigurationProviderSpi;
 }

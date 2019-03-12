@@ -5,7 +5,7 @@ description = 'Trellis File-based service implementations'
 
 ext {
     moduleName = 'org.trellisldp.file'
-    testModules = ['tamaya.core']
+    testModules = ['smallrye.config']
 }
 
 dependencies {
@@ -18,12 +18,13 @@ dependencies {
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
     implementation("org.apache.jena:jena-arq:$jenaVersion")
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
 }
+

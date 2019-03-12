@@ -18,7 +18,7 @@ import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +53,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
      */
     @Inject
     public BasicAuthFilter() {
-        this(getConfiguration().get(CONFIG_AUTH_BASIC_CREDENTIALS));
+        this(getConfig().getValue(CONFIG_AUTH_BASIC_CREDENTIALS, String.class));
     }
 
     /**
@@ -69,7 +69,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
      * @param file the credentials file
      */
     public BasicAuthFilter(final File file) {
-        this(file, getConfiguration().getOrDefault(CONFIG_AUTH_REALM, "trellis"));
+        this(file, getConfig().getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"));
     }
 
     /**

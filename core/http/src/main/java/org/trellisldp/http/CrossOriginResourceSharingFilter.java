@@ -22,7 +22,7 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.HttpMethod.OPTIONS;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
@@ -37,7 +37,7 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 
 /**
@@ -82,20 +82,20 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
      */
     @Inject
     public CrossOriginResourceSharingFilter() {
-        this(getConfiguration());
+        this(getConfig());
     }
 
-    private CrossOriginResourceSharingFilter(final Configuration config) {
-        this(populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_ORIGIN, "*")),
-             populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_METHODS,
-                     "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE")),
-             populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_HEADERS,
-                     "Content-Type,Link,Accept,Accept-DateTime,Prefer,Slug,Origin")),
-             populateFieldNames(config.getOrDefault(CONFIG_HTTP_CORS_EXPOSE_HEADERS,
-                     "Content-Type,Link,Memento-Datetime,Preference-Applied,Location,Accept-Patch,Accept-Post," +
-                     "Accept-Ranges,ETag,Vary")),
-             config.getOrDefault(CONFIG_HTTP_CORS_ALLOW_CREDENTIALS, Boolean.class, Boolean.TRUE),
-             config.getOrDefault(CONFIG_HTTP_CORS_MAX_AGE, Integer.class, 180));
+    private CrossOriginResourceSharingFilter(final Config config) {
+        this(populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_ORIGIN, String.class).orElse("*")),
+             populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_METHODS, String.class)
+                 .orElse("GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE")),
+             populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_HEADERS, String.class)
+                 .orElse("Content-Type,Link,Accept,Accept-DateTime,Prefer,Slug,Origin")),
+             populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_EXPOSE_HEADERS, String.class)
+                 .orElse("Content-Type,Link,Memento-Datetime,Preference-Applied,Location,Accept-Patch,Accept-Post," +
+                         "Accept-Ranges,ETag,Vary")),
+             config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_CREDENTIALS, Boolean.class).orElse(Boolean.TRUE),
+             config.getOptionalValue(CONFIG_HTTP_CORS_MAX_AGE, Integer.class).orElse(180));
     }
 
     /**

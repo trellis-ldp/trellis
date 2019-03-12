@@ -37,7 +37,7 @@
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
 
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-file/${project.version}</bundle>
@@ -78,8 +78,8 @@
     <!-- microprofile metrics depends on cdi/1.2 -->
     <bundle dependency="true">mvn:javax.enterprise/cdi-api/1.2</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
   </feature>
@@ -91,8 +91,8 @@
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
 
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-io-jena/${project.version}</bundle>
 
@@ -104,9 +104,9 @@
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
 
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.mustache-compiler/${mustacheOsgiVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-rdfa/${project.version}</bundle>
   </feature>
@@ -119,8 +119,8 @@
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-namespaces/${project.version}</bundle>
   </feature>
@@ -154,7 +154,7 @@
     <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
   </feature>
@@ -169,7 +169,7 @@
 
     <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.metrics/microprofile-metrics-api/${microprofileMetricsVersion}</bundle>
     <!-- microprofile metrics depends on cdi/1.2 -->
     <bundle dependency="true">mvn:javax.enterprise/cdi-api/1.2</bundle>
@@ -196,7 +196,7 @@
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.kafka-clients/${kafkaOsgiVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-kafka/${project.version}</bundle>
   </feature>
@@ -208,7 +208,7 @@
 
     <bundle dependency="true">mvn:com.rabbitmq/amqp-client/${rabbitMqVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-amqp/${project.version}</bundle>
   </feature>
@@ -222,7 +222,7 @@
 
     <bundle dependency="true">mvn:javax.jms/javax.jms-api/${jmsApiVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
   </feature>
@@ -239,8 +239,8 @@
     <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-auth-oauth/${project.version}</bundle>
   </feature>
@@ -252,8 +252,8 @@
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.tamaya/tamaya-api/${tamayaVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-auth-basic/${project.version}</bundle>
   </feature>

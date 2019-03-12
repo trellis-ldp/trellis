@@ -13,12 +13,11 @@
  */
 package org.trellisldp.jms;
 
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Iterator;
@@ -32,7 +31,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -72,11 +71,12 @@ public class JmsPublisher implements EventService {
      */
     @Inject
     public JmsPublisher() throws JMSException {
-        this(getConfiguration());
+        this(getConfig());
     }
 
-    private JmsPublisher(final Configuration config) throws JMSException {
-        this(buildJmsConnection(config).createSession(false, AUTO_ACKNOWLEDGE), config.get(CONFIG_JMS_QUEUE_NAME));
+    private JmsPublisher(final Config config) throws JMSException {
+        this(buildJmsConnection(config).createSession(false, AUTO_ACKNOWLEDGE),
+                config.getValue(CONFIG_JMS_QUEUE_NAME, String.class));
     }
 
     /**
@@ -85,7 +85,7 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a connection error
      */
     public JmsPublisher(final Connection conn) throws JMSException {
-        this(conn.createSession(false, AUTO_ACKNOWLEDGE), getConfiguration().get(CONFIG_JMS_QUEUE_NAME));
+        this(conn.createSession(false, AUTO_ACKNOWLEDGE), getConfig().getValue(CONFIG_JMS_QUEUE_NAME, String.class));
     }
 
     /**
@@ -115,12 +115,13 @@ public class JmsPublisher implements EventService {
         });
     }
 
-    private static Connection buildJmsConnection(final Configuration config) throws JMSException {
+    private static Connection buildJmsConnection(final Config config) throws JMSException {
         final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
-                config.get(CONFIG_JMS_URL));
-        if (nonNull(config.get(CONFIG_JMS_USERNAME)) && nonNull(config.get(CONFIG_JMS_PASSWORD))) {
-            factory.setUserName(config.get(CONFIG_JMS_USERNAME));
-            factory.setPassword(config.get(CONFIG_JMS_PASSWORD));
+                config.getValue(CONFIG_JMS_URL, String.class));
+        if (config.getOptionalValue(CONFIG_JMS_USERNAME, String.class).isPresent()
+                && config.getOptionalValue(CONFIG_JMS_PASSWORD, String.class).isPresent()) {
+            factory.setUserName(config.getValue(CONFIG_JMS_USERNAME, String.class));
+            factory.setPassword(config.getValue(CONFIG_JMS_PASSWORD, String.class));
         }
         return factory.createConnection();
     }

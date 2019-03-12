@@ -16,7 +16,7 @@ package org.trellisldp.amqp;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -81,12 +81,12 @@ public class AmqpPublisher implements EventService {
      */
     @Inject
     public AmqpPublisher() throws IOException, GeneralSecurityException, URISyntaxException, TimeoutException {
-        this(getConfiguration());
+        this(getConfig());
     }
 
-    private AmqpPublisher(final Configuration config) throws IOException, GeneralSecurityException, URISyntaxException,
+    private AmqpPublisher(final Config config) throws IOException, GeneralSecurityException, URISyntaxException,
             TimeoutException {
-        this(buildConnection(config.get(CONFIG_AMQP_URI)).createChannel(), config);
+        this(buildConnection(config.getValue(CONFIG_AMQP_URI, String.class)).createChannel(), config);
     }
 
     /**
@@ -94,13 +94,14 @@ public class AmqpPublisher implements EventService {
      * @param channel the channel
      */
     public AmqpPublisher(final Channel channel) {
-        this(channel, getConfiguration());
+        this(channel, getConfig());
     }
 
-    private AmqpPublisher(final Channel channel, final Configuration config) {
-        this(channel, config.get(CONFIG_AMQP_EXCHANGE_NAME), config.get(CONFIG_AMQP_ROUTING_KEY),
-            config.getOrDefault(CONFIG_AMQP_MANDATORY, Boolean.class, Boolean.TRUE),
-            config.getOrDefault(CONFIG_AMQP_IMMEDIATE, Boolean.class, Boolean.FALSE));
+    private AmqpPublisher(final Channel channel, final Config config) {
+        this(channel, config.getValue(CONFIG_AMQP_EXCHANGE_NAME, String.class),
+                config.getValue(CONFIG_AMQP_ROUTING_KEY, String.class),
+            config.getOptionalValue(CONFIG_AMQP_MANDATORY, Boolean.class).orElse(Boolean.TRUE),
+            config.getOptionalValue(CONFIG_AMQP_IMMEDIATE, Boolean.class).orElse(Boolean.FALSE));
     }
 
     /**

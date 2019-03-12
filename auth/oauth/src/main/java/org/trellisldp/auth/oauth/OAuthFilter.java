@@ -19,7 +19,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import io.jsonwebtoken.JwtException;
@@ -36,7 +36,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
 
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 
 /**
@@ -79,7 +79,7 @@ public class OAuthFilter implements ContainerRequestFilter {
      * @param authenticator the authenticator
      */
     public OAuthFilter(final Authenticator authenticator) {
-        this(authenticator, getConfiguration().getOrDefault(CONFIG_AUTH_REALM, "trellis"));
+        this(authenticator, getConfig().getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"));
     }
 
     /**
@@ -122,23 +122,23 @@ public class OAuthFilter implements ContainerRequestFilter {
     }
 
     private static Authenticator buildAuthenticator() {
-        final Configuration config = getConfiguration();
+        final Config config = getConfig();
         final Authenticator jwksAuthenticator = OAuthUtils.buildAuthenticatorWithJwk(
-                config.get(CONFIG_AUTH_OAUTH_JWK_URL));
+                config.getOptionalValue(CONFIG_AUTH_OAUTH_JWK_URL, String.class).orElse(null));
         if (nonNull(jwksAuthenticator)) {
             return jwksAuthenticator;
         }
 
         final Authenticator keystoreAuthenticator = OAuthUtils.buildAuthenticatorWithTruststore(
-                config.get(CONFIG_AUTH_OAUTH_KEYSTORE_PATH),
-                config.getOrDefault(CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS, "").toCharArray(),
-                asList(config.getOrDefault(CONFIG_AUTH_OAUTH_KEYSTORE_IDS, "").split(",")));
+                config.getOptionalValue(CONFIG_AUTH_OAUTH_KEYSTORE_PATH, String.class).orElse(null),
+                config.getOptionalValue(CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS, String.class).orElse("").toCharArray(),
+                asList(config.getOptionalValue(CONFIG_AUTH_OAUTH_KEYSTORE_IDS, String.class).orElse("").split(",")));
         if (nonNull(keystoreAuthenticator)) {
             return keystoreAuthenticator;
         }
 
         final Authenticator sharedKeyAuthenticator = OAuthUtils.buildAuthenticatorWithSharedSecret(
-                config.get(CONFIG_AUTH_OAUTH_SHARED_SECRET));
+                config.getOptionalValue(CONFIG_AUTH_OAUTH_SHARED_SECRET, String.class).orElse(null));
         if (nonNull(sharedKeyAuthenticator)) {
             return sharedKeyAuthenticator;
         }

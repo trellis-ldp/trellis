@@ -5,7 +5,7 @@ description = 'Trellis Triplestore'
 
 ext {
     moduleName = 'org.trellisldp.triplestore'
-    testModules = ['tamaya.core', 'org.trellisldp.test']
+    testModules = ['smallrye.config', 'org.trellisldp.test']
 }
 
 dependencies {
@@ -20,12 +20,12 @@ dependencies {
     implementation("org.apache.jena:jena-rdfconnection:$jenaVersion")
     implementation("org.apache.jena:jena-tdb2:$jenaVersion")
     implementation("org.apache.jena:jena-arq:$jenaVersion")
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-test');
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {

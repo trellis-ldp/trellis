@@ -13,7 +13,7 @@ dependencies {
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
@@ -25,6 +25,7 @@ dependencies {
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
     testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
@@ -32,7 +33,6 @@ dependencies {
     }
     testImplementation("org.apache.jena:jena-arq:$jenaVersion")
     testImplementation("org.apache.jena:jena-rdfconnection:$jenaVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'org.hamcrest', module: 'hamcrest-library'

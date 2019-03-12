@@ -17,7 +17,7 @@ import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
@@ -103,7 +103,7 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     }
 
     private static Set<String> getConfiguredAdmins() {
-        final String admins = getConfiguration().getOrDefault(CONFIG_HTTP_AGENT_ADMIN_USERS, "");
+        final String admins = getConfig().getOptionalValue(CONFIG_HTTP_AGENT_ADMIN_USERS, String.class).orElse("");
         return stream(admins.split(",")).map(String::trim).collect(toSet());
     }
 }

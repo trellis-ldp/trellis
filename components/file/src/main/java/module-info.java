@@ -22,7 +22,7 @@ module org.trellisldp.file {
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
     requires javax.inject;
-    requires tamaya.api;
+    requires microprofile.config.api;
     requires slf4j.api;
 
     provides org.trellisldp.api.BinaryService
@@ -31,5 +31,4 @@ module org.trellisldp.file {
         with org.trellisldp.file.FileMementoService;
 
     uses org.trellisldp.api.IdentifierService;
-    uses org.apache.tamaya.spi.ConfigurationProviderSpi;
 }

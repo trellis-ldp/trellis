@@ -36,7 +36,7 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.jena.util.SplitIRI.localnameXML;
 import static org.apache.jena.util.SplitIRI.namespaceXML;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -92,7 +92,7 @@ import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
@@ -140,11 +140,11 @@ public class TrellisWebDAV {
      */
     @Inject
     public TrellisWebDAV(final ServiceBundler services) {
-        this(services, getConfiguration());
+        this(services, getConfig());
     }
 
-    private TrellisWebDAV(final ServiceBundler services, final Configuration config) {
-        this(services, config.get(CONFIG_HTTP_BASE_URL));
+    private TrellisWebDAV(final ServiceBundler services, final Config config) {
+        this(services, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
     /**

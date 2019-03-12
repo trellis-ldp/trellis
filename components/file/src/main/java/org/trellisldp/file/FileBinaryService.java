@@ -35,8 +35,8 @@ import java.util.function.Supplier;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.tamaya.Configuration;
-import org.apache.tamaya.ConfigurationProvider;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
@@ -80,7 +80,7 @@ public class FileBinaryService implements BinaryService {
      * @param idService an identifier service
      */
     public FileBinaryService(final IdentifierService idService) {
-        this(idService, ConfigurationProvider.getConfiguration());
+        this(idService, ConfigProvider.getConfig());
     }
 
     /**
@@ -93,15 +93,15 @@ public class FileBinaryService implements BinaryService {
      */
     public FileBinaryService(final IdentifierService idService, final String basePath,
             final int hierarchy, final int length) {
-        this.basePath = requireNonNull(basePath, CONFIG_FILE_BINARY_BASE_PATH + " configuration may not be null!");
+        this.basePath = basePath;
         LOGGER.info("Storing binaries as files at {}", basePath);
         this.idSupplier = idService.getSupplier("file:///", hierarchy, length);
     }
 
-    private FileBinaryService(final IdentifierService idService, final Configuration config) {
-        this(idService, config.get(CONFIG_FILE_BINARY_BASE_PATH),
-                config.getOrDefault(CONFIG_FILE_BINARY_HIERARCHY, Integer.class, DEFAULT_HIERARCHY),
-                config.getOrDefault(CONFIG_FILE_BINARY_LENGTH, Integer.class, DEFAULT_LENGTH));
+    private FileBinaryService(final IdentifierService idService, final Config config) {
+        this(idService, config.getValue(CONFIG_FILE_BINARY_BASE_PATH, String.class),
+                config.getOptionalValue(CONFIG_FILE_BINARY_HIERARCHY, Integer.class).orElse(DEFAULT_HIERARCHY),
+                config.getOptionalValue(CONFIG_FILE_BINARY_LENGTH, Integer.class).orElse(DEFAULT_LENGTH));
     }
 
     @Override

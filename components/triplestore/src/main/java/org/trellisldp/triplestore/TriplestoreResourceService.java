@@ -31,7 +31,7 @@ import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
@@ -114,7 +114,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      */
     @Inject
     public TriplestoreResourceService() {
-        this(buildRDFConnection(getConfiguration().get(CONFIG_TRIPLESTORE_RDF_LOCATION)));
+        this(buildRDFConnection(getConfig().getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class)
+                    .orElse(null)));
     }
 
     /**

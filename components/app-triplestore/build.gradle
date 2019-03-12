@@ -23,7 +23,7 @@ dependencies {
     compile("org.apache.jena:jena-arq:$jenaVersion")
     compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
-    compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    compile("io.smallrye:smallrye-config:$smallryeVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
     compile("javax.jms:javax.jms-api:$jmsApiVersion")
     compile("javax.xml.bind:jaxb-api:$jaxbVersion")

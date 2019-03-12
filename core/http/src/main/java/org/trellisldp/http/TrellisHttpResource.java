@@ -17,7 +17,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -66,7 +66,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
@@ -116,12 +116,11 @@ public class TrellisHttpResource {
      */
     @Inject
     public TrellisHttpResource(final ServiceBundler trellis) {
-        this(trellis, getConfiguration());
+        this(trellis, getConfig());
     }
 
-    private TrellisHttpResource(final ServiceBundler trellis, final
-            Configuration config) {
-        this(trellis, config.get(CONFIG_HTTP_BASE_URL), config);
+    private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
+        this(trellis, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
     }
 
     /**
@@ -131,17 +130,18 @@ public class TrellisHttpResource {
      * @param baseUrl a base URL
      */
     public TrellisHttpResource(final ServiceBundler trellis, final String baseUrl) {
-        this(trellis, baseUrl, getConfiguration());
+        this(trellis, baseUrl, getConfig());
     }
 
-    private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Configuration config) {
+    private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Config config) {
         this.baseUrl = baseUrl;
         this.trellis = trellis;
-        this.defaultJsonLdProfile = config.get(CONFIG_HTTP_JSONLD_PROFILE);
-        this.weakEtags = config.getOrDefault(CONFIG_HTTP_WEAK_ETAG, Boolean.class, Boolean.TRUE);
-        this.includeMementoDates = config.getOrDefault(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class, Boolean.TRUE);
-        this.preconditionRequired = config.getOrDefault(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class,
-                Boolean.FALSE);
+        this.defaultJsonLdProfile = config.getOptionalValue(CONFIG_HTTP_JSONLD_PROFILE, String.class).orElse(null);
+        this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.TRUE);
+        this.includeMementoDates = config.getOptionalValue(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class)
+            .orElse(Boolean.TRUE);
+        this.preconditionRequired = config.getOptionalValue(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class)
+            .orElse(Boolean.FALSE);
     }
 
     /**

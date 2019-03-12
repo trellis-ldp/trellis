@@ -17,12 +17,11 @@ module org.trellisldp.amqp {
     requires org.trellisldp.api;
     requires org.apache.commons.rdf.api;
     requires javax.inject;
-    requires tamaya.api;
+    requires microprofile.config.api;
     requires slf4j.api;
 
     provides org.trellisldp.api.EventService
         with org.trellisldp.amqp.AmqpPublisher;
 
     uses org.trellisldp.api.ActivityStreamService;
-    uses org.apache.tamaya.spi.ConfigurationProviderSpi;
 }

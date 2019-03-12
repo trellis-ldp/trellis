@@ -25,8 +25,8 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.apache.tamaya.Configuration;
-import org.apache.tamaya.ConfigurationProvider;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
@@ -36,7 +36,7 @@ final class AppUtils {
     public static final String CONFIG_WEBAPP_CACHE_ENABLED = "trellis.webapp.cache.enabled";
     public static final String CONFIG_WEBAPP_CORS_ENABLED = "trellis.webapp.cors.enabled";
 
-    private static final Configuration config = ConfigurationProvider.getConfiguration();
+    private static final Config config = ConfigProvider.getConfig();
 
     public static <T> T loadFirst(final Class<T> service) {
         return of(load(service).iterator()).filter(Iterator::hasNext).map(Iterator::next)
@@ -52,14 +52,14 @@ final class AppUtils {
     }
 
     public static Optional<CacheControlFilter> getCacheControlFilter() {
-        if (config.getOrDefault(CONFIG_WEBAPP_CACHE_ENABLED, Boolean.class, Boolean.FALSE)) {
+        if (config.getOptionalValue(CONFIG_WEBAPP_CACHE_ENABLED, Boolean.class).orElse(Boolean.FALSE)) {
             return of(new CacheControlFilter());
         }
         return empty();
     }
 
     public static Optional<CrossOriginResourceSharingFilter> getCORSFilter() {
-        if (config.getOrDefault(CONFIG_WEBAPP_CORS_ENABLED, Boolean.class, Boolean.FALSE)) {
+        if (config.getOptionalValue(CONFIG_WEBAPP_CORS_ENABLED, Boolean.class).orElse(Boolean.FALSE)) {
             return of(new CrossOriginResourceSharingFilter());
         }
         return empty();

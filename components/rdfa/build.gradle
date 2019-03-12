@@ -5,7 +5,7 @@ description = 'Trellis RDFa Module'
 
 ext {
     moduleName = 'org.trellisldp.rdfa'
-    testModules = ['org.apache.commons.rdf.jena', 'tamaya.core']
+    testModules = ['org.apache.commons.rdf.jena', 'smallrye.config']
 }
 
 dependencies {
@@ -14,7 +14,7 @@ dependencies {
 
     implementation("com.github.spullara.mustache.java:compiler:$mustacheVersion")
     implementation("org.apache.jena:jena-arq:$jenaVersion")
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation project(':trellis-vocabulary')
 
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
@@ -23,7 +23,7 @@ dependencies {
     }
     testImplementation("org.apache.jena:jena-arq:$jenaVersion")
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }
 

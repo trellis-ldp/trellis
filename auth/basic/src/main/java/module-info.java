@@ -15,11 +15,9 @@ module org.trellisldp.auth.basic {
     exports org.trellisldp.auth.basic;
 
     requires slf4j.api;
-    requires tamaya.api;
+    requires microprofile.config.api;
     requires javax.inject;
     requires java.ws.rs;
     requires java.xml.bind;
     requires java.annotation;
-
-    uses org.apache.tamaya.spi.ConfigurationProviderSpi;
 }
