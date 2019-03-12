@@ -9,11 +9,11 @@ ext {
 }
 
 dependencies {
-    api("io.dropwizard.metrics:metrics-annotation:$metricsVersion")
     api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     api("javax.enterprise:cdi-api:${cdiApiVersion}")
     api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    api("org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
 

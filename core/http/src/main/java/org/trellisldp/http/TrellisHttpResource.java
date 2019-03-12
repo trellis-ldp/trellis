@@ -32,8 +32,6 @@ import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PRECONDITION_RE
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 
-import com.codahale.metrics.annotation.Timed;
-
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -69,6 +67,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
