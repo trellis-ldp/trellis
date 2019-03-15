@@ -380,6 +380,18 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    public void testGetBinaryHeaders() throws IOException {
+        final Response res = target(BINARY_PATH).request().head();
+
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), "hub")), "Missing rel=hub header!");
+        assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), "self")),
+                "Missing rel=hub header!");
+        assertAll("Check Binary response", checkBinaryResponse(res));
+        assertFalse(res.hasEntity(), "Unexpected entity!");
+    }
+
+    @Test
     public void testGetBinaryDigestInvalid() throws IOException {
         final Response res = target(BINARY_PATH).request().header(WANT_DIGEST, "FOO").get();
 
