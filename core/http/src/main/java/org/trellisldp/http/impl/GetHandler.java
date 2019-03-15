@@ -376,6 +376,12 @@ public class GetHandler extends BaseLdpHandler {
         builder.header(VARY, RANGE).header(VARY, WANT_DIGEST).header(ACCEPT_RANGES, "bytes").tag(etag)
             .header(ALLOW, isMemento ? join(",", GET, HEAD, OPTIONS) : join(",", GET, HEAD, OPTIONS, PUT, DELETE));
 
+        // Short circuit HEAD requests
+        if (HEAD.equals(getRequest().getMethod())) {
+            return computeInstanceDigest(dsid).thenAccept(digest -> digest.ifPresent(d -> builder.header(DIGEST, d)))
+                .thenApply(future -> builder);
+        }
+
         // Stream the binary content
         final StreamingOutput stream = new StreamingOutput() {
             @Override
