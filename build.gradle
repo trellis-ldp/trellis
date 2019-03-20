@@ -68,7 +68,7 @@ ext {
     javaxInterceptorVersion = '1.2.2'
     jenaVersionRange = '[3.8,4)'
     kafkaOsgiVersion = '2.0.0_1'
-    karafVersion = '4.2.3'
+    karafVersion = '4.2.4'
     mustacheOsgiVersion = '0.9.5_4'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
