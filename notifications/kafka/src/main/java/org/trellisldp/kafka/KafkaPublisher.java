@@ -16,7 +16,7 @@ package org.trellisldp.kafka;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Iterator;
@@ -29,7 +29,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -57,11 +57,11 @@ public class KafkaPublisher implements EventService {
      */
     @Inject
     public KafkaPublisher() {
-        this(getConfiguration());
+        this(getConfig());
     }
 
-    private KafkaPublisher(final Configuration config) {
-        this(buildProducer(config), config.get(CONFIG_KAFKA_TOPIC));
+    private KafkaPublisher(final Config config) {
+        this(buildProducer(config), config.getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
     /**
@@ -69,7 +69,7 @@ public class KafkaPublisher implements EventService {
      * @param producer the producer
      */
     public KafkaPublisher(final Producer<String, String> producer) {
-        this(producer, getConfiguration().get(CONFIG_KAFKA_TOPIC));
+        this(producer, getConfig().getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
     /**
@@ -94,21 +94,24 @@ public class KafkaPublisher implements EventService {
         });
     }
 
-    private static Producer<String, String> buildProducer(final Configuration config) {
+    private static Producer<String, String> buildProducer(final Config config) {
         final String prefix = "trellis.kafka.";
         final Properties p = new Properties();
-        p.setProperty("acks", config.getOrDefault(prefix + "acks", "all"));
-        p.setProperty("batch.size", config.getOrDefault(prefix + "batch.size", "16384"));
-        p.setProperty("retries", config.getOrDefault(prefix + "retries", "0"));
-        p.setProperty("linger.ms", config.getOrDefault(prefix + "linger.ms", "1"));
-        p.setProperty("buffer.memory", config.getOrDefault(prefix + "buffer.memory", "33554432"));
-        config.getProperties().entrySet().stream().filter(e -> e.getKey().startsWith(prefix))
-            .filter(e -> !CONFIG_KAFKA_TOPIC.equals(e.getKey()))
-            .forEach(e -> p.setProperty(e.getKey().substring(prefix.length()), e.getValue()));
+        p.setProperty("acks", config.getOptionalValue(prefix + "acks", String.class).orElse("all"));
+        p.setProperty("batch.size", config.getOptionalValue(prefix + "batch.size", String.class).orElse("16384"));
+        p.setProperty("retries", config.getOptionalValue(prefix + "retries", String.class).orElse("0"));
+        p.setProperty("linger.ms", config.getOptionalValue(prefix + "linger.ms", String.class).orElse("1"));
+        p.setProperty("buffer.memory", config.getOptionalValue(prefix + "buffer.memory", String.class)
+                .orElse("33554432"));
+        config.getPropertyNames().forEach(prop -> {
+            if (prop.startsWith(prefix) && !CONFIG_KAFKA_TOPIC.equals(prop)) {
+                p.setProperty(prop.substring(prefix.length()), config.getValue(prop, String.class));
+            }
+        });
 
         p.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         p.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        p.setProperty("bootstrap.servers", config.get("trellis.kafka.bootstrap.servers"));
+        p.setProperty("bootstrap.servers", config.getValue("trellis.kafka.bootstrap.servers", String.class));
 
         return new KafkaProducer<>(p);
     }

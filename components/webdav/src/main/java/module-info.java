@@ -25,7 +25,7 @@ module org.trellisldp.webdav {
     requires microprofile.metrics.api;
 
     requires slf4j.api;
-    requires tamaya.api;
+    requires microprofile.config.api;
     requires javax.inject;
     requires java.ws.rs;
     requires java.xml.bind;

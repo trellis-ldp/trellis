@@ -21,7 +21,7 @@ module org.trellisldp.rdfa {
     requires org.apache.commons.rdf.api;
     requires org.apache.jena.arq;
     requires javax.inject;
-    requires tamaya.api;
+    requires microprofile.config.api;
 
     uses org.trellisldp.api.NamespaceService;
 

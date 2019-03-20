@@ -25,7 +25,7 @@ import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -121,8 +121,8 @@ public class WebACService implements AccessControlService {
      */
     public WebACService(final ResourceService resourceService,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
-        this(resourceService, cache, getConfiguration()
-                .getOrDefault(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class, Boolean.FALSE));
+        this(resourceService, cache, getConfig()
+                .getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE));
     }
 
     /**

@@ -17,7 +17,7 @@ import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import java.io.IOException;
 
@@ -28,7 +28,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 
 /**
  * A {@link ContainerResponseFilter} that adds Cache-Control headers to all
@@ -55,13 +55,13 @@ public class CacheControlFilter implements ContainerResponseFilter {
      */
     @Inject
     public CacheControlFilter() {
-        this(getConfiguration());
+        this(getConfig());
     }
 
-    private CacheControlFilter(final Configuration config) {
-        this(config.getOrDefault(CONFIG_HTTP_CACHE_AGE, Integer.class, 86400),
-             config.getOrDefault(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class, Boolean.TRUE),
-             config.getOrDefault(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class, Boolean.FALSE));
+    private CacheControlFilter(final Config config) {
+        this(config.getOptionalValue(CONFIG_HTTP_CACHE_AGE, Integer.class).orElse(86400),
+             config.getOptionalValue(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class).orElse(Boolean.TRUE),
+             config.getOptionalValue(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class).orElse(Boolean.FALSE));
     }
 
     /**

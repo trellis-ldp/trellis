@@ -23,7 +23,7 @@ module org.trellisldp.http {
     requires org.apache.commons.rdf.api;
 
     requires slf4j.api;
-    requires tamaya.api;
+    requires microprofile.config.api;
     requires javax.inject;
     requires java.ws.rs;
     requires java.xml.bind;

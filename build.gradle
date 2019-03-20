@@ -23,9 +23,9 @@ ext {
     javaxJmsVersion = '2.0.1'
     javaxManagementVersion = '1.1.2'
     jaxrsVersion = '2.1.1'
+    microprofileConfigVersion = '1.3'
     microprofileMetricsVersion = '1.1.1'
     slf4jVersion = '1.7.26'
-    tamayaVersion = '0.3-incubating'
 
     /* Wiring */
     cdiApiVersion = '2.0.SP1'
@@ -61,6 +61,7 @@ ext {
     mockitoVersion = '2.25.0'
     qpidVersion = '7.1.1'
     sleepycatVersion = '18.3.12'
+    smallryeVersion = '1.3.5'
 
     /* OSGi */
     javaxElVersion = '2.2.4'

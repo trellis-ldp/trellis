@@ -14,7 +14,7 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
@@ -24,7 +24,7 @@ dependencies {
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
     testImplementation("org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion")
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")

@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.tamaya.ConfigurationProvider;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.ServiceBundler;
@@ -121,8 +121,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getAuthFilters(config).forEach(environment.jersey()::register);
 
         // Resource matchers
-        environment.jersey().register(getLdpComponent(config, ConfigurationProvider.getConfiguration()
-                    .getOrDefault(CONFIG_APP_INITIALIZE_ROOT, Boolean.class, Boolean.TRUE)));
+        environment.jersey().register(getLdpComponent(config, ConfigProvider.getConfig()
+                    .getOptionalValue(CONFIG_APP_INITIALIZE_ROOT, Boolean.class).orElse(Boolean.TRUE)));
 
         // Authentication
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),

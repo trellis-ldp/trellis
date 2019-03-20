@@ -16,7 +16,6 @@ package org.trellisldp.file;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
-import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -35,7 +34,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.tamaya.ConfigurationProvider;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
@@ -58,7 +57,7 @@ public class FileMementoService implements MementoService {
      */
     @Inject
     public FileMementoService() {
-        this(ConfigurationProvider.getConfiguration().get(CONFIG_FILE_MEMENTO_BASE_PATH));
+        this(ConfigProvider.getConfig().getValue(CONFIG_FILE_MEMENTO_BASE_PATH, String.class));
     }
 
     /**
@@ -66,7 +65,6 @@ public class FileMementoService implements MementoService {
      * @param path the file path
      */
     public FileMementoService(final String path) {
-        requireNonNull(path, "Memento base path is undefined!");
         LOGGER.info("Storing Mementos as files at {}", path);
         this.directory = new File(path);
         init();

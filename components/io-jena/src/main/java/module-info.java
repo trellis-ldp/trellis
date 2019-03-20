@@ -22,7 +22,7 @@ module org.trellisldp.io {
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
     requires javax.inject;
-    requires tamaya.api;
+    requires microprofile.config.api;
     requires slf4j.api;
 
     provides org.trellisldp.api.IOService
@@ -30,5 +30,4 @@ module org.trellisldp.io {
 
     uses org.trellisldp.api.NamespaceService;
     uses org.trellisldp.api.RDFaWriterService;
-    uses org.apache.tamaya.spi.ConfigurationProviderSpi;
 }

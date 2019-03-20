@@ -5,7 +5,7 @@ description = 'Trellis Basic authentication filter'
 
 ext {
     moduleName = 'org.trellisldp.auth.basic'
-    testModules = ['tamaya.core']
+    testModules = ['smallrye.config']
 }
 
 dependencies {
@@ -13,14 +13,14 @@ dependencies {
     api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
 
-    implementation("org.apache.tamaya:tamaya-api:$tamayaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
 
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 }

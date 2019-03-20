@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
-import org.apache.tamaya.ConfigurationProvider;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.NamespaceService;
 
@@ -55,7 +55,7 @@ public class NamespacesJsonContext implements NamespaceService {
      */
     @Inject
     public NamespacesJsonContext() {
-        this(ConfigurationProvider.getConfiguration().get(CONFIG_NAMESPACES_PATH));
+        this(ConfigProvider.getConfig().getValue(CONFIG_NAMESPACES_PATH, String.class));
     }
 
     /**
@@ -63,7 +63,7 @@ public class NamespacesJsonContext implements NamespaceService {
      * @param path the path to the JSON file
      */
     public NamespacesJsonContext(final String path) {
-        this.filePath = requireNonNull(path, "Namespace path may not be empty!");
+        this.filePath = path;
         this.data = read(path);
         init();
     }

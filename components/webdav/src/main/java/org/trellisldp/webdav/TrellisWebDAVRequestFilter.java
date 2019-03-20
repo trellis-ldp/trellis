@@ -19,7 +19,7 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.TYPE;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -45,7 +45,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.tamaya.Configuration;
+import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
@@ -68,13 +68,12 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
      */
     @Inject
     public TrellisWebDAVRequestFilter(final ServiceBundler services) {
-        this(services, getConfiguration());
+        this(services, getConfig());
     }
 
-    private TrellisWebDAVRequestFilter(final ServiceBundler services, final
-            Configuration config) {
-        this(services, config.get(CONFIG_HTTP_BASE_URL));
-            }
+    private TrellisWebDAVRequestFilter(final ServiceBundler services, final Config config) {
+        this(services, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
+    }
 
     /**
      * Create a Trellis HTTP request filter for WebDAV.

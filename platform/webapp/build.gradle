@@ -8,8 +8,8 @@ dependencies {
     compile("org.apache.jena:jena-arq:$jenaVersion")
     compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
-    compile("org.apache.tamaya:tamaya-api:$tamayaVersion")
-    compile("org.apache.tamaya:tamaya-core:$tamayaVersion")
+    compile("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
+    compile("io.smallrye:smallrye-config:$smallryeVersion")
     compile("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     compile("org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion")
 

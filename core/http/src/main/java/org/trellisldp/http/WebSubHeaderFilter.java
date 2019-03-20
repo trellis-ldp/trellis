@@ -19,7 +19,7 @@ import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import java.io.IOException;
 
@@ -48,7 +48,7 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
      */
     @Inject
     public WebSubHeaderFilter() {
-        this(getConfiguration().get(CONFIG_HTTP_WEB_SUB_HUB));
+        this(getConfig().getOptionalValue(CONFIG_HTTP_WEB_SUB_HUB, String.class).orElse(null));
     }
 
     /**

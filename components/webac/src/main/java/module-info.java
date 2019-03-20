@@ -21,11 +21,10 @@ module org.trellisldp.webac {
 
     requires javax.inject;
     requires slf4j.api;
-    requires tamaya.api;
+    requires microprofile.config.api;
 
     provides org.trellisldp.api.AccessControlService
         with org.trellisldp.webac.WebACService;
 
     uses org.trellisldp.api.ResourceService;
-    uses org.apache.tamaya.spi.ConfigurationProviderSpi;
 }

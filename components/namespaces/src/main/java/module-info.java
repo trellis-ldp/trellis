@@ -20,7 +20,7 @@ module org.trellisldp.namespaces {
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
     requires javax.inject;
-    requires tamaya.api;
+    requires microprofile.config.api;
 
     provides org.trellisldp.api.NamespaceService
         with org.trellisldp.namespaces.NamespacesJsonContext;

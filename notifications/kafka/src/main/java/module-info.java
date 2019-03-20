@@ -18,12 +18,11 @@ module org.trellisldp.kafka {
     requires org.apache.commons.rdf.api;
     requires kafka.clients;
     requires javax.inject;
-    requires tamaya.api;
+    requires microprofile.config.api;
     requires slf4j.api;
 
     provides org.trellisldp.api.EventService
         with org.trellisldp.kafka.KafkaPublisher;
 
     uses org.trellisldp.api.ActivityStreamService;
-    uses org.apache.tamaya.spi.ConfigurationProviderSpi;
 }
