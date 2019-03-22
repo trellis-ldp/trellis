@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotAcceptableException;
@@ -46,7 +47,6 @@ import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
@@ -68,13 +68,6 @@ public class HttpUtilsTest {
     private static final RDF rdf = getInstance();
     private static final IOService ioService = new JenaIOService();
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
-    private static final Quad QUAD1 = rdf.createQuad(Trellis.PreferAudit, identifier, DC.creator,
-            rdf.createLiteral("me"));
-    private static final Quad QUAD2 = rdf.createQuad(Trellis.PreferServerManaged, identifier, DC.modified,
-            rdf.createLiteral("now"));
-    private static final Quad QUAD3 = rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.subject,
-            rdf.createLiteral("subj"));
-    private static final List<Quad> QUADS = asList(QUAD1, QUAD2, QUAD3);
 
     @Mock
     private ResourceService mockResourceService;
@@ -126,46 +119,43 @@ public class HttpUtilsTest {
 
     @Test
     public void testFilterPrefer1() {
-        final List<Quad> filtered = QUADS.stream().filter(HttpUtils.filterWithPrefer(
+        final Set<IRI> filtered = HttpUtils.triplePreferences(
                     Prefer.valueOf("return=representation; include=\"" +
-                        Trellis.PreferServerManaged.getIRIString() + "\""))).collect(toList());
+                        Trellis.PreferServerManaged.getIRIString() + "\""));
 
-        assertFalse(filtered.contains(QUAD2), "Prefer filter doesn't catch quad!");
-        assertTrue(filtered.contains(QUAD3), "Prefer filter misses quad!");
-        assertEquals(1, filtered.size(), "Incorrect size of filtered quad list");
+        assertFalse(filtered.contains(Trellis.PreferServerManaged), "Prefer filter doesn't catch quad!");
+        assertTrue(filtered.contains(Trellis.PreferUserManaged), "Prefer filter misses quad!");
+        assertEquals(3, filtered.size(), "Incorrect size of filtered quad list");
     }
 
     @Test
     public void testFilterPrefer2() {
-        final List<Quad> filtered2 = QUADS.stream().filter(HttpUtils.filterWithPrefer(
-                    Prefer.valueOf("return=representation"))).collect(toList());
+        final Set<IRI> filtered2 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation"));
 
-        assertTrue(filtered2.contains(QUAD3), "Prefer filter omits quad!");
-        assertEquals(1, filtered2.size(), "Incorrect size of filtered quad list!");
+        assertTrue(filtered2.contains(Trellis.PreferUserManaged), "Prefer filter omits quad!");
+        assertEquals(3, filtered2.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
     public void testFilterPrefer3() {
-        final List<Quad> filtered3 = QUADS.stream().filter(HttpUtils.filterWithPrefer(
-                    Prefer.valueOf("return=representation; include=\"" +
-                        Trellis.PreferAudit.getIRIString() + "\""))).collect(toList());
+        final Set<IRI> filtered3 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation; include=\"" +
+                        Trellis.PreferAudit.getIRIString() + "\""));
 
-        assertTrue(filtered3.contains(QUAD1), "Prefer filter omits quad!");
-        assertFalse(filtered3.contains(QUAD2), "Prefer filter doesn't catch quad!");
-        assertTrue(filtered3.contains(QUAD3), "Prefer filter omits quad!");
-        assertEquals(2, filtered3.size(), "Incorrect size of filtered quad list!");
+        assertTrue(filtered3.contains(Trellis.PreferAudit), "Prefer filter omits quad!");
+        assertFalse(filtered3.contains(Trellis.PreferServerManaged), "Prefer filter doesn't catch quad!");
+        assertTrue(filtered3.contains(Trellis.PreferUserManaged), "Prefer filter omits quad!");
+        assertEquals(4, filtered3.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
     public void testFilterPrefer4() {
-        final List<Quad> filtered4 = QUADS.stream().filter(HttpUtils.filterWithPrefer(
-                    Prefer.valueOf("return=representation; include=\"" +
-                        Trellis.PreferUserManaged.getIRIString() + "\""))).collect(toList());
+        final Set<IRI> filtered4 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation; include=\"" +
+                        Trellis.PreferUserManaged.getIRIString() + "\""));
 
-        assertFalse(filtered4.contains(QUAD1), "Prefer filter doesn't omit quad!");
-        assertFalse(filtered4.contains(QUAD2), "Prefer filter doesn't omit quad!");
-        assertTrue(filtered4.contains(QUAD3), "Prefer filter omits quad!");
-        assertEquals(1, filtered4.size(), "Incorrect size of filtered quad list!");
+        assertFalse(filtered4.contains(Trellis.PreferAudit), "Prefer filter doesn't omit quad!");
+        assertFalse(filtered4.contains(Trellis.PreferServerManaged), "Prefer filter doesn't omit quad!");
+        assertTrue(filtered4.contains(Trellis.PreferUserManaged), "Prefer filter omits quad!");
+        assertEquals(3, filtered4.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test

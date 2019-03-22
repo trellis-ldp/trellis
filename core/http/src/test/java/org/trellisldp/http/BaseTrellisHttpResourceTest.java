@@ -234,6 +234,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
                 rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        doCallRealMethod().when(mockResource).stream(anyCollection());
     }
 
     private void setUpMementoService() {

@@ -57,12 +57,12 @@ import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.core.Prefer.PREFER_RETURN;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.filterWithLDF;
-import static org.trellisldp.http.impl.HttpUtils.filterWithPrefer;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
-import static org.trellisldp.http.impl.HttpUtils.unskolemizeQuads;
+import static org.trellisldp.http.impl.HttpUtils.triplePreferences;
+import static org.trellisldp.http.impl.HttpUtils.unskolemizeTriples;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
@@ -86,8 +86,8 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
+import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
@@ -326,12 +326,12 @@ public class GetHandler extends BaseLdpHandler {
         final StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(final OutputStream out) throws IOException {
-                try (final Stream<Quad> stream = getResource().stream()) {
-                    getServices().getIOService().write(stream.filter(filterWithPrefer(prefer))
-                        .map(unskolemizeQuads(getServices().getResourceService(), getBaseUrl()))
+                try (final Stream<Triple> stream = getResource().stream(triplePreferences(prefer))) {
+                    getServices().getIOService().write(stream
+                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
-                                getRequest().getObject()))
-                        .map(Quad::asTriple), out, syntax, ofNullable(profile).orElseGet(() ->
+                                getRequest().getObject())), out, syntax,
+                        ofNullable(profile).orElseGet(() ->
                                 getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile)));
                 }
             }

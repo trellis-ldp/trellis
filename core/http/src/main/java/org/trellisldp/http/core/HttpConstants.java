@@ -119,8 +119,8 @@ public final class HttpConstants {
     public static final String UNTIL = "until";
 
     /** The implied or default set of IRIs used with a Prefer header. **/
-    public static final Set<String> DEFAULT_REPRESENTATION = unmodifiableSet(asList(PreferContainment, PreferMembership,
-                PreferUserManaged).stream().map(IRI::getIRIString).collect(toSet()));
+    public static final Set<IRI> DEFAULT_REPRESENTATION = unmodifiableSet(asList(PreferContainment, PreferMembership,
+                PreferUserManaged).stream().collect(toSet()));
 
     private HttpConstants() {
         // prevent instantiation

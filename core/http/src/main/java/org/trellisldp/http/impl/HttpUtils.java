@@ -84,12 +84,12 @@ public final class HttpUtils {
 
     private static final Logger LOGGER = getLogger(HttpUtils.class);
     private static final RDF rdf = getInstance();
-    private static final Set<String> ignoredPreferences;
+    private static final Set<IRI> ignoredPreferences;
 
     static {
-        final Set<String> ignore = new HashSet<>();
-        ignore.add(Trellis.PreferUserManaged.getIRIString());
-        ignore.add(Trellis.PreferServerManaged.getIRIString());
+        final Set<IRI> ignore = new HashSet<>();
+        ignore.add(Trellis.PreferUserManaged);
+        ignore.add(Trellis.PreferServerManaged);
         ignoredPreferences = unmodifiableSet(ignore);
     }
 
@@ -125,26 +125,26 @@ public final class HttpUtils {
     }
 
     /**
-     * Create a filter based on a Prefer header.
+     * Get a collection of IRIs for identifying the categories of triples to retrieve.
      *
      * @param prefer the Prefer header
-     * @return a suitable predicate for filtering a stream of quads
+     * @return the categories of triples to retrieve
      */
-    public static Predicate<Quad> filterWithPrefer(final Prefer prefer) {
-        final Set<String> include = new HashSet<>(DEFAULT_REPRESENTATION);
+    public static Set<IRI> triplePreferences(final Prefer prefer) {
+        final Set<IRI> include = new HashSet<>(DEFAULT_REPRESENTATION);
         ofNullable(prefer).ifPresent(p -> {
             if (p.getInclude().contains(LDP.PreferMinimalContainer.getIRIString())) {
-                include.remove(LDP.PreferContainment.getIRIString());
-                include.remove(LDP.PreferMembership.getIRIString());
+                include.remove(LDP.PreferContainment);
+                include.remove(LDP.PreferMembership);
             }
             if (p.getOmit().contains(LDP.PreferMinimalContainer.getIRIString())) {
-                include.remove(Trellis.PreferUserManaged.getIRIString());
+                include.remove(Trellis.PreferUserManaged);
             }
-            p.getOmit().forEach(include::remove);
-            p.getInclude().stream().filter(iri -> !ignoredPreferences.contains(iri)).forEach(include::add);
+            p.getOmit().stream().map(rdf::createIRI).forEach(include::remove);
+            p.getInclude().stream().map(rdf::createIRI)
+                .filter(iri -> !ignoredPreferences.contains(iri)).forEach(include::add);
         });
-        return quad -> quad.getGraphName().filter(IRI.class::isInstance).map(IRI.class::cast)
-            .map(IRI::getIRIString).filter(include::contains).isPresent();
+        return include;
     }
 
     /**
@@ -155,11 +155,11 @@ public final class HttpUtils {
      * @param object the LDF object
      * @return a filtering predicate
      */
-    public static Predicate<Quad> filterWithLDF(final String subject, final String predicate,
+    public static Predicate<Triple> filterWithLDF(final String subject, final String predicate,
             final String object) {
-        return quad -> !(notCompareWithString(quad.getSubject(), subject)
-                    || notCompareWithString(quad.getPredicate(), predicate)
-                    || notCompareWithString(quad.getObject(), object));
+        return triple -> !(notCompareWithString(triple.getSubject(), subject)
+                    || notCompareWithString(triple.getPredicate(), predicate)
+                    || notCompareWithString(triple.getObject(), object));
     }
 
     private static boolean notCompareWithString(final RDFTerm term, final String str) {
@@ -189,19 +189,6 @@ public final class HttpUtils {
     public static Function<Triple, Triple> skolemizeTriples(final ResourceService svc, final String baseUrl) {
         return triple -> rdf.createTriple((BlankNodeOrIRI) svc.toInternal(svc.skolemize(triple.getSubject()), baseUrl),
                 triple.getPredicate(), svc.toInternal(svc.skolemize(triple.getObject()), baseUrl));
-    }
-
-    /**
-     * Convert quads from a skolemized form to an external form.
-     *
-     * @param svc the resource service
-     * @param baseUrl the base URL
-     * @return a mapping function
-     */
-    public static Function<Quad, Quad> unskolemizeQuads(final ResourceService svc, final String baseUrl) {
-        return quad -> rdf.createQuad(quad.getGraphName().orElse(PreferUserManaged),
-                    (BlankNodeOrIRI) svc.toExternal(svc.unskolemize(quad.getSubject()), baseUrl),
-                    quad.getPredicate(), svc.toExternal(svc.unskolemize(quad.getObject()), baseUrl));
     }
 
     /**
