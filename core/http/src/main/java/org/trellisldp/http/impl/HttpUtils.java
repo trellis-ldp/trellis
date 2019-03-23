@@ -36,7 +36,6 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.DEFAULT_REPRESENTATION;
 import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
-import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -199,7 +198,7 @@ public final class HttpUtils {
      * @return a mapping function
      */
     public static Function<Quad, Quad> skolemizeQuads(final ResourceService svc, final String baseUrl) {
-        return quad -> rdf.createQuad(quad.getGraphName().orElse(PreferUserManaged),
+        return quad -> rdf.createQuad(quad.getGraphName().orElse(Trellis.PreferUserManaged),
                 (BlankNodeOrIRI) svc.toInternal(svc.skolemize(quad.getSubject()), baseUrl), quad.getPredicate(),
                 svc.toInternal(svc.skolemize(quad.getObject()), baseUrl));
     }
