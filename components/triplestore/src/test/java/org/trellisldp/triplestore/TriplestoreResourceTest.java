@@ -33,7 +33,7 @@ import java.time.Instant;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Triple;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.jena.JenaDataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdfconnection.RDFConnection;
@@ -231,7 +231,7 @@ public class TriplestoreResourceTest {
         assertAll("Check resource", checkResource(memberRes, member, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(memberRes, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(memberRes, 1L, 0L, 0L, 4L, 0L));
-        assertEquals(4L, memberRes.stream(singleton(LDP.PreferMembership)).map(Triple::getPredicate)
+        assertEquals(4L, memberRes.stream(singleton(LDP.PreferMembership)).map(Quad::getPredicate)
                 .filter(isEqual(DC.subject)).count(), "Incorrect triple count!");
     }
 
@@ -265,7 +265,7 @@ public class TriplestoreResourceTest {
         assertAll("Check resource", checkResource(res2, member, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res2, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res2, 2L, 0L, 0L, 4L, 0L));
-        assertEquals(4L, res2.stream(singleton(LDP.PreferMembership)).map(Triple::getPredicate)
+        assertEquals(4L, res2.stream(singleton(LDP.PreferMembership)).map(Quad::getPredicate)
                 .filter(isEqual(DC.relation)).count(), "Incorrect triple count!");
     }
 

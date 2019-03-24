@@ -33,7 +33,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
@@ -61,7 +60,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
@@ -232,8 +230,8 @@ public class PutHandler extends MutatingLdpHandler {
         if (nonNull(getResource())) {
             getResource().getContainer().ifPresent(metadata::container);
             LOGGER.debug("Resource {} found in persistence", getIdentifier());
-            try (final Stream<Triple> remaining = getResource().stream(otherGraph)) {
-                remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
+            try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
+                remaining.forEachOrdered(mutable::add);
             }
         }
 

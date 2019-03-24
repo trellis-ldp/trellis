@@ -43,7 +43,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Triple;
+import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -98,10 +98,10 @@ public class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     public void testEntity() {
-        final Triple triple = rdf.createTriple(identifier, RDFS.label, rdf.createLiteral("A label"));
+        final Quad quad = rdf.createQuad(PreferUserManaged, identifier, RDFS.label, rdf.createLiteral("A label"));
 
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(triple));
+        when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(quad));
         when(mockTrellisRequest.getPath()).thenReturn("resource");
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);

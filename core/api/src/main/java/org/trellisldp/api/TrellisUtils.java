@@ -115,16 +115,6 @@ public final class TrellisUtils {
     }
 
     /**
-     * Get a mapping function to turn a triple into a quad.
-     *
-     * @param graphName the graph name
-     * @return the mapping function
-     */
-    public static Function<Triple, Quad> toQuad(final IRI graphName) {
-        return triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject());
-    }
-
-    /**
      * Collect a stream of Quads into a Dataset.
      *
      * @return a {@link Collector} that accumulates a {@link Stream} of

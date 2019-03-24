@@ -328,8 +328,8 @@ public class WebDAVTest extends JerseyTest {
     @Test
     public void testPropFindContainer() throws IOException {
         when(mockRootResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
-                rdf.createTriple(root, LDP.contains, identifier),
-                rdf.createTriple(root, LDP.contains, binaryIdentifier)));
+                rdf.createQuad(LDP.PreferContainment, root, LDP.contains, identifier),
+                rdf.createQuad(LDP.PreferContainment, root, LDP.contains, binaryIdentifier)));
 
         final Response res = target().request()
             .method("PROPFIND", xml("<D:propfind xmlns:D=\"DAV:\">\n"
@@ -543,7 +543,7 @@ public class WebDAVTest extends JerseyTest {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
-                rdf.createTriple(identifier, LDP.contains, otherIdentifier)));
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().delete();
 
@@ -744,7 +744,7 @@ public class WebDAVTest extends JerseyTest {
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
-                rdf.createTriple(identifier, LDP.contains, otherIdentifier)));
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .method("COPY");
@@ -758,7 +758,7 @@ public class WebDAVTest extends JerseyTest {
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
-                rdf.createTriple(identifier, LDP.contains, otherIdentifier)));
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().header("Depth", "0")
             .header("Destination", getBaseUri() + NON_EXISTENT_PATH).method("COPY");
@@ -772,7 +772,7 @@ public class WebDAVTest extends JerseyTest {
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
-                rdf.createTriple(identifier, LDP.contains, otherIdentifier)));
+                rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().header("Depth", "1")
             .header("Destination", getBaseUri() + NON_EXISTENT_PATH).method("COPY");
@@ -884,11 +884,11 @@ public class WebDAVTest extends JerseyTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(inf -> Stream.of(
-                rdf.createTriple(identifier, DC.relation, rdf.createBlankNode()),
-                rdf.createTriple(identifier, DC.created,
+                rdf.createQuad(PreferUserManaged, identifier, DC.relation, rdf.createBlankNode()),
+                rdf.createQuad(PreferUserManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-                rdf.createTriple(identifier, DC.subject, rdf.createIRI("http://example.com/Subject")),
-                rdf.createTriple(identifier, DC.title, rdf.createLiteral("A title"))));
+                rdf.createQuad(PreferUserManaged, identifier, DC.subject, rdf.createIRI("http://example.com/Subject")),
+                rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title"))));
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferUserManaged, identifier, DC.relation, rdf.createBlankNode()),
                 rdf.createQuad(PreferUserManaged, identifier, DC.subject, rdf.createIRI("http://example.com/Subject")),

@@ -46,7 +46,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
@@ -192,9 +191,8 @@ public class TriplestoreResource implements Resource {
     }
 
     @Override
-    public Stream<Triple> stream(final Collection<IRI> graphNames) {
-        return graphNames.stream().filter(graphMapper::containsKey).map(graphMapper::get).flatMap(Supplier::get)
-            .map(Quad::asTriple);
+    public Stream<Quad> stream(final Collection<IRI> graphNames) {
+        return graphNames.stream().filter(graphMapper::containsKey).map(graphMapper::get).flatMap(Supplier::get);
     }
 
     @Override

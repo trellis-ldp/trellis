@@ -22,7 +22,6 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 
@@ -163,8 +162,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
                         || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace()))
-                .filter(triple -> !LDP.contains.equals(triple.getPredicate()))
-                .map(toQuad(graphName)).forEachOrdered(dataset::add);
+                .filter(triple -> !LDP.contains.equals(triple.getPredicate())).map(triple ->
+                        rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject()))
+                .forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
         } catch (final IOException ex) {
