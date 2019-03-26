@@ -52,6 +52,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
@@ -219,7 +220,7 @@ public class WebACService implements AccessControlService {
         return group -> resourceService.get(cleanIdentifier(group)).thenApply(res -> {
             try (final Stream<RDFTerm> triples = res.stream(Trellis.PreferUserManaged)
                     .filter(t -> t.getSubject().equals(group) && t.getPredicate().equals(VCARD.hasMember))
-                    .map(Triple::getObject)) {
+                    .map(Quad::getObject)) {
                 return triples.anyMatch(agent::equals);
             }
         }).toCompletableFuture().join();
@@ -236,7 +237,8 @@ public class WebACService implements AccessControlService {
     private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
         if (resource.hasAcl()) {
-            try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).collect(toGraph()))) {
+            try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
+                        .collect(toGraph()))) {
                 final List<Authorization> authorizations = getAuthorizationFromGraph(graph.getGraph());
                 // Check for any acl:default statements if checking for inheritance
                 if (inherited && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {

@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.Triple;
 
 /**
  * The central resource abstraction for a Trellis-based linked data server.
@@ -204,24 +203,23 @@ public interface Resource {
     }
 
     /**
-     * Retrieve the RDF Triples for a given named graph.
+     * Retrieve the RDF Quads for a given named graph.
      *
      * @param graphName the named graph
-     * @return the RDF triples
+     * @return the RDF quads
      */
-    default Stream<Triple> stream(IRI graphName) {
+    default Stream<Quad> stream(IRI graphName) {
         return stream(singleton(graphName));
     }
 
     /**
-     * Retrieve the RDF Triples for a set of named graphs.
+     * Retrieve the RDF Quads for a set of named graphs.
      *
      * @param graphNames the named graphs
-     * @return the RDF triples
+     * @return the RDF quads
      */
-    default Stream<Triple> stream(Collection<IRI> graphNames) {
-        return stream().filter(quad -> quad.getGraphName().filter(graphNames::contains).isPresent())
-            .map(Quad::asTriple);
+    default Stream<Quad> stream(Collection<IRI> graphNames) {
+        return stream().filter(quad -> quad.getGraphName().filter(graphNames::contains).isPresent());
     }
 
     /**

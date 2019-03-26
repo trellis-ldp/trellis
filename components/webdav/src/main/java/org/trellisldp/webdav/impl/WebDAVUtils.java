@@ -22,7 +22,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toDataset;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +35,6 @@ import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
@@ -67,7 +65,7 @@ public final class WebDAVUtils {
     public static void recursiveDelete(final ServiceBundler services, final Session session, final IRI identifier,
             final String baseUrl) {
         final List<IRI> resources = services.getResourceService().get(identifier)
-            .thenApply(res -> res.stream(LDP.PreferContainment).map(Triple::getObject).filter(IRI.class::isInstance)
+            .thenApply(res -> res.stream(LDP.PreferContainment).map(Quad::getObject).filter(IRI.class::isInstance)
                     .map(IRI.class::cast).collect(toList())).toCompletableFuture().join();
         resources.forEach(id -> recursiveDelete(services, session, id, baseUrl));
         resources.stream().parallel().map(id -> {
@@ -111,7 +109,7 @@ public final class WebDAVUtils {
      */
     public static CompletionStage<Void> recursiveCopy(final ServiceBundler services, final Session session,
             final Resource resource, final IRI destination, final String baseUrl) {
-        final List<IRI> resources = resource.stream(LDP.PreferContainment).map(Triple::getObject)
+        final List<IRI> resources = resource.stream(LDP.PreferContainment).map(Quad::getObject)
             .filter(IRI.class::isInstance).map(IRI.class::cast).collect(toList());
         resources.stream().parallel().map(id -> recursiveCopy(services, session, id,
                     mapDestination(id, resource.getIdentifier(), destination), baseUrl))
@@ -130,7 +128,7 @@ public final class WebDAVUtils {
      */
     public static CompletionStage<Void> depth1Copy(final ServiceBundler services, final Session session,
             final Resource resource, final IRI destination, final String baseUrl) {
-        final List<IRI> resources = resource.stream(LDP.PreferContainment).map(Triple::getObject)
+        final List<IRI> resources = resource.stream(LDP.PreferContainment).map(Quad::getObject)
             .filter(IRI.class::isInstance).map(IRI.class::cast).collect(toList());
         resources.stream().parallel()
             .map(id -> copy(services, session, id, mapDestination(id, resource.getIdentifier(), destination), baseUrl))
@@ -174,10 +172,9 @@ public final class WebDAVUtils {
         resource.getMemberRelation().ifPresent(builder::memberRelation);
         resource.getMembershipResource().ifPresent(builder::membershipResource);
 
-        try (final Stream<Triple> stream = resource.stream(Trellis.PreferUserManaged)) {
+        try (final Stream<Quad> stream = resource.stream(Trellis.PreferUserManaged)) {
             LOGGER.debug("Copying {} to {}", resource.getIdentifier(), destination);
-            final TrellisDataset mutable = new TrellisDataset(stream.map(toQuad(Trellis.PreferUserManaged))
-                    .collect(toDataset()));
+            final TrellisDataset mutable = new TrellisDataset(stream.collect(toDataset()));
 
             return services.getResourceService().create(builder.build(), mutable.asDataset())
                 .whenComplete((a, b) -> mutable.close())

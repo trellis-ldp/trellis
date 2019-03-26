@@ -24,7 +24,6 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
@@ -64,8 +63,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.Triple;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
@@ -181,8 +180,8 @@ public class TrellisHttpResource {
                     .build(), dataset.asDataset());
         } else if (!res.hasAcl()) {
             LOGGER.info("Initializeing root ACL: {}", id);
-            try (final Stream<Triple> triples = res.stream(Trellis.PreferUserManaged)) {
-                triples.map(toQuad(Trellis.PreferUserManaged)).forEach(dataset::add);
+            try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
+                quads.forEach(dataset::add);
             }
             return trellis.getResourceService().replace(Metadata.builder(res).build(), dataset.asDataset());
         }

@@ -22,7 +22,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
@@ -37,7 +36,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.apache.commons.rdf.api.Triple;
+import org.apache.commons.rdf.api.Quad;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
@@ -134,8 +133,8 @@ public class DeleteHandler extends MutatingLdpHandler {
             final TrellisDataset immutable) {
 
         // When deleting just the ACL graph, keep the user managed triples intact
-        try (final Stream<Triple> triples = getResource().stream(PreferUserManaged)) {
-            triples.map(toQuad(PreferUserManaged)).forEachOrdered(mutable::add);
+        try (final Stream<Quad> quads = getResource().stream(PreferUserManaged)) {
+            quads.forEachOrdered(mutable::add);
         }
 
         // Note: when deleting ACL resources, the resource itself is not removed and so this is really

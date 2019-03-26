@@ -27,7 +27,6 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
@@ -37,6 +36,7 @@ import java.util.stream.Stream;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -92,7 +92,7 @@ public interface ResourceServiceTests {
                     .interactionModel(LDP.RDFSource).container(ROOT_CONTAINER).build(), dataset)
                 .toCompletableFuture().join(), "Check that the resource was successfully created");
         final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
-        assertAll("Check resource stream", res.stream(Trellis.PreferUserManaged).map(toQuad(Trellis.PreferUserManaged))
+        assertAll("Check resource stream", res.stream(Trellis.PreferUserManaged)
                 .map(q -> () -> assertTrue(dataset.contains(q), "Verify that the quad is from the dataset: " + q)));
     }
 
@@ -123,7 +123,6 @@ public interface ResourceServiceTests {
                 .toCompletableFuture().join(), "Check that the LDP-RS was successfully replaced");
         final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
         assertAll("Check the replaced LDP-RS stream", res.stream(Trellis.PreferUserManaged)
-                .map(toQuad(Trellis.PreferUserManaged))
                 .map(q -> () -> assertTrue(dataset.contains(q), "Check that the quad comes from the dataset: " + q)));
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the total user-managed triple count");
     }
@@ -182,7 +181,7 @@ public interface ResourceServiceTests {
                 "Check the successful addition of audit quads");
 
         final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
-        assertAll("Check the audit stream", res.stream(Trellis.PreferAudit).map(toQuad(Trellis.PreferAudit))
+        assertAll("Check the audit stream", res.stream(Trellis.PreferAudit)
                 .map(q -> () -> assertTrue(dataset1.contains(q), "Check that the audit stream includes: " + q)));
         assertEquals(4L, res.stream(Trellis.PreferAudit).count(), "Check the audit triple count");
 
@@ -202,7 +201,7 @@ public interface ResourceServiceTests {
         dataset1.stream().forEach(combined::add);
         dataset2.stream().forEach(combined::add);
 
-        assertAll("Check the audit stream", res2.stream(Trellis.PreferAudit).map(toQuad(Trellis.PreferAudit))
+        assertAll("Check the audit stream", res2.stream(Trellis.PreferAudit)
                 .map(q -> () -> assertTrue(combined.contains(q), "Check that the audit stream includes: " + q)));
         assertEquals(8L, res2.stream(Trellis.PreferAudit).count(), "Check the audit triple count");
     }
@@ -299,7 +298,7 @@ public interface ResourceServiceTests {
         assertAll("Check the LDP-C resource", checkResource(res, identifier, LDP.Container, time, dataset0));
         assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
         final Graph graph = rdf.createGraph();
-        res.stream(LDP.PreferContainment).forEach(graph::add);
+        res.stream(LDP.PreferContainment).map(Quad::asTriple).forEach(graph::add);
         assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-C");
         assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-C");
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
@@ -345,7 +344,7 @@ public interface ResourceServiceTests {
         assertAll("Check the LDP-BC resource", checkResource(res, identifier, LDP.BasicContainer, time, dataset0));
         assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
         final Graph graph = rdf.createGraph();
-        res.stream(LDP.PreferContainment).forEach(graph::add);
+        res.stream(LDP.PreferContainment).map(Quad::asTriple).forEach(graph::add);
         assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-BC");
         assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-BC");
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
@@ -404,7 +403,7 @@ public interface ResourceServiceTests {
                 "Check for no ldp:InsertedContentRelation, excepting ldp:MemberSubject");
         assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment count");
         final Graph graph = rdf.createGraph();
-        res.stream(LDP.PreferContainment).forEach(graph::add);
+        res.stream(LDP.PreferContainment).map(Quad::asTriple).forEach(graph::add);
         assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-DC");
         assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-DC");
         assertEquals(5L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
@@ -463,7 +462,7 @@ public interface ResourceServiceTests {
         assertFalse(res.getMemberOfRelation().isPresent(), "Check for no ldp:isMemberOfRelation");
         assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
         final Graph graph = rdf.createGraph();
-        res.stream(LDP.PreferContainment).forEach(graph::add);
+        res.stream(LDP.PreferContainment).map(Quad::asTriple).forEach(graph::add);
         assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-IC");
         assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-IC");
         assertEquals(6L, res.stream(Trellis.PreferUserManaged).count(), "Check the total triple count");
@@ -504,9 +503,8 @@ public interface ResourceServiceTests {
                        "Check ldp:hasMemberRelation or ldp:isMemberOfRelation"),
                 () -> assertEquals(asList(LDP.DirectContainer, LDP.IndirectContainer).contains(ldpType),
                        res.getInsertedContentRelation().isPresent(), "Check ldp:insertedContentRelation"),
-                () -> res.stream(Trellis.PreferUserManaged).forEach(t ->
-                        assertTrue(dataset.contains(of(Trellis.PreferUserManaged), t.getSubject(), t.getPredicate(),
-                                t.getObject()))));
+                () -> res.stream(Trellis.PreferUserManaged).forEach(q ->
+                        assertTrue(dataset.contains(q))));
     }
 
     /**

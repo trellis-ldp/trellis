@@ -43,7 +43,6 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.webdav.Depth.DEPTH.INFINITY;
 import static org.trellisldp.webdav.Depth.DEPTH.ONE;
@@ -91,7 +90,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.Triple;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
@@ -373,17 +371,17 @@ public class TrellisWebDAV {
             final Set<IRI> modifiedProperties = new HashSet<>();
             response.setHref(location);
             // Keep any ACL data
-            try (final Stream<Triple> stream = resource.stream(Trellis.PreferAccessControl)) {
-                stream.map(toQuad(Trellis.PreferAccessControl)).forEach(dataset::add);
+            try (final Stream<Quad> stream = resource.stream(Trellis.PreferAccessControl)) {
+                stream.forEach(dataset::add);
             }
             // Filter out any removable properties
-            try (final Stream<Triple> stream = resource.stream(Trellis.PreferUserManaged)) {
-                stream.forEach(triple -> {
-                    if (removeProperties.contains(triple.getPredicate())) {
-                        modifiedProperties.add(triple.getPredicate());
+            try (final Stream<Quad> stream = resource.stream(Trellis.PreferUserManaged)) {
+                stream.forEach(quad -> {
+                    if (removeProperties.contains(quad.getPredicate())) {
+                        modifiedProperties.add(quad.getPredicate());
                     } else {
-                        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, identifier, triple.getPredicate(),
-                                    triple.getObject()));
+                        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, identifier, quad.getPredicate(),
+                                    quad.getObject()));
                     }
                 });
             }
@@ -457,8 +455,8 @@ public class TrellisWebDAV {
             final List<DavResponse> responses = new ArrayList<>();
             responses.add(response);
 
-            try (final Stream<Triple> children = res.stream(LDP.PreferContainment)) {
-                children.map(Triple::getObject).filter(IRI.class::isInstance).map(IRI.class::cast)
+            try (final Stream<Quad> children = res.stream(LDP.PreferContainment)) {
+                children.map(Quad::getObject).filter(IRI.class::isInstance).map(IRI.class::cast)
                     .parallel().map(id -> services.getResourceService().get(id).thenApply(r -> {
                         final DavProp childProp = new DavProp();
                         childProp.setNodes(getPropertyElements(doc, r, properties, allprops, propname));
@@ -550,20 +548,20 @@ public class TrellisWebDAV {
         return empty();
     }
 
-    private static Function<Triple, Element> tripleToElement(final Document doc, final boolean propname) {
-        return triple -> {
-            if (triple.getObject() instanceof Literal) {
-                final Element el = doc.createElementNS(namespaceXML(triple.getPredicate().getIRIString()),
-                            localnameXML(triple.getPredicate().getIRIString()));
+    private static Function<Quad, Element> quadToElement(final Document doc, final boolean propname) {
+        return quad -> {
+            if (quad.getObject() instanceof Literal) {
+                final Element el = doc.createElementNS(namespaceXML(quad.getPredicate().getIRIString()),
+                            localnameXML(quad.getPredicate().getIRIString()));
                 if (!propname) {
-                    el.setTextContent(((Literal) triple.getObject()).getLexicalForm());
+                    el.setTextContent(((Literal) quad.getObject()).getLexicalForm());
                 }
                 return el;
-            } else if (triple.getObject() instanceof IRI) {
-                final Element el = doc.createElementNS(namespaceXML(triple.getPredicate().getIRIString()),
-                            localnameXML(triple.getPredicate().getIRIString()));
+            } else if (quad.getObject() instanceof IRI) {
+                final Element el = doc.createElementNS(namespaceXML(quad.getPredicate().getIRIString()),
+                            localnameXML(quad.getPredicate().getIRIString()));
                 if (!propname) {
-                    el.setTextContent(((IRI) triple.getObject()).getIRIString());
+                    el.setTextContent(((IRI) quad.getObject()).getIRIString());
                 }
                 return el;
             }
@@ -579,10 +577,10 @@ public class TrellisWebDAV {
         allProperties.add(getContentTypeElement(doc, res, propname));
         allProperties.add(getLastModifiedElement(doc, res, propname));
 
-        try (final Stream<Triple> stream = res.stream(Trellis.PreferUserManaged)) {
+        try (final Stream<Quad> stream = res.stream(Trellis.PreferUserManaged)) {
             final List<Element> elements = stream
                 .filter(t -> allproperties || properties.contains(t.getPredicate()))
-                .map(tripleToElement(doc, propname)).filter(Objects::nonNull).collect(toList());
+                .map(quadToElement(doc, propname)).filter(Objects::nonNull).collect(toList());
             allProperties.addAll(elements);
         }
         return allProperties;

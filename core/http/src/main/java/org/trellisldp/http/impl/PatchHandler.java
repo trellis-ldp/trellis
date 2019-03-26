@@ -30,7 +30,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
@@ -61,6 +60,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
@@ -184,8 +184,8 @@ public class PatchHandler extends MutatingLdpHandler {
         final List<Triple> triples;
         // Update existing graph
         try (final TrellisGraph graph = TrellisGraph.createGraph()) {
-            try (final Stream<Triple> stream = getResource().stream(graphName)) {
-                stream.forEachOrdered(graph::add);
+            try (final Stream<Quad> stream = getResource().stream(graphName)) {
+                stream.map(Quad::asTriple).forEachOrdered(graph::add);
             }
             getServices().getIOService().update(graph.asGraph(), updateBody, syntax,
                 TRELLIS_DATA_PREFIX + getRequest().getPath() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : ""));
@@ -222,7 +222,8 @@ public class PatchHandler extends MutatingLdpHandler {
         }
 
         triples.stream().map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
-            .map(toQuad(graphName)).forEachOrdered(mutable::add);
+            .map(triple -> rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject()))
+            .forEachOrdered(mutable::add);
 
         // Check any constraints on the resulting dataset
         final List<ConstraintViolation> violations = constraintServices.stream()
@@ -237,8 +238,8 @@ public class PatchHandler extends MutatingLdpHandler {
         }
 
         // When updating User or ACL triples, be sure to add the other category to the dataset
-        try (final Stream<Triple> remaining = getResource().stream(otherGraph)) {
-            remaining.map(toQuad(otherGraph)).forEachOrdered(mutable::add);
+        try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
+            remaining.forEachOrdered(mutable::add);
         }
 
         // Collect the audit data

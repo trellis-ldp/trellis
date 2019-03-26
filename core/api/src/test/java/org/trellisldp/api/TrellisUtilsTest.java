@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toDataset;
 import static org.trellisldp.api.TrellisUtils.toGraph;
-import static org.trellisldp.api.TrellisUtils.toQuad;
 
 import java.util.Set;
 import java.util.stream.Collector;
@@ -28,14 +27,10 @@ import java.util.stream.Collector;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.vocabulary.DC;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -95,15 +90,6 @@ public class TrellisUtilsTest {
         final Collector<Quad, Set<Quad>, Dataset> collector = toDataset().concurrent();
         assertEquals(quads1.size() + quads2.size(), collector.combiner().apply(quads1, quads2).size(),
                 "Dataset combiner produces the wrong number of quads!");
-    }
-
-    @Test
-    public void testToQuad() {
-        final IRI subject = rdf.createIRI("http://example.com/resource");
-        final Literal object = rdf.createLiteral("title");
-        final Triple triple = rdf.createTriple(subject, DC.title, object);
-        final Quad quad = rdf.createQuad(Trellis.PreferUserManaged, subject, DC.title, object);
-        assertEquals(quad, toQuad(Trellis.PreferUserManaged).apply(triple), "Incorrect quad from triple!");
     }
 
     private IRI getIRI() {

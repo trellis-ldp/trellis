@@ -86,8 +86,8 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
@@ -326,8 +326,8 @@ public class GetHandler extends BaseLdpHandler {
         final StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(final OutputStream out) throws IOException {
-                try (final Stream<Triple> stream = getResource().stream(triplePreferences(prefer))) {
-                    getServices().getIOService().write(stream
+                try (final Stream<Quad> stream = getResource().stream(triplePreferences(prefer))) {
+                    getServices().getIOService().write(stream.map(Quad::asTriple)
                         .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
                                 getRequest().getObject())), out, syntax,
