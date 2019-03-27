@@ -117,6 +117,31 @@ public interface LdpBasicContainerTests extends CommonTests {
     }
 
     /**
+     * Test that no membership triples are present.
+     */
+    @Test
+    @DisplayName("Test with ldp:PreferMembership Prefer header")
+    default void testGetEmptyContainerMembership() {
+        final long size;
+        try (final Response res = target(getContainerLocation()).request().header(PREFER,
+                    "return=representation; include=\"" + LDP.PreferMembership.getIRIString() + "\"; " +
+                    "omit=\"" + LDP.PreferMinimalContainer.getIRIString() + " " + LDP.PreferContainment.getIRIString() +
+                    "\"").get()) {
+            assertAll("Check a container response (1)", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
+            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+            size = g.size();
+        }
+        try (final Response res = target(getContainerLocation()).request().header(PREFER,
+                    "return=representation; omit=\"" + LDP.PreferMembership.getIRIString() + " " +
+                    LDP.PreferMinimalContainer.getIRIString() + " " + LDP.PreferContainment.getIRIString() +
+                    "\"").get()) {
+            assertAll("Check a container response (2)", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
+            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+            assertEquals(size, g.size(), "Verify that no membership triples are present");
+        }
+    }
+
+    /**
      * Test fetching a basic container.
      */
     @Test

@@ -348,6 +348,7 @@ public interface ResourceServiceTests {
         assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-BC");
         assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-BC");
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
+        assertEquals(0L, res.stream(LDP.PreferMembership).count(), "Check for an absence of membership triples");
     }
 
     /**
