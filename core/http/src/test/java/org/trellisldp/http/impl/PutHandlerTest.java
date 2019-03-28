@@ -20,11 +20,13 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -116,6 +118,24 @@ public class PutHandlerTest extends BaseTestHandler {
             .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code");
+        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
+
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
+        verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
+    }
+
+    @Test
+    public void testPutLdpResourceContainerContained() throws IOException {
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+
+        final PutHandler handler = new PutHandler(mockTrellisRequest,
+                getClass().getResource("/simpleTriple.ttl").openStream(), mockBundler, false, false, null);
+        final Response res = handler.setResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
+
+        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
 
         verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
@@ -261,7 +281,7 @@ public class PutHandlerTest extends BaseTestHandler {
             .thenReturn(asyncException());
 
         try (final InputStream entity = getClass().getResource("/simpleData.txt").openStream()) {
-            final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, false, null);
+            final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, false, true, null);
 
             assertThrows(CompletionException.class,
                             () -> unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
@@ -272,7 +292,7 @@ public class PutHandlerTest extends BaseTestHandler {
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
         try {
             return new PutHandler(mockTrellisRequest, getClass().getResource(resourceName).openStream(), mockBundler,
-                            false, baseUrl);
+                            false, true, baseUrl);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

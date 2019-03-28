@@ -28,6 +28,7 @@ import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PRECONDITION_REQUIRED;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 
@@ -107,6 +108,7 @@ public class TrellisHttpResource {
     protected final boolean weakEtags;
     protected final boolean includeMementoDates;
     protected final boolean preconditionRequired;
+    protected final boolean createUncontained;
 
     /**
      * Create a Trellis HTTP resource matcher.
@@ -141,6 +143,8 @@ public class TrellisHttpResource {
             .orElse(Boolean.TRUE);
         this.preconditionRequired = config.getOptionalValue(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class)
             .orElse(Boolean.FALSE);
+        this.createUncontained = config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
+            .orElse(Boolean.TRUE);
     }
 
     /**
@@ -346,7 +350,8 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PutHandler putHandler = new PutHandler(req, body, trellis, preconditionRequired, urlBase);
+        final PutHandler putHandler = new PutHandler(req, body, trellis, preconditionRequired, createUncontained,
+                urlBase);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)

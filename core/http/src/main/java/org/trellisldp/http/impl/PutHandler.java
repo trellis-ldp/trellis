@@ -33,6 +33,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
@@ -84,6 +85,7 @@ public class PutHandler extends MutatingLdpHandler {
     private final IRI graphName;
     private final IRI otherGraph;
     private final boolean preconditionRequired;
+    private final boolean createUncontained;
 
     /**
      * Create a builder for an LDP PUT response.
@@ -92,10 +94,11 @@ public class PutHandler extends MutatingLdpHandler {
      * @param entity the entity
      * @param trellis the Trellis application bundle
      * @param preconditionRequired whether preconditions are required for PUT operations
+     * @param createUncontained whether PUT creates uncontained resources
      * @param baseUrl the base URL
      */
     public PutHandler(final TrellisRequest req, final InputStream entity, final ServiceBundler trellis,
-                    final boolean preconditionRequired, final String baseUrl) {
+                    final boolean preconditionRequired, final boolean createUncontained, final String baseUrl) {
         super(req, trellis, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         this.rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->
@@ -106,6 +109,7 @@ public class PutHandler extends MutatingLdpHandler {
         this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
         this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
         this.preconditionRequired = preconditionRequired;
+        this.createUncontained = createUncontained;
     }
 
     /**
@@ -139,7 +143,11 @@ public class PutHandler extends MutatingLdpHandler {
             throw new NotAcceptableException();
         }
 
-        ofNullable(resource).flatMap(Resource::getContainer).ifPresent(p -> setParent(parent));
+        if (createUncontained) {
+            ofNullable(resource).flatMap(Resource::getContainer).ifPresent(p -> setParent(parent));
+        } else {
+            setParent(parent);
+        }
         return status(NO_CONTENT);
     }
 
@@ -233,6 +241,8 @@ public class PutHandler extends MutatingLdpHandler {
             try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
                 remaining.forEachOrdered(mutable::add);
             }
+        } else if (!createUncontained) {
+            getContainer(internalId).ifPresent(metadata::container);
         }
 
         auditQuads().stream().map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))

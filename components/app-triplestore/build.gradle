@@ -76,3 +76,6 @@ jar {
     }
 }
 
+test {
+    systemProperty "trellis.http.put.uncontained", "false"
+}

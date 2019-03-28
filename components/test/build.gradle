@@ -22,6 +22,7 @@ dependencies {
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
     implementation("org.apache.jena:jena-arq:$jenaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
