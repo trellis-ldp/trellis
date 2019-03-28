@@ -103,6 +103,16 @@ public class TrellisWebDAVRequestFilterTest {
     }
 
     @Test
+    public void testTestPutContainedMissing() throws Exception {
+        final TrellisWebDAVRequestFilter filter2 = new TrellisWebDAVRequestFilter(mockBundler, false, null);
+
+        filter2.filter(mockContext);
+        verify(mockContext, never()).setMethod(eq(POST));
+        verify(mockHeaders, never()).putSingle(eq(SLUG), eq(PATH));
+    }
+
+
+    @Test
     public void testTestPutUncontainedDeleted() throws Exception {
 
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
