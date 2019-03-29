@@ -23,7 +23,6 @@ import static org.trellisldp.http.core.HttpConstants.SLUG;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Objects;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
@@ -82,7 +81,7 @@ public class TrellisRequest {
 
         // Security context value
         this.principalName = ofNullable(secCtx).map(SecurityContext::getUserPrincipal)
-            .filter(Objects::nonNull).map(Principal::getName).orElse(null);
+            .map(Principal::getName).orElse(null);
     }
 
     /**
@@ -100,8 +99,8 @@ public class TrellisRequest {
      * @return the decoded value of the slug header
      */
     public String getSlug() {
-        return ofNullable(headers.getFirst(SLUG)).map(Slug::valueOf).filter(Objects::nonNull).map(Slug::getValue)
-            .filter(x -> !x.isEmpty()).orElse(null);
+        return ofNullable(headers.getFirst(SLUG)).map(Slug::valueOf).map(Slug::getValue).filter(x -> !x.isEmpty())
+            .orElse(null);
     }
 
     /**

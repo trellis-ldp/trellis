@@ -15,13 +15,10 @@ package org.trellisldp.http.core;
 
 import static java.lang.Long.parseLong;
 import static java.time.Instant.ofEpochSecond;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 
@@ -59,15 +56,13 @@ public class Version {
         return time.toString();
     }
 
-    private static Optional<Instant> parse(final String version) {
-        if (nonNull(version)) {
-            try {
-                return of(ofEpochSecond(parseLong(version.trim())));
-            } catch (final NumberFormatException ex) {
-                LOGGER.warn("Unable to parse version string '{}': {}", version, ex.getMessage());
-            }
+    private static Instant parse(final String version) {
+        try {
+            return ofEpochSecond(parseLong(version.trim()));
+        } catch (final NumberFormatException ex) {
+            LOGGER.warn("Unable to parse version string '{}': {}", version, ex.getMessage());
         }
-        return empty();
+        return null;
     }
 
     /**
@@ -77,10 +72,6 @@ public class Version {
      * @return a Version header or null if the value is not parseable
      */
     public static Version valueOf(final String value) {
-        final Optional<Instant> time = parse(value);
-        if (time.isPresent()) {
-            return new Version(time.get());
-        }
-        return null;
+        return ofNullable(value).map(Version::parse).map(Version::new).orElse(null);
     }
 }

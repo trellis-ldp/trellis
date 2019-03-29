@@ -15,14 +15,11 @@ package org.trellisldp.http.core;
 
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.DateTimeException;
 import java.time.Instant;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 
@@ -67,21 +64,15 @@ public class AcceptDatetime {
      * @return an AcceptDatetime object or null if the value is not parseable
      */
     public static AcceptDatetime valueOf(final String value) {
-        final Optional<Instant> datetime = parseDatetime(value);
-        if (datetime.isPresent()) {
-            return new AcceptDatetime(datetime.get());
-        }
-        return null;
+        return ofNullable(value).map(AcceptDatetime::parseDatetime).map(AcceptDatetime::new).orElse(null);
     }
 
-    private static Optional<Instant> parseDatetime(final String datetime) {
-        if (nonNull(datetime)) {
-            try {
-                return of(parse(datetime.trim(), RFC_1123_DATE_TIME).toInstant());
-            } catch (final DateTimeException ex) {
-                LOGGER.warn("Invalid date supplied ({}): {}", datetime, ex.getMessage());
-            }
+    private static Instant parseDatetime(final String datetime) {
+        try {
+            return parse(datetime.trim(), RFC_1123_DATE_TIME).toInstant();
+        } catch (final DateTimeException ex) {
+            LOGGER.warn("Invalid date supplied ({}): {}", datetime, ex.getMessage());
         }
-        return empty();
+        return null;
     }
 }
