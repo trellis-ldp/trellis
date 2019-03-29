@@ -14,12 +14,8 @@
 package org.trellisldp.http.core;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.Optional;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
@@ -64,16 +60,16 @@ public class Slug {
      * @return a Slug object with a decoded value or null
      */
     public static Slug valueOf(final String value) {
-        return ofNullable(value).flatMap(Slug::decodeSlug).map(Slug::new).orElse(null);
+        return ofNullable(value).map(Slug::decodeSlug).map(Slug::new).orElse(null);
     }
 
-    private static Optional<String> decodeSlug(final String value) {
+    private static String decodeSlug(final String value) {
         try {
-            return of(DECODER.decode(value));
+            return DECODER.decode(value);
         } catch (final DecoderException ex) {
             LOGGER.warn("Error decoding slug value, ignoring header: {}", ex.getMessage());
         }
-        return empty();
+        return null;
     }
 
     private static String cleanSlugString(final String value) {
