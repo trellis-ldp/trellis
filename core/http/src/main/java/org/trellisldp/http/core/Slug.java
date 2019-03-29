@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 public class Slug {
 
     private static final Logger LOGGER = getLogger(Slug.class);
+    private static final URLCodec DECODER = new URLCodec();
 
     private final String slugValue;
 
@@ -46,7 +47,7 @@ public class Slug {
      * @param value the value of the Slug header.
      */
     public Slug(final String value) {
-        this.slugValue = replaceChars(requireNonNull(value, "Must be a non-null value!"));
+        this.slugValue = cleanSlugString(requireNonNull(value, "Must be a non-null value!"));
     }
 
     /**
@@ -68,15 +69,16 @@ public class Slug {
 
     private static Optional<String> decodeSlug(final String value) {
         try {
-            final URLCodec decoder = new URLCodec();
-            return of(decoder.decode(value));
+            return of(DECODER.decode(value));
         } catch (final DecoderException ex) {
             LOGGER.warn("Error decoding slug value, ignoring header: {}", ex.getMessage());
         }
         return empty();
     }
 
-    private static String replaceChars(final String value) {
+    private static String cleanSlugString(final String value) {
+        // Remove any fragment URIs and query parameters
+        // Then trim the string and replace any remaining whitespace or slash characters with underscores
         return value.split("#")[0].split("\\?")[0].trim().replaceAll("[\\s/]+", "_");
     }
 }
