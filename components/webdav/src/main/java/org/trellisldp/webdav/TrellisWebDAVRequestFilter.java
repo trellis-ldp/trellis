@@ -25,6 +25,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.webdav.impl.WebDAVUtils.getAllButLastSegment;
 import static org.trellisldp.webdav.impl.WebDAVUtils.getLastSegment;
@@ -59,6 +60,7 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     private static final RDF rdf = getInstance();
 
     private final ServiceBundler services;
+    private final boolean createUncontained;
     private final String baseUrl;
 
     /**
@@ -72,25 +74,29 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     }
 
     private TrellisWebDAVRequestFilter(final ServiceBundler services, final Config config) {
-        this(services, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
+        this(services,
+                config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.TRUE),
+                config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
     /**
      * Create a Trellis HTTP request filter for WebDAV.
      *
      * @param services the Trellis application bundle
+     * @param createUncontained whether the put-uncontained configuration is in effect
      * @param baseUrl the baseURL
      */
-    public TrellisWebDAVRequestFilter(final ServiceBundler services, final
-            String baseUrl) {
+    public TrellisWebDAVRequestFilter(final ServiceBundler services, final boolean createUncontained,
+            final String baseUrl) {
         this.services = services;
+        this.createUncontained = createUncontained;
         this.baseUrl = baseUrl;
     }
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + ctx.getUriInfo().getPath());
-        if (PUT.equals(ctx.getMethod())) {
+        if (PUT.equals(ctx.getMethod()) && createUncontained) {
             final Resource res = services.getResourceService().get(identifier).toCompletableFuture().join();
             final List<PathSegment> segments = ctx.getUriInfo().getPathSegments();
             if ((MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res))

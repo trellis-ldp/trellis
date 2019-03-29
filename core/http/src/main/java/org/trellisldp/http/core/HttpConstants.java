@@ -64,6 +64,9 @@ public final class HttpConstants {
     /** Configuration key defining whether to require precondition headers for PUT operations. **/
     public static final String CONFIG_HTTP_PRECONDITION_REQUIRED = "trellis.http.precondition.required";
 
+    /** Configuration key defining whether PUT-on-create generates contained or uncontained resources. **/
+    public static final String CONFIG_HTTP_PUT_UNCONTAINED = "trellis.http.put.uncontained";
+
     /** The Trellis query parameter for extended features of a given resource. **/
     public static final String EXT = "ext";
 

@@ -21,9 +21,11 @@ import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
@@ -205,6 +207,8 @@ public interface LdpBasicContainerTests extends CommonTests {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child4 = getContainerLocation() + "/child4";
+        final boolean createUncontained = getConfig().getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
+            .orElse(Boolean.TRUE);
 
         // First fetch the container headers to get the initial ETag
         final EntityTag initialETag = getETag(getContainerLocation());
@@ -222,10 +226,16 @@ public interface LdpBasicContainerTests extends CommonTests {
             final IRI identifier = rdf.createIRI(getContainerLocation());
             final EntityTag etag = res.getEntityTag();
             assertAll("Check the resulting graph", checkRdfGraph(g, identifier));
-            assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child4)),
-                    "Check for an ldp:contains triple");
+            if (createUncontained) {
+                assertFalse(g.contains(identifier, LDP.contains, rdf.createIRI(child4)),
+                        "Check for the absense of an ldp:contains triple");
+                assertEquals(initialETag, etag, "Check ETags");
+            } else {
+                assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child4)),
+                        "Check for the presence of an ldp:contains triple");
+                assertNotEquals(initialETag, etag, "Check ETags");
+            }
             assertTrue(etag.isWeak(), "Check for a weak ETag");
-            assertEquals(initialETag, etag, "Check ETags");
         }
     }
 
