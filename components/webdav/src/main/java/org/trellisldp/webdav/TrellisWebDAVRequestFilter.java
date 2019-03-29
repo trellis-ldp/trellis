@@ -19,6 +19,8 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.TYPE;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.status;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -108,11 +110,17 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
         } else if ("MKCOL".equals(ctx.getMethod())) {
             // Note: MKCOL is just a POST with Link: <ldp:BasicContainer>; rel=type and appropriate Slug header
             final List<PathSegment> segments = ctx.getUriInfo().getPathSegments();
-            ctx.setRequestUri(ctx.getUriInfo().getBaseUriBuilder().path(getAllButLastSegment(segments)).build());
-            ctx.setMethod(POST);
-            ctx.getHeaders().putSingle(SLUG, getLastSegment(segments));
-            ctx.getHeaders().putSingle(LINK,
-                    Link.fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build().toString());
+            final String slug = getLastSegment(segments);
+            if (slug.isEmpty()) {
+                // cannot POST a new root resource
+                ctx.abortWith(status(CONFLICT).build());
+            } else {
+                ctx.setRequestUri(ctx.getUriInfo().getBaseUriBuilder().path(getAllButLastSegment(segments)).build());
+                ctx.setMethod(POST);
+                ctx.getHeaders().putSingle(SLUG, getLastSegment(segments));
+                ctx.getHeaders().putSingle(LINK,
+                        Link.fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build().toString());
+            }
         } else if (DELETE.equals(ctx.getMethod())) {
             final Session session = ofNullable(ctx.getSecurityContext()).map(SecurityContext::getUserPrincipal)
                 .map(Principal::getName).map(services.getAgentService()::asAgent).map(HttpSession::new)

@@ -97,10 +97,11 @@ public class TrellisRequest {
     /**
      * Get the slug header.
      *
-     * @return the value of the slug header
+     * @return the decoded value of the slug header
      */
     public String getSlug() {
-        return headers.getFirst(SLUG);
+        return ofNullable(headers.getFirst(SLUG)).map(Slug::valueOf).filter(Objects::nonNull).map(Slug::getValue)
+            .filter(x -> !x.isEmpty()).orElse(null);
     }
 
     /**

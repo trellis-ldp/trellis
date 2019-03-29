@@ -1131,13 +1131,162 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostBadSlug() {
+    public void testPostSlugWithSlash() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request().header(SLUG, "child/grandchild")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
-        assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH + "_grandchild", res.getLocation().toString(),
+                "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostEncodedSlugWithSlash() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%2Fgrandchild")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH + "_grandchild", res.getLocation().toString(),
+                "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostSlugWithWhitespace() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child grandchild")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH + "_grandchild", res.getLocation().toString(),
+                "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostEncodedSlugWithEncodedWhitespace() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%09grandchild")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH + "_grandchild", res.getLocation().toString(),
+                "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostEncodedSlugWithInvalidEncoding() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%0 grandchild")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(),
+                "Incorrect Location header!");
+        assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")),
+                "Unexpected describedby link!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostEmptySlug() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(),
+                "Incorrect Location header!");
+        assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")),
+                "Unexpected describedby link!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostEmptyEncodedSlug() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "%20%09")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(),
+                "Incorrect Location header!");
+        assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")),
+                "Unexpected describedby link!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostSlugWithHashURI() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child#hash")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostSlugWithEncodedHashURI() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%23hash")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostSlugWithQuestionMark() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child?foo=bar")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+    }
+
+    @Test
+    public void testPostSlugWithEncodedQuestionMark() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+
+        final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%3Ffoo=bar")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
     }
 
     @Test
