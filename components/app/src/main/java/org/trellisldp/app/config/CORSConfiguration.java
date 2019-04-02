@@ -32,7 +32,7 @@ public class CORSConfiguration {
             "GET", "HEAD", "OPTIONS", "POST");
 
     private List<String> allowHeaders = asList("Content-Type", "Link", "Accept",
-            "Accept-Datetime", "Prefer", "Slug", "Origin");
+            "Accept-Datetime", "Authorization", "Prefer", "Slug", "Origin");
 
     private List<String> exposeHeaders = asList("Content-Type", "Link",
             "Memento-Datetime", "Preference-Applied", "Location",

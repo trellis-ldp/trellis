@@ -100,8 +100,8 @@ cors:
 | enabled | false | Whether [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is enabled |
 | allowOrigin | "*" | A list of allowed origins |
 | allowMethods | "PUT", "DELETE", "PATCH", "GET", "HEAD", "OPTIONS", "POST" | A list of allowed methods |
-| allowHeaders | "Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Want-Digest", "Slug", "Digest" | A list of allowed request headers |
-| exposeHeaders | "Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location", "Accept-Patch", "Accept-Post", "Digest", "Accept-Ranges", "ETag", "Vary" | A list of allowed response headers |
+| allowHeaders | "Content-Type", "Link", "Accept", "Accept-Datetime", "Prefer", "Slug", "Authorization"  | A list of allowed request headers |
+| exposeHeaders | "Content-Type", "Link", "Memento-Datetime", "Preference-Applied", "Location", "Accept-Patch", "Accept-Post", "Accept-Ranges", "ETag", "Vary" | A list of allowed response headers |
 | maxAge | 180 | The maximum age (in seconds) of pre-flight messages |
 | allowCredentials | true | Whether the actual request can be made with credentials |
 
