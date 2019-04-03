@@ -67,10 +67,11 @@ public class TrellisWebDAVAuthzFilter extends WebAcFilter {
      * @param accessService the access service
      * @param challengeTypes the WWW-Authenticate challenge types
      * @param realm the authentication realm
+     * @param baseUrl the baseURL
      */
     public TrellisWebDAVAuthzFilter(final AccessControlService accessService, final List<String> challengeTypes,
-            final String realm) {
-        super(accessService, challengeTypes, realm);
+            final String realm, final String baseUrl) {
+        super(accessService, challengeTypes, realm, baseUrl);
     }
 
     @Override
