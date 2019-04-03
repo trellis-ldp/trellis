@@ -111,6 +111,19 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param accessService the access service
      * @param challengeTypes the WWW-Authenticate challenge types
      * @param realm the authentication realm
+     */
+    @Deprecated
+    public WebAcFilter(final AccessControlService accessService, final List<String> challengeTypes,
+            final String realm) {
+        this(accessService, challengeTypes, realm, getConfiguration().get(CONFIG_HTTP_BASE_URL));
+    }
+
+    /**
+     * Create a WebAc-based auth filter.
+     *
+     * @param accessService the access service
+     * @param challengeTypes the WWW-Authenticate challenge types
+     * @param realm the authentication realm
      * @param baseUrl the base URL, may be null
      */
     public WebAcFilter(final AccessControlService accessService, final List<String> challengeTypes,
