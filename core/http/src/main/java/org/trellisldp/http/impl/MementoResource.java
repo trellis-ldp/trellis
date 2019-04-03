@@ -107,7 +107,7 @@ public final class MementoResource {
             final String baseUrl) {
 
         final List<MediaType> acceptableTypes = req.getAcceptableMediaTypes();
-        final String identifier = getBaseUrl(baseUrl, req) + req.getPath();
+        final String identifier = fromUri(getBaseUrl(baseUrl, req)).path(req.getPath()).build().toString();
         final List<Link> links = getMementoLinks(identifier, mementos).collect(toList());
 
         final ResponseBuilder builder = ok().link(identifier, ORIGINAL + " " + TIMEGATE);
