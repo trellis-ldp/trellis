@@ -111,7 +111,7 @@ public class TrellisWebDAVAuthzFilterTest {
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
         final TrellisWebDAVAuthzFilter filter = new TrellisWebDAVAuthzFilter(mockAccessControlService,
-                asList("Foo", "Bar"), "my-realm");
+                asList("Foo", "Bar"), "my-realm", null);
 
         final List<Object> challenges = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No auth exception thrown with no access modes!").getChallenges();

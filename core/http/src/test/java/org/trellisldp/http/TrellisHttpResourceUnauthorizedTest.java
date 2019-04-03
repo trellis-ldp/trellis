@@ -60,7 +60,7 @@ public class TrellisHttpResourceUnauthorizedTest extends BaseTrellisHttpResource
         initMocks(this);
 
         final WebAcFilter webacFilter = new WebAcFilter(mockAccessControlService, asList(BASIC_AUTH, DIGEST_AUTH),
-                "my-realm");
+                "my-realm", null);
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler));
