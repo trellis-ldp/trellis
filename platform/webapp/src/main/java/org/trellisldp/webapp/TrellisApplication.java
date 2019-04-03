@@ -14,7 +14,9 @@
 package org.trellisldp.webapp;
 
 import static java.util.Arrays.asList;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 
+import org.apache.tamaya.ConfigurationProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.auth.basic.BasicAuthFilter;
@@ -39,8 +41,9 @@ public class TrellisApplication extends ResourceConfig {
     public TrellisApplication() {
         super();
 
+        final String baseUrl = ConfigurationProvider.getConfiguration().get(CONFIG_HTTP_BASE_URL);
         final ServiceBundler serviceBundler = new WebappServiceBundler();
-        final TrellisHttpResource ldpResource = new TrellisHttpResource(serviceBundler);
+        final TrellisHttpResource ldpResource = new TrellisHttpResource(serviceBundler, baseUrl);
         ldpResource.initialize();
 
         register(ldpResource);
@@ -52,7 +55,7 @@ public class TrellisApplication extends ResourceConfig {
         register(new OAuthFilter());
         register(new BasicAuthFilter());
         register(new WebAcFilter(new WebACService(serviceBundler.getResourceService()), asList("Basic", "Bearer"),
-                        "trellis"));
+                        "trellis", baseUrl));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);
         AppUtils.getCORSFilter().ifPresent(this::register);

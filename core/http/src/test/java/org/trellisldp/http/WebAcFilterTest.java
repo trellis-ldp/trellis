@@ -16,6 +16,7 @@ package org.trellisldp.http;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -28,7 +29,11 @@ import java.util.Set;
 import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.rdf.api.IRI;
@@ -60,6 +65,9 @@ public class WebAcFilterTest {
 
     @Mock
     private ContainerRequestContext mockContext;
+
+    @Mock
+    private ContainerResponseContext mockResponseContext;
 
     @Mock
     private UriInfo mockUriInfo;
@@ -113,12 +121,51 @@ public class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
-        final WebAcFilter filter = new WebAcFilter(mockAccessControlService, asList("Foo", "Bar"), "my-realm");
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService, asList("Foo", "Bar"), "my-realm",
+                "http://example.com/");
 
         final List<Object> challenges = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No auth exception thrown with no access modes!").getChallenges();
 
         assertTrue(challenges.contains("Foo realm=\"my-realm\""), "Foo not among challenges!");
         assertTrue(challenges.contains("Bar realm=\"my-realm\""), "Bar not among challenges!");
+    }
+
+    @Test
+    public void testFilterResponse() throws Exception {
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        when(mockResponseContext.getStatusInfo()).thenReturn(OK);
+        when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
+
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService, asList("Foo", "Bar"), "my-realm", null);
+
+        assertTrue(headers.isEmpty());
+        filter.filter(mockContext, mockResponseContext);
+        assertFalse(headers.isEmpty());
+
+        final Link link = (Link) headers.getFirst("Link");
+        assertNotNull(link);
+        assertEquals("acl", link.getRel());
+        assertEquals("http://localhost/?ext=acl", link.getUri().toString());
+    }
+
+    @Test
+    public void testFilterResponseBaseUrl() throws Exception {
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        when(mockResponseContext.getStatusInfo()).thenReturn(OK);
+        when(mockResponseContext.getHeaders()).thenReturn(headers);
+
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService, asList("Foo", "Bar"), "my-realm",
+                "http://example.com/");
+
+        assertTrue(headers.isEmpty());
+        filter.filter(mockContext, mockResponseContext);
+        assertFalse(headers.isEmpty());
+
+        final Link link = (Link) headers.getFirst("Link");
+        assertNotNull(link);
+        assertEquals("acl", link.getRel());
+        assertEquals("http://example.com/?ext=acl", link.getUri().toString());
     }
 }

@@ -28,6 +28,7 @@ import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -86,6 +88,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     private final AccessControlService accessService;
     private final List<String> challenges;
+    private final String baseUrl;
 
     /**
      * Create a new WebAc-based auth filter.
@@ -99,7 +102,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     private WebAcFilter(final AccessControlService accessService, final Configuration config) {
         this(accessService, asList(config.getOrDefault(CONFIG_AUTH_CHALLENGES, "").split(",")),
-                config.getOrDefault(CONFIG_AUTH_REALM, "trellis"));
+                config.getOrDefault(CONFIG_AUTH_REALM, "trellis"), config.get(CONFIG_HTTP_BASE_URL));
     }
 
     /**
@@ -108,14 +111,16 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param accessService the access service
      * @param challengeTypes the WWW-Authenticate challenge types
      * @param realm the authentication realm
+     * @param baseUrl the base URL, may be null
      */
     public WebAcFilter(final AccessControlService accessService, final List<String> challengeTypes,
-            final String realm) {
+            final String realm, final String baseUrl) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
         this.accessService = requireNonNull(accessService, "Access Control service may not be null!");
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
             .collect(toList());
+        this.baseUrl = baseUrl;
     }
 
     @Override
@@ -151,9 +156,16 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         if (SUCCESSFUL.equals(res.getStatusInfo().getFamily())
                 && (!req.getUriInfo().getQueryParameters().containsKey(HttpConstants.EXT)
                     || !req.getUriInfo().getQueryParameters().get(HttpConstants.EXT).contains(HttpConstants.ACL))) {
-            res.getHeaders().add(LINK, fromUri(req.getUriInfo().getAbsolutePathBuilder()
-                    .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(HttpConstants.ACL).build());
+            res.getHeaders().add(LINK, fromUri(getRequestUri(req).queryParam(HttpConstants.EXT, HttpConstants.ACL)
+                        .build()).rel(HttpConstants.ACL).build());
         }
+    }
+
+    private UriBuilder getRequestUri(final ContainerRequestContext req) {
+        if (nonNull(baseUrl)) {
+            return UriBuilder.fromUri(baseUrl).path(req.getUriInfo().getPath());
+        }
+        return req.getUriInfo().getAbsolutePathBuilder();
     }
 
     private void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
