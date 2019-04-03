@@ -32,6 +32,7 @@ import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
+import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.jena.util.SplitIRI.localnameXML;
@@ -247,7 +248,7 @@ public class TrellisWebDAV {
             throws ParserConfigurationException {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final String location = getBaseUrl(req) + req.getPath();
+        final String location = fromUri(getBaseUrl(req)).path(req.getPath()).build().toString();
         final Document doc = getDocument();
         services.getResourceService().get(identifier)
             .thenApply(this::checkResource)
@@ -279,7 +280,7 @@ public class TrellisWebDAV {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final String baseUrl = getBaseUrl(req);
-        final String location = baseUrl + req.getPath();
+        final String location = fromUri(baseUrl).path(req.getPath()).build().toString();
         final Session session = ofNullable(req.getPrincipalName()).map(services.getAgentService()::asAgent)
                 .map(HttpSession::new).orElseGet(HttpSession::new);
         services.getResourceService().get(identifier)
