@@ -265,7 +265,8 @@ public interface LdpRdfTests extends CommonTests {
             assertAll("Check an LDP-RS resource", checkRdfResponse(res, LDP.RDFSource, null));
         }
 
-        await().until(() -> !initialETag.equals(getETag(getResourceLocation())));
+        final EntityTag etag2 = getETag(getResourceLocation());
+        await().until(() -> !initialETag.equals(etag2));
 
         // Fetch the updated resource
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
@@ -276,6 +277,26 @@ public interface LdpRdfTests extends CommonTests {
                     "Check for a dc:title triple");
             assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
             assertNotEquals(initialETag, res.getEntityTag(), "Compare the first and second ETags");
+        }
+
+        // Now remove the triple
+        try (final Response res = target(getResourceLocation()).request().method("PATCH",
+                    entity("DELETE DATA { <" + getResourceLocation() + "> <http://purl.org/dc/terms/title> " +
+                        "\"Title\" }", APPLICATION_SPARQL_UPDATE))) {
+            assertAll("Check an LDP-RS resource", checkRdfResponse(res, LDP.RDFSource, null));
+        }
+
+        await().until(() -> !etag2.equals(getETag(getResourceLocation())));
+
+        // Fetch the updated resource
+        try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
+            assertAll("Check an updated resource", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
+            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES);
+            assertEquals(3L, g.size(), "Check the graph size");
+            assertFalse(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
+                    "Check for a dc:title triple");
+            assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
+            assertNotEquals(etag2, res.getEntityTag(), "Compare the second and third ETags");
         }
     }
 

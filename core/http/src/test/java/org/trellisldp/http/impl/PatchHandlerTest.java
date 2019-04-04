@@ -103,6 +103,7 @@ public class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(quad));
         when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
         final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
@@ -110,7 +111,7 @@ public class PatchHandlerTest extends BaseTestHandler {
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
 
-        verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
+        verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq("http://localhost/resource"));
         verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
     }
 
@@ -188,7 +189,7 @@ public class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         doThrow(RuntimeTrellisException.class).when(mockIoService)
-            .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(identifier.getIRIString()));
+            .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(baseUrl + "resource"));
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
         final Response res = assertThrows(BadRequestException.class, () ->

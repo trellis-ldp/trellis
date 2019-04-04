@@ -215,6 +215,8 @@ abstract class BaseTestHandler {
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.delete(any(Metadata.class))).thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(completedFuture(null));
+        when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
+        when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
         when(mockResourceService.skolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(IRI.class))).then(returnsFirstArg());
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
