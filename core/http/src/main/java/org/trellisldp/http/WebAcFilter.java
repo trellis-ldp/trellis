@@ -111,6 +111,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param accessService the access service
      * @param challengeTypes the WWW-Authenticate challenge types
      * @param realm the authentication realm
+     * @deprecated Please use either the one-argument or the four-argument constructor.
      */
     @Deprecated
     public WebAcFilter(final AccessControlService accessService, final List<String> challengeTypes,
