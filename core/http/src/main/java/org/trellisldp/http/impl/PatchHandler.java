@@ -29,7 +29,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
@@ -185,10 +184,13 @@ public class PatchHandler extends MutatingLdpHandler {
         // Update existing graph
         try (final TrellisGraph graph = TrellisGraph.createGraph()) {
             try (final Stream<Quad> stream = getResource().stream(graphName)) {
-                stream.map(Quad::asTriple).forEachOrdered(graph::add);
+                stream.map(Quad::asTriple)
+                      .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
+                      .forEachOrdered(graph::add);
             }
+
             getServices().getIOService().update(graph.asGraph(), updateBody, syntax,
-                TRELLIS_DATA_PREFIX + getRequest().getPath() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : ""));
+                getBaseUrl() + getRequest().getPath() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                 || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         }
