@@ -21,6 +21,7 @@ include ':trellis-namespaces'
 include ':trellis-triplestore'
 include ':trellis-webac'
 include ':trellis-webdav'
+include ':trellis-websocket'
 include ':trellis-app'
 include ':trellis-rdfa'
 
@@ -56,6 +57,7 @@ project(':trellis-test').projectDir = "$rootDir/components/test" as File
 project(':trellis-triplestore').projectDir = "$rootDir/components/triplestore" as File
 project(':trellis-webac').projectDir = "$rootDir/components/webac" as File
 project(':trellis-webdav').projectDir = "$rootDir/components/webdav" as File
+project(':trellis-websocket').projectDir = "$rootDir/components/websocket" as File
 project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
 
 project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File

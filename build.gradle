@@ -47,6 +47,7 @@ ext {
     kafkaVersion = '2.2.0'
     mustacheVersion = '0.9.6'
     rabbitMqVersion = '5.7.0'
+    websocketApiVersion = '1.1'
     validationVersion = '2.0.1.Final'
 
     /* Testing */

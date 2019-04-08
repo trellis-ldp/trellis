@@ -1,0 +1,49 @@
+apply plugin: 'java-library'
+apply plugin: 'biz.aQute.bnd.builder'
+
+description = 'Trellis Websocket API'
+
+ext {
+    moduleName = 'org.trellisldp.websocket'
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent', 'smallrye.config']
+}
+
+dependencies {
+    api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    api("javax.enterprise:cdi-api:${cdiApiVersion}")
+    api("javax.websocket:javax.websocket-api:$websocketApiVersion")
+    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    api("org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion")
+    api project(':trellis-api')
+
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.apache.jena:jena-arq:$jenaVersion")
+    implementation project(':trellis-http')
+    implementation project(':trellis-vocabulary')
+
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("javax.jms:javax.jms-api:$jmsApiVersion")
+    testImplementation("org.apache.activemq:activemq-broker:$activeMqVersion")
+    testImplementation("org.apache.activemq:activemq-client:$activeMqVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation project(':trellis-agent')
+    testImplementation project(':trellis-audit')
+    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-io-jena')
+    testImplementation("org.awaitility:awaitility:$awaitilityVersion")
+    testImplementation("org.jboss.weld:weld-junit5:1.3.1.Final")
+    testImplementation("org.jboss.weld.se:weld-se-shaded:3.1.0.Final")
+
+    testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")
+    testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
+}
+
