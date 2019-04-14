@@ -22,7 +22,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -42,7 +41,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.DateTimeException;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -131,18 +129,18 @@ public final class HttpUtils {
      */
     public static Set<IRI> triplePreferences(final Prefer prefer) {
         final Set<IRI> include = new HashSet<>(DEFAULT_REPRESENTATION);
-        ofNullable(prefer).ifPresent(p -> {
-            if (p.getInclude().contains(LDP.PreferMinimalContainer.getIRIString())) {
+        if (nonNull(prefer)) {
+            if (prefer.getInclude().contains(LDP.PreferMinimalContainer.getIRIString())) {
                 include.remove(LDP.PreferContainment);
                 include.remove(LDP.PreferMembership);
             }
-            if (p.getOmit().contains(LDP.PreferMinimalContainer.getIRIString())) {
+            if (prefer.getOmit().contains(LDP.PreferMinimalContainer.getIRIString())) {
                 include.remove(Trellis.PreferUserManaged);
             }
-            p.getOmit().stream().map(rdf::createIRI).forEach(include::remove);
-            p.getInclude().stream().map(rdf::createIRI)
+            prefer.getOmit().stream().map(rdf::createIRI).forEach(include::remove);
+            prefer.getInclude().stream().map(rdf::createIRI)
                 .filter(iri -> !ignoredPreferences.contains(iri)).forEach(include::add);
-        });
+        }
         return include;
     }
 
@@ -287,8 +285,12 @@ public final class HttpUtils {
      */
     public static IRI getDefaultProfile(final RDFSyntax syntax, final IRI identifier,
             final String defaultJsonLdProfile) {
-        return RDFA.equals(syntax) ? identifier
-            : ofNullable(defaultJsonLdProfile).map(rdf::createIRI).orElse(compacted);
+        if (RDFA.equals(syntax)) {
+            return identifier;
+        } else if (nonNull(defaultJsonLdProfile)) {
+            return rdf.createIRI(defaultJsonLdProfile);
+        }
+        return compacted;
     }
 
     /**
@@ -310,9 +312,10 @@ public final class HttpUtils {
     public static void checkIfModifiedSince(final String method, final String ifModifiedSince,
             final Instant modified) {
         if (isGetOrHead(method)) {
-            parseDate(ifModifiedSince).filter(d -> d.isAfter(modified.truncatedTo(SECONDS))).ifPresent(date -> {
+            final Instant time = parseDate(ifModifiedSince);
+            if (nonNull(time) && time.isAfter(modified.truncatedTo(SECONDS))) {
                 throw new RedirectionException(notModified().build());
-            });
+            }
         }
     }
 
@@ -322,9 +325,10 @@ public final class HttpUtils {
      * @param modified the resource modification date
      */
     public static void checkIfUnmodifiedSince(final String ifUnmodifiedSince, final Instant modified) {
-        parseDate(ifUnmodifiedSince).filter(modified.truncatedTo(SECONDS)::isAfter).ifPresent(date -> {
+        final Instant time = parseDate(ifUnmodifiedSince);
+        if (nonNull(time) && modified.truncatedTo(SECONDS).isAfter(time)) {
             throw new ClientErrorException(status(PRECONDITION_FAILED).build());
-        });
+        }
     }
 
     /**
@@ -377,15 +381,15 @@ public final class HttpUtils {
         return "GET".equals(method) || "HEAD".equals(method);
     }
 
-    private static Optional<Instant> parseDate(final String date) {
-        return ofNullable(date).map(String::trim).flatMap(d -> {
+    private static Instant parseDate(final String date) {
+        if (nonNull(date)) {
             try {
-                return of(parse(d, RFC_1123_DATE_TIME));
+                return parse(date.trim(), RFC_1123_DATE_TIME).toInstant();
             } catch (final DateTimeException ex) {
                 LOGGER.debug("Ignoring invalid date ({}): {}", date, ex.getMessage());
             }
-            return empty();
-        }).map(ZonedDateTime::toInstant);
+        }
+        return null;
     }
 
     /**

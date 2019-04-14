@@ -13,7 +13,7 @@
  */
 package org.trellisldp.http.core;
 
-import static java.util.Optional.ofNullable;
+import static java.util.Objects.nonNull;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
@@ -80,8 +80,7 @@ public class TrellisRequest {
         this.method = request.getMethod();
 
         // Security context value
-        this.principalName = ofNullable(secCtx).map(SecurityContext::getUserPrincipal)
-            .map(Principal::getName).orElse(null);
+        this.principalName = getPrincipalName(secCtx);
     }
 
     /**
@@ -99,8 +98,11 @@ public class TrellisRequest {
      * @return the decoded value of the slug header
      */
     public String getSlug() {
-        return ofNullable(headers.getFirst(SLUG)).map(Slug::valueOf).map(Slug::getValue).filter(x -> !x.isEmpty())
-            .orElse(null);
+        final Slug slug = Slug.valueOf(headers.getFirst(SLUG));
+        if (nonNull(slug) && !slug.getValue().isEmpty()) {
+            return slug.getValue();
+        }
+        return null;
     }
 
     /**
@@ -109,7 +111,11 @@ public class TrellisRequest {
      * @return the Link header
      */
     public Link getLink() {
-        return ofNullable(headers.getFirst(LINK)).map(Link::valueOf).orElse(null);
+        final String link = headers.getFirst(LINK);
+        if (nonNull(link)) {
+            return Link.valueOf(link);
+        }
+        return null;
     }
 
     /**
@@ -118,7 +124,7 @@ public class TrellisRequest {
      * @return the accept-datetime header
      */
     public AcceptDatetime getDatetime() {
-        return ofNullable(headers.getFirst(ACCEPT_DATETIME)).map(AcceptDatetime::valueOf).orElse(null);
+        return AcceptDatetime.valueOf(headers.getFirst(ACCEPT_DATETIME));
     }
 
     /**
@@ -127,7 +133,7 @@ public class TrellisRequest {
      * @return the Prefer header
      */
     public Prefer getPrefer() {
-        return ofNullable(headers.getFirst(PREFER)).map(Prefer::valueOf).orElse(null);
+        return Prefer.valueOf(headers.getFirst(PREFER));
     }
 
     /**
@@ -136,7 +142,7 @@ public class TrellisRequest {
      * @return the range header
      */
     public Range getRange() {
-        return ofNullable(headers.getFirst(RANGE)).map(Range::valueOf).orElse(null);
+        return Range.valueOf(headers.getFirst(RANGE));
     }
 
     /**
@@ -154,7 +160,7 @@ public class TrellisRequest {
      * @return the version query parameter
      */
     public Version getVersion() {
-        return ofNullable(parameters.getFirst("version")).map(Version::valueOf).orElse(null);
+        return Version.valueOf(parameters.getFirst("version"));
     }
 
     /**
@@ -234,5 +240,15 @@ public class TrellisRequest {
      */
     public List<MediaType> getAcceptableMediaTypes() {
         return acceptableMediaTypes;
+    }
+
+    private static String getPrincipalName(final SecurityContext secCtx) {
+        if (nonNull(secCtx)) {
+            final Principal principal = secCtx.getUserPrincipal();
+            if (nonNull(principal)) {
+                return principal.getName();
+            }
+        }
+        return null;
     }
 }

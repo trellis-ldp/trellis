@@ -27,6 +27,16 @@ import org.junit.jupiter.api.function.Executable;
 public class PreferTest {
 
     @Test
+    public void testPreferNullValues() {
+        final Prefer prefer = new Prefer(null, null, null, null, null);
+        assertFalse(prefer.getPreference().isPresent());
+        assertFalse(prefer.getHandling().isPresent());
+        assertFalse(prefer.getRespondAsync());
+        assertTrue(prefer.getInclude().isEmpty());
+        assertTrue(prefer.getOmit().isEmpty());
+    }
+
+    @Test
     public void testPrefer1() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test\"");
         assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));

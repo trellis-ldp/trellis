@@ -13,8 +13,8 @@
  */
 package org.trellisldp.http.core;
 
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.commons.codec.DecoderException;
@@ -60,7 +60,13 @@ public class Slug {
      * @return a Slug object with a decoded value or null
      */
     public static Slug valueOf(final String value) {
-        return ofNullable(value).map(Slug::decodeSlug).map(Slug::new).orElse(null);
+        if (nonNull(value)) {
+            final String decoded = decodeSlug(value);
+            if (nonNull(decoded)) {
+                return new Slug(decoded);
+            }
+        }
+        return null;
     }
 
     private static String decodeSlug(final String value) {

@@ -18,6 +18,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
@@ -28,7 +29,6 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -97,8 +97,11 @@ class MutatingLdpHandler extends BaseLdpHandler {
             final String baseUrl, final InputStream entity) {
         super(req, trellis, baseUrl);
         this.entity = entity;
-        this.session = ofNullable(req.getPrincipalName()).map(getServices().getAgentService()::asAgent)
-                .map(HttpSession::new).orElseGet(HttpSession::new);
+        if (nonNull(req.getPrincipalName())) {
+            this.session = new HttpSession(getServices().getAgentService().asAgent(req.getPrincipalName()));
+        } else {
+            this.session = new HttpSession();
+        }
     }
 
     protected void setParent(final Resource parent) {
@@ -106,16 +109,17 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     protected IRI getParentIdentifier() {
-        return ofNullable(parent).map(Resource::getIdentifier).orElse(null);
+        if (nonNull(parent)) {
+            return parent.getIdentifier();
+        }
+        return null;
     }
 
     protected IRI getParentModel() {
-        return ofNullable(parent).map(Resource::getInteractionModel).orElse(null);
-    }
-
-    protected IRI getParentMembershipResource() {
-        return ofNullable(parent).flatMap(Resource::getMembershipResource).map(IRI::getIRIString)
-            .map(res -> res.split("#")[0]).map(rdf::createIRI).orElse(null);
+        if (nonNull(parent)) {
+            return parent.getInteractionModel();
+        }
+        return null;
     }
 
     /**
@@ -146,7 +150,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @return the resource IRI
      */
     protected IRI getInternalId() {
-        return ofNullable(getResource()).map(Resource::getIdentifier).orElse(null);
+        return getResource().getIdentifier();
     }
 
     /**
@@ -197,7 +201,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
                                 getSession().getAgent(), asList(PROV.Activity, AS.Update), asList(model)));
                 // If the parent's membership resource is different than the parent itself,
                 // notify about that membership resource, too (if it exists)
-                if (!Objects.equals(id, getParentMembershipResource())) {
+                if (!parent.getMembershipResource().map(MutatingLdpHandler::removeHashFragment).filter(isEqual(id))
+                        .isPresent()) {
                     return allOf(getServices().getResourceService().touch(id).toCompletableFuture(),
                             emitMembershipUpdateEvent().toCompletableFuture());
                 }
@@ -205,6 +210,13 @@ class MutatingLdpHandler extends BaseLdpHandler {
             }
         }
         return completedFuture(null);
+    }
+
+    private static IRI removeHashFragment(final IRI iri) {
+        if (iri.getIRIString().contains("#")) {
+            return rdf.createIRI(iri.getIRIString().split("#")[0]);
+        }
+        return iri;
     }
 
     /**
@@ -275,7 +287,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * Emit update events for the membership resource, if it exists.
      */
     private CompletionStage<Void> emitMembershipUpdateEvent() {
-        final IRI membershipResource = getParentMembershipResource();
+        final IRI membershipResource = parent.getMembershipResource().map(MutatingLdpHandler::removeHashFragment)
+            .orElse(null);
         if (nonNull(membershipResource)) {
             return allOf(getServices().getResourceService().touch(membershipResource).toCompletableFuture(),
                 getServices().getResourceService().get(membershipResource).thenAccept(res -> {

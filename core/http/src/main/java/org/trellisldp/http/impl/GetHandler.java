@@ -275,8 +275,10 @@ public class GetHandler extends BaseLdpHandler {
 
     private String getBaseBinaryIdentifier() {
         // Add the version parameter, if present
-        return getIdentifier() + ofNullable(getRequest().getVersion()).map(Version::getInstant)
-            .map(Instant::getEpochSecond).map(x -> "?version=" + x).orElse("");
+        if (nonNull(getRequest().getVersion())) {
+            return getIdentifier() + "?version=" + getRequest().getVersion().getInstant().getEpochSecond();
+        }
+        return getIdentifier();
     }
 
     private void addAllowHeaders(final ResponseBuilder builder) {
@@ -322,6 +324,9 @@ public class GetHandler extends BaseLdpHandler {
             return builder;
         }
 
+        final IRI jsonldProfile = nonNull(profile) ? profile
+            : getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile);
+
         // Stream the rdf content
         final StreamingOutput stream = new StreamingOutput() {
             @Override
@@ -330,9 +335,7 @@ public class GetHandler extends BaseLdpHandler {
                     getServices().getIOService().write(stream.map(Quad::asTriple)
                         .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
-                                getRequest().getObject())), out, syntax,
-                        ofNullable(profile).orElseGet(() ->
-                                getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile)));
+                                getRequest().getObject())), out, syntax, jsonldProfile);
                 }
             }
         };

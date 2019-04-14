@@ -16,13 +16,13 @@ package org.trellisldp.http.core;
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.joining;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,9 +56,9 @@ public class Prefer {
 
     public static final String PREFER_HANDLING = "handling";
 
-    private final Optional<String> preference;
+    private final String preference;
 
-    private final Optional<String> handling;
+    private final String handling;
 
     private final List<String> include;
 
@@ -77,12 +77,12 @@ public class Prefer {
      */
     public Prefer(final String preference, final List<String> include, final List<String> omit,
             final Set<String> params, final String handling) {
-        this.preference = ofNullable(preference)
-            .filter(isEqual(PREFER_MINIMAL).or(PREFER_REPRESENTATION::equals));
-        this.include = ofNullable(include).orElseGet(Collections::emptyList);
-        this.omit = ofNullable(omit).orElseGet(Collections::emptyList);
-        this.handling = ofNullable(handling).filter(isEqual(PREFER_LENIENT).or(PREFER_STRICT::equals));
-        this.params = ofNullable(params).orElseGet(Collections::emptySet);
+        this.preference = PREFER_MINIMAL.equals(preference) || PREFER_REPRESENTATION.equals(preference)
+            ? preference : null;
+        this.handling = PREFER_LENIENT.equals(handling) || PREFER_STRICT.equals(handling) ? handling : null;
+        this.include = nonNull(include) ? include : emptyList();
+        this.omit = nonNull(omit) ? omit : emptyList();
+        this.params = nonNull(params) ? params : emptySet();
     }
 
     /**
@@ -114,7 +114,7 @@ public class Prefer {
      * @return the preferred return type
      */
     public Optional<String> getPreference() {
-        return preference;
+        return ofNullable(preference);
     }
 
     /**
@@ -123,7 +123,7 @@ public class Prefer {
      * @return the preferred handling type
      */
     public Optional<String> getHandling() {
-        return handling;
+        return ofNullable(handling);
     }
 
     /**
@@ -184,8 +184,10 @@ public class Prefer {
     }
 
     private static List<String> parseParameter(final String param) {
-        return ofNullable(param).map(Prefer::trimQuotes).map(x -> asList(x.split("\\s+")))
-            .orElseGet(Collections::emptyList);
+        if (nonNull(param)) {
+            return asList(trimQuotes(param).split("\\s+"));
+        }
+        return emptyList();
     }
 
     private static String trimQuotes(final String param) {

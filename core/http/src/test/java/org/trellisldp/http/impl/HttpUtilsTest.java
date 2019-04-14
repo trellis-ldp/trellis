@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
@@ -40,6 +41,7 @@ import java.util.Set;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -105,6 +107,21 @@ public class HttpUtilsTest {
 
         assertFalse(HttpUtils.getSyntax(ioService, types, of("application/json")).isPresent(),
                 "Non-RDF syntax is incorrectly handled!");
+    }
+
+    @Test
+    public void testCheckIfModifiedSince() {
+        final String time = "Wed, 21 Oct 2015 07:28:00 GMT";
+        assertThrows(RedirectionException.class, () ->
+                HttpUtils.checkIfModifiedSince("GET", time, ofEpochSecond(1445412479)));
+        assertDoesNotThrow(() -> HttpUtils.checkIfModifiedSince("GET", time, ofEpochSecond(1445412480)));
+    }
+
+    @Test
+    public void testDefaultProfile() {
+        final String defaultProfile = "http://example.com/profile";
+        final IRI profile = HttpUtils.getDefaultProfile(JSONLD, identifier, defaultProfile);
+        assertEquals(rdf.createIRI(defaultProfile), profile);
     }
 
     @Test

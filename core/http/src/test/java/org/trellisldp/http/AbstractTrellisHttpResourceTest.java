@@ -651,12 +651,12 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetTimeMapJsonCompact() throws IOException {
+    public void testGetTimeMapJsonDefault() throws IOException {
         when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
-            .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
+            .accept("application/ld+json").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertNull(res.getLastModified(), "Incorrect last modified date!");
@@ -1311,6 +1311,23 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target().request()
+            .post(entity("<> <http://purl.org/dc/terms/title> \"An indirect container\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+        verify(myEventService, times(2)).emit(any());
+    }
+
+    @Test
+    public void testPostIndirectContainerHashUri() {
+        final IRI hashResourceId = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE + "#foo");
+        final EventService myEventService = mock(EventService.class);
+        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+        when(mockRootResource.getMembershipResource()).thenReturn(of(hashResourceId));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
@@ -2174,6 +2191,26 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         assertFalse(entity.contains("BasicContainer"), "Unexpected BasicContainer type!");
         assertTrue(entity.contains("Type1"), "Missing Type1 type!");
+    }
+
+    @Test
+    public void testPatchExistingJsonLd() throws IOException {
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Prefer", "return=representation")
+            .header("Accept", "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"")
+            .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A new title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE));
+
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!");
+
+        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
+        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
+
+        assertAll("Check JSON-LD structure",
+                checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
+        assertEquals("A new title", (String) obj.get("title"), "Incorrect title value!");
     }
 
     @Test

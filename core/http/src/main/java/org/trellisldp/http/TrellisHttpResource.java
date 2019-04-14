@@ -15,7 +15,6 @@ package org.trellisldp.http;
 
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -317,9 +316,7 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
-        final String identifier = ofNullable(req.getSlug())
-            .orElseGet(trellis.getResourceService()::generateIdentifier);
-
+        final String identifier = getIdentifier(req);
         final String separator = path.isEmpty() ? "" : "/";
 
         final IRI parent = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
@@ -415,6 +412,13 @@ public class TrellisHttpResource {
             .thenApply(getHandler::getRepresentation);
     }
 
+    private String getIdentifier(final TrellisRequest req) {
+        final String slug = req.getSlug();
+        if (nonNull(slug)) {
+            return slug;
+        }
+        return trellis.getResourceService().generateIdentifier();
+    }
     private CompletionStage<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {
         if (nonNull(version)) {
             return trellis.getMementoService().get(identifier, version.getInstant());

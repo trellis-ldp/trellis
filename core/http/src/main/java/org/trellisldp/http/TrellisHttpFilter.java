@@ -15,7 +15,7 @@ package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
-import static java.util.Optional.ofNullable;
+import static java.util.Objects.nonNull;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
@@ -55,41 +55,68 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
+        checkTrailingSlash(ctx);
+        // Validate headers
+        validateAcceptDatetime(ctx);
+        validateRange(ctx);
+        validateLink(ctx);
+        // Validate query parameters
+        validateVersion(ctx);
+        validateTimeMap(ctx);
+    }
+
+    private void checkTrailingSlash(final ContainerRequestContext ctx) {
         final String slash = "/";
         // Check for a trailing slash. If so, redirect
         final String path = ctx.getUriInfo().getPath();
         if (path.endsWith(slash) && !path.equals(slash)) {
             ctx.abortWith(seeOther(fromUri(path.substring(0, path.length() - 1)).build()).build());
         }
+    }
 
-        // Validate header/query parameters
-        ofNullable(ctx.getHeaderString(ACCEPT_DATETIME)).filter(x -> isNull(AcceptDatetime.valueOf(x)))
-            .ifPresent(x -> ctx.abortWith(status(BAD_REQUEST).build()));
+    private void validateAcceptDatetime(final ContainerRequestContext ctx) {
+        final String acceptDatetime = ctx.getHeaderString(ACCEPT_DATETIME);
+        if (nonNull(acceptDatetime) && isNull(AcceptDatetime.valueOf(acceptDatetime))) {
+            ctx.abortWith(status(BAD_REQUEST).build());
+        }
+    }
 
-        ofNullable(ctx.getHeaderString(RANGE)).filter(x -> isNull(Range.valueOf(x))).ifPresent(x ->
-            ctx.abortWith(status(BAD_REQUEST).build()));
+    private void validateRange(final ContainerRequestContext ctx) {
+        final String range = ctx.getHeaderString(RANGE);
+        if (nonNull(range) && isNull(Range.valueOf(range))) {
+            ctx.abortWith(status(BAD_REQUEST).build());
+        }
+    }
 
-        ofNullable(ctx.getHeaderString(LINK)).ifPresent(x -> {
+    private void validateLink(final ContainerRequestContext ctx) {
+        final String link = ctx.getHeaderString(LINK);
+        if (nonNull(link)) {
             try {
-                Link.valueOf(x);
+                Link.valueOf(link);
             } catch (final IllegalArgumentException ex) {
                 ctx.abortWith(status(BAD_REQUEST).build());
             }
-        });
+        }
+    }
 
-        ofNullable(ctx.getUriInfo().getQueryParameters().getFirst("version")).ifPresent(x -> {
+    private void validateVersion(final ContainerRequestContext ctx) {
+        final String version = ctx.getUriInfo().getQueryParameters().getFirst("version");
+        if (nonNull(version)) {
             // Check well-formedness
-            if (isNull(Version.valueOf(x))) {
+            if (isNull(Version.valueOf(version))) {
                 ctx.abortWith(status(BAD_REQUEST).build());
             // Do not allow mutating versioned resources
             } else if (MUTATING_METHODS.contains(ctx.getMethod())) {
                 ctx.abortWith(status(METHOD_NOT_ALLOWED).build());
             }
-        });
+        }
+    }
 
+    private void validateTimeMap(final ContainerRequestContext ctx) {
+        final List<String> exts = ctx.getUriInfo().getQueryParameters().get(EXT);
         // Do not allow direct manipulation of timemaps
-        ofNullable(ctx.getUriInfo().getQueryParameters().get(EXT)).filter(l -> l.contains(TIMEMAP))
-            .filter(x -> MUTATING_METHODS.contains(ctx.getMethod()))
-            .ifPresent(x -> ctx.abortWith(status(METHOD_NOT_ALLOWED).build()));
+        if (nonNull(exts) && exts.contains(TIMEMAP) && MUTATING_METHODS.contains(ctx.getMethod())) {
+            ctx.abortWith(status(METHOD_NOT_ALLOWED).build());
+        }
     }
 }

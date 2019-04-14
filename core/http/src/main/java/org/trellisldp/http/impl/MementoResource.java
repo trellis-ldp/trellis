@@ -18,6 +18,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.ServiceLoader.load;
@@ -46,7 +47,7 @@ import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.core.HttpConstants.UNTIL;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
-import static org.trellisldp.vocabulary.JSONLD.expanded;
+import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.LDP.Resource;
 
@@ -120,12 +121,13 @@ public final class MementoResource {
 
         if (syntax.isPresent()) {
             final RDFSyntax rdfSyntax = syntax.get();
-            final IRI profile = ofNullable(getProfile(acceptableTypes, syntax.get())).orElse(expanded);
+            final IRI profile = getProfile(acceptableTypes, rdfSyntax);
+            final IRI jsonldProfile = nonNull(profile) ? profile : compacted;
 
             final StreamingOutput stream = new StreamingOutput() {
                 @Override
                 public void write(final OutputStream out) throws IOException {
-                    trellis.getIOService().write(timemap.asRdf(identifier, links), out, rdfSyntax, profile);
+                    trellis.getIOService().write(timemap.asRdf(identifier, links), out, rdfSyntax, jsonldProfile);
                 }
             };
 

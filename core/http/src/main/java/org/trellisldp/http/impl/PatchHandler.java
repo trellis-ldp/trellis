@@ -16,7 +16,6 @@ package org.trellisldp.http.impl;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
@@ -108,9 +107,8 @@ public class PatchHandler extends MutatingLdpHandler {
         this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
         this.syntax = getServices().getIOService().supportedUpdateSyntaxes().stream()
             .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
-        this.preference = ofNullable(req.getPrefer()).flatMap(Prefer::getPreference)
-            .filter(PREFER_REPRESENTATION::equals).orElse(null);
         this.defaultJsonLdProfile = defaultJsonLdProfile;
+        this.preference = getPreference(req.getPrefer());
     }
 
     /**
@@ -198,20 +196,6 @@ public class PatchHandler extends MutatingLdpHandler {
         return triples;
     }
 
-    private static Function<ConstraintService, Stream<ConstraintViolation>> handleConstraintViolations(
-            final TrellisDataset dataset, final IRI graphName, final IRI interactionModel) {
-        final IRI model = PreferAccessControl.equals(graphName) ? LDP.RDFSource : interactionModel;
-        return service -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
-                .flatMap(g -> service.constrainedBy(model, g));
-    }
-
-    private static Stream<String> getLinkTypes(final IRI ldpType) {
-        if (LDP.NonRDFSource.equals(ldpType)) {
-            return ldpResourceTypes(LDP.RDFSource).map(IRI::getIRIString);
-        }
-        return ldpResourceTypes(ldpType).map(IRI::getIRIString);
-    }
-
     private CompletionStage<ResponseBuilder> assembleResponse(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder) {
 
@@ -252,10 +236,8 @@ public class PatchHandler extends MutatingLdpHandler {
             .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
                         getRequest().getAcceptableMediaTypes(), empty()).orElse(null);
-                final IRI profile = ofNullable(getProfile(getRequest().getAcceptableMediaTypes(),
-                            outputSyntax)).orElseGet(() ->
-                            getDefaultProfile(outputSyntax, getIdentifier(), defaultJsonLdProfile));
                 if (nonNull(preference)) {
+                    final IRI profile = getResponseProfile(outputSyntax);
                     final StreamingOutput stream = new StreamingOutput() {
                         @Override
                         public void write(final OutputStream out) throws IOException {
@@ -269,5 +251,34 @@ public class PatchHandler extends MutatingLdpHandler {
                 }
                 return builder.status(NO_CONTENT);
             });
+    }
+
+    private IRI getResponseProfile(final RDFSyntax outputSyntax) {
+        final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), outputSyntax);
+        if (nonNull(profile)) {
+            return profile;
+        }
+        return getDefaultProfile(outputSyntax, getIdentifier(), defaultJsonLdProfile);
+    }
+
+    private static Function<ConstraintService, Stream<ConstraintViolation>> handleConstraintViolations(
+            final TrellisDataset dataset, final IRI graphName, final IRI interactionModel) {
+        final IRI model = PreferAccessControl.equals(graphName) ? LDP.RDFSource : interactionModel;
+        return service -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
+                .flatMap(g -> service.constrainedBy(model, g));
+    }
+
+    private static Stream<String> getLinkTypes(final IRI ldpType) {
+        if (LDP.NonRDFSource.equals(ldpType)) {
+            return ldpResourceTypes(LDP.RDFSource).map(IRI::getIRIString);
+        }
+        return ldpResourceTypes(ldpType).map(IRI::getIRIString);
+    }
+
+    private static String getPreference(final Prefer prefer) {
+        if (nonNull(prefer)) {
+            return prefer.getPreference().filter(PREFER_REPRESENTATION::equals).orElse(null);
+        }
+        return null;
     }
 }
