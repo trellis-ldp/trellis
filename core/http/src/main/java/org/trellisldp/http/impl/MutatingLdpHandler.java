@@ -15,7 +15,6 @@ package org.trellisldp.http.impl;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Predicate.isEqual;
@@ -29,6 +28,8 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -45,6 +46,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -225,11 +227,11 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param type the LDP interaction model
      * @param syntax the output syntax
      */
-    protected void checkConstraint(final Graph graph, final IRI type, final RDFSyntax syntax) {
-        ofNullable(graph).map(g ->
-                constraintServices.stream().parallel().flatMap(svc -> svc.constrainedBy(type, g)).collect(toList()))
-            .filter(violations -> !violations.isEmpty())
-            .map(violations -> {
+    protected void checkConstraint(final Optional<Graph> graph, final IRI type, final RDFSyntax syntax) {
+        graph.ifPresent(g -> {
+            final List<ConstraintViolation> violations = constraintServices.stream().parallel()
+                .flatMap(svc -> svc.constrainedBy(type, g)).collect(toList());
+            if (!violations.isEmpty()) {
                 final ResponseBuilder err = status(CONFLICT);
                 violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
                 final StreamingOutput stream = new StreamingOutput() {
@@ -239,10 +241,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
                                 out, syntax);
                     }
                 };
-                return err.entity(stream);
-            }).ifPresent(err -> {
-                throw new ClientErrorException(err.build());
-            });
+                throw new ClientErrorException(err.entity(stream).build());
+            }
+        });
     }
 
     protected CompletionStage<Void> persistContent(final BinaryMetadata metadata) {

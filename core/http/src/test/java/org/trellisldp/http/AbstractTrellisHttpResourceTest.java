@@ -1051,6 +1051,19 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    public void testPostTypeWrongType() {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"non-existent\"")
+            .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
+    }
+
+    @Test
     public void testPostTypeMismatch() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
@@ -1534,6 +1547,19 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     public void testPutExisting() {
         final Response res = target(RESOURCE_PATH).request()
+            .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
+        assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual("describedby")),
+                "Unexpected describedby link!");
+        assertNull(res.getHeaderString(MEMENTO_DATETIME), "Unexpected Memento-Datetime header!");
+    }
+
+    @Test
+    public void testPutTypeWrongType() {
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"non-existent\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");

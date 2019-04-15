@@ -16,10 +16,8 @@ package org.trellisldp.http.impl;
 import static java.net.URI.create;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.function.Predicate.isEqual;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -44,7 +42,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -101,10 +98,7 @@ public class PutHandler extends MutatingLdpHandler {
                     final boolean preconditionRequired, final boolean createUncontained, final String baseUrl) {
         super(req, trellis, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        this.rdfSyntax = ofNullable(req.getContentType()).map(MediaType::valueOf).flatMap(ct ->
-                getServices().getIOService().supportedWriteSyntaxes().stream().filter(s ->
-                    ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst()).orElse(null);
-
+        this.rdfSyntax = getRdfSyntax(req.getContentType(), trellis.getIOService().supportedWriteSyntaxes());
         this.heuristicType = nonNull(req.getContentType()) && isNull(rdfSyntax) ? LDP.NonRDFSource : LDP.RDFSource;
         this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
         this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
@@ -126,8 +120,7 @@ public class PutHandler extends MutatingLdpHandler {
             final Instant modified = getResource().getModified();
             final EntityTag etag;
 
-            if (getResource().getBinaryMetadata().isPresent() &&
-                    !ofNullable(getRequest().getContentType()).flatMap(RDFSyntax::byMediaType).isPresent()) {
+            if (getResource().getBinaryMetadata().isPresent() && !isRdfType(getRequest().getContentType()) ) {
                 etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", modified, null));
             } else {
                 etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()));
@@ -148,7 +141,9 @@ public class PutHandler extends MutatingLdpHandler {
         // since it has already been looked up. However, access to the parent resource is not necessary
         // if, in the case of creation/deletion, PUT operations are configured as 'uncontained' (the default)
         // or, in the case of updates, the resource has no parent container.
-        if (!createUncontained || ofNullable(resource).flatMap(Resource::getContainer).isPresent()) {
+        // Here, the `resource` object is used directly rather than doing a null check on `getResource()` since
+        // in this case, they amount to the same thing.
+        if (!createUncontained || resource.getContainer().isPresent()) {
             setParent(parent);
         }
         return status(NO_CONTENT);
@@ -162,10 +157,7 @@ public class PutHandler extends MutatingLdpHandler {
     public CompletionStage<ResponseBuilder> setResource(final ResponseBuilder builder) {
         LOGGER.debug("Setting resource as {}", getIdentifier());
 
-        final IRI ldpType = isBinaryDescription() ? LDP.NonRDFSource : ofNullable(getRequest().getLink())
-            .filter(l -> "type".equals(l.getRel())).map(Link::getUri).map(URI::toString)
-            .filter(l -> l.startsWith(LDP.getNamespace())).map(rdf::createIRI).filter(isEqual(LDP.Resource).negate())
-            .orElseGet(() -> ofNullable(getResource()).map(Resource::getInteractionModel).orElse(heuristicType));
+        final IRI ldpType = getLdpType();
 
         // Verify that the persistence layer supports the given interaction model
         if (!supportsInteractionModel(ldpType)) {
@@ -202,6 +194,42 @@ public class PutHandler extends MutatingLdpHandler {
         return super.getIdentifier() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : "");
     }
 
+    private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> syntaxes) {
+        if (nonNull(contentType)) {
+            final MediaType mediaType = MediaType.valueOf(contentType);
+            for (final RDFSyntax s : syntaxes) {
+                if (mediaType.isCompatible(MediaType.valueOf(s.mediaType()))) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isRdfType(final String contentType) {
+        if (nonNull(contentType)) {
+            return RDFSyntax.byMediaType(contentType).isPresent();
+        }
+        return false;
+    }
+
+    private IRI getLdpType() {
+        if (isBinaryDescription()) {
+            return LDP.NonRDFSource;
+        }
+        final Link link = getRequest().getLink();
+        if (nonNull(link) && "type".equals(link.getRel())) {
+            final String uri = link.getUri().toString();
+            if (uri.startsWith(LDP.getNamespace()) && !uri.equals(LDP.Resource.getIRIString())) {
+                return rdf.createIRI(uri);
+            }
+        }
+        if (nonNull(getResource())) {
+            return getResource().getInteractionModel();
+        }
+        return heuristicType;
+    }
+
     private CompletionStage<ResponseBuilder> handleResourceUpdate(final TrellisDataset mutable,
             final TrellisDataset immutable, final ResponseBuilder builder, final IRI ldpType) {
 
@@ -211,7 +239,8 @@ public class PutHandler extends MutatingLdpHandler {
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
             LOGGER.trace("Successfully checked for bad digest value");
-            final String mimeType = ofNullable(getRequest().getContentType()).orElse(APPLICATION_OCTET_STREAM);
+            final String mimeType = nonNull(getRequest().getContentType()) ? getRequest().getContentType()
+                : APPLICATION_OCTET_STREAM;
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
@@ -222,19 +251,20 @@ public class PutHandler extends MutatingLdpHandler {
             metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
-            readEntityIntoDataset(graphName, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
+            final RDFSyntax s = nonNull(rdfSyntax) ? rdfSyntax : TURTLE;
+            readEntityIntoDataset(graphName, s, mutable);
 
             // Check for any constraints
             if (ACL.equals(getRequest().getExt())) {
-                checkConstraint(mutable.getGraph(PreferAccessControl).orElse(null), LDP.RDFSource,
-                        ofNullable(rdfSyntax).orElse(TURTLE));
+                checkConstraint(mutable.getGraph(PreferAccessControl), LDP.RDFSource, s);
             } else {
-                checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null), ldpType,
-                        ofNullable(rdfSyntax).orElse(TURTLE));
+                checkConstraint(mutable.getGraph(PreferUserManaged), ldpType, s);
             }
             LOGGER.trace("Successfully checked for constraint violations");
             metadata = metadataBuilder(internalId, ldpType, mutable);
-            ofNullable(getResource()).flatMap(Resource::getBinaryMetadata).ifPresent(metadata::binary);
+            if (nonNull(getResource())) {
+                getResource().getBinaryMetadata().ifPresent(metadata::binary);
+            }
             persistPromise = completedFuture(null);
         }
 

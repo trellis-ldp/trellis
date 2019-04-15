@@ -17,8 +17,6 @@ import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -89,13 +87,13 @@ public class HttpUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("text", "turtle"));
 
-        assertEquals(of(TURTLE), HttpUtils.getSyntax(ioService, types, empty()), "Cannot determine Turtle syntax!");
+        assertEquals(TURTLE, HttpUtils.getSyntax(ioService, types, null), "Cannot determine Turtle syntax!");
     }
 
     @Test
     public void testGetSyntaxEmpty() {
-        assertFalse(HttpUtils.getSyntax(ioService, emptyList(), of("some/type")).isPresent(), "Syntax not rejected!");
-        assertEquals(of(TURTLE), HttpUtils.getSyntax(ioService, emptyList(), empty()), "Turtle not default syntax!");
+        assertNull(HttpUtils.getSyntax(ioService, emptyList(), "some/type"), "Syntax not rejected!");
+        assertEquals(TURTLE, HttpUtils.getSyntax(ioService, emptyList(), null), "Turtle not default syntax!");
     }
 
     @Test
@@ -105,7 +103,7 @@ public class HttpUtilsTest {
                 new MediaType("text", "xml"),
                 new MediaType("text", "turtle"));
 
-        assertFalse(HttpUtils.getSyntax(ioService, types, of("application/json")).isPresent(),
+        assertNull(HttpUtils.getSyntax(ioService, types, "application/json"),
                 "Non-RDF syntax is incorrectly handled!");
     }
 
@@ -130,7 +128,7 @@ public class HttpUtilsTest {
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"));
 
-        assertThrows(NotAcceptableException.class, () -> HttpUtils.getSyntax(ioService, types, empty()),
+        assertThrows(NotAcceptableException.class, () -> HttpUtils.getSyntax(ioService, types, null),
                 "Not-Acceptable Exception should be thrown when nothing matches");
     }
 

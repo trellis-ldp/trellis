@@ -16,10 +16,8 @@ package org.trellisldp.http.impl;
 import static java.net.URI.create;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.function.Predicate.isEqual;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -44,7 +42,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.InputStream;
-import java.net.URI;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -103,16 +101,35 @@ public class PostHandler extends MutatingLdpHandler {
         this.contentType = req.getContentType();
         this.parentIdentifier = parentIdentifier;
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath() + idPath);
-        this.rdfSyntax = ofNullable(contentType).map(MediaType::valueOf).flatMap(ct ->
-                getServices().getIOService().supportedWriteSyntaxes().stream().filter(s ->
-                    ct.isCompatible(MediaType.valueOf(s.mediaType()))).findFirst()).orElse(null);
+        this.rdfSyntax = getRdfSyntax(contentType, trellis.getIOService().supportedWriteSyntaxes());
 
         // Add LDP type (ldp:Resource results in the defaultType)
-        this.ldpType = ofNullable(req.getLink())
-            .filter(l -> "type".equals(l.getRel())).map(Link::getUri).map(URI::toString)
-            .filter(l -> l.startsWith(LDP.getNamespace())).map(rdf::createIRI)
-            .filter(isEqual(LDP.Resource).negate())
-            .orElseGet(() -> nonNull(contentType) && isNull(rdfSyntax) ? LDP.NonRDFSource : LDP.RDFSource);
+        this.ldpType = getLdpType(req.getLink(), this.rdfSyntax, this.contentType);
+    }
+
+    private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> supported) {
+        if (nonNull(contentType)) {
+            final MediaType type = MediaType.valueOf(contentType);
+            for (final RDFSyntax s : supported) {
+                if (type.isCompatible(MediaType.valueOf(s.mediaType()))) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static IRI getLdpType(final Link link, final RDFSyntax syntax, final String contentType) {
+        if (nonNull(link) && "type".equals(link.getRel())) {
+            final String uri = link.getUri().toString();
+            if (uri.startsWith(LDP.getNamespace())) {
+                final IRI iri = rdf.createIRI(uri);
+                if (!LDP.Resource.equals(iri)) {
+                    return iri;
+                }
+            }
+        }
+        return nonNull(contentType) && isNull(syntax) ? LDP.NonRDFSource : LDP.RDFSource;
     }
 
     /**
@@ -170,7 +187,7 @@ public class PostHandler extends MutatingLdpHandler {
 
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
-            final String mimeType = ofNullable(contentType).orElse(APPLICATION_OCTET_STREAM);
+            final String mimeType = nonNull(contentType) ? contentType : APPLICATION_OCTET_STREAM;
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
@@ -181,11 +198,11 @@ public class PostHandler extends MutatingLdpHandler {
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
-            readEntityIntoDataset(PreferUserManaged, ofNullable(rdfSyntax).orElse(TURTLE), mutable);
+            final RDFSyntax s = nonNull(rdfSyntax) ? rdfSyntax : TURTLE;
+            readEntityIntoDataset(PreferUserManaged, s, mutable);
 
             // Check for any constraints
-            checkConstraint(mutable.getGraph(PreferUserManaged).orElse(null), ldpType,
-                    ofNullable(rdfSyntax).orElse(TURTLE));
+            checkConstraint(mutable.getGraph(PreferUserManaged), ldpType, s);
 
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier);
             persistPromise = completedFuture(null);

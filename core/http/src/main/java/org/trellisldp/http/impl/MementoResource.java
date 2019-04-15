@@ -20,7 +20,6 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -56,7 +55,6 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -108,7 +106,7 @@ public final class MementoResource {
             final String baseUrl) {
 
         final List<MediaType> acceptableTypes = req.getAcceptableMediaTypes();
-        final String identifier = fromUri(getBaseUrl(baseUrl, req)).path(req.getPath()).build().toString();
+        final String identifier = fromUri(baseUrl).path(req.getPath()).build().toString();
         final List<Link> links = getMementoLinks(identifier, mementos).collect(toList());
 
         final ResponseBuilder builder = ok().link(identifier, ORIGINAL + " " + TIMEGATE);
@@ -116,22 +114,20 @@ public final class MementoResource {
             .link(Resource.getIRIString(), TYPE).link(RDFSource.getIRIString(), TYPE)
             .header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
-        final Optional<RDFSyntax> syntax;
-        syntax = getSyntax(trellis.getIOService(), acceptableTypes, of(APPLICATION_LINK_FORMAT));
+        final RDFSyntax syntax = getSyntax(trellis.getIOService(), acceptableTypes, APPLICATION_LINK_FORMAT);
 
-        if (syntax.isPresent()) {
-            final RDFSyntax rdfSyntax = syntax.get();
-            final IRI profile = getProfile(acceptableTypes, rdfSyntax);
+        if (nonNull(syntax)) {
+            final IRI profile = getProfile(acceptableTypes, syntax);
             final IRI jsonldProfile = nonNull(profile) ? profile : compacted;
 
             final StreamingOutput stream = new StreamingOutput() {
                 @Override
                 public void write(final OutputStream out) throws IOException {
-                    trellis.getIOService().write(timemap.asRdf(identifier, links), out, rdfSyntax, jsonldProfile);
+                    trellis.getIOService().write(timemap.asRdf(identifier, links), out, syntax, jsonldProfile);
                 }
             };
 
-            return builder.type(syntax.get().mediaType()).entity(stream);
+            return builder.type(syntax.mediaType()).entity(stream);
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)
@@ -148,7 +144,7 @@ public final class MementoResource {
      */
     public ResponseBuilder getTimeGateBuilder(final SortedSet<Instant> mementos, final TrellisRequest req,
             final String baseUrl) {
-        final String identifier = fromUri(getBaseUrl(baseUrl, req)).path(req.getPath()).build().toString();
+        final String identifier = fromUri(baseUrl).path(req.getPath()).build().toString();
         return status(FOUND)
             .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().getEpochSecond()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
@@ -197,10 +193,6 @@ public final class MementoResource {
             }
         }
         return link;
-    }
-
-    private static String getBaseUrl(final String baseUrl, final TrellisRequest req) {
-        return ofNullable(baseUrl).orElseGet(req::getBaseUrl);
     }
 
     private static Stream<Link> getTimeMap(final String identifier, final Instant from, final Instant until) {

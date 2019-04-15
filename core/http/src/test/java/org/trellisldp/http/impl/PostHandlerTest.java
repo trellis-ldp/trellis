@@ -199,7 +199,22 @@ public class PostHandlerTest extends BaseTestHandler {
         assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
         assertEquals(create(baseUrl + "new-resource"), res.getLocation(), "Incorrect Location header!");
         assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
-        assertAll("Check Binary response", checkBinaryEntityResponse());
+        assertAll("Check Binary response", checkBinaryEntityResponse("text/plain"));
+    }
+
+    @Test
+    public void testBinaryEntityNoContentType() throws IOException {
+        when(mockTrellisRequest.getContentType()).thenReturn(null);
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
+
+        final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
+        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
+
+        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
+        assertEquals(create(baseUrl + "new-resource"), res.getLocation(), "Incorrect Location header!");
+        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
+        assertAll("Check Binary response", checkBinaryEntityResponse("application/octet-stream"));
     }
 
     @Test
@@ -235,14 +250,14 @@ public class PostHandlerTest extends BaseTestHandler {
         return new PostHandler(mockTrellisRequest, root, id, entity, mockBundler, baseUrl);
     }
 
-    private Stream<Executable> checkBinaryEntityResponse() {
+    private Stream<Executable> checkBinaryEntityResponse(final String contentType) {
         return Stream.of(
                 () -> verify(mockResourceService, description("ResourceService::create not called!"))
                             .create(any(Metadata.class), any(Dataset.class)),
                 () -> verify(mockIoService, never().description("entity shouldn't be read!")).read(any(), any(), any()),
                 () -> verify(mockBinaryService, description("content not set on binary service!"))
                             .setContent(metadataArgument.capture(), any(InputStream.class)),
-                () -> assertEquals(of("text/plain"), metadataArgument.getValue().getMimeType(), "Invalid content-type"),
+                () -> assertEquals(of(contentType), metadataArgument.getValue().getMimeType(), "Invalid content-type"),
                 () -> assertTrue(metadataArgument.getValue().getIdentifier().getIRIString().startsWith("file:///"),
                                  "Invalid binary ID!"));
     }

@@ -18,7 +18,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -36,7 +35,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
-import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -154,7 +152,7 @@ public class GetHandler extends BaseLdpHandler {
         this.syntax = getSyntax(getServices().getIOService(),
             getRequest().getAcceptableMediaTypes(), resource.getBinaryMetadata()
                 .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
-                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM))).orElse(null);
+                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
 
         if (ACL.equals(getRequest().getExt()) && !resource.hasAcl()) {
             throw new NotFoundException();
@@ -233,9 +231,8 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         // RDFSource responses (weak ETags, etc)
-        final RDFSyntax rdfSyntax = ofNullable(syntax).orElse(TURTLE);
-        final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), rdfSyntax);
-        return getLdpRs(builder, rdfSyntax, profile);
+        final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), syntax);
+        return getLdpRs(builder, syntax, profile);
     }
 
     /**
@@ -260,8 +257,10 @@ public class GetHandler extends BaseLdpHandler {
         if (nonNull(getRequest().getVersion()) || nonNull(getRequest().getExt())) {
             final List<String> query = new ArrayList<>();
 
-            ofNullable(getRequest().getVersion()).map(Version::getInstant).map(Instant::getEpochSecond)
-                .map(x -> "version=" + x).ifPresent(query::add);
+            final Version v = getRequest().getVersion();
+            if (nonNull(v)) {
+                query.add("version=" + v.getInstant().getEpochSecond());
+            }
 
             if (ACL.equals(getRequest().getExt())) {
                 query.add("ext=acl");
@@ -312,10 +311,12 @@ public class GetHandler extends BaseLdpHandler {
         builder.header(LINK_TEMPLATE, "<" + getIdentifier() + "{?subject,predicate,object}>; rel=\""
                 + LDP.RDFSource.getIRIString() + "\"");
 
-        ofNullable(prefer).ifPresent(p -> builder.header(PREFERENCE_APPLIED, PREFER_RETURN + "=" + p.getPreference()
-                    .orElse(PREFER_REPRESENTATION)));
+        if (nonNull(prefer)) {
+            builder.header(PREFERENCE_APPLIED,
+                    PREFER_RETURN + "=" + prefer.getPreference().orElse(PREFER_REPRESENTATION));
+        }
 
-        if (ofNullable(prefer).flatMap(Prefer::getPreference).filter(PREFER_MINIMAL::equals).isPresent()) {
+        if (nonNull(prefer) && prefer.getPreference().filter(PREFER_MINIMAL::equals).isPresent()) {
             return builder.status(NO_CONTENT);
         }
 

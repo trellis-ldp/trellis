@@ -20,8 +20,6 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -43,7 +41,6 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -207,21 +204,23 @@ public final class HttpUtils {
      * @param ioService the I/O service
      * @param acceptableTypes the types from HTTP headers
      * @param mimeType an additional "default" mimeType to match
-     * @return an RDFSyntax or null if there was an error
+     * @return an RDFSyntax or, in the case of binaries, null
+     * @throws NotAcceptableException if no acceptable syntax is available
      */
-    public static Optional<RDFSyntax> getSyntax(final IOService ioService, final List<MediaType> acceptableTypes,
-            final Optional<String> mimeType) {
+    public static RDFSyntax getSyntax(final IOService ioService, final List<MediaType> acceptableTypes,
+            final String mimeType) {
         if (acceptableTypes.isEmpty()) {
-            return mimeType.isPresent() ? empty() : of(TURTLE);
+            return nonNull(mimeType) ? null : TURTLE;
         }
-        final Optional<MediaType> mt = mimeType.map(MediaType::valueOf);
+        final MediaType mt = nonNull(mimeType) ? MediaType.valueOf(mimeType) : null;
         for (final MediaType type : acceptableTypes) {
-            if (mt.filter(type::isCompatible).isPresent()) {
-                return empty();
+            if (type.isCompatible(mt)) {
+                return null;
             }
-            final Optional<RDFSyntax> syntax = ioService.supportedReadSyntaxes().stream()
-                .filter(s -> MediaType.valueOf(s.mediaType()).isCompatible(type)).findFirst();
-            if (syntax.isPresent()) {
+            final RDFSyntax syntax = ioService.supportedReadSyntaxes().stream()
+                .filter(s -> MediaType.valueOf(s.mediaType()).isCompatible(type))
+                .findFirst().orElse(null);
+            if (nonNull(syntax)) {
                 return syntax;
             }
         }
