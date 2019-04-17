@@ -80,6 +80,21 @@ public class BasicAuthFilterTest {
     }
 
     @Test
+    public void testNoSecurityContext() throws Exception {
+        final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
+        when(mockContext.getSecurityContext()).thenReturn(null);
+        when(mockContext.getHeaderString(AUTHORIZATION))
+            .thenReturn("Basic " + encodeCredentials("user", "password"));
+        filter.filter(mockContext);
+        verify(mockContext).setSecurityContext(securityArgument.capture());
+        assertEquals("https://madison.example.com/profile/#me",
+                securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
+        assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
+        assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+    }
+
+    @Test
     public void testCredentialsViaConfiguration() throws Exception {
         try {
             System.setProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS, getAuthFile());
