@@ -13,7 +13,7 @@
  */
 package org.trellisldp.webdav;
 
-import static java.util.Optional.ofNullable;
+import static java.util.Objects.nonNull;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
@@ -43,7 +43,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -122,12 +122,22 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
                         Link.fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build().toString());
             }
         } else if (DELETE.equals(ctx.getMethod())) {
-            final Session session = ofNullable(ctx.getSecurityContext()).map(SecurityContext::getUserPrincipal)
-                .map(Principal::getName).map(services.getAgentService()::asAgent).map(HttpSession::new)
-                .orElseGet(HttpSession::new);
-
-            recursiveDelete(services, session, identifier,
-                    ofNullable(baseUrl).orElseGet(ctx.getUriInfo().getBaseUri()::toString));
+            recursiveDelete(services, getSession(ctx.getSecurityContext().getUserPrincipal()), identifier,
+                    getBaseUrl(baseUrl, ctx.getUriInfo()));
         }
+    }
+
+    private Session getSession(final Principal principal) {
+        if (nonNull(principal)) {
+            return new HttpSession(services.getAgentService().asAgent(principal.getName()));
+        }
+        return new HttpSession();
+    }
+
+    private static String getBaseUrl(final String baseUrl, final UriInfo uriInfo) {
+        if (nonNull(baseUrl)) {
+            return baseUrl;
+        }
+        return uriInfo.getBaseUri().toString();
     }
 }

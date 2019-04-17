@@ -14,8 +14,8 @@
 package org.trellisldp.rdfa;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
@@ -73,8 +73,8 @@ class HtmlData {
         this.css = requireNonNull(css, "The CSS list may not be null!");
         this.js = requireNonNull(js, "The JS list may not be null!");
         this.triples = triples;
-        this.subject = ofNullable(subject).orElse("");
-        this.icon = ofNullable(icon).orElse("//www.trellisldp.org/assets/img/trellis.png");
+        this.subject = nonNull(subject) ? subject : "";
+        this.icon = nonNull(icon) ? icon : "//www.trellisldp.org/assets/img/trellis.png";
         this.prefixMapping.setNsPrefixes(namespaceService.getNamespaces());
     }
 
@@ -136,7 +136,11 @@ class HtmlData {
     }
 
     private String getLabel(final String iri) {
-        return ofNullable(prefixMapping.qnameFor(iri)).orElse(iri);
+        final String label = prefixMapping.qnameFor(iri);
+        if (nonNull(label)) {
+            return label;
+        }
+        return iri;
     }
 
     private LabelledTriple labelTriple(final Triple triple) {

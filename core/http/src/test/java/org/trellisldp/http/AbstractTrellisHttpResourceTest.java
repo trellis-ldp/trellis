@@ -21,12 +21,12 @@ import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.function.Predicate.isEqual;
@@ -92,7 +92,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2419,8 +2418,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     protected static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
-        return ofNullable(res.getStringHeaders().get(LINK)).orElseGet(Collections::emptyList)
-            .stream().map(Link::valueOf).collect(toList());
+        final List<String> links = res.getStringHeaders().get(LINK);
+        if (nonNull(links)) {
+            return links.stream().map(Link::valueOf).collect(toList());
+        }
+        return emptyList();
     }
 
     private boolean hasTimeGateLink(final Response res, final String path) {

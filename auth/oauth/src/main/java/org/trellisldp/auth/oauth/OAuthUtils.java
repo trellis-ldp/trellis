@@ -97,7 +97,10 @@ public final class OAuthUtils {
      * @return an Authenticator
      */
     public static Authenticator buildAuthenticatorWithJwk(final String location) {
-        return ofNullable(location).filter(OAuthUtils::isUrl).map(JwksAuthenticator::new).orElse(null);
+        if (nonNull(location) && OAuthUtils.isUrl(location)) {
+            return new JwksAuthenticator(location);
+        }
+        return null;
     }
 
     /**
@@ -123,8 +126,10 @@ public final class OAuthUtils {
      * @return an Authenticator
      */
     public static Authenticator buildAuthenticatorWithSharedSecret(final String key) {
-        return ofNullable(key).filter(k -> !k.isEmpty()).map(k -> hmacShaKeyFor(k.getBytes(UTF_8)))
-            .map(JwtAuthenticator::new).orElse(null);
+        if (nonNull(key) && !key.isEmpty()) {
+            return new JwtAuthenticator(hmacShaKeyFor(key.getBytes(UTF_8)));
+        }
+        return null;
     }
 
     /**
@@ -136,7 +141,9 @@ public final class OAuthUtils {
      */
     public static Authenticator buildAuthenticatorWithTruststore(final String keystorePath,
             final char[] keystorePassword, final List<String> keyids) {
-        return ofNullable(keystorePath).map(File::new).filter(File::exists).flatMap(file -> {
+        if (nonNull(keystorePath)) {
+            final File file = new File(keystorePath);
+            if (file.exists()) {
                 try (final FileInputStream fis = new FileInputStream(file)) {
                     final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
                     ks.load(fis, keystorePassword);
@@ -144,18 +151,19 @@ public final class OAuthUtils {
                     switch (keyIds.size()) {
                         case 0:
                             LOGGER.warn("No valid key ids provided! Skipping keystore: {}", keystorePath);
-                            return empty();
+                            return null;
                         case 1:
-                            return of(new JwtAuthenticator(ks.getCertificate(keyIds.get(0)).getPublicKey()));
+                            return new JwtAuthenticator(ks.getCertificate(keyIds.get(0)).getPublicKey());
                         default:
-                            return of(new FederatedJwtAuthenticator(ks, keyIds));
+                            return new FederatedJwtAuthenticator(ks, keyIds);
                     }
                 } catch (final IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException ex) {
                     LOGGER.error("Error reading keystore: {}", ex.getMessage());
                     LOGGER.warn("Ignoring JWT authenticator with keystore: {}", keystorePath);
                 }
-                return empty();
-        }).orElse(null);
+            }
+        }
+        return null;
     }
 
     private static List<String> filterKeyIds(final KeyStore ks, final List<String> keyids) throws KeyStoreException {

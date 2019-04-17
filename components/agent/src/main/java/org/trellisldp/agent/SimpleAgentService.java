@@ -13,7 +13,7 @@
  */
 package org.trellisldp.agent;
 
-import static java.util.Optional.ofNullable;
+import static java.util.Objects.nonNull;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import org.apache.commons.rdf.api.IRI;
@@ -36,6 +36,9 @@ public class SimpleAgentService implements AgentService {
 
     @Override
     public IRI asAgent(final String user) {
-        return ofNullable(user).filter(u -> !u.isEmpty()).map(rdf::createIRI).orElse(Trellis.AnonymousAgent);
+        if (nonNull(user) && !user.isEmpty()) {
+            return rdf.createIRI(user);
+        }
+        return Trellis.AnonymousAgent;
     }
 }

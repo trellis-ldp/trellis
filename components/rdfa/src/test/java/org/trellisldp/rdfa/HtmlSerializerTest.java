@@ -133,7 +133,7 @@ public class HtmlSerializerTest {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new HtmlSerializer(new NoopNamespaceService(), path,
-                "//www.trellisldp.org/assets/css/trellis.css", "", null);
+                (String) null, (String) null, (String) null);
 
         service4.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));

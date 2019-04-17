@@ -15,9 +15,10 @@ package org.trellisldp.rdfa;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -34,7 +35,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -128,11 +128,11 @@ public class HtmlSerializer implements RDFaWriterService {
             final String template, final List<String> css,
             final List<String> js, final String icon) {
         this.namespaceService = requireNonNull(namespaceService, "NamespaceService may not be null!");
-        final String templatePath = ofNullable(template).orElse("org/trellisldp/rdfa/resource.mustache");
+        final String templatePath = nonNull(template) ? template : "org/trellisldp/rdfa/resource.mustache";
         final File tpl = new File(templatePath);
         this.template = tpl.exists() ? mf.compile(templatePath) : mf.compile(getReader(templatePath), templatePath);
-        this.css = ofNullable(css).orElseGet(Collections::emptyList);
-        this.js = ofNullable(js).orElseGet(Collections::emptyList);
+        this.css = nonNull(css) ? css : emptyList();
+        this.js = nonNull(js) ? js : emptyList();
         this.icon = icon;
     }
 
@@ -163,6 +163,9 @@ public class HtmlSerializer implements RDFaWriterService {
     }
 
     private static List<String> intoList(final String property) {
-        return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
+        if (nonNull(property)) {
+            return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
+        }
+        return null;
     }
 }

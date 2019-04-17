@@ -18,6 +18,7 @@ import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -171,13 +172,11 @@ public class TrellisWebDAV {
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
             @Context final SecurityContext security) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
-        final Session session = ofNullable(req.getPrincipalName()).map(services.getAgentService()::asAgent)
-                .map(HttpSession::new).orElseGet(HttpSession::new);
+        final Session session = getSession(req.getPrincipalName());
         final IRI destination = getDestination(headers, getBaseUrl(req));
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         // Default is recursive copy as per RFC-4918
-        final Depth.DEPTH depth = ofNullable(headers.getHeaderString("Depth"))
-            .map(Depth::new).map(Depth::getDepth).orElse(INFINITY);
+        final Depth.DEPTH depth = getDepth(headers.getHeaderString("Depth"));
         getParent(destination).thenCombine(services.getResourceService().get(destination), this::checkResources)
             .thenCompose(parent -> services.getResourceService().touch(parent.getIdentifier()))
             .thenCompose(future -> services.getResourceService().get(identifier))
@@ -204,8 +203,7 @@ public class TrellisWebDAV {
         final String baseUrl = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final IRI destination = getDestination(headers, baseUrl);
-        final Session session = ofNullable(req.getPrincipalName()).map(services.getAgentService()::asAgent)
-                .map(HttpSession::new).orElseGet(HttpSession::new);
+        final Session session = getSession(req.getPrincipalName());
 
         getParent(destination)
             .thenCombine(services.getResourceService().get(destination), this::checkResources)
@@ -281,8 +279,7 @@ public class TrellisWebDAV {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final String baseUrl = getBaseUrl(req);
         final String location = fromUri(baseUrl).path(req.getPath()).build().toString();
-        final Session session = ofNullable(req.getPrincipalName()).map(services.getAgentService()::asAgent)
-                .map(HttpSession::new).orElseGet(HttpSession::new);
+        final Session session = getSession(req.getPrincipalName());
         services.getResourceService().get(identifier)
             .thenApply(this::checkResource)
             .thenCompose(resourceToMultiStatus(doc, identifier, location, baseUrl, session, propertyUpdate))
@@ -313,6 +310,13 @@ public class TrellisWebDAV {
             }
             return Stream.empty();
         };
+    }
+
+    private Session getSession(final String principal) {
+        if (nonNull(principal)) {
+            return new HttpSession(services.getAgentService().asAgent(principal));
+        }
+        return new HttpSession();
     }
 
     private CompletionStage<? extends Resource> getParent(final IRI identifier) {
@@ -386,13 +390,13 @@ public class TrellisWebDAV {
                     }
                 });
             }
-            ofNullable(propertyUpdate.getSet()).map(DavSet::getProp).map(DavProp::getNodes)
-                .orElseGet(Collections::emptyList).stream()
-                .flatMap(elementToQuads(identifier))
-                .forEach(quad -> {
-                    modifiedProperties.add(quad.getPredicate());
-                    dataset.add(quad);
-                });
+
+            ofNullable(propertyUpdate.getSet()).map(DavSet::getProp)
+                .map(DavProp::getNodes).orElseGet(Collections::emptyList).stream().flatMap(elementToQuads(identifier))
+                    .forEach(quad -> {
+                        modifiedProperties.add(quad.getPredicate());
+                        dataset.add(quad);
+                    });
 
             response.setPropStats(modifiedProperties.stream().map(predicate -> {
                 final DavPropStat stat = new DavPropStat();
@@ -493,15 +497,16 @@ public class TrellisWebDAV {
     }
 
     private String getBaseUrl(final TrellisRequest req) {
-        return ofNullable(userBaseUrl).orElseGet(req::getBaseUrl);
+        if (nonNull(userBaseUrl)) {
+            return userBaseUrl;
+        }
+        return req.getBaseUrl();
     }
 
     private static Set<IRI> getProperties(final DavPropFind propfind) {
-        return ofNullable(propfind.getProp()).map(DavProp::getNodes)
-            .orElseGet(Collections::emptyList).stream()
-            .filter(el -> nonNull(el.getNamespaceURI()))
-            .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName()))
-            .collect(toSet());
+        return ofNullable(propfind.getProp()).map(DavProp::getNodes).orElseGet(Collections::emptyList).stream()
+                .filter(el -> nonNull(el.getNamespaceURI()))
+                .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet());
     }
 
     private static Set<IRI> getRemoveProperties(final DavPropertyUpdate propertyUpdate) {
@@ -509,17 +514,21 @@ public class TrellisWebDAV {
         final DavSet set = propertyUpdate.getSet();
         final Set<IRI> props = new HashSet<>();
         if (nonNull(remove)) {
-             props.addAll(ofNullable(remove.getProp()).map(DavProp::getNodes).orElseGet(Collections::emptyList)
-                    .stream().filter(el -> nonNull(el.getNamespaceURI()))
-                    .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet()));
+             props.addAll(getProperties(remove.getProp()));
         }
         // Note: also clear any set properties before adding them back
         if (nonNull(set)) {
-             props.addAll(ofNullable(set.getProp()).map(DavProp::getNodes).orElseGet(Collections::emptyList)
-                    .stream().filter(el -> nonNull(el.getNamespaceURI()))
-                    .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet()));
+             props.addAll(getProperties(set.getProp()));
         }
         return props;
+    }
+
+    private static Set<IRI> getProperties(final DavProp prop) {
+        if (nonNull(prop)) {
+            return prop.getNodes().stream().filter(el -> nonNull(el.getNamespaceURI()))
+                .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet());
+        }
+        return emptySet();
     }
 
     private static Element getContentTypeElement(final Document doc, final Resource res, final boolean propname) {
@@ -590,4 +599,12 @@ public class TrellisWebDAV {
     private static boolean exists(final Resource res) {
         return !MISSING_RESOURCE.equals(res) && !DELETED_RESOURCE.equals(res);
     }
+
+    private static Depth.DEPTH getDepth(final String depth) {
+        if (nonNull(depth)) {
+            return new Depth(depth).getDepth();
+        }
+        return INFINITY;
+    }
+
 }

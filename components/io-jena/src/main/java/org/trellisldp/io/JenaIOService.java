@@ -21,7 +21,6 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -249,14 +248,13 @@ public class JenaIOService implements IOService {
                     LOGGER.debug("Writing stream-based RDF: {}", format);
                     final StreamRDF stream = getWriterStream(output, format);
                     stream.start();
-                    ofNullable(nsService).ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
+                    nsService.getNamespaces().forEach(stream::prefix);
                     triples.map(rdf::asJenaTriple).forEachOrdered(stream::triple);
                     stream.finish();
                 } else {
                     LOGGER.debug("Writing buffered RDF: {}", lang);
                     final org.apache.jena.graph.Graph graph = createDefaultGraph();
-                    ofNullable(nsService).map(NamespaceService::getNamespaces)
-                        .ifPresent(graph.getPrefixMapping()::setNsPrefixes);
+                    graph.getPrefixMapping().setNsPrefixes(nsService.getNamespaces());
                     triples.map(rdf::asJenaTriple).forEachOrdered(graph::add);
                     if (JSONLD.equals(lang)) {
                         writeJsonLd(output, DatasetGraphFactory.create(graph), profiles);

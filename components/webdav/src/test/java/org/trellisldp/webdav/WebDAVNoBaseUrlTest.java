@@ -13,23 +13,73 @@
  */
 package org.trellisldp.webdav;
 
+import static java.util.Collections.singleton;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.security.Principal;
 
+import javax.annotation.Priority;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.TestInstance;
+import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebAcFilter;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class WebDAVTest extends AbstractWebDAVTest {
+public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
+
+    @PreMatching
+    @Priority(500)
+    private static class TestAuthnFilter implements ContainerRequestFilter {
+        private final String principal;
+        private final String userRole;
+
+        public TestAuthnFilter(final String principal, final String role) {
+            this.principal = principal;
+            this.userRole = role;
+        }
+
+        @Override
+        public void filter(final ContainerRequestContext requestContext) throws IOException {
+            requestContext.setSecurityContext(new SecurityContext() {
+                @Override
+                public Principal getUserPrincipal() {
+                    return new Principal() {
+                        @Override
+                        public String getName() {
+                            return principal;
+                        }
+                    };
+                }
+
+                @Override
+                public boolean isSecure() {
+                    return false;
+                }
+
+                @Override
+                public boolean isUserInRole(final String role) {
+                    return userRole.equals(role);
+                }
+
+                @Override
+                public String getAuthenticationScheme() {
+                    return "BASIC";
+                }
+            });
+        }
+    }
 
     @Override
     public Application configure() {
@@ -43,20 +93,20 @@ public class WebDAVTest extends AbstractWebDAVTest {
             final String port = Integer.toString(new ServerSocket(0).getLocalPort());
             forceSet(TestProperties.CONTAINER_PORT, port);
 
-            final String baseUri = "http://localhost:" + port + "/";
+            final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(new SimpleAgentService(),
+                    singleton("testUser"));
 
-            System.setProperty(CONFIG_HTTP_BASE_URL, baseUri);
             config.register(new DebugExceptionMapper());
+            config.register(new TestAuthnFilter("testUser", ""));
             config.register(new TrellisWebDAVRequestFilter(mockBundler));
             config.register(new TrellisWebDAVResponseFilter());
             config.register(new TrellisWebDAV(mockBundler));
             config.register(new TrellisWebDAVAuthzFilter(accessControlService));
             config.register(new TrellisHttpResource(mockBundler));
+            config.register(agentFilter);
             config.register(new WebAcFilter(accessControlService));
         } catch (final IOException ex) {
             throw new RuntimeTrellisException("Could not acquire free port!", ex);
-        } finally {
-            System.clearProperty(CONFIG_HTTP_BASE_URL);
         }
         return config;
     }
