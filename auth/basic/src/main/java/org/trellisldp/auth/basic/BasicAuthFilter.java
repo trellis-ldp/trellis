@@ -13,6 +13,7 @@
  */
 package org.trellisldp.auth.basic;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
@@ -85,8 +86,8 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
 
-        final boolean secure = ofNullable(requestContext.getSecurityContext()).filter(SecurityContext::isSecure)
-            .isPresent();
+        final boolean secure = nonNull(requestContext.getSecurityContext())
+            ? requestContext.getSecurityContext().isSecure() : false;
 
         getCredentials(requestContext)
                         .map(credentials -> authenticate(credentials)
