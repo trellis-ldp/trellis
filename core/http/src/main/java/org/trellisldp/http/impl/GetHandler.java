@@ -314,19 +314,15 @@ public class GetHandler extends BaseLdpHandler {
         if (nonNull(prefer)) {
             builder.header(PREFERENCE_APPLIED,
                     PREFER_RETURN + "=" + prefer.getPreference().orElse(PREFER_REPRESENTATION));
-        }
-
-        if (nonNull(prefer) && prefer.getPreference().filter(PREFER_MINIMAL::equals).isPresent()) {
-            return builder.status(NO_CONTENT);
+            if (prefer.getPreference().filter(PREFER_MINIMAL::equals).isPresent()) {
+                return builder.status(NO_CONTENT);
+            }
         }
 
         // Short circuit HEAD requests
         if (HEAD.equals(getRequest().getMethod())) {
             return builder;
         }
-
-        final IRI jsonldProfile = nonNull(profile) ? profile
-            : getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile);
 
         // Stream the rdf content
         final StreamingOutput stream = new StreamingOutput() {
@@ -336,11 +332,18 @@ public class GetHandler extends BaseLdpHandler {
                     getServices().getIOService().write(stream.map(Quad::asTriple)
                         .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
-                                getRequest().getObject())), out, syntax, jsonldProfile);
+                                getRequest().getObject())), out, syntax, getJsonLdProfile(profile, syntax));
                 }
             }
         };
         return builder.entity(stream);
+    }
+
+    private IRI getJsonLdProfile(final IRI profile, final RDFSyntax syntax) {
+        if (nonNull(profile)) {
+            return profile;
+        }
+        return getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile);
     }
 
     private ResponseBuilder getLdpNr(final ResponseBuilder builder) {
