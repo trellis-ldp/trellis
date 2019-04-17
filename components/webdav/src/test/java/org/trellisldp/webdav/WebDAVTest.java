@@ -36,14 +36,13 @@ public class WebDAVTest extends AbstractWebDAVTest {
 
         initMocks(this);
 
-        final ResourceConfig config = new ResourceConfig();
-
         try {
             // Use a random free port for testing
             final String port = Integer.toString(new ServerSocket(0).getLocalPort());
             forceSet(TestProperties.CONTAINER_PORT, port);
 
             final String baseUri = "http://localhost:" + port + "/";
+            final ResourceConfig config = new ResourceConfig();
 
             System.setProperty(CONFIG_HTTP_BASE_URL, baseUri);
             config.register(new DebugExceptionMapper());
@@ -53,12 +52,12 @@ public class WebDAVTest extends AbstractWebDAVTest {
             config.register(new TrellisWebDAVAuthzFilter(accessControlService));
             config.register(new TrellisHttpResource(mockBundler));
             config.register(new WebAcFilter(accessControlService));
+            return config;
         } catch (final IOException ex) {
             throw new RuntimeTrellisException("Could not acquire free port!", ex);
         } finally {
             System.clearProperty(CONFIG_HTTP_BASE_URL);
         }
-        return config;
     }
 }
 
