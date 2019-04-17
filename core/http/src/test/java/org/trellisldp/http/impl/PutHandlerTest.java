@@ -159,9 +159,9 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testPutLdpBinaryResource() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
+        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
-        when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
@@ -174,16 +174,16 @@ public class PutHandlerTest extends BaseTestHandler {
     @Test
     public void testPutLdpBinaryResourceNoContentType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-        when(mockTrellisRequest.getContentType()).thenReturn(null);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getContentType()).thenReturn(null);
 
         final PutHandler handler = buildPutHandler("/simpleData.txt", null);
         final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
             .toCompletableFuture().join().build();
 
         assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-        assertAll("Check Binary PUT interactions", checkBinaryPut(res));
+        assertAll("Check Binary PUT interactions w/o contentType", checkBinaryPut(res));
     }
 
     @Test

@@ -15,7 +15,6 @@ package org.trellisldp.http.impl;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
