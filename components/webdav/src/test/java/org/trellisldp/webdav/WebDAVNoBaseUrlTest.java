@@ -17,7 +17,6 @@ import static java.util.Collections.singleton;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.security.Principal;
 
 import javax.annotation.Priority;
@@ -28,10 +27,8 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.agent.SimpleAgentService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebAcFilter;
@@ -88,26 +85,18 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
 
         final ResourceConfig config = new ResourceConfig();
 
-        try {
-            // Use a random free port for testing
-            final String port = Integer.toString(new ServerSocket(0).getLocalPort());
-            forceSet(TestProperties.CONTAINER_PORT, port);
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(new SimpleAgentService(),
+                singleton("testUser"));
 
-            final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(new SimpleAgentService(),
-                    singleton("testUser"));
-
-            config.register(new DebugExceptionMapper());
-            config.register(new TestAuthnFilter("testUser", ""));
-            config.register(new TrellisWebDAVRequestFilter(mockBundler));
-            config.register(new TrellisWebDAVResponseFilter());
-            config.register(new TrellisWebDAV(mockBundler));
-            config.register(new TrellisWebDAVAuthzFilter(accessControlService));
-            config.register(new TrellisHttpResource(mockBundler));
-            config.register(agentFilter);
-            config.register(new WebAcFilter(accessControlService));
-        } catch (final IOException ex) {
-            throw new RuntimeTrellisException("Could not acquire free port!", ex);
-        }
+        config.register(new DebugExceptionMapper());
+        config.register(new TestAuthnFilter("testUser", ""));
+        config.register(new TrellisWebDAVRequestFilter(mockBundler));
+        config.register(new TrellisWebDAVResponseFilter());
+        config.register(new TrellisWebDAV(mockBundler));
+        config.register(new TrellisWebDAVAuthzFilter(accessControlService));
+        config.register(new TrellisHttpResource(mockBundler));
+        config.register(agentFilter);
+        config.register(new WebAcFilter(accessControlService));
         return config;
     }
 }
