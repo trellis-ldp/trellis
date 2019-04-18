@@ -56,3 +56,7 @@ if (project.sourceCompatibility.isJava11Compatible()) {
         }
     }
 }
+
+test {
+    dependsOn(':trellis-http:test')
+}

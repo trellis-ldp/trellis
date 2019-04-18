@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -136,6 +137,18 @@ public class HtmlSerializerTest {
                 (String) null, (String) null, (String) null);
 
         service4.write(getTriples2(), out, "http://example.com/");
+        assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
+    }
+
+    @Test
+    public void testHtmlNullSerializer() throws Exception {
+        final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final List<String> nullList = null;
+        final RDFaWriterService service6 = new HtmlSerializer(new NoopNamespaceService(), path,
+                nullList, nullList, null);
+
+        service6.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
     }
 

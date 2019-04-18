@@ -87,7 +87,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     public void filter(final ContainerRequestContext requestContext) throws IOException {
 
         final boolean secure = nonNull(requestContext.getSecurityContext())
-            ? requestContext.getSecurityContext().isSecure() : false;
+            && requestContext.getSecurityContext().isSecure();
 
         getCredentials(requestContext)
                         .map(credentials -> authenticate(credentials)

@@ -166,6 +166,6 @@ public class HtmlSerializer implements RDFaWriterService {
         if (nonNull(property)) {
             return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
         }
-        return null;
+        return emptyList();
     }
 }
