@@ -230,7 +230,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak(), "ETag header isn't weak for LDP-RS!");
-        final String preferHash = new ArrayList().hashCode() + "." + new ArrayList().hashCode();
+        final String preferHash = new ArrayList<>().hashCode() + "." + new ArrayList<>().hashCode();
         assertEquals(md5Hex(time.toEpochMilli() + "." + time.getNano() + "." + preferHash + "." + baseUrl),
                 etag.getValue(), "Unexpected ETag value!");
 
@@ -344,7 +344,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetBinary() throws IOException {
+    public void testGetBinary() {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));

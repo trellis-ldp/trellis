@@ -40,15 +40,14 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 
 /**
- * The TrellisUtils class provides a set of convenience methods related to
- * generating and processing RDF objects.
+ * The TrellisUtils class provides a set of convenience methods related to generating and processing RDF objects.
  *
  * @author acoburn
  */
 public final class TrellisUtils {
 
     private static RDF rdf = findFirst(RDF.class)
-        .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
+                    .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
 
     /**
      * The internal trellis scheme.
@@ -81,13 +80,14 @@ public final class TrellisUtils {
 
     /**
      * Get a service.
+     * 
      * @param service the interface or abstract class representing the service
      * @param <T> the class of the service type
      * @return the first service provider or empty Optional if no service providers are located
      */
     private static <T> Optional<T> findFirst(final Class<T> service) {
-        return Optional.of(ServiceLoader.load(service)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
-            .map(Iterator::next);
+        Iterator<T> services = ServiceLoader.load(service).iterator();
+        return services.hasNext() ? Optional.of(services.next()) : Optional.empty();
     }
 
     /**
@@ -98,8 +98,10 @@ public final class TrellisUtils {
      */
     public static Optional<IRI> getContainer(final IRI identifier) {
         final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
-        return Optional.of(path).filter(p -> !p.isEmpty()).map(x -> x.lastIndexOf('/')).map(idx -> idx < 0 ? 0 : idx)
-                    .map(idx -> TRELLIS_DATA_PREFIX + path.substring(0, idx)).map(rdf::createIRI);
+        if (path.isEmpty()) return Optional.empty();
+        int lastIndex = path.lastIndexOf('/');
+        int i = lastIndex < 0 ? 0 : lastIndex;
+        return Optional.of(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(0, i)));
     }
 
     /**
@@ -117,8 +119,7 @@ public final class TrellisUtils {
     /**
      * Collect a stream of Quads into a Dataset.
      *
-     * @return a {@link Collector} that accumulates a {@link Stream} of
-     *         {@link Quad}s into a {@link Dataset}
+     * @return a {@link Collector} that accumulates a {@link Stream} of {@link Quad}s into a {@link Dataset}
      */
     public static DatasetCollector toDataset() {
         return new DatasetCollector();
@@ -155,11 +156,9 @@ public final class TrellisUtils {
         }
 
         /**
-         * Collect a stream of {@link Quad}s into a {@link Dataset} with concurrent
-         * operation.
+         * Collect a stream of {@link Quad}s into a {@link Dataset} with concurrent operation.
          *
-         * @return a {@link Collector} that accumulates a {@link Stream} of
-         *         {@link Quad}s into a {@link Dataset}
+         * @return a {@link Collector} that accumulates a {@link Stream} of {@link Quad}s into a {@link Dataset}
          */
         public ConcurrentDatasetCollector concurrent() {
             return new ConcurrentDatasetCollector();

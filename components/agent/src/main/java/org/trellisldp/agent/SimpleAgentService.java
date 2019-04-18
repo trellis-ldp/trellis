@@ -36,7 +36,7 @@ public class SimpleAgentService implements AgentService {
 
     @Override
     public IRI asAgent(final String user) {
-        if (nonNull(user) && !user.isEmpty()) {
+        if (user != null && !user.isEmpty()) {
             return rdf.createIRI(user);
         }
         return Trellis.AnonymousAgent;
