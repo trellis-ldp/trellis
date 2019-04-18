@@ -70,18 +70,14 @@ class ActivityStreamMessage {
         }
 
         /**
-         * Get the identifier.
-         *
-         * @return the id
+         * @return the identifier
          */
         public String getId() {
             return id;
         }
 
         /**
-         * Get the resource types.
-         *
-         * @return the types
+         * @return the resource types
          */
         public List<String> getType() {
             return type;
@@ -89,8 +85,6 @@ class ActivityStreamMessage {
     }
 
     /**
-     * Get the event identifier.
-     *
      * @return the event identifier
      */
     public String getId() {
@@ -98,8 +92,6 @@ class ActivityStreamMessage {
     }
 
     /**
-     * Get the event types.
-     *
      * @return the event types
      */
     public List<String> getType() {
@@ -107,28 +99,28 @@ class ActivityStreamMessage {
     }
 
     /**
-     * The inbox assocated with the resource.
+     * @return the inbox assocated with the resource
      */
     public String getInbox() {
         return inbox;
     }
 
     /**
-     * The actors associated with this event.
+     * @return the actors associated with this event
      */
     public List<String> getActor() {
         return actor;
     }
 
     /**
-     * The target resource.
+     * @return the target resource
      */
     public EventResource getObject() {
         return object;
     }
 
     /**
-     * The created date.
+     * @return the created date
      */
     @JsonProperty("published")
     public String getPublished() {
