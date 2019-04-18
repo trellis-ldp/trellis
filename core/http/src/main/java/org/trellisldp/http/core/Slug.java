@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.core;
 
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -60,9 +59,9 @@ public class Slug {
      * @return a Slug object with a decoded value or null
      */
     public static Slug valueOf(final String value) {
-        if (nonNull(value)) {
+        if (value != null) {
             final String decoded = decodeSlug(value);
-            if (nonNull(decoded)) {
+            if (decoded != null) {
                 return new Slug(decoded);
             }
         }

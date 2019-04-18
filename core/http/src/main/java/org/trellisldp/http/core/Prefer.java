@@ -19,7 +19,6 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 
@@ -80,9 +79,9 @@ public class Prefer {
         this.preference = PREFER_MINIMAL.equals(preference) || PREFER_REPRESENTATION.equals(preference)
             ? preference : null;
         this.handling = PREFER_LENIENT.equals(handling) || PREFER_STRICT.equals(handling) ? handling : null;
-        this.include = nonNull(include) ? include : emptyList();
-        this.omit = nonNull(omit) ? omit : emptyList();
-        this.params = nonNull(params) ? params : emptySet();
+        this.include = include != null ? include : emptyList();
+        this.omit = omit != null ? omit : emptyList();
+        this.params = params != null ? params : emptySet();
     }
 
     /**
@@ -92,7 +91,7 @@ public class Prefer {
      * @return a Prefer object or null on an invalid string
      */
     public static Prefer valueOf(final String value) {
-        if (nonNull(value)) {
+        if (value != null) {
             final Map<String, String> data = new HashMap<>();
             final Set<String> params = new HashSet<>();
             stream(value.split(";")).map(String::trim).map(pref -> pref.split("=", 2)).forEach(x -> {
@@ -184,7 +183,7 @@ public class Prefer {
     }
 
     private static List<String> parseParameter(final String param) {
-        if (nonNull(param)) {
+        if (param != null) {
             return asList(trimQuotes(param).split("\\s+"));
         }
         return emptyList();

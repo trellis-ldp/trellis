@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.core;
 
-import static java.util.Objects.nonNull;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
@@ -99,7 +98,7 @@ public class TrellisRequest {
      */
     public String getSlug() {
         final Slug slug = Slug.valueOf(headers.getFirst(SLUG));
-        if (nonNull(slug) && !slug.getValue().isEmpty()) {
+        if (slug != null && !slug.getValue().isEmpty()) {
             return slug.getValue();
         }
         return null;
@@ -112,7 +111,7 @@ public class TrellisRequest {
      */
     public Link getLink() {
         final String link = headers.getFirst(LINK);
-        if (nonNull(link)) {
+        if (link != null) {
             return Link.valueOf(link);
         }
         return null;
@@ -243,9 +242,9 @@ public class TrellisRequest {
     }
 
     private static String getPrincipalName(final SecurityContext secCtx) {
-        if (nonNull(secCtx)) {
+        if (secCtx != null) {
             final Principal principal = secCtx.getUserPrincipal();
-            if (nonNull(principal)) {
+            if (principal != null) {
                 return principal.getName();
             }
         }

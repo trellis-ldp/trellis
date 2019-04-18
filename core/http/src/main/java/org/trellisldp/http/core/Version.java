@@ -15,7 +15,6 @@ package org.trellisldp.http.core;
 
 import static java.lang.Long.parseLong;
 import static java.time.Instant.ofEpochSecond;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Instant;
@@ -72,9 +71,9 @@ public class Version {
      * @return a Version header or null if the value is not parseable
      */
     public static Version valueOf(final String value) {
-        if (nonNull(value)) {
+        if (value != null) {
             final Instant time = parse(value);
-            if (nonNull(time)) {
+            if (time != null) {
                 return new Version(time);
             }
         }

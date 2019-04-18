@@ -14,7 +14,6 @@
 package org.trellisldp.http.core;
 
 import static java.lang.Integer.parseInt;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
@@ -76,7 +75,7 @@ public class Range {
     }
 
     private static int[] parse(final String range) {
-        if (nonNull(range) && range.startsWith("bytes=")) {
+        if (range != null && range.startsWith("bytes=")) {
             final String[] parts = range.substring("bytes=".length()).split("-");
             if (parts.length == 2) {
                 try {
