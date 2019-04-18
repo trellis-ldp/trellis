@@ -13,7 +13,6 @@
  */
 package org.trellisldp.agent;
 
-import static java.util.Objects.nonNull;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import org.apache.commons.rdf.api.IRI;

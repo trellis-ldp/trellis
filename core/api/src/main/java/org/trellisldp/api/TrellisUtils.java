@@ -86,7 +86,7 @@ public final class TrellisUtils {
      * @return the first service provider or empty Optional if no service providers are located
      */
     private static <T> Optional<T> findFirst(final Class<T> service) {
-        Iterator<T> services = ServiceLoader.load(service).iterator();
+        final Iterator<T> services = ServiceLoader.load(service).iterator();
         return services.hasNext() ? Optional.of(services.next()) : Optional.empty();
     }
 
@@ -97,11 +97,12 @@ public final class TrellisUtils {
      * @return a container, if one exists. Only the root resource would return empty here.
      */
     public static Optional<IRI> getContainer(final IRI identifier) {
+        if (identifier.getIRIString().equals(TRELLIS_DATA_PREFIX)) {
+            return Optional.empty();
+        }
         final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
-        if (path.isEmpty()) return Optional.empty();
-        int lastIndex = path.lastIndexOf('/');
-        int i = lastIndex < 0 ? 0 : lastIndex;
-        return Optional.of(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(0, i)));
+        final int index = Math.max(path.lastIndexOf('/'), 0);
+        return Optional.of(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(0, index)));
     }
 
     /**
