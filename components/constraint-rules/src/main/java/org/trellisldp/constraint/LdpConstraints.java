@@ -60,6 +60,34 @@ import org.trellisldp.vocabulary.Trellis;
  */
 public class LdpConstraints implements ConstraintService {
 
+    private static final Set<IRI> propertiesWithInDomainRange = singleton(LDP.membershipResource);
+
+    // Properties that need to be used with objects that are IRIs
+    private static final List<IRI> propertiesWithUriRange = unmodifiableList(
+                    Arrays.asList(LDP.membershipResource, LDP.hasMemberRelation, LDP.isMemberOfRelation, LDP.inbox,
+                                    LDP.insertedContentRelation, OA.annotationService));
+
+    // Properties that cannot be used as dynamic Membership properties
+    private static final List<IRI> restrictedMemberProperties = unmodifiableList(Arrays.asList(ACL.accessControl,
+                    LDP.contains, RDF.type, LDP.membershipResource, LDP.hasMemberRelation, LDP.inbox,
+                    LDP.insertedContentRelation, OA.annotationService));
+
+    private static final Map<IRI, Predicate<Triple>> typeMap;
+
+    static {
+
+        final Map<IRI, Predicate<Triple>> typeMapElements = new HashMap<>();
+
+        typeMapElements.put(LDP.BasicContainer, LdpConstraints::basicConstraints);
+        typeMapElements.put(LDP.Container, LdpConstraints::basicConstraints);
+        typeMapElements.put(LDP.DirectContainer, LdpConstraints::memberContainerConstraints);
+        typeMapElements.put(LDP.IndirectContainer, LdpConstraints::memberContainerConstraints);
+        typeMapElements.put(LDP.NonRDFSource, LdpConstraints::basicConstraints);
+        typeMapElements.put(LDP.RDFSource, LdpConstraints::basicConstraints);
+
+        typeMap = unmodifiableMap(typeMapElements);
+    }
+
     // Identify those predicates that are prohibited in the given ixn model
     private static boolean memberContainerConstraints(final Triple triple) {
         return triple.getPredicate().equals(ACL.accessControl) || triple.getPredicate().equals(LDP.contains);
@@ -72,31 +100,6 @@ public class LdpConstraints implements ConstraintService {
                         || triple.getPredicate().equals(LDP.hasMemberRelation)
                         || triple.getPredicate().equals(LDP.isMemberOfRelation);
     }
-
-    private static final Set<IRI> propertiesWithInDomainRange = singleton(LDP.membershipResource);
-
-    private static final Map<IRI, Predicate<Triple>> typeMapElements = new HashMap<>();
-
-    static {
-        typeMapElements.put(LDP.BasicContainer, LdpConstraints::basicConstraints);
-        typeMapElements.put(LDP.Container, LdpConstraints::basicConstraints);
-        typeMapElements.put(LDP.DirectContainer, LdpConstraints::memberContainerConstraints);
-        typeMapElements.put(LDP.IndirectContainer, LdpConstraints::memberContainerConstraints);
-        typeMapElements.put(LDP.NonRDFSource, LdpConstraints::basicConstraints);
-        typeMapElements.put(LDP.RDFSource, LdpConstraints::basicConstraints);
-    }
-
-    private static final Map<IRI, Predicate<Triple>> typeMap = unmodifiableMap(typeMapElements);
-
-    // Properties that need to be used with objects that are IRIs
-    private static final List<IRI> propertiesWithUriRange = unmodifiableList(
-                    Arrays.asList(LDP.membershipResource, LDP.hasMemberRelation, LDP.isMemberOfRelation, LDP.inbox,
-                                    LDP.insertedContentRelation, OA.annotationService));
-
-    // Properties that cannot be used as dynamic Membership properties
-    private static final List<IRI> restrictedMemberProperties = unmodifiableList(Arrays.asList(ACL.accessControl,
-                    LDP.contains, RDF.type, LDP.membershipResource, LDP.hasMemberRelation, LDP.inbox,
-                    LDP.insertedContentRelation, OA.annotationService));
 
     // Verify that the object of a triple whose predicate is either ldp:hasMemberRelation or ldp:isMemberOfRelation
     // is not equal to ldp:contains or any of the other cardinality-restricted IRIs
@@ -115,8 +118,8 @@ public class LdpConstraints implements ConstraintService {
     }
 
     // Ensure that any LDP properties are appropriate for the interaction model
-    private static boolean propertyFilter(final Triple t, final IRI model) {
-        return typeMap.getOrDefault(model, LdpConstraints::basicConstraints).test(t);
+    private static boolean propertyFilter(final Triple t, final IRI ixnModel) {
+        return typeMap.getOrDefault(ixnModel, LdpConstraints::basicConstraints).test(t);
     }
 
     // Verify that the range of the property is in the server's domain
