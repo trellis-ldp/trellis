@@ -66,11 +66,11 @@ public final class OAuthUtils {
      * @return a Principal, if one can be generated from standard claims
      */
     public static Optional<Principal> withSubjectClaim(final Claims claims) {
-        return ofNullable(claims.getSubject()).flatMap(sub -> {
+        return ofNullable(claims.getSubject()).map(sub -> {
             // use the sub claim if it looks like a webid
             if (isUrl(sub)) {
                 LOGGER.debug("Using JWT claim with sub: {}", sub);
-                return of(sub).map(OAuthPrincipal::new);
+                return new OAuthPrincipal(sub);
             }
 
             final String iss = claims.getIssuer();
@@ -78,16 +78,16 @@ public final class OAuthUtils {
             if (nonNull(iss) && isUrl(iss)) {
                 final String webid = iss.endsWith("/") ? iss + sub : iss + "/" + sub;
                 LOGGER.debug("Using JWT claim with generated webid: {}", webid);
-                return of(webid).map(OAuthPrincipal::new);
+                return new OAuthPrincipal(webid);
             }
 
             // Use an OIDC website claim, if one exists
             if (claims.containsKey(WEBSITE)) {
                 final String site = claims.get(WEBSITE, String.class);
                 LOGGER.debug("Using JWT claim with website: {}", site);
-                return ofNullable(site).map(OAuthPrincipal::new);
+                return new OAuthPrincipal(site);
             }
-            return empty();
+            return null;
         });
     }
 
