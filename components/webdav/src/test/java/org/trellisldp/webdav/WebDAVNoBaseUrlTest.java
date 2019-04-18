@@ -27,7 +27,6 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.http.AgentAuthorizationFilter;
@@ -83,9 +82,6 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
     public Application configure() {
 
         initMocks(this);
-
-        // Use a random free port for testing
-        forceSet(TestProperties.CONTAINER_PORT, "0");
 
         final ResourceConfig config = new ResourceConfig();
         final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(new SimpleAgentService(),

@@ -16,15 +16,10 @@ package org.trellisldp.webdav;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-
 import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.TestInstance;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebAcFilter;
 
@@ -36,15 +31,10 @@ public class WebDAVTest extends AbstractWebDAVTest {
 
         initMocks(this);
 
+        final ResourceConfig config = new ResourceConfig();
+
         try {
-            // Use a random free port for testing
-            final String port = Integer.toString(new ServerSocket(0).getLocalPort());
-            forceSet(TestProperties.CONTAINER_PORT, port);
-
-            final String baseUri = "http://localhost:" + port + "/";
-            final ResourceConfig config = new ResourceConfig();
-
-            System.setProperty(CONFIG_HTTP_BASE_URL, baseUri);
+            System.setProperty(CONFIG_HTTP_BASE_URL, getBaseUri().toString());
             config.register(new DebugExceptionMapper());
             config.register(new TrellisWebDAVRequestFilter(mockBundler));
             config.register(new TrellisWebDAVResponseFilter());
@@ -53,8 +43,6 @@ public class WebDAVTest extends AbstractWebDAVTest {
             config.register(new TrellisHttpResource(mockBundler));
             config.register(new WebAcFilter(accessControlService));
             return config;
-        } catch (final IOException ex) {
-            throw new RuntimeTrellisException("Could not acquire free port!", ex);
         } finally {
             System.clearProperty(CONFIG_HTTP_BASE_URL);
         }
