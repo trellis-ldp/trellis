@@ -18,7 +18,6 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.HttpMethod.OPTIONS;
@@ -142,7 +141,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         final String origin = req.getHeaderString("Origin");
 
         // 6.1.1 Terminate if an Origin header is not present
-        if (isNull(origin)) {
+        if (origin == null) {
             LOGGER.debug("CORS: No Origin header");
             return emptyMap();
         }
@@ -173,7 +172,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         final String origin = req.getHeaderString("Origin");
 
         // 6.1.1 Terminate if an Origin header is not present
-        if (isNull(origin)) {
+        if (origin == null) {
             LOGGER.debug("CORS PreFlight: No Origin header");
             return emptyMap();
         }
@@ -231,7 +230,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
     }
 
     private static Set<String> populateFieldNames(final String requestHeaders) {
-        return isNull(requestHeaders)
+        return requestHeaders == null
             ? emptySet()
             : stream(requestHeaders.split(",")).map(String::trim).collect(toSet());
     }

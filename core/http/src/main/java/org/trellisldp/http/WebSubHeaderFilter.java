@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Objects.nonNull;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.core.HttpHeaders.LINK;
@@ -63,7 +62,7 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
         if ((GET.equals(req.getMethod()) || HEAD.equals(req.getMethod()))
-                && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && nonNull(hub)) {
+                && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && hub != null) {
             res.getHeaders().add(LINK, fromUri(hub).rel("hub").build());
         }
     }

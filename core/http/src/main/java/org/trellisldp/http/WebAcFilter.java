@@ -15,7 +15,6 @@ package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
@@ -151,7 +150,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     }
 
     private UriBuilder getRequestUri(final ContainerRequestContext req) {
-        if (nonNull(baseUrl)) {
+        if (baseUrl != null) {
             return UriBuilder.fromUri(baseUrl).path(req.getUriInfo().getPath());
         }
         return req.getUriInfo().getAbsolutePathBuilder();
@@ -159,7 +158,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     protected Session getOrCreateSession(final ContainerRequestContext ctx) {
         final Object session = ctx.getProperty(SESSION_PROPERTY);
-        if (nonNull(session)) {
+        if (session != null) {
             return (Session) session;
         }
         final Session s = new HttpSession();
