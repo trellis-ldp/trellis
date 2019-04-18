@@ -16,8 +16,6 @@ package org.trellisldp.http.impl;
 import static java.lang.String.join;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -174,13 +172,13 @@ public class GetHandler extends BaseLdpHandler {
 
         final IRI model;
 
-        if (isNull(getRequest().getExt()) || DESCRIPTION.equals(getRequest().getExt())) {
-            if (nonNull(syntax)) {
+        if (getRequest().getExt() == null || DESCRIPTION.equals(getRequest().getExt())) {
+            if (syntax != null) {
                 builder.header(VARY, PREFER);
                 builder.type(syntax.mediaType());
             }
 
-            model = getResource().getBinaryMetadata().isPresent() && nonNull(syntax)
+            model = getResource().getBinaryMetadata().isPresent() && syntax != null
                 ? LDP.RDFSource : getResource().getInteractionModel();
             // Link headers from User data
             getResource().getExtraLinkRelations().collect(toMap(Entry::getKey, Entry::getValue))
@@ -209,7 +207,7 @@ public class GetHandler extends BaseLdpHandler {
         getResource().getBinaryMetadata().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
             final String description = base + (base.contains("?") ? "&" : "?") + "ext=description";
-            if (nonNull(syntax)) {
+            if (syntax != null) {
                 builder.link(description, "canonical").link(base, "describes")
                     .link(base + "#description", "alternate");
             } else {
@@ -226,7 +224,7 @@ public class GetHandler extends BaseLdpHandler {
                 "<" + getIdentifier() + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"");
 
         // NonRDFSources responses (strong ETags, etc)
-        if (getResource().getBinaryMetadata().isPresent() && isNull(syntax)) {
+        if (getResource().getBinaryMetadata().isPresent() && syntax == null) {
             return getLdpNr(builder);
         }
 
@@ -254,11 +252,11 @@ public class GetHandler extends BaseLdpHandler {
 
     private String getSelfIdentifier() {
         // Add any version or ext parameters
-        if (nonNull(getRequest().getVersion()) || nonNull(getRequest().getExt())) {
+        if (getRequest().getVersion() != null || getRequest().getExt() != null) {
             final List<String> query = new ArrayList<>();
 
             final Version v = getRequest().getVersion();
-            if (nonNull(v)) {
+            if (v != null) {
                 query.add("version=" + v.getInstant().getEpochSecond());
             }
 
@@ -274,7 +272,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private String getBaseBinaryIdentifier() {
         // Add the version parameter, if present
-        if (nonNull(getRequest().getVersion())) {
+        if (getRequest().getVersion() != null) {
             return getIdentifier() + "?version=" + getRequest().getVersion().getInstant().getEpochSecond();
         }
         return getIdentifier();
@@ -311,7 +309,7 @@ public class GetHandler extends BaseLdpHandler {
         builder.header(LINK_TEMPLATE, "<" + getIdentifier() + "{?subject,predicate,object}>; rel=\""
                 + LDP.RDFSource.getIRIString() + "\"");
 
-        if (nonNull(prefer)) {
+        if (prefer != null) {
             builder.header(PREFERENCE_APPLIED,
                     PREFER_RETURN + "=" + prefer.getPreference().orElse(PREFER_REPRESENTATION));
             if (prefer.getPreference().filter(PREFER_MINIMAL::equals).isPresent()) {
@@ -340,7 +338,7 @@ public class GetHandler extends BaseLdpHandler {
     }
 
     private IRI getJsonLdProfile(final IRI profile, final RDFSyntax syntax) {
-        if (nonNull(profile)) {
+        if (profile != null) {
             return profile;
         }
         return getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile);
@@ -378,7 +376,7 @@ public class GetHandler extends BaseLdpHandler {
     }
 
     private CompletionStage<InputStream> getBinaryStream(final IRI dsid, final TrellisRequest req) {
-        if (isNull(req.getRange())) {
+        if (req.getRange() == null) {
             return getServices().getBinaryService().get(dsid).thenApply(Binary::getContent);
         }
         return getServices().getBinaryService().get(dsid)

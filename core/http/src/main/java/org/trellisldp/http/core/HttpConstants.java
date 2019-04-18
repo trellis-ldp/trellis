@@ -121,7 +121,7 @@ public final class HttpConstants {
     /** The Memento link parameter indicating the ending range of a TimeMap. **/
     public static final String UNTIL = "until";
 
-    private static final Set<IRI> DEFAULT_REPRESENTATION_ELEMENTS = new HashSet<>(); 
+    private static final Set<IRI> DEFAULT_REPRESENTATION_ELEMENTS = new HashSet<>();
 
     static {
         addAll(DEFAULT_REPRESENTATION_ELEMENTS, PreferContainment, PreferMembership, PreferUserManaged);

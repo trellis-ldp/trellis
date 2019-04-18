@@ -13,8 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
@@ -125,14 +123,14 @@ public class PatchHandler extends MutatingLdpHandler {
         } else if (DELETED_RESOURCE.equals(resource)) {
             // Can't patch non-existent resources
             throw new ClientErrorException(GONE);
-        } else if (isNull(updateBody)) {
+        } else if (updateBody == null) {
             LOGGER.error("Missing body for update: {}", resource.getIdentifier());
             throw new BadRequestException("Missing body for update");
         } else if (!supportsInteractionModel(LDP.RDFSource)) {
             throw new BadRequestException(status(BAD_REQUEST)
                 .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString())
                 .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
-        } else if (isNull(syntax)) {
+        } else if (syntax == null) {
             // Get the incoming syntax and check that the underlying I/O service supports it
             LOGGER.warn("Content-Type: {} not supported", getRequest().getContentType());
             throw new NotSupportedException();
@@ -235,7 +233,7 @@ public class PatchHandler extends MutatingLdpHandler {
             .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
                         getRequest().getAcceptableMediaTypes(), null);
-                if (nonNull(preference)) {
+                if (preference != null) {
                     final IRI profile = getResponseProfile(outputSyntax);
                     final StreamingOutput stream = new StreamingOutput() {
                         @Override
@@ -254,7 +252,7 @@ public class PatchHandler extends MutatingLdpHandler {
 
     private IRI getResponseProfile(final RDFSyntax outputSyntax) {
         final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), outputSyntax);
-        if (nonNull(profile)) {
+        if (profile != null) {
             return profile;
         }
         return getDefaultProfile(outputSyntax, getIdentifier(), defaultJsonLdProfile);
@@ -275,7 +273,7 @@ public class PatchHandler extends MutatingLdpHandler {
     }
 
     private static String getPreference(final Prefer prefer) {
-        if (nonNull(prefer)) {
+        if (prefer != null) {
             return prefer.getPreference().filter(PREFER_REPRESENTATION::equals).orElse(null);
         }
         return null;
