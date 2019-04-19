@@ -67,9 +67,9 @@
     </module>
 
     <!-- Block import statements that use the * notation. -->
-    <module name="AvoidStarImport">
+    <!-- <module name="AvoidStarImport">
       <property name="excludes" value="javax.ws.rs,javax.ws.rs.core,org.junit.jupiter.api.Assertions,org.mockito.Mockito,org.mockito.ArgumentMatchers"/>
-    </module>
+    </module> -->
 
     <!-- Checks for long lines. -->
     <module name="LineLength">
@@ -133,7 +133,7 @@
     </module>
 
     <!-- K&R style braces -->
-    <module name="NeedBraces"/>
+    <!-- <module name="NeedBraces"/> -->
     <module name="LeftCurly"/>
     <module name="RightCurly"/>
     <module name="WhitespaceAround">
