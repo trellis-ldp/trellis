@@ -18,7 +18,6 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.joining;
@@ -116,9 +115,9 @@ public final class MementoResource {
 
         final RDFSyntax syntax = getSyntax(trellis.getIOService(), acceptableTypes, APPLICATION_LINK_FORMAT);
 
-        if (nonNull(syntax)) {
+        if (syntax != null) {
             final IRI profile = getProfile(acceptableTypes, syntax);
-            final IRI jsonldProfile = nonNull(profile) ? profile : compacted;
+            final IRI jsonldProfile = profile != null ? profile : compacted;
 
             final StreamingOutput stream = new StreamingOutput() {
                 @Override

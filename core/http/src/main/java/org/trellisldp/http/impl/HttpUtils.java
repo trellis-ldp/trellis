@@ -18,8 +18,6 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -95,7 +93,7 @@ public final class HttpUtils {
      */
     public static Stream<IRI> ldpResourceTypes(final IRI ixnModel) {
         final Stream.Builder<IRI> supertypes = Stream.builder();
-        if (nonNull(ixnModel)) {
+        if (ixnModel != null) {
             LOGGER.debug("Finding types that subsume {}", ixnModel.getIRIString());
             supertypes.accept(ixnModel);
             final IRI superClass = LDP.getSuperclassOf(ixnModel);
@@ -114,7 +112,7 @@ public final class HttpUtils {
      */
     public static String buildEtagHash(final String identifier, final Instant modified, final Prefer prefer) {
         final String sep = ".";
-        final String hash = nonNull(prefer) ? prefer.getInclude().hashCode() + sep + prefer.getOmit().hashCode() : "";
+        final String hash = prefer != null ? prefer.getInclude().hashCode() + sep + prefer.getOmit().hashCode() : "";
         return md5Hex(modified.toEpochMilli() + sep + modified.getNano() + sep + hash + sep + identifier);
     }
 
@@ -126,7 +124,7 @@ public final class HttpUtils {
      */
     public static Set<IRI> triplePreferences(final Prefer prefer) {
         final Set<IRI> include = new HashSet<>(DEFAULT_REPRESENTATION);
-        if (nonNull(prefer)) {
+        if (prefer != null) {
             if (prefer.getInclude().contains(LDP.PreferMinimalContainer.getIRIString())) {
                 include.remove(LDP.PreferContainment);
                 include.remove(LDP.PreferMembership);
@@ -157,7 +155,7 @@ public final class HttpUtils {
     }
 
     private static boolean notCompareWithString(final RDFTerm term, final String str) {
-        return nonNull(str) && !str.isEmpty() && (term instanceof IRI && !((IRI) term).getIRIString().equals(str)
+        return str != null && !str.isEmpty() && (term instanceof IRI && !((IRI) term).getIRIString().equals(str)
                     || term instanceof Literal && !((Literal) term).getLexicalForm().equals(str));
     }
 
@@ -210,9 +208,9 @@ public final class HttpUtils {
     public static RDFSyntax getSyntax(final IOService ioService, final List<MediaType> acceptableTypes,
             final String mimeType) {
         if (acceptableTypes.isEmpty()) {
-            return nonNull(mimeType) ? null : TURTLE;
+            return mimeType != null ? null : TURTLE;
         }
-        final MediaType mt = nonNull(mimeType) ? MediaType.valueOf(mimeType) : null;
+        final MediaType mt = mimeType != null ? MediaType.valueOf(mimeType) : null;
         for (final MediaType type : acceptableTypes) {
             if (type.isCompatible(mt)) {
                 return null;
@@ -220,7 +218,7 @@ public final class HttpUtils {
             final RDFSyntax syntax = ioService.supportedReadSyntaxes().stream()
                 .filter(s -> MediaType.valueOf(s.mediaType()).isCompatible(type))
                 .findFirst().orElse(null);
-            if (nonNull(syntax)) {
+            if (syntax != null) {
                 return syntax;
             }
         }
@@ -286,7 +284,7 @@ public final class HttpUtils {
             final String defaultJsonLdProfile) {
         if (RDFA.equals(syntax)) {
             return identifier;
-        } else if (nonNull(defaultJsonLdProfile)) {
+        } else if (defaultJsonLdProfile != null) {
             return rdf.createIRI(defaultJsonLdProfile);
         }
         return compacted;
@@ -312,7 +310,7 @@ public final class HttpUtils {
             final Instant modified) {
         if (isGetOrHead(method)) {
             final Instant time = parseDate(ifModifiedSince);
-            if (nonNull(time) && time.isAfter(modified.truncatedTo(SECONDS))) {
+            if (time != null && time.isAfter(modified.truncatedTo(SECONDS))) {
                 throw new RedirectionException(notModified().build());
             }
         }
@@ -325,7 +323,7 @@ public final class HttpUtils {
      */
     public static void checkIfUnmodifiedSince(final String ifUnmodifiedSince, final Instant modified) {
         final Instant time = parseDate(ifUnmodifiedSince);
-        if (nonNull(time) && modified.truncatedTo(SECONDS).isAfter(time)) {
+        if (time != null && modified.truncatedTo(SECONDS).isAfter(time)) {
             throw new ClientErrorException(status(PRECONDITION_FAILED).build());
         }
     }
@@ -336,7 +334,7 @@ public final class HttpUtils {
      * @param etag the resource etag
      */
     public static void checkIfMatch(final String ifMatch, final EntityTag etag) {
-        if (isNull(ifMatch)) {
+        if (ifMatch == null) {
             return;
         }
         final Set<String> items = stream(ifMatch.split(",")).map(String::trim).collect(toSet());
@@ -359,7 +357,7 @@ public final class HttpUtils {
      * @param etag the resource etag
      */
     public static void checkIfNoneMatch(final String method, final String ifNoneMatch, final EntityTag etag) {
-        if (isNull(ifNoneMatch)) {
+        if (ifNoneMatch == null) {
             return;
         }
 
@@ -381,7 +379,7 @@ public final class HttpUtils {
     }
 
     private static Instant parseDate(final String date) {
-        if (nonNull(date)) {
+        if (date != null) {
             try {
                 return parse(date.trim(), RFC_1123_DATE_TIME).toInstant();
             } catch (final DateTimeException ex) {
@@ -399,7 +397,7 @@ public final class HttpUtils {
      */
     public static void checkRequiredPreconditions(final boolean required, final String ifMatch,
             final String ifUnmodifiedSince) {
-        if (required && isNull(ifMatch) && isNull(ifUnmodifiedSince)) {
+        if (required && ifMatch == null && ifUnmodifiedSince == null) {
             throw new ClientErrorException(status(PRECONDITION_REQUIRED).build());
         }
     }

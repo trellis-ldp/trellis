@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.util.Objects.nonNull;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
@@ -139,7 +138,7 @@ class BaseLdpHandler {
     }
 
     private static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
-        final String base = nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        final String base = baseUrl != null ? baseUrl : req.getBaseUrl();
         if (base.endsWith("/")) {
             return base;
         }

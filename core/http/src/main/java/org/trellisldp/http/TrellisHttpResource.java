@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -242,7 +241,7 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, nonNull(req.getVersion()), urlBase);
+        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, req.getVersion() != null, urlBase);
 
         fetchTrellisResource(identifier, req.getVersion()).thenApply(optionsHandler::initialize)
             .thenApply(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
@@ -364,17 +363,17 @@ public class TrellisHttpResource {
     }
 
     private String getBaseUrl(final TrellisRequest req) {
-        return nonNull(baseUrl) ? baseUrl : req.getBaseUrl();
+        return baseUrl != null ? baseUrl : req.getBaseUrl();
     }
 
     private CompletionStage<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, trellis, nonNull(req.getVersion()), weakEtags,
+        final GetHandler getHandler = new GetHandler(req, trellis, req.getVersion() != null, weakEtags,
                 includeMementoDates, defaultJsonLdProfile, urlBase);
 
         // Fetch a memento
-        if (nonNull(req.getVersion())) {
+        if (req.getVersion() != null) {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
             return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
                 .thenApply(getHandler::initialize).thenApply(getHandler::standardHeaders)
@@ -393,7 +392,7 @@ public class TrellisHttpResource {
                 });
 
         // Fetch a timegate
-        } else if (nonNull(req.getDatetime())) {
+        } else if (req.getDatetime() != null) {
             LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
             return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
                 .thenCombine(trellis.getMementoService().mementos(identifier), (res, mementos) -> {
@@ -414,13 +413,13 @@ public class TrellisHttpResource {
 
     private String getIdentifier(final TrellisRequest req) {
         final String slug = req.getSlug();
-        if (nonNull(slug)) {
+        if (slug != null) {
             return slug;
         }
         return trellis.getResourceService().generateIdentifier();
     }
     private CompletionStage<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {
-        if (nonNull(version)) {
+        if (version != null) {
             return trellis.getMementoService().get(identifier, version.getInstant());
         }
         return trellis.getResourceService().get(identifier);

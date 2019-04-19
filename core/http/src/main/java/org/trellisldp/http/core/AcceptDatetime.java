@@ -15,7 +15,6 @@ package org.trellisldp.http.core;
 
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.DateTimeException;
@@ -64,9 +63,9 @@ public class AcceptDatetime {
      * @return an AcceptDatetime object or null if the value is not parseable
      */
     public static AcceptDatetime valueOf(final String value) {
-        if (nonNull(value)) {
+        if (value != null) {
             final Instant time = parseDatetime(value);
-            if (nonNull(time)) {
+            if (time != null) {
                 return new AcceptDatetime(time);
             }
         }

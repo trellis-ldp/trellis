@@ -14,7 +14,6 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.stream;
-import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -96,7 +95,7 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     }
 
     private static String getPrincipalName(final Principal principal) {
-        if (nonNull(principal) && !principal.getName().isEmpty()) {
+        if (principal != null && !principal.getName().isEmpty()) {
             return principal.getName();
         }
         return null;

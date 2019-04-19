@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Predicate.isEqual;
@@ -99,7 +98,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
             final String baseUrl, final InputStream entity) {
         super(req, trellis, baseUrl);
         this.entity = entity;
-        if (nonNull(req.getPrincipalName())) {
+        if (req.getPrincipalName() != null) {
             this.session = new HttpSession(getServices().getAgentService().asAgent(req.getPrincipalName()));
         } else {
             this.session = new HttpSession();
@@ -111,14 +110,14 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     protected IRI getParentIdentifier() {
-        if (nonNull(parent)) {
+        if (parent != null) {
             return parent.getIdentifier();
         }
         return null;
     }
 
     protected IRI getParentModel() {
-        if (nonNull(parent)) {
+        if (parent != null) {
             return parent.getInteractionModel();
         }
         return null;
@@ -290,10 +289,10 @@ class MutatingLdpHandler extends BaseLdpHandler {
     private CompletionStage<Void> emitMembershipUpdateEvent() {
         final IRI membershipResource = parent.getMembershipResource().map(MutatingLdpHandler::removeHashFragment)
             .orElse(null);
-        if (nonNull(membershipResource)) {
+        if (membershipResource != null) {
             return allOf(getServices().getResourceService().touch(membershipResource).toCompletableFuture(),
                 getServices().getResourceService().get(membershipResource).thenAccept(res -> {
-                    if (nonNull(res.getIdentifier())) {
+                    if (res.getIdentifier() != null) {
                         getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
                                     getSession().getAgent(), asList(PROV.Activity, AS.Update),
                                     asList(res.getInteractionModel())));

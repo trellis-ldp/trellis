@@ -14,8 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.HttpMethod.DELETE;
@@ -108,7 +106,7 @@ public class PostHandler extends MutatingLdpHandler {
     }
 
     private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> supported) {
-        if (nonNull(contentType)) {
+        if (contentType != null) {
             final MediaType type = MediaType.valueOf(contentType);
             for (final RDFSyntax s : supported) {
                 if (type.isCompatible(MediaType.valueOf(s.mediaType()))) {
@@ -120,7 +118,7 @@ public class PostHandler extends MutatingLdpHandler {
     }
 
     private static IRI getLdpType(final Link link, final RDFSyntax syntax, final String contentType) {
-        if (nonNull(link) && "type".equals(link.getRel())) {
+        if (link != null && "type".equals(link.getRel())) {
             final String uri = link.getUri().toString();
             if (uri.startsWith(LDP.getNamespace())) {
                 final IRI iri = rdf.createIRI(uri);
@@ -129,7 +127,7 @@ public class PostHandler extends MutatingLdpHandler {
                 }
             }
         }
-        return nonNull(contentType) && isNull(syntax) ? LDP.NonRDFSource : LDP.RDFSource;
+        return contentType != null && syntax == null ? LDP.NonRDFSource : LDP.RDFSource;
     }
 
     /**
@@ -154,7 +152,7 @@ public class PostHandler extends MutatingLdpHandler {
         } else if (!supportsInteractionModel(ldpType)) {
             throw new BadRequestException("Unsupported interaction model provided", status(BAD_REQUEST)
                 .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString()).build());
-        } else if (ldpType.equals(LDP.NonRDFSource) && nonNull(rdfSyntax)) {
+        } else if (ldpType.equals(LDP.NonRDFSource) && rdfSyntax != null) {
             LOGGER.error("Cannot save {} as a NonRDFSource with RDF syntax", getIdentifier());
             throw new BadRequestException("Cannot save resource as a NonRDFSource with RDF syntax");
         }
@@ -187,7 +185,7 @@ public class PostHandler extends MutatingLdpHandler {
 
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
-            final String mimeType = nonNull(contentType) ? contentType : APPLICATION_OCTET_STREAM;
+            final String mimeType = contentType != null ? contentType : APPLICATION_OCTET_STREAM;
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
             // Persist the content
@@ -198,7 +196,7 @@ public class PostHandler extends MutatingLdpHandler {
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
-            final RDFSyntax s = nonNull(rdfSyntax) ? rdfSyntax : TURTLE;
+            final RDFSyntax s = rdfSyntax != null ? rdfSyntax : TURTLE;
             readEntityIntoDataset(PreferUserManaged, s, mutable);
 
             // Check for any constraints

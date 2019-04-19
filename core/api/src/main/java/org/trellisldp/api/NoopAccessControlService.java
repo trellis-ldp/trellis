@@ -31,7 +31,7 @@ public class NoopAccessControlService implements AccessControlService {
     private static final RDF rdf = getInstance();
     private static final String URI = "http://www.w3.org/ns/auth/acl#";
     private static final Set<IRI> modes = unmodifiableSet(asList("Control", "Read", "Write", "Append")
-            .stream().map(mode -> URI + mode).map(rdf::createIRI).collect(toSet()));
+            .stream().map(URI::concat).map(rdf::createIRI).collect(toSet()));
 
     @Override
     public Set<IRI> getAccessModes(final IRI identifier, final Session session) {

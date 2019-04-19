@@ -14,8 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
@@ -99,7 +97,7 @@ public class PutHandler extends MutatingLdpHandler {
         super(req, trellis, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         this.rdfSyntax = getRdfSyntax(req.getContentType(), trellis.getIOService().supportedWriteSyntaxes());
-        this.heuristicType = nonNull(req.getContentType()) && isNull(rdfSyntax) ? LDP.NonRDFSource : LDP.RDFSource;
+        this.heuristicType = req.getContentType() != null && rdfSyntax == null ? LDP.NonRDFSource : LDP.RDFSource;
         this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
         this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
         this.preconditionRequired = preconditionRequired;
@@ -116,7 +114,7 @@ public class PutHandler extends MutatingLdpHandler {
         setResource(DELETED_RESOURCE.equals(resource) || MISSING_RESOURCE.equals(resource) ? null : resource);
 
         // Check the cache
-        if (nonNull(getResource())) {
+        if (getResource() != null) {
             final Instant modified = getResource().getModified();
             final EntityTag etag;
 
@@ -132,7 +130,7 @@ public class PutHandler extends MutatingLdpHandler {
         }
 
         // One cannot put binaries into the ACL graph
-        if (ACL.equals(getRequest().getExt()) && isNull(rdfSyntax)) {
+        if (ACL.equals(getRequest().getExt()) && rdfSyntax == null) {
             throw new NotAcceptableException();
         }
 
@@ -167,7 +165,7 @@ public class PutHandler extends MutatingLdpHandler {
         }
 
         // It is not possible to change the LDP type to a type that is not a subclass
-        if (nonNull(getResource()) && !isBinaryDescription()
+        if (getResource() != null && !isBinaryDescription()
                 && ldpResourceTypes(ldpType).noneMatch(getResource().getInteractionModel()::equals)) {
             LOGGER.error("Cannot change the LDP type to {} for {}", ldpType, getIdentifier());
             throw new ClientErrorException("Cannot change the LDP type to " + ldpType, status(CONFLICT).build());
@@ -195,7 +193,7 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> syntaxes) {
-        if (nonNull(contentType)) {
+        if (contentType != null) {
             final MediaType mediaType = MediaType.valueOf(contentType);
             for (final RDFSyntax s : syntaxes) {
                 if (mediaType.isCompatible(MediaType.valueOf(s.mediaType()))) {
@@ -207,7 +205,7 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private static boolean isRdfType(final String contentType) {
-        if (nonNull(contentType)) {
+        if (contentType != null) {
             return RDFSyntax.byMediaType(contentType).isPresent();
         }
         return false;
@@ -218,13 +216,13 @@ public class PutHandler extends MutatingLdpHandler {
             return LDP.NonRDFSource;
         }
         final Link link = getRequest().getLink();
-        if (nonNull(link) && "type".equals(link.getRel())) {
+        if (link != null && "type".equals(link.getRel())) {
             final String uri = link.getUri().toString();
             if (uri.startsWith(LDP.getNamespace()) && !uri.equals(LDP.Resource.getIRIString())) {
                 return rdf.createIRI(uri);
             }
         }
-        if (nonNull(getResource())) {
+        if (getResource() != null) {
             return getResource().getInteractionModel();
         }
         return heuristicType;
@@ -237,9 +235,9 @@ public class PutHandler extends MutatingLdpHandler {
         final CompletionStage<Void> persistPromise;
 
         // Add user-supplied data
-        if (LDP.NonRDFSource.equals(ldpType) && isNull(rdfSyntax)) {
+        if (LDP.NonRDFSource.equals(ldpType) && rdfSyntax == null) {
             LOGGER.trace("Successfully checked for bad digest value");
-            final String mimeType = nonNull(getRequest().getContentType()) ? getRequest().getContentType()
+            final String mimeType = getRequest().getContentType() != null ? getRequest().getContentType()
                 : APPLICATION_OCTET_STREAM;
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
 
@@ -251,7 +249,7 @@ public class PutHandler extends MutatingLdpHandler {
             metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
-            final RDFSyntax s = nonNull(rdfSyntax) ? rdfSyntax : TURTLE;
+            final RDFSyntax s = rdfSyntax != null ? rdfSyntax : TURTLE;
             readEntityIntoDataset(graphName, s, mutable);
 
             // Check for any constraints
@@ -262,13 +260,13 @@ public class PutHandler extends MutatingLdpHandler {
             }
             LOGGER.trace("Successfully checked for constraint violations");
             metadata = metadataBuilder(internalId, ldpType, mutable);
-            if (nonNull(getResource())) {
+            if (getResource() != null) {
                 getResource().getBinaryMetadata().ifPresent(metadata::binary);
             }
             persistPromise = completedFuture(null);
         }
 
-        if (nonNull(getResource())) {
+        if (getResource() != null) {
             getResource().getContainer().ifPresent(metadata::container);
             LOGGER.debug("Resource {} found in persistence", getIdentifier());
             try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
@@ -296,7 +294,7 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private ResponseBuilder decorateResponse(final ResponseBuilder builder) {
-        if (isNull(getResource())) {
+        if (getResource() == null) {
             return builder.status(CREATED).contentLocation(create(getIdentifier()));
         }
         return builder;
@@ -304,7 +302,7 @@ public class PutHandler extends MutatingLdpHandler {
 
     private CompletionStage<Void> handleUpdateEvent(final IRI ldpType) {
         if (!ACL.equals(getRequest().getExt())) {
-            return emitEvent(getInternalId(), isNull(getResource()) ? AS.Create : AS.Update, ldpType);
+            return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType);
         }
         return completedFuture(null);
     }
@@ -316,7 +314,7 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private CompletionStage<Void> createOrReplace(final Metadata metadata, final TrellisDataset ds) {
-        if (isNull(getResource())) {
+        if (getResource() == null) {
             LOGGER.debug("Creating new resource {}", internalId);
             return getServices().getResourceService().create(metadata, ds.asDataset());
         } else {
@@ -326,14 +324,14 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private List<Quad> auditQuads() {
-        if (nonNull(getResource())) {
+        if (getResource() != null) {
             return getServices().getAuditService().update(internalId, getSession());
         }
         return getServices().getAuditService().creation(internalId, getSession());
     }
 
     private boolean isBinaryDescription() {
-        return nonNull(getResource()) && LDP.NonRDFSource.equals(getResource().getInteractionModel())
-            && nonNull(rdfSyntax);
+        return getResource() != null && LDP.NonRDFSource.equals(getResource().getInteractionModel())
+            &&  rdfSyntax != null;
     }
 }

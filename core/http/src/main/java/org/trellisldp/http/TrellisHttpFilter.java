@@ -14,8 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import static java.util.Collections.unmodifiableList;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
@@ -51,7 +50,7 @@ import org.trellisldp.http.core.Version;
 @Priority(AUTHORIZATION - 20)
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
-    private static final List<String> MUTATING_METHODS = asList(POST, PUT, DELETE, PATCH);
+    private static final List<String> MUTATING_METHODS = unmodifiableList(asList(POST, PUT, DELETE, PATCH));
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
@@ -76,21 +75,21 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private void validateAcceptDatetime(final ContainerRequestContext ctx) {
         final String acceptDatetime = ctx.getHeaderString(ACCEPT_DATETIME);
-        if (nonNull(acceptDatetime) && isNull(AcceptDatetime.valueOf(acceptDatetime))) {
+        if (acceptDatetime != null && AcceptDatetime.valueOf(acceptDatetime) == null) {
             ctx.abortWith(status(BAD_REQUEST).build());
         }
     }
 
     private void validateRange(final ContainerRequestContext ctx) {
         final String range = ctx.getHeaderString(RANGE);
-        if (nonNull(range) && isNull(Range.valueOf(range))) {
+        if (range != null && Range.valueOf(range) == null) {
             ctx.abortWith(status(BAD_REQUEST).build());
         }
     }
 
     private void validateLink(final ContainerRequestContext ctx) {
         final String link = ctx.getHeaderString(LINK);
-        if (nonNull(link)) {
+        if (link != null) {
             try {
                 Link.valueOf(link);
             } catch (final IllegalArgumentException ex) {
@@ -101,9 +100,9 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private void validateVersion(final ContainerRequestContext ctx) {
         final String version = ctx.getUriInfo().getQueryParameters().getFirst("version");
-        if (nonNull(version)) {
+        if (version != null) {
             // Check well-formedness
-            if (isNull(Version.valueOf(version))) {
+            if (Version.valueOf(version) == null) {
                 ctx.abortWith(status(BAD_REQUEST).build());
             // Do not allow mutating versioned resources
             } else if (MUTATING_METHODS.contains(ctx.getMethod())) {
@@ -115,7 +114,7 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
     private void validateTimeMap(final ContainerRequestContext ctx) {
         final List<String> exts = ctx.getUriInfo().getQueryParameters().get(EXT);
         // Do not allow direct manipulation of timemaps
-        if (nonNull(exts) && exts.contains(TIMEMAP) && MUTATING_METHODS.contains(ctx.getMethod())) {
+        if (exts != null && exts.contains(TIMEMAP) && MUTATING_METHODS.contains(ctx.getMethod())) {
             ctx.abortWith(status(METHOD_NOT_ALLOWED).build());
         }
     }
