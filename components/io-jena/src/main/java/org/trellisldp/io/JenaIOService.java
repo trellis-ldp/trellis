@@ -18,7 +18,6 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
@@ -205,7 +204,7 @@ public class JenaIOService implements IOService {
         this.whitelistDomains = whitelistDomains;
 
         final List<RDFSyntax> reads = new ArrayList<>(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
-        if (nonNull(htmlSerializer)) {
+        if (htmlSerializer != null) {
             reads.add(RDFA);
         }
         this.readable = unmodifiableList(reads);
@@ -244,7 +243,7 @@ public class JenaIOService implements IOService {
 
                 final RDFFormat format = defaultSerialization(lang);
 
-                if (nonNull(format)) {
+                if (format != null) {
                     LOGGER.debug("Writing stream-based RDF: {}", format);
                     final StreamRDF stream = getWriterStream(output, format);
                     stream.start();
@@ -269,7 +268,7 @@ public class JenaIOService implements IOService {
     }
 
     private void writeHTML(final Stream<Triple> triples, final OutputStream output, final String subject) {
-        if (nonNull(htmlSerializer)) {
+        if (htmlSerializer != null) {
             htmlSerializer.write(triples, output, subject);
         } else {
             write(triples, output, TURTLE);
@@ -277,7 +276,7 @@ public class JenaIOService implements IOService {
     }
 
     private boolean canUseCustomJsonLdProfile(final String profile) {
-        return nonNull(profile);
+        return profile != null;
     }
 
     private void writeJsonLd(final OutputStream output, final DatasetGraph graph, final IRI... profiles) {
@@ -297,7 +296,7 @@ public class JenaIOService implements IOService {
                     return null;
                 }
             });
-            if (nonNull(c)) {
+            if (c != null) {
                 ctx.setJsonLDContext(c);
                 ctx.setJsonLDContextSubstitution("\"" + profile + "\"");
             }

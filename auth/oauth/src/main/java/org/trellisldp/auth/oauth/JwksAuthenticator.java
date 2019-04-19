@@ -14,7 +14,6 @@
 package org.trellisldp.auth.oauth;
 
 import static java.util.Collections.emptyList;
-import static java.util.Objects.isNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import io.jsonwebtoken.Claims;
@@ -62,7 +61,7 @@ public class JwksAuthenticator implements Authenticator {
             @Override
             public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
                 final String keyid = header.getKeyId();
-                if (isNull(keyid)) {
+                if (keyid == null) {
                     throw new JwtException("Missing Key ID (kid) header field");
                 }
                 if (keys.containsKey(keyid)) {

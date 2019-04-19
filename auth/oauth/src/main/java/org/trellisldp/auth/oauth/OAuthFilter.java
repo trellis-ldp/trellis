@@ -14,7 +14,6 @@
 package org.trellisldp.auth.oauth;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
@@ -125,7 +124,7 @@ public class OAuthFilter implements ContainerRequestFilter {
         final Config config = getConfig();
         final Authenticator jwksAuthenticator = OAuthUtils.buildAuthenticatorWithJwk(
                 config.getOptionalValue(CONFIG_AUTH_OAUTH_JWK_URL, String.class).orElse(null));
-        if (nonNull(jwksAuthenticator)) {
+        if (jwksAuthenticator != null) {
             return jwksAuthenticator;
         }
 
@@ -133,13 +132,13 @@ public class OAuthFilter implements ContainerRequestFilter {
                 config.getOptionalValue(CONFIG_AUTH_OAUTH_KEYSTORE_PATH, String.class).orElse(null),
                 config.getOptionalValue(CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS, String.class).orElse("").toCharArray(),
                 asList(config.getOptionalValue(CONFIG_AUTH_OAUTH_KEYSTORE_IDS, String.class).orElse("").split(",")));
-        if (nonNull(keystoreAuthenticator)) {
+        if (keystoreAuthenticator != null) {
             return keystoreAuthenticator;
         }
 
         final Authenticator sharedKeyAuthenticator = OAuthUtils.buildAuthenticatorWithSharedSecret(
                 config.getOptionalValue(CONFIG_AUTH_OAUTH_SHARED_SECRET, String.class).orElse(null));
-        if (nonNull(sharedKeyAuthenticator)) {
+        if (sharedKeyAuthenticator != null) {
             return sharedKeyAuthenticator;
         }
         return new NullAuthenticator();

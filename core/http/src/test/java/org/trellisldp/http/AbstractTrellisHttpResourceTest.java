@@ -24,7 +24,6 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -2419,7 +2418,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     protected static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         final List<String> links = res.getStringHeaders().get(LINK);
-        if (nonNull(links)) {
+        if (links != null) {
             return links.stream().map(Link::valueOf).collect(toList());
         }
         return emptyList();
@@ -2496,7 +2495,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     private static Stream<IRI> ldpResourceSupertypes(final IRI ldpType) {
-        return Stream.of(ldpType).filter(t -> nonNull(LDP.getSuperclassOf(t)) || LDP.Resource.equals(t))
+        return Stream.of(ldpType).filter(t -> LDP.getSuperclassOf(t) != null || LDP.Resource.equals(t))
             .flatMap(t -> Stream.concat(ldpResourceSupertypes(LDP.getSuperclassOf(t)), Stream.of(t)));
     }
 

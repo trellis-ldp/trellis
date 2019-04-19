@@ -17,7 +17,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -813,7 +812,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     private static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         final List<String> links = res.getStringHeaders().get(LINK);
-        if (nonNull(links)) {
+        if (links != null) {
             return links.stream().map(Link::valueOf).collect(toList());
         }
         return emptyList();

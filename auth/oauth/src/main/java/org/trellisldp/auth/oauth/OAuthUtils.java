@@ -15,7 +15,6 @@ package org.trellisldp.auth.oauth;
 
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -75,7 +74,7 @@ public final class OAuthUtils {
 
             final String iss = claims.getIssuer();
             // combine the iss and sub fields if that appears possible
-            if (nonNull(iss) && isUrl(iss)) {
+            if (iss != null && isUrl(iss)) {
                 final String webid = iss.endsWith("/") ? iss + sub : iss + "/" + sub;
                 LOGGER.debug("Using JWT claim with generated webid: {}", webid);
                 return new OAuthPrincipal(webid);
@@ -97,7 +96,7 @@ public final class OAuthUtils {
      * @return an Authenticator
      */
     public static Authenticator buildAuthenticatorWithJwk(final String location) {
-        if (nonNull(location) && OAuthUtils.isUrl(location)) {
+        if (location != null && isUrl(location)) {
             return new JwksAuthenticator(location);
         }
         return null;
@@ -126,7 +125,7 @@ public final class OAuthUtils {
      * @return an Authenticator
      */
     public static Authenticator buildAuthenticatorWithSharedSecret(final String key) {
-        if (nonNull(key) && !key.isEmpty()) {
+        if (key != null && !key.isEmpty()) {
             return new JwtAuthenticator(hmacShaKeyFor(key.getBytes(UTF_8)));
         }
         return null;
@@ -141,7 +140,7 @@ public final class OAuthUtils {
      */
     public static Authenticator buildAuthenticatorWithTruststore(final String keystorePath,
             final char[] keystorePassword, final List<String> keyids) {
-        if (nonNull(keystorePath)) {
+        if (keystorePath != null) {
             final File file = new File(keystorePath);
             if (file.exists()) {
                 try (final FileInputStream fis = new FileInputStream(file)) {

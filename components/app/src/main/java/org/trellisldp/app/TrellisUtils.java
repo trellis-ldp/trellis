@@ -14,7 +14,6 @@
 package org.trellisldp.app;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -48,18 +47,18 @@ final class TrellisUtils {
     public static Authenticator getJwtAuthenticator(final JwtAuthConfiguration config) {
         final Authenticator jwksAuthenticator = OAuthUtils.buildAuthenticatorWithJwk(
                 config.getJwks());
-        if (nonNull(jwksAuthenticator)) {
+        if (jwksAuthenticator != null) {
             return jwksAuthenticator;
         }
 
         final Authenticator keystoreAuthenticator = OAuthUtils.buildAuthenticatorWithTruststore(
                 config.getKeyStore(), config.getKeyStorePassword().toCharArray(), config.getKeyIds());
-        if (nonNull(keystoreAuthenticator)) {
+        if (keystoreAuthenticator != null) {
             return keystoreAuthenticator;
         }
 
         final Authenticator sharedKeyAuthenticator = OAuthUtils.buildAuthenticatorWithSharedSecret(config.getKey());
-        if (nonNull(sharedKeyAuthenticator)) {
+        if (sharedKeyAuthenticator != null) {
             return sharedKeyAuthenticator;
         }
 
@@ -85,7 +84,7 @@ final class TrellisUtils {
             filters.add(new OAuthFilter(getJwtAuthenticator(auth.getJwt())));
         }
 
-        if (auth.getBasic().getEnabled() && nonNull(auth.getBasic().getUsersFile())) {
+        if (auth.getBasic().getEnabled() && auth.getBasic().getUsersFile() != null) {
             filters.add(new BasicAuthFilter(auth.getBasic().getUsersFile()));
         }
 

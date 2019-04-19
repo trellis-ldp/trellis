@@ -13,7 +13,6 @@
  */
 package org.trellisldp.triplestore;
 
-import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.jena.query.DatasetFactory.wrap;
@@ -69,7 +68,7 @@ final class TriplestoreUtils {
     }
 
     public static Optional<Triple> nodesToTriple(final RDFNode s, final RDFNode p, final RDFNode o) {
-        if (nonNull(s) && nonNull(p) && nonNull(o)) {
+        if (s != null && p != null && o != null) {
             return of(rdf.createTriple((BlankNodeOrIRI) rdf.asRDFTerm(s.asNode()),
                             (IRI) rdf.asRDFTerm(p.asNode()), rdf.asRDFTerm(o.asNode())));
         }

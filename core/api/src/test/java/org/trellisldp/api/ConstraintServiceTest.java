@@ -13,7 +13,6 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
@@ -44,7 +43,7 @@ public class ConstraintServiceTest {
     private static final String NO_LDP_CONTAINER = "ldp:Container not among LDP types";
 
     private static Stream<IRI> ldpResourceTypes(final IRI interactionModel) {
-        return of(interactionModel).filter(type -> nonNull(LDP.getSuperclassOf(type)) || LDP.Resource.equals(type))
+        return of(interactionModel).filter(type -> LDP.getSuperclassOf(type) != null || LDP.Resource.equals(type))
             .flatMap(type -> concat(ldpResourceTypes(LDP.getSuperclassOf(type)), of(type)));
     }
 

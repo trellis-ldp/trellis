@@ -18,7 +18,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.synchronizedList;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
@@ -428,7 +427,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @return a connection to the RDF store
      */
     public static RDFConnection buildRDFConnection(final String location) {
-        if (nonNull(location)) {
+        if (location != null) {
             if (location.startsWith("http://") || location.startsWith("https://")) {
                 // Remote
                 LOGGER.info("Using remote Triplestore for persistence at {}", location);

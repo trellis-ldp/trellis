@@ -13,7 +13,6 @@
  */
 package org.trellisldp.test;
 
-import static java.util.Objects.isNull;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
@@ -137,7 +136,7 @@ public interface LdpBinaryTests extends CommonTests {
 
         // Discover the location of the description
         final String descriptionLocation = getDescription(getResourceLocation());
-        if (isNull(descriptionLocation)) {
+        if (descriptionLocation == null) {
             fail("No describedby Link header!");
         }
 

@@ -17,7 +17,6 @@ import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
 import static java.util.Collections.emptySet;
-import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.awaitility.Awaitility.await;
@@ -148,7 +147,7 @@ public final class TestUtils {
      */
     public static String getResourceAsString(final String path) {
         final InputStream is = TestUtils.class.getResourceAsStream(path);
-        if (nonNull(is)) {
+        if (is != null) {
             try {
                 return IOUtils.toString(is, UTF_8);
             } catch (final IOException ex) {

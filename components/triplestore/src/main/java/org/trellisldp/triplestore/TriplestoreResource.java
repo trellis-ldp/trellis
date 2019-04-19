@@ -13,7 +13,6 @@
  */
 package org.trellisldp.triplestore;
 
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.function.Predicate.isEqual;
@@ -119,7 +118,7 @@ public class TriplestoreResource implements Resource {
      * @return true if this resource exists; false otherwise
      */
     protected boolean exists() {
-        return nonNull(getModified()) && nonNull(getInteractionModel());
+        return getModified() != null && getInteractionModel() != null;
     }
 
     protected boolean isDeleted() {

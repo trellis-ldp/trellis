@@ -13,7 +13,6 @@
  */
 package org.trellisldp.test;
 
-import static java.util.Objects.isNull;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -134,9 +133,9 @@ public interface CommonTests {
     default Stream<Executable> checkRdfResponse(final Response res, final IRI ldpType, final MediaType mediaType) {
         return Stream.of(
                 () -> assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response"),
-                () -> assertTrue(isNull(mediaType) || res.getMediaType().isCompatible(mediaType),
+                () -> assertTrue(mediaType == null || res.getMediaType().isCompatible(mediaType),
                                  "Check for a compatible mediaType, if one is present"),
-                () -> assertTrue(isNull(mediaType) || mediaType.isCompatible(res.getMediaType()),
+                () -> assertTrue(mediaType == null || mediaType.isCompatible(res.getMediaType()),
                                  "Check again for a compatible mediaType, if one is present"),
                 () -> assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)),
                                  "Check for the presence of a ldp:Resource Link header"),
@@ -155,9 +154,9 @@ public interface CommonTests {
     default Stream<Executable> checkNonRdfResponse(final Response res, final MediaType mediaType) {
         return Stream.of(
                 () -> assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response"),
-                () -> assertTrue(isNull(mediaType) || res.getMediaType().isCompatible(mediaType),
+                () -> assertTrue(mediaType == null || res.getMediaType().isCompatible(mediaType),
                                  "Check for a compatible mediaType, if one exists"),
-                () -> assertTrue(isNull(mediaType) || mediaType.isCompatible(res.getMediaType()),
+                () -> assertTrue(mediaType == null || mediaType.isCompatible(res.getMediaType()),
                                  "Check again for a compatible mediaType, if one exists"),
                 () -> assertTrue(getLinks(res).stream().anyMatch(hasType(LDP.Resource)),
                                  "Check for the presence of an ldp:Resource Link header"),

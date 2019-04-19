@@ -13,7 +13,6 @@
  */
 package org.trellisldp.test;
 
-import static java.util.Objects.isNull;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -79,7 +78,7 @@ public interface MementoBinaryTests extends MementoResourceTests {
     default void testCanonicalHeaderDescriptions() {
         getMementos().forEach((memento, date) -> {
             final String description = getDescription(memento);
-            if (isNull(description)) {
+            if (description == null) {
                 fail("Could not find description link header!");
             }
             try (final Response res = target(description).request().accept("text/turtle").head()) {

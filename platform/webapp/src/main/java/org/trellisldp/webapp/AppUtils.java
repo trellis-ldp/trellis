@@ -15,8 +15,6 @@ package org.trellisldp.webapp;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Objects.isNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
 
@@ -48,21 +46,17 @@ final class AppUtils {
     }
 
     public static Collection<String> asCollection(final String value) {
-        return isNull(value) ? emptyList() :  asList(value.trim().split("\\s*,\\s*"));
+        return value != null ? asList(value.trim().split("\\s*,\\s*")) : emptyList();
     }
 
     public static Optional<CacheControlFilter> getCacheControlFilter() {
-        if (config.getOptionalValue(CONFIG_WEBAPP_CACHE_ENABLED, Boolean.class).orElse(Boolean.FALSE)) {
-            return of(new CacheControlFilter());
-        }
-        return empty();
+        return config.getOptionalValue(CONFIG_WEBAPP_CACHE_ENABLED, Boolean.class).filter(Boolean.TRUE::equals)
+            .map(x -> new CacheControlFilter());
     }
 
     public static Optional<CrossOriginResourceSharingFilter> getCORSFilter() {
-        if (config.getOptionalValue(CONFIG_WEBAPP_CORS_ENABLED, Boolean.class).orElse(Boolean.FALSE)) {
-            return of(new CrossOriginResourceSharingFilter());
-        }
-        return empty();
+        return config.getOptionalValue(CONFIG_WEBAPP_CORS_ENABLED, Boolean.class).filter(Boolean.TRUE::equals)
+            .map(x -> new CrossOriginResourceSharingFilter());
     }
 
     private AppUtils() {

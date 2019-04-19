@@ -13,7 +13,6 @@
  */
 package org.trellisldp.webdav;
 
-import static java.util.Objects.nonNull;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
@@ -128,14 +127,14 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     }
 
     private Session getSession(final Principal principal) {
-        if (nonNull(principal)) {
+        if (principal != null) {
             return new HttpSession(services.getAgentService().asAgent(principal.getName()));
         }
         return new HttpSession();
     }
 
     private static String getBaseUrl(final String baseUrl, final UriInfo uriInfo) {
-        if (nonNull(baseUrl)) {
+        if (baseUrl != null) {
             return baseUrl;
         }
         return uriInfo.getBaseUri().toString();

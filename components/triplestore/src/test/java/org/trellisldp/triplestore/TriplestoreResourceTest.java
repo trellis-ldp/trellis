@@ -16,7 +16,6 @@ package org.trellisldp.triplestore;
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
 import static java.util.Collections.singleton;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -299,13 +298,13 @@ public class TriplestoreResourceTest {
     private static Stream<Executable> checkLdpProperties(final Resource res, final IRI membershipResource,
             final IRI hasMemberRelation, final IRI memberOfRelation, final IRI insertedContentRelation) {
         return Stream.of(
-                () -> assertEquals(nonNull(membershipResource), res.getMembershipResource().isPresent(),
+                () -> assertEquals(membershipResource != null, res.getMembershipResource().isPresent(),
                                    "unexpected ldp:membershipResource property!"),
-                () -> assertEquals(nonNull(hasMemberRelation), res.getMemberRelation().isPresent(),
+                () -> assertEquals(hasMemberRelation != null, res.getMemberRelation().isPresent(),
                                    "unexpected ldp:hasMemberRelation property!"),
-                () -> assertEquals(nonNull(memberOfRelation), res.getMemberOfRelation().isPresent(),
+                () -> assertEquals(memberOfRelation != null, res.getMemberOfRelation().isPresent(),
                                    "unexpected ldp:isMemberOfRelation property!"),
-                () -> assertEquals(nonNull(insertedContentRelation), res.getInsertedContentRelation().isPresent(),
+                () -> assertEquals(insertedContentRelation != null, res.getInsertedContentRelation().isPresent(),
                                    "unexpected ldp::insertedContentRelation property!"),
                 () -> assertEquals(membershipResource, res.getMembershipResource().orElse(null),
                                    "Incorrect ldp:membershipResource!"),

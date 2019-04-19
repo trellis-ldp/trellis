@@ -157,16 +157,16 @@ public class LdpConstraints implements ConstraintService {
             violations.add(new ConstraintViolation(Trellis.InvalidRange, triple));
         }
         return violations;
-    };
+    }
 
     @Override
     public Stream<ConstraintViolation> constrainedBy(final IRI model, final Graph graph, final String domain) {
-        Stream<ConstraintViolation> violations = graph.stream()
+        final Stream<ConstraintViolation> violations = graph.stream()
                         .flatMap(t -> violatesModelConstraints(t, model, domain).stream());
         if (violatesCardinality(graph, model)) {
             final ConstraintViolation cardinalityViolation = new ConstraintViolation(Trellis.InvalidCardinality,
                             graph.stream().collect(toList()));
-            violations = concat(violations, Stream.of(cardinalityViolation));
+            return concat(violations, Stream.of(cardinalityViolation));
         }
         return violations;
     }

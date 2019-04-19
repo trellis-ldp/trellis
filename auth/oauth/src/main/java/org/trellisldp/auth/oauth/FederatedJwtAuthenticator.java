@@ -13,8 +13,6 @@
  */
 package org.trellisldp.auth.oauth;
 
-import static java.util.Objects.isNull;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtException;
@@ -51,7 +49,7 @@ public class FederatedJwtAuthenticator implements Authenticator {
         return Jwts.parser().setSigningKeyResolver(new SigningKeyResolverAdapter() {
             @Override
             public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
-                if (isNull(header.getKeyId())) {
+                if (header.getKeyId() == null) {
                     throw new JwtException("Missing Key ID (kid) header field");
                 }
                 try {

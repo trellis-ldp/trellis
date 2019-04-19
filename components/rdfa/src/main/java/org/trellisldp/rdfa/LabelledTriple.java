@@ -13,8 +13,6 @@
  */
 package org.trellisldp.rdfa;
 
-import static java.util.Objects.nonNull;
-
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Triple;
@@ -84,7 +82,7 @@ class LabelledTriple {
      * @return the predicate label
      */
     public String getPredicateLabel() {
-        if (nonNull(predLabel)) {
+        if (predLabel != null) {
             return predLabel;
         }
         return getPredicate();
@@ -96,7 +94,7 @@ class LabelledTriple {
      * @return the object label
      */
     public String getObjectLabel() {
-        if (nonNull(objLabel)) {
+        if (objLabel != null) {
             return objLabel;
         }
         return getObject();
