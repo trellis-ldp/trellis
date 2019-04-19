@@ -36,6 +36,12 @@ Docker pull command
 docker pull trellisldp/trellis
 ```
 
+Or, for the database persistence layer
+
+```
+docker pull trellisldp/trellis-ext-db
+```
+
 ## Building Trellis
 
 In most cases, you won't need to compile Trellis. Released components are available on Maven Central,
