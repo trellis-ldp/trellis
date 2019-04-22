@@ -54,8 +54,11 @@ public class JmsPublisher implements EventService {
     /** The configuration key controlling the JMS username. **/
     public static final String CONFIG_JMS_USERNAME = "trellis.jms.username";
 
-    /** THe configuration key controlling the JMS password. **/
+    /** The configuration key controlling the JMS password. **/
     public static final String CONFIG_JMS_PASSWORD = "trellis.jms.password";
+
+    /** The configuration key controlling whether to use a topic or queue. **/
+    public static final String CONFIG_JMS_USE_QUEUE = "trellis.jms.use.queue";
 
     private static final Logger LOGGER = getLogger(JmsPublisher.class);
     private static final ActivityStreamService service = of(load(ActivityStreamService.class))
@@ -76,7 +79,8 @@ public class JmsPublisher implements EventService {
 
     private JmsPublisher(final Config config) throws JMSException {
         this(buildJmsConnection(config).createSession(false, AUTO_ACKNOWLEDGE),
-                config.getValue(CONFIG_JMS_QUEUE_NAME, String.class));
+                config.getValue(CONFIG_JMS_QUEUE_NAME, String.class),
+                config.getOptionalValue(CONFIG_JMS_USE_QUEUE, Boolean.class).orElse(Boolean.TRUE));
     }
 
     /**
@@ -85,7 +89,8 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a connection error
      */
     public JmsPublisher(final Connection conn) throws JMSException {
-        this(conn.createSession(false, AUTO_ACKNOWLEDGE), getConfig().getValue(CONFIG_JMS_QUEUE_NAME, String.class));
+        this(conn.createSession(false, AUTO_ACKNOWLEDGE), getConfig().getValue(CONFIG_JMS_QUEUE_NAME, String.class),
+                getConfig().getOptionalValue(CONFIG_JMS_USE_QUEUE, Boolean.class).orElse(Boolean.TRUE));
     }
 
     /**
@@ -95,9 +100,24 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a connection error
      */
     public JmsPublisher(final Session session, final String queueName) throws JMSException {
+        this(session, queueName, true);
+    }
+
+    /**
+     * Create a new JMS Publisher.
+     * @param session the JMS session
+     * @param queueName the name of the queue
+     * @param useQueue whether to use a queue or a topic
+     * @throws JMSException when there is a connection error
+     */
+    public JmsPublisher(final Session session, final String queueName, final boolean useQueue) throws JMSException {
         requireNonNull(queueName, "JMS Queue name may not be null!");
         this.session = requireNonNull(session, "JMS Session may not be null!");
-        this.producer = session.createProducer(session.createQueue(queueName));
+        if (useQueue) {
+            this.producer = session.createProducer(session.createQueue(queueName));
+        } else {
+            this.producer = session.createProducer(session.createTopic(queueName));
+        }
     }
 
     @Override

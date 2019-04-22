@@ -32,6 +32,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 
 import org.apache.activemq.broker.BrokerService;
 import org.apache.commons.rdf.api.RDF;
@@ -72,10 +73,13 @@ public class JmsPublisherTest {
     private Queue mockQueue;
 
     @Mock
+    private Topic mockTopic;
+
+    @Mock
     private TextMessage mockMessage;
 
     @Mock
-    private MessageProducer mockProducer;
+    private MessageProducer mockProducer, mockTopicProducer;
 
     @BeforeAll
     public static void initialize() throws Exception {
@@ -101,8 +105,10 @@ public class JmsPublisherTest {
 
         when(mockConnection.createSession(anyBoolean(), eq(AUTO_ACKNOWLEDGE))).thenReturn(mockSession);
         when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
+        when(mockSession.createTopic(eq(queueName))).thenReturn(mockTopic);
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
+        when(mockSession.createProducer(any(Topic.class))).thenReturn(mockTopicProducer);
 
         doNothing().when(mockProducer).send(any(TextMessage.class));
     }
@@ -113,6 +119,24 @@ public class JmsPublisherTest {
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
+    }
+
+    @Test
+    public void testQueue() throws JMSException {
+        final EventService svc = new JmsPublisher(mockSession, queueName, true);
+        svc.emit(mockEvent);
+
+        verify(mockProducer).send(eq(mockMessage));
+        verify(mockTopicProducer, never()).send(eq(mockMessage));
+    }
+
+    @Test
+    public void testTopic() throws JMSException {
+        final EventService svc = new JmsPublisher(mockSession, queueName, false);
+        svc.emit(mockEvent);
+
+        verify(mockTopicProducer).send(eq(mockMessage));
+        verify(mockProducer, never()).send(eq(mockMessage));
     }
 
     @Test
@@ -141,8 +165,6 @@ public class JmsPublisherTest {
             System.clearProperty("trellis.jms.username");
         }
     }
-
-
 
     @Test
     public void testError() throws JMSException {
