@@ -58,6 +58,7 @@ notifications:
     topicName: "test"
     connectionString: example.com:1234
     some.other.value: foo
+    use.queue: true
 
 jsonld:
     cacheSize: 10

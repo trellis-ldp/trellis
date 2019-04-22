@@ -13,6 +13,7 @@
  */
 package org.trellisldp.app.triplestore;
 
+import static java.lang.Boolean.parseBoolean;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.app.config.NotificationsConfiguration.Type.JMS;
@@ -79,7 +80,9 @@ final class AppUtils {
         LOGGER.info("Connecting to JMS broker at {}", config.getConnectionString());
         final Connection jmsConnection = getJmsFactory(config).createConnection();
         environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
-        return new JmsPublisher(jmsConnection.createSession(false, AUTO_ACKNOWLEDGE), config.getTopicName());
+        final boolean useQueue = parseBoolean(config.any().getOrDefault("use.queue", "true"));
+
+        return new JmsPublisher(jmsConnection.createSession(false, AUTO_ACKNOWLEDGE), config.getTopicName(), useQueue);
     }
 
     public static EventService getNotificationService(final NotificationsConfiguration config,

@@ -85,7 +85,7 @@ public class TrellisConfigurationTest {
         assertEquals("example.com:1234", config.getNotifications().getConnectionString(), "Incorrect connect string!");
         assertEquals("foo", config.getNotifications().any().get("some.other.value"), "Incorrect custom value!");
         assertEquals("test", config.getNotifications().getTopicName(), "Incorrect topic name!");
-
+        assertEquals("true", config.getNotifications().any().get("use.queue"), "Incorrect custom value!");
     }
 
     @Test
