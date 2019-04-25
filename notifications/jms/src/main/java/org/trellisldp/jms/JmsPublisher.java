@@ -14,13 +14,10 @@
 package org.trellisldp.jms;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.ServiceLoader.load;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import javax.inject.Inject;
 import javax.jms.Connection;
@@ -60,15 +57,8 @@ public class JmsPublisher implements EventService {
     public static final String CONFIG_JMS_USE_QUEUE = "trellis.jms.use.queue";
 
     private static final Logger LOGGER = getLogger(JmsPublisher.class);
-    private static final ActivityStreamService service;
-
-    static {
-        final ServiceLoader<ActivityStreamService> serviceLoader = load(ActivityStreamService.class);
-        if (serviceLoader == null) throw new RuntimeTrellisException("No ActivityStream service available!");
-        final Iterator<ActivityStreamService> aStreamServices = serviceLoader.iterator();
-        if (!aStreamServices.hasNext()) throw new RuntimeTrellisException("No ActivityStream service available!");
-        service = aStreamServices.next();
-    }
+    private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
+                    .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     private final MessageProducer producer;
     private final Session session;

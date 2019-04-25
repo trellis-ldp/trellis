@@ -14,6 +14,7 @@
 package org.trellisldp.webdav;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
@@ -47,9 +48,9 @@ import org.trellisldp.http.WebAcFilter;
 public class TrellisWebDAVAuthzFilter extends WebAcFilter {
 
     private static final RDF rdf = getInstance();
-    private static final Set<String> readable = new HashSet<>(asList("PROPFIND"));
+    private static final Set<String> readable = singleton("PROPFIND");
     private static final Set<String> writable = new HashSet<>(asList("PROPPATCH", "COPY", "MOVE"));
-    private static final Set<String> appendable = new HashSet<>(asList("MKCOL"));
+    private static final Set<String> appendable = singleton("MKCOL");
 
     /**
      * Create a new WebAc-based auth filter.

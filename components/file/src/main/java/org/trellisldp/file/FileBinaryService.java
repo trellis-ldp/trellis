@@ -17,7 +17,6 @@ import static java.nio.file.Files.copy;
 import static java.nio.file.Files.delete;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -70,8 +69,14 @@ public class FileBinaryService implements BinaryService {
      */
     @Inject
     public FileBinaryService() {
-        this(of(load(IdentifierService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
-                .map(Iterator::next).orElseGet(DefaultIdentifierService::new));
+        this(getDefaultIdentiferService());
+    }
+
+    private static IdentifierService getDefaultIdentiferService() {
+        final ServiceLoader<IdentifierService> serviceLoader = load(IdentifierService.class);
+        if (serviceLoader == null) return new DefaultIdentifierService();
+        final Iterator<IdentifierService> idServices = serviceLoader.iterator();
+        return idServices.hasNext() ? idServices.next() : new DefaultIdentifierService();
     }
 
     /**
@@ -145,9 +150,11 @@ public class FileBinaryService implements BinaryService {
 
     private File getFileFromIdentifier(final IRI identifier) {
         requireNonNull(identifier, "Identifier may not be null!");
-        return of(identifier).map(IRI::getIRIString).filter(x -> x.startsWith("file:")).map(URI::create)
-            .map(URI::getSchemeSpecificPart).map(x -> trimStart(x, "/")).map(x -> new File(basePath, x))
-            .orElseThrow(() -> new IllegalArgumentException("Could not create File object from IRI: " + identifier));
+        final String iriString = identifier.getIRIString();
+        if (!iriString.startsWith("file:"))
+            throw new IllegalArgumentException("Could not create File object from IRI: " + identifier);
+        final String schemeSpecificPart = URI.create(iriString).getSchemeSpecificPart();
+        return new File(basePath, trimStart(schemeSpecificPart, "/"));
     }
 
     private static String trimStart(final String str, final String trim) {
