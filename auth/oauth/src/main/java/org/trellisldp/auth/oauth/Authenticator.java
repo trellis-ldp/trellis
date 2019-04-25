@@ -13,6 +13,7 @@
  */
 package org.trellisldp.auth.oauth;
 
+import static java.util.Optional.ofNullable;
 import static org.trellisldp.auth.oauth.OAuthUtils.withSubjectClaim;
 import static org.trellisldp.auth.oauth.OAuthUtils.withWebIdClaim;
 
@@ -37,14 +38,7 @@ public interface Authenticator {
      */
     default Optional<Principal> authenticate(final String token) {
         final Claims claims = parse(token);
-
-        // Use a webid claim, if one exists
-        final Optional<Principal> webid = withWebIdClaim(claims);
-        if (webid.isPresent()) {
-            return webid;
-        }
-
-        // Try generating a webid from other elements
-        return withSubjectClaim(claims);
+        // Use a webid claim, if one exists or try generating a webid from other elements
+        return ofNullable(withWebIdClaim(claims).orElse(withSubjectClaim(claims).orElse(null)));
     }
 }

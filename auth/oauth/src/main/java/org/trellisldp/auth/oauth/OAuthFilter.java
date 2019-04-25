@@ -15,7 +15,7 @@ package org.trellisldp.auth.oauth;
 
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.of;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -94,8 +94,8 @@ public class OAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
 
-        final boolean secure = ofNullable(requestContext.getSecurityContext()).filter(SecurityContext::isSecure)
-            .isPresent();
+        final SecurityContext securityContext = requestContext.getSecurityContext();
+        final boolean secure = securityContext != null && securityContext.isSecure();
 
         getOAuthToken(requestContext)
                         .map(token -> authenticate(token)
@@ -116,8 +116,11 @@ public class OAuthFilter implements ContainerRequestFilter {
     }
 
     private Optional<String> getOAuthToken(final ContainerRequestContext ctx) {
-        return ofNullable(ctx.getHeaderString(AUTHORIZATION)).map(h -> h.split(" ", 2))
-            .filter(pair -> pair[0].equalsIgnoreCase(SCHEME)).filter(pair -> pair.length == 2).map(pair -> pair[1]);
+        final String headerString = ctx.getHeaderString(AUTHORIZATION);
+        if (headerString == null) return empty();
+        final String[] pair = headerString.split(" ", 2);
+        if (pair.length == 2 && pair[0].equalsIgnoreCase(SCHEME)) return of(pair[1]);
+        return empty();
     }
 
     private static Authenticator buildAuthenticator() {

@@ -14,14 +14,11 @@
 package org.trellisldp.kafka;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.ServiceLoader;
 
 import javax.inject.Inject;
 
@@ -42,9 +39,8 @@ import org.trellisldp.api.RuntimeTrellisException;
 public class KafkaPublisher implements EventService {
 
     private static final Logger LOGGER = getLogger(KafkaPublisher.class);
-    private static final ActivityStreamService service = of(load(ActivityStreamService.class))
-        .map(ServiceLoader::iterator).filter(Iterator::hasNext).map(Iterator::next)
-        .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
+    private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
+                    .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     /** The configuration key controlling the name of the kafka topic. **/
     public static final String CONFIG_KAFKA_TOPIC = "trellis.kafka.topic";

@@ -71,7 +71,9 @@ public final class FileUtils {
     private static final JenaRDF rdf = new JenaRDF();
     private static final String SEP = " ";
 
-    // The length of the CRC directory partition
+    /**
+     * The length of the CRC directory partition.
+     */
     public static final int LENGTH = 2;
     public static final int MAX = 3;
 

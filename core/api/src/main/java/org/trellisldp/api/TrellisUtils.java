@@ -16,6 +16,9 @@ package org.trellisldp.api;
 import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.EnumSet.of;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.ServiceLoader.load;
 import static java.util.stream.Collector.Characteristics.CONCURRENT;
 import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
 import static java.util.stream.Collector.Characteristics.UNORDERED;
@@ -76,18 +79,6 @@ public final class TrellisUtils {
      */
     public static RDF getInstance() {
         return rdf;
-    }
-
-    /**
-     * Get a service.
-     * 
-     * @param service the interface or abstract class representing the service
-     * @param <T> the class of the service type
-     * @return the first service provider or empty Optional if no service providers are located
-     */
-    private static <T> Optional<T> findFirst(final Class<T> service) {
-        final Iterator<T> services = ServiceLoader.load(service).iterator();
-        return services.hasNext() ? Optional.of(services.next()) : Optional.empty();
     }
 
     /**
@@ -199,6 +190,20 @@ public final class TrellisUtils {
         public Set<Characteristics> characteristics() {
             return unmodifiableSet(of(UNORDERED, CONCURRENT));
         }
+    }
+
+    /**
+     * Get a service.
+     * 
+     * @param service the interface or abstract class representing the service
+     * @param <T> the class of the service type
+     * @return the first service provider or empty Optional if no service providers are located
+     */
+    public static <T> Optional<T> findFirst(final Class<T> service) {
+        final ServiceLoader<T> loader = load(service);
+        if (loader == null) return empty();
+        final Iterator<T> services = loader.iterator();
+        return services.hasNext() ? of(services.next()) : empty();
     }
 
     private TrellisUtils() {

@@ -15,7 +15,6 @@ package org.trellisldp.namespaces;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -102,12 +101,15 @@ public class NamespacesJsonContext implements NamespaceService {
         final Map<String, String> namespaces = new ConcurrentHashMap<>();
         if (file.exists()) {
             try {
-                of(MAPPER.readTree(new File(filePath))).filter(JsonNode::isObject).ifPresent(json ->
-                    json.fields().forEachRemaining(node -> {
-                        if (node.getValue().isTextual()) {
-                            namespaces.put(node.getKey(), node.getValue().textValue());
+                final JsonNode jsonTree = MAPPER.readTree(new File(filePath));
+                if (jsonTree != null && jsonTree.isObject()) {
+                    jsonTree.fields().forEachRemaining(node -> {
+                        final JsonNode value = node.getValue();
+                        if (value.isTextual()) {
+                            namespaces.put(node.getKey(), value.textValue());
                         }
-                    }));
+                    });
+                }
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }

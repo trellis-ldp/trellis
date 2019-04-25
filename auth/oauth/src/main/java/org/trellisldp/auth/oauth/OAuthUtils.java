@@ -17,7 +17,6 @@ import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import io.jsonwebtoken.Claims;
@@ -53,10 +52,10 @@ public final class OAuthUtils {
      * @return a Principal, if one can be generated from a webid claim
      */
     public static Optional<Principal> withWebIdClaim(final Claims claims) {
-        return ofNullable(claims.get(WEBID, String.class)).map(webid -> {
-            LOGGER.debug("Using JWT claim with webid: {}", webid);
-            return new OAuthPrincipal(webid);
-        });
+        final String webid = claims.get(WEBID, String.class);
+        if (webid == null) return empty();
+        LOGGER.debug("Using JWT claim with webid: {}", webid);
+        return of(new OAuthPrincipal(webid));
     }
 
     /**
@@ -65,29 +64,28 @@ public final class OAuthUtils {
      * @return a Principal, if one can be generated from standard claims
      */
     public static Optional<Principal> withSubjectClaim(final Claims claims) {
-        return ofNullable(claims.getSubject()).map(sub -> {
-            // use the sub claim if it looks like a webid
-            if (isUrl(sub)) {
-                LOGGER.debug("Using JWT claim with sub: {}", sub);
-                return new OAuthPrincipal(sub);
-            }
+        final String subject = claims.getSubject();
+        if (subject == null) return empty();
+        if (isUrl(subject)) {
+            LOGGER.debug("Using JWT claim with sub: {}", subject);
+            return of(new OAuthPrincipal(subject));
+        }
 
-            final String iss = claims.getIssuer();
-            // combine the iss and sub fields if that appears possible
-            if (iss != null && isUrl(iss)) {
-                final String webid = iss.endsWith("/") ? iss + sub : iss + "/" + sub;
-                LOGGER.debug("Using JWT claim with generated webid: {}", webid);
-                return new OAuthPrincipal(webid);
-            }
+        final String iss = claims.getIssuer();
+        // combine the iss and sub fields if that appears possible
+        if (iss != null && isUrl(iss)) {
+            final String webid = iss.endsWith("/") ? iss + subject : iss + "/" + subject;
+            LOGGER.debug("Using JWT claim with generated webid: {}", webid);
+            return of(new OAuthPrincipal(webid));
+        }
 
-            // Use an OIDC website claim, if one exists
-            if (claims.containsKey(WEBSITE)) {
-                final String site = claims.get(WEBSITE, String.class);
-                LOGGER.debug("Using JWT claim with website: {}", site);
-                return new OAuthPrincipal(site);
-            }
-            return null;
-        });
+        // Use an OIDC website claim, if one exists
+        if (claims.containsKey(WEBSITE)) {
+            final String site = claims.get(WEBSITE, String.class);
+            LOGGER.debug("Using JWT claim with website: {}", site);
+            return of(new OAuthPrincipal(site));
+        }
+        return empty();
     }
 
     /**

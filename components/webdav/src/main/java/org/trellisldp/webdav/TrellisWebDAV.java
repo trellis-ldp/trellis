@@ -21,8 +21,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -55,7 +53,6 @@ import static org.trellisldp.webdav.impl.WebDAVUtils.recursiveDelete;
 import static org.trellisldp.webdav.impl.WebDAVUtils.skolemizeQuads;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -118,6 +115,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * Implements WebDAV HTTP methods.
+ */
 @ApplicationScoped
 @Path("{path: .*}")
 public class TrellisWebDAV {
@@ -356,11 +356,10 @@ public class TrellisWebDAV {
     }
 
     private Response handleException(final Throwable err) {
-        if (!(err.getCause() instanceof ClientErrorException)) {
-            LOGGER.error("Trellis Error:", err);
-        }
-        return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
-            .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err)).getResponse();
+        final Throwable cause = err.getCause();
+        if (cause instanceof WebApplicationException) return ((WebApplicationException) cause).getResponse();
+        LOGGER.error("Trellis Error:", err);
+        return new WebApplicationException(err).getResponse();
     }
 
     private Function<Resource, CompletionStage<DavMultiStatus>> resourceToMultiStatus(final Document doc,
@@ -389,12 +388,17 @@ public class TrellisWebDAV {
                 });
             }
 
-            ofNullable(propertyUpdate.getSet()).map(DavSet::getProp)
-                .map(DavProp::getNodes).orElseGet(Collections::emptyList).stream().flatMap(elementToQuads(identifier))
-                    .forEach(quad -> {
+            final DavSet set = propertyUpdate.getSet();
+            if (set != null) {
+                final DavProp prop = set.getProp();
+                if (prop != null) {
+                    final List<Element> nodes = prop.getNodes();
+                    if (nodes != null) nodes.stream().flatMap(elementToQuads(identifier)).forEach(quad -> {
                         modifiedProperties.add(quad.getPredicate());
                         dataset.add(quad);
                     });
+                }
+            }
 
             response.setPropStats(modifiedProperties.stream().map(predicate -> {
                 final DavPropStat stat = new DavPropStat();
@@ -502,9 +506,12 @@ public class TrellisWebDAV {
     }
 
     private static Set<IRI> getProperties(final DavPropFind propfind) {
-        return ofNullable(propfind.getProp()).map(DavProp::getNodes).orElseGet(Collections::emptyList).stream()
-                .filter(el -> el.getNamespaceURI() != null)
-                .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet());
+        final DavProp prop = propfind.getProp();
+        if (prop == null) return emptySet();
+        final List<Element> nodes = prop.getNodes();
+        if (nodes == null) return emptySet();
+        return nodes.stream().filter(el -> el.getNamespaceURI() != null)
+                        .map(el -> rdf.createIRI(el.getNamespaceURI() + el.getLocalName())).collect(toSet());
     }
 
     private static Set<IRI> getRemoveProperties(final DavPropertyUpdate propertyUpdate) {
@@ -551,7 +558,7 @@ public class TrellisWebDAV {
         if (!propname && res.getInteractionModel().getIRIString().endsWith("Container")) {
             final Element el = doc.createElementNS(DAV, "resourcetype");
             el.appendChild(doc.createElementNS(DAV, "collection"));
-            return of(el);
+            return Optional.of(el);
         }
         return empty();
     }

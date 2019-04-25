@@ -14,10 +14,9 @@
 package org.trellisldp.amqp;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -27,8 +26,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
-import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
@@ -47,9 +44,9 @@ import org.trellisldp.api.RuntimeTrellisException;
 public class AmqpPublisher implements EventService {
 
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
-    private static final ActivityStreamService service = of(load(ActivityStreamService.class))
-        .map(ServiceLoader::iterator).filter(Iterator::hasNext).map(Iterator::next)
-        .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
+
+    private static final ActivityStreamService service = findFirst(ActivityStreamService.class)
+                    .orElseThrow(() -> new RuntimeTrellisException("No ActivityStream service available!"));
 
     /** The configuration key controlling the AMQP exchange name. **/
     public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";

@@ -17,10 +17,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
+import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -34,9 +33,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -77,8 +74,7 @@ public class HtmlSerializer implements RDFaWriterService {
      */
     @Inject
     public HtmlSerializer() {
-        this(of(load(NamespaceService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
-                .map(Iterator::next).orElseGet(NoopNamespaceService::new));
+        this(findFirst(NamespaceService.class).orElseGet(NoopNamespaceService::new));
     }
 
     /**
