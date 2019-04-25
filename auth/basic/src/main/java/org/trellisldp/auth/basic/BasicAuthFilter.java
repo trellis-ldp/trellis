@@ -13,8 +13,7 @@
  */
 package org.trellisldp.auth.basic;
 
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.empty;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
@@ -22,6 +21,7 @@ import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.Principal;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -96,20 +96,23 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     }
 
     private Optional<Principal> authenticate(final String credentials) {
-        return ofNullable(Credentials.parse(credentials)).flatMap(creds ->
-            of(file).filter(File::exists).map(File::toPath).flatMap(path -> {
-                try (final Stream<String> lineStream = BasicAuthUtils.uncheckedLines(path)) {
-                    return lineStream.map(String::trim).filter(line -> !line.startsWith("#"))
-                        .map(line -> line.split(":", 3)).filter(x -> x.length == 3)
-                        .filter(d -> d[0].trim().equals(creds.getUsername()) && d[1].trim().equals(creds.getPassword()))
-                        .map(d -> d[2].trim()).findFirst().map(BasicPrincipal::new);
-                }
-            }));
+        final Credentials creds = Credentials.parse(credentials);
+        if (creds == null  || !file.exists()) return empty();
+        final Path path = file.toPath();
+        try (final Stream<String> lineStream = BasicAuthUtils.uncheckedLines(path)) {
+            return lineStream.map(String::trim).filter(line -> !line.startsWith("#"))
+                .map(line -> line.split(":", 3)).filter(x -> x.length == 3)
+                .filter(d -> d[0].trim().equals(creds.getUsername()) && d[1].trim().equals(creds.getPassword()))
+                .map(d -> d[2].trim()).findFirst().map(BasicPrincipal::new);
+        }
     }
 
     private Optional<String> getCredentials(final ContainerRequestContext ctx) {
-        return ofNullable(ctx.getHeaderString(AUTHORIZATION)).map(h -> h.split(" ", 2))
-            .filter(pair -> pair[0].equalsIgnoreCase(BASIC_AUTH)).filter(pair -> pair.length == 2).map(pair -> pair[1]);
+        final String authHeader = ctx.getHeaderString(AUTHORIZATION);
+        if (authHeader == null) return empty();
+        final String[] pair = authHeader.split(" ", 2);
+        if (pair.length == 2 && pair[0].equalsIgnoreCase(BASIC_AUTH)) return Optional.of(pair[1]);
+        return empty();
     }
 
     private static final class BasiAuthSecurityContext implements SecurityContext {

@@ -104,8 +104,9 @@ public class NamespacesJsonContext implements NamespaceService {
                 final JsonNode jsonTree = MAPPER.readTree(new File(filePath));
                 if (jsonTree != null && jsonTree.isObject()) {
                     jsonTree.fields().forEachRemaining(node -> {
-                        if (node.getValue().isTextual()) {
-                            namespaces.put(node.getKey(), node.getValue().textValue());
+                        final JsonNode value = node.getValue();
+                        if (value.isTextual()) {
+                            namespaces.put(node.getKey(), value.textValue());
                         }
                     });
                 }
