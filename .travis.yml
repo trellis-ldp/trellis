@@ -56,12 +56,14 @@ jobs:
     - name: "Java 11"
       stage: test
       jdk: openjdk11
+      dist: xenial
       script: travis_retry ./gradlew check install
 
     # JDK 11 (modules)
     - name: "Java 11 (modules)"
       stage: test
       jdk: openjdk11
+      dist: xenial
       env: JOB=jpms
       script: travis_retry ./gradlew clean check install -Pjpms
 
