@@ -208,7 +208,7 @@ public interface LdpBasicContainerTests extends CommonTests {
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child4 = getContainerLocation() + "/child4";
         final boolean createUncontained = getConfig().getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
-            .orElse(Boolean.TRUE);
+            .orElse(Boolean.FALSE);
 
         // First fetch the container headers to get the initial ETag
         final EntityTag initialETag = getETag(getContainerLocation());

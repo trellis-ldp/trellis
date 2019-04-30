@@ -142,7 +142,7 @@ public class TrellisHttpResource {
         this.preconditionRequired = config.getOptionalValue(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class)
             .orElse(Boolean.FALSE);
         this.createUncontained = config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
-            .orElse(Boolean.TRUE);
+            .orElse(Boolean.FALSE);
     }
 
     /**

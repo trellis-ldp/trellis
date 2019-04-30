@@ -56,6 +56,7 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_LOCATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.*;
@@ -68,6 +69,7 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
@@ -1594,7 +1596,12 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
-        verify(myEventService, times(1)).emit(any());
+        if (getConfig().getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.FALSE)) {
+            // only one event if configured with PUT-UNCONTAINED
+            verify(myEventService, times(1)).emit(any());
+        } else {
+            verify(myEventService, times(2)).emit(any());
+        }
     }
 
     @Test

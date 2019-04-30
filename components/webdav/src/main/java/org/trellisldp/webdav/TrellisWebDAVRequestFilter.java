@@ -76,7 +76,7 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
 
     private TrellisWebDAVRequestFilter(final ServiceBundler services, final Config config) {
         this(services,
-                config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.TRUE),
+                config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.FALSE),
                 config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
