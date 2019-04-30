@@ -194,12 +194,13 @@ public final class TrellisUtils {
 
     /**
      * Get a service.
-     * 
+     *
      * @param service the interface or abstract class representing the service
      * @param <T> the class of the service type
      * @return the first service provider or empty Optional if no service providers are located
      */
-    public static <T> Optional<T> findFirst(final Class<T> service) {
+    /* package-private because of JPMS */
+    static <T> Optional<T> findFirst(final Class<T> service) {
         final ServiceLoader<T> loader = load(service);
         if (loader == null) return empty();
         final Iterator<T> services = loader.iterator();

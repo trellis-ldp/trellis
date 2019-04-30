@@ -17,15 +17,17 @@ import static java.nio.file.Files.copy;
 import static java.nio.file.Files.delete;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
+import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.findFirst;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
@@ -67,7 +69,7 @@ public class FileBinaryService implements BinaryService {
      */
     @Inject
     public FileBinaryService() {
-        this(findFirst(IdentifierService.class).orElseGet(DefaultIdentifierService::new));
+        this(getDefaultIdentifierService());
     }
 
     /**
@@ -155,4 +157,14 @@ public class FileBinaryService implements BinaryService {
         return str;
     }
 
+    private static IdentifierService getDefaultIdentifierService() {
+        final ServiceLoader<IdentifierService> loader = load(IdentifierService.class);
+        if (loader != null) {
+            final Iterator<IdentifierService> services = loader.iterator();
+            if (services.hasNext()) {
+                return services.next();
+            }
+        }
+        return new DefaultIdentifierService();
+    }
 }

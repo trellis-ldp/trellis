@@ -21,6 +21,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
+import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -28,15 +29,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.findFirst;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 import static org.trellisldp.webac.WrappedGraph.wrap;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -98,7 +100,7 @@ public class WebACService implements AccessControlService {
      */
     @Inject
     public WebACService() {
-        this(findFirst(ResourceService.class).orElse(null));
+        this(getDefaultResourceService());
     }
 
     /**
@@ -274,6 +276,17 @@ public class WebACService implements AccessControlService {
      */
     private static IRI cleanIdentifier(final IRI identifier) {
         return rdf.createIRI(cleanIdentifier(identifier.getIRIString()));
+    }
+
+    private static ResourceService getDefaultResourceService() {
+        final ServiceLoader<ResourceService> loader = load(ResourceService.class);
+        if (loader != null) {
+            final Iterator<ResourceService> services = loader.iterator();
+            if (services.hasNext()) {
+                return services.next();
+            }
+        }
+        return null;
     }
 
     @TrellisAuthorizationCache
