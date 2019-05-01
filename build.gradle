@@ -66,7 +66,7 @@ ext {
     /* OSGi */
     javaxElVersion = '2.2.5'
     javaxInterceptorVersion = '1.2.2'
-    jenaVersionRange = '[3.8,4)'
+    jenaVersionRange = '[3.11,4)'
     kafkaOsgiVersion = '2.2.0_1'
     karafVersion = '4.2.5'
     mustacheOsgiVersion = '0.9.6_1'
