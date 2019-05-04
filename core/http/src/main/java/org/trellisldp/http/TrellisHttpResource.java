@@ -70,6 +70,7 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.PATCH;
 import org.trellisldp.http.core.TrellisRequest;
@@ -173,7 +174,7 @@ public class TrellisHttpResource {
                     return null;
                 }).toCompletableFuture().join();
         } catch (final Exception ex) {
-            LOGGER.error("Error closing dataset: {}", ex.getMessage());
+            throw new RuntimeTrellisException("Error closing dataset", ex);
         }
     }
 
