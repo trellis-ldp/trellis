@@ -45,6 +45,7 @@ import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.webdav.Depth.DEPTH.INFINITY;
 import static org.trellisldp.webdav.Depth.DEPTH.ONE;
 import static org.trellisldp.webdav.Depth.DEPTH.ZERO;
+import static org.trellisldp.webdav.impl.WebDAVUtils.closeDataset;
 import static org.trellisldp.webdav.impl.WebDAVUtils.copy;
 import static org.trellisldp.webdav.impl.WebDAVUtils.depth1Copy;
 import static org.trellisldp.webdav.impl.WebDAVUtils.externalUrl;
@@ -83,6 +84,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
@@ -102,7 +104,6 @@ import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
 import org.trellisldp.vocabulary.Trellis;
-import org.trellisldp.webdav.impl.TrellisDataset;
 import org.trellisldp.webdav.xml.DavMultiStatus;
 import org.trellisldp.webdav.xml.DavProp;
 import org.trellisldp.webdav.xml.DavPropFind;
@@ -214,11 +215,11 @@ public class TrellisWebDAV {
             .thenCompose(future -> services.getResourceService().delete(Metadata.builder(identifier)
                     .interactionModel(LDP.Resource).build()))
             .thenCompose(future -> {
-                final TrellisDataset immutable = TrellisDataset.createDataset();
+                final Dataset immutable = rdf.createDataset();
                 services.getAuditService().creation(identifier, session).stream()
                     .map(skolemizeQuads(services.getResourceService(), baseUrl)).forEachOrdered(immutable::add);
-                return services.getResourceService().add(identifier, immutable.asDataset())
-                    .whenComplete((a, b) -> immutable.close());
+                return services.getResourceService().add(identifier, immutable)
+                    .whenComplete((a, b) -> closeDataset(immutable));
             })
             .thenAccept(future -> services.getEventService().emit(new SimpleEvent(externalUrl(identifier,
                 baseUrl), session.getAgent(), asList(PROV.Activity, AS.Delete), singletonList(LDP.Resource))))
@@ -366,7 +367,7 @@ public class TrellisWebDAV {
             final IRI identifier, final String location, final String baseUrl, final Session session,
             final DavPropertyUpdate propertyUpdate) {
         return resource -> {
-            final TrellisDataset dataset = TrellisDataset.createDataset();
+            final Dataset dataset = rdf.createDataset();
             final Set<IRI> removeProperties = getRemoveProperties(propertyUpdate);
             final DavMultiStatus multistatus = new DavMultiStatus();
             final DavResponse response = new DavResponse();
@@ -412,16 +413,16 @@ public class TrellisWebDAV {
             multistatus.setDescription("Response to property update request");
             multistatus.setResponses(singletonList(response));
 
-            final TrellisDataset immutable = TrellisDataset.createDataset();
+            final Dataset immutable = rdf.createDataset();
             services.getAuditService().creation(resource.getIdentifier(), session).stream()
                 .map(skolemizeQuads(services.getResourceService(), baseUrl)).forEachOrdered(immutable::add);
 
             return services.getResourceService()
-                .replace(Metadata.builder(resource).build(), dataset.asDataset())
-                .whenComplete((a, b) -> dataset.close())
+                .replace(Metadata.builder(resource).build(), dataset)
+                .whenComplete((a, b) -> closeDataset(dataset))
                 .thenCompose(future ->
-                        services.getResourceService().add(resource.getIdentifier(), immutable.asDataset()))
-                .whenComplete((a, b) -> immutable.close())
+                        services.getResourceService().add(resource.getIdentifier(), immutable))
+                .whenComplete((a, b) -> closeDataset(immutable))
                 .thenCompose(future ->
                         services.getMementoService().put(services.getResourceService(), resource.getIdentifier()))
                 .thenAccept(future -> services.getEventService().emit(new SimpleEvent(location, session.getAgent(),

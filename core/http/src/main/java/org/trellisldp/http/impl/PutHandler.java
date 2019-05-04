@@ -33,6 +33,7 @@ import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
+import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
@@ -53,6 +54,7 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -173,13 +175,13 @@ public class PutHandler extends MutatingLdpHandler {
 
         LOGGER.debug("Using LDP Type: {}", ldpType);
 
-        final TrellisDataset mutable = TrellisDataset.createDataset();
-        final TrellisDataset immutable = TrellisDataset.createDataset();
+        final Dataset mutable = rdf.createDataset();
+        final Dataset immutable = rdf.createDataset();
         LOGGER.debug("Persisting {} with mutable data:\n{}\n and immutable data:\n{}", getIdentifier(), mutable,
                         immutable);
         return handleResourceUpdate(mutable, immutable, builder, ldpType)
-            .whenComplete((a, b) -> mutable.close())
-            .whenComplete((a, b) -> immutable.close());
+            .whenComplete((a, b) -> closeDataset(mutable))
+            .whenComplete((a, b) -> closeDataset(immutable));
     }
 
     @Override
@@ -228,8 +230,8 @@ public class PutHandler extends MutatingLdpHandler {
         return heuristicType;
     }
 
-    private CompletionStage<ResponseBuilder> handleResourceUpdate(final TrellisDataset mutable,
-            final TrellisDataset immutable, final ResponseBuilder builder, final IRI ldpType) {
+    private CompletionStage<ResponseBuilder> handleResourceUpdate(final Dataset mutable,
+            final Dataset immutable, final ResponseBuilder builder, final IRI ldpType) {
 
         final Metadata.Builder metadata;
         final CompletionStage<Void> persistPromise;
@@ -288,7 +290,7 @@ public class PutHandler extends MutatingLdpHandler {
 
         return persistPromise.thenCompose(future -> allOf(
                 createOrReplace(metadata.build(), mutable).toCompletableFuture(),
-                getServices().getResourceService().add(internalId, immutable.asDataset()).toCompletableFuture()))
+                getServices().getResourceService().add(internalId, immutable).toCompletableFuture()))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }
@@ -313,13 +315,13 @@ public class PutHandler extends MutatingLdpHandler {
             || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
     }
 
-    private CompletionStage<Void> createOrReplace(final Metadata metadata, final TrellisDataset ds) {
+    private CompletionStage<Void> createOrReplace(final Metadata metadata, final Dataset dataset) {
         if (getResource() == null) {
             LOGGER.debug("Creating new resource {}", internalId);
-            return getServices().getResourceService().create(metadata, ds.asDataset());
+            return getServices().getResourceService().create(metadata, dataset);
         } else {
             LOGGER.debug("Replacing old resource {}", internalId);
-            return getServices().getResourceService().replace(metadata, ds.asDataset());
+            return getServices().getResourceService().replace(metadata, dataset);
         }
     }
 

@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import javax.ws.rs.core.PathSegment;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
@@ -39,6 +40,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.SimpleEvent;
@@ -69,18 +71,30 @@ public final class WebDAVUtils {
                     .map(IRI.class::cast).collect(toList())).toCompletableFuture().join();
         resources.forEach(id -> recursiveDelete(services, session, id, baseUrl));
         resources.stream().parallel().map(id -> {
-                final TrellisDataset immutable = TrellisDataset.createDataset();
+                final Dataset immutable = rdf.createDataset();
                 services.getAuditService().creation(id, session).stream()
                     .map(skolemizeQuads(services.getResourceService(), baseUrl)).forEachOrdered(immutable::add);
 
                 return services.getResourceService().delete(Metadata.builder(id).interactionModel(LDP.Resource)
                         .container(identifier).build())
-                    .thenCompose(future -> services.getResourceService().add(id, immutable.asDataset()))
-                    .whenComplete((a, b) -> immutable.close())
+                    .thenCompose(future -> services.getResourceService().add(id, immutable))
+                    .whenComplete((a, b) -> closeDataset(immutable))
                     .thenAccept(future -> services.getEventService().emit(new SimpleEvent(externalUrl(id, baseUrl),
                                 session.getAgent(), asList(PROV.Activity, AS.Delete), singletonList(LDP.Resource))));
             })
             .map(CompletionStage::toCompletableFuture).forEach(CompletableFuture::join);
+    }
+
+    /**
+     * Close a dataset.
+     * @param dataset the dataset
+     */
+    public static void closeDataset(final Dataset dataset) {
+        try {
+            dataset.close();
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing dataset", ex);
+        }
     }
 
     /**
@@ -174,17 +188,17 @@ public final class WebDAVUtils {
 
         try (final Stream<Quad> stream = resource.stream(Trellis.PreferUserManaged)) {
             LOGGER.debug("Copying {} to {}", resource.getIdentifier(), destination);
-            final TrellisDataset mutable = new TrellisDataset(stream.collect(toDataset()));
+            final Dataset mutable = stream.collect(toDataset());
 
-            return services.getResourceService().create(builder.build(), mutable.asDataset())
-                .whenComplete((a, b) -> mutable.close())
+            return services.getResourceService().create(builder.build(), mutable)
+                .whenComplete((a, b) -> closeDataset(mutable))
                 .thenCompose(future -> {
-                        final TrellisDataset immutable = TrellisDataset.createDataset();
+                        final Dataset immutable = rdf.createDataset();
                         services.getAuditService().creation(resource.getIdentifier(), session).stream()
                             .map(skolemizeQuads(services.getResourceService(), baseUrl)).forEachOrdered(immutable::add);
 
-                        return services.getResourceService().add(resource.getIdentifier(), immutable.asDataset())
-                            .whenComplete((a, b) -> immutable.close());
+                        return services.getResourceService().add(resource.getIdentifier(), immutable)
+                            .whenComplete((a, b) -> closeDataset(immutable));
                     })
                 .thenCompose(future -> services.getMementoService().put(services.getResourceService(),
                             resource.getIdentifier()))

@@ -24,6 +24,7 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
+import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
@@ -36,6 +37,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Quad;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
@@ -111,17 +113,16 @@ public class DeleteHandler extends MutatingLdpHandler {
 
         LOGGER.debug("Deleting {}", getIdentifier());
 
-        final TrellisDataset mutable = TrellisDataset.createDataset();
-        final TrellisDataset immutable = TrellisDataset.createDataset();
+        final Dataset mutable = rdf.createDataset();
+        final Dataset immutable = rdf.createDataset();
 
         return handleDeletion(mutable, immutable)
             .thenApply(future -> builder)
-            .whenComplete((a, b) -> immutable.close())
-            .whenComplete((a, b) -> mutable.close());
+            .whenComplete((a, b) -> closeDataset(immutable))
+            .whenComplete((a, b) -> closeDataset(mutable));
     }
 
-    private CompletionStage<Void> handleDeletion(final TrellisDataset mutable,
-            final TrellisDataset immutable) {
+    private CompletionStage<Void> handleDeletion(final Dataset mutable, final Dataset immutable) {
         if (ACL.equals(getRequest().getExt())) {
             return handleAclDeletion(mutable, immutable);
         }
@@ -129,8 +130,7 @@ public class DeleteHandler extends MutatingLdpHandler {
                 emitEvent(getInternalId(), AS.Delete, LDP.Resource));
     }
 
-    private CompletionStage<Void> handleAclDeletion(final TrellisDataset mutable,
-            final TrellisDataset immutable) {
+    private CompletionStage<Void> handleAclDeletion(final Dataset mutable, final Dataset immutable) {
 
         // When deleting just the ACL graph, keep the user managed triples intact
         try (final Stream<Quad> quads = getResource().stream(PreferUserManaged)) {
@@ -146,7 +146,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         return handleResourceReplacement(mutable, immutable);
     }
 
-    private CompletionStage<Void> handleResourceDeletion(final TrellisDataset immutable) {
+    private CompletionStage<Void> handleResourceDeletion(final Dataset immutable) {
         // Collect the audit data
         getServices().getAuditService().deletion(getResource().getIdentifier(), getSession()).stream()
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))
@@ -155,7 +155,6 @@ public class DeleteHandler extends MutatingLdpHandler {
         // delete the resource
         return allOf(
             getServices().getResourceService().delete(Metadata.builder(getResource()).build()).toCompletableFuture(),
-            getServices().getResourceService().add(getResource().getIdentifier(),
-                immutable.asDataset()).toCompletableFuture());
+            getServices().getResourceService().add(getResource().getIdentifier(), immutable).toCompletableFuture());
     }
 }

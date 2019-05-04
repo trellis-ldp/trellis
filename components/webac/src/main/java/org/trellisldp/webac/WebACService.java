@@ -32,7 +32,6 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
-import static org.trellisldp.webac.WrappedGraph.wrap;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,6 +59,7 @@ import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
@@ -226,8 +226,10 @@ public class WebACService implements AccessControlService {
 
     private List<Authorization> getAuthorizationFromGraph(final Graph graph) {
         return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
-                try (final WrappedGraph subGraph = wrap(graph.stream(subject, null, null).collect(toGraph()))) {
-                    return Authorization.from(subject, subGraph.getGraph());
+                try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
+                    return Authorization.from(subject, subGraph);
+                } catch (final Exception ex) {
+                    throw new RuntimeTrellisException("Error closing graph", ex);
                 }
             }).collect(toList());
     }
@@ -235,9 +237,9 @@ public class WebACService implements AccessControlService {
     private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
         if (resource.hasAcl()) {
-            try (final WrappedGraph graph = wrap(resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
-                        .collect(toGraph()))) {
-                final List<Authorization> authorizations = getAuthorizationFromGraph(graph.getGraph());
+            try (final Graph graph = resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
+                        .collect(toGraph())) {
+                final List<Authorization> authorizations = getAuthorizationFromGraph(graph);
                 // Check for any acl:default statements if checking for inheritance
                 if (inherited && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
                     return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
@@ -245,6 +247,8 @@ public class WebACService implements AccessControlService {
                 } else if (!inherited) {
                     return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
                 }
+            } catch (final Exception ex) {
+                throw new RuntimeTrellisException("Error closing graph", ex);
             }
         }
         // Nothing here, check the parent

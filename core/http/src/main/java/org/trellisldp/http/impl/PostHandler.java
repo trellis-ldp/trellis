@@ -34,6 +34,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
+import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -52,6 +53,7 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
@@ -169,16 +171,16 @@ public class PostHandler extends MutatingLdpHandler {
     public CompletionStage<ResponseBuilder> createResource(final ResponseBuilder builder) {
         LOGGER.debug("Creating resource as {}", getIdentifier());
 
-        final TrellisDataset mutable = TrellisDataset.createDataset();
-        final TrellisDataset immutable = TrellisDataset.createDataset();
+        final Dataset mutable = rdf.createDataset();
+        final Dataset immutable = rdf.createDataset();
 
         return handleResourceCreation(mutable, immutable, builder)
-            .whenComplete((a, b) -> mutable.close())
-            .whenComplete((a, b) -> immutable.close());
+            .whenComplete((a, b) -> closeDataset(mutable))
+            .whenComplete((a, b) -> closeDataset(immutable));
     }
 
-    private CompletionStage<ResponseBuilder> handleResourceCreation(final TrellisDataset mutable,
-            final TrellisDataset immutable, final ResponseBuilder builder) {
+    private CompletionStage<ResponseBuilder> handleResourceCreation(final Dataset mutable,
+            final Dataset immutable, final ResponseBuilder builder) {
 
         final CompletionStage<Void> persistPromise;
         final Metadata.Builder metadata;
@@ -211,8 +213,8 @@ public class PostHandler extends MutatingLdpHandler {
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
 
         return persistPromise.thenCompose(future -> allOf(
-                getServices().getResourceService().create(metadata.build(), mutable.asDataset()).toCompletableFuture(),
-                getServices().getResourceService().add(internalId, immutable.asDataset()).toCompletableFuture()))
+                getServices().getResourceService().create(metadata.build(), mutable).toCompletableFuture(),
+                getServices().getResourceService().add(internalId, immutable).toCompletableFuture()))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));

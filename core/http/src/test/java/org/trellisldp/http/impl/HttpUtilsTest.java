@@ -44,6 +44,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.BlankNode;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
@@ -55,6 +56,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.DC;
@@ -74,6 +76,9 @@ public class HttpUtilsTest {
 
     @Mock
     private InputStream mockInputStream;
+
+    @Mock
+    private Dataset mockDataset;
 
     @BeforeEach
     public void setUp() {
@@ -276,5 +281,11 @@ public class HttpUtilsTest {
         final Response res = assertThrows(ClientErrorException.class, () ->
                 HttpUtils.checkRequiredPreconditions(true, null, null)).getResponse();
         assertEquals(PRECONDITION_REQUIRED, res.getStatus());
+    }
+
+    @Test
+    public void testCloseDataset() throws Exception {
+        doThrow(new IOException()).when(mockDataset).close();
+        assertThrows(RuntimeTrellisException.class, () -> HttpUtils.closeDataset(mockDataset));
     }
 }

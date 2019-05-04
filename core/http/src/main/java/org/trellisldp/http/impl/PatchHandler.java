@@ -29,6 +29,7 @@ import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
+import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
@@ -54,6 +55,8 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -161,12 +164,12 @@ public class PatchHandler extends MutatingLdpHandler {
             getLinkTypes(getResource().getInteractionModel()).forEach(type -> builder.link(type, "type"));
         }
 
-        final TrellisDataset mutable = TrellisDataset.createDataset();
-        final TrellisDataset immutable = TrellisDataset.createDataset();
+        final Dataset mutable = rdf.createDataset();
+        final Dataset immutable = rdf.createDataset();
 
         return assembleResponse(mutable, immutable, builder)
-            .whenComplete((a, b) -> mutable.close())
-            .whenComplete((a, b) -> immutable.close());
+            .whenComplete((a, b) -> closeDataset(mutable))
+            .whenComplete((a, b) -> closeDataset(immutable));
     }
 
     @Override
@@ -177,24 +180,26 @@ public class PatchHandler extends MutatingLdpHandler {
     private List<Triple> updateGraph(final RDFSyntax syntax, final IRI graphName) {
         final List<Triple> triples;
         // Update existing graph
-        try (final TrellisGraph graph = TrellisGraph.createGraph()) {
+        try (final Graph graph = rdf.createGraph()) {
             try (final Stream<Quad> stream = getResource().stream(graphName)) {
                 stream.map(Quad::asTriple)
                       .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                       .forEachOrdered(graph::add);
             }
 
-            getServices().getIOService().update(graph.asGraph(), updateBody, syntax,
+            getServices().getIOService().update(graph, updateBody, syntax,
                 getBaseUrl() + getRequest().getPath() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                 || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing graph", ex);
         }
 
         return triples;
     }
 
-    private CompletionStage<ResponseBuilder> assembleResponse(final TrellisDataset mutable,
-            final TrellisDataset immutable, final ResponseBuilder builder) {
+    private CompletionStage<ResponseBuilder> assembleResponse(final Dataset mutable,
+            final Dataset immutable, final ResponseBuilder builder) {
 
         // Put triples in buffer, short-circuit on exception
         final List<Triple> triples;
@@ -259,7 +264,7 @@ public class PatchHandler extends MutatingLdpHandler {
     }
 
     private static Function<ConstraintService, Stream<ConstraintViolation>> handleConstraintViolations(
-            final TrellisDataset dataset, final IRI graphName, final IRI interactionModel) {
+            final Dataset dataset, final IRI graphName, final IRI interactionModel) {
         final IRI model = PreferAccessControl.equals(graphName) ? LDP.RDFSource : interactionModel;
         return service -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
                 .flatMap(g -> service.constrainedBy(model, g));

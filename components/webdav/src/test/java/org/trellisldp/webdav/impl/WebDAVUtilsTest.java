@@ -17,16 +17,21 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+
+import java.io.IOException;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
@@ -58,6 +63,13 @@ public class WebDAVUtilsTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         assertEquals("https://example.com/resource", WebDAVUtils.externalUrl(identifier, "https://example.com"));
         assertEquals("https://example.com/resource", WebDAVUtils.externalUrl(identifier, "https://example.com/"));
+    }
+
+    @Test
+    public void testCloseDataset() throws Exception {
+        final Dataset mockDataset = mock(Dataset.class);
+        doThrow(new IOException()).when(mockDataset).close();
+        assertThrows(RuntimeTrellisException.class, () -> WebDAVUtils.closeDataset(mockDataset));
     }
 
     private PathSegment asPathSegment(final String segment) {

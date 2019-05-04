@@ -53,6 +53,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
@@ -63,6 +64,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -399,6 +401,18 @@ public final class HttpUtils {
             final String ifUnmodifiedSince) {
         if (required && ifMatch == null && ifUnmodifiedSince == null) {
             throw new ClientErrorException(status(PRECONDITION_REQUIRED).build());
+        }
+    }
+
+    /**
+     * Close a dataset.
+     * @param dataset the dataset
+     */
+    public static void closeDataset(final Dataset dataset) {
+        try {
+            dataset.close();
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing dataset", ex);
         }
     }
 

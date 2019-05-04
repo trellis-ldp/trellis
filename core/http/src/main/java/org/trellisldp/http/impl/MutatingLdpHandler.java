@@ -38,6 +38,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -155,13 +156,12 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     /**
-     * Read an entity into the provided {@link TrellisDataset}.
+     * Read an entity into the provided {@link Dataset}.
      * @param graphName the target graph
      * @param syntax the entity syntax
      * @param dataset the dataset
      */
-    protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax,
-            final TrellisDataset dataset) {
+    protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax, final Dataset dataset) {
         try (final InputStream input = entity) {
             getServices().getIOService().read(input, syntax, getIdentifier())
                 .map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
@@ -250,9 +250,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
                         .whenComplete(HttpUtils.closeInputStreamAsync(entity));
     }
 
-    protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final TrellisDataset mutable) {
+    protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final Dataset mutable) {
         final Metadata.Builder builder = Metadata.builder(identifier).interactionModel(ixnModel);
-        mutable.asDataset().getGraph(Trellis.PreferUserManaged).ifPresent(graph -> {
+        mutable.getGraph(Trellis.PreferUserManaged).ifPresent(graph -> {
             graph.stream(identifier, LDP.membershipResource, null).findFirst().map(Triple::getObject)
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::membershipResource);
             graph.stream(identifier, LDP.hasMemberRelation, null).findFirst().map(Triple::getObject)
@@ -265,17 +265,16 @@ class MutatingLdpHandler extends BaseLdpHandler {
         return builder;
     }
 
-    protected CompletionStage<Void> handleResourceReplacement(final TrellisDataset mutable,
-            final TrellisDataset immutable) {
+    protected CompletionStage<Void> handleResourceReplacement(final Dataset mutable, final Dataset immutable) {
         final Metadata.Builder metadata = metadataBuilder(getResource().getIdentifier(),
                 getResource().getInteractionModel(), mutable);
         getResource().getContainer().ifPresent(metadata::container);
         getResource().getBinaryMetadata().ifPresent(metadata::binary);
         // update the resource
         return allOf(
-            getServices().getResourceService().replace(metadata.build(), mutable.asDataset()).toCompletableFuture(),
+            getServices().getResourceService().replace(metadata.build(), mutable).toCompletableFuture(),
             getServices().getResourceService().add(getResource().getIdentifier(),
-                immutable.asDataset()).toCompletableFuture());
+                immutable).toCompletableFuture());
     }
 
     protected Stream<Quad> getAuditUpdateData() {
