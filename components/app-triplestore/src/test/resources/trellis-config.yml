@@ -27,6 +27,7 @@ baseUrl:
 hubUrl:
 
 auth:
+    adminUsers: ["http://admin.example.com/#me"]
     webac:
         enabled: true
     jwt:

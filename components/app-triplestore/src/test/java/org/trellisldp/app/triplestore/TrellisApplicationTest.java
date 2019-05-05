@@ -240,6 +240,11 @@ public class TrellisApplicationTest implements MessageListener {
         }
 
         @Override
+        public String getAdminWebId() {
+            return "http://admin.example.com/#me";
+        }
+
+        @Override
         public String getJwtSecret() {
             return TrellisApplicationTest.this.JWT_KEY;
         }

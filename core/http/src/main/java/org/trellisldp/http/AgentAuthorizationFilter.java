@@ -33,6 +33,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.http.impl.HttpSession;
@@ -91,7 +92,13 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
         if (adminUsers.contains(name)) {
             ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent));
         } else {
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession(agentService.asAgent(name)));
+            final IRI webid = agentService.asAgent(name);
+            // don't permit admin agent to be generated from the agent service
+            if (AdministratorAgent.equals(webid)) {
+                ctx.setProperty(SESSION_PROPERTY, new HttpSession());
+            } else {
+                ctx.setProperty(SESSION_PROPERTY, new HttpSession(webid));
+            }
         }
     }
 
