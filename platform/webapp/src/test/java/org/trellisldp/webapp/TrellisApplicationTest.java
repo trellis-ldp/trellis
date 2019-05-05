@@ -118,6 +118,11 @@ public class TrellisApplicationTest extends JerseyTest {
         public String getJwtSecret() {
             return "EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA==";
         }
+
+        @Override
+        public String getAdminWebId() {
+            return "http://admin.example.com/#me";
+        }
     }
 
     @Nested

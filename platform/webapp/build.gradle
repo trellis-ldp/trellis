@@ -57,4 +57,5 @@ test {
     systemProperty 'trellis.namespaces.path', "$buildDir/namespaces.json"
     systemProperty 'trellis.io.jsonld.profiles', 'http://www.w3.org/ns/anno.jsonld'
     systemProperty 'trellis.triplestore.rdf.location', "$buildDir/data/rdf-" + new Random().nextInt(1000)
+    systemProperty 'trellis.http.agent.adminusers', 'http://admin.example.com/#me'
 }

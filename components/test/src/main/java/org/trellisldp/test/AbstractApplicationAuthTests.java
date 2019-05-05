@@ -37,7 +37,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * A convenience class for running the Auth tests.
@@ -74,6 +73,12 @@ public abstract class AbstractApplicationAuthTests {
      */
     public abstract String getUser2Credentials();
 
+    /**
+     * Get the WebID for an admin-level user.
+     * @return the admin webid
+     */
+    public abstract String getAdminWebId();
+
     @Nested
     @DisplayName("Administrator JWT Auth tests")
     @TestInstance(PER_CLASS)
@@ -81,8 +86,7 @@ public abstract class AbstractApplicationAuthTests {
 
         @Override
         public String getAuthorizationHeader() {
-            return buildJwt(Trellis.AdministratorAgent.getIRIString(),
-                    AbstractApplicationAuthTests.this.getJwtSecret());
+            return buildJwt(getAdminWebId(), AbstractApplicationAuthTests.this.getJwtSecret());
         }
     }
 
@@ -258,8 +262,7 @@ public abstract class AbstractApplicationAuthTests {
         protected void setUp() {
             final String acl = "acl";
             final String prefixAcl = "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n";
-            final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(),
-                    AbstractApplicationAuthTests.this.getJwtSecret());
+            final String jwt = buildJwt(getAdminWebId(), AbstractApplicationAuthTests.this.getJwtSecret());
 
             final String containerContent = getResourceAsString("/basicContainer.ttl");
             final String container;
