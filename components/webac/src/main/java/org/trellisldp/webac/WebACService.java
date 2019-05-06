@@ -37,7 +37,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -283,12 +282,9 @@ public class WebACService implements AccessControlService {
     }
 
     private static ResourceService getDefaultResourceService() {
-        final ServiceLoader<ResourceService> loader = load(ResourceService.class);
-        if (loader != null) {
-            final Iterator<ResourceService> services = loader.iterator();
-            if (services.hasNext()) {
-                return services.next();
-            }
+        final Iterator<ResourceService> services = load(ResourceService.class).iterator();
+        if (services.hasNext()) {
+            return services.next();
         }
         return null;
     }

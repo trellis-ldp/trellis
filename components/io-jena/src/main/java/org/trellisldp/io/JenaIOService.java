@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -391,23 +390,17 @@ public class JenaIOService implements IOService {
     }
 
     private static <T> T getDefaultService(final Class<T> service) {
-        final ServiceLoader<T> loader = load(service);
-        if (loader != null) {
-            final Iterator<T> services = loader.iterator();
-            if (services.hasNext()) {
-                return services.next();
-            }
+        final Iterator<T> services = load(service).iterator();
+        if (services.hasNext()) {
+            return services.next();
         }
         return null;
     }
 
     private static <T> T getDefaultService(final Class<T> service, final Supplier<T> supplier) {
-        final ServiceLoader<T> loader = load(service);
-        if (loader != null) {
-            final Iterator<T> services = loader.iterator();
-            if (services.hasNext()) {
-                return services.next();
-            }
+        final Iterator<T> services = load(service).iterator();
+        if (services.hasNext()) {
+            return services.next();
         }
         return supplier.get();
     }
