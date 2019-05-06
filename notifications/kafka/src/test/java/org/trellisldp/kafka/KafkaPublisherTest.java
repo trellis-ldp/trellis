@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 
@@ -32,8 +33,10 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -80,5 +83,11 @@ public class KafkaPublisherTest {
     @Test
     public void testDefaultKafka() {
         assertDoesNotThrow(() -> new KafkaPublisher());
+    }
+
+    @Test
+    public void testGetService() {
+        assertThrows(RuntimeTrellisException.class, () -> KafkaPublisher.getService(InputStream.class));
+        assertDoesNotThrow(() -> KafkaPublisher.getService(ActivityStreamService.class));
     }
 }

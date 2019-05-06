@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
@@ -47,7 +46,7 @@ public class AmqpPublisher implements EventService {
 
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
 
-    private static final ActivityStreamService service = getActivityStreamService();
+    private static final ActivityStreamService service = getService(ActivityStreamService.class);
 
     /** The configuration key controlling the AMQP exchange name. **/
     public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
@@ -153,13 +152,11 @@ public class AmqpPublisher implements EventService {
         return factory.newConnection();
     }
 
-    private static ActivityStreamService getActivityStreamService() {
-        final ServiceLoader<ActivityStreamService> loader = load(ActivityStreamService.class);
-        if (loader != null) {
-            final Iterator<ActivityStreamService> services = loader.iterator();
-            if (services.hasNext()) {
-                return services.next();
-            }
+    /** Package-private. **/
+    static <T> T getService(final Class<T> service) {
+        final Iterator<T> services = load(service).iterator();
+        if (services.hasNext()) {
+            return services.next();
         }
         throw new RuntimeTrellisException("No ActivityStream service available!");
     }

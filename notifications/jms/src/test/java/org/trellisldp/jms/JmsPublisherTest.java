@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
+import java.io.InputStream;
 import java.time.Instant;
 
 import javax.jms.Connection;
@@ -42,8 +43,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -174,5 +177,11 @@ public class JmsPublisherTest {
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
+    }
+
+    @Test
+    public void testGetService() {
+        assertThrows(RuntimeTrellisException.class, () -> JmsPublisher.getService(InputStream.class));
+        assertDoesNotThrow(() -> JmsPublisher.getService(ActivityStreamService.class));
     }
 }
