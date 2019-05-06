@@ -25,7 +25,6 @@ import static java.util.stream.Collector.Characteristics.UNORDERED;
 
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -89,11 +88,11 @@ public final class TrellisUtils {
      */
     public static Optional<IRI> getContainer(final IRI identifier) {
         if (identifier.getIRIString().equals(TRELLIS_DATA_PREFIX)) {
-            return Optional.empty();
+            return empty();
         }
         final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
         final int index = Math.max(path.lastIndexOf('/'), 0);
-        return Optional.of(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(0, index)));
+        return of(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(0, index)));
     }
 
     /**
@@ -201,9 +200,7 @@ public final class TrellisUtils {
      */
     /* package-private because of JPMS */
     static <T> Optional<T> findFirst(final Class<T> service) {
-        final ServiceLoader<T> loader = load(service);
-        if (loader == null) return empty();
-        final Iterator<T> services = loader.iterator();
+        final Iterator<T> services = load(service).iterator();
         return services.hasNext() ? of(services.next()) : empty();
     }
 
