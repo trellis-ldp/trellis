@@ -18,6 +18,7 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -32,6 +33,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -86,6 +88,7 @@ public class KafkaPublisherTest {
     }
 
     @Test
+    @EnabledOnJre(JAVA_8)
     public void testGetService() {
         assertThrows(RuntimeTrellisException.class, () -> KafkaPublisher.getService(InputStream.class));
         assertDoesNotThrow(() -> KafkaPublisher.getService(ActivityStreamService.class));

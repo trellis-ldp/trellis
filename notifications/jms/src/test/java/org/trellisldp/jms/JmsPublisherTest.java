@@ -19,6 +19,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -180,6 +182,7 @@ public class JmsPublisherTest {
     }
 
     @Test
+    @EnabledOnJre(JAVA_8)
     public void testGetService() {
         assertThrows(RuntimeTrellisException.class, () -> JmsPublisher.getService(InputStream.class));
         assertDoesNotThrow(() -> JmsPublisher.getService(ActivityStreamService.class));

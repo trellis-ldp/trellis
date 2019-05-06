@@ -35,7 +35,6 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -167,12 +166,9 @@ public class HtmlSerializer implements RDFaWriterService {
     }
 
     private static NamespaceService getDefaultNamespaceService() {
-        final ServiceLoader<NamespaceService> loader = load(NamespaceService.class);
-        if (loader != null) {
-            final Iterator<NamespaceService> services = loader.iterator();
-            if (services.hasNext()) {
-                return services.next();
-            }
+        final Iterator<NamespaceService> services = load(NamespaceService.class).iterator();
+        if (services.hasNext()) {
+            return services.next();
         }
         return new NoopNamespaceService();
     }

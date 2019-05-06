@@ -17,6 +17,7 @@ import static java.util.Optional.of;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toDataset;
 import static org.trellisldp.api.TrellisUtils.toGraph;
@@ -31,6 +32,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnJre;
 
 /**
  * @author acoburn
@@ -106,4 +108,10 @@ public class TrellisUtilsTest {
         assertFalse(TrellisUtils.getContainer(root).isPresent(), "Root resource has a parent!");
     }
 
+    @Test
+    @EnabledOnJre(JAVA_8)
+    public void testGetService() {
+        assertTrue(TrellisUtils.findFirst(RDF.class).isPresent());
+        assertFalse(TrellisUtils.findFirst(String.class).isPresent());
+    }
 }

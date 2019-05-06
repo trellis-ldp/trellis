@@ -18,6 +18,7 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
@@ -135,6 +137,7 @@ public class AmqpPublisherTest {
     }
 
     @Test
+    @EnabledOnJre(JAVA_8)
     public void testGetService() {
         assertThrows(RuntimeTrellisException.class, () -> AmqpPublisher.getService(InputStream.class));
         assertDoesNotThrow(() -> AmqpPublisher.getService(ActivityStreamService.class));

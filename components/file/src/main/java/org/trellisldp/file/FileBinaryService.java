@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
@@ -158,12 +157,9 @@ public class FileBinaryService implements BinaryService {
     }
 
     private static IdentifierService getDefaultIdentifierService() {
-        final ServiceLoader<IdentifierService> loader = load(IdentifierService.class);
-        if (loader != null) {
-            final Iterator<IdentifierService> services = loader.iterator();
-            if (services.hasNext()) {
-                return services.next();
-            }
+        final Iterator<IdentifierService> services = load(IdentifierService.class).iterator();
+        if (services.hasNext()) {
+            return services.next();
         }
         return new DefaultIdentifierService();
     }
