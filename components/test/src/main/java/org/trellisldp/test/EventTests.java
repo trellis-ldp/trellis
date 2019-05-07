@@ -215,7 +215,7 @@ public interface EventTests extends CommonTests {
         try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2, getJwtSecret()))
                 .delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Verify a successful LDP-RS DELETE response");
-            assertAll("Check the LDP-BC parent", checkResourceParentLdpBC(resource, agent2, AS.Delete, LDP.Resource));
+            assertAll("Check the LDP-BC parent", checkResourceParentLdpBC(resource, agent2, AS.Delete, LDP.RDFSource));
         }
     }
 
@@ -261,7 +261,7 @@ public interface EventTests extends CommonTests {
                 .delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful LDP-RS DELETE");
             assertAll("Check the LDP-DC parent resource",
-                    checkResourceParentLdpDC(resource, agent2, AS.Delete, LDP.Resource, LDP.Container));
+                    checkResourceParentLdpDC(resource, agent2, AS.Delete, LDP.RDFSource, LDP.Container));
         }
     }
 
@@ -343,7 +343,7 @@ public interface EventTests extends CommonTests {
                 .delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful DELETE in an LDP-IC");
             assertAll("Check the LDP-IC parent resource",
-                    checkResourceParentLdpIC(resource, agent2, AS.Delete, LDP.Resource, LDP.Container));
+                    checkResourceParentLdpIC(resource, agent2, AS.Delete, LDP.RDFSource, LDP.Container));
         }
     }
 
