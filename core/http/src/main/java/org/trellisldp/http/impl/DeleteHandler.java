@@ -127,7 +127,7 @@ public class DeleteHandler extends MutatingLdpHandler {
             return handleAclDeletion(mutable, immutable);
         }
         return handleResourceDeletion(immutable).thenCompose(future ->
-                emitEvent(getInternalId(), AS.Delete, LDP.Resource));
+                emitEvent(getInternalId(), AS.Delete, getResource().getInteractionModel()));
     }
 
     private CompletionStage<Void> handleAclDeletion(final TrellisDataset mutable,

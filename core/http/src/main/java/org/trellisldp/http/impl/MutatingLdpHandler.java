@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.toQuad;
+import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 
@@ -187,7 +188,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
     protected CompletionStage<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
         // Always notify about updates for the resource in question
         getServices().getEventService().emit(new SimpleEvent(getUrl(identifier), getSession().getAgent(),
-                    asList(PROV.Activity, activityType), asList(resourceType)));
+                    asList(PROV.Activity, activityType), ldpResourceTypes(resourceType).collect(toList())));
         // If this was an update and the parent is an ldp:IndirectContainer,
         // notify about the member resource (if it exists)
         if (AS.Update.equals(activityType) && LDP.IndirectContainer.equals(getParentModel())) {
@@ -199,7 +200,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
             final IRI id = getParentIdentifier();
             if (HttpUtils.isContainer(model)) {
                 getServices().getEventService().emit(new SimpleEvent(getUrl(id),
-                                getSession().getAgent(), asList(PROV.Activity, AS.Update), asList(model)));
+                                getSession().getAgent(), asList(PROV.Activity, AS.Update),
+                                ldpResourceTypes(model).collect(toList())));
                 // If the parent's membership resource is different than the parent itself,
                 // notify about that membership resource, too (if it exists)
                 if (!Objects.equals(id, getParentMembershipResource())) {
@@ -313,7 +315,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                     if (nonNull(res.getIdentifier())) {
                         getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
                                     getSession().getAgent(), asList(PROV.Activity, AS.Update),
-                                    asList(res.getInteractionModel())));
+                                    ldpResourceTypes(res.getInteractionModel()).collect(toList())));
                     }
                 }).toCompletableFuture());
         }
