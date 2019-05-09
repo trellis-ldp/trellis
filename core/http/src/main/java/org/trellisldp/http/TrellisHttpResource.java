@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -429,10 +428,12 @@ public class TrellisHttpResource {
     }
 
     private Response handleException(final Throwable err) {
-        if (!(err.getCause() instanceof ClientErrorException || err.getCause() instanceof RedirectionException)) {
-            LOGGER.error("Trellis Error:", err);
-        }
-        return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
-            .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err)).getResponse();
+        final Throwable cause = err.getCause();
+        if (cause instanceof ClientErrorException) LOGGER.debug("Client error: ", err);
+        else if (cause instanceof RedirectionException) LOGGER.debug("Redirection: ", err);
+        else LOGGER.error("Error:", err);
+        return cause instanceof WebApplicationException
+                        ? ((WebApplicationException) cause).getResponse()
+                        : new WebApplicationException(err).getResponse();
     }
 }
