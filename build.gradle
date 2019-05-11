@@ -432,6 +432,7 @@ subprojects { subproj ->
 
     afterReleaseBuild.dependsOn docs
     afterReleaseBuild.dependsOn publish
+    afterReleaseBuild.dependsOn assemble
 
     afterEvaluate {
         if (subproj.name in jacocoTestProjects) {
