@@ -392,8 +392,36 @@ public class GetHandlerTest extends BaseTestHandler {
         final Response res = handler.addMementoHeaders(handler.standardHeaders(handler.initialize(mockResource)),
                 mementos).build();
 
-        final List<Link> links = res.getStringHeaders().get(LINK).stream().map(Link::valueOf)
-            .filter(link -> "memento".equals(link.getRel())).collect(toList());
-        assertEquals(2L, links.size());
+        assertAll("Check MementoHeaders",
+                checkMementoLinks(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList()), 2L));
+    }
+
+    @Test
+    public void testLimitMementoHeaders() {
+        final Instant time1 = now();
+        final Instant time2 = time1.plusSeconds(10L);
+        final Instant time3 = time1.plusSeconds(20L);
+        final Instant time4 = time1.plusSeconds(30L);
+        final Instant time5 = time1.plusSeconds(40L);
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        mementos.add(time1);
+        mementos.add(time2);
+        mementos.add(time3);
+        mementos.add(time4);
+        mementos.add(time5);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, false,
+                null, baseUrl);
+        final Response res = handler.addMementoHeaders(handler.standardHeaders(handler.initialize(mockResource)),
+                mementos).build();
+
+        assertAll("Check MementoHeaders",
+                checkMementoLinks(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList()), 2L));
+    }
+
+    private Stream<Executable> checkMementoLinks(final List<Link> links, final long mementos) {
+        return Stream.of(
+                () -> assertEquals(mementos, links.stream().filter(link -> link.getRels().contains("memento")).count()),
+                () -> assertEquals(1L, links.stream().filter(link -> link.getRels().contains("first")).count()),
+                () -> assertEquals(1L, links.stream().filter(link -> link.getRels().contains("last")).count()));
     }
 }

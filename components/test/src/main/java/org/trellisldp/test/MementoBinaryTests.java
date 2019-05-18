@@ -44,7 +44,7 @@ public interface MementoBinaryTests extends MementoResourceTests {
     default Map<String, String> getMementos() {
         final Map<String, String> mementos = new HashMap<>();
         try (final Response res = target(getBinaryLocation()).request().head()) {
-            getLinks(res).stream().filter(link -> link.getRel().equals("memento"))
+            getLinks(res).stream().filter(link -> link.getRels().contains("memento"))
                 .filter(l -> l.getParams().containsKey("datetime"))
                 .forEach(link -> mementos.put(link.getUri().toString(), link.getParams().get("datetime")));
         }
@@ -60,10 +60,10 @@ public interface MementoBinaryTests extends MementoResourceTests {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().head()) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
-                assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("canonical"))
+                assertTrue(getLinks(res).stream().filter(link -> link.getRels().contains("canonical"))
                         .anyMatch(link -> link.getUri().toString().equals(memento)),
                         "Check for a rel=canonical Link header");
-                assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("describedby"))
+                assertTrue(getLinks(res).stream().filter(link -> link.getRels().contains("describedby"))
                         .anyMatch(link -> link.getUri().toString().equals(memento + "&ext=description")),
                         "Check for a rel=describedby Link header");
             }
@@ -83,10 +83,10 @@ public interface MementoBinaryTests extends MementoResourceTests {
             }
             try (final Response res = target(description).request().accept("text/turtle").head()) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
-                assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("canonical"))
+                assertTrue(getLinks(res).stream().filter(link -> link.getRels().contains("canonical"))
                         .anyMatch(link -> link.getUri().toString().equals(memento + "&ext=description")),
                         "Check for a rel=canonical Link header");
-                assertTrue(getLinks(res).stream().filter(link -> link.getRel().equals("describes"))
+                assertTrue(getLinks(res).stream().filter(link -> link.getRels().contains("describes"))
                         .anyMatch(link -> link.getUri().toString().equals(memento)),
                         "Check for a rel=describes Link header");
             }
@@ -107,12 +107,12 @@ public interface MementoBinaryTests extends MementoResourceTests {
                 responses.put(memento, readEntityAsString(res.getEntity()));
             }
         });
-        assertEquals(3L, responses.size(), "Check for 3 mementos");
+        assertEquals(2L, responses.size(), "Check for 2 mementos");
         responses.forEach((response, content) ->
             assertTrue(content.startsWith("This is a text file."), "Check the binary content of the mementos"));
-        assertEquals(3L, responses.values().size(), "Check the number of Memento responses");
+        assertEquals(2L, responses.values().size(), "Check the number of Memento responses");
         final Set<String> values = new HashSet<>(responses.values());
-        assertEquals(3L, values.size(), "Check the number of distinct Memento responses");
+        assertEquals(2L, values.size(), "Check the number of distinct Memento responses");
     }
 
     /**

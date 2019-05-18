@@ -643,11 +643,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
+        System.out.println(entity);
         final List<Link> entityLinks = stream(entity.split(",\n")).map(Link::valueOf).collect(toList());
-        assertEquals(4L, entityLinks.size(), "Incorrect number of Link headers!");
+        assertEquals(5L, entityLinks.size(), "Incorrect number of Link headers!");
         final List<Link> links = getLinks(res);
-        assertAll("Check link headers", entityLinks.stream().map(l ->
-                    () -> assertTrue(links.contains(l), "Link not in response: " + l)));
+        final List<String> rels = asList("memento", "original", "timegate", "timemap", "first", "last");
+        assertAll("Check link headers", links.stream().filter(l -> l.getRels().stream().anyMatch(rels::contains))
+                .map(l -> () -> assertTrue(entityLinks.stream().map(Link::getUri).anyMatch(l.getUri()::equals),
+                        "Link not in response: " + l)));
     }
 
     @Test
@@ -2520,20 +2523,15 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     private Stream<Executable> checkMementoHeaders(final Response res, final String path) {
         final List<Link> links = getLinks(res);
         return Stream.of(
-                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
+                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("first") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
                         .equals(l.getParams().get("datetime")) &&
                     l.getUri().toString().equals(getBaseUrl() + path + "?version=1496260729")),
                                  "Missing expected first rel=memento Link!"),
-                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
-                    RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 1000))
-                        .equals(l.getParams().get("datetime")) &&
-                    l.getUri().toString().equals(getBaseUrl() + path + "?version=1496261729")),
-                                 "Missing expected second rel=memento Link!"),
-                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("memento") &&
+                () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("last") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(time).equals(l.getParams().get("datetime")) &&
                     l.getUri().toString().equals(getBaseUrl() + path + "?version=1496262729")),
-                                 "Missing expected third rel=memento Link!"),
+                                 "Missing expected last rel=memento Link!"),
                 () -> assertTrue(links.stream().anyMatch(l -> l.getRels().contains("timemap") &&
                     RFC_1123_DATE_TIME.withZone(UTC).format(ofEpochSecond(timestamp - 2000))
                         .equals(l.getParams().get("from")) &&

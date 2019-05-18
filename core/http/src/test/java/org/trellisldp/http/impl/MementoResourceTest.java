@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +26,11 @@ import static org.trellisldp.http.core.HttpConstants.FROM;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.core.HttpConstants.UNTIL;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.ws.rs.core.Link;
 
@@ -72,4 +78,123 @@ public class MementoResourceTest {
             .param(DATETIME, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
         assertFalse(mr.filterLinkParams(link).getParams().containsKey(DATETIME));
     }
+
+    @Test
+    public void testMementoHeadersSingle() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final Instant time = now();
+        mementos.add(time);
+
+        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time).collect(toList());
+        assertEquals(2L, links.size());
+        checkMementoHeaders(links, 0L, 0L, 1L);
+    }
+
+    @Test
+    public void testMementoHeadersMultipleFirst() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final Instant time = now();
+        mementos.add(time);
+        mementos.add(time.plusSeconds(1L));
+        mementos.add(time.plusSeconds(2L));
+
+        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time)
+            .collect(toList());
+        assertEquals(4L, links.size());
+        checkMementoHeaders(links, 0L, 1L, 3L);
+    }
+
+
+    @Test
+    public void testMementoHeadersMultipleMiddle() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final Instant time = now();
+        mementos.add(time);
+        mementos.add(time.plusSeconds(1L));
+        mementos.add(time.plusSeconds(2L));
+
+        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.plusSeconds(1L))
+            .collect(toList());
+        assertEquals(3L, links.size());
+        checkMementoHeaders(links, 1L, 1L, 2L);
+    }
+
+    @Test
+    public void testMementoHeadersMultipleLast() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final Instant time = now();
+        mementos.add(time);
+        mementos.add(time.plusSeconds(1L));
+        mementos.add(time.plusSeconds(2L));
+
+        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.plusSeconds(2L))
+            .collect(toList());
+        assertEquals(4L, links.size());
+        checkMementoHeaders(links, 1L, 0L, 3L);
+    }
+
+    @Test
+    public void testMementoHeadersMultipleBeyond() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final Instant time = now();
+        mementos.add(time);
+        mementos.add(time.plusSeconds(1L));
+        mementos.add(time.plusSeconds(2L));
+
+        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.plusSeconds(3L))
+            .collect(toList());
+        assertEquals(3L, links.size());
+        checkMementoHeaders(links, 0L, 0L, 2L);
+    }
+
+    @Test
+    public void testMementoHeadersMultiplePrecede() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final Instant time = now();
+        mementos.add(time);
+        mementos.add(time.plusSeconds(1L));
+        mementos.add(time.plusSeconds(2L));
+
+        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.minusSeconds(1L))
+            .collect(toList());
+        assertEquals(3L, links.size());
+        checkMementoHeaders(links, 0L, 0L, 2L);
+}
+
+    @Test
+    public void testMementoLinksEmpty() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final List<Link> links = MementoResource.getMementoLinks(identifier, mementos).collect(toList());
+        assertTrue(links.isEmpty());
+    }
+
+    @Test
+    public void testMementoLinksSingle() {
+        final String identifier = "http://example.com/resource";
+        final SortedSet<Instant> mementos = new TreeSet<>();
+        final Instant time = now();
+        mementos.add(time);
+        final List<Link> links = MementoResource.getMementoLinks(identifier, mementos).collect(toList());
+        assertEquals(3L, links.size());
+        checkMementoHeaders(links, 0L, 0L, 1L);
+        assertEquals(1L, links.stream().filter(l -> l.getRels().contains("timegate")).count());
+        assertEquals(1L, links.stream().filter(l -> l.getRels().contains("original")).count());
+    }
+
+    private void checkMementoHeaders(final List<Link> links, final long prev, final long next, final long mementos) {
+        assertEquals(1L, links.stream().filter(l -> l.getRels().contains("timemap")).count());
+        assertEquals(1L, links.stream().filter(l -> l.getRels().contains("first")).count());
+        assertEquals(1L, links.stream().filter(l -> l.getRels().contains("last")).count());
+        assertEquals(prev, links.stream().filter(l -> l.getRels().contains("prev")).count());
+        assertEquals(next, links.stream().filter(l -> l.getRels().contains("next")).count());
+        assertEquals(mementos, links.stream().filter(l -> l.getRels().contains("memento")).count());
+    }
+
 }
