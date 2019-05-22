@@ -118,6 +118,13 @@ public class TrellisHttpResource {
         this(trellis, getConfig());
     }
 
+    /**
+     * Used only to support CDI.
+     */
+    TrellisHttpResource() {
+        this(null);
+    }
+
     private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
         this(trellis, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
     }

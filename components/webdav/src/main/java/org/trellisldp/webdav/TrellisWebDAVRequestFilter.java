@@ -73,6 +73,13 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     public TrellisWebDAVRequestFilter(final ServiceBundler services) {
         this(services, getConfig());
     }
+    
+    /**
+     * Use only to support CDI.
+     */
+    TrellisWebDAVRequestFilter() {
+        this(null);
+    }
 
     private TrellisWebDAVRequestFilter(final ServiceBundler services, final Config config) {
         this(services,
