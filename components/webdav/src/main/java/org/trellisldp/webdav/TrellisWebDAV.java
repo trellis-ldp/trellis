@@ -142,6 +142,13 @@ public class TrellisWebDAV {
         this(services, getConfig());
     }
 
+    /**
+     * Used only to support CDI.
+     */
+    TrellisWebDAV() {
+        this(null);
+    }
+
     private TrellisWebDAV(final ServiceBundler services, final Config config) {
         this(services, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
