@@ -101,6 +101,6 @@ public interface TimemapGenerator {
      * @return true if this is a valid link; false otherwise
      */
     default boolean isMementoLink(Link link) {
-        return MEMENTO.equals(link.getRel()) && link.getParams().containsKey(DATETIME);
+        return link.getRels().contains(MEMENTO) && link.getParams().containsKey(DATETIME);
     }
 }

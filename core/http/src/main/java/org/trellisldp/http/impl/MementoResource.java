@@ -18,12 +18,15 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Optional.of;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.HttpMethod.OPTIONS;
@@ -54,9 +57,7 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.SortedSet;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.Link;
@@ -75,9 +76,13 @@ import org.trellisldp.http.core.TrellisRequest;
  */
 public final class MementoResource {
 
+    private static final String FIRST = "first";
+    private static final String LAST = "last";
+    private static final String PREV = "prev";
+    private static final String NEXT = "next";
     private static final String TIMEMAP_PARAM = "?ext=timemap";
-    private static final TimemapGenerator timemap = of(load(TimemapGenerator.class)).map(ServiceLoader::iterator)
-        .filter(Iterator::hasNext).map(Iterator::next).orElseGet(() -> new TimemapGenerator() { });
+    private static final String VERSION_PARAM = "?version=";
+    private static final TimemapGenerator timemap = loadTimemapGenerator();
 
     private final ServiceBundler trellis;
     private final boolean includeMementoDates;
@@ -106,10 +111,10 @@ public final class MementoResource {
 
         final List<MediaType> acceptableTypes = req.getAcceptableMediaTypes();
         final String identifier = fromUri(baseUrl).path(req.getPath()).build().toString();
-        final List<Link> links = getMementoLinks(identifier, mementos).collect(toList());
+        final List<Link> allLinks = getMementoLinks(identifier, mementos).collect(toList());
 
         final ResponseBuilder builder = ok().link(identifier, ORIGINAL + " " + TIMEGATE);
-        builder.links(links.stream().map(this::filterLinkParams).toArray(Link[]::new))
+        builder.links(getMementoHeaders(identifier, mementos).map(this::filterLinkParams).toArray(Link[]::new))
             .link(Resource.getIRIString(), TYPE).link(RDFSource.getIRIString(), TYPE)
             .header(ALLOW, join(",", GET, HEAD, OPTIONS));
 
@@ -122,7 +127,7 @@ public final class MementoResource {
             final StreamingOutput stream = new StreamingOutput() {
                 @Override
                 public void write(final OutputStream out) throws IOException {
-                    trellis.getIOService().write(timemap.asRdf(identifier, links), out, syntax, jsonldProfile);
+                    trellis.getIOService().write(timemap.asRdf(identifier, allLinks), out, syntax, jsonldProfile);
                 }
             };
 
@@ -130,7 +135,7 @@ public final class MementoResource {
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)
-            .entity(links.stream().map(this::filterLinkParams).map(Link::toString).collect(joining(",\n")) + "\n");
+            .entity(allLinks.stream().map(this::filterLinkParams).map(Link::toString).collect(joining(",\n")) + "\n");
     }
 
     /**
@@ -145,9 +150,9 @@ public final class MementoResource {
             final String baseUrl) {
         final String identifier = fromUri(baseUrl).path(req.getPath()).build().toString();
         return status(FOUND)
-            .location(fromUri(identifier + "?version=" + req.getDatetime().getInstant().getEpochSecond()).build())
+            .location(fromUri(identifier + VERSION_PARAM + req.getDatetime().getInstant().getEpochSecond()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
-            .links(getMementoLinks(identifier, mementos).map(this::filterLinkParams).toArray(Link[]::new))
+            .links(getMementoHeaders(identifier, mementos).map(this::filterLinkParams).toArray(Link[]::new))
             .header(VARY, ACCEPT_DATETIME);
     }
 
@@ -171,8 +176,115 @@ public final class MementoResource {
         if (mementos.isEmpty()) {
             return empty();
         }
-        return concat(getTimeMap(identifier, mementos.first(), mementos.last()),
-                mementos.stream().map(mementoToLink(identifier)));
+        return concat(
+                of(
+                    Link.fromUri(identifier).rel(TIMEGATE).rel(ORIGINAL).build(),
+                    Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
+                        .param(FROM, ofInstant(mementos.first().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                        .param(UNTIL, ofInstant(mementos.last().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                        .build()),
+                mementos.stream().map(time -> {
+                    if (mementos.size() == 1) {
+                        return mementoToLink(identifier, time, asList(FIRST, LAST));
+                    } else if (time.equals(mementos.first())) {
+                        return mementoToLink(identifier, time, singletonList(FIRST));
+                    } else if (time.equals(mementos.last())) {
+                        return mementoToLink(identifier, time, singletonList(LAST));
+                    }
+                    return mementoToLink(identifier, time, emptyList());
+                }));
+    }
+
+    /**
+     * Get the memento headers.
+     * @param identifier the identifier
+     * @param mementos the mementos
+     * @param time the time of the current memento
+     * @return a stream of link headers
+     */
+    public static Stream<Link> getMementoHeaders(final String identifier, final SortedSet<Instant> mementos,
+            final Instant time) {
+        if (mementos.isEmpty()) {
+            return empty();
+        } else if (mementos.size() == 1) {
+            // No prev/next with only one Memento
+            return of(
+                // TimeMap
+                Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
+                    .param(FROM, ofInstant(mementos.first().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                    .param(UNTIL, ofInstant(mementos.last().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                    .build(),
+                // First, Last
+                Link.fromUri(identifier + VERSION_PARAM + mementos.first().truncatedTo(SECONDS).getEpochSecond())
+                    .rel(FIRST).rel(LAST).rel(MEMENTO)
+                    .param(DATETIME, ofInstant(mementos.first().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                    .build());
+        }
+
+        final Stream.Builder<Link> builder = Stream.builder();
+        // TimeMap link
+        builder.accept(Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
+                    .param(FROM, ofInstant(mementos.first().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                    .param(UNTIL, ofInstant(mementos.last().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                    .build());
+
+        // First link
+        final Link.Builder first = Link.fromUri(identifier + VERSION_PARAM + mementos.first().truncatedTo(SECONDS)
+                .getEpochSecond()).rel(FIRST).rel(MEMENTO)
+                .param(DATETIME, ofInstant(mementos.first().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME));
+
+        // Last link
+        final Link.Builder last = Link.fromUri(identifier + VERSION_PARAM + mementos.last().truncatedTo(SECONDS)
+                .getEpochSecond()).rel(LAST).rel(MEMENTO)
+                .param(DATETIME, ofInstant(mementos.last().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME));
+
+        if (shouldAddPrevNextLinks(mementos, time)) {
+            final Instant memento = time.truncatedTo(SECONDS);
+            final SortedSet<Instant> head = mementos.headSet(memento);
+            if (!head.isEmpty()) {
+                final Instant prev = head.last();
+                if (mementos.first().equals(prev)) {
+                    // Add prev link to first
+                    first.rel(PREV);
+                } else {
+                    // Prev link
+                    builder.accept(Link.fromUri(identifier + VERSION_PARAM + prev.truncatedTo(SECONDS).getEpochSecond())
+                            .rel(PREV).rel(MEMENTO)
+                            .param(DATETIME, ofInstant(prev.truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                            .build());
+                }
+            }
+            final Iterator<Instant> tail = mementos.tailSet(memento).iterator();
+            // advance past the current item
+            tail.next();
+            if (tail.hasNext()) {
+                final Instant next = tail.next();
+                if (mementos.last().equals(next)) {
+                    last.rel(NEXT);
+                } else {
+                    // Next link
+                    builder.accept(Link.fromUri(identifier + VERSION_PARAM + next.truncatedTo(SECONDS)
+                            .getEpochSecond()).rel(NEXT).rel(MEMENTO)
+                            .param(DATETIME, ofInstant(next.truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
+                            .build());
+                }
+            }
+        }
+
+        builder.accept(first.build());
+        builder.accept(last.build());
+
+        return builder.build();
+    }
+
+    /**
+     * Get the memento headers.
+     * @param identifier the identifier
+     * @param mementos the mementos
+     * @return a stream of link headers
+     */
+    public static Stream<Link> getMementoHeaders(final String identifier, final SortedSet<Instant> mementos) {
+        return getMementoHeaders(identifier, mementos, null);
     }
 
     /**
@@ -187,23 +299,37 @@ public final class MementoResource {
         if (filter) {
             if (TIMEMAP.equals(link.getRel())) {
                 return Link.fromUri(link.getUri()).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT).build();
-            } else if (MEMENTO.equals(link.getRel())) {
-                return Link.fromUri(link.getUri()).rel(MEMENTO).build();
+            } else if (link.getRels().contains(MEMENTO)) {
+                final Link.Builder builder = Link.fromUri(link.getUri());
+                link.getRels().forEach(builder::rel);
+                return builder.build();
             }
         }
         return link;
     }
 
-    private static Stream<Link> getTimeMap(final String identifier, final Instant from, final Instant until) {
-        return Stream.of(Link.fromUri(identifier + TIMEMAP_PARAM).rel(TIMEMAP).type(APPLICATION_LINK_FORMAT)
-                .param(FROM, ofInstant(from.truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME))
-                .param(UNTIL, ofInstant(until.truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME)).build());
+    /**
+     * Convert an instant to a memento link header.
+     * @param identifier the identifier
+     * @param time the time
+     * @param rels any optional rel values
+     * @return a link header
+     */
+    public static Link mementoToLink(final String identifier, final Instant time, final List<String> rels) {
+        final Link.Builder builder = Link.fromUri(identifier + VERSION_PARAM + time.truncatedTo(SECONDS)
+                .getEpochSecond()).rel(MEMENTO).param(DATETIME, ofInstant(time.truncatedTo(SECONDS), UTC)
+                        .format(RFC_1123_DATE_TIME));
+        rels.forEach(builder::rel);
+        return builder.build();
     }
 
-    private static Function<Instant, Link> mementoToLink(final String identifier) {
-        return time ->
-            Link.fromUri(identifier + "?version=" + time.truncatedTo(SECONDS).getEpochSecond()).rel(MEMENTO)
-                .param(DATETIME, ofInstant(time.truncatedTo(SECONDS), UTC)
-                        .format(RFC_1123_DATE_TIME)).build();
+    private static boolean shouldAddPrevNextLinks(final SortedSet<Instant> mementos, final Instant time) {
+        return time != null && !time.truncatedTo(SECONDS).isBefore(mementos.first().truncatedTo(SECONDS))
+            && !time.truncatedTo(SECONDS).isAfter(mementos.last().truncatedTo(SECONDS));
+    }
+
+    private static TimemapGenerator loadTimemapGenerator() {
+        final Iterator<TimemapGenerator> services = load(TimemapGenerator.class).iterator();
+        return services.hasNext() ? services.next() : new TimemapGenerator() { };
     }
 }
