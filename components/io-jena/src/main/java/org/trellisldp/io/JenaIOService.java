@@ -76,10 +76,8 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RDFWriter;
 import org.apache.jena.riot.RiotException;
-import org.apache.jena.riot.WriterDatasetRIOT;
-import org.apache.jena.riot.system.PrefixMap;
-import org.apache.jena.riot.system.RiotLib;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
@@ -285,9 +283,6 @@ public class JenaIOService implements IOService {
     private void writeJsonLd(final OutputStream output, final DatasetGraph graph, final IRI... profiles) {
         final String profile = getCustomJsonLdProfile(profiles);
         final RDFFormat format = canUseCustomJsonLdProfile(profile) ? JSONLD_COMPACT_FLAT : getJsonLdProfile(profiles);
-        final WriterDatasetRIOT writer = RDFDataMgr.createDatasetWriter(format);
-        final PrefixMap pm = RiotLib.prefixMap(graph);
-        final String base = null;
         final JsonLDWriteContext ctx = new JsonLDWriteContext();
         if (canUseCustomJsonLdProfile(profile)) {
             LOGGER.debug("Setting JSON-LD context with profile: {}", profile);
@@ -304,7 +299,7 @@ public class JenaIOService implements IOService {
                 ctx.setJsonLDContextSubstitution("\"" + profile + "\"");
             }
         }
-        writer.write(output, graph, pm, base, ctx);
+        RDFWriter.create().format(format).context(ctx).source(graph).output(output);
     }
 
     private String getCustomJsonLdProfile(final IRI... profiles) {
