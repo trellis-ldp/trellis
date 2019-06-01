@@ -123,7 +123,7 @@ allprojects { subproj ->
         docURL = 'https://www.trellisldp.org/docs/trellis/current/apidocs/'
         license = 'Apache 2'
 
-        jacocoVersion = '0.8.3'
+        jacocoVersion = '0.8.4'
         checkstyleVersion = '8.18'
     }
 
