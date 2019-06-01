@@ -18,6 +18,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
+import static java.util.stream.Stream.of;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -31,6 +32,7 @@ import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
 import static org.trellisldp.triplestore.TriplestoreUtils.getSubject;
 import static org.trellisldp.triplestore.TriplestoreUtils.nodesToTriple;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -72,6 +74,7 @@ public class TriplestoreResource implements Resource {
 
     private final IRI identifier;
     private final RDFConnection rdfConnection;
+    private final boolean includeLdpType;
     private final Map<IRI, RDFTerm> data = new HashMap<>();
     private final Map<IRI, Supplier<Stream<Quad>>> graphMapper = new HashMap<>();
 
@@ -79,10 +82,12 @@ public class TriplestoreResource implements Resource {
      * Create a Triplestore-based Resource.
      * @param rdfConnection the triplestore connector
      * @param identifier the identifier
+     * @param includeLdpType whether to include the LDP interaction model in the response
      */
-    public TriplestoreResource(final RDFConnection rdfConnection, final IRI identifier) {
+    public TriplestoreResource(final RDFConnection rdfConnection, final IRI identifier, final boolean includeLdpType) {
         this.identifier = identifier;
         this.rdfConnection = rdfConnection;
+        this.includeLdpType = includeLdpType;
         graphMapper.put(Trellis.PreferUserManaged, this::fetchUserQuads);
         graphMapper.put(Trellis.PreferAudit, this::fetchAuditQuads);
         graphMapper.put(Trellis.PreferAccessControl, this::fetchAclQuads);
@@ -98,11 +103,13 @@ public class TriplestoreResource implements Resource {
      *           The resource content is fetched on demand via the {@link #stream} method.
      * @param rdfConnection the triplestore connector
      * @param identifier the identifier
+     * @param includeLdpType whether to include the LDP type in the body of the RDF
      * @return a new completion stage with a {@link Resource}, if one exists
      */
-    public static CompletableFuture<Resource> findResource(final RDFConnection rdfConnection, final IRI identifier) {
+    public static CompletableFuture<Resource> findResource(final RDFConnection rdfConnection, final IRI identifier,
+            final boolean includeLdpType) {
         return supplyAsync(() -> {
-            final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier);
+            final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, includeLdpType);
             res.fetchData();
             if (!res.exists()) {
                 return MISSING_RESOURCE;
@@ -475,6 +482,10 @@ public class TriplestoreResource implements Resource {
      * </code></pre>
      */
     private Stream<Quad> fetchUserQuads() {
+        if (includeLdpType) {
+            return concat(of(rdf.createQuad(Trellis.PreferUserManaged, identifier, type, getInteractionModel())),
+                    fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged));
+        }
         return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
     }
 

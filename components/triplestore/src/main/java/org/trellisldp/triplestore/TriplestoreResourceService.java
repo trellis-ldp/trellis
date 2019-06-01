@@ -98,6 +98,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     /** The configuration key used to set where the RDF is stored. **/
     public static final String CONFIG_TRIPLESTORE_RDF_LOCATION = "trellis.triplestore.rdf.location";
+    /** The configuration key used to set whether the LDP type should be included in the body of the RDF. **/
+    public static final String CONFIG_TRIPLESTORE_LDP_TYPE = "trellis.triplestore.ldp.type";
 
     private static final String MODIFIED = "modified";
 
@@ -106,6 +108,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
+    private final boolean includeLdpType;
     private final Set<IRI> supportedIxnModels;
 
     /**
@@ -133,6 +136,8 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
         super();
+        this.includeLdpType = getConfig().getOptionalValue(CONFIG_TRIPLESTORE_LDP_TYPE, Boolean.class)
+            .orElse(Boolean.FALSE);
         this.rdfConnection = requireNonNull(rdfConnection, "RDFConnection may not be null!");
         this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
         this.supportedIxnModels = unmodifiableSet(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
@@ -379,7 +384,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
 
     @Override
     public CompletionStage<Resource> get(final IRI identifier) {
-        return TriplestoreResource.findResource(rdfConnection, identifier);
+        return TriplestoreResource.findResource(rdfConnection, identifier, includeLdpType);
     }
 
     @Override
