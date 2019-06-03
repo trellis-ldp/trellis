@@ -391,7 +391,7 @@ public class GetHandler extends BaseLdpHandler {
             if (LDP.Container.equals(type) && !isMemento) {
                 builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
-            } else if (LDP.RDFSource.equals(type) && !isMemento) {
+            } else if (LDP.Resource.equals(type) && !isMemento) {
                 builder.header(ACCEPT_PATCH, getServices().getIOService().supportedUpdateSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             }

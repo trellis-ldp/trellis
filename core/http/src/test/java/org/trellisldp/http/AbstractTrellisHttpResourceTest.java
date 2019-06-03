@@ -939,6 +939,16 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    public void testOptionsACLBinary() {
+        final Response res = target(BINARY_PATH).queryParam("ext", "acl").request().options();
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+    }
+
+    @Test
     public void testOptionsNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().options();
 
@@ -981,8 +991,29 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    public void testOptionsTimemapBinary() {
+        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
+
+        final Response res = target(BINARY_PATH).queryParam("ext", "timemap").request().options();
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, MEMENTO_DATETIME)));
+    }
+
+    @Test
     public void testOptionsVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().options();
+
+        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
+        assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
+        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_PATCH, ACCEPT_POST)));
+    }
+
+    @Test
+    public void testOptionsVersionBinary() {
+        final Response res = target(BINARY_PATH).queryParam("version", timestamp).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertAll("Check allowed methods", checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));

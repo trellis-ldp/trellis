@@ -107,6 +107,10 @@ public class OptionsHandler extends BaseLdpHandler {
         ldpResourceTypes(getResource().getInteractionModel())
             .forEach(type -> builder.link(type.getIRIString(), "type"));
 
+        if (hasDescription()) {
+            builder.link(getDescription(), "describedby");
+        }
+
         if (isMemento || TIMEMAP.equals(getRequest().getExt())) {
             // Mementos and TimeMaps are read-only
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
@@ -118,7 +122,7 @@ public class OptionsHandler extends BaseLdpHandler {
                     getResource().getInteractionModel().equals(NonRDFSource)) {
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
             } else {
-                // Containers and binaries support POST
+                // Containers support POST
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
                 builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
@@ -126,5 +130,17 @@ public class OptionsHandler extends BaseLdpHandler {
         }
 
         return builder;
+    }
+
+    private boolean hasDescription() {
+        return NonRDFSource.equals(getResource().getInteractionModel()) && !TIMEMAP.equals(getRequest().getExt())
+            && !ACL.equals(getRequest().getExt());
+    }
+
+    private String getDescription() {
+        if (isMemento) {
+            return getIdentifier() + "?version=" + getResource().getModified().getEpochSecond() + "&ext=description";
+        }
+        return getIdentifier() + "?ext=description";
     }
 }
