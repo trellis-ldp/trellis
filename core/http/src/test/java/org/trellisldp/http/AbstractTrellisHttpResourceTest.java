@@ -508,6 +508,25 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    public void testPrefer4() throws IOException {
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
+
+        final Response res = target(RESOURCE_PATH).request()
+            .header("Prefer", "return=representation; include=\"" + PreferAccessControl.getIRIString() + "\"")
+            .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
+
+        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
+
+        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
+        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
+
+        assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "title", "contains", "member"),
+                    asList("mode", "created")));
+        assertEquals("A title", (String) obj.get("title"), "Incorrect title value!");
+    }
+
+    @Test
     public void testGetJsonCompact() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();

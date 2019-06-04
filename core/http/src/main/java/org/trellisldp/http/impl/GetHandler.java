@@ -69,6 +69,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
@@ -327,7 +328,7 @@ public class GetHandler extends BaseLdpHandler {
         final StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(final OutputStream out) throws IOException {
-                try (final Stream<Quad> stream = getResource().stream(triplePreferences(prefer))) {
+                try (final Stream<Quad> stream = getResource().stream(getPreferredGraphs(prefer))) {
                     getServices().getIOService().write(stream.map(Quad::asTriple)
                         .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                         .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
@@ -336,6 +337,15 @@ public class GetHandler extends BaseLdpHandler {
             }
         };
         return builder.entity(stream);
+    }
+
+    // Don't allow access control triples unless the request is for an ACL resource
+    private Set<IRI> getPreferredGraphs(final Prefer prefer) {
+        final Set<IRI> p = triplePreferences(prefer);
+        if (!ACL.equals(getRequest().getExt())) {
+            p.remove(PreferAccessControl);
+        }
+        return p;
     }
 
     private IRI getJsonLdProfile(final IRI profile, final RDFSyntax syntax) {
