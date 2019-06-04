@@ -57,6 +57,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.io.JenaIOService;
+import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -74,7 +75,8 @@ public class HttpUtilsTest {
             rdf.createLiteral("now"));
     private static final Quad QUAD3 = rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.subject,
             rdf.createLiteral("subj"));
-    private static final List<Quad> QUADS = asList(QUAD1, QUAD2, QUAD3);
+    private static final Quad QUAD4 = rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Read);
+    private static final List<Quad> QUADS = asList(QUAD1, QUAD2, QUAD3, QUAD4);
 
     @Mock
     private ResourceService mockResourceService;
@@ -128,7 +130,7 @@ public class HttpUtilsTest {
     public void testFilterPrefer1() {
         final List<Quad> filtered = QUADS.stream().filter(HttpUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation; include=\"" +
-                        Trellis.PreferServerManaged.getIRIString() + "\""))).collect(toList());
+                        Trellis.PreferServerManaged.getIRIString() + "\""), false)).collect(toList());
 
         assertFalse(filtered.contains(QUAD2), "Prefer filter doesn't catch quad!");
         assertTrue(filtered.contains(QUAD3), "Prefer filter misses quad!");
@@ -138,7 +140,7 @@ public class HttpUtilsTest {
     @Test
     public void testFilterPrefer2() {
         final List<Quad> filtered2 = QUADS.stream().filter(HttpUtils.filterWithPrefer(
-                    Prefer.valueOf("return=representation"))).collect(toList());
+                    Prefer.valueOf("return=representation"), false)).collect(toList());
 
         assertTrue(filtered2.contains(QUAD3), "Prefer filter omits quad!");
         assertEquals(1, filtered2.size(), "Incorrect size of filtered quad list!");
@@ -148,7 +150,7 @@ public class HttpUtilsTest {
     public void testFilterPrefer3() {
         final List<Quad> filtered3 = QUADS.stream().filter(HttpUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation; include=\"" +
-                        Trellis.PreferAudit.getIRIString() + "\""))).collect(toList());
+                        Trellis.PreferAudit.getIRIString() + "\""), false)).collect(toList());
 
         assertTrue(filtered3.contains(QUAD1), "Prefer filter omits quad!");
         assertFalse(filtered3.contains(QUAD2), "Prefer filter doesn't catch quad!");
@@ -160,12 +162,25 @@ public class HttpUtilsTest {
     public void testFilterPrefer4() {
         final List<Quad> filtered4 = QUADS.stream().filter(HttpUtils.filterWithPrefer(
                     Prefer.valueOf("return=representation; include=\"" +
-                        Trellis.PreferUserManaged.getIRIString() + "\""))).collect(toList());
+                        Trellis.PreferUserManaged.getIRIString() + "\""), false)).collect(toList());
 
         assertFalse(filtered4.contains(QUAD1), "Prefer filter doesn't omit quad!");
         assertFalse(filtered4.contains(QUAD2), "Prefer filter doesn't omit quad!");
         assertTrue(filtered4.contains(QUAD3), "Prefer filter omits quad!");
         assertEquals(1, filtered4.size(), "Incorrect size of filtered quad list!");
+    }
+
+    @Test
+    public void testFilterPrefer5() {
+        final List<Quad> filtered5 = QUADS.stream().filter(HttpUtils.filterWithPrefer(
+                    Prefer.valueOf("return=representation; include=\"" +
+                        Trellis.PreferAccessControl.getIRIString() + "\""), true)).collect(toList());
+
+        assertFalse(filtered5.contains(QUAD1), "Prefer filter doesn't omit quad!");
+        assertFalse(filtered5.contains(QUAD2), "Prefer filter doesn't omit quad!");
+        assertTrue(filtered5.contains(QUAD3), "Prefer filter omits quad!");
+        assertTrue(filtered5.contains(QUAD4), "Prefer filter omits quad!");
+        assertEquals(2, filtered5.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test

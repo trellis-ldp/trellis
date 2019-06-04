@@ -36,6 +36,7 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.DEFAULT_REPRESENTATION;
 import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
+import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.IOException;
@@ -128,9 +129,10 @@ public final class HttpUtils {
      * Create a filter based on a Prefer header.
      *
      * @param prefer the Prefer header
+     * @param isAcl whether the request is for an ACL resource
      * @return a suitable predicate for filtering a stream of quads
      */
-    public static Predicate<Quad> filterWithPrefer(final Prefer prefer) {
+    public static Predicate<Quad> filterWithPrefer(final Prefer prefer, final boolean isAcl) {
         final Set<String> include = new HashSet<>(DEFAULT_REPRESENTATION);
         ofNullable(prefer).ifPresent(p -> {
             if (p.getInclude().contains(LDP.PreferMinimalContainer.getIRIString())) {
@@ -144,6 +146,7 @@ public final class HttpUtils {
             p.getInclude().stream().filter(iri -> !ignoredPreferences.contains(iri)).forEach(include::add);
         });
         return quad -> quad.getGraphName().filter(IRI.class::isInstance).map(IRI.class::cast)
+            .filter(iri -> isAcl || !PreferAccessControl.equals(iri))
             .map(IRI::getIRIString).filter(include::contains).isPresent();
     }
 
