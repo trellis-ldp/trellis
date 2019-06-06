@@ -198,7 +198,7 @@ public interface Resource {
      */
     default Dataset dataset() {
         try (final Stream<Quad> quads = stream()) {
-            return quads.collect(TrellisUtils.toDataset().concurrent());
+            return quads.collect(TrellisUtils.toDataset());
         }
     }
 
