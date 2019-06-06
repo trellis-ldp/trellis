@@ -33,6 +33,7 @@ public final class Metadata {
     private final IRI memberOfRelation;
     private final IRI insertedContentRelation;
     private final BinaryMetadata binary;
+    private final boolean hasAcl;
 
     /**
      * A Metadata-bearing data structure for use with resource manipulation.
@@ -48,7 +49,7 @@ public final class Metadata {
      */
     private Metadata(final IRI identifier, final IRI ixnModel, final IRI container, final IRI membershipResource,
             final IRI memberRelation, final IRI memberOfRelation, final IRI insertedContentRelation,
-            final BinaryMetadata binary) {
+            final BinaryMetadata binary, final boolean hasAcl) {
         this.identifier = requireNonNull(identifier, "Identifier cannot be null!");
         this.ixnModel = requireNonNull(ixnModel, "Interaction model cannot be null!");
         this.container = container;
@@ -57,6 +58,7 @@ public final class Metadata {
         this.memberOfRelation = memberOfRelation;
         this.insertedContentRelation = insertedContentRelation;
         this.binary = binary;
+        this.hasAcl = hasAcl;
     }
 
     /**
@@ -156,11 +158,19 @@ public final class Metadata {
 
     /**
      * Retrieve the binary metadata if this is an LDP NonRDFSource.
-     * @implSpec Otheer LDP resource types will always return an empty {@link Optional} value
+     * @implSpec Other LDP resource types will always return an empty {@link Optional} value
      * @return the binary metadata
      */
     public Optional<BinaryMetadata> getBinary() {
         return ofNullable(binary);
+    }
+
+    /**
+     * Retrieve whether this has an ACL associated.
+     * @return whether this has an ACL associated
+     */
+    public boolean getHasAcl() {
+        return hasAcl;
     }
 
     /**
@@ -175,6 +185,7 @@ public final class Metadata {
         private IRI memberOfRelation;
         private IRI insertedContentRelation;
         private BinaryMetadata binary;
+        private boolean hasAcl;
 
         /**
          * Create a Metadata builder with the provided identifier.
@@ -255,12 +266,22 @@ public final class Metadata {
         }
 
         /**
+         * Set whether this has an ACL.
+         * @param hasAcl whether this has an ACL
+         * @return this builder
+         */
+        public Builder hasAcl(final boolean hasAcl) {
+            this.hasAcl = hasAcl;
+            return this;
+        }
+
+        /**
          * Build the Metadata object, transitioning this builder to the built state.
          * @return the built Metadata
          */
         public Metadata build() {
             return new Metadata(identifier, ixnModel, container, membershipResource, memberRelation, memberOfRelation,
-                            insertedContentRelation, binary);
+                            insertedContentRelation, binary, hasAcl);
         }
     }
 }
