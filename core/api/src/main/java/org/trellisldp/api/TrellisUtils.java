@@ -13,20 +13,17 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.EnumSet.of;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
-import static java.util.stream.Collector.Characteristics.CONCURRENT;
 import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
 import static java.util.stream.Collector.Characteristics.UNORDERED;
 
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -144,50 +141,6 @@ public final class TrellisUtils {
         @Override
         public Set<Characteristics> characteristics() {
             return unmodifiableSet(of(UNORDERED, IDENTITY_FINISH));
-        }
-
-        /**
-         * Collect a stream of {@link Quad}s into a {@link Dataset} with concurrent operation.
-         *
-         * @return a {@link Collector} that accumulates a {@link Stream} of {@link Quad}s into a {@link Dataset}
-         */
-        public ConcurrentDatasetCollector concurrent() {
-            return new ConcurrentDatasetCollector();
-        }
-    }
-
-    private static class ConcurrentDatasetCollector implements Collector<Quad, Set<Quad>, Dataset> {
-
-        @Override
-        public Supplier<Set<Quad>> supplier() {
-            return () -> newSetFromMap(new ConcurrentHashMap<>());
-        }
-
-        @Override
-        public BiConsumer<Set<Quad>, Quad> accumulator() {
-            return Set::add;
-        }
-
-        @Override
-        public BinaryOperator<Set<Quad>> combiner() {
-            return (s1, s2) -> {
-                s1.addAll(s2);
-                return s1;
-            };
-        }
-
-        @Override
-        public Function<Set<Quad>, Dataset> finisher() {
-            return set -> {
-                final Dataset dataset = rdf.createDataset();
-                set.forEach(dataset::add);
-                return dataset;
-            };
-        }
-
-        @Override
-        public Set<Characteristics> characteristics() {
-            return unmodifiableSet(of(UNORDERED, CONCURRENT));
         }
     }
 

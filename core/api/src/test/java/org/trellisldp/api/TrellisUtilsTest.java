@@ -14,7 +14,6 @@
 package org.trellisldp.api;
 
 import static java.util.Optional.of;
-import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.JRE.JAVA_8;
@@ -22,13 +21,9 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toDataset;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
-import java.util.Set;
-import java.util.stream.Collector;
-
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
@@ -58,14 +53,6 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testCollectDatasetConcurrent() {
-        final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
-            .parallel().limit(size).collect(toDataset().concurrent());
-
-        assertTrue(size >= dataset.size(), "Generated dataset has too many triples!");
-    }
-
-    @Test
     public void testCollectDataset() {
         final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toDataset());
@@ -80,18 +67,6 @@ public class TrellisUtilsTest {
 
         final TrellisUtils.DatasetCollector collector = toDataset();
         assertEquals(dataset, collector.finisher().apply(dataset), "Dataset finisher returns the wrong object!");
-    }
-
-    @Test
-    public void testDatasetCombiner() {
-        final Set<Quad> quads1 = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
-            .parallel().limit(size).collect(toSet());
-        final Set<Quad> quads2 = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
-            .parallel().limit(size).collect(toSet());
-
-        final Collector<Quad, Set<Quad>, Dataset> collector = toDataset().concurrent();
-        assertEquals(quads1.size() + quads2.size(), collector.combiner().apply(quads1, quads2).size(),
-                "Dataset combiner produces the wrong number of quads!");
     }
 
     private IRI getIRI() {
