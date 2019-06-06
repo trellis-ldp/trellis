@@ -179,8 +179,8 @@ abstract class BaseTestHandler {
     }
 
     private static Executable checkLdpType(final Set<String> expected, final Set<String> actual, final IRI type) {
-        final boolean expectation = expected.contains(type);
-        return () -> assertEquals(expectation, actual.contains(type), "Expecting " + type + " to be "
+        final boolean expectation = expected.contains(type.getIRIString());
+        return () -> assertEquals(expectation, actual.contains(type.getIRIString()), "Expecting " + type + " to be "
                 + (expectation ? "present" : "absent"));
     }
     protected void unwrapAsyncError(final CompletionStage async) {
