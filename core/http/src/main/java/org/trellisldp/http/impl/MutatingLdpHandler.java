@@ -263,6 +263,10 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::memberOfRelation);
             graph.stream(identifier, LDP.insertedContentRelation, null).findFirst().map(Triple::getObject)
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::insertedContentRelation);
+            mutable.getGraph(Trellis.PreferAccessControl)
+                .map(Graph::size)
+                .map(s -> s > 0)
+                .ifPresent(builder::hasAcl);
         });
         return builder;
     }
