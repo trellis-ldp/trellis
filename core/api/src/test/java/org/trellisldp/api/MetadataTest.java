@@ -97,5 +97,6 @@ public class MetadataTest {
         assertFalse(metadata.getMemberOfRelation().isPresent());
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
+        assertFalse(metadata.getHasAcl());
     }
 }
