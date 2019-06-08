@@ -21,7 +21,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Iterator;
 
+import javax.annotation.Priority;
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
+import javax.interceptor.Interceptor;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -41,6 +44,8 @@ import org.trellisldp.api.RuntimeTrellisException;
  *
  * @author acoburn
  */
+@Alternative
+@Priority(Interceptor.Priority.APPLICATION+10)
 public class JmsPublisher implements EventService {
 
     /** The configuration key controlling the JMS queue name. **/
@@ -107,6 +112,7 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a connection error
      */
     public JmsPublisher(final Session session, final String queueName, final boolean useQueue) throws JMSException {
+    	LOGGER.info("Loading JmsPublisher");
         requireNonNull(queueName, "JMS Queue name may not be null!");
         this.session = requireNonNull(session, "JMS Session may not be null!");
         if (useQueue) {

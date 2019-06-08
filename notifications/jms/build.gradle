@@ -15,6 +15,7 @@ ext {
 dependencies {
     api("javax.jms:javax.jms-api:$jmsApiVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     api project(':trellis-api')
 
     implementation("org.apache.activemq:activemq-client:$activeMqVersion")

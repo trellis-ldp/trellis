@@ -172,7 +172,7 @@ public class TrellisHttpResource {
             dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
             dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
             dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
-            LOGGER.debug("Preparing to initialize Trellis at {}", root);
+            LOGGER.info("Preparing to initialize Trellis at {}", root);
             trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset))
                 .exceptionally(err -> {
                     LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
@@ -186,11 +186,11 @@ public class TrellisHttpResource {
 
     private CompletionStage<Void> initialize(final IRI id, final Resource res, final Dataset dataset) {
         if (MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res)) {
-            LOGGER.info("Initializing root container: {}", id);
+            LOGGER.info("Initializing root container and ACL: {}", id);
             return trellis.getResourceService().create(Metadata.builder(id).interactionModel(LDP.BasicContainer)
                     .build(), dataset);
         } else if (!res.hasAcl()) {
-            LOGGER.info("Initializeing root ACL: {}", id);
+            LOGGER.info("Adding an ACL to root container: {}", id);
             try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
                 quads.forEach(dataset::add);
             }

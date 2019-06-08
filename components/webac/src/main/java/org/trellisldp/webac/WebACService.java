@@ -44,8 +44,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.annotation.Priority;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
+import javax.interceptor.Interceptor;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -73,6 +75,7 @@ import org.trellisldp.vocabulary.VCARD;
  * @author acoburn
  */
 @Alternative
+@Priority(Interceptor.Priority.APPLICATION+10)
 public class WebACService implements AccessControlService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. **/
@@ -135,6 +138,7 @@ public class WebACService implements AccessControlService {
         this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.cache = requireNonNull(cache, "A non-null Cache must be provided!");
         this.checkMembershipResources = checkMembershipResources;
+        LOGGER.info("Loading WebACService");
     }
 
     @Override

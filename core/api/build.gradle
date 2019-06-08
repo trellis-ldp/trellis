@@ -11,6 +11,7 @@ ext {
 dependencies {
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api("javax.enterprise:cdi-api:${cdiApiVersion}")
+    api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
 
     testImplementation("commons-io:commons-io:$commonsIoVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
