@@ -45,7 +45,7 @@ import org.slf4j.Logger;
 public class BasicAuthFilter implements ContainerRequestFilter {
 
     private static final Logger LOGGER = getLogger(BasicAuthFilter.class);
-    
+
     /** The configuration key controlling the location of the basic auth credentials file. **/
     public static final String CONFIG_AUTH_BASIC_CREDENTIALS = "trellis.auth.basic.credentials";
 

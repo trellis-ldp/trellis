@@ -75,7 +75,7 @@ import org.trellisldp.vocabulary.VCARD;
  * @author acoburn
  */
 @Alternative
-@Priority(Interceptor.Priority.APPLICATION+10)
+@Priority(Interceptor.Priority.APPLICATION + 10)
 public class WebACService implements AccessControlService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. **/
