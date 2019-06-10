@@ -87,7 +87,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     public BasicAuthFilter(final File file, final String realm) {
         this.file = file;
         this.challenge = "Basic realm=\"" + realm + "\"";
-        LOGGER.info("Configured BASIC Authentication Filter.");
+        LOGGER.info("Configured BasicAuthFilter.");
     }
 
     @Override

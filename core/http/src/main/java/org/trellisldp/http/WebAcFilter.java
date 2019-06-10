@@ -118,6 +118,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
             .collect(toList());
         this.baseUrl = baseUrl;
+        LOGGER.info("Configured WebAcFilter.");
     }
 
     @Override

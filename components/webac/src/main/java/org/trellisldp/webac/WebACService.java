@@ -138,7 +138,7 @@ public class WebACService implements AccessControlService {
         this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.cache = requireNonNull(cache, "A non-null Cache must be provided!");
         this.checkMembershipResources = checkMembershipResources;
-        LOGGER.info("Loading WebACService");
+        LOGGER.info("Configured WebACService.");
     }
 
     @Override
