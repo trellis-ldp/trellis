@@ -14,12 +14,15 @@
 
 package org.trellisldp.api;
 
+import javax.enterprise.inject.Alternative;
+
 /**
  * For use when audit functionality is not desired.
  * 
  * @author ajs6f
  *
  */
+@Alternative
 public final class NoopAuditService implements AuditService {
 
 }

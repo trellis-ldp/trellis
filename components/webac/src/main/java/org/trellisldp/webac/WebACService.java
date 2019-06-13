@@ -44,7 +44,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Graph;
@@ -72,7 +71,7 @@ import org.trellisldp.vocabulary.VCARD;
  *
  * @author acoburn
  */
-@Alternative
+
 public class WebACService implements AccessControlService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. **/
