@@ -20,12 +20,15 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Set;
 
+import javax.enterprise.inject.Alternative;
+
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 
 /**
  * A no-op AccessControlService implementation.
  */
+@Alternative
 public class NoopAccessControlService implements AccessControlService {
 
     private static final RDF rdf = getInstance();

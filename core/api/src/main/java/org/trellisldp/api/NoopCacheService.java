@@ -15,11 +15,14 @@ package org.trellisldp.api;
 
 import java.util.function.Function;
 
+import javax.enterprise.inject.Alternative;
+
 /**
  * A no-op (pass-through) cache service for Trellis.
  * @param <K> the type of key to use
  * @param <V> the type of value to cache
  */
+@Alternative
 public class NoopCacheService<K, V> implements CacheService<K, V> {
 
     @Override

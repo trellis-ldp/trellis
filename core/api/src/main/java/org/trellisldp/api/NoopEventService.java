@@ -13,9 +13,12 @@
  */
 package org.trellisldp.api;
 
+import javax.enterprise.inject.Alternative;
+
 /**
  * For use when an event service is not desired.
  */
+@Alternative
 public final class NoopEventService implements EventService {
 
     @Override
