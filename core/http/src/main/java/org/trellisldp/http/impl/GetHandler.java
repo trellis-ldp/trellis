@@ -388,10 +388,10 @@ public class GetHandler extends BaseLdpHandler {
 
     private CompletionStage<InputStream> getBinaryStream(final IRI dsid, final TrellisRequest req) {
         if (req.getRange() == null) {
-            return getServices().getBinaryService().get(dsid).thenApply(Binary::getContent);
+            return getServices().getBinaryService().get(dsid).thenComposeAsync(Binary::getContent);
         }
         return getServices().getBinaryService().get(dsid)
-                        .thenApply(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo()));
+                        .thenComposeAsync(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo()));
     }
 
     private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {

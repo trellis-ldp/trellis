@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
@@ -171,11 +173,15 @@ public class FileBinaryServiceTest {
         return false;
     }
 
-    private String uncheckedToString(final InputStream is) {
+    private String uncheckedToString(final CompletionStage<InputStream> is) {
         try {
-            return IOUtils.toString(is, UTF_8);
+            return IOUtils.toString(is.toCompletableFuture().get(), UTF_8);
         } catch (final IOException ex) {
             return null;
+        } catch (InterruptedException e) {
+            throw new AssertionError(e);
+        } catch (ExecutionException e) {
+            throw new AssertionError(e);
         }
     }
 
