@@ -403,7 +403,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     public void testGetBinaryErrorSkip() throws IOException {
         when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
-        when(mockBinary.getContent()).thenReturn(mockInputStream);
+        when(mockBinary.getContent()).thenReturn(completedFuture(mockInputStream));
         when(mockInputStream.skip(anyLong())).thenThrow(new IOException());
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=300-400").get();
         assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), "Unexpected response code!");

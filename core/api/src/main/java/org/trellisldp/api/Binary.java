@@ -15,6 +15,7 @@
 package org.trellisldp.api;
 
 import java.io.InputStream;
+import java.util.concurrent.CompletionStage;
 
 /**
  * The non-RDF content of an LDP NonRDFSource.
@@ -25,13 +26,13 @@ public interface Binary {
     /**
      * @return the content of this {@link Binary}
      */
-    InputStream getContent();
+    CompletionStage<InputStream> getContent();
 
     /**
      * @param from the point in bytes from which to begin content
      * @param to the point in bytes at which to end content
      * @return content from {@code from} to {@code to} inclusive
      */
-    InputStream getContent(int from, int to);
+    CompletionStage<InputStream> getContent(int from, int to);
 
 }
