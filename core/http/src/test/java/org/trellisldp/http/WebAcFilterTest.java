@@ -43,6 +43,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -111,6 +112,26 @@ public class WebAcFilterTest {
         modes.clear();
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
+    }
+
+    @Test
+    public void testFilterControl() throws Exception {
+        final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getMethod()).thenReturn("GET");
+        when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
+
+        final WebAcFilter filter = new WebAcFilter(mockAccessControlService);
+        modes.add(ACL.Read);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
+
+        when(mockContext.getHeaderString("Prefer"))
+            .thenReturn("return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"");
+
+        assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
+                "No expception thrown when not authorized!");
+
+        modes.add(ACL.Control);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Control ability!");
     }
 
     @Test

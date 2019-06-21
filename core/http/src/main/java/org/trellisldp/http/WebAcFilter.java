@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 
 import java.io.IOException;
@@ -52,6 +53,7 @@ import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.http.core.HttpSession;
+import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -128,7 +130,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
         final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + path), s);
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
-                .contains(HttpConstants.ACL)) {
+                .contains(HttpConstants.ACL) || reqAudit(ctx)) {
             verifyCanControl(modes, s, path);
         } else if (readable.contains(method)) {
             verifyCanRead(modes, s, path);
@@ -147,6 +149,14 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             res.getHeaders().add(LINK, fromUri(getRequestUri(req).queryParam(HttpConstants.EXT, HttpConstants.ACL)
                         .build()).rel(HttpConstants.ACL).build());
         }
+    }
+
+    private boolean reqAudit(final ContainerRequestContext ctx) {
+        final Prefer prefer = Prefer.valueOf(ctx.getHeaderString(PREFER));
+        if (prefer != null) {
+            return prefer.getInclude().contains(Trellis.PreferAudit.getIRIString());
+        }
+        return false;
     }
 
     private UriBuilder getRequestUri(final ContainerRequestContext req) {
