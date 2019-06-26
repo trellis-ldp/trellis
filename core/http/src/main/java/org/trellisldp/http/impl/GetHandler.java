@@ -42,7 +42,6 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
-import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
@@ -52,7 +51,6 @@ import static org.trellisldp.http.core.Prefer.PREFER_MINIMAL;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.core.Prefer.PREFER_RETURN;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
-import static org.trellisldp.http.impl.HttpUtils.filterWithLDF;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
@@ -94,7 +92,6 @@ import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.http.core.Version;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Memento;
 
 /**
  * The GET response builder.
@@ -220,10 +217,6 @@ public class GetHandler extends BaseLdpHandler {
         // Add a "self" link header
         builder.link(getSelfIdentifier(), "self");
 
-        // URI Template
-        builder.header(LINK_TEMPLATE,
-                "<" + getIdentifier() + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"");
-
         // NonRDFSources responses (strong ETags, etc)
         if (getResource().getBinaryMetadata().isPresent() && syntax == null) {
             return getLdpNr(builder);
@@ -307,10 +300,6 @@ public class GetHandler extends BaseLdpHandler {
         builder.tag(etag);
         addAllowHeaders(builder);
 
-        // URI Templates
-        builder.header(LINK_TEMPLATE, "<" + getIdentifier() + "{?subject,predicate,object}>; rel=\""
-                + LDP.RDFSource.getIRIString() + "\"");
-
         if (prefer != null) {
             builder.header(PREFERENCE_APPLIED,
                     PREFER_RETURN + "=" + prefer.getPreference().orElse(PREFER_REPRESENTATION));
@@ -330,9 +319,8 @@ public class GetHandler extends BaseLdpHandler {
             public void write(final OutputStream out) throws IOException {
                 try (final Stream<Quad> stream = getResource().stream(getPreferredGraphs(prefer))) {
                     getServices().getIOService().write(stream.map(Quad::asTriple)
-                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
-                        .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
-                                getRequest().getObject())), out, syntax, getJsonLdProfile(profile, syntax));
+                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())), out,
+                            syntax, getJsonLdProfile(profile, syntax));
                 }
             }
         };
