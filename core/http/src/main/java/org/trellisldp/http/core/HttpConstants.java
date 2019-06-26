@@ -79,9 +79,6 @@ public final class HttpConstants {
     /** The Memento link parameter indicating the beginning range of a TimeMap. **/
     public static final String FROM = "from";
 
-    /** The name of the HTTP response header used to indicate a link template to clients. **/
-    public static final String LINK_TEMPLATE = "Link-Template";
-
     /** The Memento link relation for mementos. **/
     public static final String MEMENTO = "memento";
 

@@ -70,7 +70,6 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
-import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
@@ -116,7 +115,6 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Memento;
 import org.trellisldp.vocabulary.XSD;
 
 /**
@@ -147,7 +145,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
         assertAll("Check JSON-LD Response", checkJsonLdResponse(res));
-        assertAll("Check LD-Template headers", checkLdTemplateHeaders(res));
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
         assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
@@ -2469,15 +2466,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         return Stream.of(RANGE, ACCEPT_DATETIME, PREFER).map(header -> vary.contains(header)
                 ? () -> assertTrue(vheaders.contains(header), "Missing Vary header: " + header)
                 : () -> assertFalse(vheaders.contains(header), "Unexpected Vary header: " + header));
-    }
-
-    private Stream<Executable> checkLdTemplateHeaders(final Response res) {
-        final List<String> templates = res.getStringHeaders().get(LINK_TEMPLATE);
-        return Stream.of(
-            () -> assertEquals(1L, templates.size(), "Incorrect Link-Template header count!"),
-            () -> assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH
-                    + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\""),
-                             "Template for Memento queries not found!"));
     }
 
     private static Stream<IRI> ldpResourceSupertypes(final IRI ldpType) {

@@ -42,7 +42,6 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
-import static org.trellisldp.http.core.HttpConstants.LINK_TEMPLATE;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
@@ -93,7 +92,6 @@ import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.http.core.Version;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Memento;
 
 /**
  * The GET response builder.
@@ -218,10 +216,6 @@ public class GetHandler extends BaseLdpHandler {
 
         // Add a "self" link header
         builder.link(getSelfIdentifier(), "self");
-
-        // URI Template
-        builder.header(LINK_TEMPLATE,
-                "<" + getIdentifier() + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\"");
 
         // NonRDFSources responses (strong ETags, etc)
         if (getResource().getBinaryMetadata().isPresent() && syntax == null) {
