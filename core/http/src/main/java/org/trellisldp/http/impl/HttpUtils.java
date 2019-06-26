@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -55,11 +54,9 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
@@ -139,26 +136,6 @@ public final class HttpUtils {
                 .filter(iri -> !ignoredPreferences.contains(iri)).forEach(include::add);
         }
         return include;
-    }
-
-    /**
-     * Create a Linked Data Fragments filter.
-     *
-     * @param subject the LDF subject
-     * @param predicate the LDF predicate
-     * @param object the LDF object
-     * @return a filtering predicate
-     */
-    public static Predicate<Triple> filterWithLDF(final String subject, final String predicate,
-            final String object) {
-        return triple -> !(notCompareWithString(triple.getSubject(), subject)
-                    || notCompareWithString(triple.getPredicate(), predicate)
-                    || notCompareWithString(triple.getObject(), object));
-    }
-
-    private static boolean notCompareWithString(final RDFTerm term, final String str) {
-        return str != null && !str.isEmpty() && (term instanceof IRI && !((IRI) term).getIRIString().equals(str)
-                    || term instanceof Literal && !((Literal) term).getLexicalForm().equals(str));
     }
 
     /**

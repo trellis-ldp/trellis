@@ -543,77 +543,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetJsonCompactLDF1() throws IOException {
-        when(mockResource.stream()).thenAnswer(inv -> getLdfQuads());
-        final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
-            .queryParam("predicate", "http://purl.org/dc/terms/title").request()
-            .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
-
-        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDF response", checkLdfResponse(res));
-
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
-
-        assertTrue(obj.get("title") instanceof List, "title property isn't a List!");
-        @SuppressWarnings("unchecked")
-        final List<Object> titles = (List<Object>) obj.get("title");
-        assertTrue(titles.contains("A title"), "Incorrect title value!");
-        assertEquals(2L, titles.size(), "Incorrect title property size!");
-        assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"), "Incorrect @id value!");
-        assertAll("Check JSON-LD structure",
-                checkJsonStructure(obj, asList("@context", "title"), asList("creator", "mode", "created")));
-    }
-
-    @Test
-    public void testGetJsonCompactLDF2() throws IOException {
-        when(mockResource.stream()).thenAnswer(inv -> getLdfQuads());
-
-        final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
-            .queryParam("object", "ex:Type").queryParam("predicate", "").request()
-            .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
-
-        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertAll("Check LDF response", checkLdfResponse(res));
-
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
-
-        assertEquals("ex:Type", obj.get("@type"), "Incorrect @type value!");
-        assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"), "Incorrect @id value!");
-        assertAll("Check JSON-LD structure",
-                checkJsonStructure(obj, asList("@type"), asList("@context", "creator", "title", "mode", "created")));
-    }
-
-    @Test
-    public void testGetJsonCompactLDF3() throws IOException {
-        when(mockResource.stream()).thenAnswer(inv -> getLdfQuads());
-
-        final Response res = target(RESOURCE_PATH).queryParam("subject", getBaseUrl() + RESOURCE_PATH)
-            .queryParam("object", "A title").queryParam("predicate", DC.title.getIRIString()).request()
-            .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
-
-        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
-        assertTrue(hasTimeGateLink(res, RESOURCE_PATH), "Missing rel=timegate link!");
-        assertTrue(hasOriginalLink(res, RESOURCE_PATH), "Missing rel=original link!");
-
-        assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
-        assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
-        assertAll("Check JSON-LD Response", checkJsonLdResponse(res));
-        assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
-
-        final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
-
-        assertEquals("A title", obj.get("title"), "Incorrect title property!");
-        assertEquals(getBaseUrl() + RESOURCE_PATH, obj.get("@id"), "Incorrect @id value!");
-        assertAll("Check JSON-LD structure",
-                checkJsonStructure(obj, asList("@context", "title"), asList("@type", "creator", "mode", "created")));
-    }
-
-    @Test
     public void testGetTimeMapLinkDefaultFormat() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
@@ -2545,10 +2474,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     private Stream<Executable> checkLdTemplateHeaders(final Response res) {
         final List<String> templates = res.getStringHeaders().get(LINK_TEMPLATE);
         return Stream.of(
-            () -> assertEquals(2L, templates.size(), "Incorrect Link-Template header count!"),
-            () -> assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH
-                    + "{?subject,predicate,object}>; rel=\"" + LDP.RDFSource.getIRIString() + "\""),
-                             "Template for Linked Data Fragments not found!"),
+            () -> assertEquals(1L, templates.size(), "Incorrect Link-Template header count!"),
             () -> assertTrue(templates.contains("<" + getBaseUrl() + RESOURCE_PATH
                     + "{?version}>; rel=\"" + Memento.Memento.getIRIString() + "\""),
                              "Template for Memento queries not found!"));

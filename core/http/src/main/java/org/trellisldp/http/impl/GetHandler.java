@@ -52,7 +52,6 @@ import static org.trellisldp.http.core.Prefer.PREFER_MINIMAL;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.core.Prefer.PREFER_RETURN;
 import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
-import static org.trellisldp.http.impl.HttpUtils.filterWithLDF;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
@@ -307,10 +306,6 @@ public class GetHandler extends BaseLdpHandler {
         builder.tag(etag);
         addAllowHeaders(builder);
 
-        // URI Templates
-        builder.header(LINK_TEMPLATE, "<" + getIdentifier() + "{?subject,predicate,object}>; rel=\""
-                + LDP.RDFSource.getIRIString() + "\"");
-
         if (prefer != null) {
             builder.header(PREFERENCE_APPLIED,
                     PREFER_RETURN + "=" + prefer.getPreference().orElse(PREFER_REPRESENTATION));
@@ -330,9 +325,8 @@ public class GetHandler extends BaseLdpHandler {
             public void write(final OutputStream out) throws IOException {
                 try (final Stream<Quad> stream = getResource().stream(getPreferredGraphs(prefer))) {
                     getServices().getIOService().write(stream.map(Quad::asTriple)
-                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
-                        .filter(filterWithLDF(getRequest().getSubject(), getRequest().getPredicate(),
-                                getRequest().getObject())), out, syntax, getJsonLdProfile(profile, syntax));
+                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())), out,
+                            syntax, getJsonLdProfile(profile, syntax));
                 }
             }
         };
