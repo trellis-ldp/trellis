@@ -44,6 +44,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Graph;
@@ -72,6 +73,7 @@ import org.trellisldp.vocabulary.VCARD;
  * @author acoburn
  */
 
+@ApplicationScoped
 public class WebACService implements AccessControlService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. **/
@@ -96,7 +98,6 @@ public class WebACService implements AccessControlService {
     /**
      * Create a WebAC-based authorization service.
      */
-    @Inject
     public WebACService() {
         this(getDefaultResourceService());
     }
@@ -106,6 +107,7 @@ public class WebACService implements AccessControlService {
      *
      * @param resourceService the resource service
      */
+    @Inject
     public WebACService(final ResourceService resourceService) {
         this(resourceService, new NoopAuthorizationCache());
     }
