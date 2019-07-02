@@ -96,10 +96,13 @@ public class WebACService implements AccessControlService {
     private final boolean checkMembershipResources;
 
     /**
-     * Create a WebAC-based authorization service.
+     * No-op for CDI. Create a WebAC-based authorization service.
      */
     public WebACService() {
-        this(getDefaultResourceService());
+        //this(getDefaultResourceService());
+    	this.resourceService = null;
+    	this.cache = null;
+    	this.checkMembershipResources = Boolean.FALSE;
     }
 
     /**
