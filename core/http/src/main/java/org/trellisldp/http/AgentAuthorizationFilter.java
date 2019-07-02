@@ -63,6 +63,14 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     private final Set<String> adminUsers;
 
     /**
+     * No-op constructor for CDI.
+     */
+    AgentAuthorizationFilter() {
+        this.agentService = null;
+        this.adminUsers = null;
+    }
+    
+    /**
      * Create an authorization filter.
      *
      * @param agentService the agent service
