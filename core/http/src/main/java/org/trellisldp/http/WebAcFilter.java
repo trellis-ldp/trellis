@@ -89,16 +89,14 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private final String baseUrl;
 
     /**
-     * No-op for CDI
-     *
-     * @param accessService the access service
+     * No-op constructor for CDI.
      */
     WebAcFilter() {
-    	this.accessService = null;
-    	this.challenges = null;
-    	this.baseUrl = null;
+        this.accessService = null;
+        this.challenges = null;
+        this.baseUrl = null;
     }
-    
+
     /**
      * Create a new WebAc-based auth filter.
      *
