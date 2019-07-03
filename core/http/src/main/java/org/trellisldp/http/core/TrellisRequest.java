@@ -172,33 +172,6 @@ public class TrellisRequest {
     }
 
     /**
-     * Get the subject filter.
-     *
-     * @return the subject filter
-     */
-    public String getSubject() {
-        return parameters.getFirst("subject");
-    }
-
-    /**
-     * Get the predicate filter.
-     *
-     * @return the predicate filter
-     */
-    public String getPredicate() {
-        return parameters.getFirst("predicate");
-    }
-
-    /**
-     * Get the object filter.
-     *
-     * @return the object filter
-     */
-    public String getObject() {
-        return parameters.getFirst("object");
-    }
-
-    /**
      * Get a base url value.
      *
      * @return the baseUrl as a string
