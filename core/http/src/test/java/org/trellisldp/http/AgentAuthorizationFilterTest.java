@@ -83,7 +83,7 @@ public class AgentAuthorizationFilterTest {
     }
 
     @Test
-    public void testNoopCtor() throws Exception {
+    public void testNoParamCtor() throws Exception {
         when(mockPrincipal.getName()).thenReturn("https://example.com/admin");
         final AgentAuthorizationFilter filter = new AgentAuthorizationFilter();
         filter.filter(mockContext);

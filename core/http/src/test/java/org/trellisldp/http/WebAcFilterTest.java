@@ -188,7 +188,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testNoopFilterCtor() {
+    public void testNoParamCtor() {
         assertDoesNotThrow(() -> new WebAcFilter());
     }
 }
