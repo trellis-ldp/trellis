@@ -67,7 +67,7 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
      */
     AgentAuthorizationFilter() {
         this.agentService = null;
-        this.adminUsers = null;
+        this.adminUsers = getConfiguredAdmins();
     }
 
     /**

@@ -186,4 +186,9 @@ public class WebAcFilterTest {
         assertEquals("acl", link.getRel());
         assertEquals("http://example.com/?ext=acl", link.getUri().toString());
     }
+
+    @Test
+    public void testNoopFilterCtor() {
+        assertDoesNotThrow(() -> new WebAcFilter());
+    }
 }
