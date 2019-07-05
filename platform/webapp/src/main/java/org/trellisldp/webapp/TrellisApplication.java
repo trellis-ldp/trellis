@@ -26,9 +26,9 @@ import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.http.WebSubHeaderFilter;
-import org.trellisldp.webac.WebACService;
+import org.trellisldp.webac.WebAcFilter;
+import org.trellisldp.webac.WebAcService;
 
 /**
  * A Trellis application.
@@ -54,7 +54,7 @@ public class TrellisApplication extends ResourceConfig {
         register(new AgentAuthorizationFilter(serviceBundler.getAgentService()));
         register(new OAuthFilter());
         register(new BasicAuthFilter());
-        register(new WebAcFilter(new WebACService(serviceBundler.getResourceService()), asList("Basic", "Bearer"),
+        register(new WebAcFilter(new WebAcService(serviceBundler.getResourceService()), asList("Basic", "Bearer"),
                         "trellis", baseUrl));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);

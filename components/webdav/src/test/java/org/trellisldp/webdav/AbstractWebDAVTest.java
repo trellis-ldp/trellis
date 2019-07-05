@@ -83,12 +83,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.trellisldp.agent.SimpleAgentService;
-import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Metadata;
-import org.trellisldp.api.NoopAccessControlService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
@@ -138,8 +136,6 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
 
     private static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)
         .mimeType(TEXT_PLAIN).build();
-
-    protected static final AccessControlService accessControlService = new NoopAccessControlService();
 
     @Mock
     protected ServiceBundler mockBundler;

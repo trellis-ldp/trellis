@@ -33,7 +33,6 @@ import java.util.List;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
-import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.app.config.BasicAuthConfiguration;
 import org.trellisldp.app.config.JwtAuthConfiguration;
@@ -43,9 +42,9 @@ import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.http.WebAcFilter;
 import org.trellisldp.http.WebSubHeaderFilter;
-import org.trellisldp.webac.WebACService;
+import org.trellisldp.webac.WebAcFilter;
+import org.trellisldp.webac.WebAcService;
 
 /**
  * A base class for Dropwizard-based Trellis applications.
@@ -136,7 +135,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Authorization
         getWebacCache(config).ifPresent(cache -> {
-            final AccessControlService webac = new WebACService(getServiceBundler().getResourceService(), cache);
+            final WebAcService webac = new WebAcService(getServiceBundler().getResourceService(), cache);
             final List<String> challenges = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
                 .ifPresent(challenges::add);

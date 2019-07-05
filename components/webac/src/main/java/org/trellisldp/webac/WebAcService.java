@@ -54,7 +54,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -66,7 +65,7 @@ import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.VCARD;
 
 /**
- * An {@link AccessControlService} implementation, based on the rules defined by WebAC.
+ * A WebAc implementation, based on the rules defined by SOLID.
  *
  * @see <a href="https://github.com/solid/web-access-control-spec">SOLID Web Access Control</a>
  *
@@ -74,12 +73,12 @@ import org.trellisldp.vocabulary.VCARD;
  */
 
 @ApplicationScoped
-public class WebACService implements AccessControlService {
+public class WebAcService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. **/
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
-    private static final Logger LOGGER = getLogger(WebACService.class);
+    private static final Logger LOGGER = getLogger(WebAcService.class);
     private static final RDF rdf = getInstance();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final Set<IRI> allModes = new HashSet<>();
@@ -98,7 +97,7 @@ public class WebACService implements AccessControlService {
     /**
      * Create a WebAC-based authorization service.
      */
-    public WebACService() {
+    public WebAcService() {
         this(getDefaultResourceService());
     }
 
@@ -108,7 +107,7 @@ public class WebACService implements AccessControlService {
      * @param resourceService the resource service
      */
     @Inject
-    public WebACService(final ResourceService resourceService) {
+    public WebAcService(final ResourceService resourceService) {
         this(resourceService, new NoopAuthorizationCache());
     }
 
@@ -118,7 +117,7 @@ public class WebACService implements AccessControlService {
      * @param resourceService the resource service
      * @param cache a cache
      */
-    public WebACService(final ResourceService resourceService,
+    public WebAcService(final ResourceService resourceService,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
         this(resourceService, cache, getConfig()
                 .getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE));
@@ -131,14 +130,19 @@ public class WebACService implements AccessControlService {
      * @param cache a cache
      * @param checkMembershipResources whether to check membership resource permissions (default=false)
      */
-    public WebACService(final ResourceService resourceService,
+    public WebAcService(final ResourceService resourceService,
             final CacheService<String, Set<IRI>> cache, final boolean checkMembershipResources) {
         this.resourceService = resourceService;
         this.cache = cache;
         this.checkMembershipResources = checkMembershipResources;
     }
 
-    @Override
+    /**
+     * Get the allowable access modes for the given session to the specified resource.
+     * @param identifier the resource identifier
+     * @param session the agent's session
+     * @return a set of allowable access modes
+     */
     public Set<IRI> getAccessModes(final IRI identifier, final Session session) {
         requireNonNull(session, "A non-null session must be provided!");
 
@@ -170,7 +174,7 @@ public class WebACService implements AccessControlService {
         if (checkMembershipResources && hasWritableMode(modes)) {
             getContainer(identifier).map(resourceService::get).map(CompletionStage::toCompletableFuture)
                 .map(CompletableFuture::join).flatMap(Resource::getMembershipResource)
-                .map(WebACService::cleanIdentifier).map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
+                .map(WebAcService::cleanIdentifier).map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
                     }

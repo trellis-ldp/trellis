@@ -45,7 +45,6 @@ public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTes
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, baseUri));
         config.register(new TestAuthenticationFilter("testUser", ""));
-        config.register(new WebAcFilter(mockAccessControlService));
         config.register(agentFilter);
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
