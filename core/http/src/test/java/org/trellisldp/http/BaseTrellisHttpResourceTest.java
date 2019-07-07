@@ -58,7 +58,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
-import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
@@ -72,7 +71,6 @@ import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.ServiceBundler;
-import org.trellisldp.api.Session;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -125,8 +123,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     protected static final String HUB = "http://hub.example.org/";
 
-    protected static final Set<IRI> allModes = new HashSet<>(asList(ACL.Append, ACL.Control, ACL.Read, ACL.Write));
-
     protected static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)
         .mimeType(BINARY_MIME_TYPE).build();
 
@@ -144,9 +140,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     @Mock
     protected Binary mockBinary;
-
-    @Mock
-    protected AccessControlService mockAccessControlService;
 
     @Mock
     protected AgentService mockAgentService;
@@ -189,7 +182,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         setUpResources();
 
         when(mockAgentService.asAgent(anyString())).thenReturn(agent);
-        when(mockAccessControlService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
     }
 
     private void setUpBundler() {

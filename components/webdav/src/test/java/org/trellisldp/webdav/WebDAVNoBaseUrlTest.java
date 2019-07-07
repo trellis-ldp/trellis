@@ -31,7 +31,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.http.WebAcFilter;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
@@ -92,10 +91,8 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
         config.register(new TrellisWebDAVRequestFilter(mockBundler));
         config.register(new TrellisWebDAVResponseFilter());
         config.register(new TrellisWebDAV(mockBundler));
-        config.register(new TrellisWebDAVAuthzFilter(accessControlService));
         config.register(new TrellisHttpResource(mockBundler));
         config.register(agentFilter);
-        config.register(new WebAcFilter(accessControlService));
         return config;
     }
 }

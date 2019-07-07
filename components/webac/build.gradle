@@ -9,12 +9,16 @@ ext {
 }
 
 dependencies {
+    api("javax.enterprise:cdi-api:${cdiApiVersion}")
+    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
 
+    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
+    implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -24,6 +28,8 @@ dependencies {
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
     testImplementation("org.apache.jena:jena-arq:$jenaVersion")
+    testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
+    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-triplestore')
 }

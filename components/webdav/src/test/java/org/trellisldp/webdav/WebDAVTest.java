@@ -21,7 +21,6 @@ import javax.ws.rs.core.Application;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.http.WebAcFilter;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WebDAVTest extends AbstractWebDAVTest {
@@ -39,9 +38,7 @@ public class WebDAVTest extends AbstractWebDAVTest {
             config.register(new TrellisWebDAVRequestFilter(mockBundler));
             config.register(new TrellisWebDAVResponseFilter());
             config.register(new TrellisWebDAV(mockBundler));
-            config.register(new TrellisWebDAVAuthzFilter(accessControlService));
             config.register(new TrellisHttpResource(mockBundler));
-            config.register(new WebAcFilter(accessControlService));
             return config;
         } finally {
             System.clearProperty(CONFIG_HTTP_BASE_URL);

@@ -15,16 +15,16 @@ module org.trellisldp.webac {
     exports org.trellisldp.webac;
 
     requires transitive org.trellisldp.api;
+    requires transitive org.trellisldp.http;
     requires transitive org.trellisldp.vocabulary;
 
     requires org.apache.commons.rdf.api;
 
     requires javax.inject;
+    requires java.ws.rs;
+    requires java.xml.bind;
     requires slf4j.api;
     requires microprofile.config.api;
-
-    provides org.trellisldp.api.AccessControlService
-        with org.trellisldp.webac.WebACService;
 
     uses org.trellisldp.api.ResourceService;
 }

@@ -152,7 +152,6 @@ public class OSGiTest {
                 featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
         featuresService.installFeature("trellis-triplestore");
         featuresService.installFeature("trellis-webac");
-        checkTrellisBundlesAreActive();
         assertTrue("trellis-webac not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-webac")));
         featuresService.uninstallFeature("trellis-webac");
@@ -229,7 +228,6 @@ public class OSGiTest {
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
         featuresService.installFeature("trellis-event-serialization");
         featuresService.installFeature("trellis-jms");
-        checkTrellisBundlesAreActive();
         assertTrue("trellis-jms not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
     }

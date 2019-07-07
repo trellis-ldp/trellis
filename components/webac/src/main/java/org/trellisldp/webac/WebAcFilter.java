@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.http;
+package org.trellisldp.webac;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -49,7 +50,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
-import org.trellisldp.api.AccessControlService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.http.core.HttpSession;
@@ -72,11 +72,33 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * The configuration key controlling which WWW-Authenticate challenges are provided on 401 errors.
      *
      * <p>Multiple challenges should be separated with commas.
-     **/
-    public static final String CONFIG_AUTH_CHALLENGES = "trellis.auth.challenges";
+     */
+    public static final String CONFIG_WEBAC_CHALLENGES = "trellis.webac.challenges";
+
+    /**
+     * The configuration key controlling with HTTP methods should apply to the acl:Read.
+     *
+     * <p>Values defined here will be in addition to GET, HEAD and OPTIONS. Multiple methods should
+     * be separated with commas.
+     */
+    public static final String CONFIG_WEBAC_METHOD_READABLE = "trellis.webac.method.readable";
+    /**
+     * The configuration key controlling with HTTP methods should apply to the acl:Write.
+     *
+     * <p>Values defined here will be in addition to GET, HEAD and OPTIONS. Multiple methods should
+     * be separated with commas.
+     */
+    public static final String CONFIG_WEBAC_METHOD_WRITABLE = "trellis.webac.method.writable";
+    /**
+     * The configuration key controlling with HTTP methods should apply to the acl:Append.
+     *
+     * <p>Values defined here will be in addition to GET, HEAD and OPTIONS. Multiple methods should
+     * be separated with commas.
+     */
+    public static final String CONFIG_WEBAC_METHOD_APPENDABLE = "trellis.webac.method.appendable";
 
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
-    public static final String CONFIG_AUTH_REALM = "trellis.auth.realm";
+    public static final String CONFIG_WEBAC_REALM = "trellis.webac.realm";
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final RDF rdf = getInstance();
@@ -84,7 +106,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
 
-    protected final AccessControlService accessService;
+    protected final WebAcService accessService;
     private final List<String> challenges;
     private final String baseUrl;
 
@@ -103,13 +125,14 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param accessService the access service
      */
     @Inject
-    public WebAcFilter(final AccessControlService accessService) {
+    public WebAcFilter(final WebAcService accessService) {
         this(accessService, getConfig());
     }
 
-    private WebAcFilter(final AccessControlService accessService, final Config config) {
-        this(accessService, asList(config.getOptionalValue(CONFIG_AUTH_CHALLENGES, String.class).orElse("").split(",")),
-                config.getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"),
+    private WebAcFilter(final WebAcService accessService, final Config config) {
+        this(accessService,
+                asList(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
+                config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
                 config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
@@ -121,7 +144,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param realm the authentication realm
      * @param baseUrl the base URL, may be null
      */
-    public WebAcFilter(final AccessControlService accessService, final List<String> challengeTypes,
+    public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
             final String realm, final String baseUrl) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
@@ -129,6 +152,13 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
             .collect(toList());
         this.baseUrl = baseUrl;
+        final Config config = getConfig();
+        config.getOptionalValue(CONFIG_WEBAC_METHOD_READABLE, String.class).ifPresent(r ->
+                stream(r.split(",")).map(String::trim).map(String::toUpperCase).forEach(readable::add));
+        config.getOptionalValue(CONFIG_WEBAC_METHOD_WRITABLE, String.class).ifPresent(w ->
+                stream(w.split(",")).map(String::trim).map(String::toUpperCase).forEach(writable::add));
+        config.getOptionalValue(CONFIG_WEBAC_METHOD_APPENDABLE, String.class).ifPresent(a ->
+                stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
     }
 
     @Override
