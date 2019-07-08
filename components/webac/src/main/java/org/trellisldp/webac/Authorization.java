@@ -74,6 +74,7 @@ public class Authorization {
         this.dataMap.put(ACL.mode, new HashSet<>());
         this.dataMap.put(ACL.accessTo, new HashSet<>());
         this.dataMap.put(ACL.default_, new HashSet<>());
+        this.dataMap.put(ACL.origin, new HashSet<>());
 
         graph.stream(identifier, null, null).filter(triple -> dataMap.containsKey(triple.getPredicate()))
             .filter(triple -> triple.getObject() instanceof IRI)
@@ -141,5 +142,14 @@ public class Authorization {
      */
     public Set<IRI> getDefault() {
         return unmodifiableSet(dataMap.get(ACL.default_));
+    }
+
+    /**
+     * Retrieve the acceptable origins of the ACL document.
+     *
+     * @return the origin IRIs
+     */
+    public Set<IRI> getOrigin() {
+        return unmodifiableSet(dataMap.get(ACL.origin));
     }
 }

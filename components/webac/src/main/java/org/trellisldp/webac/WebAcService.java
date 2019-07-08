@@ -141,40 +141,42 @@ public class WebAcService {
      * Get the allowable access modes for the given session to the specified resource.
      * @param identifier the resource identifier
      * @param session the agent's session
+     * @param origin the origin header, may be null
      * @return a set of allowable access modes
      */
-    public Set<IRI> getAccessModes(final IRI identifier, final Session session) {
+    public Set<IRI> getAccessModes(final IRI identifier, final Session session, final String origin) {
         requireNonNull(session, "A non-null session must be provided!");
 
         if (Trellis.AdministratorAgent.equals(session.getAgent())) {
             return unmodifiableSet(allModes);
         }
 
-        final Set<IRI> cachedModes = cache.get(getCacheKey(identifier, session.getAgent()), k ->
-                getAuthz(identifier, session.getAgent()));
+        final Set<IRI> cachedModes = cache.get(getCacheKey(identifier, session.getAgent(), origin), k ->
+                getAuthz(identifier, session.getAgent(), origin));
         return session.getDelegatedBy().map(delegate -> {
-                final Set<IRI> delegatedModes = new HashSet<>(cache.get(getCacheKey(identifier, delegate), k ->
-                            getAuthz(identifier, delegate)));
+                final Set<IRI> delegatedModes = new HashSet<>(cache.get(getCacheKey(identifier, delegate, origin), k ->
+                            getAuthz(identifier, delegate, origin)));
                 delegatedModes.retainAll(cachedModes);
                 return unmodifiableSet(delegatedModes);
             }).orElseGet(() -> unmodifiableSet(cachedModes));
     }
 
-    private String getCacheKey(final IRI identifier, final IRI agent) {
-        return join("||", identifier.getIRIString(), agent.getIRIString());
+    private String getCacheKey(final IRI identifier, final IRI agent, final String origin) {
+        return join("||", identifier.getIRIString(), agent.getIRIString(), origin != null ? origin : "");
     }
 
     private boolean hasWritableMode(final Set<IRI> modes) {
         return modes.contains(ACL.Write) || modes.contains(ACL.Append);
     }
 
-    private Set<IRI> getAuthz(final IRI identifier, final IRI agent) {
-        final Set<IRI> modes = getModesFor(identifier, agent);
+    private Set<IRI> getAuthz(final IRI identifier, final IRI agent, final String origin) {
+        final Set<IRI> modes = getModesFor(identifier, agent, origin);
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
             getContainer(identifier).map(resourceService::get).map(CompletionStage::toCompletableFuture)
                 .map(CompletableFuture::join).flatMap(Resource::getMembershipResource)
-                .map(WebAcService::cleanIdentifier).map(member -> getModesFor(member, agent)).ifPresent(memberModes -> {
+                .map(WebAcService::cleanIdentifier).map(member -> getModesFor(member, agent, origin))
+                .ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
                     }
@@ -186,9 +188,9 @@ public class WebAcService {
         return modes;
     }
 
-    private Set<IRI> getModesFor(final IRI identifier, final IRI agent) {
+    private Set<IRI> getModesFor(final IRI identifier, final IRI agent, final String origin) {
         return getNearestResource(identifier).map(resource -> getAllAuthorizationsFor(resource, false)
-                .filter(agentFilter(agent))).orElseGet(Stream::empty)
+                .filter(agentFilter(agent)).filter(originFilter(origin))).orElseGet(Stream::empty)
             .flatMap(auth -> auth.getMode().stream()).collect(toSet());
     }
 
@@ -202,6 +204,11 @@ public class WebAcService {
             return Optional.of(res);
         }
         return getContainer(identifier).flatMap(this::getNearestResource);
+    }
+
+    private Predicate<Authorization> originFilter(final String origin) {
+        return auth -> origin == null || auth.getOrigin().size() == 0
+            || auth.getOrigin().contains(rdf.createIRI(origin));
     }
 
     private Predicate<Authorization> agentFilter(final IRI agent) {
