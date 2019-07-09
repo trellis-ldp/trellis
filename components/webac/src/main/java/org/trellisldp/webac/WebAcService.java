@@ -207,7 +207,7 @@ public class WebAcService {
     }
 
     private Predicate<Authorization> originFilter(final String origin) {
-        return auth -> origin == null || auth.getOrigin().size() == 0
+        return auth -> origin == null || auth.getOrigin().isEmpty()
             || auth.getOrigin().contains(rdf.createIRI(origin));
     }
 
