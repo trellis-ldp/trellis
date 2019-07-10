@@ -13,10 +13,15 @@
  */
 package org.trellisldp.webac;
 
-import static java.util.Collections.unmodifiableSet;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toSet;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +29,7 @@ import java.util.Set;
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Triple;
 import org.trellisldp.vocabulary.ACL;
 
 /**
@@ -44,8 +50,11 @@ import org.trellisldp.vocabulary.ACL;
  */
 public class Authorization {
 
+    private static final Set<IRI> predicates = new HashSet<>(asList(ACL.agent, ACL.agentClass, ACL.agentGroup,
+                ACL.mode, ACL.accessTo, ACL.default_, ACL.origin));
+
     private final BlankNodeOrIRI identifier;
-    private final Map<IRI, Set<IRI>> dataMap = new HashMap<>();
+    private final Map<IRI, Set<IRI>> dataMap;
 
     /**
      * Create an Authorization object from a graph and an identifier.
@@ -68,17 +77,11 @@ public class Authorization {
         this.identifier = requireNonNull(identifier, "The Authorization identifier may not be null!");
         requireNonNull(graph, "The input graph may not be null!");
 
-        this.dataMap.put(ACL.agent, new HashSet<>());
-        this.dataMap.put(ACL.agentClass, new HashSet<>());
-        this.dataMap.put(ACL.agentGroup, new HashSet<>());
-        this.dataMap.put(ACL.mode, new HashSet<>());
-        this.dataMap.put(ACL.accessTo, new HashSet<>());
-        this.dataMap.put(ACL.default_, new HashSet<>());
-        this.dataMap.put(ACL.origin, new HashSet<>());
-
-        graph.stream(identifier, null, null).filter(triple -> dataMap.containsKey(triple.getPredicate()))
+        this.dataMap = graph.stream(identifier, null, null)
+            .filter(triple -> predicates.contains(triple.getPredicate()))
             .filter(triple -> triple.getObject() instanceof IRI)
-            .forEachOrdered(triple -> dataMap.get(triple.getPredicate()).add((IRI) triple.getObject()));
+            .collect(groupingBy(Triple::getPredicate, mapping(triple -> (IRI) triple.getObject(),
+                            collectingAndThen(toSet(), Collections::unmodifiableSet))));
     }
 
     /**
@@ -96,7 +99,7 @@ public class Authorization {
      * @return the Agent values
      */
     public Set<IRI> getAgent() {
-        return unmodifiableSet(dataMap.get(ACL.agent));
+        return dataMap.getOrDefault(ACL.agent, emptySet());
     }
 
     /**
@@ -105,7 +108,7 @@ public class Authorization {
      * @return the Agent class values
      */
     public Set<IRI> getAgentClass() {
-        return unmodifiableSet(dataMap.get(ACL.agentClass));
+        return dataMap.getOrDefault(ACL.agentClass, emptySet());
     }
 
     /**
@@ -114,7 +117,7 @@ public class Authorization {
      * @return the Agent groups values
      */
     public Set<IRI> getAgentGroup() {
-        return unmodifiableSet(dataMap.get(ACL.agentGroup));
+        return dataMap.getOrDefault(ACL.agentGroup, emptySet());
     }
 
     /**
@@ -123,7 +126,7 @@ public class Authorization {
      * @return the access mode values
      */
     public Set<IRI> getMode() {
-        return unmodifiableSet(dataMap.get(ACL.mode));
+        return dataMap.getOrDefault(ACL.mode, emptySet());
     }
 
     /**
@@ -132,7 +135,7 @@ public class Authorization {
      * @return the accessTo values
      */
     public Set<IRI> getAccessTo() {
-        return unmodifiableSet(dataMap.get(ACL.accessTo));
+        return dataMap.getOrDefault(ACL.accessTo, emptySet());
     }
 
     /**
@@ -141,7 +144,7 @@ public class Authorization {
      * @return the resource identifiers
      */
     public Set<IRI> getDefault() {
-        return unmodifiableSet(dataMap.get(ACL.default_));
+        return dataMap.getOrDefault(ACL.default_, emptySet());
     }
 
     /**
@@ -150,6 +153,6 @@ public class Authorization {
      * @return the origin IRIs
      */
     public Set<IRI> getOrigin() {
-        return unmodifiableSet(dataMap.get(ACL.origin));
+        return dataMap.getOrDefault(ACL.origin, emptySet());
     }
 }
