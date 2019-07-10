@@ -49,6 +49,7 @@ public final class ACL {
     public static final IRI default_ = createIRI(getNamespace() + "default");
     public static final IRI delegates = createIRI(getNamespace() + "delegates");
     public static final IRI mode = createIRI(getNamespace() + "mode");
+    public static final IRI origin = createIRI(getNamespace() + "origin");
     public static final IRI owner = createIRI(getNamespace() + "owner");
 
     /**
