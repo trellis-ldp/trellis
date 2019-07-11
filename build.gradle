@@ -38,7 +38,7 @@ ext {
     guavaVersion = '28.0-jre'
     jacksonVersion = '2.9.9'
     jaxbVersion = '2.3.1'
-    jenaVersion = '3.11.0'
+    jenaVersion = '3.12.0'
     // version 2.28 uses the jakarta-based jax-rs API
     jerseyVersion = '2.27'
     jjwtVersion = '0.10.6'
