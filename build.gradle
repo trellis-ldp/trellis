@@ -44,7 +44,7 @@ ext {
     jjwtVersion = '0.10.6'
     jmsApiVersion = '2.0.1'
     jsonldVersion = '0.12.4'
-    kafkaVersion = '2.2.0'
+    kafkaVersion = '2.3.0'
     mustacheVersion = '0.9.6'
     rabbitMqVersion = '5.7.0'
     validationVersion = '2.0.1.Final'
@@ -59,7 +59,7 @@ ext {
     hamcrestVersion = '2.1'
     logbackVersion = '1.2.3'
     mockitoVersion = '3.0.0'
-    qpidVersion = '7.1.2'
+    qpidVersion = '7.1.4'
     sleepycatVersion = '18.3.12'
     smallryeVersion = '1.3.7'
 
