@@ -24,6 +24,7 @@ module org.trellisldp.test {
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
+    requires org.junit.jupiter.api;
 
     requires java.annotation;
     requires java.ws.rs;
