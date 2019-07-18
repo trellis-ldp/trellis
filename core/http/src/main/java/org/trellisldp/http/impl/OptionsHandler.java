@@ -43,6 +43,9 @@ import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -126,9 +129,11 @@ public class OptionsHandler extends BaseLdpHandler {
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
             } else {
                 // Containers support POST
+                final List<RDFSyntax> rdfSyntaxes = getServices().getIOService().supportedWriteSyntaxes();
+                final Stream<String> allSyntaxes = concat(rdfSyntaxes.stream().map(RDFSyntax::mediaType), of(WILDCARD));
+
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
-                builder.header(ACCEPT_POST, concat(getServices().getIOService().supportedWriteSyntaxes().stream()
-                        .map(RDFSyntax::mediaType), of(WILDCARD)).collect(joining(",")));
+                builder.header(ACCEPT_POST, allSyntaxes.collect(joining(",")));
             }
         }
 

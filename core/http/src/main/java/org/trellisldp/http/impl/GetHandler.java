@@ -389,8 +389,10 @@ public class GetHandler extends BaseLdpHandler {
             builder.link(type.getIRIString(), "type");
             // Mementos don't accept POST or PATCH
             if (LDP.Container.equals(type) && !isMemento) {
-                builder.header(ACCEPT_POST, concat(getServices().getIOService().supportedWriteSyntaxes().stream()
-                        .map(RDFSyntax::mediaType), of(WILDCARD)).collect(joining(",")));
+                final List<RDFSyntax> rdfSyntaxes = getServices().getIOService().supportedWriteSyntaxes();
+                final Stream<String> allSyntaxes = concat(rdfSyntaxes.stream().map(RDFSyntax::mediaType), of(WILDCARD));
+
+                builder.header(ACCEPT_POST, allSyntaxes.collect(joining(",")));
             } else if (LDP.Resource.equals(type) && !isMemento) {
                 builder.header(ACCEPT_PATCH, getServices().getIOService().supportedUpdateSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
