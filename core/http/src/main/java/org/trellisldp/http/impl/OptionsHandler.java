@@ -15,6 +15,8 @@ package org.trellisldp.http.impl;
 
 import static java.lang.String.join;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Stream.concat;
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -22,6 +24,7 @@ import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
+import static javax.ws.rs.core.MediaType.WILDCARD;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
@@ -124,8 +127,8 @@ public class OptionsHandler extends BaseLdpHandler {
             } else {
                 // Containers support POST
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
-                builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
-                        .map(RDFSyntax::mediaType).collect(joining(",")));
+                builder.header(ACCEPT_POST, concat(getServices().getIOService().supportedWriteSyntaxes().stream()
+                        .map(RDFSyntax::mediaType), of(WILDCARD)).collect(joining(",")));
             }
         }
 
