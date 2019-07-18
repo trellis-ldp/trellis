@@ -15,6 +15,8 @@ package org.trellisldp.http.impl;
 
 import static java.lang.String.join;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Stream.concat;
+import static java.util.stream.Stream.of;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -22,6 +24,7 @@ import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
+import static javax.ws.rs.core.MediaType.WILDCARD;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
@@ -39,6 +42,9 @@ import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
@@ -123,9 +129,11 @@ public class OptionsHandler extends BaseLdpHandler {
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
             } else {
                 // Containers support POST
+                final List<RDFSyntax> rdfSyntaxes = getServices().getIOService().supportedWriteSyntaxes();
+                final Stream<String> allSyntaxes = concat(rdfSyntaxes.stream().map(RDFSyntax::mediaType), of(WILDCARD));
+
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE, POST));
-                builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
-                        .map(RDFSyntax::mediaType).collect(joining(",")));
+                builder.header(ACCEPT_POST, allSyntaxes.collect(joining(",")));
             }
         }
 

@@ -56,6 +56,7 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_LOCATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static javax.ws.rs.core.MediaType.WILDCARD;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -867,10 +868,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         assertAll("Check null headers", checkNullHeaders(res, asList(MEMENTO_DATETIME)));
 
         final List<String> acceptPost = asList(res.getHeaderString(ACCEPT_POST).split(","));
-        assertEquals(3L, acceptPost.size(), "Accept-Post header has wrong number of elements!");
+        assertEquals(4L, acceptPost.size(), "Accept-Post header has wrong number of elements!");
         assertTrue(acceptPost.contains("text/turtle"), "Turtle missing from Accept-Post");
         assertTrue(acceptPost.contains(APPLICATION_LD_JSON), "JSON-LD missing from Accept-Post");
         assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES), "N-Triples missing from Accept-Post");
+        assertTrue(acceptPost.contains(WILDCARD), "Wildcard missing from Accept-Post");
     }
 
     @Test

@@ -19,6 +19,7 @@ import static java.util.Date.from;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
@@ -30,6 +31,7 @@ import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
+import static javax.ws.rs.core.MediaType.WILDCARD;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
@@ -387,8 +389,10 @@ public class GetHandler extends BaseLdpHandler {
             builder.link(type.getIRIString(), "type");
             // Mementos don't accept POST or PATCH
             if (LDP.Container.equals(type) && !isMemento) {
-                builder.header(ACCEPT_POST, getServices().getIOService().supportedWriteSyntaxes().stream()
-                        .map(RDFSyntax::mediaType).collect(joining(",")));
+                final List<RDFSyntax> rdfSyntaxes = getServices().getIOService().supportedWriteSyntaxes();
+                final Stream<String> allSyntaxes = concat(rdfSyntaxes.stream().map(RDFSyntax::mediaType), of(WILDCARD));
+
+                builder.header(ACCEPT_POST, allSyntaxes.collect(joining(",")));
             } else if (LDP.Resource.equals(type) && !isMemento) {
                 builder.header(ACCEPT_PATCH, getServices().getIOService().supportedUpdateSyntaxes().stream()
                         .map(RDFSyntax::mediaType).collect(joining(",")));
