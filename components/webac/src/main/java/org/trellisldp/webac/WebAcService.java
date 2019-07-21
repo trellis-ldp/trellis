@@ -55,6 +55,7 @@ import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.NoopResourceService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -132,7 +133,7 @@ public class WebAcService {
      */
     public WebAcService(final ResourceService resourceService,
             final CacheService<String, Set<IRI>> cache, final boolean checkMembershipResources) {
-        this.resourceService = resourceService;
+        this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.cache = cache;
         this.checkMembershipResources = checkMembershipResources;
     }
@@ -298,7 +299,7 @@ public class WebAcService {
         if (services.hasNext()) {
             return services.next();
         }
-        return null;
+        return new NoopResourceService();
     }
 
     @TrellisAuthorizationCache
