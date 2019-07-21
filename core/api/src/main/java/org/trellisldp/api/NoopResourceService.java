@@ -19,7 +19,10 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+
+import javax.enterprise.inject.Alternative;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -27,7 +30,10 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * A no-op resource service that can be used with CDI and proxy objects.
  */
+@Alternative
 public class NoopResourceService implements ResourceService {
+
+    private static final CompletableFuture<Void> NO_RESULT = completedFuture(null);
 
     @Override
     public CompletionStage<Resource> get(final IRI identifier) {
@@ -36,22 +42,22 @@ public class NoopResourceService implements ResourceService {
 
     @Override
     public CompletionStage<Void> replace(final Metadata metadata, final Dataset dataset) {
-        return completedFuture(null);
+        return NO_RESULT;
     }
 
     @Override
     public CompletionStage<Void> delete(final Metadata metadata) {
-        return completedFuture(null);
+        return NO_RESULT;
     }
 
     @Override
     public CompletionStage<Void> add(final IRI identifier, final Dataset dataset) {
-        return completedFuture(null);
+        return NO_RESULT;
     }
 
     @Override
     public CompletionStage<Void> touch(final IRI identifier) {
-        return completedFuture(null);
+        return NO_RESULT;
     }
 
     @Override
