@@ -23,7 +23,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -95,7 +94,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         }
 
         // Check the cache
-        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), resource.getModified(), null));
+        final EntityTag etag = new EntityTag(etagGenerator.getValue(resource));
         checkCache(resource.getModified(), etag);
 
         setResource(resource);

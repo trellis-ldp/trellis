@@ -18,12 +18,12 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.ServiceLoader.load;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.notModified;
 import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -38,6 +38,7 @@ import java.io.UncheckedIOException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -62,6 +63,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -100,19 +102,6 @@ public final class HttpUtils {
             ldpResourceTypes(superClass).forEach(supertypes::accept);
         }
         return supertypes.build();
-    }
-
-    /**
-     * Build a hash value suitable for generating an ETag.
-     * @param identifier the resource identifier
-     * @param modified the last modified value
-     * @param prefer a prefer header, may be null
-     * @return a corresponding hash value
-     */
-    public static String buildEtagHash(final String identifier, final Instant modified, final Prefer prefer) {
-        final String sep = ".";
-        final String hash = prefer != null ? prefer.getInclude().hashCode() + sep + prefer.getOmit().hashCode() : "";
-        return md5Hex(modified.toEpochMilli() + sep + modified.getNano() + sep + hash + sep + identifier);
     }
 
     /**
@@ -391,6 +380,15 @@ public final class HttpUtils {
         } catch (final Exception ex) {
             throw new RuntimeTrellisException("Error closing dataset", ex);
         }
+    }
+
+    /**
+     * Load an Etag generator.
+     * @return the etag generator
+     */
+    public static EtagGenerator loadEtagGenerator() {
+        final Iterator<EtagGenerator> services = load(EtagGenerator.class).iterator();
+        return services.hasNext() ? services.next() : new EtagGenerator() { };
     }
 
     private HttpUtils() {

@@ -28,7 +28,6 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
-import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
@@ -139,8 +138,7 @@ public class PatchHandler extends MutatingLdpHandler {
             throw new NotSupportedException();
         }
         // Check the cache headers
-        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), resource.getModified(),
-                    getRequest().getPrefer()));
+        final EntityTag etag = new EntityTag(etagGenerator.getValue(resource));
         checkCache(resource.getModified(), etag);
 
         setResource(resource);
