@@ -2430,21 +2430,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         return hasLink(iri, "type");
     }
 
-    private Stream<Quad> getLdfQuads() {
-        return Stream.of(
-            rdf.createQuad(PreferUserManaged, identifier, DC.creator, rdf.createLiteral("User")),
-            rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), DC.title, rdf.createIRI("ex:title")),
-            rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-            rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("Other title")),
-            rdf.createQuad(PreferUserManaged, identifier, type, rdf.createIRI("ex:Type")),
-            rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Type")),
-            rdf.createQuad(PreferUserManaged, rdf.createIRI("ex:foo"), type, rdf.createIRI("ex:Other")),
-            rdf.createQuad(PreferServerManaged, identifier, DC.created,
-                rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
-            rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
-            rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control));
-    }
-
     private Stream<Quad> getPreferQuads() {
         return Stream.of(
             rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
