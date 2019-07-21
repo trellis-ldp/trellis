@@ -32,7 +32,6 @@ import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
 import static org.trellisldp.triplestore.TriplestoreUtils.getSubject;
 import static org.trellisldp.triplestore.TriplestoreUtils.nodesToTriple;
-import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -483,7 +482,7 @@ public class TriplestoreResource implements Resource {
      */
     private Stream<Quad> fetchUserQuads() {
         if (includeLdpType) {
-            return concat(of(rdf.createQuad(Trellis.PreferUserManaged, identifier, type, getInteractionModel())),
+            return concat(of(rdf.createQuad(Trellis.PreferUserManaged, identifier, RDF.type, getInteractionModel())),
                     fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged));
         }
         return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
