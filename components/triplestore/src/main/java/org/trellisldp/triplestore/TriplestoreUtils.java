@@ -76,7 +76,7 @@ final class TriplestoreUtils {
     }
 
     /**
-     * TODO Replace when COMMONSRDF-74 is released.
+     * Convert an arbitrary dataset to a Jena dataset.
      *
      * @param dataset a Commons RDF {@link Dataset}
      * @return a Jena {@link org.apache.jena.query.Dataset}
