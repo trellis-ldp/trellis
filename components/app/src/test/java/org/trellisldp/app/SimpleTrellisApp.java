@@ -15,8 +15,8 @@ package org.trellisldp.app;
 
 import io.dropwizard.setup.Environment;
 
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.app.config.TrellisConfiguration;
+import org.trellisldp.http.core.ServiceBundler;
 
 /**
  * A simple test app.

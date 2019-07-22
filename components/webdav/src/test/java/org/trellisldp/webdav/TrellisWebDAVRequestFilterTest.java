@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.http.core.ServiceBundler;
 
 public class TrellisWebDAVRequestFilterTest {
 

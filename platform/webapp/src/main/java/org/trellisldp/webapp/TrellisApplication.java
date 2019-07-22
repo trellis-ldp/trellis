@@ -18,7 +18,6 @@ import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.auth.basic.BasicAuthFilter;
 import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.http.AgentAuthorizationFilter;
@@ -27,6 +26,7 @@ import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebSubHeaderFilter;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.webac.WebAcFilter;
 import org.trellisldp.webac.WebAcService;
 

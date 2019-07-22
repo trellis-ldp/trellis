@@ -67,7 +67,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.http.core.TrellisRequest;
 

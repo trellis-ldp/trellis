@@ -11,7 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.api;
+package org.trellisldp.http.core;
+
+import org.trellisldp.api.AgentService;
+import org.trellisldp.api.AuditService;
+import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.EventService;
+import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.api.ResourceService;
 
 /**
  * The ServiceBundler interface collects all the services required for a full

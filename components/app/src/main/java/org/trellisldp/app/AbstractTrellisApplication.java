@@ -33,7 +33,6 @@ import java.util.List;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.app.config.BasicAuthConfiguration;
 import org.trellisldp.app.config.JwtAuthConfiguration;
 import org.trellisldp.app.config.TrellisConfiguration;
@@ -43,6 +42,7 @@ import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebSubHeaderFilter;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.webac.WebAcFilter;
 import org.trellisldp.webac.WebAcService;
 

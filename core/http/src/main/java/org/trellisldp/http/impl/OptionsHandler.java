@@ -54,7 +54,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
 
 /**
