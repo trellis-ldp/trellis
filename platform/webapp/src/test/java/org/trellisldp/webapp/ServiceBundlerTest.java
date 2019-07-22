@@ -20,7 +20,7 @@ import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.http.core.ServiceBundler;
 
 public class ServiceBundlerTest {
 

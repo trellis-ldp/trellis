@@ -49,9 +49,9 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpSession;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.LDP;
 
 @Provider

@@ -31,8 +31,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ServiceBundler;
 import org.trellisldp.http.core.EtagGenerator;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
 
 /**

@@ -24,7 +24,7 @@ import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
-import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 
 @RunWith(MockitoJUnitRunner.class)
