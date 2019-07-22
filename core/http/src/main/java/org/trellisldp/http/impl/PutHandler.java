@@ -31,7 +31,6 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
@@ -118,13 +117,8 @@ public class PutHandler extends MutatingLdpHandler {
         // Check the cache
         if (getResource() != null) {
             final Instant modified = getResource().getModified();
-            final EntityTag etag;
+            final EntityTag etag = new EntityTag(etagGenerator.getValue(getResource()));
 
-            if (getResource().getBinaryMetadata().isPresent() && !isRdfType(getRequest().getContentType()) ) {
-                etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", modified, null));
-            } else {
-                etag = new EntityTag(buildEtagHash(getIdentifier(), modified, getRequest().getPrefer()));
-            }
             // Check the cache
             checkRequiredPreconditions(preconditionRequired, getRequest().getHeaders().getFirst(IF_MATCH),
                     getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE));
@@ -204,13 +198,6 @@ public class PutHandler extends MutatingLdpHandler {
             }
         }
         return null;
-    }
-
-    private static boolean isRdfType(final String contentType) {
-        if (contentType != null) {
-            return RDFSyntax.byMediaType(contentType).isPresent();
-        }
-        return false;
     }
 
     private IRI getLdpType() {

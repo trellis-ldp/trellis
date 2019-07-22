@@ -52,7 +52,6 @@ import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.Prefer.PREFER_MINIMAL;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.core.Prefer.PREFER_RETURN;
-import static org.trellisldp.http.impl.HttpUtils.buildEtagHash;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
@@ -295,8 +294,7 @@ public class GetHandler extends BaseLdpHandler {
                         .collect(toList()), null, null) : getRequest().getPrefer();
 
         // Check for a cache hit
-        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier(), getResource().getModified(), prefer),
-                weakEtags);
+        final EntityTag etag = new EntityTag(etagGenerator.getValue(getResource()), weakEtags);
         checkCache(getResource().getModified(), etag);
 
         builder.tag(etag);
@@ -347,9 +345,8 @@ public class GetHandler extends BaseLdpHandler {
 
     private ResponseBuilder getLdpNr(final ResponseBuilder builder) {
 
-        final Instant mod = getResource().getModified();
-        final EntityTag etag = new EntityTag(buildEtagHash(getIdentifier() + "BINARY", mod, null));
-        checkCache(mod, etag);
+        final EntityTag etag = new EntityTag(etagGenerator.getValue(getResource()));
+        checkCache(getResource().getModified(), etag);
 
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);
 
