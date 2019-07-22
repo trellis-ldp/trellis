@@ -21,6 +21,10 @@ public interface EtagGenerator {
 
     /**
      * Generate the value portion for an entity tag for the given resource.
+     *
+     * @implSpec The default implementation of this method generates an ETag value based on
+     *           the precision of {@link Resource#getModified} implementation, up to and
+     *           including nano-second precision.
      * @param resource the Trellis resource
      * @return the value for the entity tag
      */
