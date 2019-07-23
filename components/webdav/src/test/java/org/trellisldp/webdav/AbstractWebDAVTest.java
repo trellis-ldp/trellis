@@ -93,6 +93,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
@@ -822,6 +823,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
         when(mockBundler.getEventService()).thenReturn(new NoopEventService());
         when(mockBundler.getMementoService()).thenReturn(new NoopMementoService());
+        when(mockBundler.getEtagGenerator()).thenReturn(new EtagGenerator() { });
     }
 
     private void setUpBinaryService() {

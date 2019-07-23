@@ -91,7 +91,10 @@ import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
 
@@ -249,6 +252,9 @@ abstract class BaseTestHandler {
         when(mockBundler.getMementoService()).thenReturn(mementoService);
         when(mockBundler.getAgentService()).thenReturn(agentService);
         when(mockBundler.getEventService()).thenReturn(mockEventService);
+        when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraints()));
+        when(mockBundler.getTimemapGenerator()).thenReturn(new TimemapGenerator() { });
+        when(mockBundler.getEtagGenerator()).thenReturn(new EtagGenerator() { });
     }
 
     private void setUpIoService() {

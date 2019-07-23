@@ -41,9 +41,9 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -138,7 +138,7 @@ public class PatchHandler extends MutatingLdpHandler {
             throw new NotSupportedException();
         }
         // Check the cache headers
-        final EntityTag etag = new EntityTag(etagGenerator.getValue(resource));
+        final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(resource));
         checkCache(resource.getModified(), etag);
 
         setResource(resource);
@@ -212,9 +212,10 @@ public class PatchHandler extends MutatingLdpHandler {
             .forEachOrdered(mutable::add);
 
         // Check any constraints on the resulting dataset
-        final List<ConstraintViolation> violations = constraintServices.stream()
-            .flatMap(handleConstraintViolations(mutable, graphName, getResource().getInteractionModel()))
-            .collect(toList());
+        final List<ConstraintViolation> violations = new ArrayList<>();
+        getServices().getConstraintServices()
+            .forEach(svc -> handleConstraintViolation(svc, mutable, graphName, getResource().getInteractionModel())
+                    .forEach(violations::add));
 
         // Short-ciruit if there is a constraint violation
         if (!violations.isEmpty()) {
@@ -261,10 +262,10 @@ public class PatchHandler extends MutatingLdpHandler {
         return getDefaultProfile(outputSyntax, getIdentifier(), defaultJsonLdProfile);
     }
 
-    private static Function<ConstraintService, Stream<ConstraintViolation>> handleConstraintViolations(
+    private static Stream<ConstraintViolation> handleConstraintViolation(final ConstraintService service,
             final Dataset dataset, final IRI graphName, final IRI interactionModel) {
         final IRI model = PreferAccessControl.equals(graphName) ? LDP.RDFSource : interactionModel;
-        return service -> dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
+        return dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
                 .flatMap(g -> service.constrainedBy(model, g));
     }
 

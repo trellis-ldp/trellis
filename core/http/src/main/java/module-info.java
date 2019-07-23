@@ -29,8 +29,4 @@ module org.trellisldp.http {
     requires java.xml.bind;
     requires java.annotation;
     requires cdi.api;
-
-    uses org.trellisldp.api.ConstraintService;
-    uses org.trellisldp.http.core.TimemapGenerator;
-    uses org.trellisldp.http.core.EtagGenerator;
 }

@@ -18,20 +18,14 @@ import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.http.impl.HttpUtils.loadEtagGenerator;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ServiceLoader;
 
 import javax.ws.rs.core.EntityTag;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
 
@@ -41,13 +35,6 @@ import org.trellisldp.http.core.TrellisRequest;
 class BaseLdpHandler {
 
     protected static final RDF rdf = getInstance();
-
-    protected static final EtagGenerator etagGenerator = loadEtagGenerator();
-    protected static final List<ConstraintService> constraintServices = new ArrayList<>();
-
-    static {
-        ServiceLoader.load(ConstraintService.class).forEach(constraintServices::add);
-    }
 
     private final String requestBaseUrl;
     private final TrellisRequest request;

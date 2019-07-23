@@ -18,6 +18,7 @@ import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -70,7 +71,10 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -192,6 +196,9 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockBundler.getEventService()).thenReturn(mockEventService);
+        when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraints()));
+        when(mockBundler.getEtagGenerator()).thenReturn(new EtagGenerator() { });
+        when(mockBundler.getTimemapGenerator()).thenReturn(new TimemapGenerator() { });
     }
 
     private void setUpResourceService() {

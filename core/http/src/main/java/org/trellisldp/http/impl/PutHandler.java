@@ -117,7 +117,7 @@ public class PutHandler extends MutatingLdpHandler {
         // Check the cache
         if (getResource() != null) {
             final Instant modified = getResource().getModified();
-            final EntityTag etag = new EntityTag(etagGenerator.getValue(getResource()));
+            final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(getResource()));
 
             // Check the cache
             checkRequiredPreconditions(preconditionRequired, getRequest().getHeaders().getFirst(IF_MATCH),

@@ -14,24 +14,31 @@
 package org.trellisldp.webapp;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import com.google.common.cache.Cache;
 
+import java.util.List;
+
 import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 
@@ -51,6 +58,9 @@ public class WebappServiceBundler implements ServiceBundler {
     private final BinaryService binaryService;
     private final IOService ioService;
     private final EventService eventService;
+    private final TimemapGenerator timemapGenerator;
+    private final EtagGenerator etagGenerator;
+    private final List<ConstraintService> constraintServices;
 
     /**
      * Create a new application service bundler.
@@ -70,6 +80,9 @@ public class WebappServiceBundler implements ServiceBundler {
         mementoService = new FileMementoService();
         ioService = new JenaIOService(nsService, null, profileCache);
         auditService = resourceService = new TriplestoreResourceService();
+        constraintServices = singletonList(new LdpConstraints());
+        timemapGenerator = new TimemapGenerator() { };
+        etagGenerator = new EtagGenerator() { };
     }
 
     @Override
@@ -105,5 +118,20 @@ public class WebappServiceBundler implements ServiceBundler {
     @Override
     public EventService getEventService() {
         return eventService;
+    }
+
+    @Override
+    public EtagGenerator getEtagGenerator() {
+        return etagGenerator;
+    }
+
+    @Override
+    public TimemapGenerator getTimemapGenerator() {
+        return timemapGenerator;
+    }
+
+    @Override
+    public Iterable<ConstraintService> getConstraintServices() {
+        return constraintServices;
     }
 }

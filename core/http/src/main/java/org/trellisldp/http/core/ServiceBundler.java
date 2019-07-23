@@ -16,6 +16,7 @@ package org.trellisldp.http.core;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
@@ -68,4 +69,22 @@ public interface ServiceBundler {
      * @return the service for emiting notifications.
      */
     EventService getEventService();
+
+    /**
+     * Get the constraint services for this application.
+     * @return an interator of the constraint service(s).
+     */
+    Iterable<ConstraintService> getConstraintServices();
+
+    /**
+     * Get the ETag generator for this application.
+     * @return the service for generating ETags
+     */
+    EtagGenerator getEtagGenerator();
+
+    /**
+     * Get the TimemapGenerator for this application.
+     * @return the service for generating TimeMaps.
+     */
+    TimemapGenerator getTimemapGenerator();
 }

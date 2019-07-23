@@ -18,7 +18,6 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.ServiceLoader.load;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -38,7 +37,6 @@ import java.io.UncheckedIOException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -63,7 +61,6 @@ import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -380,15 +377,6 @@ public final class HttpUtils {
         } catch (final Exception ex) {
             throw new RuntimeTrellisException("Error closing dataset", ex);
         }
-    }
-
-    /**
-     * Load an Etag generator.
-     * @return the etag generator
-     */
-    public static EtagGenerator loadEtagGenerator() {
-        final Iterator<EtagGenerator> services = load(EtagGenerator.class).iterator();
-        return services.hasNext() ? services.next() : new EtagGenerator() { };
     }
 
     private HttpUtils() {
