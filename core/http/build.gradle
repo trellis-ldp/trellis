@@ -5,7 +5,7 @@ description = 'Trellis HTTP API'
 
 ext {
     moduleName = 'org.trellisldp.http'
-    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent', 'smallrye.config']
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent', 'org.trellisldp.constraint', 'smallrye.config']
 }
 
 dependencies {
