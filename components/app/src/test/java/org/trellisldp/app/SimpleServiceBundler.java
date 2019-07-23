@@ -15,13 +15,17 @@ package org.trellisldp.app;
 
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
+
+import java.util.List;
 
 import org.trellisldp.agent.SimpleAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
@@ -30,8 +34,11 @@ import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.file.FileBinaryService;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.io.NoopProfileCache;
 import org.trellisldp.triplestore.TriplestoreResourceService;
@@ -44,6 +51,9 @@ public class SimpleServiceBundler implements ServiceBundler {
     private final MementoService mementoService = new NoopMementoService();
     private final EventService eventService = new NoopEventService();
     private final AgentService agentService = new SimpleAgentService();
+    private final EtagGenerator etagGenerator = new EtagGenerator() { };
+    private final TimemapGenerator timemapGenerator = new TimemapGenerator() { };
+    private final List<ConstraintService> constraintServices = singletonList(new LdpConstraints());
     private final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, new NoopProfileCache(),
             emptySet(), emptySet());
     private final BinaryService binaryService = new FileBinaryService(new DefaultIdentifierService(),
@@ -88,5 +98,20 @@ public class SimpleServiceBundler implements ServiceBundler {
     @Override
     public EventService getEventService() {
         return eventService;
+    }
+
+    @Override
+    public TimemapGenerator getTimemapGenerator() {
+        return timemapGenerator;
+    }
+
+    @Override
+    public EtagGenerator getEtagGenerator() {
+        return etagGenerator;
+    }
+
+    @Override
+    public Iterable<ConstraintService> getConstraintServices() {
+        return constraintServices;
     }
 }

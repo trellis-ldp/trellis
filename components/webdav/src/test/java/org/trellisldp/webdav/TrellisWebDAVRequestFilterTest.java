@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 
 public class TrellisWebDAVRequestFilterTest {
@@ -79,6 +80,7 @@ public class TrellisWebDAVRequestFilterTest {
         initMocks(this);
 
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
+        when(mockBundler.getEtagGenerator()).thenReturn(new EtagGenerator() { });
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockContext.getMethod()).thenReturn(PUT);

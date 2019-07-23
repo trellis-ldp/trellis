@@ -21,7 +21,6 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
@@ -68,7 +67,6 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.http.core.TrellisRequest;
 
 /**
@@ -82,7 +80,6 @@ public final class MementoResource {
     private static final String NEXT = "next";
     private static final String TIMEMAP_PARAM = "?ext=timemap";
     private static final String VERSION_PARAM = "?version=";
-    private static final TimemapGenerator timemap = loadTimemapGenerator();
 
     private final ServiceBundler trellis;
     private final boolean includeMementoDates;
@@ -127,7 +124,8 @@ public final class MementoResource {
             final StreamingOutput stream = new StreamingOutput() {
                 @Override
                 public void write(final OutputStream out) throws IOException {
-                    trellis.getIOService().write(timemap.asRdf(identifier, allLinks), out, syntax, jsonldProfile);
+                    trellis.getIOService().write(trellis.getTimemapGenerator()
+                            .asRdf(identifier, allLinks), out, syntax, jsonldProfile);
                 }
             };
 
@@ -326,10 +324,5 @@ public final class MementoResource {
     private static boolean shouldAddPrevNextLinks(final SortedSet<Instant> mementos, final Instant time) {
         return time != null && !time.truncatedTo(SECONDS).isBefore(mementos.first().truncatedTo(SECONDS))
             && !time.truncatedTo(SECONDS).isAfter(mementos.last().truncatedTo(SECONDS));
-    }
-
-    private static TimemapGenerator loadTimemapGenerator() {
-        final Iterator<TimemapGenerator> services = load(TimemapGenerator.class).iterator();
-        return services.hasNext() ? services.next() : new TimemapGenerator() { };
     }
 }

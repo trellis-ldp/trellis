@@ -138,7 +138,7 @@ public class PatchHandler extends MutatingLdpHandler {
             throw new NotSupportedException();
         }
         // Check the cache headers
-        final EntityTag etag = new EntityTag(etagGenerator.getValue(resource));
+        final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(resource));
         checkCache(resource.getModified(), etag);
 
         setResource(resource);

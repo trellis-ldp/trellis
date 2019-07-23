@@ -13,14 +13,21 @@
  */
 package org.trellisldp.osgi;
 
+import static java.util.Collections.emptyList;
+
+import java.util.List;
+
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 
 /**
@@ -35,6 +42,9 @@ public class TrellisServiceBundler implements ServiceBundler {
     private final IOService ioService;
     private final MementoService mementoService;
     private final ResourceService resourceService;
+    private final TimemapGenerator timemapGenerator;
+    private final EtagGenerator etagGenerator;
+    private final List<ConstraintService> constraintServices;
 
     /**
      * Create a Trellis service bundler with existing services.
@@ -55,6 +65,9 @@ public class TrellisServiceBundler implements ServiceBundler {
         this.eventService = eventService;
         this.auditService = service;
         this.resourceService = service;
+        this.constraintServices = emptyList();
+        this.etagGenerator = new EtagGenerator() { };
+        this.timemapGenerator = new TimemapGenerator() { };
     }
 
     @Override
@@ -90,5 +103,20 @@ public class TrellisServiceBundler implements ServiceBundler {
     @Override
     public EventService getEventService() {
         return eventService;
+    }
+
+    @Override
+    public TimemapGenerator getTimemapGenerator() {
+        return timemapGenerator;
+    }
+
+    @Override
+    public EtagGenerator getEtagGenerator() {
+        return etagGenerator;
+    }
+
+    @Override
+    public Iterable<ConstraintService> getConstraintServices() {
+        return constraintServices;
     }
 }
