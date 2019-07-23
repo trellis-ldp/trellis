@@ -28,6 +28,7 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -230,8 +231,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     protected void checkConstraint(final Optional<Graph> graph, final IRI type, final RDFSyntax syntax) {
         graph.ifPresent(g -> {
-            final List<ConstraintViolation> violations = constraintServices.stream().parallel()
-                .flatMap(svc -> svc.constrainedBy(type, g)).collect(toList());
+            final List<ConstraintViolation> violations = new ArrayList<>();
+            getServices().getConstraintServices().forEach(svc -> svc.constrainedBy(type, g).forEach(violations::add));
             if (!violations.isEmpty()) {
                 final ResponseBuilder err = status(CONFLICT);
                 violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
