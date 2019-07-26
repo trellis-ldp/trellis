@@ -12,8 +12,3 @@ Bundle-SCM:             url=https://github.com/trellis-ldp/trellis, \
                         connection=scm:git:https://github.com/trellis-ldp/trellis.git, \
                         developerConnection=scm:git:git@github.com:trellis-ldp/trellis.git
 
-Require-Capability:     osgi.extender; filter:="(osgi.extender=osgi.serviceloader.processor)", \
-                        osgi.serviceloader; \
-                            filter:="(osgi.serviceloader=org.trellisldp.api.ActivityStreamService)"; \
-                            resolution:=mandatory
-

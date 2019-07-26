@@ -14,11 +14,9 @@
 package org.trellisldp.kafka;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.ServiceLoader.load;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import javax.inject.Inject;
@@ -32,7 +30,6 @@ import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * A Kafka message producer capable of publishing messages to a Kafka cluster.
@@ -40,40 +37,45 @@ import org.trellisldp.api.RuntimeTrellisException;
 public class KafkaPublisher implements EventService {
 
     private static final Logger LOGGER = getLogger(KafkaPublisher.class);
-    private static final ActivityStreamService service = getService(ActivityStreamService.class);
 
     /** The configuration key controlling the name of the kafka topic. **/
     public static final String CONFIG_KAFKA_TOPIC = "trellis.kafka.topic";
 
+    private final ActivityStreamService serializer;
     private final Producer<String, String> producer;
     private final String topic;
 
     /**
      * Create a new Kafka Publisher.
+     * @param serializer the event serializer
      */
     @Inject
-    public KafkaPublisher() {
-        this(getConfig());
+    public KafkaPublisher(final ActivityStreamService serializer) {
+        this(serializer, getConfig());
     }
 
-    private KafkaPublisher(final Config config) {
-        this(buildProducer(config), config.getValue(CONFIG_KAFKA_TOPIC, String.class));
+    private KafkaPublisher(final ActivityStreamService serializer, final Config config) {
+        this(serializer, buildProducer(config), config.getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
     /**
      * Create a new Kafka Publisher.
+     * @param serializer the event serializer
      * @param producer the producer
      */
-    public KafkaPublisher(final Producer<String, String> producer) {
-        this(producer, getConfig().getValue(CONFIG_KAFKA_TOPIC, String.class));
+    public KafkaPublisher(final ActivityStreamService serializer, final Producer<String, String> producer) {
+        this(serializer, producer, getConfig().getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
     /**
      * Create a new Kafka Publisher.
+     * @param serializer the event serializer
      * @param producer the producer
      * @param topic the name of the kafka topic
      */
-    public KafkaPublisher(final Producer<String, String> producer, final String topic) {
+    public KafkaPublisher(final ActivityStreamService serializer, final Producer<String, String> producer,
+            final String topic) {
+        this.serializer = requireNonNull(serializer, "The Event serializer may not be null!");
         this.producer = requireNonNull(producer, "Kafka producer may not be null!");
         this.topic = requireNonNull(topic, "Kafka topic name may not be null!");
     }
@@ -82,7 +84,7 @@ public class KafkaPublisher implements EventService {
     public void emit(final Event event) {
         requireNonNull(event, "Cannot emit a null event!");
 
-        service.serialize(event).ifPresent(message -> {
+        serializer.serialize(event).ifPresent(message -> {
             LOGGER.debug("Sending message to Kafka topic: {}", topic);
             producer.send(
                 new ProducerRecord<>(topic, event.getTarget().map(IRI::getIRIString).orElse(null),
@@ -110,14 +112,5 @@ public class KafkaPublisher implements EventService {
         p.setProperty("bootstrap.servers", config.getValue("trellis.kafka.bootstrap.servers", String.class));
 
         return new KafkaProducer<>(p);
-    }
-
-    /** Package-private. **/
-    static <T> T getService(final Class<T> service) {
-        final Iterator<T> services = load(service).iterator();
-        if (services.hasNext()) {
-            return services.next();
-        }
-        throw new RuntimeTrellisException("No ActivityStream service available!");
     }
 }

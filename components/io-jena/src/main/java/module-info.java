@@ -27,7 +27,4 @@ module org.trellisldp.io {
 
     provides org.trellisldp.api.IOService
         with org.trellisldp.io.JenaIOService;
-
-    uses org.trellisldp.api.NamespaceService;
-    uses org.trellisldp.api.RDFaWriterService;
 }

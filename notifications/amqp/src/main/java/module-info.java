@@ -19,9 +19,4 @@ module org.trellisldp.amqp {
     requires javax.inject;
     requires microprofile.config.api;
     requires slf4j.api;
-
-    provides org.trellisldp.api.EventService
-        with org.trellisldp.amqp.AmqpPublisher;
-
-    uses org.trellisldp.api.ActivityStreamService;
 }

@@ -19,13 +19,11 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
-import java.io.InputStream;
 import java.time.Instant;
 
 import javax.jms.Connection;
@@ -43,12 +41,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.event.EventSerializer;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -60,6 +57,7 @@ public class JmsPublisherTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final BrokerService BROKER = new BrokerService();
+    private static final ActivityStreamService serializer = new EventSerializer();
 
     private final String queueName = "queue";
 
@@ -120,7 +118,7 @@ public class JmsPublisherTest {
 
     @Test
     public void testJms() throws JMSException {
-        final EventService svc = new JmsPublisher(mockConnection);
+        final EventService svc = new JmsPublisher(serializer, mockConnection);
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
@@ -128,7 +126,7 @@ public class JmsPublisherTest {
 
     @Test
     public void testQueue() throws JMSException {
-        final EventService svc = new JmsPublisher(mockSession, queueName, true);
+        final EventService svc = new JmsPublisher(serializer, mockSession, queueName, true);
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
@@ -137,7 +135,7 @@ public class JmsPublisherTest {
 
     @Test
     public void testTopic() throws JMSException {
-        final EventService svc = new JmsPublisher(mockSession, queueName, false);
+        final EventService svc = new JmsPublisher(serializer, mockSession, queueName, false);
         svc.emit(mockEvent);
 
         verify(mockTopicProducer).send(eq(mockMessage));
@@ -145,46 +143,12 @@ public class JmsPublisherTest {
     }
 
     @Test
-    public void testDefaultJms() throws JMSException {
-        assertDoesNotThrow(() -> new JmsPublisher());
-    }
-
-    @Test
-    public void testDefaultJmsWithUsername() throws JMSException {
-        try {
-            System.setProperty("trellis.jms.username", "user");
-            System.setProperty("trellis.jms.password", "pass");
-            assertDoesNotThrow(() -> new JmsPublisher());
-        } finally {
-            System.clearProperty("trellis.jms.username");
-            System.clearProperty("trellis.jms.password");
-        }
-    }
-
-    @Test
-    public void testDefaultJmsWithoutPass() throws JMSException {
-        try {
-            System.setProperty("trellis.jms.username", "user");
-            assertDoesNotThrow(() -> new JmsPublisher());
-        } finally {
-            System.clearProperty("trellis.jms.username");
-        }
-    }
-
-    @Test
     public void testError() throws JMSException {
         doThrow(JMSException.class).when(mockProducer).send(eq(mockMessage));
 
-        final EventService svc = new JmsPublisher(mockSession, queueName);
+        final EventService svc = new JmsPublisher(serializer, mockSession, queueName);
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
-    }
-
-    @Test
-    @EnabledOnJre(JAVA_8)
-    public void testGetService() {
-        assertThrows(RuntimeTrellisException.class, () -> JmsPublisher.getService(InputStream.class));
-        assertDoesNotThrow(() -> JmsPublisher.getService(ActivityStreamService.class));
     }
 }

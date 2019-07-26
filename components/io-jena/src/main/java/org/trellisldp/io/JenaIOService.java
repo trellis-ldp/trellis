@@ -19,7 +19,6 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
-import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -48,11 +47,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -125,9 +122,8 @@ public class JenaIOService implements IOService {
     /**
      * Create a serialization service.
      */
-    @Inject
     public JenaIOService() {
-        this(getDefaultService(NamespaceService.class, NoopNamespaceService::new));
+        this(new NoopNamespaceService());
     }
 
     /**
@@ -135,7 +131,7 @@ public class JenaIOService implements IOService {
      * @param namespaceService the namespace service
      */
     public JenaIOService(final NamespaceService namespaceService) {
-        this(namespaceService, getDefaultService(RDFaWriterService.class));
+        this(namespaceService, null);
     }
 
     /**
@@ -155,6 +151,7 @@ public class JenaIOService implements IOService {
      * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
      */
+    @Inject
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
             @TrellisProfileCache final CacheService<String, String> cache) {
@@ -387,21 +384,5 @@ public class JenaIOService implements IOService {
 
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {
         return JSONLD_FORMATS.get(mergeProfiles(profiles));
-    }
-
-    private static <T> T getDefaultService(final Class<T> service) {
-        final Iterator<T> services = load(service).iterator();
-        if (services.hasNext()) {
-            return services.next();
-        }
-        return null;
-    }
-
-    private static <T> T getDefaultService(final Class<T> service, final Supplier<T> supplier) {
-        final Iterator<T> services = load(service).iterator();
-        if (services.hasNext()) {
-            return services.next();
-        }
-        return supplier.get();
     }
 }

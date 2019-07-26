@@ -14,20 +14,13 @@
 package org.trellisldp.amqp;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.ServiceLoader.load;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.GeneralSecurityException;
-import java.util.Iterator;
-import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
@@ -36,7 +29,6 @@ import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * An AMQP message producer capable of publishing messages to an AMQP broker such as
@@ -45,8 +37,6 @@ import org.trellisldp.api.RuntimeTrellisException;
 public class AmqpPublisher implements EventService {
 
     private static final Logger LOGGER = getLogger(AmqpPublisher.class);
-
-    private static final ActivityStreamService service = getService(ActivityStreamService.class);
 
     /** The configuration key controlling the AMQP exchange name. **/
     public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
@@ -63,6 +53,7 @@ public class AmqpPublisher implements EventService {
     /** The configuration key controlling the AMQP connection URI. **/
     public static final String CONFIG_AMQP_URI = "trellis.amqp.uri";
 
+    private final ActivityStreamService service;
     private final Channel channel;
     private final String exchangeName;
     private final String routingKey;
@@ -71,31 +62,16 @@ public class AmqpPublisher implements EventService {
 
     /**
      * Create an AMQP publisher.
-     * @throws IOException in the event that an I/O related error occurs when connecting
-     * @throws GeneralSecurityException in the event that a security error occurs when connecting
-     * @throws URISyntaxException in the event that the connection URI is syntactically incorrect
-     * @throws TimeoutException in the event that the connection times out
-     */
-    @Inject
-    public AmqpPublisher() throws IOException, GeneralSecurityException, URISyntaxException, TimeoutException {
-        this(getConfig());
-    }
-
-    private AmqpPublisher(final Config config) throws IOException, GeneralSecurityException, URISyntaxException,
-            TimeoutException {
-        this(buildConnection(config.getValue(CONFIG_AMQP_URI, String.class)).createChannel(), config);
-    }
-
-    /**
-     * Create an AMQP publisher.
+     * @param serializer the event serializer
      * @param channel the channel
      */
-    public AmqpPublisher(final Channel channel) {
-        this(channel, getConfig());
+    @Inject
+    public AmqpPublisher(final ActivityStreamService serializer, final Channel channel) {
+        this(serializer, channel, getConfig());
     }
 
-    private AmqpPublisher(final Channel channel, final Config config) {
-        this(channel, config.getValue(CONFIG_AMQP_EXCHANGE_NAME, String.class),
+    private AmqpPublisher(final ActivityStreamService serializer, final Channel channel, final Config config) {
+        this(serializer, channel, config.getValue(CONFIG_AMQP_EXCHANGE_NAME, String.class),
                 config.getValue(CONFIG_AMQP_ROUTING_KEY, String.class),
             config.getOptionalValue(CONFIG_AMQP_MANDATORY, Boolean.class).orElse(Boolean.TRUE),
             config.getOptionalValue(CONFIG_AMQP_IMMEDIATE, Boolean.class).orElse(Boolean.FALSE));
@@ -103,24 +79,28 @@ public class AmqpPublisher implements EventService {
 
     /**
      * Create an AMQP publisher.
+     * @param serializer the event serializer
      * @param channel the channel
      * @param exchangeName the exchange name
      * @param routingKey the routing key
      */
-    public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey) {
-        this(channel, exchangeName, routingKey, true, false);
+    public AmqpPublisher(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
+            final String routingKey) {
+        this(serializer, channel, exchangeName, routingKey, true, false);
     }
 
     /**
      * Create an AMQP publisher.
+     * @param serializer the event serializer
      * @param channel the channel
      * @param exchangeName the exchange name
      * @param routingKey the routing key
      * @param mandatory the mandatory setting
      * @param immediate the immediate setting
      */
-    public AmqpPublisher(final Channel channel, final String exchangeName, final String routingKey,
-            final boolean mandatory, final boolean immediate) {
+    public AmqpPublisher(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
+            final String routingKey, final boolean mandatory, final boolean immediate) {
+        this.service = requireNonNull(serializer, "Event serializer may not be null!");
         this.channel = requireNonNull(channel, "AMQP Channel may not be null!");
         this.exchangeName = requireNonNull(exchangeName, "AMQP exchange name may not be null!");
         this.routingKey = requireNonNull(routingKey, "AMQP routing key may not be null!");
@@ -143,21 +123,5 @@ public class AmqpPublisher implements EventService {
                 LOGGER.error("Error writing to broker: {}", ex.getMessage());
             }
         });
-    }
-
-    private static Connection buildConnection(final String uri) throws IOException, GeneralSecurityException,
-            URISyntaxException, TimeoutException {
-        final ConnectionFactory factory = new ConnectionFactory();
-        factory.setUri(uri);
-        return factory.newConnection();
-    }
-
-    /** Package-private. **/
-    static <T> T getService(final Class<T> service) {
-        final Iterator<T> services = load(service).iterator();
-        if (services.hasNext()) {
-            return services.next();
-        }
-        throw new RuntimeTrellisException("No ActivityStream service available!");
     }
 }

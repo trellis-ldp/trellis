@@ -14,14 +14,6 @@ Bundle-SCM:             url=https://github.com/trellis-ldp/trellis, \
 
 Require-Capability:     osgi.extender; \
                             filter:="(osgi.extender=osgi.serviceloader.registrar)"; \
-                            resolution:=optional, \
-                        osgi.extender; \
-                            filter:="(osgi.extender=osgi.serviceloader.processor)", \
-                        osgi.serviceloader; \
-                            filter:="(osgi.serviceloader=org.trellisldp.api.RDFaWriterService)"; \
-                            resolution:=optional, \
-                        osgi.serviceloader; \
-                            filter:="(osgi.serviceloader=org.trellisldp.api.NamespaceService)"; \
                             resolution:=optional
 Provide-Capability:     osgi.serviceloader; \
                             osgi.serviceloader=org.trellisldp.api.IOService

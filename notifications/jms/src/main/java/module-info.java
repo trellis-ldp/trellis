@@ -16,15 +16,9 @@ module org.trellisldp.jms {
 
     requires org.trellisldp.api;
     requires org.apache.commons.rdf.api;
-    requires activemq.client;
     requires java.naming;
     requires javax.jms.api;
     requires javax.inject;
     requires microprofile.config.api;
     requires slf4j.api;
-
-    provides org.trellisldp.api.EventService
-        with org.trellisldp.jms.JmsPublisher;
-
-    uses org.trellisldp.api.ActivityStreamService;
 }

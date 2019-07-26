@@ -17,7 +17,6 @@ import static java.nio.file.Files.copy;
 import static java.nio.file.Files.delete;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
-import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -26,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.util.Iterator;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
@@ -66,9 +64,8 @@ public class FileBinaryService implements BinaryService {
     /**
      * Create a File-based Binary service.
      */
-    @Inject
     public FileBinaryService() {
-        this(getDefaultIdentifierService());
+        this(new DefaultIdentifierService());
     }
 
     /**
@@ -76,6 +73,7 @@ public class FileBinaryService implements BinaryService {
      *
      * @param idService an identifier service
      */
+    @Inject
     public FileBinaryService(final IdentifierService idService) {
         this(idService, ConfigProvider.getConfig());
     }
@@ -154,13 +152,5 @@ public class FileBinaryService implements BinaryService {
             return trimStart(str.substring(trim.length()), trim);
         }
         return str;
-    }
-
-    private static IdentifierService getDefaultIdentifierService() {
-        final Iterator<IdentifierService> services = load(IdentifierService.class).iterator();
-        if (services.hasNext()) {
-            return services.next();
-        }
-        return new DefaultIdentifierService();
     }
 }

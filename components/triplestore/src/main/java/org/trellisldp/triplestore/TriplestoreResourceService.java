@@ -19,8 +19,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.synchronizedList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
@@ -48,8 +46,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
@@ -114,7 +110,6 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
     /**
      * Create a triplestore-backed resource service.
      */
-    @Inject
     public TriplestoreResourceService() {
         this(buildRDFConnection(getConfig().getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class)
                     .orElse(null)));
@@ -125,8 +120,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param rdfConnection the connection to an RDF datastore
      */
     public TriplestoreResourceService(final RDFConnection rdfConnection) {
-        this(rdfConnection, of(load(IdentifierService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
-                .map(Iterator::next).orElseGet(DefaultIdentifierService::new));
+        this(rdfConnection, new DefaultIdentifierService());
     }
 
     /**
@@ -134,6 +128,7 @@ public class TriplestoreResourceService extends DefaultAuditService implements R
      * @param rdfConnection the connection to an RDF datastore
      * @param identifierService an ID supplier service
      */
+    @Inject
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
         super();
         this.includeLdpType = getConfig().getOptionalValue(CONFIG_TRIPLESTORE_LDP_TYPE, Boolean.class)
