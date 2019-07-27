@@ -21,7 +21,6 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
-import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -34,7 +33,6 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -99,7 +97,7 @@ public class WebAcService {
      * Create a WebAC-based authorization service.
      */
     public WebAcService() {
-        this(getDefaultResourceService());
+        this(new NoopResourceService());
     }
 
     /**
@@ -107,7 +105,6 @@ public class WebAcService {
      *
      * @param resourceService the resource service
      */
-    @Inject
     public WebAcService(final ResourceService resourceService) {
         this(resourceService, new NoopAuthorizationCache());
     }
@@ -118,6 +115,7 @@ public class WebAcService {
      * @param resourceService the resource service
      * @param cache a cache
      */
+    @Inject
     public WebAcService(final ResourceService resourceService,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
         this(resourceService, cache, getConfig()
@@ -292,14 +290,6 @@ public class WebAcService {
      */
     private static IRI cleanIdentifier(final IRI identifier) {
         return rdf.createIRI(cleanIdentifier(identifier.getIRIString()));
-    }
-
-    private static ResourceService getDefaultResourceService() {
-        final Iterator<ResourceService> services = load(ResourceService.class).iterator();
-        if (services.hasNext()) {
-            return services.next();
-        }
-        return new NoopResourceService();
     }
 
     @TrellisAuthorizationCache

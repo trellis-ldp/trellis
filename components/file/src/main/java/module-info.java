@@ -29,6 +29,4 @@ module org.trellisldp.file {
         with org.trellisldp.file.FileBinaryService;
     provides org.trellisldp.api.MementoService
         with org.trellisldp.file.FileMementoService;
-
-    uses org.trellisldp.api.IdentifierService;
 }

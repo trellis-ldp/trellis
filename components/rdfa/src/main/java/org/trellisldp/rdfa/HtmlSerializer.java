@@ -17,7 +17,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
-import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
@@ -33,7 +32,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -73,9 +71,8 @@ public class HtmlSerializer implements RDFaWriterService {
     /**
      * Create an HTML Serializer object.
      */
-    @Inject
     public HtmlSerializer() {
-        this(getDefaultNamespaceService());
+        this(new NoopNamespaceService());
     }
 
     /**
@@ -83,6 +80,7 @@ public class HtmlSerializer implements RDFaWriterService {
      *
      * @param namespaceService a namespace service
      */
+    @Inject
     public HtmlSerializer(final NamespaceService namespaceService) {
         this(namespaceService, getConfig());
     }
@@ -163,13 +161,5 @@ public class HtmlSerializer implements RDFaWriterService {
             return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
         }
         return emptyList();
-    }
-
-    private static NamespaceService getDefaultNamespaceService() {
-        final Iterator<NamespaceService> services = load(NamespaceService.class).iterator();
-        if (services.hasNext()) {
-            return services.next();
-        }
-        return new NoopNamespaceService();
     }
 }

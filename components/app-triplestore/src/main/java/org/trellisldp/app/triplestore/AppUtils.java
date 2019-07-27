@@ -30,10 +30,12 @@ import javax.jms.JMSException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
+import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.app.config.NotificationsConfiguration;
+import org.trellisldp.event.EventSerializer;
 import org.trellisldp.jms.JmsPublisher;
 import org.trellisldp.kafka.KafkaPublisher;
 
@@ -42,6 +44,7 @@ final class AppUtils {
     private static final String UN_KEY = "username";
     private static final String PW_KEY = "password";
     private static final Logger LOGGER = getLogger(AppUtils.class);
+    private static final ActivityStreamService serializer = new EventSerializer();
 
     public static Properties getKafkaProperties(final NotificationsConfiguration config) {
         final Properties p = new Properties();
@@ -72,7 +75,7 @@ final class AppUtils {
         LOGGER.info("Connecting to Kafka broker at {}", config.getConnectionString());
         final KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getKafkaProperties(config));
         environment.lifecycle().manage(new AutoCloseableManager(kafkaProducer));
-        return new KafkaPublisher(kafkaProducer, config.getTopicName());
+        return new KafkaPublisher(serializer, kafkaProducer, config.getTopicName());
     }
 
     private static EventService buildJmsPublisher(final NotificationsConfiguration config,
@@ -82,7 +85,8 @@ final class AppUtils {
         environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
         final boolean useQueue = parseBoolean(config.any().getOrDefault("use.queue", "true"));
 
-        return new JmsPublisher(jmsConnection.createSession(false, AUTO_ACKNOWLEDGE), config.getTopicName(), useQueue);
+        return new JmsPublisher(serializer, jmsConnection.createSession(false, AUTO_ACKNOWLEDGE), config.getTopicName(),
+                useQueue);
     }
 
     public static EventService getNotificationService(final NotificationsConfiguration config,

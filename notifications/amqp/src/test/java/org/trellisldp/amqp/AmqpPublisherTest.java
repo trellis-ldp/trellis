@@ -18,8 +18,6 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
-import static org.junit.jupiter.api.condition.OS.WINDOWS;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -29,7 +27,6 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,13 +39,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.event.EventSerializer;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -60,6 +55,7 @@ public class AmqpPublisherTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final SystemLauncher broker = new SystemLauncher();
+    private static final ActivityStreamService serializer = new EventSerializer();
 
     private final String exchangeName = "exchange";
     private final String queueName = "queue";
@@ -101,14 +97,8 @@ public class AmqpPublisherTest {
     }
 
     @Test
-    @DisabledOnOs(WINDOWS)
-    public void testDefaultService() {
-        assertDoesNotThrow(() -> new AmqpPublisher());
-    }
-
-    @Test
     public void testAmqp() throws IOException {
-        final EventService svc = new AmqpPublisher(mockChannel, exchangeName, queueName);
+        final EventService svc = new AmqpPublisher(serializer, mockChannel, exchangeName, queueName);
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
@@ -117,7 +107,7 @@ public class AmqpPublisherTest {
 
     @Test
     public void testAmqpConfiguration() throws IOException {
-        final EventService svc = new AmqpPublisher(mockChannel);
+        final EventService svc = new AmqpPublisher(serializer, mockChannel);
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
@@ -129,17 +119,10 @@ public class AmqpPublisherTest {
         doThrow(IOException.class).when(mockChannel).basicPublish(eq(exchangeName), eq(queueName),
                 anyBoolean(), anyBoolean(), any(BasicProperties.class), any(byte[].class));
 
-        final EventService svc = new AmqpPublisher(mockChannel, exchangeName, queueName, true, true);
+        final EventService svc = new AmqpPublisher(serializer, mockChannel, exchangeName, queueName, true, true);
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));
-    }
-
-    @Test
-    @EnabledOnJre(JAVA_8)
-    public void testGetService() {
-        assertThrows(RuntimeTrellisException.class, () -> AmqpPublisher.getService(InputStream.class));
-        assertDoesNotThrow(() -> AmqpPublisher.getService(ActivityStreamService.class));
     }
 }

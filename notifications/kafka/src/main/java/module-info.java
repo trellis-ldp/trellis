@@ -20,9 +20,4 @@ module org.trellisldp.kafka {
     requires javax.inject;
     requires microprofile.config.api;
     requires slf4j.api;
-
-    provides org.trellisldp.api.EventService
-        with org.trellisldp.kafka.KafkaPublisher;
-
-    uses org.trellisldp.api.ActivityStreamService;
 }
