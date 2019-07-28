@@ -34,7 +34,7 @@ ext {
     activationApiVersion = '1.2.0'
     activeMqVersion = '5.15.9'
     commonsCompressVersion = '1.18'
-    dropwizardVersion = '1.3.12'
+    dropwizardVersion = '1.3.13'
     guavaVersion = '28.0-jre'
     jacksonVersion = '2.9.9'
     jaxbVersion = '2.3.1'
@@ -166,12 +166,14 @@ allprojects { subproj ->
             substitute module("org.apache.geronimo.specs:geronimo-jms_1.1_spec") with module("javax.jms:javax.jms-api:$javaxJmsVersion")
             substitute module("org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec") with module("javax.management.j2ee:javax.management.j2ee-api:$javaxManagementVersion")
         }
+        /*
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
             if (details.requested.group.startsWith('com.fasterxml.jackson.')) {
                 details.useVersion jacksonVersion
                 details.because 'Jackson modules should use a consistent version'
             }
         }
+        */
     }
 }
 
