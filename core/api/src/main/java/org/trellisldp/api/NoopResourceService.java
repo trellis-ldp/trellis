@@ -22,15 +22,13 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import javax.enterprise.inject.Alternative;
-
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 
 /**
  * A no-op resource service that can be used with CDI and proxy objects.
  */
-@Alternative
+@NoopImplementation
 public class NoopResourceService implements ResourceService {
 
     private static final CompletableFuture<Void> NO_RESULT = completedFuture(null);
