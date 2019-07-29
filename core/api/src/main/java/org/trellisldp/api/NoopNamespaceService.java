@@ -17,15 +17,13 @@ package org.trellisldp.api;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.enterprise.inject.Alternative;
-
 /**
  * A {@link NamespaceService} that stores nothing and offers nothing.
  *
  * @author ajs6f
  *
  */
-@Alternative
+@NoopImplementation
 public class NoopNamespaceService implements NamespaceService {
 
     @Override

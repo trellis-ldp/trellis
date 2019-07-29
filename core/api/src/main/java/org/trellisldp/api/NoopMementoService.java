@@ -21,14 +21,12 @@ import java.time.Instant;
 import java.util.SortedSet;
 import java.util.concurrent.CompletionStage;
 
-import javax.enterprise.inject.Alternative;
-
 import org.apache.commons.rdf.api.IRI;
 
 /**
  * A no-op MementoService implementation.
  */
-@Alternative
+@NoopImplementation
 public class NoopMementoService implements MementoService {
 
     @Override
