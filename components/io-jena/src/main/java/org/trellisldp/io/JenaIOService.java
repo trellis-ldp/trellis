@@ -122,6 +122,7 @@ public class JenaIOService implements IOService {
     /**
      * Create a serialization service.
      */
+    @Inject
     public JenaIOService() {
         this(new NoopNamespaceService());
     }
@@ -151,7 +152,6 @@ public class JenaIOService implements IOService {
      * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
      */
-    @Inject
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
             @TrellisProfileCache final CacheService<String, String> cache) {
