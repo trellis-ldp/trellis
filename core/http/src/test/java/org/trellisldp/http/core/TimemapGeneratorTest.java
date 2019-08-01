@@ -27,7 +27,7 @@ public class TimemapGeneratorTest {
 
     @Test
     public void testIsMementoLink() {
-        final TimemapGenerator svc = new TimemapGenerator() { };
+        final TimemapGenerator svc = new DefaultTimemapGenerator();
         assertTrue(svc.isMementoLink(fromUri(url).rel("memento")
                     .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()), "Valid Memento Link header skipped!");
         assertFalse(svc.isMementoLink(fromUri(url).rel("foo")

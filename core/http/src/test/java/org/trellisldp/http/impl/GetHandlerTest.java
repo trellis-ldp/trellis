@@ -78,6 +78,7 @@ import javax.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -89,7 +90,7 @@ import org.trellisldp.vocabulary.SKOS;
  */
 public class GetHandlerTest extends BaseTestHandler {
 
-    private static final EtagGenerator etagGenerator = new EtagGenerator() { };
+    private static final EtagGenerator etagGenerator = new DefaultEtagGenerator();
 
     private BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///testResource.txt"))
         .mimeType("text/plain").build();

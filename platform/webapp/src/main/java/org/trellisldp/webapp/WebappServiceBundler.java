@@ -36,6 +36,8 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
+import org.trellisldp.http.core.DefaultEtagGenerator;
+import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
@@ -81,8 +83,8 @@ public class WebappServiceBundler implements ServiceBundler {
         ioService = new JenaIOService(nsService, null, profileCache);
         auditService = resourceService = new TriplestoreResourceService();
         constraintServices = singletonList(new LdpConstraints());
-        timemapGenerator = new TimemapGenerator() { };
-        etagGenerator = new EtagGenerator() { };
+        timemapGenerator = new DefaultTimemapGenerator();
+        etagGenerator = new DefaultEtagGenerator();
     }
 
     @Override

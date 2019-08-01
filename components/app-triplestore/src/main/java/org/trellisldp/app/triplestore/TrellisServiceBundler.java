@@ -40,6 +40,8 @@ import org.trellisldp.app.TrellisCache;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
+import org.trellisldp.http.core.DefaultEtagGenerator;
+import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
@@ -76,8 +78,8 @@ public class TrellisServiceBundler implements ServiceBundler {
     public TrellisServiceBundler(final AppConfiguration config, final Environment environment) {
         agentService = new SimpleAgentService();
         mementoService = new FileMementoService(config.getMementos());
-        etagGenerator = new EtagGenerator() { };
-        timemapGenerator = new TimemapGenerator() { };
+        etagGenerator = new DefaultEtagGenerator();
+        timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = singletonList(new LdpConstraints());
         auditService = resourceService = buildResourceService(config, environment);
         binaryService = buildBinaryService(config);

@@ -36,6 +36,8 @@ import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.file.FileBinaryService;
+import org.trellisldp.http.core.DefaultEtagGenerator;
+import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
@@ -51,8 +53,8 @@ public class SimpleServiceBundler implements ServiceBundler {
     private final MementoService mementoService = new NoopMementoService();
     private final EventService eventService = new NoopEventService();
     private final AgentService agentService = new SimpleAgentService();
-    private final EtagGenerator etagGenerator = new EtagGenerator() { };
-    private final TimemapGenerator timemapGenerator = new TimemapGenerator() { };
+    private final EtagGenerator etagGenerator = new DefaultEtagGenerator();
+    private final TimemapGenerator timemapGenerator = new DefaultTimemapGenerator();
     private final List<ConstraintService> constraintServices = singletonList(new LdpConstraints());
     private final IOService ioService = new JenaIOService(new NoopNamespaceService(), null, new NoopProfileCache(),
             emptySet(), emptySet());
