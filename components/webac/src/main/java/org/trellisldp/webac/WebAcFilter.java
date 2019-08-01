@@ -39,6 +39,7 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -100,6 +101,13 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
     public static final String CONFIG_WEBAC_REALM = "trellis.webac.realm";
 
+    /**
+     * The configuration key controlling the response code for forbidden resources.
+     *
+     * <p>A true value will cause 404 Not Found responses to be generated for forbidden resources.
+     */
+    public static final String CONFIG_WEBAC_HIDE_FORBIDDEN_RESOURCES = "trellis.webac.hide.forbidden.resources";
+
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final RDF rdf = getInstance();
     private static final String ORIGIN = "Origin";
@@ -110,6 +118,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     protected final WebAcService accessService;
     private final List<String> challenges;
     private final String baseUrl;
+    private final boolean hideForbiddenResources;
 
     /**
      * No-op constructor for CDI.
@@ -118,6 +127,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         this.accessService = null;
         this.challenges = null;
         this.baseUrl = null;
+        this.hideForbiddenResources = false;
     }
 
     /**
@@ -134,6 +144,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         this(accessService,
                 asList(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
                 config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
+                config.getOptionalValue(CONFIG_WEBAC_HIDE_FORBIDDEN_RESOURCES, Boolean.class).orElse(false),
                 config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
@@ -143,12 +154,15 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param accessService the access service
      * @param challengeTypes the WWW-Authenticate challenge types
      * @param realm the authentication realm
+     * @param hideForbiddenResources true indicates using a 404 response code for forbidden resources, thereby
+     *              hiding them from clients; otherwise, 403 response code will be generated for forbidden resources
      * @param baseUrl the base URL, may be null
      */
     public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
-            final String realm, final String baseUrl) {
+            final String realm, final boolean hideForbiddenResources, final String baseUrl) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
+        this.hideForbiddenResources = hideForbiddenResources;
         this.accessService = requireNonNull(accessService, "Access Control service may not be null!");
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
             .collect(toList());
@@ -223,6 +237,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
+            } else if (hideForbiddenResources) {
+                throw new NotFoundException();
             }
             throw new ForbiddenException();
         }
@@ -235,6 +251,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
+            } else if (hideForbiddenResources) {
+                throw new NotFoundException();
             }
             throw new ForbiddenException();
         }
@@ -247,6 +265,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
+            } else if (hideForbiddenResources) {
+                throw new NotFoundException();
             }
             throw new ForbiddenException();
         }
@@ -259,6 +279,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             if (Trellis.AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
+            } else if (hideForbiddenResources) {
+                throw new NotFoundException();
             }
             throw new ForbiddenException();
         }

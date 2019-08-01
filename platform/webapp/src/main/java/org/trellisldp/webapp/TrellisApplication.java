@@ -55,7 +55,7 @@ public class TrellisApplication extends ResourceConfig {
         register(new OAuthFilter());
         register(new BasicAuthFilter());
         register(new WebAcFilter(new WebAcService(serviceBundler.getResourceService()), asList("Basic", "Bearer"),
-                        "trellis", baseUrl));
+                        "trellis", false, baseUrl));
 
         AppUtils.getCacheControlFilter().ifPresent(this::register);
         AppUtils.getCORSFilter().ifPresent(this::register);

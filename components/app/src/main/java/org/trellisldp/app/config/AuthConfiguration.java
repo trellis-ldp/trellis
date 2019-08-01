@@ -27,6 +27,7 @@ public class AuthConfiguration {
     private JwtAuthConfiguration jwt = new JwtAuthConfiguration();
     private BasicAuthConfiguration basic = new BasicAuthConfiguration();
     private WebacConfiguration webac = new WebacConfiguration();
+    private boolean hideForbiddenResources = false;
 
     @NotNull
     private String realm = "trellis";
@@ -122,5 +123,23 @@ public class AuthConfiguration {
     @JsonProperty
     public void setRealm(final String realm) {
         this.realm = realm;
+    }
+
+    /**
+     * Get whether to hide forbidden resources.
+     * @return whether to hide forbidden resources; by default, this is false
+     */
+    @JsonProperty
+    public boolean getHideForbiddenResources() {
+        return hideForbiddenResources;
+    }
+
+    /**
+     * Set whether to hide forbidden resources.
+     * @param hideForbiddenResources true to hide forbidden resources; false otherwise
+     */
+    @JsonProperty
+    public void setHideForbiddenResources(final boolean hideForbiddenResources) {
+        this.hideForbiddenResources = hideForbiddenResources;
     }
 }
