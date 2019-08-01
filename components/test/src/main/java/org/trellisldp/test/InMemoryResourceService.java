@@ -39,6 +39,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -64,11 +65,7 @@ public class InMemoryResourceService implements ResourceService {
 
     private final AtomicLong idCounter = new AtomicLong();
 
-<<<<<<< HEAD
-    private final Map<IRI, Resource> resources = new ConcurrentHashMap<>();
-=======
     private final Map<IRI, InMemoryResource> resources = new ConcurrentHashMap<>();
-
 
     private final Map<IRI, Dataset> auditData = new ConcurrentHashMap<>();
 
@@ -85,7 +82,7 @@ public class InMemoryResourceService implements ResourceService {
 
     @Override
     public CompletionStage<? extends Resource> get(IRI identifier) {
-<<<<<<< HEAD
+
         if (resources.containsKey(identifier)) {
             LOG.debug("Retrieving resource: {}", identifier);
             final Resource resource = resources.get(identifier);
@@ -96,9 +93,6 @@ public class InMemoryResourceService implements ResourceService {
         }
         LOG.debug("Resource: {} not found.", identifier);
         return completedFuture(MISSING_RESOURCE);
-=======
-        return completedFuture(resources.get(identifier));
->>>>>>> Introducing in-memory services
     }
 
     @Override
@@ -107,11 +101,7 @@ public class InMemoryResourceService implements ResourceService {
         final IRI ixnModel = meta.getInteractionModel();
         final IRI container = meta.getContainer().orElse(null);
         final InMemoryResource newResource = new InMemoryResource(identifier, ixnModel, container, now(), data);
-<<<<<<< HEAD
         resources.put(identifier, newResource);
-=======
-        resources.replace(identifier, newResource);
->>>>>>> Introducing in-memory services
         return DONE;
     }
 
@@ -124,23 +114,15 @@ public class InMemoryResourceService implements ResourceService {
     @Override
     public CompletionStage<Void> add(IRI identifier, Dataset newData) {
         final Dataset oldData = auditData.computeIfAbsent(identifier, k -> rdfFactory.createDataset());
-<<<<<<< HEAD
         newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q)).forEach(oldData::add);
         final Dataset refreshedData = auditData.get(identifier);
         refreshedData.stream().forEach(q -> LOG.debug("Recorded audit tuple: {}", q));
-=======
-        newData.stream().forEach(oldData::add);
->>>>>>> Introducing in-memory services
         return DONE;
     }
 
     @Override
     public CompletionStage<Void> touch(IRI identifier) {
-<<<<<<< HEAD
-        ((InMemoryResource) resources.get(identifier)).modified = now();
-=======
         resources.get(identifier).modified = now();
->>>>>>> Introducing in-memory services
         return DONE;
     }
 
@@ -159,6 +141,14 @@ public class InMemoryResourceService implements ResourceService {
         private final IRI identifier, ixnModel, container;
 
         private Instant modified;
+        
+        
+
+        @Override
+        public Optional<BinaryMetadata> getBinaryMetadata() {
+            // TODO Auto-generated method stub
+            return Resource.super.getBinaryMetadata();
+        }
 
         private final Dataset dataset;
 
@@ -195,13 +185,10 @@ public class InMemoryResourceService implements ResourceService {
         public Stream<Quad> stream() {
             return (Stream<Quad>) dataset.stream();
         }
-<<<<<<< HEAD
 
         @Override
         public Dataset dataset() {
             return dataset;
         }
-=======
->>>>>>> Introducing in-memory services
     }
 }
