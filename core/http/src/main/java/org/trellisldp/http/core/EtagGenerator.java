@@ -13,8 +13,6 @@
  */
 package org.trellisldp.http.core;
 
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
-
 import org.trellisldp.api.Resource;
 
 public interface EtagGenerator {
@@ -28,7 +26,5 @@ public interface EtagGenerator {
      * @param resource the Trellis resource
      * @return the value for the entity tag
      */
-    default String getValue(final Resource resource) {
-        return md5Hex(resource.getModified().getNano() + "." + resource.getIdentifier());
-    }
+    String getValue(Resource resource);
 }

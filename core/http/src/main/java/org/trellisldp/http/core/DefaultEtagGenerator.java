@@ -13,11 +13,20 @@
  */
 package org.trellisldp.http.core;
 
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+
 import javax.enterprise.context.ApplicationScoped;
+
+import org.trellisldp.api.Resource;
 
 /**
  * A default EtagGenerator.
  */
 @ApplicationScoped
 public class DefaultEtagGenerator implements EtagGenerator {
+
+    @Override
+    public String getValue(final Resource resource) {
+        return md5Hex(resource.getModified().getNano() + "." + resource.getIdentifier());
+    }
 }
