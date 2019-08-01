@@ -25,6 +25,8 @@ import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.http.core.DefaultEtagGenerator;
+import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
@@ -66,8 +68,8 @@ public class TrellisServiceBundler implements ServiceBundler {
         this.auditService = service;
         this.resourceService = service;
         this.constraintServices = emptyList();
-        this.etagGenerator = new EtagGenerator() { };
-        this.timemapGenerator = new TimemapGenerator() { };
+        this.etagGenerator = new DefaultEtagGenerator();
+        this.timemapGenerator = new DefaultTimemapGenerator();
     }
 
     @Override

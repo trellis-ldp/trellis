@@ -13,18 +13,20 @@
  */
 package org.trellisldp.http.core;
 
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+
+import javax.enterprise.context.ApplicationScoped;
+
 import org.trellisldp.api.Resource;
 
-public interface EtagGenerator {
+/**
+ * A default EtagGenerator.
+ */
+@ApplicationScoped
+public class DefaultEtagGenerator implements EtagGenerator {
 
-    /**
-     * Generate the value portion for an entity tag for the given resource.
-     *
-     * @implSpec The default implementation of this method generates an ETag value based on
-     *           the precision of {@link Resource#getModified} implementation, up to and
-     *           including nano-second precision.
-     * @param resource the Trellis resource
-     * @return the value for the entity tag
-     */
-    String getValue(Resource resource);
+    @Override
+    public String getValue(final Resource resource) {
+        return md5Hex(resource.getModified().getNano() + "." + resource.getIdentifier());
+    }
 }
