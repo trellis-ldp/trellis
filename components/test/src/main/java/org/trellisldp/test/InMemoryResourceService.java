@@ -17,7 +17,7 @@ package org.trellisldp.test;
 import static java.time.Instant.now;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +33,8 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -43,6 +45,8 @@ import org.trellisldp.vocabulary.LDP;
  * A {@link ResourceService} that stores its contents in memory, for testing.
  */
 public class InMemoryResourceService implements ResourceService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryResourceService.class);
 
     private static final RDF rdfFactory = TrellisUtils.getInstance();
 
@@ -56,7 +60,7 @@ public class InMemoryResourceService implements ResourceService {
 
     private final AtomicLong idCounter = new AtomicLong();
 
-    private final Map<IRI, InMemoryResource> resources = new ConcurrentHashMap<>();
+    private final Map<IRI, Resource> resources = new ConcurrentHashMap<>();
 
     private final Map<IRI, Dataset> auditData = new ConcurrentHashMap<>();
 
@@ -73,7 +77,16 @@ public class InMemoryResourceService implements ResourceService {
 
     @Override
     public CompletionStage<? extends Resource> get(IRI identifier) {
-        return completedFuture(resources.get(identifier));
+        if (resources.containsKey(identifier)) {
+            LOG.debug("Retrieving resource: {}", identifier);
+            final Resource resource = resources.get(identifier);
+            final Dataset auditQuads = auditData.getOrDefault(identifier, rdfFactory.createDataset());
+            auditQuads.stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q)).forEach(resource.dataset()::add);
+
+            return completedFuture(resource);
+        }
+        LOG.debug("Resource: {} not found.", identifier);
+        return completedFuture(MISSING_RESOURCE);
     }
 
     @Override
@@ -82,7 +95,7 @@ public class InMemoryResourceService implements ResourceService {
         final IRI ixnModel = meta.getInteractionModel();
         final IRI container = meta.getContainer().orElse(null);
         final InMemoryResource newResource = new InMemoryResource(identifier, ixnModel, container, now(), data);
-        resources.replace(identifier, newResource);
+        resources.put(identifier, newResource);
         return DONE;
     }
 
@@ -95,13 +108,15 @@ public class InMemoryResourceService implements ResourceService {
     @Override
     public CompletionStage<Void> add(IRI identifier, Dataset newData) {
         final Dataset oldData = auditData.computeIfAbsent(identifier, k -> rdfFactory.createDataset());
-        newData.stream().forEach(oldData::add);
+        newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q)).forEach(oldData::add);
+        final Dataset refreshedData = auditData.get(identifier);
+        refreshedData.stream().forEach(q -> LOG.debug("Recorded audit tuple: {}", q));
         return DONE;
     }
 
     @Override
     public CompletionStage<Void> touch(IRI identifier) {
-        resources.get(identifier).modified = now();
+        ((InMemoryResource) resources.get(identifier)).modified = now();
         return DONE;
     }
 
@@ -155,6 +170,11 @@ public class InMemoryResourceService implements ResourceService {
         @Override
         public Stream<Quad> stream() {
             return (Stream<Quad>) dataset.stream();
+        }
+
+        @Override
+        public Dataset dataset() {
+            return dataset;
         }
     }
 }
