@@ -13,26 +13,31 @@
  */
 package org.trellisldp.http.core;
 
+import static java.util.Arrays.asList;
 import static javax.ws.rs.core.Link.fromUri;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+
+import javax.ws.rs.core.Link;
 
 import org.junit.jupiter.api.Test;
 
 /**
  * @author acoburn
  */
-public class TimemapGeneratorTest {
+public class DefaultTimemapGeneratorTest {
 
     private final String url = "http://example.com/resource/memento";
 
     @Test
     public void testIsMementoLink() {
         final TimemapGenerator svc = new DefaultTimemapGenerator();
-        assertTrue(svc.isMementoLink(fromUri(url).rel("memento")
-                    .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()), "Valid Memento Link header skipped!");
-        assertFalse(svc.isMementoLink(fromUri(url).rel("foo")
-                    .param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build()), "Invalid Memento header accepted!");
-        assertFalse(svc.isMementoLink(fromUri(url).rel("memento")
-                    .param("bar", "Fri, 11 May 2018 15:29:25 GMT").build()), "Invalid Memento header accepted!");
+        final List<Link> links = asList(
+            fromUri(url).rel("memento").param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build(),
+            fromUri(url).rel("foo").param("datetime", "Fri, 11 May 2018 15:39:25 GMT").build(),
+            fromUri(url).rel("memento").param("bar", "Fri, 11 May 2018 15:49:25 GMT").build());
+        // 4 standard links + 2 memento links + 6 for each memento link w/ datetime
+        assertEquals(12L, svc.asRdf(url, links).count());
     }
 }
