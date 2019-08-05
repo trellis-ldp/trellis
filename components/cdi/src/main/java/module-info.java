@@ -11,23 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module org.trellisldp.triplestore {
-    exports org.trellisldp.triplestore;
+module org.trellisldp.cdi {
+    exports org.trellisldp.cdi;
 
     requires transitive org.trellisldp.api;
+    requires transitive org.trellisldp.http;
     requires transitive org.trellisldp.vocabulary;
 
-    requires org.apache.commons.io;
-    requires org.apache.commons.rdf.api;
-    requires org.apache.commons.rdf.jena;
-    requires org.apache.jena.arq;
-
     requires javax.inject;
-    requires slf4j.api;
-    requires microprofile.config.api;
 
-    provides org.trellisldp.api.ResourceService
-        with org.trellisldp.triplestore.TriplestoreResourceService;
-
-    uses org.trellisldp.api.IdentifierService;
+    opens org.trellisldp.cdi;
 }

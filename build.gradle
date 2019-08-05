@@ -9,6 +9,7 @@ plugins {
     id 'biz.aQute.bnd.builder' version '4.1.0' apply false
     id 'com.palantir.docker' version '0.22.1' apply false
     id 'nebula.ospackage' version '6.2.1' apply false
+    id "net.wasdev.wlp.gradle.plugins.Liberty" version "2.6.5" apply false
 }
 
 ext {
@@ -19,7 +20,7 @@ ext {
     commonsLangVersion = '3.9'
     commonsRdfVersion = '0.5.0'
     javaxAnnotationsVersion = '1.3.2'
-    javaxInjectVersion = '2.5.0-b62'
+    javaxInjectVersion = '1'
     javaxJmsVersion = '2.0.1'
     javaxManagementVersion = '1.1.2'
     jaxrsVersion = '2.1.1'
@@ -62,8 +63,10 @@ ext {
     qpidVersion = '7.1.4'
     sleepycatVersion = '18.3.12'
     smallryeVersion = '1.3.7'
+    weldVersion = '2.0.0.Final'
 
     /* OSGi */
+    glassfishInjectVersion = '2.5.0-b62'
     javaxElVersion = '2.2.5'
     javaxInterceptorVersion = '1.2.2'
     jenaVersionRange = '[3.11,4)'

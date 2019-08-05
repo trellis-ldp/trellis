@@ -34,6 +34,7 @@ import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.http.core.DefaultEtagGenerator;
@@ -50,6 +51,7 @@ import org.trellisldp.triplestore.TriplestoreResourceService;
  */
 public class SimpleServiceBundler implements ServiceBundler {
 
+    private final AuditService auditService = new DefaultAuditService();
     private final MementoService mementoService = new NoopMementoService();
     private final EventService eventService = new NoopEventService();
     private final AgentService agentService = new SimpleAgentService();
@@ -89,7 +91,7 @@ public class SimpleServiceBundler implements ServiceBundler {
 
     @Override
     public AuditService getAuditService() {
-        return triplestoreService;
+        return auditService;
     }
 
     @Override

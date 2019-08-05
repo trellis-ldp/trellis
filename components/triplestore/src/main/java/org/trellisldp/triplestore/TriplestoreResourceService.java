@@ -79,7 +79,6 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
@@ -90,7 +89,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * A triplestore-based implementation of the Trellis ResourceService API.
  */
-public class TriplestoreResourceService extends DefaultAuditService implements ResourceService {
+public class TriplestoreResourceService implements ResourceService {
 
     /** The configuration key used to set where the RDF is stored. **/
     public static final String CONFIG_TRIPLESTORE_RDF_LOCATION = "trellis.triplestore.rdf.location";

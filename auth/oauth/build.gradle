@@ -10,7 +10,7 @@ ext {
 dependencies {
     api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
-    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    api("javax.inject:javax.inject:$javaxInjectVersion")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")

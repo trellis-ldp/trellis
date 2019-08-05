@@ -1,0 +1,43 @@
+apply plugin: 'java-library'
+apply plugin: 'biz.aQute.bnd.builder'
+
+description = 'Trellis CDI component'
+
+ext {
+    moduleName = 'org.trellisldp.cdi'
+    testModules = ['weld.junit5', 'smallrye.config', 'org.trellisldp.constraint',
+        'org.trellisldp.agent', 'org.trellisldp.file', 'org.trellisldp.io',
+        'org.trellisldp.rdfa']
+}
+
+dependencies {
+    api("javax.enterprise:cdi-api:$cdiApiVersion")
+    api project(':trellis-api')
+    api project(':trellis-http')
+    api project(':trellis-vocabulary')
+
+    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-agent')
+    testImplementation project(':trellis-file')
+    testImplementation project(':trellis-io-jena')
+    testImplementation project(':trellis-rdfa')
+
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
+        exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
+        exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
+    }
+}
+
+if (project.sourceCompatibility.isJava11Compatible()) {
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
+                '--add-opens', "org.trellisldp.http/org.trellisldp.http.core=weld.core.impl",
+            ]
+        }
+    }
+}

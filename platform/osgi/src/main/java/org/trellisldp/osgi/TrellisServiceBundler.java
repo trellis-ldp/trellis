@@ -30,7 +30,6 @@ import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
-import org.trellisldp.triplestore.TriplestoreResourceService;
 
 /**
  * Trellis OSGi ServiceBundler module.
@@ -55,18 +54,19 @@ public class TrellisServiceBundler implements ServiceBundler {
      * @param ioService the IOService
      * @param agentService the AgentService
      * @param eventService the EventService
-     * @param service the TriplestoreResourceService
+     * @param auditService the AuditService
+     * @param resourceService the ResourceService
      */
     public TrellisServiceBundler(final MementoService mementoService, final BinaryService binaryService,
             final IOService ioService, final AgentService agentService, final EventService eventService,
-            final TriplestoreResourceService service) {
+            final AuditService auditService, final ResourceService resourceService) {
         this.mementoService = mementoService;
         this.agentService = agentService;
         this.ioService = ioService;
         this.binaryService = binaryService;
         this.eventService = eventService;
-        this.auditService = service;
-        this.resourceService = service;
+        this.auditService = auditService;
+        this.resourceService = resourceService;
         this.constraintServices = emptyList();
         this.etagGenerator = new DefaultEtagGenerator();
         this.timemapGenerator = new DefaultTimemapGenerator();

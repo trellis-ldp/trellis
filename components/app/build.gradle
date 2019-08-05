@@ -18,6 +18,7 @@ dependencies {
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-agent')
+    implementation project(':trellis-audit')
     implementation project(':trellis-webac')
     implementation project(':trellis-auth-basic')
     implementation project(':trellis-auth-oauth')
