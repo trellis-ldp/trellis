@@ -13,9 +13,6 @@
  */
 package org.trellisldp.http.core;
 
-import static org.trellisldp.http.core.HttpConstants.DATETIME;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO;
-
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -36,12 +33,4 @@ public interface TimemapGenerator {
      */
     Stream<Triple> asRdf(String identifier, List<Link> mementos);
 
-    /**
-     * Check whether the provided link is to be accepted as a memento link.
-     * @param link the link
-     * @return true if this is a valid link; false otherwise
-     */
-    default boolean isMementoLink(Link link) {
-        return link.getRels().contains(MEMENTO) && link.getParams().containsKey(DATETIME);
-    }
 }

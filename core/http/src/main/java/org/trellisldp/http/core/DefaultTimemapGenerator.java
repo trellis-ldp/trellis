@@ -94,4 +94,13 @@ public class DefaultTimemapGenerator implements TimemapGenerator {
             return buffer.build();
         }));
     }
+
+    /**
+     * Check whether the provided link is to be accepted as a memento link.
+     * @param link the link
+     * @return true if this is a valid link; false otherwise
+     */
+    private boolean isMementoLink(final Link link) {
+        return link.getRels().contains(MEMENTO) && link.getParams().containsKey(DATETIME);
+    }
 }
