@@ -39,7 +39,8 @@ public class CDIServiceBundlerTest {
     @WeldSetup
     private WeldInitiator weld = WeldInitiator.of(WeldInitiator.createWeld()
                                        .beanClasses(
-                                           CDIServiceBundler.class,
+                                           BaseServiceBundler.class,
+                                           CDIConstraintServices.class,
                                            DefaultEtagGenerator.class,
                                            DefaultIdentifierService.class,
                                            DefaultTimemapGenerator.class,

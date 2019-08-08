@@ -13,6 +13,7 @@
  */
 package org.trellisldp.app;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.trellisldp.api.*;
@@ -24,7 +25,8 @@ import org.trellisldp.http.core.*;
  * <p>In this class, the fields are expected to be filled by injection, but in subclasses
  * the fields may be filled by any appropriate means.
  */
-public abstract class BaseServiceBundler implements ServiceBundler {
+@ApplicationScoped
+public class BaseServiceBundler implements ServiceBundler {
 
     @Inject
     protected MementoService mementoService;
@@ -52,6 +54,9 @@ public abstract class BaseServiceBundler implements ServiceBundler {
 
     @Inject
     protected AuditService auditService;
+
+    @Inject
+    protected ConstraintServices constraintServices;
 
     @Override
     public AgentService getAgentService() {
@@ -96,5 +101,10 @@ public abstract class BaseServiceBundler implements ServiceBundler {
     @Override
     public TimemapGenerator getTimemapGenerator() {
         return timemapGenerator;
+    }
+
+    @Override
+    public Iterable<ConstraintService> getConstraintServices() {
+        return constraintServices;
     }
 }

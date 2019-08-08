@@ -13,6 +13,8 @@
  */
 package org.trellisldp.app;
 
+import java.util.Iterator;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -20,13 +22,13 @@ import javax.inject.Inject;
 import org.trellisldp.api.ConstraintService;
 
 @ApplicationScoped
-public class CDIServiceBundler extends BaseServiceBundler {
+public class CDIConstraintServices implements ConstraintServices {
 
     @Inject
-    protected Instance<ConstraintService> cdiConstraintServices;
+    protected Instance<ConstraintService> constraintServices;
 
     @Override
-    public Iterable<ConstraintService> getConstraintServices() {
-        return cdiConstraintServices;
+    public Iterator<ConstraintService> iterator() {
+        return constraintServices.iterator();
     }
 }
