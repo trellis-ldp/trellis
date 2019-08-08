@@ -19,7 +19,10 @@ import org.trellisldp.api.*;
 import org.trellisldp.http.core.*;
 
 /**
- * A ServiceBundler that supplies injected components for a Trellis application.
+ * A {@link ServiceBundler} that supplies components for a Trellis application from its fields.
+ *
+ * <p>In this class, the fields are expected to be filled by injection, but in subclasses
+ * the fields may be filled by any appropriate means.
  */
 public abstract class BaseServiceBundler implements ServiceBundler {
 
