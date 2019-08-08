@@ -37,6 +37,7 @@ import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.app.TrellisCache;
+import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.constraint.LdpConstraints;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
@@ -61,7 +62,7 @@ public class TrellisServiceBundler implements ServiceBundler {
 
     private final MementoService mementoService;
     private final AuditService auditService;
-    private final TriplestoreResourceService resourceService;
+    private final ResourceService resourceService;
     private final BinaryService binaryService;
     private final AgentService agentService;
     private final IOService ioService;
@@ -77,11 +78,12 @@ public class TrellisServiceBundler implements ServiceBundler {
      */
     public TrellisServiceBundler(final AppConfiguration config, final Environment environment) {
         agentService = new SimpleAgentService();
+        auditService = new DefaultAuditService();
         mementoService = new FileMementoService(config.getMementos());
         etagGenerator = new DefaultEtagGenerator();
         timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = singletonList(new LdpConstraints());
-        auditService = resourceService = buildResourceService(config, environment);
+        resourceService = buildResourceService(config, environment);
         binaryService = buildBinaryService(config);
         ioService = buildIoService(config);
         eventService = AppUtils.getNotificationService(config.getNotifications(), environment);

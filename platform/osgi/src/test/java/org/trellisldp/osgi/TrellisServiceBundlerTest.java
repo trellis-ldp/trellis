@@ -20,12 +20,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.trellisldp.api.AgentService;
+import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.triplestore.TriplestoreResourceService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TrellisServiceBundlerTest {
@@ -39,7 +40,7 @@ public class TrellisServiceBundlerTest {
     private IOService ioService;
 
     @Mock
-    private TriplestoreResourceService service;
+    private ResourceService resourceService;
 
     @Mock
     private BinaryService binaryService;
@@ -47,13 +48,16 @@ public class TrellisServiceBundlerTest {
     @Mock
     private MementoService mementoService;
 
+    @Mock
+    private AuditService auditService;
+
     @Test
     public void testServiceBundler() {
         final ServiceBundler bundler = new TrellisServiceBundler(mementoService, binaryService,
-                ioService, agentService, eventService, service);
+                ioService, agentService, eventService, auditService, resourceService);
         assertEquals(ioService, bundler.getIOService());
-        assertEquals(service, bundler.getAuditService());
-        assertEquals(service, bundler.getResourceService());
+        assertEquals(auditService, bundler.getAuditService());
+        assertEquals(resourceService, bundler.getResourceService());
         assertEquals(agentService, bundler.getAgentService());
         assertEquals(binaryService, bundler.getBinaryService());
         assertEquals(mementoService, bundler.getMementoService());

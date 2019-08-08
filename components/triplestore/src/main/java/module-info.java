@@ -15,7 +15,6 @@ module org.trellisldp.triplestore {
     exports org.trellisldp.triplestore;
 
     requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.audit;
     requires transitive org.trellisldp.vocabulary;
 
     requires org.apache.commons.io;
@@ -28,9 +27,6 @@ module org.trellisldp.triplestore {
     requires microprofile.config.api;
 
     provides org.trellisldp.api.ResourceService
-        with org.trellisldp.triplestore.TriplestoreResourceService;
-
-    provides org.trellisldp.api.AuditService
         with org.trellisldp.triplestore.TriplestoreResourceService;
 
     uses org.trellisldp.api.IdentifierService;

@@ -9,7 +9,7 @@ ext {
 }
 
 dependencies {
-    api("org.glassfish.hk2.external:javax.inject:$javaxInjectVersion")
+    api("javax.inject:javax.inject:$javaxInjectVersion")
     api project(':trellis-api')
 
     implementation("com.github.spullara.mustache.java:compiler:$mustacheVersion")

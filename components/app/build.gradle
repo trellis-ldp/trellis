@@ -9,15 +9,16 @@ ext {
 dependencies {
     api("io.dropwizard:dropwizard-core:$dropwizardVersion")
     api project(':trellis-api')
+    api project(':trellis-http')
 
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-agent')
+    implementation project(':trellis-audit')
     implementation project(':trellis-webac')
     implementation project(':trellis-auth-basic')
     implementation project(':trellis-auth-oauth')
@@ -26,6 +27,7 @@ dependencies {
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("javax.enterprise:cdi-api:$cdiApiVersion")
     testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
@@ -43,9 +45,14 @@ dependencies {
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-io-jena')
     testImplementation project(':trellis-file')
+    testImplementation project(':trellis-rdfa')
     testImplementation("io.dropwizard:dropwizard-client:$dropwizardVersion")
     testImplementation("io.dropwizard:dropwizard-testing:$dropwizardVersion") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
+    }
+    testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
+        exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
+        exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
     }
 }
 
