@@ -23,7 +23,6 @@ include ':trellis-webac'
 include ':trellis-webdav'
 include ':trellis-app'
 include ':trellis-rdfa'
-include ':trellis-cdi'
 
 include ':trellis-karaf'
 include ':trellis-osgi'
@@ -57,7 +56,6 @@ project(':trellis-triplestore').projectDir = "$rootDir/components/triplestore" a
 project(':trellis-webac').projectDir = "$rootDir/components/webac" as File
 project(':trellis-webdav').projectDir = "$rootDir/components/webdav" as File
 project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
-project(':trellis-cdi').projectDir = "$rootDir/components/cdi" as File
 
 project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
 project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File

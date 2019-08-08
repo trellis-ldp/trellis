@@ -11,10 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.cdi;
+package org.trellisldp.app;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.trellisldp.api.*;
@@ -23,38 +21,34 @@ import org.trellisldp.http.core.*;
 /**
  * A ServiceBundler that supplies injected components for a Trellis application.
  */
-@ApplicationScoped
-public class CDIServiceBundler implements ServiceBundler {
+public abstract class BaseServiceBundler implements ServiceBundler {
 
     @Inject
-    private MementoService mementoService;
+    protected MementoService mementoService;
 
     @Inject
-    private BinaryService binaryService;
+    protected BinaryService binaryService;
 
     @Inject
-    private AgentService agentService;
+    protected AgentService agentService;
 
     @Inject
-    private IOService ioService;
+    protected IOService ioService;
 
     @Inject
-    private EventService eventService;
+    protected EventService eventService;
 
     @Inject
-    private Instance<ConstraintService> constraintServices;
+    protected TimemapGenerator timemapGenerator;
 
     @Inject
-    private TimemapGenerator timemapGenerator;
+    protected EtagGenerator etagGenerator;
 
     @Inject
-    private EtagGenerator etagGenerator;
+    protected ResourceService resourceService;
 
     @Inject
-    private ResourceService resourceService;
-
-    @Inject
-    private AuditService auditService;
+    protected AuditService auditService;
 
     @Override
     public AgentService getAgentService() {
@@ -99,10 +93,5 @@ public class CDIServiceBundler implements ServiceBundler {
     @Override
     public TimemapGenerator getTimemapGenerator() {
         return timemapGenerator;
-    }
-
-    @Override
-    public Iterable<ConstraintService> getConstraintServices() {
-        return constraintServices;
     }
 }

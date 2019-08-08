@@ -11,7 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Trellis CDI components.
- */
-package org.trellisldp.cdi;
+package org.trellisldp.app;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+
+import org.trellisldp.api.ConstraintService;
+
+@ApplicationScoped
+public class CDIServiceBundler extends BaseServiceBundler {
+
+    @Inject
+    protected Instance<ConstraintService> cdiConstraintServices;
+
+    @Override
+    public Iterable<ConstraintService> getConstraintServices() {
+        return cdiConstraintServices;
+    }
+}
