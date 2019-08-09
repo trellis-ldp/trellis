@@ -18,6 +18,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
@@ -184,7 +185,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
-        if (SUCCESSFUL.equals(res.getStatusInfo().getFamily())
+        if (SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && !DELETE.equals(req.getMethod())
                 && (!req.getUriInfo().getQueryParameters().containsKey(HttpConstants.EXT)
                     || !req.getUriInfo().getQueryParameters().get(HttpConstants.EXT).contains(HttpConstants.ACL))) {
             res.getHeaders().add(LINK, fromUri(getRequestUri(req).queryParam(HttpConstants.EXT, HttpConstants.ACL)
