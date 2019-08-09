@@ -19,7 +19,7 @@ import java.util.Iterator;
 import org.trellisldp.api.ConstraintService;
 
 /**
- * A default ConstraintServices implementation, using a backing {@link List}.
+ * A default ConstraintServices implementation, using a backing {@link Collection}.
  */
 public class DefaultConstraintServices implements ConstraintServices {
 
