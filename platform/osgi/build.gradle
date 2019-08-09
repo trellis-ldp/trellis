@@ -105,15 +105,6 @@ task generateDependsFile {
     }
 }
 
-publishing.publications {
-    maven(MavenPublication) {
-        artifact ('build/cfg/main/org.trellisldp.osgi.cfg') {
-            classifier 'configuration'
-            extension 'cfg'
-        }
-    }
-}
-
 test {
     systemProperty 'karaf.version', karafVersion
     systemProperty 'karaf.commonsIo.version', commonsIoVersion
