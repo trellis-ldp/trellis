@@ -16,6 +16,7 @@ package org.trellisldp.webac;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.*;
@@ -322,6 +323,21 @@ public class WebAcFilterTest {
         assertNotNull(link);
         assertEquals("acl", link.getRel());
         assertEquals("http://localhost/?ext=acl", link.getUri().toString());
+    }
+
+    @Test
+    public void testFilterResponseDelete() throws Exception {
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        when(mockContext.getMethod()).thenReturn(DELETE);
+        when(mockResponseContext.getStatusInfo()).thenReturn(OK);
+        when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
+
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", null);
+
+        assertTrue(headers.isEmpty());
+        filter.filter(mockContext, mockResponseContext);
+        assertTrue(headers.isEmpty());
     }
 
     @Test
