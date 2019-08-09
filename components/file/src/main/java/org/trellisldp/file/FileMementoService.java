@@ -100,9 +100,16 @@ public class FileMementoService implements MementoService {
             if (file.exists()) {
                 return new FileResource(identifier, file);
             }
-            final SortedSet<Instant> possible = listMementos(identifier).headSet(mementoTime);
-            if (possible.isEmpty()) {
+            final SortedSet<Instant> allMementos = listMementos(identifier);
+            if (allMementos.isEmpty()) {
                 return MISSING_RESOURCE;
+            }
+            final SortedSet<Instant> possible = allMementos.headSet(mementoTime);
+            if (possible.isEmpty()) {
+                // In this case, the requested Memento is earlier than the set of all existing Mementos.
+                // Based on RFC 7089, Section 4.5.3 https://tools.ietf.org/html/rfc7089#section-4.5.3
+                // the first extant memento should therefore be returned.
+                return new FileResource(identifier, FileUtils.getNquadsFile(resourceDir, allMementos.first()));
             }
             return new FileResource(identifier, FileUtils.getNquadsFile(resourceDir, possible.last()));
         });
