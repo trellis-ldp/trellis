@@ -95,7 +95,6 @@ test {
     systemProperties = ['liberty.test.port': testServerHttpPort, 'war.name': warContext]
 }
 
-clean.dependsOn 'libertyStop'
 test.dependsOn 'libertyStart'
 test.finalizedBy 'libertyStop'
 libertyPackage.dependsOn 'libertyStop'

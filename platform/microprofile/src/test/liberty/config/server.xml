@@ -7,6 +7,7 @@
       <feature>mpHealth-2.0</feature>
       <feature>mpJwt-1.1</feature>
       <feature>mpMetrics-2.0</feature>
+      <!-- TODO - switch to the microprofile feature instead of particular features above -->
       <!--<feature>microProfile-3.0</feature>-->
     </featureManager>
     <logging consoleLogLevel="INFO"/>

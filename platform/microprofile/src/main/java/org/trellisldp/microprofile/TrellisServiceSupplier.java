@@ -32,19 +32,19 @@ import org.trellisldp.file.FileMementoService;
  * triplestore resource service.
  */
 @ApplicationScoped
-class TrellisServiceSupplier {
+public class TrellisServiceSupplier {
 
     @Produces
-    private RDFConnection rdfConnection;
+    protected RDFConnection rdfConnection;
 
     @Produces
-    private MementoService mementoService;
+    protected MementoService mementoService;
 
     @Produces
-    private EventService eventService;
+    protected EventService eventService;
 
     @PostConstruct
-    private void init() {
+    protected void init() {
         rdfConnection = buildRDFConnection(getConfig().getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class)
             .orElse(null));
 
