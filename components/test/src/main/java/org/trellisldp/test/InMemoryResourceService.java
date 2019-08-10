@@ -90,12 +90,15 @@ public class InMemoryResourceService implements ResourceService {
             final Dataset auditQuads = auditData.getOrDefault(identifier, rdfFactory.createDataset());
             auditQuads.stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q)).forEach(resource.dataset()::add);
             final Set<IRI> contained = containment.getOrDefault(identifier, emptySet());
-            contained.stream().map(c -> rdfFactory.createQuad(PreferContainment, identifier, contains, c))
-                            .forEach(resource.dataset()::add);
+            contained.stream().map(c -> containmentQuad(c, identifier)).forEach(resource.dataset()::add);
             return completedFuture(resource);
         }
         LOG.debug("Resource: {} not found.", identifier);
         return completedFuture(MISSING_RESOURCE);
+    }
+
+    private static Quad containmentQuad(final IRI container, final IRI identifier) {
+        return rdfFactory.createQuad(PreferContainment, identifier, contains, container);
     }
 
     @Override
@@ -128,7 +131,7 @@ public class InMemoryResourceService implements ResourceService {
 
     @Override
     public CompletionStage<Void> add(final IRI identifier, final Dataset newData) {
-        final Dataset oldData = auditData.computeIfAbsent(identifier, k -> rdfFactory.createDataset());
+        final Dataset oldData = auditData.computeIfAbsent(identifier, dummy -> rdfFactory.createDataset());
         newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q)).forEach(oldData::add);
         return DONE;
     }
