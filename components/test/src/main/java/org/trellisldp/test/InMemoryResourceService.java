@@ -15,10 +15,14 @@
 package org.trellisldp.test;
 
 import static java.time.Instant.now;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.vocabulary.LDP.PreferContainment;
+import static org.trellisldp.vocabulary.LDP.contains;
 
 import java.time.Instant;
 import java.util.Map;
@@ -38,7 +42,6 @@ import org.apache.commons.rdf.api.RDF;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
@@ -67,6 +70,8 @@ public class InMemoryResourceService implements ResourceService {
 
     private final Map<IRI, InMemoryResource> resources = new ConcurrentHashMap<>();
 
+    private final Map<IRI, Set<IRI>> containment = new ConcurrentHashMap<>();
+
     private final Map<IRI, Dataset> auditData = new ConcurrentHashMap<>();
 
     private static final Set<IRI> SUPPORTED_IXN_MODELS;
@@ -88,7 +93,9 @@ public class InMemoryResourceService implements ResourceService {
             final Resource resource = resources.get(identifier);
             final Dataset auditQuads = auditData.getOrDefault(identifier, rdfFactory.createDataset());
             auditQuads.stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q)).forEach(resource.dataset()::add);
-
+            Set<IRI> contained = containment.getOrDefault(identifier, emptySet());
+            contained.stream().map(c -> rdfFactory.createQuad(PreferContainment, identifier, contains, c))
+                            .forEach(resource.dataset()::add);
             return completedFuture(resource);
         }
         LOG.debug("Resource: {} not found.", identifier);
@@ -102,13 +109,21 @@ public class InMemoryResourceService implements ResourceService {
         final IRI container = meta.getContainer().orElse(null);
         final InMemoryResource newResource = new InMemoryResource(identifier, ixnModel, container, now(), data);
         resources.put(identifier, newResource);
+        containment.computeIfAbsent(container, dummy -> newSetFromMap(new ConcurrentHashMap<>())).add(identifier);
         return DONE;
     }
 
     @Override
     public CompletionStage<Void> delete(Metadata metadata) {
-        resources.remove(metadata.getIdentifier());
+        IRI identifier = metadata.getIdentifier();
+        resources.remove(identifier);
+        metadata.getContainer().ifPresent(container -> containment
+                        .computeIfAbsent(container, dummy -> concurrentHashMap()).add(identifier));
         return DONE;
+    }
+
+    private static <T> Set<T> concurrentHashMap() {
+        return newSetFromMap(new ConcurrentHashMap<T, Boolean>());
     }
 
     @Override
@@ -144,12 +159,6 @@ public class InMemoryResourceService implements ResourceService {
         
         
 
-        @Override
-        public Optional<BinaryMetadata> getBinaryMetadata() {
-            // TODO Auto-generated method stub
-            return Resource.super.getBinaryMetadata();
-        }
-
         private final Dataset dataset;
 
         private InMemoryResource(IRI identifier, IRI ixnModel, IRI container, Instant modified, Dataset dataset) {
@@ -158,6 +167,12 @@ public class InMemoryResourceService implements ResourceService {
             this.container = container;
             this.modified = modified;
             this.dataset = dataset;
+        }
+
+        @Override
+        public Optional<BinaryMetadata> getBinaryMetadata() {
+            // TODO Auto-generated method stub
+            return Resource.super.getBinaryMetadata();
         }
 
         @Override
