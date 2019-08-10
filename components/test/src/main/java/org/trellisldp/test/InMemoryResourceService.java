@@ -107,7 +107,8 @@ public class InMemoryResourceService implements ResourceService {
         final IRI identifier = meta.getIdentifier();
         final IRI ixnModel = meta.getInteractionModel();
         final IRI container = meta.getContainer().orElse(null);
-        final InMemoryResource newResource = new InMemoryResource(identifier, ixnModel, container, now(), data);
+        final BinaryMetadata binary = meta.getBinary().orElse(null);
+        final InMemoryResource newResource = new InMemoryResource(identifier, ixnModel, container, now(), data, binary);
         resources.put(identifier, newResource);
         containment.computeIfAbsent(container, dummy -> newSetFromMap(new ConcurrentHashMap<>())).add(identifier);
         return DONE;
@@ -160,19 +161,21 @@ public class InMemoryResourceService implements ResourceService {
         
 
         private final Dataset dataset;
+        
+        private final BinaryMetadata binaryMetadata;
 
-        private InMemoryResource(IRI identifier, IRI ixnModel, IRI container, Instant modified, Dataset dataset) {
+        private InMemoryResource(IRI identifier, IRI ixnModel, IRI container, Instant modified, Dataset dataset, BinaryMetadata binaryMetadata) {
             this.identifier = identifier;
             this.ixnModel = ixnModel;
             this.container = container;
             this.modified = modified;
             this.dataset = dataset;
+            this.binaryMetadata = binaryMetadata;
         }
 
         @Override
         public Optional<BinaryMetadata> getBinaryMetadata() {
-            // TODO Auto-generated method stub
-            return Resource.super.getBinaryMetadata();
+            return Optional.ofNullable(binaryMetadata);
         }
 
         @Override
