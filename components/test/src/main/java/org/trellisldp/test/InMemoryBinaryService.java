@@ -51,23 +51,23 @@ public class InMemoryBinaryService implements BinaryService {
     private final Map<IRI, Binary> data = new ConcurrentHashMap<>();
 
     @Override
-    public CompletionStage<? extends Binary> get(IRI identifier) {
+    public CompletionStage<? extends Binary> get(final IRI identifier) {
         return completedFuture(data.get(identifier));
     }
 
     @Override
-    public CompletionStage<Void> setContent(BinaryMetadata meta, InputStream bytes) {
+    public CompletionStage<Void> setContent(final BinaryMetadata meta, final InputStream bytes) {
         try {
             final InMemoryBinary binary = new InMemoryBinary(toByteArray(bytes));
             data.put(meta.getIdentifier(), binary);
             return DONE;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     @Override
-    public CompletionStage<Void> purgeContent(IRI identifier) {
+    public CompletionStage<Void> purgeContent(final IRI identifier) {
         data.remove(identifier);
         return DONE;
     }
@@ -77,11 +77,11 @@ public class InMemoryBinaryService implements BinaryService {
         return ID_PREFIX + idCounter.getAndIncrement();
     }
 
-    private static class InMemoryBinary implements Binary {
+    private static final class InMemoryBinary implements Binary {
 
         private final byte[] data;
 
-        private InMemoryBinary(byte[] data) {
+        private InMemoryBinary(final byte[] data) {
             this.data = data;
         }
 
@@ -91,8 +91,8 @@ public class InMemoryBinaryService implements BinaryService {
         }
 
         @Override
-        public CompletionStage<InputStream> getContent(int from, int to) {
-            final byte[] slice = copyOfRange(data, from, to);
+        public CompletionStage<InputStream> getContent(final int from, final int to) {
+            final byte[] slice = copyOfRange(data, from, to + 1); // to is inclusive
             return completedFuture(new ByteArrayInputStream(slice));
         }
     }

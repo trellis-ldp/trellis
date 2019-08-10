@@ -77,7 +77,7 @@ public class InMemoryResourceService implements ResourceService {
     private static final Set<IRI> SUPPORTED_IXN_MODELS;
 
     static {
-        Set<IRI> models = new CopyOnWriteArraySet<>();
+        final Set<IRI> models = new CopyOnWriteArraySet<>();
         models.add(LDP.RDFSource);
         models.add(LDP.NonRDFSource);
         models.add(LDP.Container);
@@ -86,14 +86,13 @@ public class InMemoryResourceService implements ResourceService {
     }
 
     @Override
-    public CompletionStage<? extends Resource> get(IRI identifier) {
-
+    public CompletionStage<? extends Resource> get(final IRI identifier) {
         if (resources.containsKey(identifier)) {
             LOG.debug("Retrieving resource: {}", identifier);
             final Resource resource = resources.get(identifier);
             final Dataset auditQuads = auditData.getOrDefault(identifier, rdfFactory.createDataset());
             auditQuads.stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q)).forEach(resource.dataset()::add);
-            Set<IRI> contained = containment.getOrDefault(identifier, emptySet());
+            final Set<IRI> contained = containment.getOrDefault(identifier, emptySet());
             contained.stream().map(c -> rdfFactory.createQuad(PreferContainment, identifier, contains, c))
                             .forEach(resource.dataset()::add);
             return completedFuture(resource);
@@ -103,7 +102,7 @@ public class InMemoryResourceService implements ResourceService {
     }
 
     @Override
-    public CompletionStage<Void> replace(Metadata meta, Dataset data) {
+    public CompletionStage<Void> replace(final Metadata meta, final Dataset data) {
         final IRI identifier = meta.getIdentifier();
         final IRI ixnModel = meta.getInteractionModel();
         final IRI container = meta.getContainer().orElse(null);
@@ -115,8 +114,8 @@ public class InMemoryResourceService implements ResourceService {
     }
 
     @Override
-    public CompletionStage<Void> delete(Metadata metadata) {
-        IRI identifier = metadata.getIdentifier();
+    public CompletionStage<Void> delete(final Metadata metadata) {
+        final IRI identifier = metadata.getIdentifier();
         resources.remove(identifier);
         metadata.getContainer().ifPresent(container -> containment
                         .computeIfAbsent(container, dummy -> concurrentHashMap()).add(identifier));
@@ -128,7 +127,7 @@ public class InMemoryResourceService implements ResourceService {
     }
 
     @Override
-    public CompletionStage<Void> add(IRI identifier, Dataset newData) {
+    public CompletionStage<Void> add(final IRI identifier, final Dataset newData) {
         final Dataset oldData = auditData.computeIfAbsent(identifier, k -> rdfFactory.createDataset());
         newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q)).forEach(oldData::add);
         final Dataset refreshedData = auditData.get(identifier);
@@ -137,7 +136,7 @@ public class InMemoryResourceService implements ResourceService {
     }
 
     @Override
-    public CompletionStage<Void> touch(IRI identifier) {
+    public CompletionStage<Void> touch(final IRI identifier) {
         resources.get(identifier).modified = now();
         return DONE;
     }
@@ -152,19 +151,22 @@ public class InMemoryResourceService implements ResourceService {
         return ID_PREFIX + idCounter.getAndIncrement();
     }
 
-    private static class InMemoryResource implements Resource {
+    private static final class InMemoryResource implements Resource {
 
-        private final IRI identifier, ixnModel, container;
+        private final IRI identifier;
+        private final IRI ixnModel;
+        private final IRI container;
 
         private Instant modified;
         
         
 
         private final Dataset dataset;
-        
+
         private final BinaryMetadata binaryMetadata;
 
-        private InMemoryResource(IRI identifier, IRI ixnModel, IRI container, Instant modified, Dataset dataset, BinaryMetadata binaryMetadata) {
+        private InMemoryResource(final IRI identifier, final IRI ixnModel, final IRI container, final Instant modified,
+                        final Dataset dataset, final BinaryMetadata binaryMetadata) {
             this.identifier = identifier;
             this.ixnModel = ixnModel;
             this.container = container;
