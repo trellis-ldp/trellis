@@ -19,7 +19,6 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.contains;
@@ -39,7 +38,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trellisldp.api.BinaryMetadata;
@@ -158,8 +156,6 @@ public class InMemoryResourceService implements ResourceService {
         private final IRI container;
 
         private Instant modified;
-        
-        
 
         private final Dataset dataset;
 
