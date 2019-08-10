@@ -35,16 +35,16 @@ import org.trellisldp.file.FileMementoService;
 public class TrellisServiceSupplier {
 
     @Produces
-    protected RDFConnection rdfConnection;
+    private RDFConnection rdfConnection;
 
     @Produces
-    protected MementoService mementoService;
+    private MementoService mementoService;
 
     @Produces
-    protected EventService eventService;
+    private EventService eventService;
 
     @PostConstruct
-    protected void init() {
+    private void init() {
         rdfConnection = buildRDFConnection(getConfig().getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class)
             .orElse(null));
 
