@@ -35,7 +35,7 @@ class SmokeIT {
     private static final HttpClient testClient = HttpClients.createDefault();
 
     @Test
-    public void findTrellis() throws IOException {
+    private void findTrellis() throws IOException {
         final HttpResponse response = testClient.execute(new HttpGet(testUri));
         final int statusCode = response.getStatusLine().getStatusCode();
         final String statusPhrase = response.getStatusLine().getReasonPhrase();
