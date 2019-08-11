@@ -13,7 +13,8 @@
  */
 package org.trellisldp.microprofile;
 
-import static java.util.Collections.singleton;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Set;
@@ -24,7 +25,7 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.slf4j.Logger;
-import org.trellisldp.http.TrellisHttpResource;
+import org.trellisldp.http.*;
 
 /**
  * Web Application wrapper.
@@ -37,10 +38,13 @@ public class WebApplication extends Application {
 
     @Inject
     private TrellisHttpResource httpResource;
+    private TrellisHttpFilter httpFilter = new TrellisHttpFilter();
+    private CrossOriginResourceSharingFilter corsFilter = new CrossOriginResourceSharingFilter();
+    private CacheControlFilter cacheFilter = new CacheControlFilter();
 
     @Override
     public Set<Object> getSingletons() {
         LOGGER.info("Adding application JAX-RS resources: {}", httpResource);
-        return singleton(httpResource);
+        return asList(httpResource, httpFilter, corsFilter, cacheFilter).stream().collect(toSet());
     }
 }

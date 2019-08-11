@@ -30,7 +30,8 @@ class SmokeIT {
 
     private static final Logger LOGGER = getLogger(SmokeIT.class);
 
-    private static final String testUri = "http://localhost:" + Integer.getInteger("testServerHttpPort", 9080) + "/";
+    private static final String testUri = "http://localhost:" + Integer.getInteger("testServerHttpPort", 9080)
+        + "/trellis";
 
     private static final HttpClient testClient = HttpClients.createDefault();
 

@@ -24,15 +24,12 @@ dependencies {
     }
     compile("commons-codec:commons-codec:$commonsCodecVersion")
     compile("javax.activation:javax.activation-api:$activationApiVersion")
-    //compile("javax.jms:javax.jms-api:$jmsApiVersion")
     compile("org.apache.activemq:activemq-client:$activeMqVersion")
     compile("org.apache.jena:jena-arq:$jenaVersion")
     compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
     compile("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    //compile("io.smallrye:smallrye-config:$smallryeVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
-    //compile("javax.jms:javax.jms-api:$jmsApiVersion")
     compile("javax.xml.bind:jaxb-api:$jaxbVersion")
     compile("javax.validation:validation-api:$validationVersion")
     compile("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
@@ -49,26 +46,25 @@ dependencies {
     compile project(':trellis-file')
     compile project(':trellis-namespaces')
     compile project(':trellis-agent')
-    compile project(':trellis-app')
     compile project(':trellis-audit')
     compile project(':trellis-event-serialization')
     compile project(':trellis-webac')
     compile project(':trellis-triplestore')
-    //compile project(':trellis-jms')
     compile project(':trellis-rdfa')
+    //compile project(':trellis-jms')
     //compile project(':trellis-kafka')
     compile project(':trellis-auth-oauth')
     compile project(':trellis-auth-basic')
-    compile("ch.qos.logback:logback-classic:$logbackVersion")
 
     testCompile("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
     }
+    testCompile("io.smallrye:smallrye-config:$smallryeVersion")
     testCompile("org.hamcrest:hamcrest:$hamcrestVersion")
     testCompile("org.mockito:mockito-core:$mockitoVersion")
     testCompile project(':trellis-test')
-    testCompile("org.apache.activemq:activemq-broker:$activeMqVersion")
+    testCompile("org.apache.cxf:cxf-rt-rs-client:3.3.2")
 
     libertyRuntime group:'io.openliberty', name:'openliberty-runtime', version:'[19.0.0.7,)'
 }
@@ -76,7 +72,7 @@ dependencies {
 liberty {
     server {
         name = "${appName}"
-        configFile = file("src/test/liberty/config/server.xml")
+        configFile = file("src/main/liberty/config/server.xml")
         bootstrapProperties = ['default.http.port': testServerHttpPort,
                                'default.https.port': testServerHttpsPort,
                                'app.context.root': warContext]
