@@ -30,5 +30,5 @@ module org.trellisldp.test {
     requires java.ws.rs;
     requires java.xml.bind;
     requires javax.inject;
-    requires slf4j.api;
+    requires org.slf4j;
 }

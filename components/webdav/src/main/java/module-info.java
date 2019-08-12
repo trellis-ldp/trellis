@@ -22,9 +22,9 @@ module org.trellisldp.webdav {
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.lang3;
     requires org.apache.jena.arq;
+    requires org.slf4j;
     requires microprofile.metrics.api;
 
-    requires slf4j.api;
     requires microprofile.config.api;
     requires javax.inject;
     requires java.ws.rs;

@@ -19,5 +19,5 @@ module org.trellisldp.kafka {
     requires kafka.clients;
     requires javax.inject;
     requires microprofile.config.api;
-    requires slf4j.api;
+    requires org.slf4j;
 }

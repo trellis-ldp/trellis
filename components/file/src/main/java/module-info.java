@@ -21,9 +21,9 @@ module org.trellisldp.file {
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
+    requires org.slf4j;
     requires javax.inject;
     requires microprofile.config.api;
-    requires slf4j.api;
 
     provides org.trellisldp.api.BinaryService
         with org.trellisldp.file.FileBinaryService;

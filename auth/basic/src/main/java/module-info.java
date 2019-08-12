@@ -14,10 +14,10 @@
 module org.trellisldp.auth.basic {
     exports org.trellisldp.auth.basic;
 
-    requires slf4j.api;
-    requires microprofile.config.api;
     requires javax.inject;
     requires java.ws.rs;
     requires java.xml.bind;
     requires java.annotation;
+    requires microprofile.config.api;
+    requires org.slf4j;
 }

@@ -21,9 +21,9 @@ module org.trellisldp.triplestore {
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
+    requires org.slf4j;
 
     requires javax.inject;
-    requires slf4j.api;
     requires microprofile.config.api;
 
     provides org.trellisldp.api.ResourceService

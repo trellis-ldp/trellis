@@ -19,11 +19,11 @@ module org.trellisldp.webac {
     requires transitive org.trellisldp.vocabulary;
 
     requires org.apache.commons.rdf.api;
+    requires org.slf4j;
 
     requires javax.inject;
     requires java.ws.rs;
     requires java.xml.bind;
-    requires slf4j.api;
     requires microprofile.config.api;
 
     uses org.trellisldp.api.ResourceService;

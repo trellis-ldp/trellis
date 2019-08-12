@@ -18,5 +18,5 @@ module org.trellisldp.amqp {
     requires org.apache.commons.rdf.api;
     requires javax.inject;
     requires microprofile.config.api;
-    requires slf4j.api;
+    requires org.slf4j;
 }
