@@ -20,5 +20,5 @@ module org.trellisldp.jms {
     requires javax.jms.api;
     requires javax.inject;
     requires microprofile.config.api;
-    requires slf4j.api;
+    requires org.slf4j;
 }

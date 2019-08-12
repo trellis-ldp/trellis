@@ -21,8 +21,8 @@ module org.trellisldp.http {
     requires org.apache.commons.codec;
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
+    requires org.slf4j;
 
-    requires slf4j.api;
     requires microprofile.config.api;
     requires javax.inject;
     requires java.ws.rs;
