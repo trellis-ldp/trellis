@@ -25,7 +25,7 @@ import org.trellisldp.test.AbstractApplicationLdpTests;
 class TrellisApplicationTest {
 
     protected final Client CLIENT = newBuilder().build();
-    protected final String TRELLIS_URL = "http://localhost:" + getInteger("trellis.port", 9080) + "/trellis";
+    protected final String TRELLIS_URL = "http://localhost:" + getInteger("trellis.port", 9080) + "/";
 
     @Nested
     @DisplayName("Trellis LDP Tests")

@@ -185,7 +185,7 @@ public interface LdpBinaryTests extends CommonTests {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
         try (final Response res = target().request().get()) {
-            assertAll("Check binary in container", checkRdfResponse(res, LDP.BasicContainer, null));
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Check that the container is RDF");
             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
                         rdf.createIRI(getResourceLocation())), "Check for an ldp:contains triple");
