@@ -13,6 +13,7 @@
  */
 package org.trellisldp.test;
 
+import static java.time.Instant.from;
 import static java.time.Instant.now;
 import static java.time.ZoneOffset.UTC;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -20,8 +21,6 @@ import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
-import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
@@ -137,12 +136,25 @@ public interface MementoTimeGateTests extends MementoCommonTests {
      */
     @Test
     @DisplayName("Test timegate request that predates creation")
-    default void testTimeGateNotFound() {
+    default void testTimeGateRequestPrecedingMemento() {
         final Instant time = now().minusSeconds(1000000);
+        final String acceptDatetime = RFC_1123_DATE_TIME.withZone(UTC).format(time);
+        final String location;
         try (final Response res = target(getResourceLocation()).request()
-                .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get()) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for an error response");
-            assertEquals(NOT_ACCEPTABLE, fromStatusCode(res.getStatus()), "Check for a 406 error");
+                .header(ACCEPT_DATETIME, acceptDatetime).get()) {
+            if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
+                location = res.getLocation().toString();
+            } else {
+                location = getResourceLocation();
+            }
+        }
+
+        try (final Response res = target(location).request().header(ACCEPT_DATETIME, acceptDatetime).head()) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
+            assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Check for a Memento-Datetime header");
+            final Instant mementoTime = from(RFC_1123_DATE_TIME.withZone(UTC)
+                    .parse(res.getHeaderString(MEMENTO_DATETIME)));
+            assertTrue(mementoTime.isAfter(time));
         }
     }
 }

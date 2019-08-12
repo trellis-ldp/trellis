@@ -79,8 +79,9 @@ public class FileMementoServiceTest {
                 .toCompletableFuture().join();
             svc.get(identifier, time).thenAccept(res -> assertEquals(time, res.getModified(), "Incorrect date!"))
                 .toCompletableFuture().join();
-            assertEquals(MISSING_RESOURCE, svc.get(identifier, parse("2015-02-16T10:00:00Z"))
-                .toCompletableFuture().join(), "Wrong response for a missing resource!");
+            svc.get(identifier, parse("2015-02-16T10:00:00Z"))
+                .thenAccept(res -> assertEquals(time, res.getModified(), "Incorrect date!"))
+                .toCompletableFuture().join();
             svc.get(identifier, time2).thenAccept(res -> assertEquals(time2, res.getModified(), "Incorrect date!"))
                 .toCompletableFuture().join();
             svc.get(identifier, MAX).thenAccept(res -> assertEquals(time2, res.getModified(), "Incorrect date!"))
