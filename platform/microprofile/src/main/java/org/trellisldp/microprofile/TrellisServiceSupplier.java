@@ -22,10 +22,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.trellisldp.api.EventService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.NoopEventService;
-import org.trellisldp.file.FileMementoService;
 
 /**
  * A managed bean that generates an RDF connection for the
@@ -37,18 +33,9 @@ public class TrellisServiceSupplier {
     @Produces
     private RDFConnection rdfConnection;
 
-    @Produces
-    private MementoService mementoService;
-
-    @Produces
-    private EventService eventService;
-
     @PostConstruct
     private void init() {
         rdfConnection = buildRDFConnection(getConfig().getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class)
             .orElse(null));
-
-        mementoService = new FileMementoService();
-        eventService = new NoopEventService();
     }
 }
