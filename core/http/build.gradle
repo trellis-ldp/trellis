@@ -20,6 +20,7 @@ dependencies {
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
+    implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
