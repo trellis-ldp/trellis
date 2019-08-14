@@ -35,7 +35,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.event.EventSerializer;
+import org.trellisldp.event.DefaultActivityStreamService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -43,10 +43,10 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test the Kafka publisher
  */
-public class KafkaPublisherTest {
+public class KafkaEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
-    private static final ActivityStreamService serializer = new EventSerializer();
+    private static final ActivityStreamService serializer = new DefaultActivityStreamService();
 
     private final String queueName = "queue";
 
@@ -72,7 +72,7 @@ public class KafkaPublisherTest {
 
     @Test
     public void testKafka() {
-        final EventService svc = new KafkaPublisher(serializer, producer);
+        final EventService svc = new KafkaEventService(serializer, producer);
         svc.emit(mockEvent);
 
         final List<ProducerRecord<String, String>> records = producer.history();
@@ -82,6 +82,6 @@ public class KafkaPublisherTest {
 
     @Test
     public void testDefaultKafka() {
-        assertDoesNotThrow(() -> new KafkaPublisher(serializer));
+        assertDoesNotThrow(() -> new KafkaEventService(serializer));
     }
 }

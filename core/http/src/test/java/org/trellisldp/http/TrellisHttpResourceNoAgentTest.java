@@ -20,7 +20,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import javax.ws.rs.core.Application;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.trellisldp.agent.SimpleAgentService;
+import org.trellisldp.agent.DefaultAgentService;
 
 /**
  * @author acoburn
@@ -37,7 +37,7 @@ public class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceT
 
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
-        when(mockBundler.getAgentService()).thenReturn(new SimpleAgentService());
+        when(mockBundler.getAgentService()).thenReturn(new DefaultAgentService());
 
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);

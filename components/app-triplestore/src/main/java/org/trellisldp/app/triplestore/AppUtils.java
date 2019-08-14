@@ -35,16 +35,16 @@ import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.dropwizard.config.NotificationsConfiguration;
-import org.trellisldp.event.EventSerializer;
-import org.trellisldp.jms.JmsPublisher;
-import org.trellisldp.kafka.KafkaPublisher;
+import org.trellisldp.event.DefaultActivityStreamService;
+import org.trellisldp.jms.JmsEventService;
+import org.trellisldp.kafka.KafkaEventService;
 
 final class AppUtils {
 
     private static final String UN_KEY = "username";
     private static final String PW_KEY = "password";
     private static final Logger LOGGER = getLogger(AppUtils.class);
-    private static final ActivityStreamService serializer = new EventSerializer();
+    private static final ActivityStreamService serializer = new DefaultActivityStreamService();
 
     public static Properties getKafkaProperties(final NotificationsConfiguration config) {
         final Properties p = new Properties();
@@ -70,23 +70,23 @@ final class AppUtils {
         return factory;
     }
 
-    private static EventService buildKafkaPublisher(final NotificationsConfiguration config,
+    private static EventService buildKafkaEventService(final NotificationsConfiguration config,
             final Environment environment) {
         LOGGER.info("Connecting to Kafka broker at {}", config.getConnectionString());
         final KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getKafkaProperties(config));
         environment.lifecycle().manage(new AutoCloseableManager(kafkaProducer));
-        return new KafkaPublisher(serializer, kafkaProducer, config.getTopicName());
+        return new KafkaEventService(serializer, kafkaProducer, config.getTopicName());
     }
 
-    private static EventService buildJmsPublisher(final NotificationsConfiguration config,
+    private static EventService buildJmsEventService(final NotificationsConfiguration config,
             final Environment environment) throws JMSException {
         LOGGER.info("Connecting to JMS broker at {}", config.getConnectionString());
         final Connection jmsConnection = getJmsFactory(config).createConnection();
         environment.lifecycle().manage(new AutoCloseableManager(jmsConnection));
         final boolean useQueue = parseBoolean(config.any().getOrDefault("use.queue", "true"));
 
-        return new JmsPublisher(serializer, jmsConnection.createSession(false, AUTO_ACKNOWLEDGE), config.getTopicName(),
-                useQueue);
+        return new JmsEventService(serializer, jmsConnection.createSession(false, AUTO_ACKNOWLEDGE),
+                config.getTopicName(), useQueue);
     }
 
     public static EventService getNotificationService(final NotificationsConfiguration config,
@@ -94,11 +94,11 @@ final class AppUtils {
 
         if (config.getEnabled()) {
             if (KAFKA.equals(config.getType())) {
-                return buildKafkaPublisher(config, environment);
+                return buildKafkaEventService(config, environment);
 
             } else if (JMS.equals(config.getType())) {
                 try {
-                    return buildJmsPublisher(config, environment);
+                    return buildJmsEventService(config, environment);
                 } catch (final JMSException ex) {
                     throw new RuntimeTrellisException(ex);
                 }

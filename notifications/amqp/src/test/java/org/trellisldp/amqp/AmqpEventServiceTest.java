@@ -43,7 +43,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.event.EventSerializer;
+import org.trellisldp.event.DefaultActivityStreamService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -51,11 +51,11 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class AmqpPublisherTest {
+public class AmqpEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final SystemLauncher broker = new SystemLauncher();
-    private static final ActivityStreamService serializer = new EventSerializer();
+    private static final ActivityStreamService serializer = new DefaultActivityStreamService();
 
     private final String exchangeName = "exchange";
     private final String queueName = "queue";
@@ -98,7 +98,7 @@ public class AmqpPublisherTest {
 
     @Test
     public void testAmqp() throws IOException {
-        final EventService svc = new AmqpPublisher(serializer, mockChannel, exchangeName, queueName);
+        final EventService svc = new AmqpEventService(serializer, mockChannel, exchangeName, queueName);
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
@@ -107,7 +107,7 @@ public class AmqpPublisherTest {
 
     @Test
     public void testAmqpConfiguration() throws IOException {
-        final EventService svc = new AmqpPublisher(serializer, mockChannel);
+        final EventService svc = new AmqpEventService(serializer, mockChannel);
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
@@ -119,7 +119,7 @@ public class AmqpPublisherTest {
         doThrow(IOException.class).when(mockChannel).basicPublish(eq(exchangeName), eq(queueName),
                 anyBoolean(), anyBoolean(), any(BasicProperties.class), any(byte[].class));
 
-        final EventService svc = new AmqpPublisher(serializer, mockChannel, exchangeName, queueName, true, true);
+        final EventService svc = new AmqpEventService(serializer, mockChannel, exchangeName, queueName, true, true);
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),

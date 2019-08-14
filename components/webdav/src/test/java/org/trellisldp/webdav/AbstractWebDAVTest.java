@@ -82,7 +82,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 import org.slf4j.Logger;
-import org.trellisldp.agent.SimpleAgentService;
+import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
@@ -818,7 +818,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     private void setUpBundler() {
         when(mockBundler.getIOService()).thenReturn(ioService);
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
-        when(mockBundler.getAgentService()).thenReturn(new SimpleAgentService());
+        when(mockBundler.getAgentService()).thenReturn(new DefaultAgentService());
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService());
         when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
         when(mockBundler.getEventService()).thenReturn(new NoopEventService());

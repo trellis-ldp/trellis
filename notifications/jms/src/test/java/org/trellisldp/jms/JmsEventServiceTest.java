@@ -45,7 +45,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
-import org.trellisldp.event.EventSerializer;
+import org.trellisldp.event.DefaultActivityStreamService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -53,11 +53,11 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class JmsPublisherTest {
+public class JmsEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final BrokerService BROKER = new BrokerService();
-    private static final ActivityStreamService serializer = new EventSerializer();
+    private static final ActivityStreamService serializer = new DefaultActivityStreamService();
 
     private final String queueName = "queue";
 
@@ -118,7 +118,7 @@ public class JmsPublisherTest {
 
     @Test
     public void testJms() throws JMSException {
-        final EventService svc = new JmsPublisher(serializer, mockConnection);
+        final EventService svc = new JmsEventService(serializer, mockConnection);
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
@@ -126,7 +126,7 @@ public class JmsPublisherTest {
 
     @Test
     public void testQueue() throws JMSException {
-        final EventService svc = new JmsPublisher(serializer, mockSession, queueName, true);
+        final EventService svc = new JmsEventService(serializer, mockSession, queueName, true);
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
@@ -135,7 +135,7 @@ public class JmsPublisherTest {
 
     @Test
     public void testTopic() throws JMSException {
-        final EventService svc = new JmsPublisher(serializer, mockSession, queueName, false);
+        final EventService svc = new JmsEventService(serializer, mockSession, queueName, false);
         svc.emit(mockEvent);
 
         verify(mockTopicProducer).send(eq(mockMessage));
@@ -146,7 +146,7 @@ public class JmsPublisherTest {
     public void testError() throws JMSException {
         doThrow(JMSException.class).when(mockProducer).send(eq(mockMessage));
 
-        final EventService svc = new JmsPublisher(serializer, mockSession, queueName);
+        final EventService svc = new JmsEventService(serializer, mockSession, queueName);
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));

@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
@@ -194,6 +195,9 @@ public interface LdpRdfTests extends CommonTests {
             assertEquals("Annotation", obj.get("type"), "Check the type value");
             assertEquals("http://example.org/post1", obj.get("body"), "Check the body value");
             assertEquals("http://example.org/page1", obj.get("target"), "Check the target value");
+        } catch (final ProcessingException ex) {
+            // Error dereferencing JSON-LD profile
+            assumeTrue(false, "Error dereferencing JSON-LD profile");
         }
     }
 

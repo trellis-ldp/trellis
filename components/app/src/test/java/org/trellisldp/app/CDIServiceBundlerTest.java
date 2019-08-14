@@ -22,16 +22,16 @@ import org.jboss.weld.junit5.WeldJunit5Extension;
 import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.trellisldp.agent.SimpleAgentService;
+import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.*;
-import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.io.NoopProfileCache;
-import org.trellisldp.rdfa.HtmlSerializer;
+import org.trellisldp.rdfa.DefaultRdfaWriterService;
 
 @ExtendWith(WeldJunit5Extension.class)
 public class CDIServiceBundlerTest {
@@ -41,20 +41,20 @@ public class CDIServiceBundlerTest {
                                        .beanClasses(
                                            BaseServiceBundler.class,
                                            CDIConstraintServices.class,
+                                           DefaultAgentService.class,
                                            DefaultEtagGenerator.class,
                                            DefaultIdentifierService.class,
+                                           DefaultRdfaWriterService.class,
                                            DefaultTimemapGenerator.class,
                                            FileBinaryService.class,
-                                           HtmlSerializer.class,
                                            JenaIOService.class,
-                                           LdpConstraints.class,
+                                           LdpConstraintService.class,
                                            NoopAuditService.class,
                                            NoopEventService.class,
                                            NoopMementoService.class,
                                            NoopNamespaceService.class,
                                            NoopProfileCache.class,
-                                           NoopResourceService.class,
-                                           SimpleAgentService.class)
+                                           NoopResourceService.class)
                                        .alternatives(NoopAuditService.class,
                                            NoopEventService.class,
                                            NoopMementoService.class,

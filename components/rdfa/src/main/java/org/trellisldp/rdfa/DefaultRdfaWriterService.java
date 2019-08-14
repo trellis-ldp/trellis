@@ -46,7 +46,7 @@ import org.trellisldp.api.RDFaWriterService;
 /**
  * An RDFa (HTML) serialization service.
  */
-public class HtmlSerializer implements RDFaWriterService {
+public class DefaultRdfaWriterService implements RDFaWriterService {
 
     private static final MustacheFactory mf = new DefaultMustacheFactory();
 
@@ -71,7 +71,7 @@ public class HtmlSerializer implements RDFaWriterService {
     /**
      * Create an HTML Serializer object.
      */
-    public HtmlSerializer() {
+    public DefaultRdfaWriterService() {
         this(new NoopNamespaceService());
     }
 
@@ -81,11 +81,11 @@ public class HtmlSerializer implements RDFaWriterService {
      * @param namespaceService a namespace service
      */
     @Inject
-    public HtmlSerializer(final NamespaceService namespaceService) {
+    public DefaultRdfaWriterService(final NamespaceService namespaceService) {
         this(namespaceService, getConfig());
     }
 
-    private HtmlSerializer(final NamespaceService namespaceService, final Config config) {
+    private DefaultRdfaWriterService(final NamespaceService namespaceService, final Config config) {
         this(namespaceService, config.getOptionalValue(CONFIG_RDFA_TEMPLATE, String.class).orElse(null),
                 config.getOptionalValue(CONFIG_RDFA_CSS, String.class)
                     .orElse("//www.trellisldp.org/assets/css/trellis.css"),
@@ -103,7 +103,7 @@ public class HtmlSerializer implements RDFaWriterService {
      * @param js the js to use (comma-delimited for multiple js documents)
      * @param icon an icon, may be {@code null}
      */
-    public HtmlSerializer(final NamespaceService namespaceService,
+    public DefaultRdfaWriterService(final NamespaceService namespaceService,
             final String template, final String css,
             final String js, final String icon) {
         this(namespaceService, template, intoList(css), intoList(js), icon);
@@ -118,7 +118,7 @@ public class HtmlSerializer implements RDFaWriterService {
      * @param js the js to use (comma-delimited for multiple js documents)
      * @param icon an icon, may be {@code null}
      */
-    public HtmlSerializer(final NamespaceService namespaceService,
+    public DefaultRdfaWriterService(final NamespaceService namespaceService,
             final String template, final List<String> css,
             final List<String> js, final String icon) {
         this.namespaceService = requireNonNull(namespaceService, "NamespaceService may not be null!");

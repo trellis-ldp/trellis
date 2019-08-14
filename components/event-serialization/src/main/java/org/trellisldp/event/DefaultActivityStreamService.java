@@ -32,7 +32,7 @@ import org.trellisldp.api.Event;
  *
  * @author acoburn
  */
-public class EventSerializer implements ActivityStreamService {
+public class DefaultActivityStreamService implements ActivityStreamService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

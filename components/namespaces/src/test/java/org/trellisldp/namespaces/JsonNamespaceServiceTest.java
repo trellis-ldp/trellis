@@ -22,36 +22,37 @@ import java.net.URL;
 import java.security.SecureRandom;
 
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.NamespaceService;
 import org.trellisldp.vocabulary.JSONLD;
 
 /**
  * @author acoburn
  */
-public class NamespacesJsonContextTest {
+public class JsonNamespaceServiceTest {
 
     private static final String nsDoc = "/testNamespaces.json";
 
     @Test
     public void testReadFromJson() {
-        final URL res = NamespacesJsonContext.class.getResource(nsDoc);
+        final URL res = JsonNamespaceService.class.getResource(nsDoc);
         try {
-            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, res.getPath());
-            final NamespacesJsonContext svc = new NamespacesJsonContext();
+            System.setProperty(JsonNamespaceService.CONFIG_NAMESPACES_PATH, res.getPath());
+            final NamespaceService svc = new JsonNamespaceService();
             assertEquals(2, svc.getNamespaces().size(), "Namespace mapping count is incorrect!");
         } finally {
-            System.clearProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
+            System.clearProperty(JsonNamespaceService.CONFIG_NAMESPACES_PATH);
         }
     }
 
     @Test
     public void testReadError() {
-        final URL res = NamespacesJsonContext.class.getResource("/thisIsNot.json");
+        final URL res = JsonNamespaceService.class.getResource("/thisIsNot.json");
         try {
-            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, res.getPath());
-            assertThrows(UncheckedIOException.class, NamespacesJsonContext::new,
+            System.setProperty(JsonNamespaceService.CONFIG_NAMESPACES_PATH, res.getPath());
+            assertThrows(UncheckedIOException.class, JsonNamespaceService::new,
                     "Loaded namespaces from invalid file!");
         } finally {
-            System.clearProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
+            System.clearProperty(JsonNamespaceService.CONFIG_NAMESPACES_PATH);
         }
     }
 
@@ -59,31 +60,31 @@ public class NamespacesJsonContextTest {
     public void testWriteError() {
         final File file = new File(getClass().getResource(nsDoc).getFile());
         final File nonexistent = new File(file.getParentFile(), "nonexistent/dir/file.json");
-        assertThrows(UncheckedIOException.class, () -> new NamespacesJsonContext(nonexistent.getAbsolutePath()),
+        assertThrows(UncheckedIOException.class, () -> new JsonNamespaceService(nonexistent.getAbsolutePath()),
                     "Loaded namespaces from invalid file!");
     }
 
     @Test
     public void testWriteToJson() {
-        final File file = new File(NamespacesJsonContext.class.getResource(nsDoc).getPath());
+        final File file = new File(JsonNamespaceService.class.getResource(nsDoc).getPath());
         final String filename = file.getParent() + "/" + randomFilename();
 
         try {
-            System.setProperty(NamespacesJsonContext.CONFIG_NAMESPACES_PATH, filename);
+            System.setProperty(JsonNamespaceService.CONFIG_NAMESPACES_PATH, filename);
 
-            final NamespacesJsonContext svc1 = new NamespacesJsonContext();
+            final NamespaceService svc1 = new JsonNamespaceService();
             assertEquals(15, svc1.getNamespaces().size(), "Incorrect namespace mapping count!");
             assertFalse(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix unexpectedly found!");
             assertTrue(svc1.setPrefix("jsonld", JSONLD.getNamespace()), "unable to set jsonld mapping!");
             assertEquals(16, svc1.getNamespaces().size(), "Namespace count was not incremented!");
             assertTrue(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix not found in mapping!");
 
-            final NamespacesJsonContext svc2 = new NamespacesJsonContext();
+            final NamespaceService svc2 = new JsonNamespaceService();
             assertEquals(16, svc2.getNamespaces().size(), "Incorrect namespace count when reloading from file!");
             assertFalse(svc2.setPrefix("jsonld", JSONLD.getNamespace()),
                     "unexpected response when trying to re-set jsonld mapping!");
         } finally {
-            System.getProperties().remove(NamespacesJsonContext.CONFIG_NAMESPACES_PATH);
+            System.getProperties().remove(JsonNamespaceService.CONFIG_NAMESPACES_PATH);
         }
     }
 

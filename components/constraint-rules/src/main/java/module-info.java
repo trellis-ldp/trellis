@@ -20,5 +20,5 @@ module org.trellisldp.constraint {
     requires org.apache.commons.rdf.api;
 
     provides org.trellisldp.api.ConstraintService
-        with org.trellisldp.constraint.LdpConstraints;
+        with org.trellisldp.constraint.LdpConstraintService;
 }

@@ -35,7 +35,7 @@ import org.trellisldp.api.EventService;
  *
  * @author acoburn
  */
-public class JmsPublisher implements EventService {
+public class JmsEventService implements EventService {
 
     /** The configuration key controlling the JMS queue name. **/
     public static final String CONFIG_JMS_QUEUE_NAME = "trellis.jms.queue";
@@ -52,7 +52,7 @@ public class JmsPublisher implements EventService {
     /** The configuration key controlling whether to use a topic or queue. **/
     public static final String CONFIG_JMS_USE_QUEUE = "trellis.jms.use.queue";
 
-    private static final Logger LOGGER = getLogger(JmsPublisher.class);
+    private static final Logger LOGGER = getLogger(JmsEventService.class);
 
     private final ActivityStreamService serializer;
     private final MessageProducer producer;
@@ -65,7 +65,7 @@ public class JmsPublisher implements EventService {
      * @throws JMSException when there is a connection error
      */
     @Inject
-    public JmsPublisher(final ActivityStreamService serializer, final Connection conn) throws JMSException {
+    public JmsEventService(final ActivityStreamService serializer, final Connection conn) throws JMSException {
         this(serializer, conn.createSession(false, AUTO_ACKNOWLEDGE),
                 getConfig().getValue(CONFIG_JMS_QUEUE_NAME, String.class),
                 getConfig().getOptionalValue(CONFIG_JMS_USE_QUEUE, Boolean.class).orElse(Boolean.TRUE));
@@ -78,7 +78,7 @@ public class JmsPublisher implements EventService {
      * @param queueName the name of the queue
      * @throws JMSException when there is a connection error
      */
-    public JmsPublisher(final ActivityStreamService serializer, final Session session, final String queueName)
+    public JmsEventService(final ActivityStreamService serializer, final Session session, final String queueName)
             throws JMSException {
         this(serializer, session, queueName, true);
     }
@@ -91,7 +91,7 @@ public class JmsPublisher implements EventService {
      * @param useQueue whether to use a queue or a topic
      * @throws JMSException when there is a connection error
      */
-    public JmsPublisher(final ActivityStreamService serializer, final Session session, final String queueName,
+    public JmsEventService(final ActivityStreamService serializer, final Session session, final String queueName,
             final boolean useQueue) throws JMSException {
         requireNonNull(queueName, "JMS Queue name may not be null!");
         this.serializer = requireNonNull(serializer, "Event serializer may not be null!");

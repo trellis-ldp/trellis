@@ -71,7 +71,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
@@ -196,7 +196,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockBundler.getEventService()).thenReturn(mockEventService);
-        when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraints()));
+        when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));
         when(mockBundler.getEtagGenerator()).thenReturn(new DefaultEtagGenerator());
         when(mockBundler.getTimemapGenerator()).thenReturn(new DefaultTimemapGenerator());
     }

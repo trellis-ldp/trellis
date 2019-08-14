@@ -19,7 +19,7 @@ import static java.util.Collections.singletonList;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 
-import org.trellisldp.agent.SimpleAgentService;
+import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
@@ -27,7 +27,7 @@ import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.app.BaseServiceBundler;
 import org.trellisldp.app.DefaultConstraintServices;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
@@ -47,10 +47,10 @@ public class SimpleServiceBundler extends BaseServiceBundler {
         auditService = new DefaultAuditService();
         mementoService = new NoopMementoService();
         eventService = new NoopEventService();
-        agentService = new SimpleAgentService();
+        agentService = new DefaultAgentService();
         etagGenerator = new DefaultEtagGenerator();
         timemapGenerator = new DefaultTimemapGenerator();
-        constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraints()));
+        constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         ioService = new JenaIOService(new NoopNamespaceService(), null, new NoopProfileCache(),
                 emptySet(), emptySet());
         binaryService = new FileBinaryService(new DefaultIdentifierService(),

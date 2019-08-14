@@ -34,9 +34,9 @@ import org.trellisldp.api.EventService;
 /**
  * A Kafka message producer capable of publishing messages to a Kafka cluster.
  */
-public class KafkaPublisher implements EventService {
+public class KafkaEventService implements EventService {
 
-    private static final Logger LOGGER = getLogger(KafkaPublisher.class);
+    private static final Logger LOGGER = getLogger(KafkaEventService.class);
 
     /** The configuration key controlling the name of the kafka topic. **/
     public static final String CONFIG_KAFKA_TOPIC = "trellis.kafka.topic";
@@ -46,34 +46,34 @@ public class KafkaPublisher implements EventService {
     private final String topic;
 
     /**
-     * Create a new Kafka Publisher.
+     * Create a new Kafka Event Service.
      * @param serializer the event serializer
      */
     @Inject
-    public KafkaPublisher(final ActivityStreamService serializer) {
+    public KafkaEventService(final ActivityStreamService serializer) {
         this(serializer, getConfig());
     }
 
-    private KafkaPublisher(final ActivityStreamService serializer, final Config config) {
+    private KafkaEventService(final ActivityStreamService serializer, final Config config) {
         this(serializer, buildProducer(config), config.getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
     /**
-     * Create a new Kafka Publisher.
+     * Create a new Kafka Event Service.
      * @param serializer the event serializer
      * @param producer the producer
      */
-    public KafkaPublisher(final ActivityStreamService serializer, final Producer<String, String> producer) {
+    public KafkaEventService(final ActivityStreamService serializer, final Producer<String, String> producer) {
         this(serializer, producer, getConfig().getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
     /**
-     * Create a new Kafka Publisher.
+     * Create a new Kafka Event Service.
      * @param serializer the event serializer
      * @param producer the producer
      * @param topic the name of the kafka topic
      */
-    public KafkaPublisher(final ActivityStreamService serializer, final Producer<String, String> producer,
+    public KafkaEventService(final ActivityStreamService serializer, final Producer<String, String> producer,
             final String topic) {
         this.serializer = requireNonNull(serializer, "The Event serializer may not be null!");
         this.producer = requireNonNull(producer, "Kafka producer may not be null!");

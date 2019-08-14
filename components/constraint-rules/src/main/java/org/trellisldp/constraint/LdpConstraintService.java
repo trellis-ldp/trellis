@@ -58,7 +58,7 @@ import org.trellisldp.vocabulary.Trellis;
  *
  * @author acoburn
  */
-public class LdpConstraints implements ConstraintService {
+public class LdpConstraintService implements ConstraintService {
 
     private static final Set<IRI> propertiesWithInDomainRange = singleton(LDP.membershipResource);
 
@@ -78,12 +78,12 @@ public class LdpConstraints implements ConstraintService {
 
         final Map<IRI, Predicate<Triple>> typeMapElements = new HashMap<>();
 
-        typeMapElements.put(LDP.BasicContainer, LdpConstraints::basicConstraints);
-        typeMapElements.put(LDP.Container, LdpConstraints::basicConstraints);
-        typeMapElements.put(LDP.DirectContainer, LdpConstraints::memberContainerConstraints);
-        typeMapElements.put(LDP.IndirectContainer, LdpConstraints::memberContainerConstraints);
-        typeMapElements.put(LDP.NonRDFSource, LdpConstraints::basicConstraints);
-        typeMapElements.put(LDP.RDFSource, LdpConstraints::basicConstraints);
+        typeMapElements.put(LDP.BasicContainer, LdpConstraintService::basicConstraints);
+        typeMapElements.put(LDP.Container, LdpConstraintService::basicConstraints);
+        typeMapElements.put(LDP.DirectContainer, LdpConstraintService::memberContainerConstraints);
+        typeMapElements.put(LDP.IndirectContainer, LdpConstraintService::memberContainerConstraints);
+        typeMapElements.put(LDP.NonRDFSource, LdpConstraintService::basicConstraints);
+        typeMapElements.put(LDP.RDFSource, LdpConstraintService::basicConstraints);
 
         typeMap = unmodifiableMap(typeMapElements);
     }
@@ -119,7 +119,7 @@ public class LdpConstraints implements ConstraintService {
 
     // Ensure that any LDP properties are appropriate for the interaction model
     private static boolean propertyFilter(final Triple t, final IRI ixnModel) {
-        return typeMap.getOrDefault(ixnModel, LdpConstraints::basicConstraints).test(t);
+        return typeMap.getOrDefault(ixnModel, LdpConstraintService::basicConstraints).test(t);
     }
 
     // Verify that the range of the property is in the server's domain

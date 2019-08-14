@@ -18,7 +18,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.constraint.LdpConstraintService;
 
 public class DefaultConstraintServicesTest {
 
@@ -30,7 +30,7 @@ public class DefaultConstraintServicesTest {
 
     @Test
     public void testSingleServices() {
-        final ConstraintServices svcs = new DefaultConstraintServices(singletonList(new LdpConstraints()));
+        final ConstraintServices svcs = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         assertTrue(svcs.iterator().hasNext());
     }
 }
