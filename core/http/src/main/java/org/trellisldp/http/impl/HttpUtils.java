@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.notModified;
 import static javax.ws.rs.core.Response.status;
+import static org.apache.commons.lang3.StringUtils.strip;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -218,7 +219,7 @@ public final class HttpUtils {
         for (final MediaType type : acceptableTypes) {
             if (RDFSyntax.byMediaType(type.toString()).filter(isEqual(syntax)).isPresent() &&
                     type.getParameters().containsKey("profile")) {
-                return rdf.createIRI(type.getParameters().get("profile").split(" ")[0].trim());
+                return rdf.createIRI(strip(type.getParameters().get("profile"), "\"").split(" ")[0].trim());
             }
         }
         return null;
