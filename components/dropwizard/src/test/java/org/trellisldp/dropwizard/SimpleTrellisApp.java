@@ -11,29 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.triplestore;
+package org.trellisldp.dropwizard;
 
 import io.dropwizard.setup.Environment;
 
-import org.trellisldp.dropwizard.AbstractTrellisApplication;
+import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.http.core.ServiceBundler;
 
 /**
- * A deployable Trellis application.
+ * A simple test app.
  */
-public class TrellisApplication extends AbstractTrellisApplication<AppConfiguration> {
+public class SimpleTrellisApp extends AbstractTrellisApplication<TrellisConfiguration> {
 
     private ServiceBundler serviceBundler;
-
-    /**
-     * The main entry point.
-     *
-     * @param args the argument list
-     * @throws Exception if something goes horribly awry
-     */
-    public static void main(final String[] args) throws Exception {
-        new TrellisApplication().run(args);
-    }
 
     @Override
     protected ServiceBundler getServiceBundler() {
@@ -41,8 +31,8 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
     }
 
     @Override
-    protected void initialize(final AppConfiguration config, final Environment environment) {
-        super.initialize(config, environment);
-        this.serviceBundler = new TrellisServiceBundler(config, environment);
+    protected void initialize(final TrellisConfiguration config, final Environment env) {
+        super.initialize(config, env);
+        this.serviceBundler = new SimpleServiceBundler();
     }
 }

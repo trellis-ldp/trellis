@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
-import org.trellisldp.app.config.TrellisConfiguration;
+import org.trellisldp.dropwizard.config.TrellisConfiguration;
 
 class AppConfiguration extends TrellisConfiguration {
 

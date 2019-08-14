@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.app.config.NotificationsConfiguration;
+import org.trellisldp.dropwizard.config.NotificationsConfiguration;
 import org.trellisldp.kafka.KafkaPublisher;
 
 /**

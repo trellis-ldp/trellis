@@ -23,6 +23,7 @@ include ':trellis-webac'
 include ':trellis-webdav'
 include ':trellis-app'
 include ':trellis-rdfa'
+include ':trellis-dropwizard'
 
 include ':trellis-karaf'
 include ':trellis-osgi'
@@ -46,6 +47,7 @@ project(':trellis-app').projectDir = "$rootDir/components/app" as File
 project(':trellis-app-triplestore').projectDir = "$rootDir/components/app-triplestore" as File
 project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
 project(':trellis-constraint-rules').projectDir = "$rootDir/components/constraint-rules" as File
+project(':trellis-dropwizard').projectDir = "$rootDir/components/dropwizard" as File
 project(':trellis-event-serialization').projectDir = "$rootDir/components/event-serialization" as File
 project(':trellis-file').projectDir = "$rootDir/components/file" as File
 project(':trellis-io-jena').projectDir = "$rootDir/components/io-jena" as File
