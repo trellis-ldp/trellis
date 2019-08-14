@@ -39,6 +39,7 @@ dependencies {
     compile project(':trellis-api')
     compile project(':trellis-http')
     compile project(':trellis-app')
+    compile project(':trellis-dropwizard')
     compile project(':trellis-vocabulary')
     compile project(':trellis-file')
     compile project(':trellis-namespaces')

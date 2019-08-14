@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.trellisldp.app.config.NotificationsConfiguration;
+import org.trellisldp.dropwizard.config.NotificationsConfiguration;
 
 /**
  * @author acoburn

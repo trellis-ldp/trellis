@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 /**
- * Shared Trellis components for building a deployable application.
+ * Trellis Dropwizard Application Configuration
+ *
+ * <p>This package implements the configuration for a deployable dropwizard-based Trellis application.
  */
-package org.trellisldp.app;
+package org.trellisldp.dropwizard.config;

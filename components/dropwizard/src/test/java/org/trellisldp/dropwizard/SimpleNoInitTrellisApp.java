@@ -11,7 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.trellisldp.dropwizard;
+
+import org.trellisldp.dropwizard.config.TrellisConfiguration;
+
 /**
- * Shared Trellis components for building a deployable application.
+ * A simple test app.
  */
-package org.trellisldp.app;
+public class SimpleNoInitTrellisApp extends SimpleTrellisApp {
+
+    @Override
+    protected Object getLdpComponent(final TrellisConfiguration config, final boolean initialize) {
+        return super.getLdpComponent(config, false);
+    }
+}

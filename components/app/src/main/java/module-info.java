@@ -11,7 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Shared Trellis components for building a deployable application.
- */
-package org.trellisldp.app;
+module org.trellisldp.app {
+    exports org.trellisldp.app;
+
+    requires transitive org.trellisldp.api;
+    requires transitive org.trellisldp.http;
+    requires transitive org.trellisldp.vocabulary;
+
+    requires javax.inject;
+    requires cdi.api;
+
+    opens org.trellisldp.app;
+}
