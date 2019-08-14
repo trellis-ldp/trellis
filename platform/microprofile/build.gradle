@@ -56,6 +56,7 @@ dependencies {
     compile project(':trellis-auth-oauth')
     compile project(':trellis-auth-basic')
 
+    compile("ch.qos.logback:logback-classic:$logbackVersion")
     testCompile("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'
         exclude group: 'org.hamcrest', module: 'hamcrest-library'

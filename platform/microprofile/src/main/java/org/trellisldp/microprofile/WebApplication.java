@@ -14,11 +14,18 @@
 package org.trellisldp.microprofile;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
@@ -42,9 +49,25 @@ public class WebApplication extends Application {
     private CrossOriginResourceSharingFilter corsFilter = new CrossOriginResourceSharingFilter();
     private CacheControlFilter cacheFilter = new CacheControlFilter();
 
+    @PostConstruct
+    private void init() {
+        printBanner("Trellis Microprofile");
+    }
+
     @Override
     public Set<Object> getSingletons() {
-        LOGGER.info("Adding application JAX-RS resources: {}", httpResource);
         return asList(httpResource, httpFilter, corsFilter, cacheFilter).stream().collect(toSet());
+    }
+
+    private void printBanner(final String name) {
+        final URL resource = Thread.currentThread().getContextClassLoader().getResource("banner.txt");
+        try (final InputStream resourceStream = resource.openStream();
+             final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream);
+             final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            final String banner = bufferedReader.lines().collect(joining(String.format("%n")));
+            LOGGER.info("Starting {}\n{}", name, banner);
+        } catch (final IllegalArgumentException | IOException ignored) {
+            LOGGER.info("Starting {}", name);
+        }
     }
 }

@@ -24,8 +24,7 @@ import javax.enterprise.inject.Produces;
 import org.apache.jena.rdfconnection.RDFConnection;
 
 /**
- * A managed bean that generates an RDF connection for the
- * triplestore resource service.
+ * A managed bean that generates an RDF connection for the triplestore resource service.
  */
 @ApplicationScoped
 public class TrellisServiceSupplier {
