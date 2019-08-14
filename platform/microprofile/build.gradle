@@ -51,6 +51,7 @@ dependencies {
     compile project(':trellis-webac')
     compile project(':trellis-triplestore')
     compile project(':trellis-rdfa')
+    compile project(':trellis-app')
     //compile project(':trellis-jms')
     //compile project(':trellis-kafka')
     compile project(':trellis-auth-oauth')
