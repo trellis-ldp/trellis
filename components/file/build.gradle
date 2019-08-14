@@ -25,6 +25,6 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
 }
 

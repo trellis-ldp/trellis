@@ -22,7 +22,7 @@ dependencies {
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("com.sleepycat:je:$sleepycatVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-event-serialization')

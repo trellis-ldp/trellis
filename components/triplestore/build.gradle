@@ -10,6 +10,7 @@ ext {
 
 dependencies {
     api("javax.inject:javax.inject:$javaxInjectVersion")
+    api("org.eclipse.microprofile.health:microprofile-health-api:$microprofileHealthVersion")
     api project(':trellis-api')
 
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
@@ -24,7 +25,8 @@ dependencies {
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testImplementation("io.smallrye:smallrye-health:$smallryeHealthVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-audit');
     testImplementation project(':trellis-test');

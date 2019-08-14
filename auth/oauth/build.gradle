@@ -24,7 +24,7 @@ dependencies {
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
     testImplementation("org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion")
     testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
