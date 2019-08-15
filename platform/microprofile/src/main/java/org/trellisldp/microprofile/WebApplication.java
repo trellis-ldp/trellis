@@ -32,6 +32,7 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.slf4j.Logger;
+import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.http.*;
 
 /**
@@ -45,9 +46,21 @@ public class WebApplication extends Application {
 
     @Inject
     private TrellisHttpResource httpResource;
-    private TrellisHttpFilter httpFilter = new TrellisHttpFilter();
-    private CrossOriginResourceSharingFilter corsFilter = new CrossOriginResourceSharingFilter();
-    private CacheControlFilter cacheFilter = new CacheControlFilter();
+
+    @Inject
+    private AgentAuthorizationFilter agentFilter;
+
+    @Inject
+    private TrellisHttpFilter httpFilter;
+
+    @Inject
+    private CrossOriginResourceSharingFilter corsFilter;
+
+    @Inject
+    private CacheControlFilter cacheFilter;
+
+    @Inject
+    private OAuthFilter oauthFilter;
 
     @PostConstruct
     private void init() {
@@ -56,7 +69,8 @@ public class WebApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return asList(httpResource, httpFilter, corsFilter, cacheFilter).stream().collect(toSet());
+        return asList(httpResource, httpFilter, corsFilter, cacheFilter, agentFilter, oauthFilter).stream()
+            .collect(toSet());
     }
 
     private void printBanner(final String name) {

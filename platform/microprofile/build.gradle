@@ -24,7 +24,6 @@ dependencies {
     }
     compile("commons-codec:commons-codec:$commonsCodecVersion")
     compile("javax.activation:javax.activation-api:$activationApiVersion")
-    compile("org.apache.activemq:activemq-client:$activeMqVersion")
     compile("org.apache.jena:jena-arq:$jenaVersion")
     compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
@@ -53,20 +52,20 @@ dependencies {
     compile project(':trellis-rdfa')
     compile project(':trellis-app')
     //compile project(':trellis-jms')
-    //compile project(':trellis-kafka')
     compile project(':trellis-auth-oauth')
     compile project(':trellis-auth-basic')
 
     compile("ch.qos.logback:logback-classic:$logbackVersion")
+
+    testCompile("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testCompile("org.apache.cxf:cxf-rt-rs-client:$cxfVersion")
     testCompile("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
     }
-    testCompile("io.smallrye:smallrye-config:$smallryeConfigVersion")
     testCompile("org.hamcrest:hamcrest:$hamcrestVersion")
     testCompile("org.mockito:mockito-core:$mockitoVersion")
     testCompile project(':trellis-test')
-    testCompile("org.apache.cxf:cxf-rt-rs-client:3.3.2")
 
     libertyRuntime group:'io.openliberty', name:'openliberty-runtime', version:'[19.0.0.7,)'
 }
@@ -90,7 +89,10 @@ war {
 }
 
 test {
-    systemProperties = ['liberty.test.port': testServerHttpPort, 'war.name': warContext]
+    systemProperties = [
+        'liberty.test.port': testServerHttpPort,
+        'war.name': warContext
+    ]
 }
 
 test.dependsOn 'libertyStart'

@@ -15,13 +15,17 @@ package org.trellisldp.microprofile;
 
 import static java.lang.Integer.getInteger;
 import static javax.ws.rs.client.ClientBuilder.newBuilder;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import javax.ws.rs.client.Client;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.test.AbstractApplicationLdpTests;
+import org.trellisldp.test.AbstractApplicationMementoTests;
 
+@TestInstance(PER_CLASS)
 class TrellisApplicationTest {
 
     protected final Client CLIENT = newBuilder().build();
@@ -30,6 +34,21 @@ class TrellisApplicationTest {
     @Nested
     @DisplayName("Trellis LDP Tests")
     public class LdpTests extends AbstractApplicationLdpTests {
+
+        @Override
+        public Client getClient() {
+            return TrellisApplicationTest.this.CLIENT;
+        }
+
+        @Override
+        public String getBaseURL() {
+            return TrellisApplicationTest.this.TRELLIS_URL;
+        }
+    }
+
+    @Nested
+    @DisplayName("Trellis Memento Tests")
+    public class MementoTests extends AbstractApplicationMementoTests {
 
         @Override
         public Client getClient() {
