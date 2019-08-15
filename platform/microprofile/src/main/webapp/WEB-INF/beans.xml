@@ -4,7 +4,6 @@
   bean-discovery-mode="all">
   <alternatives>
      <class>org.trellisldp.api.NoopEventService</class>
-     <class>org.trellisldp.file.FileMementoService</class>
   </alternatives>
 </beans>
 

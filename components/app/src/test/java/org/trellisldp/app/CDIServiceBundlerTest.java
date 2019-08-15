@@ -26,6 +26,7 @@ import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.*;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
+import org.trellisldp.file.FileMementoService;
 import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
@@ -47,17 +48,16 @@ public class CDIServiceBundlerTest {
                                            DefaultRdfaWriterService.class,
                                            DefaultTimemapGenerator.class,
                                            FileBinaryService.class,
+                                           FileMementoService.class,
                                            JenaIOService.class,
                                            LdpConstraintService.class,
                                            NoopAuditService.class,
                                            NoopEventService.class,
-                                           NoopMementoService.class,
                                            NoopNamespaceService.class,
                                            NoopProfileCache.class,
                                            NoopResourceService.class)
                                        .alternatives(NoopAuditService.class,
                                            NoopEventService.class,
-                                           NoopMementoService.class,
                                            NoopNamespaceService.class,
                                            NoopResourceService.class));
 
