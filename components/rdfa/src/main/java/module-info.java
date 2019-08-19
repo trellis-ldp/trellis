@@ -28,5 +28,5 @@ module org.trellisldp.rdfa {
     opens org.trellisldp.rdfa to com.github.mustachejava;
 
     provides org.trellisldp.api.RDFaWriterService
-        with org.trellisldp.rdfa.HtmlSerializer;
+        with org.trellisldp.rdfa.DefaultRdfaWriterService;
 }

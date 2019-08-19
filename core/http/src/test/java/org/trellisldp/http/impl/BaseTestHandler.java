@@ -76,7 +76,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.trellisldp.agent.SimpleAgentService;
+import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
@@ -91,7 +91,7 @@ import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
@@ -111,7 +111,7 @@ abstract class BaseTestHandler {
     protected static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
     protected static final Instant time = ofEpochSecond(1496262729);
 
-    protected final AgentService agentService = new SimpleAgentService();
+    protected final AgentService agentService = new DefaultAgentService();
     protected final AuditService auditService = new NoopAuditService();
     protected final MementoService mementoService = new NoopMementoService();
 
@@ -252,7 +252,7 @@ abstract class BaseTestHandler {
         when(mockBundler.getMementoService()).thenReturn(mementoService);
         when(mockBundler.getAgentService()).thenReturn(agentService);
         when(mockBundler.getEventService()).thenReturn(mockEventService);
-        when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraints()));
+        when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));
         when(mockBundler.getTimemapGenerator()).thenReturn(new DefaultTimemapGenerator());
         when(mockBundler.getEtagGenerator()).thenReturn(new DefaultEtagGenerator());
     }

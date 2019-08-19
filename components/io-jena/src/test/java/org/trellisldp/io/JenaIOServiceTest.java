@@ -93,7 +93,7 @@ public class JenaIOServiceTest {
     private OutputStream mockOutputStream;
 
     @Mock
-    private RDFaWriterService mockHtmlSerializer;
+    private RDFaWriterService mockRdfaWriterService;
 
     @Mock
     private CacheService<String, String> mockCache;
@@ -112,7 +112,7 @@ public class JenaIOServiceTest {
         service = new JenaIOService(mockNamespaceService, null, mockCache,
                 "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/");
 
-        service2 = new JenaIOService(mockNamespaceService, mockHtmlSerializer, mockCache, emptySet(),
+        service2 = new JenaIOService(mockNamespaceService, mockRdfaWriterService, mockCache, emptySet(),
                 singleton("http://www.w3.org/ns/"));
 
         service3 = new JenaIOService(mockNamespaceService, null, mockCache, emptySet(), emptySet());
@@ -339,20 +339,20 @@ public class JenaIOServiceTest {
 
     @Test
     public void testHtmlSerializer() throws Exception {
-        final IOService service4 = new JenaIOService(mockNamespaceService, mockHtmlSerializer);
+        final IOService service4 = new JenaIOService(mockNamespaceService, mockRdfaWriterService);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service4.write(getComplexTriples(), out, RDFA, rdf.createIRI("http://example.org/"));
-        verify(mockHtmlSerializer).write(any(), eq(out), eq("http://example.org/"));
+        verify(mockRdfaWriterService).write(any(), eq(out), eq("http://example.org/"));
     }
 
     @Test
     public void testHtmlSerializer2() throws Exception {
-        final IOService service4 = new JenaIOService(mockNamespaceService, mockHtmlSerializer);
+        final IOService service4 = new JenaIOService(mockNamespaceService, mockRdfaWriterService);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service4.write(getComplexTriples(), out, RDFA);
-        verify(mockHtmlSerializer).write(any(), eq(out), eq(null));
+        verify(mockRdfaWriterService).write(any(), eq(out), eq(null));
     }
 
     @Test

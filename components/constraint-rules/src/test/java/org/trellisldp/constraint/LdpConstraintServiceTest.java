@@ -39,12 +39,12 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class LdpConstraintsTest {
+public class LdpConstraintServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
 
     private final String domain = "trellis:data/";
-    private final ConstraintService svc = new LdpConstraints();
+    private final ConstraintService svc = new LdpConstraintService();
     private final List<IRI> models = asList(LDP.RDFSource, LDP.NonRDFSource, LDP.Container, LDP.Resource,
             LDP.DirectContainer, LDP.IndirectContainer);
 

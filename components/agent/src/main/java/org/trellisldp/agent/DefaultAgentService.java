@@ -24,12 +24,12 @@ import org.trellisldp.vocabulary.Trellis;
  * An {@link org.trellisldp.api.AgentService} implementation that converts user strings
  * directly to {@link org.apache.commons.rdf.api.IRI}s.
  *
- * <p>A value of {@code null} passed to {@link SimpleAgentService#asAgent} will result
+ * <p>A value of {@code null} passed to {@link DefaultAgentService#asAgent} will result
  * in a {@code trellis:AnonymousAgent} value.
  *
  * @author acoburn
  */
-public class SimpleAgentService implements AgentService {
+public class DefaultAgentService implements AgentService {
 
     private static final RDF rdf = getInstance();
 

@@ -37,12 +37,12 @@ import org.trellisldp.api.NamespaceService;
  *
  * @author acoburn
  */
-public class NamespacesJsonContext implements NamespaceService {
+public class JsonNamespaceService implements NamespaceService {
 
     /** The configuration key controlling the path to a JSON-formatted namespace file. **/
     public static final String CONFIG_NAMESPACES_PATH = "trellis.namespaces.path";
 
-    private static final Logger LOGGER = getLogger(NamespacesJsonContext.class);
+    private static final Logger LOGGER = getLogger(JsonNamespaceService.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final String filePath;
@@ -53,7 +53,7 @@ public class NamespacesJsonContext implements NamespaceService {
      * Create a JSON-based Namespace service.
      */
     @Inject
-    public NamespacesJsonContext() {
+    public JsonNamespaceService() {
         this(ConfigProvider.getConfig().getValue(CONFIG_NAMESPACES_PATH, String.class));
     }
 
@@ -61,7 +61,7 @@ public class NamespacesJsonContext implements NamespaceService {
      * Create a JSON-based Namespace service.
      * @param path the path to the JSON file
      */
-    public NamespacesJsonContext(final String path) {
+    public JsonNamespaceService(final String path) {
         this.filePath = path;
         this.data = read(path);
         init();

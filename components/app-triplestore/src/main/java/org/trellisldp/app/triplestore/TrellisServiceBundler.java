@@ -22,7 +22,7 @@ import com.google.common.cache.Cache;
 import io.dropwizard.setup.Environment;
 
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.trellisldp.agent.SimpleAgentService;
+import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IOService;
@@ -31,15 +31,15 @@ import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.app.BaseServiceBundler;
 import org.trellisldp.app.DefaultConstraintServices;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.constraint.LdpConstraints;
+import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.dropwizard.TrellisCache;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.io.JenaIOService;
-import org.trellisldp.namespaces.NamespacesJsonContext;
-import org.trellisldp.rdfa.HtmlSerializer;
+import org.trellisldp.namespaces.JsonNamespaceService;
+import org.trellisldp.rdfa.DefaultRdfaWriterService;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 
 /**
@@ -57,12 +57,12 @@ public class TrellisServiceBundler extends BaseServiceBundler {
      * @param environment the dropwizard environment
      */
     public TrellisServiceBundler(final AppConfiguration config, final Environment environment) {
-        agentService = new SimpleAgentService();
+        agentService = new DefaultAgentService();
         auditService = new DefaultAuditService();
         mementoService = new FileMementoService(config.getMementos());
         etagGenerator = new DefaultEtagGenerator();
         timemapGenerator = new DefaultTimemapGenerator();
-        constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraints()));
+        constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         resourceService = buildResourceService(config, environment);
         binaryService = buildBinaryService(config);
         ioService = buildIoService(config);
@@ -83,9 +83,10 @@ public class TrellisServiceBundler extends BaseServiceBundler {
         final long hours = config.getJsonld().getCacheExpireHours();
         final Cache<String, String> cache = newBuilder().maximumSize(cacheSize).expireAfterAccess(hours, HOURS).build();
         final TrellisCache<String, String> profileCache = new TrellisCache<>(cache);
-        final NamespaceService namespaceService = new NamespacesJsonContext(config.getNamespaces());
-        final RDFaWriterService htmlSerializer = new HtmlSerializer(namespaceService, config.getAssets().getTemplate(),
-                config.getAssets().getCss(), config.getAssets().getJs(), config.getAssets().getIcon());
+        final NamespaceService namespaceService = new JsonNamespaceService(config.getNamespaces());
+        final RDFaWriterService htmlSerializer = new DefaultRdfaWriterService(namespaceService,
+                config.getAssets().getTemplate(), config.getAssets().getCss(), config.getAssets().getJs(),
+                config.getAssets().getIcon());
         return new JenaIOService(namespaceService, htmlSerializer, profileCache,
                 config.getJsonld().getContextWhitelist(), config.getJsonld().getContextDomainWhitelist());
     }

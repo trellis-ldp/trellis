@@ -22,11 +22,11 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class SimpleAgentServiceTest {
+public class DefaultAgentServiceTest {
 
     @Test
     public void testAgent() {
-        final AgentService service = new SimpleAgentService();
+        final AgentService service = new DefaultAgentService();
 
         assertEquals("user:acoburn", service.asAgent("user:acoburn").getIRIString(), "Unexpected acoburn agent IRI!");
         assertEquals("user:foo/bar", service.asAgent("user:foo/bar").getIRIString(), "Unexpected foo/bar agent IRI!");

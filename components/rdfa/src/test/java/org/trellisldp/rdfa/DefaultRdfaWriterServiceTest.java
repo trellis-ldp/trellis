@@ -54,7 +54,7 @@ import org.trellisldp.api.RDFaWriterService;
 /**
  * @author acoburn
  */
-public class HtmlSerializerTest {
+public class DefaultRdfaWriterServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
 
@@ -76,7 +76,7 @@ public class HtmlSerializerTest {
         namespaces.put("dcmitype", "http://purl.org/dc/dcmitype/");
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
 
-        service = new HtmlSerializer(mockNamespaceService);
+        service = new DefaultRdfaWriterService(mockNamespaceService);
 
     }
 
@@ -89,30 +89,30 @@ public class HtmlSerializerTest {
 
     @Test
     public void testDefaultSerializer() {
-        final RDFaWriterService svc = new HtmlSerializer();
+        final RDFaWriterService svc = new DefaultRdfaWriterService();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         svc.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
-    public void testHtmlSerializer() {
+    public void testDefaultRdfaWriterService() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, null);
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
-    public void testHtmlSerializer2() {
+    public void testDefaultRdfaWriterService2() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
-    public void testHtmlSerializer3() {
+    public void testDefaultRdfaWriterService3() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new HtmlSerializer(mockNamespaceService, "/resource-test.mustache",
+        final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, "/resource-test.mustache",
                 "//www.trellisldp.org/assets/css/trellis.css", "", "//www.trellisldp.org/assets/img/trellis.png");
 
         service4.write(getTriples(), out, "http://example.com/");
@@ -120,20 +120,20 @@ public class HtmlSerializerTest {
     }
 
     @Test
-    public void testHtmlSerializer4() throws Exception {
+    public void testDefaultRdfaWriterService4() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new HtmlSerializer(mockNamespaceService, path,
+        final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, path,
                 "//www.trellisldp.org/assets/css/trellis.css", "", null);
         service4.write(getTriples(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
-    public void testHtmlSerializer5() throws Exception {
+    public void testDefaultRdfaWriterService5() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new HtmlSerializer(new NoopNamespaceService(), path,
+        final RDFaWriterService service4 = new DefaultRdfaWriterService(new NoopNamespaceService(), path,
                 (String) null, (String) null, (String) null);
 
         service4.write(getTriples2(), out, "http://example.com/");
@@ -145,7 +145,7 @@ public class HtmlSerializerTest {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final List<String> nullList = null;
-        final RDFaWriterService service6 = new HtmlSerializer(new NoopNamespaceService(), path,
+        final RDFaWriterService service6 = new DefaultRdfaWriterService(new NoopNamespaceService(), path,
                 nullList, nullList, null);
 
         service6.write(getTriples2(), out, "http://example.com/");

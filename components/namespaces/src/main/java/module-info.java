@@ -23,5 +23,5 @@ module org.trellisldp.namespaces {
     requires microprofile.config.api;
 
     provides org.trellisldp.api.NamespaceService
-        with org.trellisldp.namespaces.NamespacesJsonContext;
+        with org.trellisldp.namespaces.JsonNamespaceService;
 }

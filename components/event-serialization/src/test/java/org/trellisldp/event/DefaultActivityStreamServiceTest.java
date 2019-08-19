@@ -46,11 +46,11 @@ import org.trellisldp.vocabulary.AS;
 /**
  * @author acoburn
  */
-public class EventSerializerTest {
+public class DefaultActivityStreamServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
 
-    private final ActivityStreamService svc = new EventSerializer();
+    private final ActivityStreamService svc = new DefaultActivityStreamService();
 
     private final Instant time = now();
 

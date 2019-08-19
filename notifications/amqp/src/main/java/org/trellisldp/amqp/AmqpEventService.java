@@ -34,9 +34,9 @@ import org.trellisldp.api.EventService;
  * An AMQP message producer capable of publishing messages to an AMQP broker such as
  * RabbitMQ or Qpid.
  */
-public class AmqpPublisher implements EventService {
+public class AmqpEventService implements EventService {
 
-    private static final Logger LOGGER = getLogger(AmqpPublisher.class);
+    private static final Logger LOGGER = getLogger(AmqpEventService.class);
 
     /** The configuration key controlling the AMQP exchange name. **/
     public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
@@ -66,11 +66,11 @@ public class AmqpPublisher implements EventService {
      * @param channel the channel
      */
     @Inject
-    public AmqpPublisher(final ActivityStreamService serializer, final Channel channel) {
+    public AmqpEventService(final ActivityStreamService serializer, final Channel channel) {
         this(serializer, channel, getConfig());
     }
 
-    private AmqpPublisher(final ActivityStreamService serializer, final Channel channel, final Config config) {
+    private AmqpEventService(final ActivityStreamService serializer, final Channel channel, final Config config) {
         this(serializer, channel, config.getValue(CONFIG_AMQP_EXCHANGE_NAME, String.class),
                 config.getValue(CONFIG_AMQP_ROUTING_KEY, String.class),
             config.getOptionalValue(CONFIG_AMQP_MANDATORY, Boolean.class).orElse(Boolean.TRUE),
@@ -84,7 +84,7 @@ public class AmqpPublisher implements EventService {
      * @param exchangeName the exchange name
      * @param routingKey the routing key
      */
-    public AmqpPublisher(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
+    public AmqpEventService(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
             final String routingKey) {
         this(serializer, channel, exchangeName, routingKey, true, false);
     }
@@ -98,7 +98,7 @@ public class AmqpPublisher implements EventService {
      * @param mandatory the mandatory setting
      * @param immediate the immediate setting
      */
-    public AmqpPublisher(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
+    public AmqpEventService(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
             final String routingKey, final boolean mandatory, final boolean immediate) {
         this.service = requireNonNull(serializer, "Event serializer may not be null!");
         this.channel = requireNonNull(channel, "AMQP Channel may not be null!");

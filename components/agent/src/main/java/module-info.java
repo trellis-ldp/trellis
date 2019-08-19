@@ -20,5 +20,5 @@ module org.trellisldp.agent {
     requires org.apache.commons.rdf.api;
 
     provides org.trellisldp.api.AgentService
-        with org.trellisldp.agent.SimpleAgentService;
+        with org.trellisldp.agent.DefaultAgentService;
 }
