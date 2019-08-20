@@ -160,7 +160,14 @@ public class WebAcService {
             }).orElseGet(() -> unmodifiableSet(cachedModes));
     }
 
-    private String getCacheKey(final IRI identifier, final IRI agent, final String origin) {
+    /**
+     * Get a key suitable for cache lookups for the given arguments.
+     * @param identifier the resource identifier
+     * @param agent the agent identifier
+     * @param origin the origin, may be {@code null}
+     * @return a key for cache lookups
+     */
+    public static String getCacheKey(final IRI identifier, final IRI agent, final String origin) {
         return join("||", identifier.getIRIString(), agent.getIRIString(), origin != null ? origin : "");
     }
 
