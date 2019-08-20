@@ -150,24 +150,24 @@ public class WebAcService {
             return unmodifiableSet(allModes);
         }
 
-        final Set<IRI> cachedModes = cache.get(getCacheKey(identifier, session.getAgent(), origin), k ->
+        final Set<IRI> cachedModes = cache.get(generateCacheKey(identifier, session.getAgent(), origin), k ->
                 getAuthz(identifier, session.getAgent(), origin));
         return session.getDelegatedBy().map(delegate -> {
-                final Set<IRI> delegatedModes = new HashSet<>(cache.get(getCacheKey(identifier, delegate, origin), k ->
-                            getAuthz(identifier, delegate, origin)));
+                final Set<IRI> delegatedModes = new HashSet<>(cache.get(generateCacheKey(identifier, delegate, origin),
+                            k -> getAuthz(identifier, delegate, origin)));
                 delegatedModes.retainAll(cachedModes);
                 return unmodifiableSet(delegatedModes);
             }).orElseGet(() -> unmodifiableSet(cachedModes));
     }
 
     /**
-     * Get a key suitable for cache lookups for the given arguments.
+     * Generate a key suitable for cache lookups for the given arguments.
      * @param identifier the resource identifier
      * @param agent the agent identifier
      * @param origin the origin, may be {@code null}
      * @return a key for cache lookups
      */
-    public static String getCacheKey(final IRI identifier, final IRI agent, final String origin) {
+    public static String generateCacheKey(final IRI identifier, final IRI agent, final String origin) {
         return join("||", identifier.getIRIString(), agent.getIRIString(), origin != null ? origin : "");
     }
 
