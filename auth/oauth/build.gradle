@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
 
-description = 'Trellis OAuth authentication filter'
+description = 'Trellis OAuth'
 
 ext {
     moduleName = 'org.trellisldp.auth.oauth'

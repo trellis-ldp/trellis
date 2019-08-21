@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
 
-description = 'Trellis Basic authentication filter'
+description = 'Trellis Basic Auth'
 
 ext {
     moduleName = 'org.trellisldp.auth.basic'

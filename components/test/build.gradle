@@ -1,6 +1,6 @@
 apply plugin: 'java-library'
 
-description = """Common tests for Trellis components"""
+description = 'Trellis Test'
 
 ext {
     moduleName = 'org.trellisldp.test'

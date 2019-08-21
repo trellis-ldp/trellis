@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
 
-description = 'Trellis Event Serialization Module'
+description = 'Trellis Event Serialization'
 
 ext {
     moduleName = 'org.trellisldp.event'

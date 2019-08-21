@@ -69,14 +69,15 @@ ext {
     glassfishInjectVersion = '2.5.0-b62'
     javaxElVersion = '2.2.5'
     javaxInterceptorVersion = '1.2.2'
+    jenaOsgiVersion = '3.11.0'
     jenaVersionRange = '[3.11,4)'
     kafkaOsgiVersion = '2.2.0_1'
-    karafVersion = '4.2.5'
+    karafVersion = '4.2.6'
     mustacheOsgiVersion = '0.9.6_1'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
     paxExamVersion = '4.13.1'
-    spiflyVersion = '1.2.1'
+    spiflyVersion = '1.2.3'
     // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = '4.1.0'
 

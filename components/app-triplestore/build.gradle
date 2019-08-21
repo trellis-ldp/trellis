@@ -1,6 +1,6 @@
 apply plugin: 'java-library'
 
-description = 'Trellis Triplestore Application'
+description = "Trellis Triplestore Application"
 
 ext {
     moduleName = 'org.trellisldp.app.triplestore'
