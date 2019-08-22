@@ -1,5 +1,3 @@
-apply plugin: 'biz.aQute.bnd.builder'
-
 description = """Trellis OSGi"""
 
 ext {
@@ -108,7 +106,7 @@ task generateDependsFile {
 test {
     systemProperty 'karaf.version', karafVersion
     systemProperty 'karaf.commonsIo.version', commonsIoVersion
-    systemProperty 'jena.version', jenaVersion
+    systemProperty 'jena.version', jenaOsgiVersion
     systemProperty 'activemq.version', activeMqVersion
     systemProperty 'spring.version', springFeatureVersion
 

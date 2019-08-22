@@ -1,6 +1,6 @@
 apply plugin: 'java-library'
 
-description = 'Trellis Dropwizard Application'
+description = "Trellis Dropwizard"
 
 ext {
     moduleName = 'org.trellisldp.dropwizard'

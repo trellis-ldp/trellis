@@ -5,8 +5,7 @@ Bundle-Vendor:          ${project.vendor}
 Bundle-Version:         ${project.version}
 Bundle-License:         ${project.license}
 Bundle-DocURL:          ${project.docURL}
-Bundle-Description:     ${project.description}
-Bundle-Name:            ${project.name}
+Bundle-Name:            ${project.description}
 Bundle-SymbolicName:    ${project.group}.${project.name}
 Bundle-SCM:             url=https://github.com/trellis-ldp/trellis, \
                         connection=scm:git:https://github.com/trellis-ldp/trellis.git, \

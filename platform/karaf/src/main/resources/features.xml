@@ -9,6 +9,7 @@
     <bundle dependency="true">mvn:javax.el/javax.el-api/${javaxElVersion}</bundle>
     <bundle dependency="true">mvn:javax.interceptor/javax.interceptor-api/${javaxInterceptorVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-api/${project.version}</bundle>
   </feature>
@@ -74,9 +75,8 @@
 
     <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
     <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.metrics/microprofile-metrics-api/${microprofileMetricsVersion}</bundle>
-    <!-- microprofile metrics depends on cdi/1.2 -->
-    <bundle dependency="true">mvn:javax.enterprise/cdi-api/1.2</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
@@ -156,8 +156,6 @@
 
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
-    <!-- microprofile metrics depends on cdi/1.2 -->
-    <bundle dependency="true">mvn:javax.enterprise/cdi-api/1.2</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
   </feature>
@@ -174,8 +172,6 @@
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.metrics/microprofile-metrics-api/${microprofileMetricsVersion}</bundle>
-    <!-- microprofile metrics depends on cdi/1.2 -->
-    <bundle dependency="true">mvn:javax.enterprise/cdi-api/1.2</bundle>
     <bundle dependency="true">mvn:javax.xml.bind/jaxb-api/${jaxbVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-webdav/${project.version}</bundle>
@@ -240,8 +236,11 @@
     <bundle dependency="true">wrap:mvn:io.jsonwebtoken/jjwt-impl/${jjwtVersion}</bundle>
     <bundle dependency="true">wrap:mvn:io.jsonwebtoken/jjwt-jackson/${jjwtVersion}</bundle>
     <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:javax.el/javax.el-api/${javaxElVersion}</bundle>
+    <bundle dependency="true">mvn:javax.enterprise/cdi-api/${cdiApiVersion}</bundle>
+    <bundle dependency="true">mvn:javax.interceptor/javax.interceptor-api/${javaxInterceptorVersion}</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
@@ -253,8 +252,11 @@
 
     <feature dependency="true">trellis-vocabulary</feature>
 
-    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:javax.el/javax.el-api/${javaxElVersion}</bundle>
+    <bundle dependency="true">mvn:javax.enterprise/cdi-api/${cdiApiVersion}</bundle>
+    <bundle dependency="true">mvn:javax.interceptor/javax.interceptor-api/${javaxInterceptorVersion}</bundle>
     <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrsVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
