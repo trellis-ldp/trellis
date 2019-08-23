@@ -9,6 +9,7 @@ ext {
 }
 
 dependencies {
+    api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     api("javax.inject:javax.inject:$javaxInjectVersion")
     api("org.eclipse.microprofile.health:microprofile-health-api:$microprofileHealthVersion")
     api project(':trellis-api')

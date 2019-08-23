@@ -1,4 +1,3 @@
-apply plugin: 'java-library'
 apply plugin: 'liberty'
 apply plugin: 'war'
 
@@ -19,14 +18,13 @@ ext {
 }
 
 dependencies {
-    api project(':trellis-api')
-    api project(':trellis-app')
-
-    api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
-    api("javax.enterprise:cdi-api:${cdiApiVersion}")
-    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    implementation("javax.enterprise:cdi-api:${cdiApiVersion}")
+    implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
 
     implementation project(':trellis-agent')
+    implementation project(':trellis-api')
+    implementation project(':trellis-app')
     implementation project(':trellis-audit')
     implementation project(':trellis-auth-basic')
     implementation project(':trellis-auth-oauth')
