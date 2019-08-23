@@ -52,6 +52,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -90,6 +91,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * A triplestore-based implementation of the Trellis ResourceService API.
  */
+@ApplicationScoped
 public class TriplestoreResourceService implements ResourceService {
 
     /** The configuration key used to set where the RDF is stored. **/
