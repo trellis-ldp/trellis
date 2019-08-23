@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -74,8 +73,8 @@ public class WebApplication extends Application {
     }
 
     private void printBanner(final String name) {
-        final URL resource = Thread.currentThread().getContextClassLoader().getResource("banner.txt");
-        try (final InputStream resourceStream = resource.openStream();
+        try (final InputStream resourceStream = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("banner.txt");
              final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream);
              final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             final String banner = bufferedReader.lines().collect(joining(String.format("%n")));
