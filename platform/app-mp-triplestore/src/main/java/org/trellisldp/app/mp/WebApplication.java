@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.microprofile;
+package org.trellisldp.app.mp.triplestore;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
@@ -63,7 +63,7 @@ public class WebApplication extends Application {
 
     @PostConstruct
     private void init() {
-        printBanner("Trellis Microprofile");
+        printBanner("Trellis Triplestore Application");
     }
 
     @Override

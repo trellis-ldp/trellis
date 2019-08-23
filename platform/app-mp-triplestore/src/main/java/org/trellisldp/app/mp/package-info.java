@@ -15,4 +15,4 @@
 /**
  * A microprofile-based Trellis application.
  */
-package org.trellisldp.microprofile;
+package org.trellisldp.app.mp.triplestore;

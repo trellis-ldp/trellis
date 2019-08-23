@@ -29,7 +29,7 @@ include ':trellis-karaf'
 include ':trellis-osgi'
 include ':trellis-server'
 include ':trellis-test'
-include ':trellis-microprofile'
+include ':trellis-app-mp-triplestore'
 include ':trellis-app-triplestore'
 
 project(':trellis-api').projectDir = "$rootDir/core/api" as File
@@ -63,4 +63,4 @@ project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
 project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
 project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File
 project(':trellis-server').projectDir = "$rootDir/platform/server" as File
-project(':trellis-microprofile').projectDir = "$rootDir/platform/microprofile" as File
+project(':trellis-app-mp-triplestore').projectDir = "$rootDir/platform/app-mp-triplestore" as File
