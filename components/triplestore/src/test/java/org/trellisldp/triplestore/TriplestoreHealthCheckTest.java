@@ -29,6 +29,12 @@ public class TriplestoreHealthCheckTest {
     private static final JenaRDF rdf = new JenaRDF();
 
     @Test
+    public void testUnhealthyDefault() {
+        final HealthCheck check = new TriplestoreHealthCheck();
+        assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(), "RDFConnection isn't healthy!");
+    }
+
+    @Test
     public void testHealthy() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));

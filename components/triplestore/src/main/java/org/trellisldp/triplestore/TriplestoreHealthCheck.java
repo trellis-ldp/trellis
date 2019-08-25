@@ -32,6 +32,11 @@ public class TriplestoreHealthCheck implements HealthCheck {
 
     private final RDFConnection rdfConnection;
 
+    /** For use with CDI proxies. */
+    TriplestoreHealthCheck() {
+        this(null);
+    }
+
     /**
      * Create an object that checks the health of an RDF Connection.
      * @param rdfConnection the RDF Connection
@@ -44,6 +49,6 @@ public class TriplestoreHealthCheck implements HealthCheck {
     @Override
     public HealthCheckResponse call() {
         return HealthCheckResponse.named(TriplestoreHealthCheck.class.getSimpleName())
-            .state(!rdfConnection.isClosed()).build();
+            .state(rdfConnection != null && !rdfConnection.isClosed()).build();
     }
 }
