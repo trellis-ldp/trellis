@@ -25,8 +25,9 @@ ext {
     javaxManagementVersion = '1.1.2'
     jaxrsVersion = '2.1.1'
     microprofileConfigVersion = '1.3'
-    microprofileMetricsVersion = '2.0.1'
     microprofileHealthVersion = '2.0.1'
+    microprofileMetricsVersion = '2.0.1'
+    microprofileReactiveMessagingVersion = '1.0'
     slf4jVersion = '1.7.28'
 
     /* Wiring */
@@ -49,6 +50,7 @@ ext {
     kafkaVersion = '2.3.0'
     mustacheVersion = '0.9.6'
     rabbitMqVersion = '5.7.3'
+    rxjavaVersion = '2.2.12'
     validationVersion = '2.0.1.Final'
 
     /* Testing */
@@ -66,6 +68,9 @@ ext {
     sleepycatVersion = '18.3.12'
     smallryeConfigVersion = '1.3.9'
     smallryeHealthVersion = '2.0.0'
+    smallryeReactiveVersion = '1.0.1'
+    smallryeReactiveOperatorsVersion = '1.0.9'
+    weldSeVersion = '3.1.2.Final'
     weldVersion = '2.0.0.Final'
 
     /* OSGi */

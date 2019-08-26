@@ -1,0 +1,71 @@
+apply plugin: 'java-library'
+apply plugin: 'biz.aQute.bnd.builder'
+
+description = 'Trellis Notifications (Reactive Messaging)'
+
+configurations {
+    weld
+}
+
+ext {
+    moduleName = 'org.trellisldp.reactive'
+    testModules = ['smallrye.config', 'org.trellisldp.vocabulary', 'org.trellisldp.event', 'org.apache.commons.rdf.simple']
+}
+
+dependencies {
+    api("io.reactivex.rxjava2:rxjava:$rxjavaVersion")
+    api("javax.inject:javax.inject:$javaxInjectVersion")
+    api("org.eclipse.microprofile.reactive.messaging:microprofile-reactive-messaging-api:$microprofileReactiveMessagingVersion")
+    api project(':trellis-api')
+
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testImplementation("io.smallrye.reactive:smallrye-reactive-streams-operators:$smallryeReactiveOperatorsVersion")
+    testImplementation("io.smallrye.reactive:smallrye-reactive-messaging-provider:$smallryeReactiveVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
+        exclude group: "org.hamcrest", module: 'hamcrest-core'
+        exclude group: 'org.hamcrest', module: 'hamcrest-library'
+    }
+    testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-vocabulary')
+
+    weld("org.jboss.weld.se:weld-se-core:$weldSeVersion")
+
+    if (!project.sourceCompatibility.isJava11Compatible()) {
+        testImplementation("org.jboss.weld.se:weld-se-core:$weldSeVersion")
+    }
+}
+
+test {
+    systemProperty 'smallrye-messaging-strict-binding', 'true'
+}
+
+
+if (project.sourceCompatibility.isJava11Compatible()) {
+    compileTestJava {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            options.compilerArgs += [
+                '--add-reads', "$moduleName=ALL-UNNAMED",
+            ]
+            classpath = files(configurations.weld)
+        }
+    }
+
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-reads', "$moduleName=ALL-UNNAMED",
+                '--add-opens', "$moduleName/$moduleName=ALL-UNNAMED",
+                '--add-opens', "org.trellisldp.event/org.trellisldp.event=ALL-UNNAMED",
+            ]
+            classpath = files(configurations.weld)
+        }
+    }
+}
