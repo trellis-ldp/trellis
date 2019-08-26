@@ -51,6 +51,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -89,6 +91,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * A triplestore-based implementation of the Trellis ResourceService API.
  */
+@ApplicationScoped
 public class TriplestoreResourceService implements ResourceService {
 
     /** The configuration key used to set where the RDF is stored. **/
@@ -129,7 +132,6 @@ public class TriplestoreResourceService implements ResourceService {
      */
     @Inject
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
-        super();
         this.includeLdpType = getConfig().getOptionalValue(CONFIG_TRIPLESTORE_LDP_TYPE, Boolean.class)
             .orElse(Boolean.FALSE);
         this.rdfConnection = requireNonNull(rdfConnection, "RDFConnection may not be null!");
@@ -331,6 +333,7 @@ public class TriplestoreResourceService implements ResourceService {
      *
      * </code></pre>
      */
+    @PostConstruct
     public void initialize() {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         final Query q = new Query();
@@ -374,6 +377,7 @@ public class TriplestoreResourceService implements ResourceService {
             update.add(new UpdateDataInsert(sink));
             rdfConnection.update(update);
         }
+        LOGGER.info("Initialized Trellis Triplestore Resource Service");
     }
 
     @Override

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<server description="Trellis Server">
+    <featureManager>
+      <feature>microProfile-3.0</feature>
+    </featureManager>
+    <logging consoleLogLevel="INFO"/>
+    <httpEndpoint httpPort="${default.http.port}" httpsPort="${default.https.port}"
+      id="defaultHttpEndpoint" host="*">
+      <accessLogging filepath="${server.output.dir}/logs/access.log"/>
+    </httpEndpoint>
+    <webApplication location="trellis-app-mp-triplestore.war" contextRoot="/"/>
+</server>
+

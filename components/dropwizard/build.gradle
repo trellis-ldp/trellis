@@ -26,7 +26,7 @@ dependencies {
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
     testImplementation("javax.enterprise:cdi-api:$cdiApiVersion")
     testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {

@@ -13,6 +13,8 @@
  */
 package org.trellisldp.test;
 
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.LINK;
@@ -29,6 +31,7 @@ import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
@@ -160,15 +163,17 @@ public interface MementoCommonTests extends CommonTests {
      * @return a Stream of executable assertions
      */
     default Stream<Executable> checkMementoAllowedMethods(final Response res) {
+        final Set<String> methods = res.getAllowedMethods().stream()
+            .flatMap(item -> stream(item.split(",")).map(String::trim)).collect(toSet());
         return of(
                 () -> assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response"),
-                () -> assertTrue(res.getAllowedMethods().contains("GET"), "GET should be allowed!"),
-                () -> assertTrue(res.getAllowedMethods().contains("HEAD"), "HEAD should be allowed!"),
-                () -> assertTrue(res.getAllowedMethods().contains("OPTIONS"), "OPTIONS should be allowed!"),
-                () -> assertFalse(res.getAllowedMethods().contains("POST"), "POST shouldn't be allowed!"),
-                () -> assertFalse(res.getAllowedMethods().contains("PUT"), "PUT shouldn't be allowed!"),
-                () -> assertFalse(res.getAllowedMethods().contains("PATCH"), "PATCH shouldn't be allowed!"),
-                () -> assertFalse(res.getAllowedMethods().contains("DELETE"), "DELETE shouldn't be allowed!"));
+                () -> assertTrue(methods.contains("GET"), "GET should be allowed!"),
+                () -> assertTrue(methods.contains("HEAD"), "HEAD should be allowed!"),
+                () -> assertTrue(methods.contains("OPTIONS"), "OPTIONS should be allowed!"),
+                () -> assertFalse(methods.contains("POST"), "POST shouldn't be allowed!"),
+                () -> assertFalse(methods.contains("PUT"), "PUT shouldn't be allowed!"),
+                () -> assertFalse(methods.contains("PATCH"), "PATCH shouldn't be allowed!"),
+                () -> assertFalse(methods.contains("DELETE"), "DELETE shouldn't be allowed!"));
     }
 
     /**

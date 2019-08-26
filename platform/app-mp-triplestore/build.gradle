@@ -1,0 +1,111 @@
+apply plugin: 'liberty'
+apply plugin: 'war'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.wasdev.wlp.gradle.plugins:liberty-gradle-plugin:2.6.5'
+    }
+}
+
+ext {
+    appName = "trellis"
+    testServerHttpPort = 9080
+    testServerHttpsPort = 9443
+    warContext = appName
+}
+
+dependencies {
+    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
+    implementation("javax.enterprise:cdi-api:${cdiApiVersion}")
+    implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+
+    implementation project(':trellis-agent')
+    implementation project(':trellis-api')
+    implementation project(':trellis-app')
+    implementation project(':trellis-audit')
+    implementation project(':trellis-auth-basic')
+    implementation project(':trellis-auth-oauth')
+    implementation project(':trellis-constraint-rules')
+    implementation project(':trellis-event-serialization')
+    implementation project(':trellis-file')
+    implementation project(':trellis-http')
+    implementation project(':trellis-io-jena')
+    implementation project(':trellis-namespaces')
+    implementation project(':trellis-rdfa')
+    implementation project(':trellis-triplestore')
+    implementation project(':trellis-vocabulary')
+    implementation project(':trellis-webac')
+
+    implementation("com.github.jsonld-java:jsonld-java:$jsonldVersion") {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient-osgi'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore-osgi'
+    }
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+    implementation("org.apache.jena:jena-arq:$jenaVersion")
+    implementation("org.apache.jena:jena-rdfconnection:$jenaVersion")
+    implementation("org.apache.jena:jena-tdb2:$jenaVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
+        exclude group: 'org.apache.jena', module: 'jena-osgi'
+        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
+    }
+
+    runtime("ch.qos.logback:logback-classic:$logbackVersion")
+    runtime("javax.xml.bind:jaxb-api:$jaxbVersion")
+    runtime("javax.activation:javax.activation-api:$activationApiVersion")
+    runtime("javax.validation:validation-api:$validationVersion")
+
+    testImplementation project(':trellis-test')
+
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testImplementation("org.apache.cxf:cxf-rt-rs-client:$cxfVersion")
+    testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
+        exclude group: "org.hamcrest", module: 'hamcrest-core'
+        exclude group: 'org.hamcrest', module: 'hamcrest-library'
+    }
+    testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+
+    libertyRuntime group:'io.openliberty', name:'openliberty-runtime', version:'[19.0.0.7,)'
+}
+
+liberty {
+    server {
+        name = "${appName}"
+        configFile = file("src/main/liberty/config/server.xml")
+        bootstrapProperties = ['default.http.port': testServerHttpPort,
+                               'default.https.port': testServerHttpsPort,
+                               'app.context.root': warContext]
+        packageLiberty {
+            archive = "$buildDir/${appName}.zip"
+            include = "usr"
+        }
+    }
+}
+
+war {
+    archiveName = "${baseName}.${extension}"
+}
+
+test {
+    systemProperties = [
+        'liberty.test.port': testServerHttpPort,
+        'war.name': warContext
+    ]
+}
+
+test.dependsOn 'libertyStart'
+test.finalizedBy 'libertyStop'
+libertyPackage.dependsOn 'libertyStop'
+
+java {
+    // because this isn't built as a JPMS module
+    if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
+        disableAutoTargetJvm()
+    }
+}
