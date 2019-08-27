@@ -23,6 +23,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.util.Optional;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 
@@ -32,6 +34,7 @@ import org.trellisldp.api.Event;
  *
  * @author acoburn
  */
+@ApplicationScoped
 public class DefaultActivityStreamService implements ActivityStreamService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();

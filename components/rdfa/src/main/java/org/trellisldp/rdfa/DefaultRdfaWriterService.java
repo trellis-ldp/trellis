@@ -35,6 +35,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Triple;
@@ -46,6 +47,7 @@ import org.trellisldp.api.RDFaWriterService;
 /**
  * An RDFa (HTML) serialization service.
  */
+@ApplicationScoped
 public class DefaultRdfaWriterService implements RDFaWriterService {
 
     private static final MustacheFactory mf = new DefaultMustacheFactory();

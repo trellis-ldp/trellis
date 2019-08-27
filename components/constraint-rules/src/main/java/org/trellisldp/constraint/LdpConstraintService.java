@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
@@ -58,6 +60,7 @@ import org.trellisldp.vocabulary.Trellis;
  *
  * @author acoburn
  */
+@ApplicationScoped
 public class LdpConstraintService implements ConstraintService {
 
     private static final Set<IRI> propertiesWithInDomainRange = singleton(LDP.membershipResource);
