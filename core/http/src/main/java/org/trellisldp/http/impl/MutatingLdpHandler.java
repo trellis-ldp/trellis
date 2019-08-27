@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
@@ -190,27 +191,31 @@ class MutatingLdpHandler extends BaseLdpHandler {
         // Always notify about updates for the resource in question
         getServices().getEventService().emit(new SimpleEvent(getUrl(identifier), getSession().getAgent(),
                     asList(PROV.Activity, activityType), ldpResourceTypes(resourceType).collect(toList())));
-        // If this was an update and the parent is an ldp:IndirectContainer,
-        // notify about the member resource (if it exists)
-        if (AS.Update.equals(activityType) && LDP.IndirectContainer.equals(getParentModel())) {
-            return emitMembershipUpdateEvent();
-        // If this was a creation or deletion, and the parent is some form of container,
-        // notify about the parent resource, too
-        } else if (AS.Create.equals(activityType) || AS.Delete.equals(activityType)) {
-            final IRI model = getParentModel();
-            final IRI id = getParentIdentifier();
-            if (HttpUtils.isContainer(model)) {
-                getServices().getEventService().emit(new SimpleEvent(getUrl(id),
-                                getSession().getAgent(), asList(PROV.Activity, AS.Update),
-                                ldpResourceTypes(model).collect(toList())));
-                // If the parent's membership resource is different than the parent itself,
-                // notify about that membership resource, too (if it exists)
-                if (!parent.getMembershipResource().map(MutatingLdpHandler::removeHashFragment).filter(isEqual(id))
-                        .isPresent()) {
-                    return allOf(getServices().getResourceService().touch(id).toCompletableFuture(),
-                            emitMembershipUpdateEvent().toCompletableFuture());
+
+        // Further notifications are only relevant for non-ACL resources
+        if (!isAclRequest()) {
+            // If this was an update and the parent is an ldp:IndirectContainer,
+            // notify about the member resource (if it exists)
+            if (AS.Update.equals(activityType) && LDP.IndirectContainer.equals(getParentModel())) {
+                return emitMembershipUpdateEvent();
+            // If this was a creation or deletion, and the parent is some form of container,
+            // notify about the parent resource, too
+            } else if (AS.Create.equals(activityType) || AS.Delete.equals(activityType)) {
+                final IRI model = getParentModel();
+                final IRI id = getParentIdentifier();
+                if (HttpUtils.isContainer(model)) {
+                    getServices().getEventService().emit(new SimpleEvent(getUrl(id),
+                                    getSession().getAgent(), asList(PROV.Activity, AS.Update),
+                                    ldpResourceTypes(model).collect(toList())));
+                    // If the parent's membership resource is different than the parent itself,
+                    // notify about that membership resource, too (if it exists)
+                    if (!parent.getMembershipResource().map(MutatingLdpHandler::removeHashFragment).filter(isEqual(id))
+                            .isPresent()) {
+                        return allOf(getServices().getResourceService().touch(id).toCompletableFuture(),
+                                emitMembershipUpdateEvent().toCompletableFuture());
+                    }
+                    return getServices().getResourceService().touch(id);
                 }
-                return getServices().getResourceService().touch(id);
             }
         }
         return completedFuture(null);
@@ -312,6 +317,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * Convert an internal identifier to an external identifier, suitable for notifications.
      */
     private String getUrl(final IRI identifier) {
-        return getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
+        final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
+        return isAclRequest() ? url + ACL_QUERY_PARAM : url;
     }
 }

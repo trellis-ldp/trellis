@@ -46,6 +46,9 @@ public final class HttpConstants {
     /** The ext parameter for ACL resources. **/
     public static final String ACL = "acl";
 
+    /** The query parameter for ACL resources. **/
+    public static final String ACL_QUERY_PARAM = "?ext=acl";
+
     /** The default Memento TimeMap output format. **/
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 

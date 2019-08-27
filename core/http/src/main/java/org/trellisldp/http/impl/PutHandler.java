@@ -31,6 +31,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
@@ -126,7 +127,7 @@ public class PutHandler extends MutatingLdpHandler {
         }
 
         // One cannot put binaries into the ACL graph
-        if (ACL.equals(getRequest().getExt()) && rdfSyntax == null) {
+        if (isAclRequest() && rdfSyntax == null) {
             throw new NotAcceptableException();
         }
 
@@ -185,7 +186,7 @@ public class PutHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : "");
+        return super.getIdentifier() + (isAclRequest() ? ACL_QUERY_PARAM : "");
     }
 
     private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> syntaxes) {
@@ -242,7 +243,7 @@ public class PutHandler extends MutatingLdpHandler {
             readEntityIntoDataset(graphName, s, mutable);
 
             // Check for any constraints
-            if (ACL.equals(getRequest().getExt())) {
+            if (isAclRequest()) {
                 checkConstraint(mutable.getGraph(PreferAccessControl), LDP.RDFSource, s);
             } else {
                 checkConstraint(mutable.getGraph(PreferUserManaged), ldpType, s);
@@ -290,16 +291,13 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private CompletionStage<Void> handleUpdateEvent(final IRI ldpType) {
-        if (!ACL.equals(getRequest().getExt())) {
-            return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType);
-        }
-        return completedFuture(null);
+        return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update,
+                isAclRequest() ? LDP.RDFSource : ldpType);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {
         LOGGER.trace("Determining effective LDP type from offered type {}", ldpType.getIRIString());
-        return ACL.equals(getRequest().getExt())
-            || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
+        return isAclRequest() || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
     }
 
     private CompletionStage<Void> createOrReplace(final Metadata metadata, final Dataset dataset) {

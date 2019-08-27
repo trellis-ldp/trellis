@@ -42,7 +42,6 @@ import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
-import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
@@ -151,7 +150,7 @@ public class GetHandler extends BaseLdpHandler {
                 .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
                 .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
 
-        if (ACL.equals(getRequest().getExt()) && !resource.hasAcl()) {
+        if (isAclRequest() && !resource.hasAcl()) {
             throw new NotFoundException();
         }
 
@@ -203,7 +202,7 @@ public class GetHandler extends BaseLdpHandler {
      */
     public ResponseBuilder getRepresentation(final ResponseBuilder builder) {
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
-        getResource().getBinaryMetadata().filter(ds -> !ACL.equals(getRequest().getExt())).ifPresent(ds -> {
+        getResource().getBinaryMetadata().filter(ds -> !isAclRequest()).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
             final String description = base + (base.contains("?") ? "&" : "?") + "ext=description";
             if (syntax != null) {
@@ -236,7 +235,7 @@ public class GetHandler extends BaseLdpHandler {
      */
     public ResponseBuilder addMementoHeaders(final ResponseBuilder builder, final SortedSet<Instant> mementos) {
         // Only show memento links for the user-managed graph (not ACL)
-        if (!ACL.equals(getRequest().getExt())) {
+        if (!isAclRequest()) {
             builder.link(getIdentifier(), "original timegate")
                 .links(MementoResource.getMementoHeaders(getIdentifier(), mementos, isMemento ?
                             getResource().getModified() : null)
@@ -256,7 +255,7 @@ public class GetHandler extends BaseLdpHandler {
                 query.add("version=" + v.getInstant().getEpochSecond());
             }
 
-            if (ACL.equals(getRequest().getExt())) {
+            if (isAclRequest()) {
                 query.add("ext=acl");
             } else if (DESCRIPTION.equals(getRequest().getExt())) {
                 query.add("ext=description");
@@ -277,7 +276,7 @@ public class GetHandler extends BaseLdpHandler {
     private void addAllowHeaders(final ResponseBuilder builder) {
         if (isMemento) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
-        } else if (ACL.equals(getRequest().getExt())) {
+        } else if (isAclRequest()) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH));
         } else if (getResource().getInteractionModel().equals(LDP.RDFSource)) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
@@ -288,7 +287,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private ResponseBuilder getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax,
             final IRI profile) {
-        final Prefer prefer = ACL.equals(getRequest().getExt()) ?
+        final Prefer prefer = isAclRequest() ?
             new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
                     of(PreferUserManaged, LDP.PreferContainment, LDP.PreferMembership).map(IRI::getIRIString)
                         .collect(toList()), null, null) : getRequest().getPrefer();
@@ -330,7 +329,7 @@ public class GetHandler extends BaseLdpHandler {
     // Don't allow access control triples unless the request is for an ACL resource
     private Set<IRI> getPreferredGraphs(final Prefer prefer) {
         final Set<IRI> p = triplePreferences(prefer);
-        if (!ACL.equals(getRequest().getExt())) {
+        if (!isAclRequest()) {
             p.remove(PreferAccessControl);
         }
         return p;

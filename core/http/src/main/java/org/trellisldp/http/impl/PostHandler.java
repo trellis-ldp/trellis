@@ -32,7 +32,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
@@ -145,7 +144,7 @@ public class PostHandler extends MutatingLdpHandler {
         } else if (DELETED_RESOURCE.equals(parent)) {
             // Can't POST to a deleted resource
             throw new ClientErrorException(GONE);
-        } else if (ACL.equals(getRequest().getExt())
+        } else if (isAclRequest()
                 || ldpResourceTypes(parent.getInteractionModel()).noneMatch(LDP.Container::equals)) {
             // Can't POST to an ACL resource or non-Container
             throw new NotAllowedException(GET, Stream.of(HEAD, OPTIONS, PATCH, PUT, DELETE).toArray(String[]::new));

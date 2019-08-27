@@ -28,12 +28,14 @@ import static org.mockito.Mockito.*;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
+import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.BadRequestException;
@@ -45,6 +47,8 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.trellisldp.api.Event;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
@@ -114,6 +118,29 @@ public class PatchHandlerTest extends BaseTestHandler {
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq("http://localhost/resource"));
         verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
     }
+
+    @Test
+    public void testAcl() {
+        when(mockTrellisRequest.getExt()).thenReturn(ACL);
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
+
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
+        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+            .toCompletableFuture().join().build();
+
+        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+
+        final ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
+        verify(mockEventService).emit(event.capture());
+        assertEquals(Optional.of("http://localhost/resource?ext=acl"),
+                event.getValue().getTarget().map(IRI::getIRIString));
+        verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
+                eq("http://localhost/resource?ext=acl"));
+        verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
+    }
+
 
     @Test
     public void testPreferRepresentation() {
