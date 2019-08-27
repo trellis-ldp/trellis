@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
@@ -317,6 +318,6 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     private String getUrl(final IRI identifier) {
         final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
-        return isAclRequest() ? url + "?ext=acl" : url;
+        return isAclRequest() ? url + ACL_QUERY_PARAM : url;
     }
 }

@@ -25,6 +25,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
@@ -171,7 +172,7 @@ public class PatchHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (isAclRequest() ? "?ext=acl" : "");
+        return super.getIdentifier() + (isAclRequest() ? ACL_QUERY_PARAM : "");
     }
 
     private List<Triple> updateGraph(final RDFSyntax syntax, final IRI graphName) {
@@ -185,7 +186,7 @@ public class PatchHandler extends MutatingLdpHandler {
             }
 
             getServices().getIOService().update(graph, updateBody, syntax,
-                getBaseUrl() + getRequest().getPath() + (isAclRequest() ? "?ext=acl" : ""));
+                getBaseUrl() + getRequest().getPath() + (isAclRequest() ? ACL_QUERY_PARAM : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                 || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         } catch (final Exception ex) {

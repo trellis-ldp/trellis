@@ -22,7 +22,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -68,7 +68,7 @@ public class DeleteHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (ACL.equals(getRequest().getExt()) ? "?ext=acl" : "");
+        return super.getIdentifier() + (isAclRequest() ? ACL_QUERY_PARAM : "");
     }
 
     /**
@@ -122,7 +122,7 @@ public class DeleteHandler extends MutatingLdpHandler {
     }
 
     private CompletionStage<Void> handleDeletion(final Dataset mutable, final Dataset immutable) {
-        if (ACL.equals(getRequest().getExt())) {
+        if (isAclRequest()) {
             return handleAclDeletion(mutable, immutable);
         }
         return handleResourceDeletion(immutable).thenCompose(future ->

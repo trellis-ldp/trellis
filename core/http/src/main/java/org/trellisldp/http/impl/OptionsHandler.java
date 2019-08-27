@@ -142,7 +142,7 @@ public class OptionsHandler extends BaseLdpHandler {
 
     private boolean hasDescription() {
         return NonRDFSource.equals(getResource().getInteractionModel()) && !TIMEMAP.equals(getRequest().getExt())
-            && !ACL.equals(getRequest().getExt());
+            && !isAclRequest();
     }
 
     private String getDescription() {

@@ -31,6 +31,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
@@ -185,7 +186,7 @@ public class PutHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (isAclRequest() ? "?ext=acl" : "");
+        return super.getIdentifier() + (isAclRequest() ? ACL_QUERY_PARAM : "");
     }
 
     private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> syntaxes) {
