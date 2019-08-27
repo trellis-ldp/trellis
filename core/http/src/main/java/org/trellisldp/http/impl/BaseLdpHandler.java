@@ -18,6 +18,7 @@ import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.ACL;
 
 import java.time.Instant;
 
@@ -125,6 +126,14 @@ class BaseLdpHandler {
      */
     protected ServiceBundler getServices() {
         return services;
+    }
+
+    /**
+     * Determine whether the request is for an ACL resource.
+     * @return true if the request targeted an ACL resource; false otherwise
+     */
+    protected boolean isAclRequest() {
+        return ACL.equals(getRequest().getExt());
     }
 
     private static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
