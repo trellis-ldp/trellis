@@ -190,7 +190,7 @@ public class TrellisHttpResource {
             return trellis.getResourceService().create(Metadata.builder(id).interactionModel(LDP.BasicContainer)
                     .build(), dataset);
         } else if (!res.hasAcl()) {
-            LOGGER.info("Initializeing root ACL: {}", id);
+            LOGGER.info("Initializing root ACL: {}", id);
             try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
                 quads.forEach(dataset::add);
             }
