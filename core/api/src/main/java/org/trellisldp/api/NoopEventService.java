@@ -17,7 +17,7 @@ package org.trellisldp.api;
  * For use when an event service is not desired.
  */
 @NoopImplementation
-public final class NoopEventService implements EventService {
+public class NoopEventService implements EventService {
 
     @Override
     public void emit(final Event event) {

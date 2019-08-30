@@ -21,6 +21,6 @@ package org.trellisldp.api;
  *
  */
 @NoopImplementation
-public final class NoopAuditService implements AuditService {
+public class NoopAuditService implements AuditService {
 
 }
