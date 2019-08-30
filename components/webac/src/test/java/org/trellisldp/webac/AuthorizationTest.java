@@ -66,9 +66,6 @@ public class AuthorizationTest {
         graph.add(rdf.createTriple(other, ACL.accessToClass, PROV.Entity));
 
         graph.add(rdf.createTriple(subject, ACL.default_, rdf.createIRI("trellis:data/container")));
-
-        graph.add(rdf.createTriple(subject, ACL.origin, rdf.createIRI("https://example.com")));
-        graph.add(rdf.createTriple(subject, ACL.origin, rdf.createIRI("https://app.example.com")));
     }
 
     @Test
@@ -96,9 +93,5 @@ public class AuthorizationTest {
 
         assertEquals(1, auth.getDefault().size(), "Incorrect number of default values!");
         assertTrue(auth.getDefault().contains(rdf.createIRI("trellis:data/container")), "missing default value!");
-
-        assertEquals(2, auth.getOrigin().size(), "Incorrect number of origin values!");
-        assertTrue(auth.getOrigin().contains(rdf.createIRI("https://example.com")));
-        assertTrue(auth.getOrigin().contains(rdf.createIRI("https://app.example.com")));
     }
 }

@@ -103,7 +103,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final RDF rdf = getInstance();
-    private static final String ORIGIN = "Origin";
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
@@ -168,9 +167,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final String path = ctx.getUriInfo().getPath();
         final Session s = getOrCreateSession(ctx);
         final String method = ctx.getMethod();
-        final String origin = ctx.getHeaderString(ORIGIN);
 
-        final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + path), s, origin);
+        final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + path), s);
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
                 .contains(HttpConstants.ACL) || reqAudit(ctx)) {
             verifyCanControl(modes, s, path);

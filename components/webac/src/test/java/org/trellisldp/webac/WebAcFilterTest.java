@@ -100,7 +100,7 @@ public class WebAcFilterTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(allModes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
@@ -119,7 +119,7 @@ public class WebAcFilterTest {
     public void testFilterRead() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("GET");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Read);
@@ -138,7 +138,7 @@ public class WebAcFilterTest {
     public void testFilterCustomRead() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("READ");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Read);
@@ -158,7 +158,7 @@ public class WebAcFilterTest {
     public void testFilterWrite() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("PUT");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Write);
@@ -177,7 +177,7 @@ public class WebAcFilterTest {
     public void testFilterCustomWrite() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("WRITE");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Write);
@@ -196,7 +196,7 @@ public class WebAcFilterTest {
     public void testFilterAppend() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("POST");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Append);
@@ -221,7 +221,7 @@ public class WebAcFilterTest {
     public void testFilterCustomAppend() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("APPEND");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Append);
@@ -246,7 +246,7 @@ public class WebAcFilterTest {
     public void testFilterControl() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("GET");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Read);
@@ -271,7 +271,7 @@ public class WebAcFilterTest {
     public void testFilterControl2() throws Exception {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("GET");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(modes);
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
         modes.add(ACL.Read);
@@ -294,7 +294,7 @@ public class WebAcFilterTest {
     @Test
     public void testFilterChallenges() throws Exception {
         when(mockContext.getMethod()).thenReturn("POST");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class), any())).thenReturn(emptySet());
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm",
                 "http://example.com/");

@@ -51,7 +51,7 @@ import org.trellisldp.vocabulary.ACL;
 public class Authorization {
 
     private static final Set<IRI> predicates = new HashSet<>(asList(ACL.agent, ACL.agentClass, ACL.agentGroup,
-                ACL.mode, ACL.accessTo, ACL.default_, ACL.origin));
+                ACL.mode, ACL.accessTo, ACL.default_));
 
     private final BlankNodeOrIRI identifier;
     private final Map<IRI, Set<IRI>> dataMap;
@@ -145,14 +145,5 @@ public class Authorization {
      */
     public Set<IRI> getDefault() {
         return dataMap.getOrDefault(ACL.default_, emptySet());
-    }
-
-    /**
-     * Retrieve the acceptable origins of the ACL document.
-     *
-     * @return the origin IRIs
-     */
-    public Set<IRI> getOrigin() {
-        return dataMap.getOrDefault(ACL.origin, emptySet());
     }
 }
