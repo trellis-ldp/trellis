@@ -15,6 +15,8 @@ package org.trellisldp.agent;
 
 import static org.trellisldp.api.TrellisUtils.getInstance;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.AgentService;
@@ -29,6 +31,7 @@ import org.trellisldp.vocabulary.Trellis;
  *
  * @author acoburn
  */
+@ApplicationScoped
 public class DefaultAgentService implements AgentService {
 
     private static final RDF rdf = getInstance();

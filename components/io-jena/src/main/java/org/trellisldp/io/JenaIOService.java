@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
@@ -92,6 +93,7 @@ import org.trellisldp.api.RuntimeTrellisException;
  *
  * @author acoburn
  */
+@ApplicationScoped
 public class JenaIOService implements IOService {
 
     /** The configuration key listing valid JSON-LD profile documents. **/

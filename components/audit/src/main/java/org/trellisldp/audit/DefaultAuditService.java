@@ -21,6 +21,8 @@ import static org.trellisldp.vocabulary.Trellis.PreferAudit;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -41,6 +43,7 @@ import org.trellisldp.vocabulary.XSD;
  * 
  * @author acoburn
  */
+@ApplicationScoped
 public class DefaultAuditService implements AuditService {
 
     private static final RDF rdf = getInstance();
