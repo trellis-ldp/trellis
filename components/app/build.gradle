@@ -43,7 +43,10 @@ if (project.sourceCompatibility.isJava11Compatible()) {
         doFirst {
             jvmArgs += [
                 '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
-                '--add-opens', "org.trellisldp.http/org.trellisldp.http.core=weld.core.impl"
+                '--add-opens', "org.trellisldp.http/org.trellisldp.http.core=weld.core.impl",
+                '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
+                '--add-opens', "org.trellisldp.io/org.trellisldp.io=weld.core.impl",
+                '--add-opens', "org.trellisldp.agent/org.trellisldp.agent=weld.core.impl"
             ]
         }
     }
