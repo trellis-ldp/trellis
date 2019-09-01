@@ -24,6 +24,8 @@ module org.trellisldp.file {
     requires org.slf4j;
     requires javax.inject;
     requires microprofile.config.api;
+    requires org.apache.commons.codec;
+    requires org.apache.jena.core;
 
     provides org.trellisldp.api.BinaryService
         with org.trellisldp.file.FileBinaryService;

@@ -21,6 +21,8 @@ module org.trellisldp.event {
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
+    requires com.fasterxml.jackson.annotation;
+    requires cdi.api;
 
     opens org.trellisldp.event to com.fasterxml.jackson.databind;
 

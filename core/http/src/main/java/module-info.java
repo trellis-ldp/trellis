@@ -29,4 +29,5 @@ module org.trellisldp.http {
     requires java.xml.bind;
     requires java.annotation;
     requires cdi.api;
+    requires microprofile.metrics.api;
 }

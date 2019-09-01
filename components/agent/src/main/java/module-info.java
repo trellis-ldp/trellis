@@ -18,6 +18,7 @@ module org.trellisldp.agent {
     requires transitive org.trellisldp.vocabulary;
 
     requires org.apache.commons.rdf.api;
+    requires cdi.api;
 
     provides org.trellisldp.api.AgentService
         with org.trellisldp.agent.DefaultAgentService;
