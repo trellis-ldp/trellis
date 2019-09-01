@@ -28,6 +28,6 @@ module org.trellisldp.io {
     requires org.apache.jena.core;
     requires org.apache.jena.base;
 
-  provides org.trellisldp.api.IOService
+    provides org.trellisldp.api.IOService
         with org.trellisldp.io.JenaIOService;
 }
