@@ -25,6 +25,8 @@ module org.trellisldp.webac {
     requires java.ws.rs;
     requires java.xml.bind;
     requires microprofile.config.api;
+    requires java.annotation;
+    requires cdi.api;
 
     uses org.trellisldp.api.ResourceService;
 }

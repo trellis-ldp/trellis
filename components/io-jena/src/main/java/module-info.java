@@ -24,7 +24,10 @@ module org.trellisldp.io {
     requires javax.inject;
     requires microprofile.config.api;
     requires org.slf4j;
+    requires cdi.api;
+    requires org.apache.jena.core;
+    requires org.apache.jena.base;
 
-    provides org.trellisldp.api.IOService
+  provides org.trellisldp.api.IOService
         with org.trellisldp.io.JenaIOService;
 }

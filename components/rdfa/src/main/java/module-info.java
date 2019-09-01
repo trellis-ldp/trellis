@@ -22,8 +22,10 @@ module org.trellisldp.rdfa {
     requires org.apache.jena.arq;
     requires javax.inject;
     requires microprofile.config.api;
+    requires cdi.api;
+    requires org.apache.jena.core;
 
-    uses org.trellisldp.api.NamespaceService;
+  uses org.trellisldp.api.NamespaceService;
 
     opens org.trellisldp.rdfa to com.github.mustachejava;
 

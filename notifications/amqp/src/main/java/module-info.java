@@ -19,4 +19,5 @@ module org.trellisldp.amqp {
     requires javax.inject;
     requires microprofile.config.api;
     requires org.slf4j;
+    requires com.rabbitmq.client;
 }

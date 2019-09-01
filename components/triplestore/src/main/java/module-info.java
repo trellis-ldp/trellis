@@ -25,6 +25,12 @@ module org.trellisldp.triplestore {
 
     requires javax.inject;
     requires microprofile.config.api;
+    requires microprofile.health.api;
+    requires cdi.api;
+    requires org.apache.jena.rdfconnection;
+    requires org.apache.jena.core;
+    requires org.apache.jena.tdb2;
+    requires java.annotation;
 
     provides org.trellisldp.api.ResourceService
         with org.trellisldp.triplestore.TriplestoreResourceService;

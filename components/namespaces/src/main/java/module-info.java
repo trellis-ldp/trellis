@@ -21,7 +21,8 @@ module org.trellisldp.namespaces {
     requires com.fasterxml.jackson.databind;
     requires javax.inject;
     requires microprofile.config.api;
+    requires org.slf4j;
 
-    provides org.trellisldp.api.NamespaceService
+  provides org.trellisldp.api.NamespaceService
         with org.trellisldp.namespaces.JsonNamespaceService;
 }
