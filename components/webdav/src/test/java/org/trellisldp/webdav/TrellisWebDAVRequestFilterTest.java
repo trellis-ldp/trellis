@@ -93,7 +93,8 @@ public class TrellisWebDAVRequestFilterTest {
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockPathSegment.getPath()).thenReturn(PATH);
 
-        filter = new TrellisWebDAVRequestFilter(mockBundler, true, null);
+        filter = new TrellisWebDAVRequestFilter(true, null);
+        filter.setServiceBundler(mockBundler);
     }
 
     @Test
@@ -106,7 +107,8 @@ public class TrellisWebDAVRequestFilterTest {
 
     @Test
     public void testTestPutContainedMissing() throws Exception {
-        final TrellisWebDAVRequestFilter filter2 = new TrellisWebDAVRequestFilter(mockBundler, false, null);
+        final TrellisWebDAVRequestFilter filter2 = new TrellisWebDAVRequestFilter(false, null);
+        filter2.setServiceBundler(mockBundler);
 
         filter2.filter(mockContext);
         verify(mockContext, never()).setMethod(eq(POST));

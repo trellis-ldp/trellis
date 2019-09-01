@@ -19,7 +19,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.trellisldp.api.AgentService;
+import org.trellisldp.http.core.ServiceBundler;
 
 /**
  * @author acoburn
@@ -39,13 +42,10 @@ public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTes
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(mockAgentService,
-                singleton("testUser"));
-
         final ResourceConfig config = new ResourceConfig();
-        config.register(new TrellisHttpResource(mockBundler, baseUri));
+        config.register(new TrellisHttpResource(baseUri));
         config.register(new TestAuthenticationFilter("testUser", ""));
-        config.register(agentFilter);
+        config.register(new AgentAuthorizationFilter(singleton("testUser")));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
@@ -53,6 +53,13 @@ public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTes
                     asList("PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Datetime"),
                     asList("Link", "Content-Type", "Pragma", "Memento-Datetime"), true, 100));
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(mockAgentService).to(AgentService.class);
+                bind(mockBundler).to(ServiceBundler.class);
+            }
+        });
         return config;
     }
 }

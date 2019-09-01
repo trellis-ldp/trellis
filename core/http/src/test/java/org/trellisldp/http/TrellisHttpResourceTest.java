@@ -38,15 +38,18 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.rdf.api.Dataset;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
 
 /**
@@ -87,20 +90,29 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
         final ResourceConfig config = new ResourceConfig();
 
-        config.register(new TrellisHttpResource(mockBundler, null));
-        config.register(new AgentAuthorizationFilter(mockAgentService));
+        config.register(new TrellisHttpResource(null));
+        config.register(new AgentAuthorizationFilter());
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));
+
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(mockAgentService).to(AgentService.class);
+                bind(mockBundler).to(ServiceBundler.class);
+            }
+        });
         return config;
     }
 
     @Test
     public void testNoBaseURL() throws Exception {
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
+        final TrellisHttpResource matcher = new TrellisHttpResource(null);
+        matcher.setServiceBundler(mockBundler);
 
         when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>(singletonMap("path", "resource")));
         when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
@@ -125,7 +137,8 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
             throw new RuntimeTrellisException("Expected exception");
         }));
 
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource();
+        matcher.setServiceBundler(mockBundler);
         matcher.initialize();
         assertAll("Verify interactions with init-errored resource service", verifyInteractions(mockService));
     }
@@ -136,7 +149,8 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
 
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource();
+        matcher.setServiceBundler(mockBundler);
         matcher.initialize();
         assertAll("Verify interactions with resource service", verifyInteractions(mockService));
     }
@@ -149,7 +163,8 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockRootResource.hasAcl()).thenReturn(false);
         when(mockService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource();
+        matcher.setServiceBundler(mockBundler);
         matcher.initialize();
 
         verify(mockService, never().description("When re-initializing the root ACL, create should not be called"))
@@ -166,7 +181,8 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource();
+        matcher.setServiceBundler(mockBundler);
         matcher.initialize();
 
         verify(mockService, description("Re-create a missing root resource on initialization"))
@@ -183,7 +199,8 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
+        final TrellisHttpResource matcher = new TrellisHttpResource();
+        matcher.setServiceBundler(mockBundler);
         matcher.initialize();
 
         verify(mockService, description("A previously deleted root resource should be re-created upon initialization"))

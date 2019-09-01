@@ -18,7 +18,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.trellisldp.api.AgentService;
+import org.trellisldp.http.core.ServiceBundler;
 
 /**
  * @author acoburn
@@ -35,15 +38,22 @@ public class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new TrellisHttpResource(mockBundler));
+        config.register(new TrellisHttpResource());
         config.register(new TestAuthenticationFilter("testUser", "group"));
-        config.register(new AgentAuthorizationFilter(mockAgentService));
+        config.register(new AgentAuthorizationFilter());
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(mockAgentService).to(AgentService.class);
+                bind(mockBundler).to(ServiceBundler.class);
+            }
+        });
         return config;
     }
 }

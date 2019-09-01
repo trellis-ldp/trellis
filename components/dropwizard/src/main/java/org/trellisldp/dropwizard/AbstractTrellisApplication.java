@@ -32,7 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
+import org.trellisldp.api.AgentService;
 import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
@@ -81,7 +83,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      * @return the LDP resource matcher
      */
     protected Object getLdpComponent(final T config, final boolean initialize) {
-        final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(), config.getBaseUrl());
+        final TrellisHttpResource ldpResource = new TrellisHttpResource(config.getBaseUrl());
+        ldpResource.setServiceBundler(getServiceBundler());
         if (initialize) {
             ldpResource.initialize();
         }
@@ -124,7 +127,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     .getOptionalValue(CONFIG_DROPWIZARD_INITIALIZE_ROOT, Boolean.class).orElse(Boolean.TRUE)));
 
         // Authentication
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(
                 new HashSet<>(config.getAuth().getAdminUsers()));
 
         // Filters
@@ -155,5 +158,15 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Additional components
         getComponents().forEach(environment.jersey()::register);
+
+        // Injection
+        environment.jersey().register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(getServiceBundler().getAgentService()).to(AgentService.class);
+                bind(getServiceBundler()).to(ServiceBundler.class);
+            }
+        });
+
     }
 }

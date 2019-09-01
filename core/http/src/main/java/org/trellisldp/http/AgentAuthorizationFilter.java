@@ -59,36 +59,33 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
 
     private static final Logger LOGGER = getLogger(AgentAuthorizationFilter.class);
 
-    private final AgentService agentService;
     private final Set<String> adminUsers;
 
+    private AgentService agentService;
+
     /**
-     * No-op constructor for CDI.
+     * Create an authorization filter.
      */
-    AgentAuthorizationFilter() {
-        this.agentService = null;
-        this.adminUsers = getConfiguredAdmins();
+    public AgentAuthorizationFilter() {
+        this(getConfiguredAdmins());
     }
 
     /**
      * Create an authorization filter.
      *
+     * @param adminUsers the admin users
+     */
+    public AgentAuthorizationFilter(final Set<String> adminUsers) {
+        this.adminUsers = adminUsers;
+    }
+
+    /**
+     * Set the agent service.
      * @param agentService the agent service
      */
     @Inject
-    public AgentAuthorizationFilter(final AgentService agentService) {
-        this(agentService, getConfiguredAdmins());
-    }
-
-    /**
-     * Create an authorization filter.
-     *
-     * @param agentService the agent service
-     * @param adminUsers the admin users
-     */
-    public AgentAuthorizationFilter(final AgentService agentService, final Set<String> adminUsers) {
+    public void setAgentService(final AgentService agentService) {
         this.agentService = agentService;
-        this.adminUsers = adminUsers;
     }
 
     @Override

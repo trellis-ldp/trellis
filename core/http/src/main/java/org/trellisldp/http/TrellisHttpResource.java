@@ -100,7 +100,8 @@ public class TrellisHttpResource {
 
     protected static final RDF rdf = getInstance();
 
-    protected final ServiceBundler trellis;
+    protected ServiceBundler trellis;
+
     protected final String baseUrl;
     protected final String defaultJsonLdProfile;
     protected final boolean weakEtags;
@@ -110,38 +111,26 @@ public class TrellisHttpResource {
 
     /**
      * Create a Trellis HTTP resource matcher.
-     *
-     * @param trellis the Trellis application bundle
      */
-    @Inject
-    public TrellisHttpResource(final ServiceBundler trellis) {
-        this(trellis, getConfig());
+    public TrellisHttpResource() {
+        this(getConfig());
     }
 
-    /**
-     * Used only to support CDI.
-     */
-    TrellisHttpResource() {
-        this(null);
-    }
-
-    private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
-        this(trellis, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
+    private TrellisHttpResource(final Config config) {
+        this(config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
     }
 
     /**
      * Create a Trellis HTTP resource matcher.
      *
-     * @param trellis the Trellis application bundle
      * @param baseUrl a base URL
      */
-    public TrellisHttpResource(final ServiceBundler trellis, final String baseUrl) {
-        this(trellis, baseUrl, getConfig());
+    public TrellisHttpResource(final String baseUrl) {
+        this(baseUrl, getConfig());
     }
 
-    private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Config config) {
+    private TrellisHttpResource(final String baseUrl, final Config config) {
         this.baseUrl = baseUrl;
-        this.trellis = trellis;
         this.defaultJsonLdProfile = config.getOptionalValue(CONFIG_HTTP_JSONLD_PROFILE, String.class).orElse(null);
         this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.TRUE);
         this.includeMementoDates = config.getOptionalValue(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class)
@@ -150,6 +139,15 @@ public class TrellisHttpResource {
             .orElse(Boolean.FALSE);
         this.createUncontained = config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
             .orElse(Boolean.FALSE);
+    }
+
+    /**
+     * Set the trellis services.
+     * @param trellis the services
+     */
+    @Inject
+    public void setServiceBundler(final ServiceBundler trellis) {
+        this.trellis = trellis;
     }
 
     /**

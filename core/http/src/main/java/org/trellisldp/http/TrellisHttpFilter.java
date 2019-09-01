@@ -37,7 +37,6 @@ import java.util.List;
 import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
@@ -46,7 +45,6 @@ import org.trellisldp.http.core.Range;
 import org.trellisldp.http.core.Version;
 
 @Provider
-@PreMatching
 @Priority(AUTHORIZATION - 20)
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
