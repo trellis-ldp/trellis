@@ -30,19 +30,14 @@ import org.eclipse.microprofile.health.Readiness;
 @ApplicationScoped
 public class TriplestoreHealthCheck implements HealthCheck {
 
-    private final RDFConnection rdfConnection;
-
-    /** For use with CDI proxies. */
-    TriplestoreHealthCheck() {
-        this(null);
-    }
+    private RDFConnection rdfConnection;
 
     /**
      * Create an object that checks the health of an RDF Connection.
      * @param rdfConnection the RDF Connection
      */
     @Inject
-    public TriplestoreHealthCheck(final RDFConnection rdfConnection) {
+    public void setRdfConnection(final RDFConnection rdfConnection) {
         this.rdfConnection = rdfConnection;
     }
 

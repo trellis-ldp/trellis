@@ -108,32 +108,20 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(asList("POST"));
 
-    protected final WebAcService accessService;
     private final List<String> challenges;
     private final String baseUrl;
 
-    /**
-     * No-op constructor for CDI.
-     */
-    WebAcFilter() {
-        this.accessService = null;
-        this.challenges = null;
-        this.baseUrl = null;
-    }
+    protected WebAcService accessService;
 
     /**
      * Create a new WebAc-based auth filter.
-     *
-     * @param accessService the access service
      */
-    @Inject
-    public WebAcFilter(final WebAcService accessService) {
-        this(accessService, getConfig());
+    public WebAcFilter() {
+        this(getConfig());
     }
 
-    private WebAcFilter(final WebAcService accessService, final Config config) {
-        this(accessService,
-                asList(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
+    private WebAcFilter(final Config config) {
+        this(asList(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
                 config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
                 config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
@@ -141,16 +129,13 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     /**
      * Create a WebAc-based auth filter.
      *
-     * @param accessService the access service
      * @param challengeTypes the WWW-Authenticate challenge types
      * @param realm the authentication realm
      * @param baseUrl the base URL, may be null
      */
-    public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
-            final String realm, final String baseUrl) {
+    public WebAcFilter(final List<String> challengeTypes, final String realm, final String baseUrl) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
-        this.accessService = requireNonNull(accessService, "Access Control service may not be null!");
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
             .collect(toList());
         this.baseUrl = baseUrl;
@@ -161,6 +146,16 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 stream(w.split(",")).map(String::trim).map(String::toUpperCase).forEach(writable::add));
         config.getOptionalValue(CONFIG_WEBAC_METHOD_APPENDABLE, String.class).ifPresent(a ->
                 stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
+    }
+
+    /**
+     * Set the access service.
+     *
+     * @param accessService the access service
+     */
+    @Inject
+    public void setAccessService(final WebAcService accessService) {
+        this.accessService = requireNonNull(accessService, "Access Control service may not be null!");
     }
 
     @Override

@@ -30,6 +30,7 @@ import io.dropwizard.setup.Environment;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -137,15 +138,20 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
 
         // Authorization
-        getWebacCache(config).ifPresent(cache -> {
-            final WebAcService webac = new WebAcService(getServiceBundler().getResourceService(), cache);
+        final Optional<WebAcService> webac = getWebacCache(config)
+            .map(cache -> new WebAcService(getServiceBundler().getResourceService(), cache));
+
+
+        webac.ifPresent(accessService -> {
             final List<String> challenges = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
                 .ifPresent(challenges::add);
             of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled).map(x -> "Basic")
                 .ifPresent(challenges::add);
-            environment.jersey().register(new WebAcFilter(webac, challenges, config.getAuth().getRealm(),
-                        config.getBaseUrl()));
+            final WebAcFilter webacFilter = new WebAcFilter(challenges, config.getAuth().getRealm(),
+                    config.getBaseUrl());
+            webacFilter.setAccessService(accessService);
+            environment.jersey().register(webacFilter);
         });
 
         // WebSub
@@ -165,6 +171,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
             protected void configure() {
                 bind(getServiceBundler().getAgentService()).to(AgentService.class);
                 bind(getServiceBundler()).to(ServiceBundler.class);
+                webac.ifPresent(accessService -> bind(accessService).to(WebAcService.class));
             }
         });
 
