@@ -14,6 +14,7 @@ dependencies {
     api("org.eclipse.microprofile.health:microprofile-health-api:$microprofileHealthVersion")
     api project(':trellis-api')
 
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'

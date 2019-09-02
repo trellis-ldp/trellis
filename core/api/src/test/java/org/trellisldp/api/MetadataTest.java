@@ -38,7 +38,8 @@ public class MetadataTest {
                 .interactionModel(LDP.IndirectContainer)
                 .container(root).memberRelation(LDP.member)
                 .membershipResource(member)
-                .insertedContentRelation(FOAF.primaryTopic).build();
+                .insertedContentRelation(FOAF.primaryTopic)
+                .revision("blahblahblah").build();
         assertEquals(identifier, metadata.getIdentifier());
         assertEquals(LDP.IndirectContainer, metadata.getInteractionModel());
         assertEquals(of(root), metadata.getContainer());
@@ -47,6 +48,7 @@ public class MetadataTest {
         assertEquals(of(FOAF.primaryTopic), metadata.getInsertedContentRelation());
         assertFalse(metadata.getMemberOfRelation().isPresent());
         assertFalse(metadata.getBinary().isPresent());
+        assertEquals(of("blahblahblah"), metadata.getRevision());
     }
 
     @Test
@@ -97,6 +99,7 @@ public class MetadataTest {
         assertFalse(metadata.getMemberOfRelation().isPresent());
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
+        assertFalse(metadata.getRevision().isPresent());
         assertFalse(metadata.getHasAcl());
     }
 }

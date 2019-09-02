@@ -19,6 +19,7 @@ import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -208,6 +209,11 @@ public class TriplestoreResource implements Resource {
     @Override
     public IRI getInteractionModel() {
         return asIRI(RDF.type).orElse(null);
+    }
+
+    @Override
+    public String getRevision() {
+        return md5Hex(getModified().getNano() + "." + identifier);
     }
 
     @Override

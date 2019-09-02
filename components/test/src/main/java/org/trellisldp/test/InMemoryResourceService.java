@@ -18,6 +18,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.contains;
@@ -194,6 +195,11 @@ public class InMemoryResourceService implements ResourceService {
         @Override
         public Instant getModified() {
             return modified;
+        }
+
+        @Override
+        public String getRevision() {
+            return md5Hex(modified.getNano() + "." + identifier);
         }
 
         @Override

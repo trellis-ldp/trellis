@@ -98,6 +98,7 @@ public class ResourceTest {
         assertNull(MISSING_RESOURCE.getIdentifier(), "Missing resource has an identifier!");
         assertNull(MISSING_RESOURCE.getInteractionModel(), "Missing resource has an interaction model!");
         assertNull(MISSING_RESOURCE.getModified(), "Missing resource has a last modified date!");
+        assertNull(MISSING_RESOURCE.getRevision(), "Missing resource has a non-null revision!");
         assertFalse(MISSING_RESOURCE.getContainer().isPresent(), "Missing resource has a parent resource!");
         assertEquals(0L, MISSING_RESOURCE.stream().count(), "Missing resource contains triples!");
         assertEquals("A non-existent resource", MISSING_RESOURCE.toString(), "Missing resource has wrong string repr.");
@@ -108,6 +109,7 @@ public class ResourceTest {
         assertNull(DELETED_RESOURCE.getIdentifier(), "Deleted resource has an identifier!");
         assertNull(DELETED_RESOURCE.getInteractionModel(), "Deleted resource has an interaction model!");
         assertNull(DELETED_RESOURCE.getModified(), "Deleted resource has a modification date!");
+        assertNull(DELETED_RESOURCE.getRevision(), "Deleted resource has a non-null revision!");
         assertFalse(DELETED_RESOURCE.getContainer().isPresent(), "Deleted resource has a parent resource!");
         assertEquals(0L, DELETED_RESOURCE.stream().count(), "Deleted resource contains triples!");
         assertEquals("A deleted resource", DELETED_RESOURCE.toString(), "Deleted resource has wrong string repr.");

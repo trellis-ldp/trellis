@@ -247,6 +247,8 @@ public class TriplestoreResourceTest {
         assertAll("Check RDF stream", checkRdfStream(memberRes, 1L, 0L, 0L, 4L, 0L));
         assertEquals(4L, memberRes.stream(singleton(LDP.PreferMembership)).map(Quad::getPredicate)
                 .filter(isEqual(DC.subject)).count(), "Incorrect triple count!");
+
+        assertNotEquals(res.getRevision(), memberRes.getRevision(), "Revisions not unequal");
     }
 
     @Test
@@ -281,6 +283,8 @@ public class TriplestoreResourceTest {
         assertAll("Check RDF stream", checkRdfStream(res2, 2L, 0L, 0L, 4L, 0L));
         assertEquals(4L, res2.stream(singleton(LDP.PreferMembership)).map(Quad::getPredicate)
                 .filter(isEqual(DC.relation)).count(), "Incorrect triple count!");
+
+        assertNotEquals(res.getRevision(), res2.getRevision(), "Revisions not unequal");
     }
 
     private static Stream<IRI> getChildIRIs() {
@@ -305,6 +309,7 @@ public class TriplestoreResourceTest {
                 () -> assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!"),
                 () -> assertEquals(ldpType, res.getInteractionModel(), "Incorrect interaction model!"),
                 () -> assertEquals(parse(time), res.getModified(), "Incorrect modified date!"),
+                () -> assertNotNull(res.getRevision(), "Revision is null!"),
                 () -> assertEquals(hasBinary, res.getBinaryMetadata().isPresent(), "Unexpected binary presence!"),
                 () -> assertEquals(hasParent, res.getContainer().isPresent(), "Unexpected parent resource!"),
                 () -> assertEquals(hasAcl, res.hasAcl(), "Unexpected ACL presence!"));

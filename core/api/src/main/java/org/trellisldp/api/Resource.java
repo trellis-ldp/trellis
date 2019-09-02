@@ -61,6 +61,11 @@ public interface Resource {
             }
 
             @Override
+            public String getRevision() {
+                return null;
+            }
+
+            @Override
             public Optional<IRI> getContainer() {
                 return empty();
             }
@@ -87,6 +92,11 @@ public interface Resource {
 
             @Override
             public Instant getModified() {
+                return null;
+            }
+
+            @Override
+            public String getRevision() {
                 return null;
             }
 
@@ -132,6 +142,18 @@ public interface Resource {
      * @return the last-modified date
      */
     Instant getModified();
+
+    /**
+     * Get the revision or state tag of the resource.
+     *
+     * @apiNote the return value of this method should be unique to the state of the resource.
+     *          That is, it should be unique across all resources on the server, and whenever
+     *          a given resource changes, this revision tag should also change. To create this
+     *          value, an implementation may simply generate a hash of the identifier and
+     *          modification date.
+     * @return the revision tag of the resource
+     */
+    String getRevision();
 
     /**
      * Get the container for this resource.
