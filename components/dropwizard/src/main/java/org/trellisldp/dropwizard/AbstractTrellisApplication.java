@@ -16,6 +16,7 @@ package org.trellisldp.dropwizard;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.dropwizard.TrellisUtils.getAuthFilters;
 import static org.trellisldp.dropwizard.TrellisUtils.getCorsConfiguration;
@@ -32,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.trellisldp.api.AgentService;
@@ -124,7 +124,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getAuthFilters(config).forEach(environment.jersey()::register);
 
         // Resource matchers
-        environment.jersey().register(getLdpComponent(config, ConfigProvider.getConfig()
+        environment.jersey().register(getLdpComponent(config, getConfig()
                     .getOptionalValue(CONFIG_DROPWIZARD_INITIALIZE_ROOT, Boolean.class).orElse(Boolean.TRUE)));
 
         // Authentication
@@ -140,8 +140,6 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         // Authorization
         final Optional<WebAcService> webac = getWebacCache(config)
             .map(cache -> new WebAcService(getServiceBundler().getResourceService(), cache));
-
-
         webac.ifPresent(accessService -> {
             final List<String> challenges = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
@@ -150,7 +148,6 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                 .ifPresent(challenges::add);
             final WebAcFilter webacFilter = new WebAcFilter(challenges, config.getAuth().getRealm(),
                     config.getBaseUrl());
-            webacFilter.setAccessService(accessService);
             environment.jersey().register(webacFilter);
         });
 
