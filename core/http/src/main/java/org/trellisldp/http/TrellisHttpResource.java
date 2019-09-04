@@ -120,6 +120,9 @@ public class TrellisHttpResource {
 
     /**
      * For use with RESTeasy and CDI.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
     public TrellisHttpResource() {
         this(null);

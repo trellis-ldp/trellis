@@ -75,7 +75,10 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Used to support RESTeasy and CDI.
+     * For use with RESTeasy and CDI proxies.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
     public TrellisWebDAVRequestFilter() {
         this(null);

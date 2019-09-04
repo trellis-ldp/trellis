@@ -32,7 +32,12 @@ public class TriplestoreHealthCheck implements HealthCheck {
 
     private final RDFConnection rdfConnection;
 
-    /** For use with CDI proxies. */
+    /**
+     * For use with RESTeasy and CDI proxies.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
+     */
     public TriplestoreHealthCheck() {
         this(null);
     }

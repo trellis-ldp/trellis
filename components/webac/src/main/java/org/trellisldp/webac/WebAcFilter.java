@@ -113,7 +113,10 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private final String baseUrl;
 
     /**
-     * No-op constructor for RESTeasy and CDI.
+     * For use with RESTeasy and CDI proxies.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
     public WebAcFilter() {
         this(null);
