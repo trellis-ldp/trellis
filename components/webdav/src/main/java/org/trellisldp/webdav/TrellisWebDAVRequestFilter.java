@@ -64,7 +64,6 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     private final boolean createUncontained;
     private final String baseUrl;
 
-
     /**
      * Create a Trellis HTTP request filter for WebDAV.
      *
