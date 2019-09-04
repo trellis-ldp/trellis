@@ -132,7 +132,7 @@ public class TrellisHttpResource {
     /**
      * Create a Trellis HTTP resource matcher.
      *
-     * @param trellis the services
+     * @param trellis the Trellis application bundle
      * @param baseUrl a base URL
      */
     public TrellisHttpResource(final ServiceBundler trellis, final String baseUrl) {
@@ -140,8 +140,8 @@ public class TrellisHttpResource {
     }
 
     private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Config config) {
-        this.trellis = trellis;
         this.baseUrl = baseUrl;
+        this.trellis = trellis;
         this.defaultJsonLdProfile = config.getOptionalValue(CONFIG_HTTP_JSONLD_PROFILE, String.class).orElse(null);
         this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.TRUE);
         this.includeMementoDates = config.getOptionalValue(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class)

@@ -95,7 +95,6 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));
-
         return config;
     }
 

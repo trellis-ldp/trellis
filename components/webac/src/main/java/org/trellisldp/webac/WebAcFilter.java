@@ -144,8 +144,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param realm the authentication realm
      * @param baseUrl the base URL, may be null
      */
-    public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes, final String realm,
-            final String baseUrl) {
+    public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
+            final String realm, final String baseUrl) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
         this.accessService = accessService;
