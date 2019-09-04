@@ -39,13 +39,10 @@ public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTes
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
 
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(mockAgentService,
-                singleton("testUser"));
-
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, baseUri));
         config.register(new TestAuthenticationFilter("testUser", ""));
-        config.register(agentFilter);
+        config.register(new AgentAuthorizationFilter(mockAgentService, singleton("testUser")));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());

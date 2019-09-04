@@ -44,6 +44,7 @@ import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
@@ -105,6 +106,9 @@ public class WebAcServiceTest {
     private CacheService<String, Set<IRI>> mockCache;
 
     @Mock
+    private ServiceBundler mockServiceBundler;
+
+    @Mock
     private Resource mockResource, mockChildResource, mockParentResource, mockRootResource, mockGroupResource,
             mockMemberResource;
 
@@ -113,7 +117,9 @@ public class WebAcServiceTest {
     public void setUp() {
         initMocks(this);
 
-        testService = new WebAcService(mockResourceService);
+        when(mockServiceBundler.getResourceService()).thenReturn(mockResourceService);
+
+        testService = new WebAcService(mockServiceBundler);
 
         when(mockCache.get(anyString(), any(Function.class))).thenAnswer(inv -> {
             final String key = inv.getArgument(0);

@@ -58,6 +58,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.Trellis;
@@ -103,6 +104,27 @@ public class WebAcService {
     /**
      * Create a WebAC-based authorization service.
      *
+     * @param services the trellis service bundler
+     */
+    public WebAcService(final ServiceBundler services) {
+        this(services, new NoopAuthorizationCache());
+    }
+
+    /**
+     * Create a WebAC-based authorization service.
+     *
+     * @param services the trellis service bundler
+     * @param cache a cache
+     */
+    @Inject
+    public WebAcService(final ServiceBundler services,
+            @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
+        this(services.getResourceService(), cache);
+    }
+
+    /**
+     * Create a WebAC-based authorization service.
+     *
      * @param resourceService the resource service
      */
     public WebAcService(final ResourceService resourceService) {
@@ -115,9 +137,7 @@ public class WebAcService {
      * @param resourceService the resource service
      * @param cache a cache
      */
-    @Inject
-    public WebAcService(final ResourceService resourceService,
-            @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
+    public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache) {
         this(resourceService, cache, getConfig()
                 .getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE));
     }

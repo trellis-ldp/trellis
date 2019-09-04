@@ -83,8 +83,6 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
         initMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(new DefaultAgentService(),
-                singleton("testUser"));
 
         config.register(new DebugExceptionMapper());
         config.register(new TestAuthnFilter("testUser", ""));
@@ -92,7 +90,7 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
         config.register(new TrellisWebDAVResponseFilter());
         config.register(new TrellisWebDAV(mockBundler));
         config.register(new TrellisHttpResource(mockBundler));
-        config.register(agentFilter);
+        config.register(new AgentAuthorizationFilter(new DefaultAgentService(), singleton("testUser")));
         return config;
     }
 }

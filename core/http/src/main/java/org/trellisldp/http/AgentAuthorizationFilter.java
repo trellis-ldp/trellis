@@ -63,11 +63,13 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     private final Set<String> adminUsers;
 
     /**
-     * No-op constructor for CDI.
+     * For use with RESTeasy and CDI proxies.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
-    AgentAuthorizationFilter() {
-        this.agentService = null;
-        this.adminUsers = getConfiguredAdmins();
+    public AgentAuthorizationFilter() {
+        this(null);
     }
 
     /**

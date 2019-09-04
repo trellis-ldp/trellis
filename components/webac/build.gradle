@@ -14,11 +14,11 @@ dependencies {
     api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api project(':trellis-api')
+    api project(':trellis-http')
 
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")

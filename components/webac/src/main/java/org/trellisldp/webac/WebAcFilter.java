@@ -113,12 +113,13 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private final String baseUrl;
 
     /**
-     * No-op constructor for CDI.
+     * For use with RESTeasy and CDI proxies.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
-    WebAcFilter() {
-        this.accessService = null;
-        this.challenges = null;
-        this.baseUrl = null;
+    public WebAcFilter() {
+        this(null);
     }
 
     /**
@@ -150,7 +151,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             final String realm, final String baseUrl) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
-        this.accessService = requireNonNull(accessService, "Access Control service may not be null!");
+        this.accessService = accessService;
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
             .collect(toList());
         this.baseUrl = baseUrl;

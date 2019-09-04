@@ -89,7 +89,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
@@ -139,18 +138,17 @@ public class TrellisWebDAV {
      */
     @Inject
     public TrellisWebDAV(final ServiceBundler services) {
-        this(services, getConfig());
+        this(services, getConfig().getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
     /**
-     * Used only to support CDI.
+     * For use with RESTeasy and CDI proxies.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
-    TrellisWebDAV() {
+    public TrellisWebDAV() {
         this(null);
-    }
-
-    private TrellisWebDAV(final ServiceBundler services, final Config config) {
-        this(services, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
     /**

@@ -34,6 +34,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
 
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
  * An OAuth authentication filter that processes JWT-based Bearer tokens
  * from an Authorization HTTP header.
  */
+@Provider
 @Priority(AUTHENTICATION)
 public class OAuthFilter implements ContainerRequestFilter {
 

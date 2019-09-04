@@ -16,6 +16,7 @@ package org.trellisldp.dropwizard;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.dropwizard.TrellisUtils.getAuthFilters;
 import static org.trellisldp.dropwizard.TrellisUtils.getCorsConfiguration;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
@@ -120,7 +120,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         getAuthFilters(config).forEach(environment.jersey()::register);
 
         // Resource matchers
-        environment.jersey().register(getLdpComponent(config, ConfigProvider.getConfig()
+        environment.jersey().register(getLdpComponent(config, getConfig()
                     .getOptionalValue(CONFIG_DROPWIZARD_INITIALIZE_ROOT, Boolean.class).orElse(Boolean.TRUE)));
 
         // Authentication
