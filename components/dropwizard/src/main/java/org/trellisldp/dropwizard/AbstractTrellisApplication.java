@@ -31,11 +31,8 @@ import io.dropwizard.setup.Environment;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
 import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
@@ -84,8 +81,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      * @return the LDP resource matcher
      */
     protected Object getLdpComponent(final T config, final boolean initialize) {
-        final TrellisHttpResource ldpResource = new TrellisHttpResource(config.getBaseUrl());
-        ldpResource.setServiceBundler(getServiceBundler());
+        final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(), config.getBaseUrl());
         if (initialize) {
             ldpResource.initialize();
         }
@@ -128,7 +124,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     .getOptionalValue(CONFIG_DROPWIZARD_INITIALIZE_ROOT, Boolean.class).orElse(Boolean.TRUE)));
 
         // Authentication
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),
                 new HashSet<>(config.getAuth().getAdminUsers()));
 
         // Filters
@@ -138,17 +134,15 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
 
         // Authorization
-        final Optional<WebAcService> webac = getWebacCache(config)
-            .map(cache -> new WebAcService(getServiceBundler().getResourceService(), cache));
-        webac.ifPresent(accessService -> {
+        getWebacCache(config).ifPresent(cache -> {
+            final WebAcService webac = new WebAcService(getServiceBundler().getResourceService(), cache);
             final List<String> challenges = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
                 .ifPresent(challenges::add);
             of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled).map(x -> "Basic")
                 .ifPresent(challenges::add);
-            final WebAcFilter webacFilter = new WebAcFilter(challenges, config.getAuth().getRealm(),
-                    config.getBaseUrl());
-            environment.jersey().register(webacFilter);
+            environment.jersey().register(new WebAcFilter(webac, challenges, config.getAuth().getRealm(),
+                    config.getBaseUrl()));
         });
 
         // WebSub
@@ -161,16 +155,5 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Additional components
         getComponents().forEach(environment.jersey()::register);
-
-        // Injection
-        environment.jersey().register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(getServiceBundler().getAgentService()).to(AgentService.class);
-                bind(getServiceBundler()).to(ServiceBundler.class);
-                webac.ifPresent(accessService -> bind(accessService).to(WebAcService.class));
-            }
-        });
-
     }
 }

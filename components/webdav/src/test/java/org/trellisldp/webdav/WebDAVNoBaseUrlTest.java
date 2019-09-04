@@ -26,14 +26,11 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.SecurityContext;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.agent.DefaultAgentService;
-import org.trellisldp.api.AgentService;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.http.core.ServiceBundler;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
@@ -89,18 +86,11 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
 
         config.register(new DebugExceptionMapper());
         config.register(new TestAuthnFilter("testUser", ""));
-        config.register(new TrellisWebDAVRequestFilter());
+        config.register(new TrellisWebDAVRequestFilter(mockBundler));
         config.register(new TrellisWebDAVResponseFilter());
-        config.register(new TrellisWebDAV());
-        config.register(new TrellisHttpResource());
-        config.register(new AgentAuthorizationFilter(singleton("testUser")));
-        config.register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(new DefaultAgentService()).to(AgentService.class);
-                bind(mockBundler).to(ServiceBundler.class);
-            }
-        });
+        config.register(new TrellisWebDAV(mockBundler));
+        config.register(new TrellisHttpResource(mockBundler));
+        config.register(new AgentAuthorizationFilter(new DefaultAgentService(), singleton("testUser")));
         return config;
     }
 }

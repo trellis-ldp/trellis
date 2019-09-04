@@ -26,10 +26,8 @@ import java.util.List;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
-import org.trellisldp.http.core.ServiceBundler;
 
 /**
  * @author acoburn
@@ -41,17 +39,11 @@ public class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOrig
         init();
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new TrellisHttpResource());
+        config.register(new TrellisHttpResource(mockBundler));
         config.register(new CrossOriginResourceSharingFilter(asList("*"),
                     asList("GET", "HEAD", "PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Datetime"),
                     emptyList(), false, 0));
-        config.register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(mockBundler).to(ServiceBundler.class);
-            }
-        });
         return config;
     }
 

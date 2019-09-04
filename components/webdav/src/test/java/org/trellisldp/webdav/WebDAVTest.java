@@ -18,11 +18,9 @@ import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 
 import javax.ws.rs.core.Application;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.http.core.ServiceBundler;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WebDAVTest extends AbstractWebDAVTest {
@@ -37,16 +35,10 @@ public class WebDAVTest extends AbstractWebDAVTest {
         try {
             System.setProperty(CONFIG_HTTP_BASE_URL, getBaseUri().toString());
             config.register(new DebugExceptionMapper());
-            config.register(new TrellisWebDAVRequestFilter());
+            config.register(new TrellisWebDAVRequestFilter(mockBundler));
             config.register(new TrellisWebDAVResponseFilter());
-            config.register(new TrellisWebDAV());
-            config.register(new TrellisHttpResource());
-            config.register(new AbstractBinder() {
-                @Override
-                protected void configure() {
-                    bind(mockBundler).to(ServiceBundler.class);
-                }
-            });
+            config.register(new TrellisWebDAV(mockBundler));
+            config.register(new TrellisHttpResource(mockBundler));
             return config;
         } finally {
             System.clearProperty(CONFIG_HTTP_BASE_URL);

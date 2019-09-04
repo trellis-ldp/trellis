@@ -60,33 +60,10 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
 
     private static final RDF rdf = getInstance();
 
+    private final ServiceBundler services;
     private final boolean createUncontained;
     private final String baseUrl;
 
-    private ServiceBundler services;
-
-    /**
-     * Create a Trellis HTTP request filter for WebDAV.
-     */
-    public TrellisWebDAVRequestFilter() {
-        this(getConfig());
-    }
-
-    private TrellisWebDAVRequestFilter(final Config config) {
-        this(config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.FALSE),
-             config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
-    }
-
-    /**
-     * Create a Trellis HTTP request filter for WebDAV.
-     *
-     * @param createUncontained whether the put-uncontained configuration is in effect
-     * @param baseUrl the baseURL
-     */
-    public TrellisWebDAVRequestFilter(final boolean createUncontained, final String baseUrl) {
-        this.createUncontained = createUncontained;
-        this.baseUrl = baseUrl;
-    }
 
     /**
      * Create a Trellis HTTP request filter for WebDAV.
@@ -94,8 +71,35 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
      * @param services the Trellis application bundle
      */
     @Inject
-    public void setServiceBundler(final ServiceBundler services) {
+    public TrellisWebDAVRequestFilter(final ServiceBundler services) {
+        this(services, getConfig());
+    }
+
+    /**
+     * Used to support RESTeasy and CDI.
+     */
+    public TrellisWebDAVRequestFilter() {
+        this(null);
+    }
+
+    private TrellisWebDAVRequestFilter(final ServiceBundler services, final Config config) {
+        this(services,
+             config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.FALSE),
+             config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
+    }
+
+    /**
+     * Create a Trellis HTTP request filter for WebDAV.
+     *
+     * @param services the Trellis application bundle
+     * @param createUncontained whether the put-uncontained configuration is in effect
+     * @param baseUrl the baseURL
+     */
+    public TrellisWebDAVRequestFilter(final ServiceBundler services, final boolean createUncontained,
+            final String baseUrl) {
         this.services = services;
+        this.createUncontained = createUncontained;
+        this.baseUrl = baseUrl;
     }
 
     @Override

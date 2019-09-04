@@ -100,8 +100,7 @@ public class TrellisHttpResource {
 
     protected static final RDF rdf = getInstance();
 
-    protected ServiceBundler trellis;
-
+    protected final ServiceBundler trellis;
     protected final String baseUrl;
     protected final String defaultJsonLdProfile;
     protected final boolean weakEtags;
@@ -111,25 +110,37 @@ public class TrellisHttpResource {
 
     /**
      * Create a Trellis HTTP resource matcher.
+     *
+     * @param trellis the Trellis application bundle
      */
-    public TrellisHttpResource() {
-        this(getConfig());
+    @Inject
+    public TrellisHttpResource(final ServiceBundler trellis) {
+        this(trellis, getConfig());
     }
 
-    private TrellisHttpResource(final Config config) {
-        this(config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
+    /**
+     * For use with RESTeasy and CDI.
+     */
+    public TrellisHttpResource() {
+        this(null);
+    }
+
+    private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
+        this(trellis, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
     }
 
     /**
      * Create a Trellis HTTP resource matcher.
      *
+     * @param trellis the services
      * @param baseUrl a base URL
      */
-    public TrellisHttpResource(final String baseUrl) {
-        this(baseUrl, getConfig());
+    public TrellisHttpResource(final ServiceBundler trellis, final String baseUrl) {
+        this(trellis, baseUrl, getConfig());
     }
 
-    private TrellisHttpResource(final String baseUrl, final Config config) {
+    private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Config config) {
+        this.trellis = trellis;
         this.baseUrl = baseUrl;
         this.defaultJsonLdProfile = config.getOptionalValue(CONFIG_HTTP_JSONLD_PROFILE, String.class).orElse(null);
         this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.TRUE);
@@ -139,15 +150,6 @@ public class TrellisHttpResource {
             .orElse(Boolean.FALSE);
         this.createUncontained = config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
             .orElse(Boolean.FALSE);
-    }
-
-    /**
-     * Set the trellis services.
-     * @param trellis the services
-     */
-    @Inject
-    public void setServiceBundler(final ServiceBundler trellis) {
-        this.trellis = trellis;
     }
 
     /**

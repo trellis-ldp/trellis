@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Link;
@@ -48,7 +49,23 @@ import org.trellisldp.http.core.Version;
 @Priority(AUTHORIZATION - 20)
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
-    private static final List<String> MUTATING_METHODS = unmodifiableList(asList(POST, PUT, DELETE, PATCH));
+    private final List<String> mutatingMethods;
+
+    /**
+     * Create a simple pre-matching filter.
+     */
+    @Inject
+    public TrellisHttpFilter() {
+        this(asList(POST, PUT, DELETE, PATCH));
+    }
+
+    /**
+     * Create a simple pre-matching filter with a custom method list.
+     * @param mutatingMethods a list of mutating HTTP methods
+     */
+    public TrellisHttpFilter(final List<String> mutatingMethods) {
+        this.mutatingMethods = unmodifiableList(mutatingMethods);
+    }
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
@@ -103,7 +120,7 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
             if (Version.valueOf(version) == null) {
                 ctx.abortWith(status(BAD_REQUEST).build());
             // Do not allow mutating versioned resources
-            } else if (MUTATING_METHODS.contains(ctx.getMethod())) {
+            } else if (mutatingMethods.contains(ctx.getMethod())) {
                 ctx.abortWith(status(METHOD_NOT_ALLOWED).build());
             }
         }
@@ -112,7 +129,7 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
     private void validateTimeMap(final ContainerRequestContext ctx) {
         final List<String> exts = ctx.getUriInfo().getQueryParameters().get(EXT);
         // Do not allow direct manipulation of timemaps
-        if (exts != null && exts.contains(TIMEMAP) && MUTATING_METHODS.contains(ctx.getMethod())) {
+        if (exts != null && exts.contains(TIMEMAP) && mutatingMethods.contains(ctx.getMethod())) {
             ctx.abortWith(status(METHOD_NOT_ALLOWED).build());
         }
     }

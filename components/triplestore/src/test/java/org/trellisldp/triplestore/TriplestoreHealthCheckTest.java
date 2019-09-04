@@ -38,8 +38,7 @@ public class TriplestoreHealthCheckTest {
     public void testHealthy() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final TriplestoreHealthCheck check = new TriplestoreHealthCheck();
-        check.setRdfConnection(rdfConnection);
+        final TriplestoreHealthCheck check = new TriplestoreHealthCheck(rdfConnection);
         assertEquals(HealthCheckResponse.State.UP, check.call().getState(), "RDFConnection isn't healthy!");
     }
 
@@ -48,8 +47,7 @@ public class TriplestoreHealthCheckTest {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         rdfConnection.close();
-        final TriplestoreHealthCheck check = new TriplestoreHealthCheck();
-        check.setRdfConnection(rdfConnection);
+        final TriplestoreHealthCheck check = new TriplestoreHealthCheck(rdfConnection);
         assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(),
                 "Closed RDFConnection doesn't report as unhealthy!");
     }

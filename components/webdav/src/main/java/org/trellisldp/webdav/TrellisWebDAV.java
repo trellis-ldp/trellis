@@ -128,34 +128,35 @@ public class TrellisWebDAV {
     private static final RDF rdf = getInstance();
     private static final Logger LOGGER = getLogger(TrellisWebDAV.class);
 
+    private final ServiceBundler services;
     private final String userBaseUrl;
 
-    private ServiceBundler services;
-
     /**
      * Create a Trellis HTTP resource matcher.
-     */
-    public TrellisWebDAV() {
-        this(getConfig().getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
-    }
-
-    /**
-     * Create a Trellis HTTP resource matcher.
-     *
-     * @param baseUrl the base URL
-     */
-    public TrellisWebDAV(final String baseUrl) {
-        this.userBaseUrl = baseUrl;
-    }
-
-    /**
-     * Set the service bundler.
      *
      * @param services the Trellis application bundle
      */
     @Inject
-    public void setServiceBundler(final ServiceBundler services) {
+    public TrellisWebDAV(final ServiceBundler services) {
+        this(services, getConfig().getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
+    }
+
+    /**
+     * Used to support RESTeasy and CDI.
+     */
+    public TrellisWebDAV() {
+        this(null);
+    }
+
+    /**
+     * Create a Trellis HTTP resource matcher.
+     *
+     * @param services the Trellis application bundle
+     * @param baseUrl the base URL
+     */
+    public TrellisWebDAV(final ServiceBundler services, final String baseUrl) {
         this.services = services;
+        this.userBaseUrl = baseUrl;
     }
 
     /**
