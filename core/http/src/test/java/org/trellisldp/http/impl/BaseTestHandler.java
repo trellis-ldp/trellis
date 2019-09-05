@@ -32,7 +32,6 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
 import static javax.ws.rs.core.Link.TYPE;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.io.IOUtils.readLines;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
@@ -268,15 +267,11 @@ abstract class BaseTestHandler {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getRevision()).thenReturn(genEtag(time, identifier));
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockResource).getRevision();
 
         when(mockParent.getInteractionModel()).thenReturn(LDP.Container);
         when(mockParent.getIdentifier()).thenReturn(root);
         when(mockParent.getMembershipResource()).thenReturn(empty());
-    }
-
-    private static String genEtag(final Instant modified, final IRI identifier) {
-        return md5Hex(modified.getNano() + "." + identifier);
     }
 }

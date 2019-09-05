@@ -17,6 +17,7 @@ import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 
@@ -134,6 +135,25 @@ class BaseLdpHandler {
      */
     protected boolean isAclRequest() {
         return ACL.equals(getRequest().getExt());
+    }
+
+    /**
+     * Create a strong entity tag from a resource's revision value.
+     * @param resource the resource
+     * @return an etag
+     */
+    protected EntityTag generateEtag(final Resource res) {
+        return generateEtag(res, false);
+    }
+
+    /**
+     * Create an entity tag from a resource's revision value.
+     * @param resource the resource
+     * @param weakEtag set this as true to generate a weak etag; false for a strong etag
+     * @return an etag
+     */
+    protected EntityTag generateEtag(final Resource res, final boolean weakEtag) {
+        return new EntityTag(md5Hex(res.getRevision()), weakEtag);
     }
 
     private static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {

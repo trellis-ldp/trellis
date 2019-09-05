@@ -37,7 +37,6 @@ import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.io.IOUtils.readLines;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -860,17 +859,12 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
     }
 
-    private static String genEtag(final Instant modified, final IRI identifier) {
-        return md5Hex(modified.getNano() + "." + identifier);
-    }
-
     private void setUpResources() {
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getRevision()).thenReturn(genEtag(time, identifier));
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(PreferUserManaged, identifier, DC.relation, rdf.createBlankNode()),
@@ -886,30 +880,31 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
                 rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        doCallRealMethod().when(mockResource).getRevision();
 
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockRootResource.getModified()).thenReturn(time);
         when(mockRootResource.getBinaryMetadata()).thenReturn(empty());
         when(mockRootResource.getIdentifier()).thenReturn(root);
-        when(mockRootResource.getRevision()).thenReturn(genEtag(time, root));
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockRootResource.hasAcl()).thenReturn(true);
+        doCallRealMethod().when(mockRootResource).getRevision();
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
         when(mockBinaryResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
-        when(mockBinaryResource.getRevision()).thenReturn(genEtag(time, binaryIdentifier));
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockBinaryResource).getRevision();
 
         when(mockOtherResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockOtherResource.getModified()).thenReturn(time);
         when(mockOtherResource.getBinaryMetadata()).thenReturn(empty());
         when(mockOtherResource.getContainer()).thenReturn(of(identifier));
         when(mockOtherResource.getIdentifier()).thenReturn(otherIdentifier);
-        when(mockOtherResource.getRevision()).thenReturn(genEtag(time, otherIdentifier));
         when(mockOtherResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockOtherResource.hasAcl()).thenReturn(false);
+        doCallRealMethod().when(mockOtherResource).getRevision();
     }
 }
 

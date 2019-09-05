@@ -33,7 +33,6 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -94,8 +93,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         }
 
         // Check the cache
-        final EntityTag etag = new EntityTag(resource.getRevision());
-        checkCache(resource.getModified(), etag);
+        checkCache(resource.getModified(), generateEtag(resource));
 
         setResource(resource);
         resource.getContainer().ifPresent(p -> setParent(parent));

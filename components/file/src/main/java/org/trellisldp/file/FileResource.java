@@ -18,7 +18,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.vocabulary.RDF.type;
 
@@ -77,11 +76,6 @@ public class FileResource implements Resource {
     @Override
     public Instant getModified() {
         return asLiteral(DC.modified).map(Instant::parse).orElse(null);
-    }
-
-    @Override
-    public String getRevision() {
-        return md5Hex(getModified().getNano() + "." + identifier);
     }
 
     @Override

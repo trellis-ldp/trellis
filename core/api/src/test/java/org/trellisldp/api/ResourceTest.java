@@ -51,6 +51,7 @@ public class ResourceTest {
         doCallRealMethod().when(mockResource).getMemberRelation();
         doCallRealMethod().when(mockResource).getMemberOfRelation();
         doCallRealMethod().when(mockResource).getInsertedContentRelation();
+        doCallRealMethod().when(mockResource).getRevision();
         doCallRealMethod().when(mockResource).stream(any(IRI.class));
         doCallRealMethod().when(mockResource).stream(anyCollection());
         doCallRealMethod().when(mockResource).getBinaryMetadata();
@@ -65,6 +66,7 @@ public class ResourceTest {
     public void testResource() {
         assertEquals(0L, mockResource.stream(prefer).count(), "Resource stream has extra triples!");
         assertEquals(0L, mockResource.stream(singleton(prefer)).count(), "Resource stream has extra triples!");
+        assertNotNull(mockResource.getRevision(), "Resource revision should not be null!");
         assertFalse(mockResource.getMembershipResource().isPresent(), "Membership resource unexpectedly present!");
         assertFalse(mockResource.getMemberRelation().isPresent(), "Member relation unexpectedly present!");
         assertFalse(mockResource.getMemberOfRelation().isPresent(), "Member of relation unexpectedly present!");

@@ -46,8 +46,11 @@ public final class Metadata {
      * @param memberRelation an LDP hasMemberRelation predicate, may be {@code null}
      * @param memberOfRelation an LDP isMemberOfRelation predicate, may be {@code null}
      * @param insertedContentRelation an LDP insertedContentRelation, may be {@code null}
-     * @param revision a revision value, may be {@code null}
      * @param binary metadata about a BinaryMetadata, may be {@code null}
+     * @param revision a revision value, may be {@code null}. This value may be used by a
+     *          {@link ResourceService} implementation for additional concurrency control.
+     *          This value would typically be used in tandem with the {@link Resource#getRevision}
+     *          method.
      */
     private Metadata(final IRI identifier, final IRI ixnModel, final IRI container, final IRI membershipResource,
             final IRI memberRelation, final IRI memberOfRelation, final IRI insertedContentRelation,
@@ -179,7 +182,7 @@ public final class Metadata {
 
     /**
      * Retrieve the revision value, if one exists.
-     * @return a unique revision value, such as an ETag, representing the state of the resource
+     * @return a unique revision value, representing the state of the resource
      */
     public Optional<String> getRevision() {
         return ofNullable(revision);

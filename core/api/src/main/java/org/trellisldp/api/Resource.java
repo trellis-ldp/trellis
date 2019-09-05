@@ -148,12 +148,16 @@ public interface Resource {
      *
      * @apiNote the return value of this method should be unique to the state of the resource.
      *          That is, it should be unique across all resources on the server, and whenever
-     *          a given resource changes, this revision tag should also change. To create this
-     *          value, an implementation may simply generate a hash of the identifier and
-     *          modification date.
+     *          a given resource changes, this revision tag should also change. This value will
+     *          be used as the raw material for generating an ETag in the HTTP layer, and it
+     *          should not return {@code null}.
+     * @implSpec the default implementation returns a concatenation of the resource identifier
+     *           and the modification date.
      * @return the revision tag of the resource
      */
-    String getRevision();
+    default String getRevision() {
+        return getModified() + "::" + getIdentifier();
+    }
 
     /**
      * Get the container for this resource.

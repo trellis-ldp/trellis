@@ -17,21 +17,20 @@ module org.trellisldp.triplestore {
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.vocabulary;
 
-    requires org.apache.commons.codec;
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
-    requires org.apache.jena.core;
-    requires org.apache.jena.rdfconnection;
-    requires org.apache.jena.tdb2;
     requires org.slf4j;
 
-    requires cdi.api;
-    requires java.annotation;
     requires javax.inject;
     requires microprofile.config.api;
     requires microprofile.health.api;
+    requires cdi.api;
+    requires org.apache.jena.rdfconnection;
+    requires org.apache.jena.core;
+    requires org.apache.jena.tdb2;
+    requires java.annotation;
 
     provides org.trellisldp.api.ResourceService
         with org.trellisldp.triplestore.TriplestoreResourceService;
