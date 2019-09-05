@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -122,6 +123,14 @@ public class FileUtilsTest {
                 throw new IOException("Expected exception");
             });
         assertThrows(IOException.class, () -> FileUtils.getBoundedStream(badInput, 4, 10));
+    }
+
+    @Test
+    public void testDeleteException() throws IOException {
+        final Path badPath = mock(Path.class, inv -> {
+                throw new IOException("Expected exception");
+            });
+        assertThrows(UncheckedIOException.class, () -> FileUtils.uncheckedDeleteIfExists(badPath));
     }
 
     @Test

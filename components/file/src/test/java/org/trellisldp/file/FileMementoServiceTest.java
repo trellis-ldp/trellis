@@ -60,6 +60,44 @@ public class FileMementoServiceTest {
     }
 
     @Test
+    public void testPutThenDelete() throws Exception {
+        final File dir = new File(getClass().getResource("/versions").getFile());
+        final FileMementoService svc = new FileMementoService(dir.getAbsolutePath());
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "another-resource");
+        final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+        final Instant time = parse("2019-08-16T14:21:01Z");
+
+        final Resource mockResource = mock(Resource.class);
+
+        when(mockResource.getIdentifier()).thenReturn(identifier);
+        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockResource.getModified()).thenReturn(time);
+        when(mockResource.getContainer()).thenReturn(of(root));
+        when(mockResource.getBinaryMetadata()).thenReturn(empty());
+        when(mockResource.getMembershipResource()).thenReturn(empty());
+        when(mockResource.getMemberOfRelation()).thenReturn(empty());
+        when(mockResource.getMemberRelation()).thenReturn(empty());
+        when(mockResource.getInsertedContentRelation()).thenReturn(empty());
+        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
+                    rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title"))));
+
+        svc.put(mockResource).toCompletableFuture().join();
+
+        final Resource res = svc.get(identifier, time).toCompletableFuture().join();
+        assertEquals(identifier, res.getIdentifier());
+        assertEquals(time, res.getModified());
+
+        // Delete a different time, memento should still be present
+        svc.delete(identifier, time.plusSeconds(100)).toCompletableFuture().join();
+        assertEquals(identifier, svc.get(identifier, time).toCompletableFuture().join().getIdentifier());
+
+        // Delete the actual memento, memento should now be gone
+        svc.delete(identifier, time).toCompletableFuture().join();
+        assertEquals(MISSING_RESOURCE, svc.get(identifier, time).toCompletableFuture().join());
+    }
+
+
+    @Test
     public void testList() {
         final Instant time = parse("2017-02-16T11:15:01Z");
         final Instant time2 = parse("2017-02-16T11:15:11Z");

@@ -122,6 +122,19 @@ public final class FileUtils {
     }
 
     /**
+     * Try to delete a file if it exists or throw an unchecked exception.
+     * @param path the file path
+     * @return true if the file existed and was deleted; false otherwise
+     */
+    public static boolean uncheckedDeleteIfExists(final Path path) {
+        try {
+            return Files.deleteIfExists(path);
+        } catch (final IOException ex) {
+            throw new UncheckedIOException("Error deleting file", ex);
+        }
+    }
+
+    /**
      * Fetch a stream of files in the provided directory path.
      * @param path the directory path
      * @return a stream of filenames
