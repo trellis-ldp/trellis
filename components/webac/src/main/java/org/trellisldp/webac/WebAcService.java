@@ -157,7 +157,7 @@ public class WebAcService {
             try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
                 quads.forEach(dataset::add);
             }
-            return this.resourceService.replace(Metadata.builder(res).build(), dataset);
+            return this.resourceService.replace(Metadata.builder(res).hasAcl(true).build(), dataset);
         } else {
             LOGGER.info("Root ACL is present, not initializing: {}", id);
             return DONE;

@@ -37,6 +37,7 @@ import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.io.IOUtils.readLines;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -93,7 +94,6 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
@@ -823,7 +823,6 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
         when(mockBundler.getEventService()).thenReturn(new NoopEventService());
         when(mockBundler.getMementoService()).thenReturn(new NoopMementoService());
-        when(mockBundler.getEtagGenerator()).thenReturn(new DefaultEtagGenerator());
     }
 
     private void setUpBinaryService() {
@@ -861,12 +860,17 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
     }
 
+    private static String genEtag(final Instant modified, final IRI identifier) {
+        return md5Hex(modified.getNano() + "." + identifier);
+    }
+
     private void setUpResources() {
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getIdentifier()).thenReturn(identifier);
+        when(mockResource.getRevision()).thenReturn(genEtag(time, identifier));
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(PreferUserManaged, identifier, DC.relation, rdf.createBlankNode()),
@@ -887,6 +891,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockRootResource.getModified()).thenReturn(time);
         when(mockRootResource.getBinaryMetadata()).thenReturn(empty());
         when(mockRootResource.getIdentifier()).thenReturn(root);
+        when(mockRootResource.getRevision()).thenReturn(genEtag(time, root));
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockRootResource.hasAcl()).thenReturn(true);
 
@@ -894,6 +899,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockBinaryResource.getModified()).thenReturn(time);
         when(mockBinaryResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
+        when(mockBinaryResource.getRevision()).thenReturn(genEtag(time, binaryIdentifier));
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockOtherResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
@@ -901,6 +907,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockOtherResource.getBinaryMetadata()).thenReturn(empty());
         when(mockOtherResource.getContainer()).thenReturn(of(identifier));
         when(mockOtherResource.getIdentifier()).thenReturn(otherIdentifier);
+        when(mockOtherResource.getRevision()).thenReturn(genEtag(time, otherIdentifier));
         when(mockOtherResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockOtherResource.hasAcl()).thenReturn(false);
     }

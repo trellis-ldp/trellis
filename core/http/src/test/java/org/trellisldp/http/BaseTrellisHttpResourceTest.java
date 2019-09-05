@@ -22,6 +22,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.io.IOUtils.readLines;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.*;
@@ -72,7 +73,6 @@ import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.constraint.LdpConstraintService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.io.JenaIOService;
@@ -197,7 +197,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockBundler.getEventService()).thenReturn(mockEventService);
         when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));
-        when(mockBundler.getEtagGenerator()).thenReturn(new DefaultEtagGenerator());
         when(mockBundler.getTimemapGenerator()).thenReturn(new DefaultTimemapGenerator());
     }
 
@@ -279,9 +278,14 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
     }
 
+    private static String genEtag(final Instant modified, final IRI identifier) {
+        return md5Hex(modified.getNano() + "." + identifier);
+    }
+
     private void setUpResources() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockVersionedResource.getModified()).thenReturn(time);
+        when(mockVersionedResource.getRevision()).thenReturn(genEtag(time, identifier));
         when(mockVersionedResource.getBinaryMetadata()).thenReturn(empty());
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
@@ -290,17 +294,20 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBinaryVersionedResource.getModified()).thenReturn(time);
         when(mockBinaryVersionedResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryVersionedResource.getIdentifier()).thenReturn(binaryIdentifier);
+        when(mockBinaryVersionedResource.getRevision()).thenReturn(genEtag(time, binaryIdentifier));
         when(mockBinaryVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
         when(mockBinaryResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
+        when(mockBinaryResource.getRevision()).thenReturn(genEtag(time, binaryIdentifier));
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
 
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
+        when(mockResource.getRevision()).thenReturn(genEtag(time, identifier));
         when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
@@ -309,6 +316,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockRootResource.getModified()).thenReturn(time);
         when(mockRootResource.getBinaryMetadata()).thenReturn(empty());
         when(mockRootResource.getIdentifier()).thenReturn(root);
+        when(mockRootResource.getRevision()).thenReturn(genEtag(time, root));
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockRootResource.hasAcl()).thenReturn(true);
     }

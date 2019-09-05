@@ -282,6 +282,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 getResource().getInteractionModel(), mutable);
         getResource().getContainer().ifPresent(metadata::container);
         getResource().getBinaryMetadata().ifPresent(metadata::binary);
+        metadata.revision(getResource().getRevision());
         // update the resource
         return allOf(
             getServices().getResourceService().replace(metadata.build(), mutable).toCompletableFuture(),

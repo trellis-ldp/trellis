@@ -47,9 +47,6 @@ public class BaseServiceBundler implements ServiceBundler {
     protected TimemapGenerator timemapGenerator;
 
     @Inject
-    protected EtagGenerator etagGenerator;
-
-    @Inject
     protected ResourceService resourceService;
 
     @Inject
@@ -91,11 +88,6 @@ public class BaseServiceBundler implements ServiceBundler {
     @Override
     public EventService getEventService() {
         return eventService;
-    }
-
-    @Override
-    public EtagGenerator getEtagGenerator() {
-        return etagGenerator;
     }
 
     @Override

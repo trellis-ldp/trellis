@@ -56,12 +56,12 @@ public interface Resource {
             }
 
             @Override
-            public Instant getModified() {
+            public String getRevision() {
                 return null;
             }
 
             @Override
-            public String getRevision() {
+            public Instant getModified() {
                 return null;
             }
 

@@ -27,7 +27,6 @@ import org.trellisldp.api.*;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.io.JenaIOService;
@@ -43,7 +42,6 @@ public class CDIServiceBundlerTest {
                                            BaseServiceBundler.class,
                                            CDIConstraintServices.class,
                                            DefaultAgentService.class,
-                                           DefaultEtagGenerator.class,
                                            DefaultIdentifierService.class,
                                            DefaultRdfaWriterService.class,
                                            DefaultTimemapGenerator.class,
@@ -77,11 +75,6 @@ public class CDIServiceBundlerTest {
     @Test
     public void testAuditService() {
         assertNotNull(serviceBundler.getAuditService());
-    }
-
-    @Test
-    public void testEtagGenerator() {
-        assertNotNull(serviceBundler.getEtagGenerator());
     }
 
     @Test

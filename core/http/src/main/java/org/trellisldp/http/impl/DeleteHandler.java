@@ -94,7 +94,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         }
 
         // Check the cache
-        final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(resource));
+        final EntityTag etag = new EntityTag(resource.getRevision());
         checkCache(resource.getModified(), etag);
 
         setResource(resource);

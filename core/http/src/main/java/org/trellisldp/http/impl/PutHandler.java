@@ -118,7 +118,7 @@ public class PutHandler extends MutatingLdpHandler {
         // Check the cache
         if (getResource() != null) {
             final Instant modified = getResource().getModified();
-            final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(getResource()));
+            final EntityTag etag = new EntityTag(getResource().getRevision());
 
             // Check the cache
             checkRequiredPreconditions(preconditionRequired, getRequest().getHeaders().getFirst(IF_MATCH),
@@ -258,6 +258,7 @@ public class PutHandler extends MutatingLdpHandler {
 
         if (getResource() != null) {
             getResource().getContainer().ifPresent(metadata::container);
+            metadata.revision(getResource().getRevision());
             LOGGER.debug("Resource {} found in persistence", getIdentifier());
             try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
                 remaining.forEachOrdered(mutable::add);

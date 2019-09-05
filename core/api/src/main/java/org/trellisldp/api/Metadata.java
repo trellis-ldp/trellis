@@ -82,6 +82,7 @@ public final class Metadata {
      */
     public static Builder builder(final Resource r) {
         return builder(r.getIdentifier()).interactionModel(r.getInteractionModel())
+                        .revision(r.getRevision()).hasAcl(r.hasAcl())
                         .container(r.getContainer().orElse(null))
                         .memberRelation(r.getMemberRelation().orElse(null))
                         .membershipResource(r.getMembershipResource().orElse(null))

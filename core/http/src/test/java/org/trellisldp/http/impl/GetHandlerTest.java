@@ -78,8 +78,6 @@ import javax.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.BinaryMetadata;
-import org.trellisldp.http.core.DefaultEtagGenerator;
-import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
@@ -89,8 +87,6 @@ import org.trellisldp.vocabulary.SKOS;
  * @author acoburn
  */
 public class GetHandlerTest extends BaseTestHandler {
-
-    private static final EtagGenerator etagGenerator = new DefaultEtagGenerator();
 
     private BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///testResource.txt"))
         .mimeType("text/plain").build();
@@ -116,7 +112,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak(), "ETag isn't weak for an RDF document!");
-        assertEquals(etagGenerator.getValue(mockResource), etag.getValue(), "Unexpected ETag value!");
+        assertEquals(mockResource.getRevision(), etag.getValue(), "Unexpected ETag value!");
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertFalse(varies.contains(RANGE), "Unexpected Vary: range header!");
@@ -166,7 +162,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak(), "ETag header is not weak for an RDF resource!");
-        assertEquals(etagGenerator.getValue(mockResource), etag.getValue(), "Unexpected ETag value!");
+        assertEquals(mockResource.getRevision(), etag.getValue(), "Unexpected ETag value!");
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertTrue(varies.contains(PREFER), "Missing Vary: prefer header!");
@@ -229,7 +225,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak(), "ETag header isn't weak for LDP-RS!");
-        assertEquals(etagGenerator.getValue(mockResource), etag.getValue(), "Unexpected ETag value!");
+        assertEquals(mockResource.getRevision(), etag.getValue(), "Unexpected ETag value!");
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertTrue(varies.contains(ACCEPT_DATETIME), "Missing Vary: accept-datetime header!");
@@ -272,7 +268,7 @@ public class GetHandlerTest extends BaseTestHandler {
 
         final EntityTag etag = res.getEntityTag();
         assertTrue(etag.isWeak(), "ETag isn't weak for RDF!");
-        assertEquals(etagGenerator.getValue(mockResource), etag.getValue(), "Incorrect ETag value for LDP-C!");
+        assertEquals(mockResource.getRevision(), etag.getValue(), "Incorrect ETag value for LDP-C!");
 
         final List<Object> varies = res.getHeaders().get(VARY);
         assertTrue(varies.contains(ACCEPT_DATETIME), "Missing Vary: accept-datetime header!");

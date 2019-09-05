@@ -77,12 +77,6 @@ public interface ServiceBundler {
     Iterable<ConstraintService> getConstraintServices();
 
     /**
-     * Get the ETag generator for this application.
-     * @return the service for generating ETags
-     */
-    EtagGenerator getEtagGenerator();
-
-    /**
      * Get the TimemapGenerator for this application.
      * @return the service for generating TimeMaps.
      */

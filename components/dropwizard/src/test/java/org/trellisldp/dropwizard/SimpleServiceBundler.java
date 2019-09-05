@@ -29,7 +29,6 @@ import org.trellisldp.app.DefaultConstraintServices;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.io.NoopProfileCache;
@@ -48,7 +47,6 @@ public class SimpleServiceBundler extends BaseServiceBundler {
         mementoService = new NoopMementoService();
         eventService = new NoopEventService();
         agentService = new DefaultAgentService();
-        etagGenerator = new DefaultEtagGenerator();
         timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         ioService = new JenaIOService(new NoopNamespaceService(), null, new NoopProfileCache(),
