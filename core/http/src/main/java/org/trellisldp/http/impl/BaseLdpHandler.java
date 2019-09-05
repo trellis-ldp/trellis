@@ -139,7 +139,7 @@ class BaseLdpHandler {
 
     /**
      * Create a strong entity tag from a resource's revision value.
-     * @param resource the resource
+     * @param res the resource
      * @return an etag
      */
     protected EntityTag generateEtag(final Resource res) {
@@ -148,7 +148,7 @@ class BaseLdpHandler {
 
     /**
      * Create an entity tag from a resource's revision value.
-     * @param resource the resource
+     * @param res the resource
      * @param weakEtag set this as true to generate a weak etag; false for a strong etag
      * @return an etag
      */
