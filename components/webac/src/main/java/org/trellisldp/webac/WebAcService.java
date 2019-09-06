@@ -19,6 +19,8 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -45,7 +47,6 @@ import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -86,7 +87,8 @@ public class WebAcService {
     private static final Set<IRI> allModes = new HashSet<>();
 
     /** The permissive Authorizations in effect when no ACL is present on the root node. **/
-    private static final List<Authorization> defaultRootAuthorizations = generateDefaultRootAuthorizations();
+    private static final List<Authorization> defaultRootAuthorizations =
+        unmodifiableList(generateDefaultRootAuthorizations());
 
     static {
         allModes.add(ACL.Read);
@@ -107,15 +109,18 @@ public class WebAcService {
     }
 
     private static List<Authorization> generateDefaultRootAuthorizations() {
-        final Dataset dataset = rdf.createDataset();
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
-        final Graph graph = dataset.stream().map(Quad::asTriple).collect(toGraph());
-        return getAuthorizationFromGraph(graph);
+        try (final Graph graph = rdf.createGraph()) {
+            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Read));
+            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Write));
+            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Control));
+            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Append));
+            graph.add(rdf.createTriple(rootAuth, ACL.agentClass, FOAF.Agent));
+            graph.add(rdf.createTriple(rootAuth, ACL.default_, root));
+            graph.add(rdf.createTriple(rootAuth, ACL.accessTo, root));
+            return singletonList(Authorization.from(rootAuth, graph));
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing graph", ex);
+        }
     }
 
     /**
