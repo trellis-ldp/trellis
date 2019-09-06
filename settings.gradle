@@ -31,6 +31,7 @@ include ':trellis-server'
 include ':trellis-test'
 include ':trellis-app-mp-triplestore'
 include ':trellis-app-triplestore'
+include ':trellis-bom'
 
 project(':trellis-api').projectDir = "$rootDir/core/api" as File
 project(':trellis-http').projectDir = "$rootDir/core/http" as File
@@ -64,3 +65,5 @@ project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
 project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File
 project(':trellis-server').projectDir = "$rootDir/platform/server" as File
 project(':trellis-app-mp-triplestore').projectDir = "$rootDir/platform/app-mp-triplestore" as File
+project(':trellis-bom').projectDir = "$rootDir/platform/bom" as File
+
