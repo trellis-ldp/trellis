@@ -32,7 +32,6 @@ import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -62,7 +61,6 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
@@ -81,10 +79,7 @@ import org.trellisldp.http.impl.OptionsHandler;
 import org.trellisldp.http.impl.PatchHandler;
 import org.trellisldp.http.impl.PostHandler;
 import org.trellisldp.http.impl.PutHandler;
-import org.trellisldp.vocabulary.ACL;
-import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * An HTTP request matcher for path-based HTTP resource operations.
@@ -168,13 +163,7 @@ public class TrellisHttpResource {
     @PostConstruct
     public void initialize() {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-        final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
         try (final Dataset dataset = rdf.createDataset()) {
-            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
-            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
-            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
-            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
-            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
             LOGGER.debug("Preparing to initialize Trellis at {}", root);
             trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset))
                 .exceptionally(err -> {
@@ -192,12 +181,6 @@ public class TrellisHttpResource {
             LOGGER.info("Initializing root container: {}", id);
             return trellis.getResourceService().create(Metadata.builder(id).interactionModel(LDP.BasicContainer)
                     .build(), dataset);
-        } else if (!res.hasAcl()) {
-            LOGGER.info("Initializing root ACL: {}", id);
-            try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
-                quads.forEach(dataset::add);
-            }
-            return trellis.getResourceService().replace(Metadata.builder(res).build(), dataset);
         }
         return completedFuture(null);
     }
