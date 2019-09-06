@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -81,7 +82,9 @@ public class WebAcService {
     private static final Logger LOGGER = getLogger(WebAcService.class);
     private static final RDF rdf = getInstance();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+    private static final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
     private static final Set<IRI> allModes = new HashSet<>();
+    private List<Authorization> defaultRootAuthorizations = null;  // Used when no root auth is set.
 
     static {
         allModes.add(ACL.Read);
@@ -261,7 +264,7 @@ public class WebAcService {
         }).toCompletableFuture().join();
     }
 
-    private List<Authorization> getAuthorizationFromGraph(final Graph graph) {
+    private static List<Authorization> getAuthorizationFromGraph(final Graph graph) {
         return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
                 try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
                     return Authorization.from(subject, subGraph);
@@ -287,12 +290,29 @@ public class WebAcService {
             } catch (final Exception ex) {
                 throw new RuntimeTrellisException("Error closing graph", ex);
             }
+        } else if(root.equals(resource.getIdentifier())) {
+            return getDefaultRootAuthorizations().stream();
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
         return getContainer(resource.getIdentifier()).map(resourceService::get)
             .map(CompletionStage::toCompletableFuture).map(CompletableFuture::join)
             .map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
+    }
+
+    private List<Authorization> getDefaultRootAuthorizations() {
+	if(this.defaultRootAuthorizations == null) {
+            final Dataset dataset = rdf.createDataset();
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+            final Graph graph = dataset.stream().map(Quad::asTriple).collect(toGraph());
+            this.defaultRootAuthorizations = getAuthorizationFromGraph(graph);
+	}
+	return this.defaultRootAuthorizations;
     }
 
     /**
