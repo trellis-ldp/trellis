@@ -1,0 +1,54 @@
+apply plugin: 'java-library'
+apply plugin: 'biz.aQute.bnd.builder'
+
+description = 'Trellis Notifications (Reactive Messaging)'
+
+ext {
+    moduleName = 'org.trellisldp.reactive'
+    testModules = ['smallrye.config', 'org.trellisldp.vocabulary', 'org.trellisldp.event', 'org.apache.commons.rdf.simple']
+}
+
+dependencies {
+    api("io.reactivex.rxjava2:rxjava:$rxjavaVersion")
+    api("javax.inject:javax.inject:$javaxInjectVersion")
+    api("org.eclipse.microprofile.reactive.messaging:microprofile-reactive-messaging-api:$microprofileReactiveMessagingVersion")
+    api project(':trellis-api')
+
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testImplementation("io.smallrye.reactive:smallrye-reactive-streams-operators:$smallryeReactiveOperatorsVersion")
+    testImplementation("io.smallrye.reactive:smallrye-reactive-messaging-provider:$smallryeReactiveVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
+        exclude group: "org.hamcrest", module: 'hamcrest-core'
+        exclude group: 'org.hamcrest', module: 'hamcrest-library'
+    }
+    testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
+    testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
+        exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
+        exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
+    }
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-vocabulary')
+}
+
+test {
+    systemProperty 'smallrye-messaging-strict-binding', 'true'
+}
+
+if (project.sourceCompatibility.isJava11Compatible()) {
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-opens', "$moduleName/$moduleName=weld.junit5",
+                '--add-opens', "$moduleName/$moduleName=weld.core.impl",
+                '--add-opens', "org.trellisldp.event/org.trellisldp.event=weld.core.impl",
+            ]
+        }
+    }
+}
+

@@ -7,6 +7,7 @@ include ':trellis-vocabulary'
 include ':trellis-amqp'
 include ':trellis-jms'
 include ':trellis-kafka'
+include ':trellis-reactive'
 
 include ':trellis-auth-oauth'
 include ':trellis-auth-basic'
@@ -40,6 +41,7 @@ project(':trellis-vocabulary').projectDir = "$rootDir/core/vocabulary" as File
 project(':trellis-amqp').projectDir = "$rootDir/notifications/amqp" as File
 project(':trellis-jms').projectDir = "$rootDir/notifications/jms" as File
 project(':trellis-kafka').projectDir = "$rootDir/notifications/kafka" as File
+project(':trellis-reactive').projectDir = "$rootDir/notifications/reactive" as File
 
 project(':trellis-auth-oauth').projectDir = "$rootDir/auth/oauth" as File
 project(':trellis-auth-basic').projectDir = "$rootDir/auth/basic" as File
