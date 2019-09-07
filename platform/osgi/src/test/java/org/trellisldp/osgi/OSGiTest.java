@@ -113,14 +113,17 @@ public class OSGiTest {
     }
 
     @Test
-    public void testAuditAndTriplestoreInstallation() throws Exception {
-        // test these two together because trellis-triplestore depends on trellis-audit
+    public void testAuditInstallation() throws Exception {
         if (!featuresService.isInstalled(featuresService.getFeature("trellis-audit"))) {
             featuresService.installFeature("trellis-audit");
         }
         assertTrue("trellis-audit not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-audit")));
+        checkTrellisBundlesAreActive();
+    }
 
+    @Test
+    public void testTriplestoreInstallation() throws Exception {
         if (!featuresService.isInstalled(featuresService.getFeature("trellis-triplestore"))) {
             featuresService.installFeature("trellis-triplestore");
         }
