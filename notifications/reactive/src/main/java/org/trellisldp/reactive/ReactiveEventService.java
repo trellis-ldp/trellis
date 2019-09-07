@@ -36,7 +36,7 @@ public class ReactiveEventService implements EventService {
     private final PublishSubject<Message<String>> subject = PublishSubject.create();
 
     /**
-     * Create a new Kafka Event Service.
+     * Create a new Reactive Stream Event Service.
      * @param serializer the event serializer
      */
     @Inject
