@@ -3,10 +3,6 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis Notifications (Reactive Messaging)'
 
-configurations {
-    weld
-}
-
 ext {
     moduleName = 'org.trellisldp.reactive'
     testModules = ['smallrye.config', 'org.trellisldp.vocabulary', 'org.trellisldp.event', 'org.apache.commons.rdf.simple']
@@ -48,8 +44,8 @@ if (project.sourceCompatibility.isJava11Compatible()) {
         inputs.property("moduleName", moduleName)
         doFirst {
             jvmArgs += [
+                '--add-opens', "$moduleName/$moduleName=weld.junit5",
                 '--add-opens', "$moduleName/$moduleName=weld.core.impl",
-                '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
                 '--add-opens', "org.trellisldp.event/org.trellisldp.event=weld.core.impl",
             ]
         }
