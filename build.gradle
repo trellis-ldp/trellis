@@ -70,6 +70,7 @@ ext {
 
     /* OSGi */
     glassfishInjectVersion = '2.5.0-b62'
+    jaxbOsgiVersion = '2.3.0'
     javaxElVersion = '2.2.5'
     javaxInterceptorVersion = '1.2.2'
     jenaOsgiVersion = '3.11.0'
