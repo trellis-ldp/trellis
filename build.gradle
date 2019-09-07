@@ -70,7 +70,6 @@ ext {
     smallryeHealthVersion = '2.0.0'
     smallryeReactiveVersion = '1.0.1'
     smallryeReactiveOperatorsVersion = '1.0.9'
-    weldSeVersion = '3.1.2.Final'
     weldVersion = '2.0.0.Final'
 
     /* OSGi */

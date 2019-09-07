@@ -32,14 +32,16 @@ import io.smallrye.reactive.messaging.impl.InternalChannelRegistry;
 
 import java.time.Instant;
 
+import javax.inject.Inject;
+
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.jboss.weld.junit5.WeldInitiator;
+import org.jboss.weld.junit5.WeldJunit5Extension;
+import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.trellisldp.api.*;
 import org.trellisldp.event.DefaultActivityStreamService;
@@ -47,42 +49,32 @@ import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
+@ExtendWith(WeldJunit5Extension.class)
 public class ReactiveEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
-    private static WeldContainer container;
-
     private final Instant time = now();
+
+    @WeldSetup
+    private WeldInitiator weld = WeldInitiator.of(WeldInitiator.createWeld()
+                                       .beanClasses(
+                                           MediatorFactory.class,
+                                           MediatorManager.class,
+                                           InternalChannelRegistry.class,
+                                           ConfiguredChannelFactory.class,
+                                           TestCollector.class,
+                                           ReactiveEventService.class,
+                                           DefaultActivityStreamService.class)
+                                       .extensions(new ReactiveMessagingExtension()));
+
+    @Inject
+    private TestCollector collector;
+
+    @Inject
+    private ReactiveEventService service;
 
     @Mock
     private Event mockEvent;
-
-    @BeforeAll
-    public static void initialize() {
-        // Setup Weld
-        final Weld weld = new Weld();
-        weld.addBeanClass(MediatorFactory.class);
-        weld.addBeanClass(MediatorManager.class);
-        weld.addBeanClass(InternalChannelRegistry.class);
-        weld.addBeanClass(ConfiguredChannelFactory.class);
-
-        weld.addExtension(new ReactiveMessagingExtension());
-
-        weld.addBeanClass(TestCollector.class);
-        weld.addBeanClass(ReactiveEventService.class);
-        weld.addBeanClass(DefaultActivityStreamService.class);
-        weld.addBeanClass(ReactiveEventService.class);
-        weld.disableDiscovery();
-
-        container = weld.initialize();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        if (container != null) {
-            container.shutdown();
-        }
-    }
 
     @BeforeEach
     public void setUp() {
@@ -99,9 +91,6 @@ public class ReactiveEventServiceTest {
 
     @Test
     public void testReactiveStream() {
-        final TestCollector collector = getInstance(TestCollector.class);
-        final ReactiveEventService service = getInstance(ReactiveEventService.class);
-
         service.emit(mockEvent);
         await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 1);
         service.emit(mockEvent);
@@ -109,9 +98,5 @@ public class ReactiveEventServiceTest {
         service.emit(mockEvent);
         service.emit(mockEvent);
         await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 4);
-    }
-
-    private <T> T getInstance(final Class<T> type) {
-        return container.getBeanManager().createInstance().select(type).get();
     }
 }

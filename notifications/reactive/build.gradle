@@ -30,42 +30,29 @@ dependencies {
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
     }
     testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
+    testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
+        exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
+        exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
+    }
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-event-serialization')
     testImplementation project(':trellis-vocabulary')
-
-    weld("org.jboss.weld.se:weld-se-core:$weldSeVersion")
-
-    if (!project.sourceCompatibility.isJava11Compatible()) {
-        testImplementation("org.jboss.weld.se:weld-se-core:$weldSeVersion")
-    }
 }
 
 test {
     systemProperty 'smallrye-messaging-strict-binding', 'true'
 }
 
-
 if (project.sourceCompatibility.isJava11Compatible()) {
-    compileTestJava {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            options.compilerArgs += [
-                '--add-reads', "$moduleName=ALL-UNNAMED",
-            ]
-            classpath = files(configurations.weld)
-        }
-    }
-
     test {
         inputs.property("moduleName", moduleName)
         doFirst {
             jvmArgs += [
-                '--add-reads', "$moduleName=ALL-UNNAMED",
-                '--add-opens', "$moduleName/$moduleName=ALL-UNNAMED",
-                '--add-opens', "org.trellisldp.event/org.trellisldp.event=ALL-UNNAMED",
+                '--add-opens', "$moduleName/$moduleName=weld.core.impl",
+                '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
+                '--add-opens', "org.trellisldp.event/org.trellisldp.event=weld.core.impl",
             ]
-            classpath = files(configurations.weld)
         }
     }
 }
+
