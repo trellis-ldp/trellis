@@ -1,0 +1,46 @@
+apply plugin: 'java-library'
+apply plugin: 'biz.aQute.bnd.builder'
+
+description = 'Trellis Microprofile JWT-Auth'
+
+ext {
+    moduleName = 'org.trellisldp.auth.jwt'
+}
+
+dependencies {
+    api "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
+    api "jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion"
+    api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
+    api "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
+    api "org.eclipse.microprofile.jwt:microprofile-jwt-auth-api:$microprofileJwtVersion"
+
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+
+    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye:smallrye-jwt:$smallryeJwtVersion"
+    testImplementation "jakarta.json.bind:jakarta.json.bind-api:$jsonbApiVersion"
+    testImplementation "org.eclipse:yasson:$yassonVersion"
+    testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
+    testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
+        exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
+        exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
+    }
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+
+    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+if (project.sourceCompatibility.isJava11Compatible()) {
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-opens', "$moduleName/$moduleName=weld.junit5",
+                '--add-opens', "$moduleName/$moduleName=weld.core.impl",
+            ]
+        }
+    }
+}

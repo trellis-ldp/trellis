@@ -80,4 +80,17 @@ class HttpSessionTest {
         assertEquals(rdf.createIRI(agent), session.getAgent(), "Incorrect agent in admin session");
         assertFalse(session.getDelegatedBy().isPresent(), "Incorrect delegate");
     }
+
+    @Test
+    void testNullPrincipalNameHttpSession() {
+        final SecurityContext mockSecurityContext = mock(SecurityContext.class);
+        final Principal mockPrincipal = mock(Principal.class);
+
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(eq(HttpSession.ADMIN_ROLE))).thenReturn(false);
+
+        final Session session = HttpSession.from(mockSecurityContext);
+        assertEquals(Trellis.AnonymousAgent, session.getAgent(), "Incorrect agent");
+        assertFalse(session.getDelegatedBy().isPresent(), "Incorrect delegate");
+    }
 }

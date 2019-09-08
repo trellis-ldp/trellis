@@ -6,7 +6,7 @@ def installForQuarkus = [
     "trellis-api",
     "trellis-app",
     "trellis-audit",
-    "trellis-auth-oauth",
+    "trellis-auth-jwt",
     "trellis-cache",
     "trellis-cdi",
     "trellis-constraint-rules",
@@ -27,7 +27,7 @@ dependencies {
     implementation "org.trellisldp:trellis-api:${project.version}"
     implementation "org.trellisldp:trellis-app:${project.version}"
     implementation "org.trellisldp:trellis-audit:${project.version}"
-    implementation "org.trellisldp:trellis-auth-oauth:${project.version}"
+    implementation "org.trellisldp:trellis-auth-jwt:${project.version}"
     implementation "org.trellisldp:trellis-cache:${project.version}"
     implementation "org.trellisldp:trellis-cdi:${project.version}"
     implementation "org.trellisldp:trellis-constraint-rules:${project.version}"
@@ -45,6 +45,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-resteasy'
     implementation 'io.quarkus:quarkus-security'
     implementation 'io.quarkus:quarkus-smallrye-health'
+    implementation 'io.quarkus:quarkus-smallrye-jwt'
     implementation 'io.quarkus:quarkus-smallrye-metrics'
     implementation 'io.quarkus:quarkus-smallrye-openapi'
     implementation 'io.quarkus:quarkus-smallrye-reactive-messaging'
@@ -57,7 +58,6 @@ dependencies {
     implementation "org.apache.jena:jena-arq:$jenaVersion"
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
-
 
     runtimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
@@ -72,6 +72,7 @@ test {
     systemProperty 'trellis.file.memento.basepath', "$buildDir/data/mementos"
     systemProperty 'trellis.triplestore.rdf.location', "$buildDir/data/rdf"
     systemProperty 'trellis.namespace.prefixes', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
+    systemProperty 'mp.jwt.verify.publickey.location', 'https://www.trellisldp.org/tests/jwks.json'
 }
 
 sonarqube {

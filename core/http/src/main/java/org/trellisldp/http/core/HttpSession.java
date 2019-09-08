@@ -99,7 +99,7 @@ public class HttpSession implements Session {
      * @return the session
      */
     public static Session from(final SecurityContext security) {
-        if (security != null && security.getUserPrincipal() != null) {
+        if (security != null && security.getUserPrincipal() != null && security.getUserPrincipal().getName() != null) {
             final IRI webid = rdf.createIRI(security.getUserPrincipal().getName());
             if (security.isUserInRole(ADMIN_ROLE)) {
                 return new HttpSession(Trellis.AdministratorAgent, webid);

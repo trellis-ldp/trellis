@@ -27,6 +27,7 @@ include ':trellis-reactive'
 
 include ':trellis-auth-oauth'
 include ':trellis-auth-basic'
+include ':trellis-auth-jwt'
 
 include ':trellis-app'
 include ':trellis-audit'
@@ -64,6 +65,7 @@ project(':trellis-reactive').projectDir = "$rootDir/notifications/reactive" as F
 
 project(':trellis-auth-oauth').projectDir = "$rootDir/auth/oauth" as File
 project(':trellis-auth-basic').projectDir = "$rootDir/auth/basic" as File
+project(':trellis-auth-jwt').projectDir = "$rootDir/auth/jwt" as File
 
 project(':trellis-app').projectDir = "$rootDir/components/app" as File
 project(':trellis-app-triplestore').projectDir = "$rootDir/components/app-triplestore" as File

@@ -29,20 +29,11 @@ sonarqube {
 }
 
 dependencies {
-    implementation "org.apache.jena:jena-osgi:$jenaVersion"
-    implementation "org.apache.commons:commons-compress:$commonsCompressVersion"
-    implementation project(':trellis-api')
-    implementation project(':trellis-http')
-    implementation project(':trellis-io-jena')
-    implementation project(':trellis-namespaces')
-    implementation project(':trellis-vocabulary')
-    implementation project(':trellis-triplestore')
-
-    runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
-
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "org.apache.commons:commons-compress:$commonsCompressVersion"
     testImplementation "org.apache.karaf.features:standard:$karafVersion"
     testImplementation "org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion"
+    testImplementation "org.apache.jena:jena-osgi:$jenaVersion"
     testImplementation "org.ops4j.pax.exam:pax-exam:$paxExamVersion"
     testImplementation "org.ops4j.pax.exam:pax-exam-junit4:$paxExamVersion"
     testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:$paxExamVersion"
@@ -50,6 +41,8 @@ dependencies {
     testImplementation "org.osgi:org.osgi.compendium:$osgiCompendiumVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.glassfish.hk2.external:javax.inject:$glassfishInjectVersion"
+
+    testImplementation project(':trellis-api')
     testImplementation project(':trellis-amqp')
     testImplementation project(':trellis-app')
     testImplementation project(':trellis-audit')
@@ -59,14 +52,19 @@ dependencies {
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-event-jsonb')
     testImplementation project(':trellis-file')
+    testImplementation project(':trellis-http')
+    testImplementation project(':trellis-io-jena')
     testImplementation project(':trellis-jms')
     testImplementation project(':trellis-kafka')
+    testImplementation project(':trellis-namespaces')
     testImplementation project(':trellis-triplestore')
     testImplementation project(':trellis-webac')
     testImplementation project(':trellis-karaf')
+    testImplementation project(':trellis-vocabulary')
 
     testImplementation group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
 
+    testRuntimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     testRuntimeClasspath "org.junit.vintage:junit-vintage-engine:${junitVersion}"
 
     karafDistro group: 'org.apache.karaf', name: 'apache-karaf', version: karafVersion, ext: 'zip'
