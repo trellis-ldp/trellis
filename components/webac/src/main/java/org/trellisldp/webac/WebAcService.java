@@ -23,6 +23,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -44,9 +45,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -55,6 +58,7 @@ import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopResourceService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -88,7 +92,8 @@ public class WebAcService {
 
     /** The permissive Authorizations in effect when no ACL is present on the root node. **/
     private static final List<Authorization> defaultRootAuthorizations =
-        unmodifiableList(generateDefaultRootAuthorizations());
+        unmodifiableList(singletonList(Authorization.from(rootAuth, generateDefaultRootAuthorizations()
+            .getGraph(Trellis.PreferAccessControl).get())));
 
     static {
         allModes.add(ACL.Read);
@@ -108,18 +113,44 @@ public class WebAcService {
         this(new NoopResourceService());
     }
 
-    private static List<Authorization> generateDefaultRootAuthorizations() {
-        try (final Graph graph = rdf.createGraph()) {
-            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Read));
-            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Write));
-            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Control));
-            graph.add(rdf.createTriple(rootAuth, ACL.mode, ACL.Append));
-            graph.add(rdf.createTriple(rootAuth, ACL.agentClass, FOAF.Agent));
-            graph.add(rdf.createTriple(rootAuth, ACL.default_, root));
-            graph.add(rdf.createTriple(rootAuth, ACL.accessTo, root));
-            return singletonList(Authorization.from(rootAuth, graph));
+    private static Dataset generateDefaultRootAuthorizations() {
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.default_, root));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+        return dataset;
+    }
+
+    /**
+     * Initializes the root ACL, if there is no root ACL.
+     */
+    @PostConstruct
+    public void initialize() {
+        try (final Dataset dataset = generateDefaultRootAuthorizations()) {
+            this.resourceService.get(root).thenCompose(res -> initialize(root, res, dataset))
+                .exceptionally(err -> {
+                    LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
+                    LOGGER.debug("Error auto-initializing Trellis", err);
+                    return null;
+                }).toCompletableFuture().join();
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing graph", ex);
+            throw new RuntimeTrellisException("Error closing dataset", ex);
+        }
+    }
+
+    private CompletionStage<Void> initialize(final IRI id, final Resource res, final Dataset dataset) {
+        if (!res.hasAcl()) {
+            LOGGER.info("Initializing root ACL: {}", id);
+            try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
+                quads.forEach(dataset::add);
+            }
+            return this.resourceService.replace(Metadata.builder(res).build(), dataset);
+        } else {
+            return runAsync(() -> { });
         }
     }
 

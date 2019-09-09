@@ -142,24 +142,6 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    public void testInitializeExistingLdpResourceWithNoACL() throws Exception {
-        final ResourceService mockService = mock(ResourceService.class);
-        when(mockBundler.getResourceService()).thenReturn(mockService);
-        when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
-        when(mockRootResource.hasAcl()).thenReturn(false);
-        when(mockService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
-
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
-        matcher.initialize();
-
-        verify(mockService, never().description("When re-initializing the root ACL, create should not be called"))
-            .create(any(Metadata.class), any(Dataset.class));
-        verify(mockService, description("Use replace when re-initializing the root ACL"))
-            .replace(any(Metadata.class), any(Dataset.class));
-        verify(mockService, description("Verify that the root resource is fetched only once")).get(root);
-    }
-
-    @Test
     public void testInitializeoNoLdpResource() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
