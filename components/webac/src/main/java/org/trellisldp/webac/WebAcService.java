@@ -23,7 +23,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -85,6 +84,7 @@ public class WebAcService {
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
     private static final Logger LOGGER = getLogger(WebAcService.class);
+    private static final CompletionStage<Void> DONE = CompletableFuture.completedFuture(null);
     private static final RDF rdf = getInstance();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
@@ -150,7 +150,8 @@ public class WebAcService {
             }
             return this.resourceService.replace(Metadata.builder(res).build(), dataset);
         } else {
-            return runAsync(() -> { });
+            LOGGER.info("Root ACL is present, not initializing: {}", id);
+            return DONE;
         }
     }
 
