@@ -19,7 +19,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
@@ -34,6 +34,7 @@ import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -92,8 +93,7 @@ public class WebAcService {
 
     /** The permissive Authorizations in effect when no ACL is present on the root node. **/
     private static final List<Authorization> defaultRootAuthorizations =
-        unmodifiableList(singletonList(Authorization.from(rootAuth, generateDefaultRootAuthorizations()
-            .getGraph(Trellis.PreferAccessControl).get())));
+        unmodifiableList(getDefaultRootAuthorizations());
 
     static {
         allModes.add(ACL.Read);
@@ -113,7 +113,16 @@ public class WebAcService {
         this(new NoopResourceService());
     }
 
-    private static Dataset generateDefaultRootAuthorizations() {
+    private static List<Authorization> getDefaultRootAuthorizations() {
+        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
+            return dataset.getGraph(Trellis.PreferAccessControl).map(graph -> Authorization.from(rootAuth, graph))
+                .map(Collections::singletonList).orElse(emptyList());
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing dataset", ex);
+        }
+    }
+
+    private static Dataset generateDefaultRootAuthorizationsDataset() {
         final Dataset dataset = rdf.createDataset();
         dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
         dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
@@ -130,7 +139,7 @@ public class WebAcService {
      */
     @PostConstruct
     public void initialize() {
-        try (final Dataset dataset = generateDefaultRootAuthorizations()) {
+        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
             this.resourceService.get(root).thenCompose(res -> initialize(root, res, dataset))
                 .exceptionally(err -> {
                     LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
