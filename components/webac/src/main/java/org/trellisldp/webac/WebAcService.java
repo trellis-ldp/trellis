@@ -19,6 +19,8 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -32,6 +34,7 @@ import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -42,9 +45,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -53,6 +58,7 @@ import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopResourceService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -79,9 +85,15 @@ public class WebAcService {
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
     private static final Logger LOGGER = getLogger(WebAcService.class);
+    private static final CompletionStage<Void> DONE = CompletableFuture.completedFuture(null);
     private static final RDF rdf = getInstance();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+    private static final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
     private static final Set<IRI> allModes = new HashSet<>();
+
+    /** The permissive Authorizations in effect when no ACL is present on the root node. **/
+    private static final List<Authorization> defaultRootAuthorizations =
+        unmodifiableList(getDefaultRootAuthorizations());
 
     static {
         allModes.add(ACL.Read);
@@ -99,6 +111,57 @@ public class WebAcService {
      */
     public WebAcService() {
         this(new NoopResourceService());
+    }
+
+    private static List<Authorization> getDefaultRootAuthorizations() {
+        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
+            return dataset.getGraph(Trellis.PreferAccessControl).map(graph -> Authorization.from(rootAuth, graph))
+                .map(Collections::singletonList).orElse(emptyList());
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing dataset", ex);
+        }
+    }
+
+    private static Dataset generateDefaultRootAuthorizationsDataset() {
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.default_, root));
+        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+        return dataset;
+    }
+
+    /**
+     * Initializes the root ACL, if there is no root ACL.
+     */
+    @PostConstruct
+    public void initialize() {
+        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
+            this.resourceService.get(root).thenCompose(res -> initialize(root, res, dataset))
+                .exceptionally(err -> {
+                    LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
+                    LOGGER.debug("Error auto-initializing Trellis", err);
+                    return null;
+                }).toCompletableFuture().join();
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing dataset", ex);
+        }
+    }
+
+    private CompletionStage<Void> initialize(final IRI id, final Resource res, final Dataset dataset) {
+        if (!res.hasAcl()) {
+            LOGGER.info("Initializing root ACL: {}", id);
+            try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
+                quads.forEach(dataset::add);
+            }
+            return this.resourceService.replace(Metadata.builder(res).build(), dataset);
+        } else {
+            LOGGER.info("Root ACL is present, not initializing: {}", id);
+            return DONE;
+        }
     }
 
     /**
@@ -254,7 +317,7 @@ public class WebAcService {
         }).toCompletableFuture().join();
     }
 
-    private List<Authorization> getAuthorizationFromGraph(final Graph graph) {
+    private static List<Authorization> getAuthorizationFromGraph(final Graph graph) {
         return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
                 try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
                     return Authorization.from(subject, subGraph);
@@ -266,7 +329,7 @@ public class WebAcService {
 
     private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
-        if (resource.hasAcl()) {
+        if ( resource.hasAcl() ) {
             try (final Graph graph = resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
                         .collect(toGraph())) {
                 final List<Authorization> authorizations = getAuthorizationFromGraph(graph);
@@ -280,6 +343,8 @@ public class WebAcService {
             } catch (final Exception ex) {
                 throw new RuntimeTrellisException("Error closing graph", ex);
             }
+        } else if ( root.equals(resource.getIdentifier()) ) {
+            return WebAcService.defaultRootAuthorizations.stream();
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());

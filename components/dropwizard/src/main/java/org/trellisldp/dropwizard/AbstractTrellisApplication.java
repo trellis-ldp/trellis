@@ -136,6 +136,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         // Authorization
         getWebacCache(config).ifPresent(cache -> {
             final WebAcService webac = new WebAcService(getServiceBundler().getResourceService(), cache);
+            webac.initialize();
             final List<String> challenges = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
                 .ifPresent(challenges::add);
