@@ -231,9 +231,9 @@ abstract class BaseTestHandler {
 
     private void setUpBinaryService() throws Exception {
         when(mockBinary.getContent(eq(3), eq(10)))
-                        .thenReturn(completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
+                        .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent())
-                        .thenReturn(completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
+                        .thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
         when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));

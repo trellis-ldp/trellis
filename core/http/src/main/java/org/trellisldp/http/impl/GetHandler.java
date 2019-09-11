@@ -16,6 +16,7 @@ package org.trellisldp.http.impl;
 import static java.lang.String.join;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -200,7 +201,7 @@ public class GetHandler extends BaseLdpHandler {
      * @param builder the response builder
      * @return the response builder
      */
-    public ResponseBuilder getRepresentation(final ResponseBuilder builder) {
+    public CompletionStage<ResponseBuilder> getRepresentation(final ResponseBuilder builder) {
         // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
         getResource().getBinaryMetadata().filter(ds -> !isAclRequest()).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
@@ -224,7 +225,7 @@ public class GetHandler extends BaseLdpHandler {
 
         // RDFSource responses (weak ETags, etc)
         final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), syntax);
-        return getLdpRs(builder, syntax, profile);
+        return completedFuture(getLdpRs(builder, syntax, profile));
     }
 
     /**
@@ -342,7 +343,7 @@ public class GetHandler extends BaseLdpHandler {
         return getDefaultProfile(syntax, getIdentifier(), defaultJsonLdProfile);
     }
 
-    private ResponseBuilder getLdpNr(final ResponseBuilder builder) {
+    private CompletionStage<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
 
         final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(getResource()));
         checkCache(getResource().getModified(), etag);
@@ -355,29 +356,22 @@ public class GetHandler extends BaseLdpHandler {
 
         // Short circuit HEAD requests
         if (HEAD.equals(getRequest().getMethod())) {
-            return builder;
+            return completedFuture(builder);
         }
 
         // Stream the binary content
-        final StreamingOutput stream = new StreamingOutput() {
-            @Override
-            public void write(final OutputStream out) throws IOException {
-                // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
-                try (final InputStream binary = getBinaryStream(dsid, getRequest()).toCompletableFuture().join()) {
-                    IOUtils.copy(binary, out);
-                }
-            }
-        };
-
-        return builder.entity(stream);
+        // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
+        return getBinaryStream(dsid, getRequest())
+                        .thenApply(in -> (StreamingOutput) out -> IOUtils.copy(in, out))
+                        .thenApply(builder::entity);
     }
 
     private CompletionStage<InputStream> getBinaryStream(final IRI dsid, final TrellisRequest req) {
         if (req.getRange() == null) {
-            return getServices().getBinaryService().get(dsid).thenComposeAsync(Binary::getContent);
+            return getServices().getBinaryService().get(dsid).thenApply(Binary::getContent);
         }
         return getServices().getBinaryService().get(dsid)
-                        .thenComposeAsync(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo()));
+                        .thenApply(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo()));
     }
 
     private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {

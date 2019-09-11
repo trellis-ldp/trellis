@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -37,32 +36,32 @@ class InMemoryBinaryServiceTest {
     private final BinaryService testService = new InMemoryBinaryService();
 
     @Test
-    void storeAndRetrieve() throws InterruptedException, ExecutionException, IOException {
+    void storeAndRetrieve() throws IOException {
         final String uuid = testService.generateIdentifier();
         final IRI id = rdfFactory.createIRI(uuid);
         final BinaryMetadata metadata = BinaryMetadata.builder(id).mimeType("mime/type").build();
         final byte[] answer = new byte[] { 1, 2, 3 };
         final InputStream stream = new ByteArrayInputStream(answer);
         testService.setContent(metadata, stream);
-        final Binary binary = testService.get(id).toCompletableFuture().get();
+        final Binary binary = testService.get(id).toCompletableFuture().join();
         final byte[] result;
-        try (InputStream bytes = binary.getContent().toCompletableFuture().get()) {
+        try (InputStream bytes = binary.getContent()) {
             result = toByteArray(bytes);
         }
         assertArrayEquals(answer, result);
     }
 
     @Test
-    void storeAndRetrievePart() throws InterruptedException, ExecutionException, IOException {
+    void storeAndRetrievePart() throws IOException {
         final String uuid = testService.generateIdentifier();
         final IRI id = rdfFactory.createIRI(uuid);
         final BinaryMetadata metadata = BinaryMetadata.builder(id).mimeType("mime/type").build();
         final byte[] fullAnswer = new byte[] { 1, 2, 3 };
         final InputStream stream = new ByteArrayInputStream(fullAnswer);
         testService.setContent(metadata, stream);
-        final Binary binary = testService.get(id).toCompletableFuture().get();
+        final Binary binary = testService.get(id).toCompletableFuture().join();
         final byte[] result;
-        try (InputStream bytes = binary.getContent(0, 1).toCompletableFuture().get()) {
+        try (InputStream bytes = binary.getContent(0, 1)) {
             result = toByteArray(bytes);
         }
         final byte[] answer = new byte[] { 1, 2 };
