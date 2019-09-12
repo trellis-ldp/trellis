@@ -98,17 +98,15 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
         final SecurityContext sec = ctx.getSecurityContext();
         final String name = getPrincipalName(sec.getUserPrincipal());
         LOGGER.debug("Checking security context: {}", name);
+        final IRI webid = agentService.asAgent(name);
         if (adminUsers.contains(name)) {
             LOGGER.info("{} acting as administrator user", name);
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent));
+            ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent, webid));
+        // don't permit admin agent to be generated from the agent service
+        } else if (AdministratorAgent.equals(webid)) {
+            ctx.setProperty(SESSION_PROPERTY, new HttpSession());
         } else {
-            final IRI webid = agentService.asAgent(name);
-            // don't permit admin agent to be generated from the agent service
-            if (AdministratorAgent.equals(webid)) {
-                ctx.setProperty(SESSION_PROPERTY, new HttpSession());
-            } else {
-                ctx.setProperty(SESSION_PROPERTY, new HttpSession(webid));
-            }
+            ctx.setProperty(SESSION_PROPERTY, new HttpSession(webid));
         }
     }
 

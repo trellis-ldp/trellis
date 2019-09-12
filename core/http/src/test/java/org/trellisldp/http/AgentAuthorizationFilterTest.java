@@ -84,10 +84,6 @@ public class AgentAuthorizationFilterTest {
 
     @Test
     public void testNoParamCtor() throws Exception {
-        when(mockPrincipal.getName()).thenReturn("https://example.com/admin");
-        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter();
-        filter.filter(mockContext);
-        verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
-        assertEquals(Trellis.AdministratorAgent, sessionArgument.getValue().getAgent(), "Unexpected agent IRI!");
+        assertDoesNotThrow(() -> new AgentAuthorizationFilter());
     }
 }
