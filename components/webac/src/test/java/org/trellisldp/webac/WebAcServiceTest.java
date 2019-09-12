@@ -157,7 +157,7 @@ public class WebAcServiceTest {
         when(mockRootResource.hasAcl()).thenReturn(false);
 
         assertDoesNotThrow(() -> testService.initialize());
-        verify(mockRootResource).stream(Trellis.PreferUserManaged);
+        verify(mockRootResource).stream(PreferUserManaged);
     }
 
     @Test
@@ -165,7 +165,7 @@ public class WebAcServiceTest {
         when(mockRootResource.hasAcl()).thenReturn(true);
 
         assertDoesNotThrow(() -> testService.initialize());
-        verify(mockRootResource, never()).stream(Trellis.PreferUserManaged);
+        verify(mockRootResource, never()).stream(PreferUserManaged);
     }
 
     @Test
