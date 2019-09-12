@@ -267,9 +267,9 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     private void setUpBinaryService() throws Exception {
         when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(eq(3), eq(10)))
-                        .thenReturn(completedFuture(new ByteArrayInputStream("e input".getBytes(UTF_8))));
+                        .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent())
-                        .thenReturn(completedFuture(new ByteArrayInputStream("Some input stream".getBytes(UTF_8))));
+                        .thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
         .thenAnswer(inv -> {
             readLines((InputStream) inv.getArguments()[1], UTF_8);

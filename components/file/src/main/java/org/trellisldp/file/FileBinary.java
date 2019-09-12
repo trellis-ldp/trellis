@@ -14,15 +14,12 @@
 
 package org.trellisldp.file;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.concurrent.CompletionStage;
 
 import org.trellisldp.api.Binary;
 
@@ -43,18 +40,18 @@ public class FileBinary implements Binary {
 
     @SuppressWarnings("resource")
     @Override
-    public CompletionStage<InputStream> getContent() {
+    public InputStream getContent() {
         try {
-            return completedFuture(new FileInputStream(file));
+            return new FileInputStream(file);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     @Override
-    public CompletionStage<InputStream> getContent(final int from, final int to) {
+    public InputStream getContent(final int from, final int to) {
         try {
-            return completedFuture(FileUtils.getBoundedStream(new FileInputStream(file), from, to));
+            return FileUtils.getBoundedStream(new FileInputStream(file), from, to);
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }

@@ -86,14 +86,14 @@ public class InMemoryBinaryService implements BinaryService {
         }
 
         @Override
-        public CompletionStage<InputStream> getContent() {
-            return completedFuture(new ByteArrayInputStream(data));
+        public InputStream getContent() {
+            return new ByteArrayInputStream(data);
         }
 
         @Override
-        public CompletionStage<InputStream> getContent(final int from, final int to) {
+        public InputStream getContent(final int from, final int to) {
             final byte[] slice = copyOfRange(data, from, to + 1); // to is inclusive
-            return completedFuture(new ByteArrayInputStream(slice));
+            return new ByteArrayInputStream(slice);
         }
     }
 }
