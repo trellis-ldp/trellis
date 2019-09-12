@@ -46,6 +46,7 @@ public class MetadataTest {
         assertEquals(of(LDP.member), metadata.getMemberRelation());
         assertEquals(of(FOAF.primaryTopic), metadata.getInsertedContentRelation());
         assertFalse(metadata.getMemberOfRelation().isPresent());
+        assertFalse(metadata.getHasAcl());
         assertFalse(metadata.getBinary().isPresent());
     }
 
@@ -54,7 +55,7 @@ public class MetadataTest {
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.DirectContainer)
                 .container(root).memberOfRelation(DC.isPartOf)
-                .membershipResource(member).build();
+                .membershipResource(member).hasAcl(true).build();
         assertEquals(identifier, metadata.getIdentifier());
         assertEquals(LDP.DirectContainer, metadata.getInteractionModel());
         assertEquals(of(root), metadata.getContainer());
@@ -63,6 +64,7 @@ public class MetadataTest {
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
         assertFalse(metadata.getBinary().isPresent());
+        assertTrue(metadata.getHasAcl());
     }
 
     @Test
@@ -70,7 +72,7 @@ public class MetadataTest {
         final BinaryMetadata binary = BinaryMetadata.builder(rdf.createIRI("http://example.com/binary")).build();
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.NonRDFSource)
-                .container(root).binary(binary).build();
+                .container(root).binary(binary).hasAcl(false).build();
         assertEquals(identifier, metadata.getIdentifier());
         assertEquals(LDP.NonRDFSource, metadata.getInteractionModel());
         assertEquals(of(root), metadata.getContainer());
@@ -79,6 +81,7 @@ public class MetadataTest {
         assertFalse(metadata.getMemberOfRelation().isPresent());
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
+        assertFalse(metadata.getHasAcl());
     }
 
     @Test
