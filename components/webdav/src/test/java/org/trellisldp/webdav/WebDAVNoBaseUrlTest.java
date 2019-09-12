@@ -28,7 +28,6 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.TestInstance;
-import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpResource;
 
@@ -90,7 +89,7 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
         config.register(new TrellisWebDAVResponseFilter());
         config.register(new TrellisWebDAV(mockBundler));
         config.register(new TrellisHttpResource(mockBundler));
-        config.register(new AgentAuthorizationFilter(new DefaultAgentService(), singleton("testUser")));
+        config.register(new AgentAuthorizationFilter(singleton("testUser")));
         return config;
     }
 }

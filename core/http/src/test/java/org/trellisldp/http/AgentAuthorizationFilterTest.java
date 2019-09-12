@@ -30,7 +30,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.trellisldp.api.AgentService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -39,9 +38,6 @@ import org.trellisldp.vocabulary.Trellis;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AgentAuthorizationFilterTest {
-
-    @Mock
-    private AgentService mockAgentService;
 
     @Mock
     private ContainerRequestContext mockContext;
@@ -58,7 +54,6 @@ public class AgentAuthorizationFilterTest {
     @BeforeEach
     public void setUp() {
         initMocks(this);
-        when(mockAgentService.asAgent(any())).thenReturn(Trellis.AnonymousAgent);
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
     }
@@ -66,7 +61,7 @@ public class AgentAuthorizationFilterTest {
     @Test
     public void testFilterMissingAgent() throws Exception {
         when(mockPrincipal.getName()).thenReturn("");
-        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter(mockAgentService);
+        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter();
         filter.filter(mockContext);
         verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
         assertEquals(Trellis.AnonymousAgent, sessionArgument.getValue().getAgent(), "Unexpected agent IRI!");
@@ -74,9 +69,8 @@ public class AgentAuthorizationFilterTest {
 
     @Test
     public void testFilterAdminAgent() throws Exception {
-        when(mockPrincipal.getName()).thenReturn("admin");
-        when(mockAgentService.asAgent(any())).thenReturn(Trellis.AdministratorAgent);
-        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter(mockAgentService);
+        when(mockPrincipal.getName()).thenReturn(Trellis.AdministratorAgent.getIRIString());
+        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter();
         filter.filter(mockContext);
         verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
         assertEquals(Trellis.AnonymousAgent, sessionArgument.getValue().getAgent(), "Unexpected agent IRI!");
@@ -84,10 +78,6 @@ public class AgentAuthorizationFilterTest {
 
     @Test
     public void testNoParamCtor() throws Exception {
-        when(mockPrincipal.getName()).thenReturn("https://example.com/admin");
-        final AgentAuthorizationFilter filter = new AgentAuthorizationFilter();
-        filter.filter(mockContext);
-        verify(mockContext).setProperty(eq(SESSION_PROPERTY), sessionArgument.capture());
-        assertEquals(Trellis.AdministratorAgent, sessionArgument.getValue().getAgent(), "Unexpected agent IRI!");
+        assertDoesNotThrow(() -> new AgentAuthorizationFilter());
     }
 }

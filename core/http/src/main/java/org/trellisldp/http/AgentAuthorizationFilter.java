@@ -18,6 +18,7 @@ import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 import static org.trellisldp.vocabulary.Trellis.AdministratorAgent;
 
@@ -29,12 +30,12 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
-import org.trellisldp.api.AgentService;
+import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpSession;
 
 /**
@@ -57,64 +58,55 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
     /** A configuration key controlling which agents should be considered administrators. **/
     public static final String CONFIG_HTTP_AGENT_ADMIN_USERS = "trellis.http.agent.adminusers";
 
+    private static final RDF rdf = getInstance();
     private static final Logger LOGGER = getLogger(AgentAuthorizationFilter.class);
 
-    private final AgentService agentService;
     private final Set<String> adminUsers;
 
     /**
-     * For use with RESTeasy and CDI proxies.
-     *
-     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
-     *          It should not be invoked directly in user code.
-     */
-    public AgentAuthorizationFilter() {
-        this(null);
-    }
-
-    /**
      * Create an authorization filter.
-     *
-     * @param agentService the agent service
      */
     @Inject
-    public AgentAuthorizationFilter(final AgentService agentService) {
-        this(agentService, getConfiguredAdmins());
+    public AgentAuthorizationFilter() {
+        this(getConfiguredAdmins());
     }
 
     /**
      * Create an authorization filter.
      *
-     * @param agentService the agent service
      * @param adminUsers the admin users
      */
-    public AgentAuthorizationFilter(final AgentService agentService, final Set<String> adminUsers) {
-        this.agentService = agentService;
+    public AgentAuthorizationFilter(final Set<String> adminUsers) {
         this.adminUsers = adminUsers;
     }
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
-        final SecurityContext sec = ctx.getSecurityContext();
-        final String name = getPrincipalName(sec.getUserPrincipal());
-        LOGGER.debug("Checking security context: {}", name);
-        if (adminUsers.contains(name)) {
-            LOGGER.info("{} acting as administrator user", name);
-            ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent));
-        } else {
-            final IRI webid = agentService.asAgent(name);
-            // don't permit admin agent to be generated from the agent service
-            if (AdministratorAgent.equals(webid)) {
-                ctx.setProperty(SESSION_PROPERTY, new HttpSession());
-            } else {
-                ctx.setProperty(SESSION_PROPERTY, new HttpSession(webid));
-            }
-        }
+        ctx.setProperty(SESSION_PROPERTY, getSession(ctx.getSecurityContext().getUserPrincipal()));
     }
 
-    private static String getPrincipalName(final Principal principal) {
-        if (principal != null && !principal.getName().isEmpty()) {
-            return principal.getName();
+    private Session getSession(final Principal principal) {
+        final String name = getPrincipalName(principal);
+        if (name != null) {
+            final IRI webid = rdf.createIRI(name);
+            if (adminUsers.contains(name)) {
+                LOGGER.info("{} acting as administrator user", name);
+                return new HttpSession(AdministratorAgent, webid);
+            // don't permit admin agent to be generated from the authn layer
+            } else if (!AdministratorAgent.equals(webid)) {
+                return new HttpSession(webid);
+            }
+        }
+        // Default to anonymous session
+        return new HttpSession();
+    }
+
+    private String getPrincipalName(final Principal principal) {
+        if (principal != null) {
+            final String name = principal.getName();
+            if (name != null && !name.trim().isEmpty()) {
+                return name;
+            }
         }
         return null;
     }

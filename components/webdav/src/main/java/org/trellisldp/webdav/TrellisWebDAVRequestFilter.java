@@ -138,7 +138,7 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
 
     private Session getSession(final Principal principal) {
         if (principal != null) {
-            return new HttpSession(services.getAgentService().asAgent(principal.getName()));
+            return new HttpSession(rdf.createIRI(principal.getName()));
         }
         return new HttpSession();
     }

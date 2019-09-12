@@ -318,7 +318,7 @@ public class TrellisWebDAV {
 
     private Session getSession(final String principal) {
         if (principal != null) {
-            return new HttpSession(services.getAgentService().asAgent(principal));
+            return new HttpSession(rdf.createIRI(principal));
         }
         return new HttpSession();
     }

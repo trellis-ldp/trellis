@@ -102,11 +102,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
             final String baseUrl, final InputStream entity) {
         super(req, trellis, baseUrl);
         this.entity = entity;
-        if (req.getPrincipalName() != null) {
-            this.session = new HttpSession(getServices().getAgentService().asAgent(req.getPrincipalName()));
-        } else {
-            this.session = new HttpSession();
-        }
+        this.session = req.getPrincipalName() != null ? new HttpSession(rdf.createIRI(req.getPrincipalName()))
+            : new HttpSession();
     }
 
     protected void setParent(final Resource parent) {

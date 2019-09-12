@@ -22,7 +22,6 @@ import com.google.common.cache.Cache;
 import io.dropwizard.setup.Environment;
 
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IOService;
@@ -56,7 +55,6 @@ public class TrellisServiceBundler extends BaseServiceBundler {
      * @param environment the dropwizard environment
      */
     public TrellisServiceBundler(final AppConfiguration config, final Environment environment) {
-        agentService = new DefaultAgentService();
         auditService = new DefaultAuditService();
         mementoService = new FileMementoService(config.getMementos());
         timemapGenerator = new DefaultTimemapGenerator();

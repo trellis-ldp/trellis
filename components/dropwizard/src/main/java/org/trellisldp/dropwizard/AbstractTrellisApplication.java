@@ -124,7 +124,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     .getOptionalValue(CONFIG_DROPWIZARD_INITIALIZE_ROOT, Boolean.class).orElse(Boolean.TRUE)));
 
         // Authentication
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),
+        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(
                 new HashSet<>(config.getAuth().getAdminUsers()));
 
         // Filters

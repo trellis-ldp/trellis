@@ -22,7 +22,6 @@ dependencies {
     implementation("javax.enterprise:cdi-api:${cdiApiVersion}")
     implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
 
-    implementation project(':trellis-agent')
     implementation project(':trellis-api')
     implementation project(':trellis-app')
     implementation project(':trellis-audit')

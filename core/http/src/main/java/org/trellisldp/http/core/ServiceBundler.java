@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http.core;
 
-import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintService;
@@ -27,12 +26,6 @@ import org.trellisldp.api.ResourceService;
  * Trellis application.
  */
 public interface ServiceBundler {
-
-    /**
-     * Get the {@link AgentService} for the application.
-     * @return a service for handling agent IRIs.
-     */
-    AgentService getAgentService();
 
     /**
      * Get the {@link ResourceService} for the application.

@@ -5,8 +5,7 @@ description = 'Trellis Application'
 
 ext {
     moduleName = 'org.trellisldp.app'
-    testModules = ['org.trellisldp.file', 'org.trellisldp.constraint',
-                   'org.trellisldp.agent', 'org.trellisldp.audit',
+    testModules = ['org.trellisldp.file', 'org.trellisldp.constraint', 'org.trellisldp.audit',
                    'org.trellisldp.io', 'org.trellisldp.rdfa', 'smallrye.config']
 }
 
@@ -33,7 +32,6 @@ dependencies {
     testImplementation project(':trellis-io-jena')
     testImplementation project(':trellis-file')
     testImplementation project(':trellis-rdfa')
-    testImplementation project(':trellis-agent')
     testImplementation project(':trellis-audit')
 }
 
@@ -45,8 +43,7 @@ if (project.sourceCompatibility.isJava11Compatible()) {
                 '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
                 '--add-opens', "org.trellisldp.http/org.trellisldp.http.core=weld.core.impl",
                 '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
-                '--add-opens', "org.trellisldp.io/org.trellisldp.io=weld.core.impl",
-                '--add-opens', "org.trellisldp.agent/org.trellisldp.agent=weld.core.impl"
+                '--add-opens', "org.trellisldp.io/org.trellisldp.io=weld.core.impl"
             ]
         }
     }

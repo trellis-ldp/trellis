@@ -12,7 +12,6 @@ include ':trellis-reactive'
 include ':trellis-auth-oauth'
 include ':trellis-auth-basic'
 
-include ':trellis-agent'
 include ':trellis-audit'
 include ':trellis-constraint-rules'
 include ':trellis-event-serialization'
@@ -46,7 +45,6 @@ project(':trellis-reactive').projectDir = "$rootDir/notifications/reactive" as F
 project(':trellis-auth-oauth').projectDir = "$rootDir/auth/oauth" as File
 project(':trellis-auth-basic').projectDir = "$rootDir/auth/basic" as File
 
-project(':trellis-agent').projectDir = "$rootDir/components/agent" as File
 project(':trellis-app').projectDir = "$rootDir/components/app" as File
 project(':trellis-app-triplestore').projectDir = "$rootDir/components/app-triplestore" as File
 project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
