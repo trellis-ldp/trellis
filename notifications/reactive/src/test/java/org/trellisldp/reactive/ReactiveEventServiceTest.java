@@ -93,10 +93,13 @@ public class ReactiveEventServiceTest {
     public void testReactiveStream() {
         service.emit(mockEvent);
         await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 1);
+        assertEquals(1, collector.getResults().size(), "Incorrect number of messages!");
         service.emit(mockEvent);
         await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 2);
+        assertEquals(2, collector.getResults().size(), "Incorrect number of messages!");
         service.emit(mockEvent);
         service.emit(mockEvent);
         await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 4);
+        assertEquals(4, collector.getResults().size(), "Incorrect number of messages!");
     }
 }
