@@ -360,10 +360,15 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         // Stream the binary content
-        // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
         return getBinaryStream(dsid, getRequest())
-                        .thenApply(in -> (StreamingOutput) out -> IOUtils.copy(in, out))
+                        .thenApply(in -> (StreamingOutput) out -> copy(in, out))
                         .thenApply(builder::entity);
+    }
+
+    // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
+    private static void copy(final InputStream from, final OutputStream to) throws IOException {
+        IOUtils.copy(from, to);
+        from.close();
     }
 
     private CompletionStage<InputStream> getBinaryStream(final IRI dsid, final TrellisRequest req) {
