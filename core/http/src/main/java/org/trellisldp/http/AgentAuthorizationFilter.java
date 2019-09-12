@@ -99,6 +99,7 @@ public class AgentAuthorizationFilter implements ContainerRequestFilter {
         final String name = getPrincipalName(sec.getUserPrincipal());
         LOGGER.debug("Checking security context: {}", name);
         if (adminUsers.contains(name)) {
+            LOGGER.info("{} acting as administrator user", name);
             ctx.setProperty(SESSION_PROPERTY, new HttpSession(AdministratorAgent));
         } else {
             final IRI webid = agentService.asAgent(name);
