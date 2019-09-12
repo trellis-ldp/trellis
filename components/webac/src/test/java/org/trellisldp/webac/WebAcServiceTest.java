@@ -153,6 +153,34 @@ public class WebAcServiceTest {
     }
 
     @Test
+    public void testInitialize() {
+        when(mockRootResource.hasAcl()).thenReturn(false);
+
+        assertDoesNotThrow(() -> testService.initialize());
+        verify(mockRootResource).stream(Trellis.PreferUserManaged);
+    }
+
+    @Test
+    public void testDontInitialize() {
+        when(mockRootResource.hasAcl()).thenReturn(true);
+
+        assertDoesNotThrow(() -> testService.initialize());
+        verify(mockRootResource, never()).stream(Trellis.PreferUserManaged);
+    }
+
+    @Test
+    public void testUseDefaultAcl() {
+        when(mockRootResource.hasAcl()).thenReturn(false);
+        when(mockSession.getAgent()).thenReturn(acoburnIRI);
+
+        assertAll("Check readability for " + acoburnIRI,
+                checkCannotRead(resourceIRI),
+                checkCannotRead(childIRI),
+                checkCanRead(parentIRI),
+                checkCanRead(rootIRI));
+    }
+
+    @Test
     public void testCanRead1() {
         when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
