@@ -35,7 +35,6 @@ import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.dropwizard.TrellisCache;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.namespaces.JsonNamespaceService;
@@ -60,7 +59,6 @@ public class TrellisServiceBundler extends BaseServiceBundler {
         agentService = new DefaultAgentService();
         auditService = new DefaultAuditService();
         mementoService = new FileMementoService(config.getMementos());
-        etagGenerator = new DefaultEtagGenerator();
         timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         resourceService = buildResourceService(config, environment);
@@ -96,5 +94,3 @@ public class TrellisServiceBundler extends BaseServiceBundler {
                 config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength());
     }
 }
-
-

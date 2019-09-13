@@ -92,7 +92,6 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.constraint.LdpConstraintService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -254,7 +253,6 @@ abstract class BaseTestHandler {
         when(mockBundler.getEventService()).thenReturn(mockEventService);
         when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));
         when(mockBundler.getTimemapGenerator()).thenReturn(new DefaultTimemapGenerator());
-        when(mockBundler.getEtagGenerator()).thenReturn(new DefaultEtagGenerator());
     }
 
     private void setUpIoService() {
@@ -270,6 +268,7 @@ abstract class BaseTestHandler {
         when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getModified()).thenReturn(time);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockResource).getRevision();
 
         when(mockParent.getInteractionModel()).thenReturn(LDP.Container);
         when(mockParent.getIdentifier()).thenReturn(root);

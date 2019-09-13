@@ -294,7 +294,7 @@ public class GetHandler extends BaseLdpHandler {
                         .collect(toList()), null, null) : getRequest().getPrefer();
 
         // Check for a cache hit
-        final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(getResource()), weakEtags);
+        final EntityTag etag = generateEtag(getResource(), weakEtags);
         checkCache(getResource().getModified(), etag);
 
         builder.tag(etag);
@@ -345,7 +345,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private CompletionStage<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
 
-        final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(getResource()));
+        final EntityTag etag = generateEtag(getResource());
         checkCache(getResource().getModified(), etag);
 
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);

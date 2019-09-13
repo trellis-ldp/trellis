@@ -93,7 +93,6 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
@@ -823,7 +822,6 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
         when(mockBundler.getEventService()).thenReturn(new NoopEventService());
         when(mockBundler.getMementoService()).thenReturn(new NoopMementoService());
-        when(mockBundler.getEtagGenerator()).thenReturn(new DefaultEtagGenerator());
     }
 
     private void setUpBinaryService() {
@@ -882,6 +880,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
                 rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        doCallRealMethod().when(mockResource).getRevision();
 
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockRootResource.getModified()).thenReturn(time);
@@ -889,12 +888,14 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockRootResource.getIdentifier()).thenReturn(root);
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockRootResource.hasAcl()).thenReturn(true);
+        doCallRealMethod().when(mockRootResource).getRevision();
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
         when(mockBinaryResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockBinaryResource).getRevision();
 
         when(mockOtherResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockOtherResource.getModified()).thenReturn(time);
@@ -903,6 +904,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockOtherResource.getIdentifier()).thenReturn(otherIdentifier);
         when(mockOtherResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockOtherResource.hasAcl()).thenReturn(false);
+        doCallRealMethod().when(mockOtherResource).getRevision();
     }
 }
 

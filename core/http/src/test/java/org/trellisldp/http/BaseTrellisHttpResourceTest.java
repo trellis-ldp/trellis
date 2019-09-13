@@ -72,7 +72,6 @@ import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.constraint.LdpConstraintService;
-import org.trellisldp.http.core.DefaultEtagGenerator;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.io.JenaIOService;
@@ -197,7 +196,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockBundler.getEventService()).thenReturn(mockEventService);
         when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));
-        when(mockBundler.getEtagGenerator()).thenReturn(new DefaultEtagGenerator());
         when(mockBundler.getTimemapGenerator()).thenReturn(new DefaultTimemapGenerator());
     }
 
@@ -285,18 +283,21 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockVersionedResource.getBinaryMetadata()).thenReturn(empty());
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockVersionedResource).getRevision();
 
         when(mockBinaryVersionedResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryVersionedResource.getModified()).thenReturn(time);
         when(mockBinaryVersionedResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryVersionedResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockBinaryVersionedResource).getRevision();
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
         when(mockBinaryResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockBinaryResource).getRevision();
 
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
@@ -304,6 +305,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockResource).getRevision();
 
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockRootResource.getModified()).thenReturn(time);
@@ -311,5 +313,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockRootResource.getIdentifier()).thenReturn(root);
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         when(mockRootResource.hasAcl()).thenReturn(true);
+        doCallRealMethod().when(mockRootResource).getRevision();
     }
 }

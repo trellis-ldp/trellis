@@ -34,6 +34,7 @@ public final class Metadata {
     private final IRI insertedContentRelation;
     private final BinaryMetadata binary;
     private final boolean hasAcl;
+    private final String revision;
 
     /**
      * A Metadata-bearing data structure for use with resource manipulation.
@@ -46,10 +47,14 @@ public final class Metadata {
      * @param memberOfRelation an LDP isMemberOfRelation predicate, may be {@code null}
      * @param insertedContentRelation an LDP insertedContentRelation, may be {@code null}
      * @param binary metadata about a BinaryMetadata, may be {@code null}
+     * @param revision a revision value, may be {@code null}. This value may be used by a
+     *          {@link ResourceService} implementation for additional concurrency control.
+     *          This value would typically be used in tandem with the {@link Resource#getRevision}
+     *          method.
      */
     private Metadata(final IRI identifier, final IRI ixnModel, final IRI container, final IRI membershipResource,
             final IRI memberRelation, final IRI memberOfRelation, final IRI insertedContentRelation,
-            final BinaryMetadata binary, final boolean hasAcl) {
+            final BinaryMetadata binary, final String revision, final boolean hasAcl) {
         this.identifier = requireNonNull(identifier, "Identifier cannot be null!");
         this.ixnModel = requireNonNull(ixnModel, "Interaction model cannot be null!");
         this.container = container;
@@ -58,6 +63,7 @@ public final class Metadata {
         this.memberOfRelation = memberOfRelation;
         this.insertedContentRelation = insertedContentRelation;
         this.binary = binary;
+        this.revision = revision;
         this.hasAcl = hasAcl;
     }
 
@@ -79,6 +85,7 @@ public final class Metadata {
      */
     public static Builder builder(final Resource r) {
         return builder(r.getIdentifier()).interactionModel(r.getInteractionModel())
+                        .revision(r.getRevision()).hasAcl(r.hasAcl())
                         .container(r.getContainer().orElse(null))
                         .memberRelation(r.getMemberRelation().orElse(null))
                         .membershipResource(r.getMembershipResource().orElse(null))
@@ -174,6 +181,14 @@ public final class Metadata {
     }
 
     /**
+     * Retrieve the revision value, if one exists.
+     * @return a unique revision value, representing the state of the resource
+     */
+    public Optional<String> getRevision() {
+        return ofNullable(revision);
+    }
+
+    /**
      * A mutable builder for a {@link Metadata} object.
      */
     public static final class Builder {
@@ -185,6 +200,7 @@ public final class Metadata {
         private IRI memberOfRelation;
         private IRI insertedContentRelation;
         private BinaryMetadata binary;
+        private String revision;
         private boolean hasAcl;
 
         /**
@@ -276,12 +292,22 @@ public final class Metadata {
         }
 
         /**
+         * Set a revision value for the resource.
+         * @param revision the revision value
+         * @return this builder
+         */
+        public Builder revision(final String revision) {
+            this.revision = revision;
+            return this;
+        }
+
+        /**
          * Build the Metadata object, transitioning this builder to the built state.
          * @return the built Metadata
          */
         public Metadata build() {
             return new Metadata(identifier, ixnModel, container, membershipResource, memberRelation, memberOfRelation,
-                            insertedContentRelation, binary, hasAcl);
+                            insertedContentRelation, binary, revision, hasAcl);
         }
     }
 }

@@ -49,7 +49,6 @@ import java.util.stream.Stream;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -118,12 +117,11 @@ public class PutHandler extends MutatingLdpHandler {
         // Check the cache
         if (getResource() != null) {
             final Instant modified = getResource().getModified();
-            final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(getResource()));
 
             // Check the cache
             checkRequiredPreconditions(preconditionRequired, getRequest().getHeaders().getFirst(IF_MATCH),
                     getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE));
-            checkCache(modified, etag);
+            checkCache(modified, generateEtag(getResource()));
         }
 
         // One cannot put binaries into the ACL graph
@@ -258,6 +256,7 @@ public class PutHandler extends MutatingLdpHandler {
 
         if (getResource() != null) {
             getResource().getContainer().ifPresent(metadata::container);
+            metadata.revision(getResource().getRevision());
             LOGGER.debug("Resource {} found in persistence", getIdentifier());
             try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
                 remaining.forEachOrdered(mutable::add);

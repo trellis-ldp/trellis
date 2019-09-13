@@ -50,7 +50,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -138,8 +137,7 @@ public class PatchHandler extends MutatingLdpHandler {
             throw new NotSupportedException();
         }
         // Check the cache headers
-        final EntityTag etag = new EntityTag(getServices().getEtagGenerator().getValue(resource));
-        checkCache(resource.getModified(), etag);
+        checkCache(resource.getModified(), generateEtag(resource));
 
         setResource(resource);
         resource.getContainer().ifPresent(p -> setParent(parent));
