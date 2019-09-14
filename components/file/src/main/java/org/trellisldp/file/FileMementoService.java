@@ -118,6 +118,23 @@ public class FileMementoService implements MementoService {
         return supplyAsync(() -> listMementos(identifier));
     }
 
+    /**
+     * Delete a memento at the given time.
+     *
+     * @param identifier the resource identifier
+     * @param time the memento time
+     * @return the next stage of completion
+     */
+    public CompletionStage<Void> delete(final IRI identifier, final Instant time) {
+        return runAsync(() -> {
+            final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+            final File file = FileUtils.getNquadsFile(resourceDir, time.truncatedTo(SECONDS));
+            if (FileUtils.uncheckedDeleteIfExists(file.toPath())) {
+                LOGGER.debug("Deleted Memento {} at {}", identifier, file);
+            }
+        });
+    }
+
     private void init() {
         if (!directory.exists()) {
             directory.mkdirs();
