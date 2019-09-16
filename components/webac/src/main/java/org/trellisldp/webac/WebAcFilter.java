@@ -29,7 +29,6 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
-import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -166,7 +165,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
         final String path = ctx.getUriInfo().getPath();
-        final Session s = getOrCreateSession(ctx);
+        final Session s = HttpSession.from(ctx.getSecurityContext());
         final String method = ctx.getMethod();
 
         final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + path), s);
@@ -205,16 +204,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             return UriBuilder.fromUri(baseUrl).path(req.getUriInfo().getPath());
         }
         return req.getUriInfo().getAbsolutePathBuilder();
-    }
-
-    protected Session getOrCreateSession(final ContainerRequestContext ctx) {
-        final Object session = ctx.getProperty(SESSION_PROPERTY);
-        if (session != null) {
-            return (Session) session;
-        }
-        final Session s = new HttpSession();
-        ctx.setProperty(SESSION_PROPERTY, s);
-        return s;
     }
 
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {

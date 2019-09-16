@@ -14,6 +14,7 @@
 package org.trellisldp.auth.basic;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singleton;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,7 +63,31 @@ public class BasicAuthFilterTest {
         assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("admin"), "Unexpectedly in user role!");
+    }
+
+    @Test
+    public void testAdminCredentials() throws Exception {
+        final String webid = "https://people.apache.org/~acoburn/#i";
+        final BasicAuthFilter filter = new BasicAuthFilter(new File(getAuthFile()), "trellis", singleton(webid));
+        final String token = encodeCredentials("acoburn", "secret");
+        when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BASIC " + token);
+        filter.filter(mockContext);
+        verify(mockContext).setSecurityContext(securityArgument.capture());
+        assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
+        assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
+        assertTrue(securityArgument.getValue().isUserInRole("admin"), "Not in user role!");
+    }
+
+    @Test
+    public void testNoHeader() throws Exception {
+        final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
+        when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn(null);
+        filter.filter(mockContext);
+        verify(mockContext, never()).setSecurityContext(securityArgument.capture());
     }
 
     @Test
@@ -76,7 +101,7 @@ public class BasicAuthFilterTest {
                 securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
     }
 
     @Test
@@ -91,7 +116,7 @@ public class BasicAuthFilterTest {
         assertEquals(webid, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertTrue(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
     }
 
     @Test
@@ -106,7 +131,7 @@ public class BasicAuthFilterTest {
                 securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
     }
 
     @Test
@@ -122,7 +147,7 @@ public class BasicAuthFilterTest {
                     securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
             assertEquals(BASIC_AUTH, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
             assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-            assertTrue(securityArgument.getValue().isUserInRole("some other role"), "Not in user role!");
+            assertFalse(securityArgument.getValue().isUserInRole("some other role"), "Unexpectedly in user role!");
         } finally {
             System.clearProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS);
         }

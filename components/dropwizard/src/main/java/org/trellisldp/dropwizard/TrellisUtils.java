@@ -20,7 +20,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.google.common.cache.Cache;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -79,13 +81,15 @@ final class TrellisUtils {
         // Authentication
         final List<ContainerRequestFilter> filters = new ArrayList<>();
         final AuthConfiguration auth = config.getAuth();
+        final String realm = config.getAuth().getRealm();
+        final Set<String> admins = new HashSet<>(config.getAuth().getAdminUsers());
 
         if (auth.getJwt().getEnabled()) {
-            filters.add(new OAuthFilter(getJwtAuthenticator(auth.getJwt())));
+            filters.add(new OAuthFilter(getJwtAuthenticator(auth.getJwt()), realm, admins));
         }
 
         if (auth.getBasic().getEnabled() && auth.getBasic().getUsersFile() != null) {
-            filters.add(new BasicAuthFilter(auth.getBasic().getUsersFile()));
+            filters.add(new BasicAuthFilter(new File(auth.getBasic().getUsersFile()), realm, admins));
         }
 
         return filters;

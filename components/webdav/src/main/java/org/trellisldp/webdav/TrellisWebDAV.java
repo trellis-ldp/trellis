@@ -176,7 +176,7 @@ public class TrellisWebDAV {
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
             @Context final SecurityContext security) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
-        final Session session = getSession(req.getPrincipalName());
+        final Session session = HttpSession.from(security);
         final IRI destination = getDestination(headers, getBaseUrl(req));
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         // Default is recursive copy as per RFC-4918
@@ -207,7 +207,7 @@ public class TrellisWebDAV {
         final String baseUrl = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final IRI destination = getDestination(headers, baseUrl);
-        final Session session = getSession(req.getPrincipalName());
+        final Session session = HttpSession.from(security);
 
         getParent(destination)
             .thenCombine(services.getResourceService().get(destination), this::checkResources)
@@ -283,7 +283,7 @@ public class TrellisWebDAV {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final String baseUrl = getBaseUrl(req);
         final String location = fromUri(baseUrl).path(req.getPath()).build().toString();
-        final Session session = getSession(req.getPrincipalName());
+        final Session session = HttpSession.from(security);
         services.getResourceService().get(identifier)
             .thenApply(this::checkResource)
             .thenCompose(resourceToMultiStatus(doc, identifier, location, baseUrl, session, propertyUpdate))
@@ -314,13 +314,6 @@ public class TrellisWebDAV {
             }
             return Stream.empty();
         };
-    }
-
-    private Session getSession(final String principal) {
-        if (principal != null) {
-            return new HttpSession(rdf.createIRI(principal));
-        }
-        return new HttpSession();
     }
 
     private CompletionStage<? extends Resource> getParent(final IRI identifier) {

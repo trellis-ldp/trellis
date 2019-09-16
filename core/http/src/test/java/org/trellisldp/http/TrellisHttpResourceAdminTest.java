@@ -14,7 +14,6 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -42,7 +41,6 @@ public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTes
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, baseUri));
         config.register(new TestAuthenticationFilter("testUser", ""));
-        config.register(new AgentAuthorizationFilter(singleton("testUser")));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
