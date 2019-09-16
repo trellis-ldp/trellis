@@ -117,7 +117,9 @@ public interface MementoResourceTests extends MementoCommonTests {
                 final ZonedDateTime zdt2 = ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME),
                         RFC_1123_DATE_TIME);
                 final long diff = Math.abs(zdt1.until(zdt2, SECONDS));
-                assertTrue(diff <= 1, "Check that the memento-datetime header is correct, within on second");
+                assertTrue(diff <= 2, "Check that the memento-datetime header is correct, within two seconds. "
+                        + " Request header: " + date
+                        + " Response header: " + res.getHeaderString(MEMENTO_DATETIME));
             }
         });
     }
