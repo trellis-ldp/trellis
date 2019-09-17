@@ -13,12 +13,12 @@
  */
 package org.trellisldp.test;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
@@ -149,7 +149,7 @@ public interface LdpBinaryTests extends CommonTests {
             assertTrue(descriptionETag.isWeak(), "Check for a weak ETag");
         }
         // wait for enough time so that the ETags will surely be different
-        await().pollDelay(TWO_SECONDS).until(() -> true);
+        await().pollDelay(2, SECONDS).until(() -> true);
         // Patch the description
         try (final Response res = target(descriptionLocation).request().method("PATCH",
                     entity("INSERT { <> <http://purl.org/dc/terms/title> \"Title\" } WHERE {}",

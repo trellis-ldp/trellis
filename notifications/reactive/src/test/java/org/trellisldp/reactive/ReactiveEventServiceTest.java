@@ -17,8 +17,8 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.FIVE_SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -92,14 +92,14 @@ public class ReactiveEventServiceTest {
     @Test
     public void testReactiveStream() {
         service.emit(mockEvent);
-        await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 1);
+        await().atMost(5, SECONDS).until(() -> collector.getResults().size() == 1);
         assertEquals(1, collector.getResults().size(), "Incorrect number of messages!");
         service.emit(mockEvent);
-        await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 2);
+        await().atMost(5, SECONDS).until(() -> collector.getResults().size() == 2);
         assertEquals(2, collector.getResults().size(), "Incorrect number of messages!");
         service.emit(mockEvent);
         service.emit(mockEvent);
-        await().atMost(FIVE_SECONDS).until(() -> collector.getResults().size() == 4);
+        await().atMost(5, SECONDS).until(() -> collector.getResults().size() == 4);
         assertEquals(4, collector.getResults().size(), "Incorrect number of messages!");
     }
 }
