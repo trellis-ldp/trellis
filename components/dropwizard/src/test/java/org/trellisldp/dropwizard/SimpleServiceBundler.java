@@ -19,7 +19,6 @@ import static java.util.Collections.singletonList;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 
-import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
@@ -46,7 +45,6 @@ public class SimpleServiceBundler extends BaseServiceBundler {
         auditService = new DefaultAuditService();
         mementoService = new NoopMementoService();
         eventService = new NoopEventService();
-        agentService = new DefaultAgentService();
         timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         ioService = new JenaIOService(new NoopNamespaceService(), null, new NoopProfileCache(),

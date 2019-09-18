@@ -47,9 +47,6 @@ public class WebApplication extends Application {
     private TrellisHttpResource httpResource;
 
     @Inject
-    private AgentAuthorizationFilter agentFilter;
-
-    @Inject
     private TrellisHttpFilter httpFilter;
 
     @Inject
@@ -68,8 +65,7 @@ public class WebApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return asList(httpResource, httpFilter, corsFilter, cacheFilter, agentFilter, oauthFilter).stream()
-            .collect(toSet());
+        return asList(httpResource, httpFilter, corsFilter, cacheFilter, oauthFilter).stream().collect(toSet());
     }
 
     private void printBanner(final String name) {

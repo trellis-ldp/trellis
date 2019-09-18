@@ -16,22 +16,31 @@ package org.trellisldp.http.core;
 import static java.time.Instant.now;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_SCHEME;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_SESSION_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
 
 import java.time.Instant;
 import java.util.Optional;
 
+import javax.ws.rs.core.SecurityContext;
+
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.Session;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
  */
 public class HttpSession implements Session {
 
-    private final IRI identifier = getInstance().createIRI(TRELLIS_SCHEME + "session/" + randomUUID());
+    /** The admin role. */
+    public static final String ADMIN_ROLE = "admin";
+
+    private static final RDF rdf = getInstance();
+
+    private final IRI identifier = rdf.createIRI(TRELLIS_SESSION_PREFIX + randomUUID());
     private final IRI agent;
     private final IRI delegatedBy;
     private final Instant created;
@@ -82,5 +91,22 @@ public class HttpSession implements Session {
     @Override
     public Instant getCreated() {
         return created;
+    }
+
+    /**
+     * Create a session from a security context.
+     * @param security the security context
+     * @return the session
+     */
+    public static Session from(final SecurityContext security) {
+        if (security != null && security.getUserPrincipal() != null) {
+            final IRI webid = rdf.createIRI(security.getUserPrincipal().getName());
+            if (security.isUserInRole(ADMIN_ROLE)) {
+                return new HttpSession(Trellis.AdministratorAgent, webid);
+            }
+            return new HttpSession(webid);
+        }
+        return new HttpSession();
+
     }
 }

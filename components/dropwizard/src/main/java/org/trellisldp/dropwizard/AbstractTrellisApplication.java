@@ -29,14 +29,12 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
-import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.TrellisHttpFilter;
@@ -123,12 +121,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         environment.jersey().register(getLdpComponent(config, getConfig()
                     .getOptionalValue(CONFIG_DROPWIZARD_INITIALIZE_ROOT, Boolean.class).orElse(Boolean.TRUE)));
 
-        // Authentication
-        final AgentAuthorizationFilter agentFilter = new AgentAuthorizationFilter(getServiceBundler().getAgentService(),
-                new HashSet<>(config.getAuth().getAdminUsers()));
-
         // Filters
-        environment.jersey().register(agentFilter);
         environment.jersey().register(new TrellisHttpFilter());
         environment.jersey().register(new CacheControlFilter(config.getCache().getMaxAge(),
                     config.getCache().getMustRevalidate(), config.getCache().getNoCache()));

@@ -5,7 +5,7 @@ description = 'Trellis HTTP'
 
 ext {
     moduleName = 'org.trellisldp.http'
-    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent', 'org.trellisldp.constraint', 'smallrye.config']
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.constraint', 'smallrye.config']
 }
 
 dependencies {
@@ -34,7 +34,6 @@ dependencies {
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
     testImplementation("org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation project(':trellis-agent')
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-event-serialization')

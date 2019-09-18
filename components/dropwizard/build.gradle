@@ -17,7 +17,6 @@ dependencies {
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
-    implementation project(':trellis-agent')
     implementation project(':trellis-audit')
     implementation project(':trellis-webac')
     implementation project(':trellis-auth-basic')

@@ -43,7 +43,6 @@ dependencies {
     compile project(':trellis-vocabulary')
     compile project(':trellis-file')
     compile project(':trellis-namespaces')
-    compile project(':trellis-agent')
     compile project(':trellis-audit')
     compile project(':trellis-event-serialization')
     compile project(':trellis-webac')

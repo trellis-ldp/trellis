@@ -59,7 +59,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
-import org.trellisldp.api.AgentService;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
@@ -145,9 +144,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     protected Binary mockBinary;
 
     @Mock
-    protected AgentService mockAgentService;
-
-    @Mock
     protected EventService mockEventService;
 
     @Mock
@@ -183,8 +179,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         setUpMementoService();
         setUpBinaryService();
         setUpResources();
-
-        when(mockAgentService.asAgent(anyString())).thenReturn(agent);
     }
 
     private void setUpBundler() {
@@ -192,7 +186,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBundler.getIOService()).thenReturn(ioService);
         when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
-        when(mockBundler.getAgentService()).thenReturn(mockAgentService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockBundler.getEventService()).thenReturn(mockEventService);
         when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));

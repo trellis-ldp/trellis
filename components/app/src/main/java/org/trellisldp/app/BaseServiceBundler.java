@@ -35,9 +35,6 @@ public class BaseServiceBundler implements ServiceBundler {
     protected BinaryService binaryService;
 
     @Inject
-    protected AgentService agentService;
-
-    @Inject
     protected IOService ioService;
 
     @Inject
@@ -54,11 +51,6 @@ public class BaseServiceBundler implements ServiceBundler {
 
     @Inject
     protected ConstraintServices constraintServices;
-
-    @Override
-    public AgentService getAgentService() {
-        return agentService;
-    }
 
     @Override
     public ResourceService getResourceService() {

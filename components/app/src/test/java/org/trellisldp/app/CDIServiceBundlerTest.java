@@ -22,7 +22,6 @@ import org.jboss.weld.junit5.WeldJunit5Extension;
 import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.trellisldp.agent.DefaultAgentService;
 import org.trellisldp.api.*;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
@@ -41,7 +40,6 @@ public class CDIServiceBundlerTest {
                                        .beanClasses(
                                            BaseServiceBundler.class,
                                            CDIConstraintServices.class,
-                                           DefaultAgentService.class,
                                            DefaultIdentifierService.class,
                                            DefaultRdfaWriterService.class,
                                            DefaultTimemapGenerator.class,
@@ -94,11 +92,6 @@ public class CDIServiceBundlerTest {
             counter++;
         }
         assertEquals(1, counter);
-    }
-
-    @Test
-    public void testAgentService() {
-        assertNotNull(serviceBundler.getAgentService());
     }
 
     @Test

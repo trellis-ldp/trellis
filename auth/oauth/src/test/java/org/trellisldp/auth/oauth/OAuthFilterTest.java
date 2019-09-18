@@ -18,6 +18,7 @@ import static io.jsonwebtoken.security.Keys.secretKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
 import static java.util.Base64.getUrlDecoder;
+import static java.util.Collections.singleton;
 import static java.util.Date.from;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
@@ -88,7 +89,7 @@ public class OAuthFilterTest {
         assertEquals(WEBID1, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
     }
 
     @Test
@@ -103,8 +104,26 @@ public class OAuthFilterTest {
         assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertTrue(securityArgument.getValue().isUserInRole("some role"), "Not in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("admin"), "Unexpectedly in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
     }
+
+    @Test
+    public void testFilterAdminWebid() throws Exception {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS512);
+        final String token = Jwts.builder().claim("webid", WEBID2).signWith(key).compact();
+        when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
+
+        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key), "trellis", singleton(WEBID2));
+        filter.filter(mockContext);
+        verify(mockContext).setSecurityContext(securityArgument.capture());
+        assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
+        assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
+        assertTrue(securityArgument.getValue().isUserInRole("admin"), "Unexpectedly in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
+    }
+
 
     @Test
     public void testFilterInvalidAuth() throws Exception {
@@ -273,6 +292,6 @@ public class OAuthFilterTest {
                 () -> assertEquals(webid, ctx.getUserPrincipal().getName(), "Unexpected agent IRI!"),
                 () -> assertEquals(OAuthFilter.SCHEME, ctx.getAuthenticationScheme(), "Unexpected scheme!"),
                 () -> assertFalse(ctx.isSecure(), "Unexpected secure flag!"),
-                () -> assertTrue(ctx.isUserInRole("some role"), "Not in user role!"));
+                () -> assertFalse(ctx.isUserInRole("some role"), "Unexpectedly in user role!"));
     }
 }

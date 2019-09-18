@@ -5,7 +5,7 @@ description = 'Trellis WebDAV'
 
 ext {
     moduleName = 'org.trellisldp.webdav'
-    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.agent', 'smallrye.config']
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'smallrye.config']
 }
 
 dependencies {
@@ -32,7 +32,6 @@ dependencies {
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
     testImplementation("org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation project(':trellis-agent')
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-event-serialization')

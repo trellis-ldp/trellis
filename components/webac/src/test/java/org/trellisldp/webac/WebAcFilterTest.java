@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.http.core.HttpConstants.SESSION_PROPERTY;
 
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +36,7 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -47,7 +48,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -66,8 +66,6 @@ public class WebAcFilterTest {
         allModes.add(ACL.Control);
     }
 
-    private static final Session session = new HttpSession(ACL.AuthenticatedAgent);
-
     @Mock
     private WebAcService mockWebAcService;
 
@@ -78,10 +76,16 @@ public class WebAcFilterTest {
     private ContainerResponseContext mockResponseContext;
 
     @Mock
+    private SecurityContext mockSecurityContext;
+
+    @Mock
     private UriInfo mockUriInfo;
 
     @Mock
     private MultivaluedMap<String, String> mockQueryParams;
+
+    @Mock
+    private Principal mockPrincipal;
 
     @BeforeAll
     public static void setUpProperties() {
@@ -105,6 +109,9 @@ public class WebAcFilterTest {
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn("https://example.com/user#me");
     }
 
     @Test
@@ -129,7 +136,7 @@ public class WebAcFilterTest {
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
 
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }
@@ -148,7 +155,7 @@ public class WebAcFilterTest {
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
 
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }
@@ -168,7 +175,7 @@ public class WebAcFilterTest {
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
 
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }
@@ -187,7 +194,7 @@ public class WebAcFilterTest {
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
 
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }
@@ -212,7 +219,7 @@ public class WebAcFilterTest {
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
 
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }
@@ -237,7 +244,7 @@ public class WebAcFilterTest {
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
 
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }
@@ -262,7 +269,7 @@ public class WebAcFilterTest {
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Control ability!");
 
         modes.clear();
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }
@@ -286,7 +293,7 @@ public class WebAcFilterTest {
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Control ability!");
 
         modes.clear();
-        when(mockContext.getProperty(SESSION_PROPERTY)).thenReturn(session);
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
     }

@@ -14,8 +14,12 @@
 package org.trellisldp.auth.oauth;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -27,6 +31,7 @@ import io.jsonwebtoken.security.SecurityException;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -47,25 +52,30 @@ import org.slf4j.Logger;
 @Priority(AUTHENTICATION)
 public class OAuthFilter implements ContainerRequestFilter {
 
-    /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
+    /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. */
     public static final String CONFIG_AUTH_REALM = "trellis.auth.realm";
-    /** The configuration key controlling the OAuth Keystore path. **/
+    /** The configuration key controlling the OAuth Keystore path. */
     public static final String CONFIG_AUTH_OAUTH_KEYSTORE_PATH = "trellis.auth.oauth.keystore.path";
-    /** The configuration key controlling the OAuth Keystore credentials. **/
+    /** The configuration key controlling the OAuth Keystore credentials. */
     public static final String CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS = "trellis.auth.oauth.keystore.credentials";
-    /** The configuration key controlling the OAuth Keystore ids. **/
+    /** The configuration key controlling the OAuth Keystore ids. */
     public static final String CONFIG_AUTH_OAUTH_KEYSTORE_IDS = "trellis.auth.oauth.keystore.ids";
-    /** The configuration key controlling the OAuth HMAC shared secret. **/
+    /** The configuration key controlling the OAuth HMAC shared secret. */
     public static final String CONFIG_AUTH_OAUTH_SHARED_SECRET = "trellis.auth.oauth.sharedsecret";
-    /** The configuration key controlling the OAuth JWK URL. **/
+    /** The configuration key controlling the OAuth JWK URL. */
     public static final String CONFIG_AUTH_OAUTH_JWK_URL = "trellis.auth.oauth.jwk";
-    /** The authentication scheme used by this module. **/
+    /** The authentication scheme used by this module. */
     public static final String SCHEME = "Bearer";
+    /** The configuration key controlling the list of of admin WebID values. */
+    public static final String CONFIG_AUTH_ADMIN_USERS = "trellis.auth.adminusers";
+    /** The admin role. */
+    public static final String ADMIN_ROLE = "admin";
 
     private static final Logger LOGGER = getLogger(OAuthFilter.class);
 
     private final Authenticator authenticator;
     private final String challenge;
+    private final Set<String> admins;
 
     /**
      * Create an OAuth filter.
@@ -80,17 +90,24 @@ public class OAuthFilter implements ContainerRequestFilter {
      * @param authenticator the authenticator
      */
     public OAuthFilter(final Authenticator authenticator) {
-        this(authenticator, getConfig().getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"));
+        this(authenticator, getConfig());
+    }
+
+    private OAuthFilter(final Authenticator authenticator, final Config config) {
+        this(authenticator, config.getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"),
+                getConfiguredAdmins(config));
     }
 
     /**
      * Create an OAuth filter with a defined authenticator.
      * @param authenticator the authenticator
      * @param realm the authentication realm
+     * @param admins the admin users
      */
-    public OAuthFilter(final Authenticator authenticator, final String realm) {
+    public OAuthFilter(final Authenticator authenticator, final String realm, final Set<String> admins) {
         this.authenticator = authenticator;
         this.challenge = "Bearer realm=\"" + realm + "\"";
+        this.admins = unmodifiableSet(requireNonNull(admins, "Admin set may not be null!"));
     }
 
     @Override
@@ -103,7 +120,7 @@ public class OAuthFilter implements ContainerRequestFilter {
                         .map(token -> authenticate(token)
                                         .<RuntimeException>orElseThrow(() -> new NotAuthorizedException(challenge)))
                         .ifPresent(principal -> requestContext
-                                        .setSecurityContext(new OAuthSecurityContext(secure, principal)));
+                                        .setSecurityContext(new OAuthSecurityContext(principal, admins, secure)));
     }
 
     private Optional<Principal> authenticate(final String token) {
@@ -149,13 +166,20 @@ public class OAuthFilter implements ContainerRequestFilter {
         return new NullAuthenticator();
     }
 
+    private static Set<String> getConfiguredAdmins(final Config config) {
+        final String admins = config.getOptionalValue(CONFIG_AUTH_ADMIN_USERS, String.class).orElse("");
+        return stream(admins.split(",")).map(String::trim).collect(toSet());
+    }
+
     private static final class OAuthSecurityContext implements SecurityContext {
         private final boolean secure;
         private final Principal principal;
+        private final Set<String> admins;
 
-        private OAuthSecurityContext(final boolean secure, final Principal principal) {
-            this.secure = secure;
+        private OAuthSecurityContext(final Principal principal, final Set<String> admins, final boolean secure) {
             this.principal = principal;
+            this.admins = admins;
+            this.secure = secure;
         }
 
         @Override
@@ -165,7 +189,7 @@ public class OAuthFilter implements ContainerRequestFilter {
 
         @Override
         public boolean isUserInRole(final String role) {
-            return true;
+            return ADMIN_ROLE.equals(role) && admins.contains(principal.getName());
         }
 
         @Override

@@ -88,7 +88,6 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         final ResourceConfig config = new ResourceConfig();
 
         config.register(new TrellisHttpResource(mockBundler, null));
-        config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());

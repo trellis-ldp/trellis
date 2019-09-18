@@ -69,6 +69,11 @@ public final class TrellisUtils {
     public static final String TRELLIS_SESSION_PREFIX = TRELLIS_SCHEME + "session/";
 
     /**
+     * The name of the trellis admin role.
+     */
+    public static final String TRELLIS_ADMIN_ROLE = "trellis_admin_role";
+
+    /**
      * Get the Commons RDF instance in use.
      *
      * @return the RDF instance

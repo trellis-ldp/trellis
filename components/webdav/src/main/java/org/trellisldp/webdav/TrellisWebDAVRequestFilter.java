@@ -33,7 +33,6 @@ import static org.trellisldp.webdav.impl.WebDAVUtils.getLastSegment;
 import static org.trellisldp.webdav.impl.WebDAVUtils.recursiveDelete;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -49,7 +48,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.LDP;
@@ -131,16 +129,9 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
                         Link.fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build().toString());
             }
         } else if (DELETE.equals(ctx.getMethod())) {
-            recursiveDelete(services, getSession(ctx.getSecurityContext().getUserPrincipal()), identifier,
+            recursiveDelete(services, HttpSession.from(ctx.getSecurityContext()), identifier,
                     getBaseUrl(baseUrl, ctx.getUriInfo()));
         }
-    }
-
-    private Session getSession(final Principal principal) {
-        if (principal != null) {
-            return new HttpSession(services.getAgentService().asAgent(principal.getName()));
-        }
-        return new HttpSession();
     }
 
     private static String getBaseUrl(final String baseUrl, final UriInfo uriInfo) {

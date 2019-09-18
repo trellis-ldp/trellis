@@ -20,7 +20,6 @@ import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 
-import java.security.Principal;
 import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -40,12 +39,12 @@ public class TrellisRequest {
 
     private final String path;
     private final String baseUrl;
-    private final String principalName;
     private final String method;
     private final List<MediaType> acceptableMediaTypes;
 
     private final MultivaluedMap<String, String> headers;
     private final MultivaluedMap<String, String> parameters;
+    private final SecurityContext secCtx;
 
     /**
      * Bundle together some request contexts.
@@ -79,7 +78,7 @@ public class TrellisRequest {
         this.method = request.getMethod();
 
         // Security context value
-        this.principalName = getPrincipalName(secCtx);
+        this.secCtx = secCtx;
     }
 
     /**
@@ -185,8 +184,8 @@ public class TrellisRequest {
      *
      * @return the security context
      */
-    public String getPrincipalName() {
-        return principalName;
+    public SecurityContext getSecurityContext() {
+        return secCtx;
     }
 
     /**
@@ -212,15 +211,5 @@ public class TrellisRequest {
      */
     public List<MediaType> getAcceptableMediaTypes() {
         return acceptableMediaTypes;
-    }
-
-    private static String getPrincipalName(final SecurityContext secCtx) {
-        if (secCtx != null) {
-            final Principal principal = secCtx.getUserPrincipal();
-            if (principal != null) {
-                return principal.getName();
-            }
-        }
-        return null;
     }
 }

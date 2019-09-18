@@ -46,7 +46,6 @@ public class TrellisHttpResourceBaseUrlTest extends AbstractTrellisHttpResourceT
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, URL));
         config.register(new TestAuthenticationFilter("testUser", "group"));
-        config.register(new AgentAuthorizationFilter(mockAgentService));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());

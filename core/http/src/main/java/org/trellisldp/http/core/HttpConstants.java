@@ -106,9 +106,6 @@ public final class HttpConstants {
     /** The name of the HTTP request header used to make range requests. **/
     public static final String RANGE = "Range";
 
-    /** The name of the Trellis session property. **/
-    public static final String SESSION_PROPERTY = "session";
-
     /** The name of the HTTP request header used to indicate the desired name for a new resource. **/
     public static final String SLUG = "Slug";
 
