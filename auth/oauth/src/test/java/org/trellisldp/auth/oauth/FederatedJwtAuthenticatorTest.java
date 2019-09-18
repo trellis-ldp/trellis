@@ -27,7 +27,6 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.Principal;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -51,9 +50,9 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis", "foo"));
 
-        final Optional<Principal> result = authenticator.authenticate(jwt);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#me", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(jwt);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#me", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -69,9 +68,9 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-public"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -83,9 +82,9 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -100,7 +99,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
+        assertNull(authenticator.authenticate(token), "Unexpected principal!");
     }
 
     @Test
@@ -116,9 +115,9 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("http://localhost/acoburn", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("http://localhost/acoburn", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -134,7 +133,7 @@ public class FederatedJwtAuthenticatorTest {
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
                 asList("trellis-ec"));
 
-        assertFalse(authenticator.authenticate(token).isPresent(), "Unexpected principal!");
+        assertNull(authenticator.authenticate(token), "Unexpected principal!");
     }
 
     @Test

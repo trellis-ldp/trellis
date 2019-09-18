@@ -14,6 +14,7 @@
 package org.trellisldp.dropwizard.config;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -26,7 +27,7 @@ public class CORSConfiguration {
 
     private boolean enabled = false;
 
-    private List<String> origins = asList("*");
+    private List<String> origins = singletonList("*");
 
     private List<String> allowMethods = asList("PUT", "DELETE", "PATCH",
             "GET", "HEAD", "OPTIONS", "POST");

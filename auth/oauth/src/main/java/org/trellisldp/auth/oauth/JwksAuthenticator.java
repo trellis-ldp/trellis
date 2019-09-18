@@ -86,7 +86,10 @@ public class JwksAuthenticator implements Authenticator {
         for (final Map<String, String> jwk : data.getOrDefault("keys", emptyList())) {
             final BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("n")));
             final BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("e")));
-            OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent).ifPresent(key -> keys.put(jwk.get("kid"), key));
+            final Key key = OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
+            if (key != null) {
+                keys.put(jwk.get("kid"), key);
+            }
         }
         return keys;
     }

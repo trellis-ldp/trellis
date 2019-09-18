@@ -39,8 +39,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -237,16 +235,11 @@ public class PatchHandler extends MutatingLdpHandler {
                         getRequest().getAcceptableMediaTypes(), null);
                 if (preference != null) {
                     final IRI profile = getResponseProfile(outputSyntax);
-                    final StreamingOutput stream = new StreamingOutput() {
-                        @Override
-                        public void write(final OutputStream out) throws IOException {
+                    return builder.header(PREFERENCE_APPLIED, "return=representation")
+                        .type(outputSyntax.mediaType()).entity((StreamingOutput) out ->
                             getServices().getIOService().write(triples.stream()
                                         .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
-                                        out, outputSyntax, profile);
-                        }
-                    };
-                    return builder.header(PREFERENCE_APPLIED, "return=representation")
-                        .type(outputSyntax.mediaType()).entity(stream);
+                                        out, outputSyntax, profile));
                 }
                 return builder.status(NO_CONTENT);
             });

@@ -140,7 +140,7 @@ public class WebAcService {
     @PostConstruct
     public void initialize() {
         try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
-            this.resourceService.get(root).thenCompose(res -> initialize(root, res, dataset))
+            this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
                 .exceptionally(err -> {
                     LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
                     LOGGER.debug("Error auto-initializing Trellis", err);
@@ -151,15 +151,15 @@ public class WebAcService {
         }
     }
 
-    private CompletionStage<Void> initialize(final IRI id, final Resource res, final Dataset dataset) {
+    private CompletionStage<Void> initialize(final Resource res, final Dataset dataset) {
         if (!res.hasAcl()) {
-            LOGGER.info("Initializing root ACL: {}", id);
+            LOGGER.info("Initializing root ACL: {}", res.getIdentifier());
             try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
                 quads.forEach(dataset::add);
             }
             return this.resourceService.replace(Metadata.builder(res).hasAcl(true).build(), dataset);
         } else {
-            LOGGER.info("Root ACL is present, not initializing: {}", id);
+            LOGGER.info("Root ACL is present, not initializing: {}", res.getIdentifier());
             return DONE;
         }
     }

@@ -51,8 +51,6 @@ import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.LDP.Resource;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
@@ -121,15 +119,9 @@ public final class MementoResource {
             final IRI profile = getProfile(acceptableTypes, syntax);
             final IRI jsonldProfile = profile != null ? profile : compacted;
 
-            final StreamingOutput stream = new StreamingOutput() {
-                @Override
-                public void write(final OutputStream out) throws IOException {
-                    trellis.getIOService().write(trellis.getTimemapGenerator()
-                            .asRdf(identifier, allLinks), out, syntax, jsonldProfile);
-                }
-            };
-
-            return builder.type(syntax.mediaType()).entity(stream);
+            return builder.type(syntax.mediaType()).entity((StreamingOutput) out ->
+                trellis.getIOService().write(trellis.getTimemapGenerator()
+                        .asRdf(identifier, allLinks), out, syntax, jsonldProfile));
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)

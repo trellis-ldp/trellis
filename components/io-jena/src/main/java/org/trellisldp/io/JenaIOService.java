@@ -16,6 +16,7 @@ package org.trellisldp.io;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
@@ -45,11 +46,8 @@ import static org.trellisldp.vocabulary.JSONLD.getNamespace;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -203,7 +201,7 @@ public class JenaIOService implements IOService {
             reads.add(RDFA);
         }
         this.readable = unmodifiableList(reads);
-        this.updatable = unmodifiableList(asList(SPARQL_UPDATE));
+        this.updatable = unmodifiableList(singletonList(SPARQL_UPDATE));
         this.writable = unmodifiableList(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
     }
 
@@ -326,8 +324,7 @@ public class JenaIOService implements IOService {
             RDFParser.source(input).lang(lang).base(base).parse(graph);
 
             // Check the graph for any new namespace definitions
-            final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
-                .collect(toSet());
+            final Set<String> namespaces = new HashSet<>(nsService.getNamespaces().values());
             graph.getPrefixMapping().getNsPrefixMap().forEach((prefix, namespace) -> {
                 if (!namespaces.contains(namespace)) {
                     LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);

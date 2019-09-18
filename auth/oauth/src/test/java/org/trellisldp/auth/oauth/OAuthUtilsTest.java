@@ -93,6 +93,6 @@ public class OAuthUtilsTest {
 
     @Test
     public void testInvalidRSAKey() {
-        assertFalse(OAuthUtils.buildRSAPublicKey("EC", BigInteger.ONE, BigInteger.TEN).isPresent());
+        assertNull(OAuthUtils.buildRSAPublicKey("EC", BigInteger.ONE, BigInteger.TEN));
     }
 }

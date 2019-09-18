@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http;
 
+import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
@@ -159,7 +160,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         }
 
         if (!exposedHeaders.isEmpty()) {
-            headers.put("Access-Control-Expose-Headers", exposedHeaders.stream().collect(joining(",")));
+            headers.put("Access-Control-Expose-Headers", join(",", exposedHeaders));
         }
 
         return headers;
@@ -223,7 +224,7 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
         // 6.2.10 If each of the header field names is a simple header and none is Content-Type, this may be
         // skipped. Add one or more Access-Control-Allow-Headers consisting of (a subset of) the list of headers.
         if (fieldNames.stream().map(String::toLowerCase).anyMatch(x -> !simpleHeaders.contains(x))) {
-            headers.put("Access-Control-Allow-Headers", allowedHeaders.stream().collect(joining(",")));
+            headers.put("Access-Control-Allow-Headers", join(",", allowedHeaders));
         }
 
         return headers;

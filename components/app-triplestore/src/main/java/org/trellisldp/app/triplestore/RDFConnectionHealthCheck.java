@@ -36,7 +36,7 @@ public class RDFConnectionHealthCheck extends HealthCheck {
     }
 
     @Override
-    protected HealthCheck.Result check() throws InterruptedException {
+    protected HealthCheck.Result check() {
         return rdfConnection.isClosed() ? unhealthy("RDF Connection is closed.") : healthy("RDF Connection is open.");
     }
 }

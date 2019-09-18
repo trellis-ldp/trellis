@@ -201,7 +201,7 @@ public class PostHandler extends MutatingLdpHandler {
             readEntityIntoDataset(PreferUserManaged, s, mutable);
 
             // Check for any constraints
-            checkConstraint(mutable.getGraph(PreferUserManaged), ldpType, s);
+            mutable.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, s));
 
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier);
             persistPromise = completedFuture(null);

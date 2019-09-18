@@ -14,7 +14,7 @@
 package org.trellisldp.http.core;
 
 import static java.time.Instant.now;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -67,7 +67,7 @@ public class SimpleEvent implements Event {
 
     @Override
     public Collection<IRI> getAgents() {
-        return asList(agent);
+        return singletonList(agent);
     }
 
     @Override

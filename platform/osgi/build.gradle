@@ -4,7 +4,7 @@ ext {
     moduleName = 'org.trellisldp.osgi'
 }
 
-def randomPort() {
+def static randomPort() {
     try {
         ServerSocket server = new ServerSocket()
         server.setReuseAddress(true)
@@ -76,23 +76,23 @@ task generateDependsFile {
 
     doFirst {
         outputFileDir.mkdirs()
-        Properties properties = new Properties();
+        Properties properties = new Properties()
 
         // first we add our GAV info
-        properties.setProperty( "groupId", "${project.group}" );
-        properties.setProperty( "artifactId", project.name );
-        properties.setProperty( "version", "${project.version}" );
-        properties.setProperty( "${project.group}/${project.name}/version", "${project.version}" );
+        properties.setProperty( "groupId", "${project.group}" )
+        properties.setProperty( "artifactId", project.name )
+        properties.setProperty( "version", "${project.version}" )
+        properties.setProperty( "${project.group}/${project.name}/version", "${project.version}" )
 
         // then for all our deps
         project.configurations.testRuntime.resolvedConfiguration.resolvedArtifacts.each {
-            final String keyBase = it.moduleVersion.id.group + '/' + it.moduleVersion.id.name;
+            final String keyBase = it.moduleVersion.id.group + '/' + it.moduleVersion.id.name
             properties.setProperty( "${keyBase}/scope", "compile" )
             properties.setProperty( "${keyBase}/type", it.extension )
             properties.setProperty( "${keyBase}/version", it.moduleVersion.id.version )
         }
 
-        FileOutputStream outputStream = new FileOutputStream( outputFile );
+        FileOutputStream outputStream = new FileOutputStream( outputFile )
         try {
             properties.store( outputStream, "Generated from Gradle for PaxExam testing" )
         }

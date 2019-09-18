@@ -181,7 +181,7 @@ public class GetHandler extends BaseLdpHandler {
                 ? LDP.RDFSource : getResource().getInteractionModel();
             // Link headers from User data
             getResource().getExtraLinkRelations().collect(toMap(Entry::getKey, Entry::getValue))
-                .entrySet().forEach(entry -> builder.link(entry.getKey(), join(" ", entry.getValue())));
+                    .forEach((key, value) -> builder.link(key, join(" ", value)));
         } else {
             model = LDP.RDFSource;
         }
@@ -314,17 +314,13 @@ public class GetHandler extends BaseLdpHandler {
         }
 
         // Stream the rdf content
-        final StreamingOutput stream = new StreamingOutput() {
-            @Override
-            public void write(final OutputStream out) throws IOException {
-                try (final Stream<Quad> stream = getResource().stream(getPreferredGraphs(prefer))) {
-                    getServices().getIOService().write(stream.map(Quad::asTriple)
-                        .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())), out,
-                            syntax, getJsonLdProfile(profile, syntax));
-                }
+        return builder.entity((StreamingOutput) out -> {
+            try (final Stream<Quad> stream = getResource().stream(getPreferredGraphs(prefer))) {
+                getServices().getIOService().write(stream.map(Quad::asTriple)
+                                .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())), out,
+                        syntax, getJsonLdProfile(profile, syntax));
             }
-        };
-        return builder.entity(stream);
+        });
     }
 
     // Don't allow access control triples unless the request is for an ACL resource

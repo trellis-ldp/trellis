@@ -13,14 +13,12 @@
  */
 package org.trellisldp.auth.oauth;
 
-import static java.util.Optional.ofNullable;
 import static org.trellisldp.auth.oauth.OAuthUtils.withSubjectClaim;
 import static org.trellisldp.auth.oauth.OAuthUtils.withWebIdClaim;
 
 import io.jsonwebtoken.Claims;
 
 import java.security.Principal;
-import java.util.Optional;
 
 public interface Authenticator {
 
@@ -36,9 +34,12 @@ public interface Authenticator {
      * @param token the token
      * @return the principal if present
      */
-    default Optional<Principal> authenticate(final String token) {
+    default Principal authenticate(final String token) {
         final Claims claims = parse(token);
         // Use a webid claim, if one exists or try generating a webid from other elements
-        return ofNullable(withWebIdClaim(claims).orElse(withSubjectClaim(claims).orElse(null)));
+        final Principal webid = withWebIdClaim(claims);
+        if (webid != null) return webid;
+
+        return withSubjectClaim(claims);
     }
 }

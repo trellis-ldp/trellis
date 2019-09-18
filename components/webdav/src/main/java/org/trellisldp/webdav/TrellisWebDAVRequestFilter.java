@@ -32,7 +32,6 @@ import static org.trellisldp.webdav.impl.WebDAVUtils.getAllButLastSegment;
 import static org.trellisldp.webdav.impl.WebDAVUtils.getLastSegment;
 import static org.trellisldp.webdav.impl.WebDAVUtils.recursiveDelete;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -103,7 +102,7 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     }
 
     @Override
-    public void filter(final ContainerRequestContext ctx) throws IOException {
+    public void filter(final ContainerRequestContext ctx) {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + ctx.getUriInfo().getPath());
         if (PUT.equals(ctx.getMethod()) && createUncontained) {
             final Resource res = services.getResourceService().get(identifier).toCompletableFuture().join();

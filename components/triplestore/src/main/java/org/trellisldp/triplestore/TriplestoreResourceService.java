@@ -20,7 +20,6 @@ import static java.util.Collections.synchronizedList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
-import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
@@ -46,6 +45,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
@@ -136,8 +136,8 @@ public class TriplestoreResourceService implements ResourceService {
             .orElse(Boolean.FALSE);
         this.rdfConnection = requireNonNull(rdfConnection, "RDFConnection may not be null!");
         this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
-        this.supportedIxnModels = unmodifiableSet(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
-                LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer).stream().collect(toSet()));
+        this.supportedIxnModels = unmodifiableSet(new HashSet<>(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
+                LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer)));
     }
 
     @Override
@@ -156,10 +156,15 @@ public class TriplestoreResourceService implements ResourceService {
     }
 
     @Override
+    public CompletionStage<Void> create(final Metadata metadata, final Dataset dataset) {
+        LOGGER.debug("Creating: {}", metadata.getIdentifier());
+        return runAsync(() -> createOrReplace(metadata, dataset, OperationType.CREATE));
+    }
+
+    @Override
     public CompletionStage<Void> replace(final Metadata metadata, final Dataset dataset) {
         LOGGER.debug("Persisting: {}", metadata.getIdentifier());
-        return runAsync(() ->
-                createOrReplace(metadata, dataset, OperationType.REPLACE));
+        return runAsync(() -> createOrReplace(metadata, dataset, OperationType.REPLACE));
     }
 
     private void createOrReplace(final Metadata metadata, final Dataset dataset, final OperationType type) {
@@ -217,7 +222,7 @@ public class TriplestoreResourceService implements ResourceService {
     }
 
     private enum OperationType {
-        DELETE, CREATE, REPLACE;
+        DELETE, CREATE, REPLACE
     }
 
     /**
@@ -447,7 +452,7 @@ public class TriplestoreResourceService implements ResourceService {
 
     /**
      * Alias{@link org.apache.jena.graph.Triple#create(Node, Node, Node)} to
-     * avoid collision with {@link ResourceService#create(IRI, IRI, Dataset)}.
+     * avoid collision with {@link ResourceService#create(Metadata, Dataset)}.
      *
      * @param subj the subject
      * @param pred the predicate

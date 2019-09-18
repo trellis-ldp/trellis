@@ -29,11 +29,12 @@ public class NotificationsConfiguration {
         NONE, JMS, KAFKA
     }
 
+    private final Map<String, String> other = new HashMap<>();
+
     private String topic = "trellis";
     private boolean enabled = false;
     private Type type = Type.NONE;
     private String connectionString;
-    private Map<String, String> other = new HashMap<>();
 
     /**
      * Get whether notifications have been enabled.

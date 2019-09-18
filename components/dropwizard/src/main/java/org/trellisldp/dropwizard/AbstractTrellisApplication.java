@@ -112,7 +112,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     }
 
     @Override
-    public void run(final T config, final Environment environment) throws Exception {
+    public void run(final T config, final Environment environment) {
         initialize(config, environment);
 
         getAuthFilters(config).forEach(environment.jersey()::register);

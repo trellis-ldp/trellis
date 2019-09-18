@@ -14,6 +14,7 @@
 package org.trellisldp.rdfa;
 
 import static java.util.Arrays.asList;
+import static java.util.Comparator.comparing;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -41,14 +42,11 @@ class HtmlData {
 
     private static final Set<IRI> titleCandidates = new HashSet<>(asList(SKOS.prefLabel, RDFS.label, DC.title));
 
-    private static final Comparator<LabelledTriple> sortSubjects = (q1, q2) ->
-        q1.getSubject().compareTo(q2.getSubject());
+    private static final Comparator<LabelledTriple> sortSubjects = comparing(LabelledTriple::getSubject);
 
-    private static final Comparator<LabelledTriple> sortPredicates = (q1, q2) ->
-        q1.getPredicate().compareTo(q2.getPredicate());
+    private static final Comparator<LabelledTriple> sortPredicates = comparing(LabelledTriple::getPredicate);
 
-    private static final Comparator<LabelledTriple> sortObjects = (q1, q2) ->
-        q1.getObject().compareTo(q2.getObject());
+    private static final Comparator<LabelledTriple> sortObjects = comparing(LabelledTriple::getObject);
 
     private final List<Triple> triples;
     private final String subject;

@@ -211,7 +211,7 @@ public final class FileUtils {
      * @return the file
      */
     public static File getNquadsFile(final File dir, final Instant time) {
-        return new File(dir, Long.toString(time.getEpochSecond()) + ".nq");
+        return new File(dir, time.getEpochSecond() + ".nq");
     }
 
     private static Stream<Quad> generateServerManaged(final Resource resource) {

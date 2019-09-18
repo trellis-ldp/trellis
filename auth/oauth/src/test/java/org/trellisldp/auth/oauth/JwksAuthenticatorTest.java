@@ -29,7 +29,6 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.Principal;
 import java.security.spec.RSAPrivateKeySpec;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -60,9 +59,9 @@ public class JwksAuthenticatorTest {
 
         final Authenticator authenticator = new JwksAuthenticator(url);
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -75,9 +74,9 @@ public class JwksAuthenticatorTest {
 
         final Authenticator authenticator = new JwksAuthenticator(url);
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test

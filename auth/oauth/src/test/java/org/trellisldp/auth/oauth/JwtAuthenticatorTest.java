@@ -29,7 +29,6 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.Principal;
 import java.util.Base64;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,9 +45,9 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(key);
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -59,9 +58,9 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(keypair.getPublic());
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -72,9 +71,9 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(keypair.getPublic());
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -89,9 +88,9 @@ public class JwtAuthenticatorTest {
         final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis").getPublicKey());
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -106,9 +105,9 @@ public class JwtAuthenticatorTest {
         final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis-public").getPublicKey());
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -123,9 +122,9 @@ public class JwtAuthenticatorTest {
         final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis-ec").getPublicKey());
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -141,9 +140,9 @@ public class JwtAuthenticatorTest {
         final Authenticator authenticator = new JwtAuthenticator(
                 ks.getCertificate("trellis-ec").getPublicKey());
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -153,8 +152,8 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(key);
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent(), "Unexpected principal!");
+        final Principal p = authenticator.authenticate(token);
+        assertNull(p, "Unexpected principal!");
     }
 
     @Test
@@ -165,9 +164,9 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(key);
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("http://localhost/acoburn", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("http://localhost/acoburn", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -177,8 +176,8 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(key);
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent(), "Unexpected principal!");
+        final Principal p = authenticator.authenticate(token);
+        assertNull(p, "Unexpected principal!");
     }
 
     @Test
@@ -189,9 +188,9 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -203,9 +202,9 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("http://example.org/acoburn", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("http://example.org/acoburn", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -217,9 +216,9 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertTrue(result.isPresent(), "Missing principal!");
-        result.ifPresent(p -> assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!"));
+        final Principal p = authenticator.authenticate(token);
+        assertNotNull(p, "Missing principal!");
+        assertEquals("https://people.apache.org/~acoburn/#i", p.getName(), "Incorrect webid!");
     }
 
     @Test
@@ -242,8 +241,8 @@ public class JwtAuthenticatorTest {
 
         final Authenticator authenticator = new JwtAuthenticator(hmacShaKeyFor(Base64.getDecoder().decode(key)));
 
-        final Optional<Principal> result = authenticator.authenticate(token);
-        assertFalse(result.isPresent(), "Unexpected principal!");
+        final Principal p = authenticator.authenticate(token);
+        assertNull(p, "Unexpected principal!");
     }
 
     @Test
