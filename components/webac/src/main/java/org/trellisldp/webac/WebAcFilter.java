@@ -16,6 +16,7 @@ package org.trellisldp.webac;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.HttpMethod.DELETE;
@@ -30,7 +31,6 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -104,7 +104,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final RDF rdf = getInstance();
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
-    private static final Set<String> appendable = new HashSet<>(asList("POST"));
+    private static final Set<String> appendable = new HashSet<>(singletonList("POST"));
 
     protected final WebAcService accessService;
     private final List<String> challenges;
@@ -163,7 +163,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     }
 
     @Override
-    public void filter(final ContainerRequestContext ctx) throws IOException {
+    public void filter(final ContainerRequestContext ctx) {
         final String path = ctx.getUriInfo().getPath();
         final Session s = HttpSession.from(ctx.getSecurityContext());
         final String method = ctx.getMethod();
@@ -182,7 +182,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     }
 
     @Override
-    public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
+    public void filter(final ContainerRequestContext req, final ContainerResponseContext res) {
         if (SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && !DELETE.equals(req.getMethod())
                 && (!req.getUriInfo().getQueryParameters().containsKey(HttpConstants.EXT)
                     || !req.getUriInfo().getQueryParameters().get(HttpConstants.EXT).contains(HttpConstants.ACL))) {

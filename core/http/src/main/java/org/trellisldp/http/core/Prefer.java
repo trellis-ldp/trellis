@@ -20,7 +20,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.joining;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -164,7 +163,7 @@ public class Prefer {
             return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION));
         }
         return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION) + "; " + PREFER_INCLUDE + "=\"" +
-                iris.stream().collect(joining(" ")) + "\"");
+                join(" ", iris) + "\"");
     }
 
     /**
@@ -179,7 +178,7 @@ public class Prefer {
             return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION));
         }
         return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION) + "; " + PREFER_OMIT + "=\"" +
-                iris.stream().collect(joining(" ")) + "\"");
+                join(" ", iris) + "\"");
     }
 
     private static List<String> parseParameter(final String param) {

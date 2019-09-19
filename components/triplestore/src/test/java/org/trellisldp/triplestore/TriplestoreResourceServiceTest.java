@@ -14,6 +14,7 @@
 package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
+import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.function.Predicate.isEqual;
@@ -1342,7 +1343,7 @@ public class TriplestoreResourceServiceTest {
         return Stream.of(
                 () -> assertNotNull(res, "Missing resource!"),
                 () -> assertTrue(res.getBinaryMetadata().isPresent(), "missing binary metadata!"),
-                () -> assertEquals(identifier, res.getBinaryMetadata().get().getIdentifier(),
+                () -> assertEquals(of(identifier), res.getBinaryMetadata().map(BinaryMetadata::getIdentifier),
                                    "Incorrect binary identifier!"),
                 () -> assertEquals(mimeType, res.getBinaryMetadata().flatMap(BinaryMetadata::getMimeType).orElse(null),
                                    "Incorrect binary mimetype!"));

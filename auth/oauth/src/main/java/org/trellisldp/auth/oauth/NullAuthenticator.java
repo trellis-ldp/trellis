@@ -13,12 +13,9 @@
  */
 package org.trellisldp.auth.oauth;
 
-import static java.util.Optional.empty;
-
 import io.jsonwebtoken.Claims;
 
 import java.security.Principal;
-import java.util.Optional;
 
 /**
  * A null authenticator.
@@ -31,7 +28,7 @@ public class NullAuthenticator implements Authenticator {
     }
 
     @Override
-    public Optional<Principal> authenticate(final String credentials) {
-        return empty();
+    public Principal authenticate(final String credentials) {
+        return null;
     }
 }

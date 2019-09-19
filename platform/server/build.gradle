@@ -4,8 +4,11 @@ apply plugin: 'nebula.ospackage-application'
 apply plugin: 'com.palantir.docker'
 
 description = 'Trellis Triplestore Application'
-mainClassName = 'org.trellisldp.app.triplestore.TrellisApplication'
-applicationName = 'trellis'
+
+application {
+    mainClassName = 'org.trellisldp.app.triplestore.TrellisApplication'
+    applicationName = 'trellis'
+}
 
 dependencies {
     compile project(':trellis-app-triplestore')
@@ -110,8 +113,6 @@ task copyDistTask(type: Copy) {
 
 assembleDist {
     dependsOn copyDistTask
-    dependsOn buildRpm
-    dependsOn buildDeb
     dependsOn signBuildRpm
     dependsOn signBuildDeb
 }
@@ -119,7 +120,7 @@ assembleDist {
 gradle.taskGraph.whenReady({ graph ->
     tasks.withType(AbstractArchiveTask).each { archive ->
         archive.doLast {
-            ant.checksum file: archive.archivePath, algorithm: 'sha-256', format: 'MD5SUM', fileext: '.sha256'
+            ant.checksum file: archive.archiveFile.get(), algorithm: 'sha-256', format: 'MD5SUM', fileext: '.sha256'
         }
     }
 })

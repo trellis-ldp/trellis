@@ -97,7 +97,7 @@ public final class HttpUtils {
             supertypes.accept(ixnModel);
             final IRI superClass = LDP.getSuperclassOf(ixnModel);
             LOGGER.debug("... including {}", superClass);
-            ldpResourceTypes(superClass).forEach(supertypes::accept);
+            ldpResourceTypes(superClass).forEach(supertypes);
         }
         return supertypes.build();
     }

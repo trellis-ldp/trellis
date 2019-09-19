@@ -15,8 +15,6 @@ package org.trellisldp.webdav;
 
 import static javax.ws.rs.HttpMethod.OPTIONS;
 
-import java.io.IOException;
-
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -26,7 +24,7 @@ import javax.ws.rs.ext.Provider;
 public class TrellisWebDAVResponseFilter implements ContainerResponseFilter {
 
     @Override
-    public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
+    public void filter(final ContainerRequestContext req, final ContainerResponseContext res) {
         if (OPTIONS.equals(req.getMethod())) {
             // WebDAV compliance classes 1 and 3 are supported.
             // See https://tools.ietf.org/html/rfc4918#section-18 for more information.

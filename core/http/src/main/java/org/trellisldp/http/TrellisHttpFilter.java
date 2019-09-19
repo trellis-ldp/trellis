@@ -31,7 +31,6 @@ import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Priority;
@@ -68,7 +67,7 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
     }
 
     @Override
-    public void filter(final ContainerRequestContext ctx) throws IOException {
+    public void filter(final ContainerRequestContext ctx) {
         checkTrailingSlash(ctx);
         // Validate headers
         validateAcceptDatetime(ctx);

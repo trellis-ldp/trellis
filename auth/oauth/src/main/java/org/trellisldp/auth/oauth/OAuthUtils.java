@@ -15,8 +15,6 @@ package org.trellisldp.auth.oauth;
 
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import io.jsonwebtoken.Claims;
@@ -36,7 +34,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 
@@ -51,11 +48,13 @@ public final class OAuthUtils {
      * @param claims the JWT claims
      * @return a Principal, if one can be generated from a webid claim
      */
-    public static Optional<Principal> withWebIdClaim(final Claims claims) {
+    public static Principal withWebIdClaim(final Claims claims) {
         final String webid = claims.get(WEBID, String.class);
-        if (webid == null) return empty();
-        LOGGER.debug("Using JWT claim with webid: {}", webid);
-        return of(new OAuthPrincipal(webid));
+        if (webid != null) {
+            LOGGER.debug("Using JWT claim with webid: {}", webid);
+            return new OAuthPrincipal(webid);
+        }
+        return null;
     }
 
     /**
@@ -63,12 +62,12 @@ public final class OAuthUtils {
      * @param claims the JWT claims
      * @return a Principal, if one can be generated from standard claims
      */
-    public static Optional<Principal> withSubjectClaim(final Claims claims) {
+    public static Principal withSubjectClaim(final Claims claims) {
         final String subject = claims.getSubject();
-        if (subject == null) return empty();
+        if (subject == null) return null;
         if (isUrl(subject)) {
             LOGGER.debug("Using JWT claim with sub: {}", subject);
-            return of(new OAuthPrincipal(subject));
+            return new OAuthPrincipal(subject);
         }
 
         final String iss = claims.getIssuer();
@@ -76,16 +75,16 @@ public final class OAuthUtils {
         if (iss != null && isUrl(iss)) {
             final String webid = iss.endsWith("/") ? iss + subject : iss + "/" + subject;
             LOGGER.debug("Using JWT claim with generated webid: {}", webid);
-            return of(new OAuthPrincipal(webid));
+            return new OAuthPrincipal(webid);
         }
 
         // Use an OIDC website claim, if one exists
         if (claims.containsKey(WEBSITE)) {
             final String site = claims.get(WEBSITE, String.class);
             LOGGER.debug("Using JWT claim with website: {}", site);
-            return of(new OAuthPrincipal(site));
+            return new OAuthPrincipal(site);
         }
-        return empty();
+        return null;
     }
 
     /**
@@ -107,14 +106,14 @@ public final class OAuthUtils {
      * @param exponent the exponent
      * @return an RSA public key, if one could be successfully generated
      */
-    public static Optional<Key> buildRSAPublicKey(final String keyType, final BigInteger modulus,
+    public static Key buildRSAPublicKey(final String keyType, final BigInteger modulus,
             final BigInteger exponent) {
         try {
-            return of(KeyFactory.getInstance(keyType).generatePublic(new RSAPublicKeySpec(modulus, exponent)));
+            return KeyFactory.getInstance(keyType).generatePublic(new RSAPublicKeySpec(modulus, exponent));
         } catch (final NoSuchAlgorithmException | InvalidKeySpecException ex) {
             LOGGER.error("Error generating RSA Key from JWKS entry", ex);
         }
-        return empty();
+        return null;
     }
 
     /**

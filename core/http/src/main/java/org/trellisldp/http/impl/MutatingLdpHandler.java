@@ -28,10 +28,8 @@ import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -230,23 +228,16 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param type the LDP interaction model
      * @param syntax the output syntax
      */
-    protected void checkConstraint(final Optional<Graph> graph, final IRI type, final RDFSyntax syntax) {
-        graph.ifPresent(g -> {
-            final List<ConstraintViolation> violations = new ArrayList<>();
-            getServices().getConstraintServices().forEach(svc -> svc.constrainedBy(type, g).forEach(violations::add));
-            if (!violations.isEmpty()) {
-                final ResponseBuilder err = status(CONFLICT);
-                violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
-                final StreamingOutput stream = new StreamingOutput() {
-                    @Override
-                    public void write(final OutputStream out) throws IOException {
-                        getServices().getIOService().write(violations.stream().flatMap(v2 -> v2.getTriples().stream()),
-                                out, syntax);
-                    }
-                };
-                throw new ClientErrorException(err.entity(stream).build());
-            }
-        });
+    protected void checkConstraint(final Graph graph, final IRI type, final RDFSyntax syntax) {
+        final List<ConstraintViolation> violations = new ArrayList<>();
+        getServices().getConstraintServices().forEach(svc -> svc.constrainedBy(type, graph).forEach(violations::add));
+        if (!violations.isEmpty()) {
+            final ResponseBuilder err = status(CONFLICT);
+            violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
+            throw new ClientErrorException(err.entity((StreamingOutput) out ->
+                    getServices().getIOService().write(violations.stream().flatMap(v2 -> v2.getTriples().stream()),
+                            out, syntax)).build());
+        }
     }
 
     protected CompletionStage<Void> persistContent(final BinaryMetadata metadata) {

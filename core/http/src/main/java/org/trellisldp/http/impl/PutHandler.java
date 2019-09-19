@@ -242,9 +242,9 @@ public class PutHandler extends MutatingLdpHandler {
 
             // Check for any constraints
             if (isAclRequest()) {
-                checkConstraint(mutable.getGraph(PreferAccessControl), LDP.RDFSource, s);
+                mutable.getGraph(PreferAccessControl).ifPresent(graph -> checkConstraint(graph, LDP.RDFSource, s));
             } else {
-                checkConstraint(mutable.getGraph(PreferUserManaged), ldpType, s);
+                mutable.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, s));
             }
             LOGGER.trace("Successfully checked for constraint violations");
             metadata = metadataBuilder(internalId, ldpType, mutable);

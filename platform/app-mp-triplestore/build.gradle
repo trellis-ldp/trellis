@@ -88,7 +88,7 @@ liberty {
 }
 
 war {
-    archiveName = "${baseName}.${extension}"
+    archiveFileName.set(archiveBaseName.flatMap { base -> archiveExtension.map { ext -> base + "." + ext} })
 }
 
 test {

@@ -49,10 +49,7 @@ public class DefaultIdentifierService implements IdentifierService {
 
     @Override
     public Supplier<String> getSupplier(final String prefix, final int hierarchy, final int length) {
-
         requireNonNull(prefix, "The Id prefix may not be null!");
-        requireNonNull(hierarchy, "The hierarchy value may not be null!");
-        requireNonNull(length, "The length value may not be null!");
         return () -> getId(prefix, hierarchy, length);
     }
 

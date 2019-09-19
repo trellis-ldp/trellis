@@ -93,6 +93,18 @@ public class OAuthFilterTest {
     }
 
     @Test
+    public void testFilterNoAuth() throws Exception {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS512);
+        final ContainerRequestContext mockCtx = mock(ContainerRequestContext.class);
+        when(mockCtx.getSecurityContext()).thenReturn(mockSecurityContext);
+        when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn(null);
+
+        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        filter.filter(mockCtx);
+        verify(mockCtx, never()).setSecurityContext(securityArgument.capture());
+    }
+
+    @Test
     public void testFilterWebid() throws Exception {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().claim("webid", WEBID2).signWith(key).compact();

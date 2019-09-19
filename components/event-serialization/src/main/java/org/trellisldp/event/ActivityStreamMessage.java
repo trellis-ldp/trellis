@@ -55,8 +55,8 @@ class ActivityStreamMessage {
      */
     @JsonInclude(NON_ABSENT)
     static class EventResource {
-        private String id;
-        private List<String> type;
+        private final String id;
+        private final List<String> type;
 
         /**
          * Create a new event resource target.

@@ -15,13 +15,13 @@ package org.trellisldp.app.mp.triplestore;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toSet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -65,7 +65,7 @@ public class WebApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return asList(httpResource, httpFilter, corsFilter, cacheFilter, oauthFilter).stream().collect(toSet());
+        return new HashSet<>(asList(httpResource, httpFilter, corsFilter, cacheFilter, oauthFilter));
     }
 
     private void printBanner(final String name) {

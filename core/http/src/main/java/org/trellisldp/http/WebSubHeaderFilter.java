@@ -20,8 +20,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
-import java.io.IOException;
-
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -60,7 +58,7 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
     }
 
     @Override
-    public void filter(final ContainerRequestContext req, final ContainerResponseContext res) throws IOException {
+    public void filter(final ContainerRequestContext req, final ContainerResponseContext res) {
         if ((GET.equals(req.getMethod()) || HEAD.equals(req.getMethod()))
                 && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && hub != null) {
             res.getHeaders().add(LINK, fromUri(hub).rel("hub").build());

@@ -17,8 +17,6 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
@@ -28,9 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.SecurityException;
 
-import java.io.IOException;
 import java.security.Principal;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Priority;
@@ -111,19 +107,20 @@ public class OAuthFilter implements ContainerRequestFilter {
     }
 
     @Override
-    public void filter(final ContainerRequestContext requestContext) throws IOException {
+    public void filter(final ContainerRequestContext requestContext) {
 
         final SecurityContext securityContext = requestContext.getSecurityContext();
         final boolean secure = securityContext != null && securityContext.isSecure();
 
-        getOAuthToken(requestContext)
-                        .map(token -> authenticate(token)
-                                        .<RuntimeException>orElseThrow(() -> new NotAuthorizedException(challenge)))
-                        .ifPresent(principal -> requestContext
-                                        .setSecurityContext(new OAuthSecurityContext(principal, admins, secure)));
+        final String token = getOAuthToken(requestContext);
+        if (token != null) {
+            final Principal principal = authenticate(token);
+            if (principal == null) throw new NotAuthorizedException(challenge);
+            requestContext.setSecurityContext(new OAuthSecurityContext(principal, admins, secure));
+        }
     }
 
-    private Optional<Principal> authenticate(final String token) {
+    private Principal authenticate(final String token) {
         try {
             return authenticator.authenticate(token);
         } catch (final SecurityException ex) {
@@ -131,15 +128,16 @@ public class OAuthFilter implements ContainerRequestFilter {
         } catch (final JwtException ex) {
             LOGGER.warn("Problem reading JWT value: {}", ex.getMessage());
         }
-        return empty();
+        return null;
     }
 
-    private Optional<String> getOAuthToken(final ContainerRequestContext ctx) {
+    private String getOAuthToken(final ContainerRequestContext ctx) {
         final String headerString = ctx.getHeaderString(AUTHORIZATION);
-        if (headerString == null) return empty();
-        final String[] pair = headerString.split(" ", 2);
-        if (pair.length == 2 && pair[0].equalsIgnoreCase(SCHEME)) return of(pair[1]);
-        return empty();
+        if (headerString != null) {
+            final String[] pair = headerString.split(" ", 2);
+            if (pair.length == 2 && pair[0].equalsIgnoreCase(SCHEME)) return pair[1];
+        }
+        return null;
     }
 
     private static Authenticator buildAuthenticator() {

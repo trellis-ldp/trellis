@@ -45,7 +45,7 @@ import org.apache.commons.rdf.api.Triple;
  */
 public final class TrellisUtils {
 
-    private static RDF rdf = findFirst(RDF.class)
+    private static final RDF rdf = findFirst(RDF.class)
                     .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
 
     /**

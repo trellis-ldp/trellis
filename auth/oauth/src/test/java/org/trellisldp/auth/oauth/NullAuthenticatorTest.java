@@ -22,7 +22,7 @@ public class NullAuthenticatorTest {
     @Test
     public void testNullAuthenticator() {
         final Authenticator authenticator = new NullAuthenticator();
-        assertFalse(authenticator.authenticate("blah").isPresent(), "Unexpected principal found!");
+        assertNull(authenticator.authenticate("blah"), "Unexpected principal found!");
         assertNull(authenticator.parse("credentials"), "Credentials were not null!");
     }
 

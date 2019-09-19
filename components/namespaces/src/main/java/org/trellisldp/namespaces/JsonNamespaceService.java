@@ -93,7 +93,7 @@ public class JsonNamespaceService implements NamespaceService {
             data.putAll(read(getClass().getResource("/defaultNamespaces.json").getPath()));
             write(filePath, data);
         }
-        data.entrySet().forEach(e -> dataRev.put(e.getValue(), e.getKey()));
+        data.forEach((k, v) -> dataRev.put(v, k));
     }
 
     private static Map<String, String> read(final String filePath) {

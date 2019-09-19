@@ -23,7 +23,7 @@ import org.apache.commons.rdf.api.RDF;
  */
 final class VocabUtils {
 
-    private static RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
+    private static final RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
     public static IRI createIRI(final String uri) {
         return rdf.createIRI(uri);
