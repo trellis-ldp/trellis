@@ -25,20 +25,20 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class ASTest extends AbstractVocabularyTest {
+class ASTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "https://www.w3.org/ns/activitystreams#";
     }
 
     @Override
-    public Class<AS> vocabulary() {
+    Class<AS> vocabulary() {
         return AS.class;
     }
 
     @Override
-    protected Graph getVocabulary(final String url) {
+    Graph getVocabulary(final String url) {
         final Graph graph = createDefaultGraph();
         try {
             RDFParser.source(url).httpAccept("application/ld+json").parse(graph);
@@ -51,7 +51,7 @@ public class ASTest extends AbstractVocabularyTest {
 
     @Test
     @Override
-    public void testVocabularyRev() {
+    void testVocabularyRev() {
         assertEquals(namespace() + "Create", AS.Create.getIRIString(), "as:Create IRIs don't match!");
         assertEquals(namespace() + "Delete", AS.Delete.getIRIString(), "as:Delete IRIs don't match!");
         assertEquals(namespace() + "Update", AS.Update.getIRIString(), "as:Update IRIs don't match!");
@@ -59,12 +59,12 @@ public class ASTest extends AbstractVocabularyTest {
 
     @Test
     @Override
-    public void testVocabulary() {
+    void testVocabulary() {
         assertEquals(namespace() + "Activity", AS.Activity.getIRIString(), "as:Activity IRIs don't match!");
     }
 
     @Test
-    public void checkUri() {
+    void checkUri() {
         getVocabulary(namespace());
         assertEquals(namespace(), AS.getNamespace(), "AS namespace doesn't match expected value!");
     }

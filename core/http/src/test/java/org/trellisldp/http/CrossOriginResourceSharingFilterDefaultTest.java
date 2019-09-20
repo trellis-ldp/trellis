@@ -31,10 +31,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOriginResourceSharingFilterTest {
+class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOriginResourceSharingFilterTest {
 
     @Override
-    public Application configure() {
+    protected Application configure() {
         init();
 
         final ResourceConfig config = new ResourceConfig();
@@ -44,7 +44,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     }
 
     @Test
-    public void testGetCORS() {
+    void testGetCORS() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PATCH")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
@@ -60,7 +60,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     }
 
     @Test
-    public void testGetCORSSimple() {
+    void testGetCORSSimple() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PATCH")
             .header("Access-Control-Request-Headers", "Accept").get();
@@ -76,7 +76,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     }
 
     @Test
-    public void testOptionsPreflightSimple() {
+    void testOptionsPreflightSimple() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PATCH")
             .header("Access-Control-Request-Headers", "Accept").options();
@@ -95,7 +95,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     }
 
     @Test
-    public void testCorsPreflight() {
+    void testCorsPreflight() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PATCH")
             .header("Access-Control-Request-Headers", "Content-Language, Content-Type, Link").options();
@@ -118,7 +118,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
    }
 
     @Test
-    public void testCorsPreflightNoRequestHeaders() {
+    void testCorsPreflightNoRequestHeaders() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PATCH").options();
 
@@ -133,7 +133,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     }
 
     @Test
-    public void testCorsPreflightNoMatch() {
+    void testCorsPreflightNoMatch() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PATCH")
             .header("Access-Control-Request-Headers", "Content-Language").options();
@@ -149,7 +149,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     }
 
     @Test
-    public void testOptionsPreflightInvalid2() {
+    void testOptionsPreflightInvalid2() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PATCH")
             .header("Access-Control-Request-Headers", "Content-Type, Link, Bar").options();
@@ -159,7 +159,7 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
     }
 
     @Test
-    public void testOptionsPreflightInvalid3() {
+    void testOptionsPreflightInvalid3() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "BAR")
             .header("Access-Control-Request-Headers", "Content-Type, Link").options();
@@ -167,5 +167,4 @@ public class CrossOriginResourceSharingFilterDefaultTest extends BaseCrossOrigin
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertAll("Check that there are no CORS headers", checkNoCORSHeaders(res));
     }
-
 }

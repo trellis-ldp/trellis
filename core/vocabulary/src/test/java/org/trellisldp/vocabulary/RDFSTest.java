@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the RDFS Vocabulary Class
  * @author acoburn
  */
-public class RDFSTest extends AbstractVocabularyTest {
+class RDFSTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/2000/01/rdf-schema#";
     }
 
     @Override
-    public Class<RDFS> vocabulary() {
+    Class<RDFS> vocabulary() {
         return RDFS.class;
     }
 }

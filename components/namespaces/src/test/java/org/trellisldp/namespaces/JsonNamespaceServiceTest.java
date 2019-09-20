@@ -28,12 +28,12 @@ import org.trellisldp.vocabulary.JSONLD;
 /**
  * @author acoburn
  */
-public class JsonNamespaceServiceTest {
+class JsonNamespaceServiceTest {
 
     private static final String nsDoc = "/testNamespaces.json";
 
     @Test
-    public void testReadFromJson() {
+    void testReadFromJson() {
         final URL res = JsonNamespaceService.class.getResource(nsDoc);
         try {
             System.setProperty(JsonNamespaceService.CONFIG_NAMESPACES_PATH, res.getPath());
@@ -45,7 +45,7 @@ public class JsonNamespaceServiceTest {
     }
 
     @Test
-    public void testReadError() {
+    void testReadError() {
         final URL res = JsonNamespaceService.class.getResource("/thisIsNot.json");
         try {
             System.setProperty(JsonNamespaceService.CONFIG_NAMESPACES_PATH, res.getPath());
@@ -57,7 +57,7 @@ public class JsonNamespaceServiceTest {
     }
 
     @Test
-    public void testWriteError() {
+    void testWriteError() {
         final File file = new File(getClass().getResource(nsDoc).getFile());
         final File nonexistent = new File(file.getParentFile(), "nonexistent/dir/file.json");
         assertThrows(UncheckedIOException.class, () -> new JsonNamespaceService(nonexistent.getAbsolutePath()),
@@ -65,7 +65,7 @@ public class JsonNamespaceServiceTest {
     }
 
     @Test
-    public void testWriteToJson() {
+    void testWriteToJson() {
         final File file = new File(JsonNamespaceService.class.getResource(nsDoc).getPath());
         final String filename = file.getParent() + "/" + randomFilename();
 

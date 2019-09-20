@@ -24,14 +24,14 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class XSDTest {
+class XSDTest {
 
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/2001/XMLSchema#";
     }
 
     @Test
-    public void testVocabulary() {
+    void testVocabulary() {
         assertEquals(namespace() + "dateTime", XSD.dateTime.getIRIString(), "xsd:dateTime IRIs don't match");
         assertEquals(namespace() + "string", XSD.string_.getIRIString(), "xsd:string IRIs don't match!");
         assertEquals(dateTime.getURI(), XSD.dateTime.getIRIString(), "xsd:dateTime IRI doesn't match Jena's value!");
@@ -39,7 +39,7 @@ public class XSDTest {
     }
 
     @Test
-    public void checkUri() {
+    void checkUri() {
         assertEquals(namespace(), XSD.getNamespace(), "Namespace IRIs don't match!");
         assertEquals(NS, XSD.getNamespace(), "Namespace IRI doesn't match Jena's value!");
     }

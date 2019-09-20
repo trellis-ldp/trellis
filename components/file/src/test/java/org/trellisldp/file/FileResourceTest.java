@@ -32,12 +32,12 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test a file-based resource.
  */
-public class FileResourceTest {
+class FileResourceTest {
 
     private static final RDF rdf = new JenaRDF();
 
     @Test
-    public void testResource() {
+    void testResource() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");
@@ -60,7 +60,7 @@ public class FileResourceTest {
     }
 
     @Test
-    public void testBinary() {
+    void testBinary() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "binary");
         final File file = new File(getClass().getResource("/binary.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");
@@ -87,7 +87,7 @@ public class FileResourceTest {
     }
 
     @Test
-    public void testInvalidFile() {
+    void testInvalidFile() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File dir = new File(getClass().getResource("/resource.nq").getFile()).getParentFile();
         final File file = new File(dir, "nonexistent");
@@ -99,7 +99,7 @@ public class FileResourceTest {
     }
 
     @Test
-    public void testIndirectContainer() {
+    void testIndirectContainer() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/ldpic.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");
@@ -126,7 +126,7 @@ public class FileResourceTest {
     }
 
     @Test
-    public void testDirectContainer() {
+    void testDirectContainer() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/ldpdc.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");

@@ -14,13 +14,13 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -52,7 +52,7 @@ import org.trellisldp.http.core.TrellisRequest;
 /**
  * @author acoburn
  */
-public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
+class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
     @Mock
     private AsyncResponse mockResponse;
@@ -73,12 +73,12 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     private ArgumentCaptor<Response> captor;
 
     @Override
-    protected String getBaseUrl() {
+    String getBaseUrl() {
         return getBaseUri().toString();
     }
 
     @Override
-    public Application configure() {
+    protected Application configure() {
 
         initMocks(this);
 
@@ -91,21 +91,21 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
-        config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
+        config.register(new CrossOriginResourceSharingFilter(singletonList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));
         return config;
     }
 
     @Test
-    public void testNoBaseURL() throws Exception {
+    void testNoBaseURL() throws Exception {
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
 
         when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>(singletonMap("path", "resource")));
         when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockHttpHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());
-        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(asList(WILDCARD_TYPE));
+        when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
         matcher.getResourceHeaders(mockResponse, mockRequest, mockUriInfo, mockHttpHeaders);
         verify(mockResponse).resume(captor.capture());
@@ -117,7 +117,7 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    public void testInitializeExistingLdpResourceWithFailure() throws Exception {
+    void testInitializeExistingLdpResourceWithFailure() {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> runAsync(() -> {
@@ -130,7 +130,7 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    public void testInitializeExistingLdpResource() throws Exception {
+    void testInitializeExistingLdpResource() {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
@@ -141,7 +141,7 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    public void testInitializeoNoLdpResource() throws Exception {
+    void testInitializeoNoLdpResource() {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -158,7 +158,7 @@ public class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    public void testInitializeoDeletedLdpResource() throws Exception {
+    void testInitializeoDeletedLdpResource() {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));

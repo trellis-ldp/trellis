@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the VCARD Vocabulary Class
  * @author acoburn
  */
-public class VCARDTest extends AbstractVocabularyTest {
+class VCARDTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/2006/vcard/ns#";
     }
 
     @Override
-    public Class<VCARD> vocabulary() {
+    Class<VCARD> vocabulary() {
         return VCARD.class;
     }
 }

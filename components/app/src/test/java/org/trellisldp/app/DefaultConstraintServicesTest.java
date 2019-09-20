@@ -20,16 +20,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.constraint.LdpConstraintService;
 
-public class DefaultConstraintServicesTest {
+class DefaultConstraintServicesTest {
 
     @Test
-    public void testEmptyServices() {
+    void testEmptyServices() {
         final ConstraintServices svcs = new DefaultConstraintServices(emptyList());
         assertFalse(svcs.iterator().hasNext());
     }
 
     @Test
-    public void testSingleServices() {
+    void testSingleServices() {
         final ConstraintServices svcs = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         assertTrue(svcs.iterator().hasNext());
     }

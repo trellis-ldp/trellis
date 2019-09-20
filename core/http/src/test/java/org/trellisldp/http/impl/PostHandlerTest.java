@@ -25,7 +25,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -55,10 +54,10 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class PostHandlerTest extends BaseTestHandler {
+class PostHandlerTest extends BaseTestHandler {
 
     @Test
-    public void testPostLdprs() throws IOException {
+    void testPostLdprs() throws IOException {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
@@ -71,7 +70,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadAudit() throws IOException {
+    void testBadAudit() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -86,7 +85,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDefaultType1() throws IOException {
+    void testDefaultType1() throws IOException {
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
         final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
             .toCompletableFuture().join().build();
@@ -97,7 +96,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDefaultType2() throws IOException {
+    void testDefaultType2() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
@@ -110,7 +109,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDefaultType3() throws IOException {
+    void testDefaultType3() throws IOException {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
@@ -123,7 +122,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDefaultType4() throws IOException {
+    void testDefaultType4() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
@@ -137,7 +136,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDefaultType5() throws IOException {
+    void testDefaultType5() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
@@ -150,7 +149,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testUnsupportedType() throws IOException {
+    void testUnsupportedType() throws IOException {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
@@ -166,7 +165,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testRdfEntity() throws IOException {
+    void testRdfEntity() throws IOException {
         final String path = "newresource";
         final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
                         rdf.createLiteral("A title"));
@@ -189,7 +188,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBinaryEntity() throws IOException {
+    void testBinaryEntity() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
 
         final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
@@ -203,7 +202,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBinaryEntityNoContentType() throws IOException {
+    void testBinaryEntityNoContentType() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn(null);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
 
@@ -218,7 +217,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testError() throws IOException {
+    void testError() throws IOException {
         when(mockResourceService.create(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
@@ -230,7 +229,7 @@ public class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadRdfInputStream() throws IOException {
+    void testBadRdfInputStream() {
         final InputStream mockInputStream = mock(InputStream.class, inv -> {
             throw new IOException("Expected exception");
         });

@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the OA Vocabulary Class
  * @author acoburn
  */
-public class OATest extends AbstractVocabularyTest {
+class OATest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/ns/oa#";
     }
 
     @Override
-    public Class<OA> vocabulary() {
+    Class<OA> vocabulary() {
         return OA.class;
     }
 }

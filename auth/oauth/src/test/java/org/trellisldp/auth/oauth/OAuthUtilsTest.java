@@ -21,24 +21,24 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class OAuthUtilsTest {
+class OAuthUtilsTest {
 
-    private static char[] passphrase = "password".toCharArray();
+    private static final char[] passphrase = "password".toCharArray();
 
     @Test
-    public void testBuilderSimpleDefault() {
+    void testBuilderSimpleDefault() {
         assertNull(OAuthUtils.buildAuthenticatorWithSharedSecret(null));
         assertNull(OAuthUtils.buildAuthenticatorWithSharedSecret(""));
     }
 
     @Test
-    public void testBuildFederatedNull() {
+    void testBuildFederatedNull() {
         assertNull(OAuthUtils.buildAuthenticatorWithTruststore(null, "test".toCharArray(),
                     asList("one,two".split(","))));
     }
 
     @Test
-    public void testOAuthFederatedBuilder() {
+    void testOAuthFederatedBuilder() {
         final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
         final List<String> ids = asList("trellis,foo".split(","));
         final Authenticator authenticator = OAuthUtils.buildAuthenticatorWithTruststore(keystorePath, passphrase, ids);
@@ -46,21 +46,21 @@ public class OAuthUtilsTest {
     }
 
     @Test
-    public void testOAuthBuilderNoKeystore() {
+    void testOAuthBuilderNoKeystore() {
         final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
         final List<String> ids = asList("trellis,foo".split(","));
         assertNull(OAuthUtils.buildAuthenticatorWithTruststore(keystorePath + "foo", passphrase, ids));
     }
 
     @Test
-    public void testOAuthBuilderNoIds() {
+    void testOAuthBuilderNoIds() {
         final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
         final List<String> ids = asList("foo,bar".split(","));
         assertNull(OAuthUtils.buildAuthenticatorWithTruststore(keystorePath, passphrase, ids));
     }
 
     @Test
-    public void testOAuthFederatedBuilderMultipleIds() {
+    void testOAuthFederatedBuilderMultipleIds() {
         final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
         final List<String> ids = asList("trellis,trellis-ec".split(","));
         final Authenticator authenticator = OAuthUtils.buildAuthenticatorWithTruststore(keystorePath, passphrase, ids);
@@ -68,31 +68,31 @@ public class OAuthUtilsTest {
     }
 
     @Test
-    public void testOAuthFederatedBuilderBadPassphrase() {
+    void testOAuthFederatedBuilderBadPassphrase() {
         final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();
         final List<String> ids = asList("trellis,trellis-ec".split(","));
         assertNull(OAuthUtils.buildAuthenticatorWithTruststore(keystorePath, "foo".toCharArray(), ids));
     }
 
     @Test
-    public void testOAuthJwkBuilder() {
+    void testOAuthJwkBuilder() {
         final String url = "https://www.trellisldp.org/tests/jwks.json";
         final Authenticator authenticator = OAuthUtils.buildAuthenticatorWithJwk(url);
         assertTrue(authenticator instanceof JwksAuthenticator);
     }
 
     @Test
-    public void testOAuthJwkBuilderNull() {
+    void testOAuthJwkBuilderNull() {
         assertNull(OAuthUtils.buildAuthenticatorWithJwk(null));
     }
 
     @Test
-    public void testOAuthJwkBuilderNotUrl() {
+    void testOAuthJwkBuilderNotUrl() {
         assertNull(OAuthUtils.buildAuthenticatorWithJwk("some text"));
     }
 
     @Test
-    public void testInvalidRSAKey() {
+    void testInvalidRSAKey() {
         assertNull(OAuthUtils.buildRSAPublicKey("EC", BigInteger.ONE, BigInteger.TEN));
     }
 }

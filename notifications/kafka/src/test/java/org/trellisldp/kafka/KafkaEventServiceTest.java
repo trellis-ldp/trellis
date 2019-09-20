@@ -43,7 +43,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test the Kafka publisher
  */
-public class KafkaEventServiceTest {
+class KafkaEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final ActivityStreamService serializer = new DefaultActivityStreamService();
@@ -59,7 +59,7 @@ public class KafkaEventServiceTest {
     private Event mockEvent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
@@ -71,7 +71,7 @@ public class KafkaEventServiceTest {
     }
 
     @Test
-    public void testKafka() {
+    void testKafka() {
         final EventService svc = new KafkaEventService(serializer, producer);
         svc.emit(mockEvent);
 
@@ -81,7 +81,7 @@ public class KafkaEventServiceTest {
     }
 
     @Test
-    public void testDefaultKafka() {
+    void testDefaultKafka() {
         assertDoesNotThrow(() -> new KafkaEventService(serializer));
     }
 }

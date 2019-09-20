@@ -26,10 +26,10 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class HttpSessionTest {
+class HttpSessionTest {
 
     @Test
-    public void testHttpSession() {
+    void testHttpSession() {
         final Instant time = now();
         final Session session = new HttpSession();
         assertEquals(Trellis.AnonymousAgent, session.getAgent(), "Incorrect agent in default session!");

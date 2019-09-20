@@ -60,7 +60,6 @@ import static javax.ws.rs.core.MediaType.WILDCARD;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -128,7 +127,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *           HEAD Tests
      * ****************************** */
     @Test
-    public void testHeadDefaultType() {
+    void testHeadDefaultType() {
         final Response res = target(RESOURCE_PATH).request().head();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -140,7 +139,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *            GET Tests
      * ******************************* */
     @Test
-    public void testGetJson() throws IOException {
+    void testGetJson() throws IOException {
         final Response res = target("/" + RESOURCE_PATH).request().accept("application/ld+json").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -158,7 +157,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetDefaultType() {
+    void testGetDefaultType() {
         final Response res = target(RESOURCE_PATH).request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -167,7 +166,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetDefaultType2() {
+    void testGetDefaultType2() {
         final Response res = target("resource").request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -176,7 +175,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testScrewyAcceptDatetimeHeader() {
+    void testScrewyAcceptDatetimeHeader() {
         final Response res = target(RESOURCE_PATH).request().header("Accept-Datetime",
                 "it's pathetic how we both").get();
 
@@ -184,14 +183,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testScrewyRange() {
+    void testScrewyRange() {
         final Response res = target(BINARY_PATH).request().header("Range", "say it to my face, then").get();
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetRootSlash() {
+    void testGetRootSlash() {
         final Response res = target("/").request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -200,7 +199,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetRoot() {
+    void testGetRoot() {
         final Response res = target("").request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -209,7 +208,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetDatetime() {
+    void testGetDatetime() {
         assumeTrue(getBaseUrl().startsWith("http://localhost"));
         final Response res = target(RESOURCE_PATH).request()
             .header(ACCEPT_DATETIME, RFC_1123_DATE_TIME.withZone(UTC).format(time)).get();
@@ -228,7 +227,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetTrailingSlash() {
+    void testGetTrailingSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -238,35 +237,35 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetNotModified() {
+    void testGetNotModified() {
         final Response res = target("").request().header("If-Modified-Since", "Wed, 12 Dec 2018 07:28:00 GMT").get();
 
         assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetNotModifiedInvalidDate() {
+    void testGetNotModifiedInvalidDate() {
         final Response res = target("").request().header("If-Modified-Since", "Wed, 12 Dec 2017 07:28:00 GMT").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetNotModifiedInvalidSyntax() {
+    void testGetNotModifiedInvalidSyntax() {
         final Response res = target("").request().header("If-Modified-Since", "Yesterday").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetIfNoneMatchStar() {
+    void testGetIfNoneMatchStar() {
         final Response res = target("").request().header("If-None-Match", "*").get();
 
         assertEquals(SC_NOT_MODIFIED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetIfMatchWeak() {
+    void testGetIfMatchWeak() {
         final String etag = target("").request().get().getEntityTag().getValue();
 
         final Response res = target("").request().header("If-Match", "W/\"" + etag + "\"").get();
@@ -275,7 +274,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetIfMatch() {
+    void testGetIfMatch() {
         final String etag = target("").request().get().getEntityTag().getValue();
 
         final Response res = target("").request().header("If-Match", "\"" + etag + "\"").get();
@@ -284,14 +283,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetIfNoneMatchFoo() {
+    void testGetIfNoneMatchFoo() {
         final Response res = target("").request().header("If-None-Match", "\"blah\"").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetIfNoneMatch() {
+    void testGetIfNoneMatch() {
         final String etag = target("").request().get().getEntityTag().getValue();
 
         final Response res = target("").request().header("If-None-Match", "\"" + etag + "\"").get();
@@ -300,7 +299,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetIfNoneMatchWeak() {
+    void testGetIfNoneMatchWeak() {
         final String etag = target("").request().get().getEntityTag().getValue();
 
         final Response res = target("").request().header("If-None-Match", "W/\"" + etag + "\"").get();
@@ -309,7 +308,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetIfMatchBinaryWeak() {
+    void testGetIfMatchBinaryWeak() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
 
         final Response res = target(BINARY_PATH).request().header("If-Match", "W/\"" + etag + "\"").get();
@@ -318,7 +317,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetIfMatchBinary() {
+    void testGetIfMatchBinary() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
 
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"" + etag + "\"").get();
@@ -327,7 +326,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetIfNoneMatchBinary() {
+    void testGetIfNoneMatchBinary() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
 
         final Response res = target(BINARY_PATH).request().header("If-None-Match", "\"" + etag + "\"").get();
@@ -336,7 +335,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetIfNoneMatchWeakBinary() {
+    void testGetIfNoneMatchWeakBinary() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
 
         final Response res = target(BINARY_PATH).request().header("If-None-Match", "W/\"" + etag + "\"").get();
@@ -345,7 +344,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryDescription() {
+    void testGetBinaryDescription() {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -362,7 +361,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinary() throws IOException {
+    void testGetBinary() throws IOException {
         final Response res = target(BINARY_PATH).request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -376,7 +375,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryHeaders() throws IOException {
+    void testGetBinaryHeaders() {
         final Response res = target(BINARY_PATH).request().head();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -388,7 +387,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryRange() throws IOException {
+    void testGetBinaryRange() throws IOException {
         final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=3-10").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -399,7 +398,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryErrorSkip() throws IOException {
+    void testGetBinaryErrorSkip() throws IOException {
         when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent()).thenReturn(mockInputStream);
         when(mockInputStream.skip(anyLong())).thenThrow(new IOException());
@@ -408,32 +407,32 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetVersionError() {
+    void testGetVersionError() {
         final Response res = target(BINARY_PATH).queryParam("version", "looking at my history").request().get();
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetVersionNotFound() {
+    void testGetVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729").request().get();
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetTimemapNotFound() {
+    void testGetTimemapNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("ext", "timemap").request().get();
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetTimegateNotFound() {
+    void testGetTimegateNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .header(ACCEPT_DATETIME, "Wed, 16 May 2018 13:18:57 GMT").get();
         assertEquals(SC_NOT_ACCEPTABLE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetBinaryVersion() throws IOException {
+    void testGetBinaryVersion() throws IOException {
         final Response res = target(BINARY_PATH).queryParam("version", timestamp).request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -453,7 +452,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPrefer() throws IOException {
+    void testPrefer() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation; include=\"" + PreferServerManaged.getIRIString() + "\"")
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
@@ -465,11 +464,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
         assertAll("Check JSON-LD structure",
                 checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
-        assertEquals("A title", (String) obj.get("title"), "Incorrect title value!");
+        assertEquals("A title", obj.get("title"), "Incorrect title value!");
     }
 
     @Test
-    public void testPrefer2() throws IOException {
+    void testPrefer2() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
 
@@ -484,11 +483,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
         assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "title"),
                     asList("mode", "created", "contains", "member")));
-        assertEquals("A title", (String) obj.get("title"), "Incorrect title value!");
+        assertEquals("A title", obj.get("title"), "Incorrect title value!");
     }
 
     @Test
-    public void testPrefer3() throws IOException {
+    void testPrefer3() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
 
@@ -506,7 +505,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPrefer4() throws IOException {
+    void testPrefer4() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
 
@@ -521,11 +520,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
         assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "title", "contains", "member"),
                     asList("mode", "created")));
-        assertEquals("A title", (String) obj.get("title"), "Incorrect title value!");
+        assertEquals("A title", obj.get("title"), "Incorrect title value!");
     }
 
     @Test
-    public void testGetJsonCompact() throws IOException {
+    void testGetJsonCompact() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
@@ -535,13 +534,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertEquals("A title", (String) obj.get("title"), "Incorrect title property in JSON!");
+        assertEquals("A title", obj.get("title"), "Incorrect title property in JSON!");
         assertAll("Check JSON-LD structure",
                 checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
     }
 
     @Test
-    public void testGetTimeMapLinkDefaultFormat() {
+    void testGetTimeMapLinkDefaultFormat() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().get();
@@ -551,7 +550,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetTimeMapLinkDefaultFormat2() {
+    void testGetTimeMapLinkDefaultFormat2() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target("resource").queryParam("ext", "timemap").request().get();
@@ -561,7 +560,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetTimeMapLinkInvalidFormat() {
+    void testGetTimeMapLinkInvalidFormat() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
@@ -571,7 +570,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetTimeMapLink() throws IOException {
+    void testGetTimeMapLink() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
@@ -600,7 +599,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetTimeMapJsonDefault() throws IOException {
+    void testGetTimeMapJsonDefault() throws IOException {
         when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
@@ -644,7 +643,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetTimeMapJson() throws IOException {
+    void testGetTimeMapJson() throws IOException {
         when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
@@ -690,7 +689,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetVersionJson() {
+    void testGetVersionJson() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
 
@@ -705,7 +704,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetVersionContainerJson() {
+    void testGetVersionContainerJson() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
@@ -721,14 +720,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetNoAcl() {
+    void testGetNoAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().get();
 
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetBinaryAcl() {
+    void testGetBinaryAcl() {
         when(mockBinaryResource.hasAcl()).thenReturn(true);
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request().get();
 
@@ -741,7 +740,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryLinks() {
+    void testGetBinaryLinks() {
         final Response res = target(BINARY_PATH).request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -752,7 +751,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetBinaryDescriptionLinks() {
+    void testGetBinaryDescriptionLinks() {
         final Response res = target(BINARY_PATH).request().accept("text/turtle").get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
@@ -764,7 +763,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetAclJsonCompact() throws IOException {
+    void testGetAclJsonCompact() throws IOException {
         when(mockResource.hasAcl()).thenReturn(true);
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .accept("application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"").get();
@@ -779,37 +778,38 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
         final Map<String, Object> obj = MAPPER.readValue(entity, new TypeReference<Map<String, Object>>(){});
 
-        assertEquals(ACL.Control.getIRIString(), (String) obj.get("mode"), "Incorrect ACL mode property!");
+        assertEquals(ACL.Control.getIRIString(), obj.get("mode"), "Incorrect ACL mode property!");
         assertAll("Check Simple JSON-LD", checkSimpleJsonLdResponse(res, LDP.RDFSource));
         assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, GET, HEAD, OPTIONS)));
-        assertAll("Check Vary headers", checkVary(res, asList(ACCEPT_DATETIME)));
+        assertAll("Check Vary headers", checkVary(res, singletonList(ACCEPT_DATETIME)));
         assertAll("Check null headers", checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_RANGES)));
-        assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "mode"), asList("title")));
+        assertAll("Check JSON-LD structure", checkJsonStructure(obj, asList("@context", "mode"),
+                    singletonList("title")));
     }
 
     @Test
-    public void testGetResource() {
+    void testGetResource() {
         final Response res = target(RESOURCE_PATH).request().get();
 
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetNotFound() {
+    void testGetNotFound() {
         final Response res = target(NON_EXISTENT_PATH).request().get();
 
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetGone() {
+    void testGetGone() {
         final Response res = target(DELETED_PATH).request().get();
 
         assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testGetCORSInvalid() {
+    void testGetCORSInvalid() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", "http://foo.com")
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
@@ -821,7 +821,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testGetException() {
+    void testGetException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
         }));
@@ -833,18 +833,18 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *            OPTIONS Tests
      * ******************************* */
     @Test
-    public void testOptionsLDPRS() {
+    void testOptionsLDPRS() {
         final Response res = target(RESOURCE_PATH).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.RDFSource));
         assertAll("Check allowed methods", checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-        assertAll("Check null headers", checkNullHeaders(res, asList(MEMENTO_DATETIME)));
+        assertAll("Check null headers", checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
     }
 
     @Test
-    public void testOptionsLDPNR() {
+    void testOptionsLDPNR() {
         final Response res = target(BINARY_PATH).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -855,7 +855,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsLDPC() {
+    void testOptionsLDPC() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target(RESOURCE_PATH).request().options();
 
@@ -865,7 +865,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         assertAll("Check allowed methods",
                 checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
         assertAll("Check LDP type Link headers", checkLdpTypeHeaders(res, LDP.Container));
-        assertAll("Check null headers", checkNullHeaders(res, asList(MEMENTO_DATETIME)));
+        assertAll("Check null headers", checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
 
         final List<String> acceptPost = asList(res.getHeaderString(ACCEPT_POST).split(","));
         assertEquals(4L, acceptPost.size(), "Accept-Post header has wrong number of elements!");
@@ -876,7 +876,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsACL() {
+    void testOptionsACL() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -886,7 +886,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsACLBinary() {
+    void testOptionsACLBinary() {
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -896,27 +896,27 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsNonexistent() {
+    void testOptionsNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().options();
 
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testOptionsVersionNotFound() {
+    void testOptionsVersionNotFound() {
         final Response res = target(NON_EXISTENT_PATH).queryParam("version", "1496260729").request().options();
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testOptionsGone() {
+    void testOptionsGone() {
         final Response res = target(DELETED_PATH).request().options();
 
         assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testOptionsSlash() {
+    void testOptionsSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -926,7 +926,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsTimemap() {
+    void testOptionsTimemap() {
         when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
@@ -938,7 +938,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsTimemapBinary() {
+    void testOptionsTimemapBinary() {
         when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
 
@@ -950,7 +950,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsVersion() {
+    void testOptionsVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -959,7 +959,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsVersionBinary() {
+    void testOptionsVersionBinary() {
         final Response res = target(BINARY_PATH).queryParam("version", timestamp).request().options();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -968,7 +968,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testOptionsException() {
+    void testOptionsException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
         }));
@@ -980,7 +980,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *            POST Tests
      * ******************************* */
     @Test
-    public void testPost() {
+    void testPost() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
                     eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -997,7 +997,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostRoot() {
+    void testPostRoot() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
@@ -1016,7 +1016,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostInvalidLink() {
+    void testPostInvalidLink() {
         final Response res = target(RESOURCE_PATH).request().header("Link", "I never really liked his friends")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1024,7 +1024,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostToTimemap() {
+    void testPostToTimemap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1032,7 +1032,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostTypeWrongType() {
+    void testPostTypeWrongType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1045,7 +1045,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostTypeMismatch() {
+    void testPostTypeMismatch() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1058,7 +1058,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostConflict() {
+    void testPostConflict() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(mockResource));
@@ -1071,7 +1071,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostUnknownLinkType() {
+    void testPostUnknownLinkType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1087,7 +1087,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostBadContent() {
+    void testPostBadContent() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1099,7 +1099,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostToLdpRs() {
+    void testPostToLdpRs() {
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
                 .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
@@ -1110,7 +1110,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlug() {
+    void testPostSlug() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
@@ -1125,7 +1125,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlugWithSlash() {
+    void testPostSlugWithSlash() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1140,7 +1140,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostEncodedSlugWithSlash() {
+    void testPostEncodedSlugWithSlash() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1155,7 +1155,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlugWithWhitespace() {
+    void testPostSlugWithWhitespace() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1170,7 +1170,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostEncodedSlugWithEncodedWhitespace() {
+    void testPostEncodedSlugWithEncodedWhitespace() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/child_grandchild"))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1185,7 +1185,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostEncodedSlugWithInvalidEncoding() {
+    void testPostEncodedSlugWithInvalidEncoding() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1202,7 +1202,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostEmptySlug() {
+    void testPostEmptySlug() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1219,7 +1219,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostEmptyEncodedSlug() {
+    void testPostEmptyEncodedSlug() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1236,7 +1236,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlugWithHashURI() {
+    void testPostSlugWithHashURI() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).request().header(SLUG, "child#hash")
@@ -1248,7 +1248,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlugWithEncodedHashURI() {
+    void testPostSlugWithEncodedHashURI() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%23hash")
@@ -1260,7 +1260,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlugWithQuestionMark() {
+    void testPostSlugWithQuestionMark() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).request().header(SLUG, "child?foo=bar")
@@ -1272,7 +1272,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlugWithEncodedQuestionMark() {
+    void testPostSlugWithEncodedQuestionMark() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%3Ffoo=bar")
@@ -1284,7 +1284,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostVersion() {
+    void testPostVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().header(SLUG, "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1292,7 +1292,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostAcl() {
+    void testPostAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().header(SLUG, "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1300,7 +1300,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostIndirectContainer() {
+    void testPostIndirectContainer() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -1316,7 +1316,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostIndirectContainerHashUri() {
+    void testPostIndirectContainerHashUri() {
         final IRI hashResourceId = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE + "#foo");
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
@@ -1333,7 +1333,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostIndirectContainerSelf() {
+    void testPostIndirectContainerSelf() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -1349,7 +1349,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostIndirectContainerResource() {
+    void testPostIndirectContainerResource() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -1365,7 +1365,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostDirectContainer() {
+    void testPostDirectContainer() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
@@ -1381,7 +1381,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostDirectContainerSelf() {
+    void testPostDirectContainerSelf() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
@@ -1397,7 +1397,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostDirectContainerResource() {
+    void testPostDirectContainerResource() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
@@ -1413,7 +1413,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostBadJsonLdSemantics() {
+    void testPostBadJsonLdSemantics() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1425,7 +1425,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostBadJsonLdSyntax() {
+    void testPostBadJsonLdSyntax() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1436,7 +1436,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostConstraint() {
+    void testPostConstraint() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1451,7 +1451,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostIgnoreContains() {
+    void testPostIgnoreContains() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1464,7 +1464,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostNonexistent() {
+    void testPostNonexistent() {
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(NON_EXISTENT_PATH).request()
@@ -1474,7 +1474,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostGone() {
+    void testPostGone() {
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         final Response res = target(DELETED_PATH).request()
@@ -1484,7 +1484,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostBinary() {
+    void testPostBinary() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/newresource")),
                     any(Instant.class))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1497,7 +1497,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostTimeMap() {
+    void testPostTimeMap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1505,7 +1505,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostSlash() {
+    void testPostSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().header(SLUG, "test")
             .post(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1513,7 +1513,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPostException() {
+    void testPostException() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
@@ -1526,7 +1526,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *            PUT Tests
      * ******************************* */
     @Test
-    public void testPutExisting() {
+    void testPutExisting() {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1538,7 +1538,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutTypeWrongType() {
+    void testPutTypeWrongType() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"non-existent\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1551,7 +1551,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutUncontainedIndirectContainer() {
+    void testPutUncontainedIndirectContainer() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -1566,7 +1566,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutUncontainedIndirectContainerSelf() {
+    void testPutUncontainedIndirectContainerSelf() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -1586,7 +1586,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutUncontainedIndirectContainerResource() {
+    void testPutUncontainedIndirectContainerResource() {
         final EventService myEventService = mock(EventService.class);
         final Resource mockChildResource = mock(Resource.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
@@ -1603,7 +1603,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIndirectContainer() {
+    void testPutIndirectContainer() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -1617,7 +1617,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIndirectContainerSelf() {
+    void testPutIndirectContainerSelf() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -1631,7 +1631,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIndirectContainerResource() {
+    void testPutIndirectContainerResource() {
         final EventService myEventService = mock(EventService.class);
         final Resource mockChildResource = mock(Resource.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
@@ -1649,7 +1649,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutDirectContainer() {
+    void testPutDirectContainer() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
@@ -1663,7 +1663,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutDirectContainerSelf() {
+    void testPutDirectContainerSelf() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
@@ -1677,7 +1677,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutDirectContainerResource() {
+    void testPutDirectContainerResource() {
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
@@ -1691,7 +1691,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutExistingBinaryDescription() {
+    void testPutExistingBinaryDescription() {
         final Response res = target(BINARY_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1701,7 +1701,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutExistingUnknownLink() {
+    void testPutExistingUnknownLink() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", "<http://example.com/types/Foo>; rel=\"type\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1712,7 +1712,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutExistingIgnoreProperties() {
+    void testPutExistingIgnoreProperties() {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" ;"
                         + " <http://example.com/foo> <http://www.w3.org/ns/ldp#IndirectContainer> ;"
@@ -1725,7 +1725,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutExistingSubclassLink() {
+    void testPutExistingSubclassLink() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Link", LDP.Container + "; rel=\"type\"")
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1736,7 +1736,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutExistingMalformed() {
+    void testPutExistingMalformed() {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1744,7 +1744,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutConstraint() {
+    void testPutConstraint() {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> \"Some literal\" .",
                     TEXT_TURTLE_TYPE));
@@ -1755,7 +1755,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIgnoreContains() {
+    void testPutIgnoreContains() {
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ",
                     TEXT_TURTLE_TYPE));
@@ -1764,7 +1764,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutNew() {
+    void testPutNew() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1780,7 +1780,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutDeleted() {
+    void testPutDeleted() {
         final Response res = target(DELETED_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1791,7 +1791,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutVersion() {
+    void testPutVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1799,7 +1799,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutAcl() {
+    void testPutAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -1808,7 +1808,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutAclOnDc() {
+    void testPutAclOnDc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1818,7 +1818,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutAclOnIc() {
+    void testPutAclOnIc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1828,7 +1828,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutOnDc() {
+    void testPutOnDc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1839,7 +1839,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutOnIc() {
+    void testPutOnIc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         final Response res = target(RESOURCE_PATH).request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
@@ -1850,7 +1850,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutBinary() {
+    void testPutBinary() {
         final Response res = target(BINARY_PATH).request().put(entity("some data.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -1859,7 +1859,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutBinaryToACL() {
+    void testPutBinaryToACL() {
         final Response res = target(BINARY_PATH).queryParam("ext", "acl").request()
             .put(entity("some data.", TEXT_PLAIN_TYPE));
 
@@ -1867,7 +1867,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfMatch() {
+    void testPutIfMatch() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
 
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"" + etag + "\"")
@@ -1877,7 +1877,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfMatchWeak() {
+    void testPutIfMatchWeak() {
         final String etag = target("").request().get().getEntityTag().getValue();
 
         final Response res = target("").request().header("If-Match", "W/\"" + etag + "\"")
@@ -1887,7 +1887,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfNoneMatchEtag() {
+    void testPutIfNoneMatchEtag() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
 
         final Response res = target(BINARY_PATH).request().header("If-None-Match", "\"" + etag + "\"")
@@ -1897,7 +1897,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfNoneMatchRdfEtag() {
+    void testPutIfNoneMatchRdfEtag() {
         final String etag = target("").request().get().getEntityTag().getValue();
 
         final Response res = target("").request().header("If-None-Match", "\"" + etag + "\"")
@@ -1907,7 +1907,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfNoneMatchRdfWeakEtag() {
+    void testPutIfNoneMatchRdfWeakEtag() {
         final String etag = target("").request().get().getEntityTag().getValue();
 
         final Response res = target("").request().header("If-None-Match", "W/\"" + etag + "\"")
@@ -1917,7 +1917,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfNoneMatchWeakEtag() {
+    void testPutIfNoneMatchWeakEtag() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
 
         final Response res = target(BINARY_PATH).request().header("If-None-Match", "W/\"" + etag + "\"")
@@ -1927,7 +1927,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfNoneMatch() {
+    void testPutIfNoneMatch() {
         final Response res = target(BINARY_PATH).request().header("If-None-Match", "\"foo\", \"bar\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
@@ -1935,7 +1935,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfMatchStar() {
+    void testPutIfMatchStar() {
         final Response res = target(BINARY_PATH).request().header("If-Match", "*")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
@@ -1943,7 +1943,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfMatchMultiple() {
+    void testPutIfMatchMultiple() {
         final String etag = target(BINARY_PATH).request().get().getEntityTag().getValue();
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"blah\", \"" + etag + "\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
@@ -1952,7 +1952,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfNoneMatchStar() {
+    void testPutIfNoneMatchStar() {
         final Response res = target(BINARY_PATH).request().header("If-None-Match", "*")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
@@ -1960,7 +1960,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutBadIfMatch() {
+    void testPutBadIfMatch() {
         final Response res = target(BINARY_PATH).request().header("If-Match", "4db2c60044c906361ac212ae8684e8ad")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
@@ -1968,7 +1968,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutIfUnmodified() {
+    void testPutIfUnmodified() {
         final Response res = target(BINARY_PATH).request()
             .header("If-Unmodified-Since", "Tue, 29 Aug 2017 07:14:52 GMT")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
@@ -1977,7 +1977,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutPreconditionFailed() {
+    void testPutPreconditionFailed() {
         final Response res = target(BINARY_PATH).request().header("If-Match", "\"blahblahblah\"")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
 
@@ -1985,7 +1985,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutPreconditionFailed2() {
+    void testPutPreconditionFailed2() {
         final Response res = target(BINARY_PATH).request()
             .header("If-Unmodified-Since", "Wed, 19 Oct 2016 10:15:00 GMT")
             .put(entity("some different data.", TEXT_PLAIN_TYPE));
@@ -1994,7 +1994,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutSlash() {
+    void testPutSlash() {
         final Response res = target(RESOURCE_PATH + "/").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -2003,7 +2003,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutTimeMap() {
+    void testPutTimeMap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .put(entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -2011,7 +2011,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPutException() {
+    void testPutException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
         }));
@@ -2023,7 +2023,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *            DELETE Tests
      * ******************************* */
     @Test
-    public void testDeleteExisting() {
+    void testDeleteExisting() {
         final Response res = target(RESOURCE_PATH).request().delete();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -2031,21 +2031,21 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteNonexistent() {
+    void testDeleteNonexistent() {
         final Response res = target(NON_EXISTENT_PATH).request().delete();
 
         assertEquals(SC_NOT_FOUND, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testDeleteDeleted() {
+    void testDeleteDeleted() {
         final Response res = target(DELETED_PATH).request().delete();
 
         assertEquals(SC_GONE, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testDeleteVersion() {
+    void testDeleteVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request().delete();
 
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
@@ -2053,7 +2053,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteNonExistant() {
+    void testDeleteNonExistant() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -2065,7 +2065,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteWithChildren() {
+    void testDeleteWithChildren() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.of(
                     rdf.createTriple(identifier, LDP.contains, rdf.createIRI(identifier.getIRIString() + "/child"))));
@@ -2076,7 +2076,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteNoChildren1() {
+    void testDeleteNoChildren1() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.empty());
 
@@ -2086,7 +2086,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteNoChildren2() {
+    void testDeleteNoChildren2() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.empty());
 
@@ -2096,7 +2096,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteAcl() {
+    void testDeleteAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request().delete();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -2104,13 +2104,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteTimeMap() {
+    void testDeleteTimeMap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request().delete();
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testDeleteSlash() {
+    void testDeleteSlash() {
         final Response res = target(RESOURCE_PATH + "/").request().delete();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -2121,7 +2121,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testDeleteException() {
+    void testDeleteException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
         }));
@@ -2133,7 +2133,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *      PATCH tests
      * ********************* */
     @Test
-    public void testPatchVersion() {
+    void testPatchVersion() {
         final Response res = target(RESOURCE_PATH).queryParam("version", timestamp).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2142,7 +2142,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchTimeMap() {
+    void testPatchTimeMap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2151,7 +2151,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchExisting() {
+    void testPatchExisting() {
         final Response res = target(RESOURCE_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2162,7 +2162,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchRoot() {
+    void testPatchRoot() {
         final Response res = target().request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2173,7 +2173,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchMissing() {
+    void testPatchMissing() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2181,7 +2181,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchGone() {
+    void testPatchGone() {
         final Response res = target(DELETED_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2189,7 +2189,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchExistingIgnoreLdpType() throws IOException {
+    void testPatchExistingIgnoreLdpType() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" ;"
@@ -2206,7 +2206,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchExistingJsonLd() throws IOException {
+    void testPatchExistingJsonLd() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation")
             .header("Accept", "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#compacted\"")
@@ -2222,11 +2222,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
         assertAll("Check JSON-LD structure",
                 checkJsonStructure(obj, asList("@context", "title"), asList("mode", "created")));
-        assertEquals("A new title", (String) obj.get("title"), "Incorrect title value!");
+        assertEquals("A new title", obj.get("title"), "Incorrect title value!");
     }
 
     @Test
-    public void testPatchExistingBinary() {
+    void testPatchExistingBinary() {
         final Response res = target(BINARY_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2237,7 +2237,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchExistingResponse() throws IOException {
+    void testPatchExistingResponse() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .header("Prefer", "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2251,7 +2251,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchConstraint() {
+    void testPatchConstraint() {
         final Response res = target(RESOURCE_PATH).request()
             .method("PATCH", entity("INSERT { <> a \"Some literal\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2262,7 +2262,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchToTimemap() {
+    void testPatchToTimemap() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "timemap").request()
             .method("PATCH", entity("<> <http://purl.org/dc/terms/title> \"A title\" .", TEXT_TURTLE_TYPE));
 
@@ -2270,7 +2270,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchNew() {
+    void testPatchNew() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/test");
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -2284,7 +2284,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchAcl() {
+    void testPatchAcl() {
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2295,7 +2295,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchOnDc() {
+    void testPatchOnDc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         final Response res = target(RESOURCE_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2307,7 +2307,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchOnIc() {
+    void testPatchOnIc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         final Response res = target(RESOURCE_PATH).request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2319,7 +2319,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchAclOnDc() {
+    void testPatchAclOnDc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2330,7 +2330,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchAclOnIc() {
+    void testPatchAclOnIc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         final Response res = target(RESOURCE_PATH).queryParam("ext", "acl").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
@@ -2341,7 +2341,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchInvalidContent() {
+    void testPatchInvalidContent() {
         final Response res = target(RESOURCE_PATH).request().method("PATCH", entity("blah blah blah", "invalid/type"));
 
         assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus(), "Unexpected response code!");
@@ -2349,7 +2349,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchSlash() {
+    void testPatchSlash() {
         final Response res = target(RESOURCE_PATH + "/").request()
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2359,7 +2359,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchNotAcceptable() {
+    void testPatchNotAcceptable() {
         final Response res = target(RESOURCE_PATH).request().accept("text/foo")
             .method("PATCH", entity("INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}",
                         APPLICATION_SPARQL_UPDATE));
@@ -2368,7 +2368,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testPatchException() {
+    void testPatchException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
         }));
@@ -2380,7 +2380,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      * Some other method
      */
     @Test
-    public void testOtherMethod() {
+    void testOtherMethod() {
         final Response res = target(RESOURCE_PATH).request().method("FOO");
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
@@ -2389,7 +2389,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      *      Test cache control headers
      * ************************************ */
     @Test
-    public void testCacheControl() {
+    void testCacheControl() {
         final Response res = target(RESOURCE_PATH).request().get();
         assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
         assertNotNull(res.getHeaderString(CACHE_CONTROL), "Missing Cache-Control header!");
@@ -2397,13 +2397,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    public void testCacheControlOptions() {
+    void testCacheControlOptions() {
         final Response res = target(RESOURCE_PATH).request().options();
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
         assertNull(res.getHeaderString(CACHE_CONTROL), "Unexpected Cache-Control header!");
     }
 
-    protected static List<Link> getLinks(final Response res) {
+    static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         final List<String> links = res.getStringHeaders().get(LINK);
         if (links != null) {
@@ -2422,11 +2422,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 l.getRel().contains("original") && l.getUri().toString().equals(getBaseUrl() + path));
     }
 
-    protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
+    static Predicate<Link> hasLink(final IRI iri, final String rel) {
         return link -> rel.equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
     }
 
-    protected static Predicate<Link> hasType(final IRI iri) {
+    static Predicate<Link> hasType(final IRI iri) {
         return hasLink(iri, "type");
     }
 

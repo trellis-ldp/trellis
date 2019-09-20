@@ -28,12 +28,12 @@ import org.trellisldp.test.AbstractApplicationMementoTests;
 @TestInstance(PER_CLASS)
 class TrellisApplicationTest {
 
-    protected final Client CLIENT = newBuilder().build();
-    protected final String TRELLIS_URL = "http://localhost:" + getInteger("trellis.port", 9080) + "/";
+    private final Client CLIENT = newBuilder().build();
+    private final String TRELLIS_URL = "http://localhost:" + getInteger("trellis.port", 9080) + "/";
 
     @Nested
     @DisplayName("Trellis LDP Tests")
-    public class LdpTests extends AbstractApplicationLdpTests {
+    class LdpTests extends AbstractApplicationLdpTests {
 
         @Override
         public Client getClient() {
@@ -48,7 +48,7 @@ class TrellisApplicationTest {
 
     @Nested
     @DisplayName("Trellis Memento Tests")
-    public class MementoTests extends AbstractApplicationMementoTests {
+    class MementoTests extends AbstractApplicationMementoTests {
 
         @Override
         public Client getClient() {

@@ -14,6 +14,7 @@
 package org.trellisldp.auth.oauth;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -33,12 +34,12 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class FederatedJwtAuthenticatorTest {
+class FederatedJwtAuthenticatorTest {
 
-    private static char[] passphrase = "password".toCharArray();
+    private static final char[] passphrase = "password".toCharArray();
 
     @Test
-    public void testAuthenticateKeystore() throws Exception {
+    void testAuthenticateKeystore() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
@@ -56,7 +57,7 @@ public class FederatedJwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateKeystoreRSA() throws Exception {
+    void testAuthenticateKeystoreRSA() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
@@ -66,7 +67,7 @@ public class FederatedJwtAuthenticatorTest {
             .signWith(privateKey, SignatureAlgorithm.RS256).compact();
 
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
-                asList("trellis-public"));
+                singletonList("trellis-public"));
 
         final Principal p = authenticator.authenticate(token);
         assertNotNull(p, "Missing principal!");
@@ -74,13 +75,13 @@ public class FederatedJwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateKeystoreEC() throws Exception {
+    void testAuthenticateKeystoreEC() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
         final String token = buildEcToken(ks.getKey("trellis-ec", passphrase), "trellis-ec");
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
-                asList("trellis-ec"));
+                singletonList("trellis-ec"));
 
         final Principal p = authenticator.authenticate(token);
         assertNotNull(p, "Missing principal!");
@@ -88,7 +89,7 @@ public class FederatedJwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateNoSub() throws Exception {
+    void testAuthenticateNoSub() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
@@ -97,13 +98,13 @@ public class FederatedJwtAuthenticatorTest {
             .setIssuer("http://localhost").signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
-                asList("trellis-ec"));
+                singletonList("trellis-ec"));
 
         assertNull(authenticator.authenticate(token), "Unexpected principal!");
     }
 
     @Test
-    public void testAuthenticateSubIss() throws Exception {
+    void testAuthenticateSubIss() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
@@ -113,7 +114,7 @@ public class FederatedJwtAuthenticatorTest {
             .signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
-                asList("trellis-ec"));
+                singletonList("trellis-ec"));
 
         final Principal p = authenticator.authenticate(token);
         assertNotNull(p, "Missing principal!");
@@ -121,7 +122,7 @@ public class FederatedJwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateSubNoWebIss() throws Exception {
+    void testAuthenticateSubNoWebIss() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
@@ -131,13 +132,13 @@ public class FederatedJwtAuthenticatorTest {
             .signWith(privateKey, SignatureAlgorithm.ES256).compact();
 
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
-                asList("trellis-ec"));
+                singletonList("trellis-ec"));
 
         assertNull(authenticator.authenticate(token), "Unexpected principal!");
     }
 
     @Test
-    public void testAuthenticateKeystoreNoKeyId() throws Exception {
+    void testAuthenticateKeystoreNoKeyId() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
@@ -145,13 +146,13 @@ public class FederatedJwtAuthenticatorTest {
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
             .signWith(privateKey, SignatureAlgorithm.ES256).compact();
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
-                asList("trellis-ec"));
+                singletonList("trellis-ec"));
 
         assertThrows(JwtException.class, () -> authenticator.authenticate(token), "Unexpected key id field!");
     }
 
     @Test
-    public void testAuthenticateKeystoreNoMatch() throws Exception {
+    void testAuthenticateKeystoreNoMatch() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
@@ -163,19 +164,19 @@ public class FederatedJwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateKeystoreAnotherNoMatch() throws Exception {
+    void testAuthenticateKeystoreAnotherNoMatch() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), passphrase);
 
         final String token = buildEcToken(ks.getKey("trellis-ec", passphrase), "foo");
         final Authenticator authenticator = new FederatedJwtAuthenticator(ks,
-                asList("foo"));
+                singletonList("foo"));
 
         assertThrows(SecurityException.class, () -> authenticator.authenticate(token), "Unexpected keystore entry!");
     }
 
     @Test
-    public void testKeyStoreException() throws Exception {
+    void testKeyStoreException() throws Exception {
         final KeyStore mockKeyStore = mock(KeyStore.class, inv -> {
             throw new KeyStoreException("Expected");
         });
@@ -185,7 +186,7 @@ public class FederatedJwtAuthenticatorTest {
 
         final String token = buildEcToken(ks.getKey("trellis-ec", passphrase), "trellis-ec");
         final Authenticator authenticator = new FederatedJwtAuthenticator(mockKeyStore,
-                asList("trellis-ec"));
+                singletonList("trellis-ec"));
 
         assertThrows(SecurityException.class, () -> authenticator.authenticate(token),
                 "Unexpectedly functional keystore!");

@@ -15,7 +15,6 @@ package org.trellisldp.api;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -35,7 +34,7 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class ResourceServiceTest {
+class ResourceServiceTest {
 
     private static final RDF rdf = new JenaRDF();
     private static final IRI existing = rdf.createIRI("trellis:data/existing");
@@ -57,7 +56,7 @@ public class ResourceServiceTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         doCallRealMethod().when(mockResourceService).skolemize(any());
         doCallRealMethod().when(mockResourceService).unskolemize(any());
@@ -69,20 +68,20 @@ public class ResourceServiceTest {
     }
 
     @Test
-    public void testRetrievalService2() {
+    void testRetrievalService2() {
         final RetrievalService<Resource> svc = new MyRetrievalService();
         assertEquals(mockResource, svc.get(existing).toCompletableFuture().join(),
                 "Incorrect resource returned by retrieval service!");
     }
 
     @Test
-    public void testRetrievalService() {
+    void testRetrievalService() {
         assertEquals(mockResource, mockRetrievalService.get(existing).toCompletableFuture().join(),
                 "Incorrect resource found by retrieval service!");
     }
 
     @Test
-    public void testDefaultCreate() {
+    void testDefaultCreate() {
         final IRI root = rdf.createIRI("trellis:data/");
         final Dataset dataset = rdf.createDataset();
         final Metadata metadata = Metadata.builder(existing).container(root).interactionModel(LDP.RDFSource).build();
@@ -94,7 +93,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    public void testSkolemization() {
+    void testSkolemization() {
         final BlankNode bnode = rdf.createBlankNode("testing");
         final IRI iri = rdf.createIRI("trellis:bnode/testing");
         final IRI resource = rdf.createIRI("trellis:data/resource");
@@ -114,7 +113,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    public void testInternalExternal() {
+    void testInternalExternal() {
         final String baseUrl = "http://example.com/";
         final IRI external = rdf.createIRI(baseUrl + "resource");
         final IRI internal = rdf.createIRI("trellis:data/resource");

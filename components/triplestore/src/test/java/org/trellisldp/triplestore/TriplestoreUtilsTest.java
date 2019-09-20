@@ -35,7 +35,7 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * ResourceService tests.
  */
-public class TriplestoreUtilsTest {
+class TriplestoreUtilsTest {
 
     private static final RDF simpleRdf = new SimpleRDF();
     private static final RDF jenaRdf = new JenaRDF();
@@ -44,7 +44,7 @@ public class TriplestoreUtilsTest {
     private static final Literal literal = simpleRdf.createLiteral("title");
 
     @Test
-    public void testDatasetNoConversion() {
+    void testDatasetNoConversion() {
         final Dataset dataset = jenaRdf.createDataset();
 
         dataset.add(jenaRdf.createQuad(PreferUserManaged, subject, SKOS.prefLabel, literal));
@@ -59,7 +59,7 @@ public class TriplestoreUtilsTest {
     }
 
     @Test
-    public void testDatasetConversion() {
+    void testDatasetConversion() {
         final Dataset dataset = simpleRdf.createDataset();
 
         dataset.add(simpleRdf.createQuad(PreferUserManaged, subject, SKOS.prefLabel, literal));
@@ -74,20 +74,20 @@ public class TriplestoreUtilsTest {
     }
 
     @Test
-    public void testBaseIRItruncate() {
+    void testBaseIRItruncate() {
         final IRI iri = jenaRdf.createIRI("http://example.com/resource#i");
         assertEquals(jenaRdf.createIRI("http://example.com/resource"), TriplestoreUtils.getBaseIRI(iri),
                 "Check that fragment URLs are removed");
     }
 
     @Test
-    public void testBaseIRInoTruncate() {
+    void testBaseIRInoTruncate() {
         final IRI iri = jenaRdf.createIRI("http://example.com/resource");
         assertEquals(iri, TriplestoreUtils.getBaseIRI(iri), "Check that fragment URLs are removed");
     }
 
     @Test
-    public void testNodeConversion() {
+    void testNodeConversion() {
         final Resource s = createResource("http://example.com/Resource");
         final Property p = createProperty("http://example.com/prop");
         final Resource o = createResource("http://example.com/Other");
@@ -102,7 +102,7 @@ public class TriplestoreUtilsTest {
     }
 
     @Test
-    public void testBaseIRIliteral() {
+    void testBaseIRIliteral() {
         final Literal l = jenaRdf.createLiteral("a literal");
         assertEquals(l, TriplestoreUtils.getBaseIRI(l), "Incorrect literal value!");
     }

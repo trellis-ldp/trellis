@@ -87,13 +87,13 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * @author acoburn
  */
-public class GetHandlerTest extends BaseTestHandler {
+class GetHandlerTest extends BaseTestHandler {
 
-    private BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///testResource.txt"))
+    private final BinaryMetadata testBinary = BinaryMetadata.builder(rdf.createIRI("file:///testResource.txt"))
         .mimeType("text/plain").build();
 
     @Test
-    public void testGetLdprs() {
+    void testGetLdprs() {
         when(mockTrellisRequest.getBaseUrl()).thenReturn("http://example.org");
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
@@ -122,7 +122,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetPreferLdprs() {
+    void testGetPreferLdprs() {
         when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(LD_PATCH));
         when(mockTrellisRequest.getPrefer())
             .thenReturn(Prefer.valueOf("return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment"));
@@ -143,7 +143,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetVersionedLdprs() {
+    void testGetVersionedLdprs() {
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, true, true, true, null, null);
         final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build();
@@ -172,7 +172,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testExtraLinks() {
+    void testExtraLinks() {
         final String inbox = "http://ldn.example.com/inbox";
         final String annService = "http://annotation.example.com/resource";
 
@@ -193,7 +193,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testNotAcceptableLdprs() {
+    void testNotAcceptableLdprs() {
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
 
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
@@ -205,7 +205,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testMinimalLdprs() {
+    void testMinimalLdprs() {
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_LD_JSON_TYPE));
         when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
@@ -235,7 +235,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetLdpc() {
+    void testGetLdpc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(Stream.of(TURTLE, NTRIPLES, JSONLD).collect(toList()));
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(
@@ -278,7 +278,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetHTML() {
+    void testGetHTML() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockTrellisRequest.getAcceptableMediaTypes())
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
@@ -297,7 +297,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetBinaryDescription() {
+    void testGetBinaryDescription() {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
@@ -309,7 +309,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetBinaryDescription2() {
+    void testGetBinaryDescription2() {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getExt()).thenReturn(DESCRIPTION);
@@ -337,7 +337,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetBinary() {
+    void testGetBinary() {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
@@ -360,7 +360,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testGetAcl() {
+    void testGetAcl() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResource.hasAcl()).thenReturn(true);
         when(mockTrellisRequest.getExt()).thenReturn("acl");
@@ -375,7 +375,7 @@ public class GetHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testFilterMementoLink() {
+    void testFilterMementoLink() {
         final Instant time1 = now();
         final Instant time2 = time1.plusSeconds(10L);
         final SortedSet<Instant> mementos = new TreeSet<>();
@@ -387,11 +387,11 @@ public class GetHandlerTest extends BaseTestHandler {
                 mementos).build();
 
         assertAll("Check MementoHeaders",
-                checkMementoLinks(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList()), 2L));
+                checkMementoLinks(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList())));
     }
 
     @Test
-    public void testLimitMementoHeaders() {
+    void testLimitMementoHeaders() {
         final Instant time1 = now();
         final Instant time2 = time1.plusSeconds(10L);
         final Instant time3 = time1.plusSeconds(20L);
@@ -409,12 +409,12 @@ public class GetHandlerTest extends BaseTestHandler {
                 mementos).build();
 
         assertAll("Check MementoHeaders",
-                checkMementoLinks(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList()), 2L));
+                checkMementoLinks(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList())));
     }
 
-    private Stream<Executable> checkMementoLinks(final List<Link> links, final long mementos) {
+    private Stream<Executable> checkMementoLinks(final List<Link> links) {
         return Stream.of(
-                () -> assertEquals(mementos, links.stream().filter(link -> link.getRels().contains("memento")).count()),
+                () -> assertEquals(2L, links.stream().filter(link -> link.getRels().contains("memento")).count()),
                 () -> assertEquals(1L, links.stream().filter(link -> link.getRels().contains("first")).count()),
                 () -> assertEquals(1L, links.stream().filter(link -> link.getRels().contains("last")).count()));
     }

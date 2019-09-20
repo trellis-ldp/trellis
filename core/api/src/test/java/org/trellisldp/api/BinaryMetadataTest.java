@@ -29,16 +29,16 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class BinaryMetadataTest {
+class BinaryMetadataTest {
 
     private static final RDF rdf = new SimpleRDF();
 
-    private final String mimeType = "text/plain";
     private final IRI identifier = rdf.createIRI("trellis:data/resource");
-    private final Map<String, List<String>> hints = singletonMap("key", asList("val1", "val2"));
 
     @Test
-    public void testBinaryMetadata() {
+    void testBinaryMetadata() {
+        final String mimeType = "text/plain";
+        final Map<String, List<String>> hints = singletonMap("key", asList("val1", "val2"));
         final BinaryMetadata binary = BinaryMetadata.builder(identifier).mimeType(mimeType).hints(hints).build();
         assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
         assertEquals(of(mimeType), binary.getMimeType(), "MimeType did not match");
@@ -46,7 +46,7 @@ public class BinaryMetadataTest {
     }
 
     @Test
-    public void testBinaryMetadataWithOptionalArgs() {
+    void testBinaryMetadataWithOptionalArgs() {
         final BinaryMetadata binary = BinaryMetadata.builder(identifier).build();
         assertEquals(identifier, binary.getIdentifier(), "Identifier did not match");
         assertFalse(binary.getMimeType().isPresent(), "MimeType was not absent");

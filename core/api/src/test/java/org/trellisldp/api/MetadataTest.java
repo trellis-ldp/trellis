@@ -25,7 +25,7 @@ import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
 
-public class MetadataTest {
+class MetadataTest {
 
     private static final RDF rdf = TrellisUtils.getInstance();
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
@@ -33,7 +33,7 @@ public class MetadataTest {
     private static final IRI root = rdf.createIRI("trellis:data/");
 
     @Test
-    public void testMetadataIndirectContainer() {
+    void testMetadataIndirectContainer() {
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.IndirectContainer)
                 .container(root).memberRelation(LDP.member)
@@ -53,7 +53,7 @@ public class MetadataTest {
     }
 
     @Test
-    public void testMetadataDirectContainer() {
+    void testMetadataDirectContainer() {
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.DirectContainer)
                 .container(root).memberOfRelation(DC.isPartOf)
@@ -70,7 +70,7 @@ public class MetadataTest {
     }
 
     @Test
-    public void testMetadataBinary() {
+    void testMetadataBinary() {
         final BinaryMetadata binary = BinaryMetadata.builder(rdf.createIRI("http://example.com/binary")).build();
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.NonRDFSource)
@@ -87,7 +87,7 @@ public class MetadataTest {
     }
 
     @Test
-    public void testMetadataResource() {
+    void testMetadataResource() {
         final Resource mockResource = mock(Resource.class);
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);

@@ -13,12 +13,11 @@
  */
 package org.trellisldp.webdav;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -42,10 +41,9 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.http.core.ServiceBundler;
 
-public class TrellisWebDAVRequestFilterTest {
+class TrellisWebDAVRequestFilterTest {
 
-    private static RDF rdf = getInstance();
-
+    private static final RDF rdf = getInstance();
     private static final String PATH = "resource";
 
     @Mock
@@ -75,7 +73,7 @@ public class TrellisWebDAVRequestFilterTest {
     private TrellisWebDAVRequestFilter filter;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
 
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
@@ -87,7 +85,7 @@ public class TrellisWebDAVRequestFilterTest {
         when(mockUriBuilder.path(any(String.class))).thenReturn(mockUriBuilder);
         when(mockUriInfo.getBaseUriBuilder()).thenReturn(mockUriBuilder);
         when(mockUriInfo.getPath()).thenReturn(PATH);
-        when(mockUriInfo.getPathSegments()).thenReturn(asList(mockPathSegment));
+        when(mockUriInfo.getPathSegments()).thenReturn(singletonList(mockPathSegment));
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockPathSegment.getPath()).thenReturn(PATH);
 
@@ -95,7 +93,7 @@ public class TrellisWebDAVRequestFilterTest {
     }
 
     @Test
-    public void testTestPutUncontainedMissing() throws Exception {
+    void testTestPutUncontainedMissing() {
 
         filter.filter(mockContext);
         verify(mockContext).setMethod(eq(POST));
@@ -103,7 +101,7 @@ public class TrellisWebDAVRequestFilterTest {
     }
 
     @Test
-    public void testTestPutContainedMissing() throws Exception {
+    void testTestPutContainedMissing() {
         final TrellisWebDAVRequestFilter filter2 = new TrellisWebDAVRequestFilter(mockBundler, false, null);
 
         filter2.filter(mockContext);
@@ -113,7 +111,7 @@ public class TrellisWebDAVRequestFilterTest {
 
 
     @Test
-    public void testTestPutUncontainedDeleted() throws Exception {
+    void testTestPutUncontainedDeleted() {
 
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
             .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
@@ -124,7 +122,7 @@ public class TrellisWebDAVRequestFilterTest {
     }
 
     @Test
-    public void testTestPutUncontainedExisting() throws Exception {
+    void testTestPutUncontainedExisting() {
 
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
             .thenAnswer(inv -> completedFuture(mockResource));
@@ -136,7 +134,7 @@ public class TrellisWebDAVRequestFilterTest {
 
 
     @Test
-    public void testTestPutUncontainedNoPaths() throws Exception {
+    void testTestPutUncontainedNoPaths() {
 
         when(mockUriInfo.getPathSegments()).thenReturn(emptyList());
 
@@ -146,7 +144,7 @@ public class TrellisWebDAVRequestFilterTest {
     }
 
     @Test
-    public void testTestPutUncontainedEmptyPaths() throws Exception {
+    void testTestPutUncontainedEmptyPaths() {
 
         when(mockPathSegment.getPath()).thenReturn("");
 

@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the PROV Ontology Class
  * @author acoburn
  */
-public class PROVTest extends AbstractVocabularyTest {
+class PROVTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/ns/prov#";
     }
 
     @Override
-    public Class<PROV> vocabulary() {
+    Class<PROV> vocabulary() {
         return PROV.class;
     }
 }

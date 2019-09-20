@@ -18,7 +18,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -55,7 +54,7 @@ import org.trellisldp.vocabulary.VCARD;
 /**
  * Tests to verify the correctness of WebAC authorization decisions.
  */
-public class WebAcServiceTest {
+class WebAcServiceTest {
 
     private static final RDF rdf = new JenaRDF();
 
@@ -114,7 +113,7 @@ public class WebAcServiceTest {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setUp() {
+    void setUp() {
         initMocks(this);
 
         when(mockServiceBundler.getResourceService()).thenReturn(mockResourceService);
@@ -148,12 +147,12 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testDefaultResourceService() {
+    void testDefaultResourceService() {
         assertDoesNotThrow(() -> new WebAcService());
     }
 
     @Test
-    public void testInitialize() {
+    void testInitialize() {
         when(mockRootResource.hasAcl()).thenReturn(false);
 
         assertDoesNotThrow(() -> testService.initialize());
@@ -161,7 +160,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testDontInitialize() {
+    void testDontInitialize() {
         when(mockRootResource.hasAcl()).thenReturn(true);
 
         assertDoesNotThrow(() -> testService.initialize());
@@ -169,7 +168,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testUseDefaultAcl() {
+    void testUseDefaultAcl() {
         when(mockRootResource.hasAcl()).thenReturn(false);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
 
@@ -181,7 +180,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanRead1() {
+    void testCanRead1() {
         when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Check readability for " + acoburnIRI,
@@ -193,19 +192,19 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanRead2() {
+    void testCanRead2() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertAll("Check user can read all resources", checkAllCanRead());
     }
 
     @Test
-    public void testCanRead3() {
+    void testCanRead3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         assertAll("Check user can read all resources", checkAllCanRead());
     }
 
     @Test
-    public void testCanRead4() {
+    void testCanRead4() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.DirectContainer));
@@ -214,7 +213,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanRead5() {
+    void testCanRead5() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.IndirectContainer));
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -223,7 +222,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanWrite1() {
+    void testCanWrite1() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Check writability for " + acoburnIRI,
                 checkCannotWrite(nonexistentIRI),
@@ -234,7 +233,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanWrite2() {
+    void testCanWrite2() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Container));
         assertAll("Check writability for " + addisonIRI,
@@ -246,7 +245,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanWrite2b() {
+    void testCanWrite2b() {
         when(mockSession.getAgent()).thenReturn(browserIRI);
         when(mockResourceService.supportedInteractionModels()).thenReturn(singleton(LDP.Container));
         assertAll("Check writability for " + addisonIRI,
@@ -258,13 +257,13 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanWrite3() {
+    void testCanWrite3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         assertAll("Check user can write to all resources", checkAllCanWrite());
     }
 
     @Test
-    public void testCanWrite4() {
+    void testCanWrite4() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -273,7 +272,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanWrite5() {
+    void testCanWrite5() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -286,7 +285,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanWrite6() {
+    void testCanWrite6() {
         final WebAcService testService2 = new WebAcService(mockResourceService,
                 new WebAcService.NoopAuthorizationCache(), false);
         when(mockSession.getAgent()).thenReturn(agentIRI);
@@ -308,7 +307,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanWrite7() {
+    void testCanWrite7() {
         final WebAcService testService2 = new WebAcService(mockResourceService,
                 new WebAcService.NoopAuthorizationCache(), false);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
@@ -328,7 +327,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanControl1() {
+    void testCanControl1() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Test controlability for " + acoburnIRI,
                 checkCannotWrite(nonexistentIRI),
@@ -339,7 +338,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanControl2() {
+    void testCanControl2() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertAll("Test controlability for " + addisonIRI,
                 checkCanControl(nonexistentIRI),
@@ -349,7 +348,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanControl3() {
+    void testCanControl3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         assertAll("Test controlability for " + agentIRI,
                 checkCanControl(nonexistentIRI),
@@ -360,7 +359,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanAppend1() {
+    void testCanAppend1() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Test appendability for " + acoburnIRI,
                 checkCannotAppend(nonexistentIRI),
@@ -371,7 +370,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanAppend2() {
+    void testCanAppend2() {
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertAll("Test appendability for " + addisonIRI,
                 checkCannotAppend(nonexistentIRI),
@@ -382,7 +381,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanAppend3() {
+    void testCanAppend3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         assertAll("Test appendability for " + agentIRI,
                 checkCannotAppend(nonexistentIRI),
@@ -393,7 +392,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanAppend4() {
+    void testCanAppend4() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -407,7 +406,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCanAppend5() {
+    void testCanAppend5() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -420,7 +419,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testAdmin1() {
+    void testAdmin1() {
         when(mockSession.getAgent()).thenReturn(Trellis.AdministratorAgent);
         assertAll("Test appendability for admin",
                 checkCanAppend(nonexistentIRI),
@@ -438,7 +437,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testDelegate1() {
+    void testDelegate1() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(acoburnIRI));
 
@@ -447,7 +446,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testDelegate2() {
+    void testDelegate2() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(agentIRI));
 
@@ -456,7 +455,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testDelegate3() {
+    void testDelegate3() {
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));
         assertAll("Test delegated writabliity for " + agentIRI + " via " + addisonIRI,
@@ -468,7 +467,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testInheritance() {
+    void testInheritance() {
         when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI8, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.agent, agentIRI),
@@ -486,7 +485,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testNoInheritance() {
+    void testNoInheritance() {
         when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Write),
@@ -511,7 +510,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testInheritRoot() {
+    void testInheritRoot() {
         when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI8, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.agent, agentIRI),
@@ -536,7 +535,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testFoafAgent() {
+    void testFoafAgent() {
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI1, type, ACL.Authorization),
@@ -578,7 +577,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testNotInherited() {
+    void testNotInherited() {
         when(mockParentResource.hasAcl()).thenReturn(true);
         when(mockParentResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferAccessControl, authIRI5, type, ACL.Authorization),
@@ -602,7 +601,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testGroup() {
+    void testGroup() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         when(mockGroupResource.stream(eq(PreferUserManaged))).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferUserManaged, authIRI1, VCARD.hasMember, acoburnIRI),
@@ -642,7 +641,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testGroup2() {
+    void testGroup2() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         when(mockGroupResource.stream(eq(PreferUserManaged))).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferUserManaged, authIRI1, VCARD.hasMember, acoburnIRI),
@@ -683,7 +682,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testAuthenticatedUser() {
+    void testAuthenticatedUser() {
         when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, rootIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agentClass, ACL.AuthenticatedAgent),
@@ -698,7 +697,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testUnauthenticatedUser() {
+    void testUnauthenticatedUser() {
         when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, rootIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agentClass, ACL.AuthenticatedAgent),
@@ -713,7 +712,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCacheCanWrite1() {
+    void testCacheCanWrite1() {
         final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Check writability with cache", checkCannotWrite(testCacheService, nonexistentIRI),
@@ -724,7 +723,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCacheCanWrite2() {
+    void testCacheCanWrite2() {
         final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertAll("Check writability with cache", checkCanWrite(testCacheService, nonexistentIRI),
@@ -734,7 +733,7 @@ public class WebAcServiceTest {
     }
 
     @Test
-    public void testCacheCanWrite3() {
+    void testCacheCanWrite3() {
         final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));

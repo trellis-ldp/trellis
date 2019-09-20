@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -25,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-public class TrellisHttpFilterTest {
+class TrellisHttpFilterTest {
 
     @Mock
     private ContainerRequestContext mockContext;
@@ -34,12 +33,12 @@ public class TrellisHttpFilterTest {
     private UriInfo mockUriInfo;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
     }
 
     @Test
-    public void testTestRootSlash() throws Exception {
+    void testTestRootSlash() {
 
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getPath()).thenReturn("/");

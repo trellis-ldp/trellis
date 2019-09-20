@@ -18,7 +18,6 @@ import static java.time.Instant.now;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -37,7 +36,7 @@ import org.mockito.Mock;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
 
-public class NoopMementoServiceTest {
+class NoopMementoServiceTest {
 
     private static final MementoService testService = new NoopMementoService();
     private static final RDF rdf = getInstance();
@@ -55,7 +54,7 @@ public class NoopMementoServiceTest {
     private MementoService mockMementoService;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getModified()).thenReturn(time);
@@ -66,31 +65,31 @@ public class NoopMementoServiceTest {
     }
 
     @Test
-    public void testPutDefaultMethod() {
+    void testPutDefaultMethod() {
         mockMementoService.put(mockResourceService, identifier).toCompletableFuture().join();
         verify(mockResourceService).get(eq(identifier));
         verify(mockMementoService).put(eq(mockResource));
     }
 
     @Test
-    public void testPutResourceServiceNoop() {
+    void testPutResourceServiceNoop() {
         testService.put(mockResourceService, identifier).toCompletableFuture().join();
         verifyZeroInteractions(mockResourceService);
     }
 
     @Test
-    public void testPutResourceNoop() {
+    void testPutResourceNoop() {
         testService.put(mockResource).toCompletableFuture().join();
         verifyZeroInteractions(mockResource);
     }
 
     @Test
-    public void testGetResource() {
+    void testGetResource() {
         assertEquals(MISSING_RESOURCE, testService.get(identifier, time).toCompletableFuture().join());
     }
 
     @Test
-    public void testMementos() {
+    void testMementos() {
         assertTrue(testService.mementos(identifier).thenApply(SortedSet::isEmpty).toCompletableFuture().join());
     }
 }

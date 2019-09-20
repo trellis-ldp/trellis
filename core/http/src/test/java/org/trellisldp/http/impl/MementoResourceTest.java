@@ -36,43 +36,40 @@ import javax.ws.rs.core.Link;
 
 import org.junit.jupiter.api.Test;
 
-public class MementoResourceTest {
+class MementoResourceTest {
 
     @Test
-    public void testFilteredMementoLink() {
+    void testFilteredMementoLink() {
         final Link link = fromUri("http://example.com/resource/memento/1").rel(MEMENTO)
             .param(DATETIME, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-        final boolean filter = true;
-        assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(DATETIME));
-        assertFalse(MementoResource.filterLinkParams(link, filter).getParams().containsKey(DATETIME));
+        assertTrue(MementoResource.filterLinkParams(link, false).getParams().containsKey(DATETIME));
+        assertFalse(MementoResource.filterLinkParams(link, true).getParams().containsKey(DATETIME));
     }
 
     @Test
-    public void testFilteredTimemapLink() {
+    void testFilteredTimemapLink() {
         final Link link = fromUri("http://example.com/resource/timemap").rel(TIMEMAP)
             .param(FROM, ofInstant(now().minusSeconds(1000), UTC).format(RFC_1123_DATE_TIME))
             .param(UNTIL, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-        final boolean filter = true;
-        assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(FROM));
-        assertFalse(MementoResource.filterLinkParams(link, filter).getParams().containsKey(FROM));
-        assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(UNTIL));
-        assertFalse(MementoResource.filterLinkParams(link, filter).getParams().containsKey(UNTIL));
+        assertTrue(MementoResource.filterLinkParams(link, false).getParams().containsKey(FROM));
+        assertFalse(MementoResource.filterLinkParams(link, true).getParams().containsKey(FROM));
+        assertTrue(MementoResource.filterLinkParams(link, false).getParams().containsKey(UNTIL));
+        assertFalse(MementoResource.filterLinkParams(link, true).getParams().containsKey(UNTIL));
     }
 
     @Test
-    public void testFilteredOtherLink() {
+    void testFilteredOtherLink() {
         final Link link = fromUri("http://example.com/resource").rel(TYPE)
             .param(FROM, ofInstant(now().minusSeconds(1000), UTC).format(RFC_1123_DATE_TIME))
             .param(UNTIL, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
-        final boolean filter = true;
-        assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(FROM));
-        assertTrue(MementoResource.filterLinkParams(link, filter).getParams().containsKey(FROM));
-        assertTrue(MementoResource.filterLinkParams(link, !filter).getParams().containsKey(UNTIL));
-        assertTrue(MementoResource.filterLinkParams(link, filter).getParams().containsKey(UNTIL));
+        assertTrue(MementoResource.filterLinkParams(link, false).getParams().containsKey(FROM));
+        assertTrue(MementoResource.filterLinkParams(link, true).getParams().containsKey(FROM));
+        assertTrue(MementoResource.filterLinkParams(link, false).getParams().containsKey(UNTIL));
+        assertTrue(MementoResource.filterLinkParams(link, true).getParams().containsKey(UNTIL));
     }
 
     @Test
-    public void testFilterLinkFromConfiguration() {
+    void testFilterLinkFromConfiguration() {
         final MementoResource mr = new MementoResource(null, false);
         final Link link = fromUri("http://example.com/resource/memento/1").rel(MEMENTO)
             .param(DATETIME, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
@@ -80,7 +77,7 @@ public class MementoResourceTest {
     }
 
     @Test
-    public void testMementoHeadersSingle() {
+    void testMementoHeadersSingle() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
@@ -92,7 +89,7 @@ public class MementoResourceTest {
     }
 
     @Test
-    public void testMementoHeadersMultipleFirst() {
+    void testMementoHeadersMultipleFirst() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
@@ -108,7 +105,7 @@ public class MementoResourceTest {
 
 
     @Test
-    public void testMementoHeadersMultipleMiddle() {
+    void testMementoHeadersMultipleMiddle() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
@@ -123,7 +120,7 @@ public class MementoResourceTest {
     }
 
     @Test
-    public void testMementoHeadersMultipleLast() {
+    void testMementoHeadersMultipleLast() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
@@ -138,7 +135,7 @@ public class MementoResourceTest {
     }
 
     @Test
-    public void testMementoHeadersMultipleBeyond() {
+    void testMementoHeadersMultipleBeyond() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
@@ -153,7 +150,7 @@ public class MementoResourceTest {
     }
 
     @Test
-    public void testMementoHeadersMultiplePrecede() {
+    void testMementoHeadersMultiplePrecede() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
@@ -168,7 +165,7 @@ public class MementoResourceTest {
 }
 
     @Test
-    public void testMementoLinksEmpty() {
+    void testMementoLinksEmpty() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final List<Link> links = MementoResource.getMementoLinks(identifier, mementos).collect(toList());
@@ -176,7 +173,7 @@ public class MementoResourceTest {
     }
 
     @Test
-    public void testMementoLinksSingle() {
+    void testMementoLinksSingle() {
         final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
@@ -196,5 +193,4 @@ public class MementoResourceTest {
         assertEquals(next, links.stream().filter(l -> l.getRels().contains("next")).count());
         assertEquals(mementos, links.stream().filter(l -> l.getRels().contains("memento")).count());
     }
-
 }

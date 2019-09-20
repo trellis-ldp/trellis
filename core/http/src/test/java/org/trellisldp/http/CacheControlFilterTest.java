@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-public class CacheControlFilterTest {
+class CacheControlFilterTest {
 
     @Mock
     private ContainerRequestContext mockRequest;
@@ -41,12 +41,12 @@ public class CacheControlFilterTest {
     private MultivaluedMap<String, Object> mockHeaders;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
     }
 
     @Test
-    public void testCacheControlNull() throws Exception {
+    void testCacheControlNull() {
 
         when(mockRequest.getMethod()).thenReturn(GET);
         when(mockResponse.getStatusInfo()).thenReturn(OK);
@@ -58,7 +58,7 @@ public class CacheControlFilterTest {
     }
 
     @Test
-    public void testCacheControlHead() throws Exception {
+    void testCacheControlHead() {
 
         when(mockRequest.getMethod()).thenReturn(HEAD);
         when(mockResponse.getStatusInfo()).thenReturn(OK);

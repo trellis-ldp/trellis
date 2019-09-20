@@ -24,7 +24,6 @@ import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.io.IOUtils.readLines;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -81,52 +80,37 @@ import org.trellisldp.vocabulary.XSD;
 
 abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
-    protected static final IOService ioService = new JenaIOService();
+    static final int timestamp = 1496262729;
+    static final RDF rdf = getInstance();
+    static final Instant time = ofEpochSecond(timestamp);
+    static final ObjectMapper MAPPER = new ObjectMapper();
+    static final String RANDOM_VALUE = "randomValue";
+    static final String RESOURCE_PATH = "resource";
+    static final String CHILD_PATH = RESOURCE_PATH + "/child";
+    static final String BINARY_PATH = "binary";
+    static final String NON_EXISTENT_PATH = "nonexistent";
+    static final String DELETED_PATH = "deleted";
+    static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
+    static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
+    static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+    static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
+    static final IRI newresourceIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE);
+    static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
+    static final String HUB = "http://hub.example.org/";
 
-    protected static final AuditService auditService = new NoopAuditService();
-
-    protected static final int timestamp = 1496262729;
-
-    protected static final Instant time = ofEpochSecond(timestamp);
-
-    protected static final ObjectMapper MAPPER = new ObjectMapper();
-
-    protected static final RDF rdf = getInstance();
-
-    protected static final IRI agent = rdf.createIRI("user:agent");
-
-    protected static final BlankNode bnode = rdf.createBlankNode();
-
-    protected static final String BINARY_MIME_TYPE = "text/plain";
-
-    protected static final String RANDOM_VALUE = "randomValue";
-
-    protected static final String RESOURCE_PATH = "resource";
-    protected static final String CHILD_PATH = RESOURCE_PATH + "/child";
-    protected static final String BINARY_PATH = "binary";
-    protected static final String NON_EXISTENT_PATH = "nonexistent";
-    protected static final String DELETED_PATH = "deleted";
-    protected static final String USER_DELETED_PATH = "userdeleted";
-    protected static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
-
-    protected static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
-    protected static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-    protected static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
-    protected static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
-    protected static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
-    protected static final IRI newresourceIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE);
-    protected static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
-    protected static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
-    protected static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
-    protected static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
-                LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
-
-    protected static final String BASE_URL = "http://example.org/";
-
-    protected static final String HUB = "http://hub.example.org/";
-
-    protected static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)
-        .mimeType(BINARY_MIME_TYPE).build();
+    private static final IOService ioService = new JenaIOService();
+    private static final AuditService auditService = new NoopAuditService();
+    private static final String USER_DELETED_PATH = "userdeleted";
+    private static final String BINARY_MIME_TYPE = "text/plain";
+    private static final IRI deletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + DELETED_PATH);
+    private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
+    private static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
+            LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
+    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
+    private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
+    private static final String BASE_URL = "http://example.org/";
+    private static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)
+            .mimeType(BINARY_MIME_TYPE).build();
 
     @Mock
     protected ServiceBundler mockBundler;
@@ -153,12 +137,12 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     @Mock
     protected InputStream mockInputStream;
 
-    protected String getBaseUrl() {
+    String getBaseUrl() {
         return BASE_URL;
     }
 
     @BeforeAll
-    public void before() throws Exception {
+    void initialize() throws Exception {
         super.setUp();
     }
 
@@ -168,12 +152,12 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     }
 
     @AfterAll
-    public void after() throws Exception {
+    void cleanup() throws Exception {
         super.tearDown();
     }
 
     @BeforeEach
-    public void setUpMocks() throws Exception {
+    void setUpMocks() {
         setUpBundler();
         setUpResourceService();
         setUpMementoService();
@@ -255,7 +239,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         doCallRealMethod().when(mockMementoService).put(any(ResourceService.class), any(IRI.class));
     }
 
-    private void setUpBinaryService() throws Exception {
+    private void setUpBinaryService() {
         when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(eq(3), eq(10)))
                         .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));

@@ -50,7 +50,7 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
 @ExtendWith(WeldJunit5Extension.class)
-public class ReactiveEventServiceTest {
+class ReactiveEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
     private final Instant time = now();
@@ -77,7 +77,7 @@ public class ReactiveEventServiceTest {
     private Event mockEvent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
 
         when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
@@ -90,7 +90,7 @@ public class ReactiveEventServiceTest {
     }
 
     @Test
-    public void testReactiveStream() {
+    void testReactiveStream() {
         service.emit(mockEvent);
         await().atMost(5, SECONDS).until(() -> collector.getResults().size() == 1);
         assertEquals(1, collector.getResults().size(), "Incorrect number of messages!");

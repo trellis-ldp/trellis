@@ -38,12 +38,12 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test the file utilities.
  */
-public class FileUtilsTest {
+class FileUtilsTest {
 
     private static final RDF rdf = new JenaRDF();
 
     @Test
-    public void testParseQuad() {
+    void testParseQuad() {
         final Optional<Quad> quad = FileUtils.parseQuad(
                 "<trellis:data/resource> <http://purl.org/dc/terms/title> "
                 + "\"Some title\" <http://www.trellisldp.org/ns/trellis#PreferUserManaged> .").findFirst();
@@ -58,7 +58,7 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testParseQuadWithComment() {
+    void testParseQuadWithComment() {
         final Optional<Quad> quad = FileUtils.parseQuad(
                 "<trellis:data/resource> <http://purl.org/dc/terms/description> "
                 + "\"A description\" <http://www.trellisldp.org/ns/trellis#PreferUserManaged> . # some comment")
@@ -74,7 +74,7 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testParseQuadNoGraph() {
+    void testParseQuadNoGraph() {
         final Optional<Quad> quad = FileUtils.parseQuad(
                 "<trellis:data/resource> <http://purl.org/dc/terms/title> "
                 + "\"A different title\" .").findFirst();
@@ -88,12 +88,12 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testParseBadQuad() {
+    void testParseBadQuad() {
         assertFalse(FileUtils.parseQuad("blah blah blah").findFirst().isPresent(), "Invalid quad shouldn't parse!");
     }
 
     @Test
-    public void testSerializeQuad() {
+    void testSerializeQuad() {
         final Quad quad = rdf.createQuad(Trellis.PreferServerManaged, rdf.createIRI("trellis:data/resource"),
                 DC.subject, rdf.createIRI("http://example.org"));
         assertEquals("<trellis:data/resource> <http://purl.org/dc/terms/subject> <http://example.org> "
@@ -102,7 +102,7 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testSerializeQuadDefaultGraph() {
+    void testSerializeQuadDefaultGraph() {
         final Quad quad = rdf.createQuad(null, rdf.createIRI("trellis:data/resource"),
                 DC.subject, rdf.createIRI("http://example.org"));
         assertEquals("<trellis:data/resource> <http://purl.org/dc/terms/subject> <http://example.org> .",
@@ -111,14 +111,14 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testListFilesBadDirectory() {
+    void testListFilesBadDirectory() {
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         final File dir = new File(file.getParentFile(), "nonexistent");
         assertThrows(UncheckedIOException.class, () -> FileUtils.uncheckedList(dir.toPath()));
     }
 
     @Test
-    public void testBadBoundedStream() throws IOException {
+    void testBadBoundedStream() {
         final InputStream badInput = mock(InputStream.class, inv -> {
                 throw new IOException("Expected exception");
             });
@@ -126,7 +126,7 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testDeleteException() throws IOException {
+    void testDeleteException() {
         final Path badPath = mock(Path.class, inv -> {
                 throw new IOException("Expected exception");
             });
@@ -134,7 +134,7 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testWriteMementoBadDirectory() {
+    void testWriteMementoBadDirectory() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         final Resource res = new FileResource(identifier, file);

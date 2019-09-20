@@ -23,10 +23,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.http.TrellisHttpResource;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class WebDAVTest extends AbstractWebDAVTest {
+class WebDAVTest extends AbstractWebDAVTest {
 
     @Override
-    public Application configure() {
+    protected Application configure() {
 
         initMocks(this);
 

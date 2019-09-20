@@ -39,7 +39,7 @@ import org.trellisldp.api.BinaryService;
 /**
  * Test the file-based binary service.
  */
-public class FileBinaryServiceTest {
+class FileBinaryServiceTest {
 
     private static final String testDoc = "test.txt";
 
@@ -51,17 +51,17 @@ public class FileBinaryServiceTest {
     private static final IRI file = rdf.createIRI("file:///" + testDoc);
 
     @BeforeAll
-    public static void setUpEverything() {
+    static void setUpEverything() {
         System.setProperty(FileBinaryService.CONFIG_FILE_BINARY_BASE_PATH, directory);
     }
 
     @AfterAll
-    public static void cleanUp() {
+    static void cleanUp() {
         System.clearProperty(FileBinaryService.CONFIG_FILE_BINARY_BASE_PATH);
     }
 
     @Test
-    public void testFilePurge() {
+    void testFilePurge() {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         final InputStream inputStream = new ByteArrayInputStream("Some data".getBytes(UTF_8));
@@ -76,14 +76,14 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testIdSupplier() {
+    void testIdSupplier() {
         final BinaryService service = new FileBinaryService();
         assertTrue(service.generateIdentifier().startsWith("file:///"), "Identifier has incorrect prefix!");
         assertNotEquals(service.generateIdentifier(), service.generateIdentifier(), "Identifiers are not unique!");
     }
 
     @Test
-    public void testFileContent() {
+    void testFileContent() {
         final BinaryService service = new FileBinaryService();
         assertEquals("A test document.\n",
                         service.get(file).thenApply(Binary::getContent).thenApply(this::uncheckedToString)
@@ -92,7 +92,7 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testFileContentSegment() {
+    void testFileContentSegment() {
         final BinaryService service = new FileBinaryService();
         assertEquals(" tes",
                         service.get(file).thenApply(b -> b.getContent(1, 5)).thenApply(this::uncheckedToString)
@@ -103,14 +103,14 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testFileContentSegmentBeyond() {
+    void testFileContentSegmentBeyond() {
         final BinaryService service = new FileBinaryService();
         assertEquals("", service.get(file).thenApply(b -> b.getContent(1000, 1005)).thenApply(this::uncheckedToString)
                         .toCompletableFuture().join(), "Incorrect out-of-range segment when fetching from a file!");
     }
 
     @Test
-    public void testSetFileContent() {
+    void testSetFileContent() {
         final String contents = "A new file";
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
@@ -123,7 +123,7 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testGetFileContentError() throws IOException {
+    void testGetFileContentError() {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(Binary::getContent)
@@ -134,7 +134,7 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testSetFileContentError() throws Exception {
+    void testSetFileContentError() {
         final InputStream throwingMockInputStream = mock(InputStream.class, inv -> {
                 throw new IOException("Expected error");
         });
@@ -148,7 +148,7 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testGetFileSkipContentError() throws Exception {
+    void testGetFileSkipContentError() {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
         assertAll(() -> service.get(fileIRI).thenApply(binary -> binary.getContent(10, 20)).handle((val, err) -> {
@@ -158,7 +158,7 @@ public class FileBinaryServiceTest {
     }
 
     @Test
-    public void testBadIdentifier() {
+    void testBadIdentifier() {
         final BinaryService service = new FileBinaryService();
         assertFalse(service.get(rdf.createIRI("http://example.com/")).thenApply(Binary::getContent)
                         .handle(this::checkError).toCompletableFuture().join(),

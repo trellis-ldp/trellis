@@ -38,10 +38,11 @@ import org.trellisldp.triplestore.TriplestoreResourceService;
  */
 public class SimpleServiceBundler extends BaseServiceBundler {
 
-    private final TriplestoreResourceService triplestoreService
-        = new TriplestoreResourceService(connect(createTxnMem()));
-
-    public SimpleServiceBundler() {
+    SimpleServiceBundler() {
+        final TriplestoreResourceService triplestoreService
+                = new TriplestoreResourceService(connect(createTxnMem()));
+        triplestoreService.initialize();
+        resourceService = triplestoreService;
         auditService = new DefaultAuditService();
         mementoService = new NoopMementoService();
         eventService = new NoopEventService();
@@ -51,8 +52,5 @@ public class SimpleServiceBundler extends BaseServiceBundler {
                 emptySet(), emptySet());
         binaryService = new FileBinaryService(new DefaultIdentifierService(),
                 resourceFilePath("data") + "/binaries", 2, 2);
-
-        triplestoreService.initialize();
-        resourceService = triplestoreService;
     }
 }

@@ -41,10 +41,10 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * LDP-related tests for Trellis.
  */
-public class TrellisApplicationTest {
+class TrellisApplicationTest {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
-        = new DropwizardTestSupport<TrellisConfiguration>(SimpleTrellisApp.class,
+        = new DropwizardTestSupport<>(SimpleTrellisApp.class,
                 resourceFilePath("trellis-config.yml"));
 
     private static final Client CLIENT;
@@ -57,13 +57,13 @@ public class TrellisApplicationTest {
     }
 
     @Test
-    public void testGetName() {
+    void testGetName() {
         final Application<TrellisConfiguration> app = new SimpleTrellisApp();
         assertEquals("Trellis LDP", app.getName(), "Incorrect application name!");
     }
 
     @Test
-    public void testGET() {
+    void testGET() {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         try (final Response res = CLIENT.target(baseUrl).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
@@ -75,7 +75,7 @@ public class TrellisApplicationTest {
     }
 
     @Test
-    public void testPOST() {
+    void testPOST() {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         try (final Response res = CLIENT.target(baseUrl).request().post(entity("", TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");

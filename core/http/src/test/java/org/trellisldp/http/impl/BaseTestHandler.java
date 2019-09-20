@@ -38,7 +38,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
@@ -100,16 +99,17 @@ import org.trellisldp.vocabulary.LDP;
  */
 abstract class BaseTestHandler {
 
-    protected static final String baseUrl = "http://example.org/";
-    protected static final RDF rdf = getInstance();
-    protected static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-    protected static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
-            LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
-    protected static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-    protected static final Instant time = ofEpochSecond(1496262729);
+    static final String baseUrl = "http://example.org/";
+    static final RDF rdf = getInstance();
+    static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+    static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+    static final Instant time = ofEpochSecond(1496262729);
 
-    protected final AuditService auditService = new NoopAuditService();
-    protected final MementoService mementoService = new NoopMementoService();
+    private static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
+            LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
+
+    private final AuditService auditService = new NoopAuditService();
+    private final MementoService mementoService = new NoopMementoService();
 
     @Mock
     protected ServiceBundler mockBundler;
@@ -142,7 +142,7 @@ abstract class BaseTestHandler {
     protected ArgumentCaptor<BinaryMetadata> metadataArgument;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() {
         initMocks(this);
 
         setUpBundler();
@@ -157,7 +157,7 @@ abstract class BaseTestHandler {
         when(mockTrellisRequest.getHeaders()).thenReturn(new MultivaluedHashMap<>());
     }
 
-    protected Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {
+    Stream<Executable> checkAllowHeader(final Response res, final List<String> methods) {
         final String allow = res.getHeaderString(ALLOW);
         return concat(of(() -> assertNotNull(allow, "Missing Allow header!")),
                 of(GET, HEAD, OPTIONS, PUT, DELETE, POST, PATCH).map(m -> checkAllowHeader(methods, allow, m)));
@@ -169,7 +169,7 @@ abstract class BaseTestHandler {
                 + (expectation ? "present" : "absent"));
     }
 
-    protected Stream<Executable> checkLdpType(final Response res, final IRI type) {
+    Stream<Executable> checkLdpType(final Response res, final IRI type) {
         final Set<String> types = HttpUtils.ldpResourceTypes(type).map(IRI::getIRIString).collect(toSet());
         final Set<String> responseTypes = res.getLinks().stream().filter(link -> TYPE.equals(link.getRel()))
             .map(link -> link.getUri().toString()).collect(toSet());
@@ -182,7 +182,8 @@ abstract class BaseTestHandler {
         return () -> assertEquals(expectation, actual.contains(type.getIRIString()), "Expecting " + type + " to be "
                 + (expectation ? "present" : "absent"));
     }
-    protected void unwrapAsyncError(final CompletionStage async) {
+
+    void unwrapAsyncError(final CompletionStage async) {
         try {
             async.toCompletableFuture().join();
         } catch (final CompletionException ex) {
@@ -193,15 +194,15 @@ abstract class BaseTestHandler {
         }
     }
 
-    protected static Predicate<Link> hasLink(final IRI iri, final String rel) {
+    static Predicate<Link> hasLink(final IRI iri, final String rel) {
         return link -> rel.equals(link.getRel()) && iri.getIRIString().equals(link.getUri().toString());
     }
 
-    protected static Predicate<Link> hasType(final IRI iri) {
+    static Predicate<Link> hasType(final IRI iri) {
         return hasLink(iri, TYPE);
     }
 
-    protected static CompletionStage<Void> asyncException() {
+    static CompletionStage<Void> asyncException() {
         return runAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");
         });
@@ -225,7 +226,7 @@ abstract class BaseTestHandler {
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
     }
 
-    private void setUpBinaryService() throws Exception {
+    private void setUpBinaryService() {
         when(mockBinary.getContent(eq(3), eq(10)))
                         .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent())
@@ -254,7 +255,7 @@ abstract class BaseTestHandler {
     private void setUpIoService() {
         when(mockIoService.supportedReadSyntaxes()).thenReturn(asList(TURTLE, JSONLD, RDFA));
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD));
-        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(asList(SPARQL_UPDATE));
+        when(mockIoService.supportedUpdateSyntaxes()).thenReturn(singletonList(SPARQL_UPDATE));
     }
 
     private void setUpResources() {

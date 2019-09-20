@@ -25,8 +25,6 @@ import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.karafDist
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.keepRuntimeFolder;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.logLevel;
 import static org.osgi.framework.Bundle.ACTIVE;
-import static org.osgi.framework.Constants.OBJECTCLASS;
-import static org.osgi.framework.FrameworkUtil.createFilter;
 
 import java.io.File;
 
@@ -43,9 +41,6 @@ import org.ops4j.pax.exam.karaf.options.LogLevelOption.LogLevel;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.util.tracker.ServiceTracker;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Test OSGi provisioning.
@@ -278,22 +273,5 @@ public class OSGiTest {
     private void checkTrellisBundlesAreActive() {
         stream(bundleContext.getBundles()).filter(b -> b.getSymbolicName().startsWith("org.trellisldp")).forEach(b ->
                     assertEquals("Bundle " + b.getSymbolicName() + " is not active!", ACTIVE, b.getState()));
-    }
-
-    protected <T> T getOsgiService(final Class<T> type, final String filter, final long timeout) {
-        try {
-            final ServiceTracker<?, T> tracker = new ServiceTracker<>(bundleContext,
-                    createFilter("(&(" + OBJECTCLASS + "=" + type.getName() + ")" + filter + ")"), null);
-            tracker.open(true);
-            final T svc = tracker.waitForService(timeout);
-            if (svc == null) {
-                throw new RuntimeTrellisException("Gave up waiting for service " + filter);
-            }
-            return svc;
-        } catch (InvalidSyntaxException e) {
-            throw new IllegalArgumentException("Invalid filter", e);
-        } catch (InterruptedException e) {
-            throw new RuntimeTrellisException(e);
-        }
     }
 }

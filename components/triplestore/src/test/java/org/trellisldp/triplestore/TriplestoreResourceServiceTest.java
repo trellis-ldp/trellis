@@ -23,7 +23,6 @@ import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Metadata.builder;
@@ -67,7 +66,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Test the TriplestoreResourceService class.
  */
-public class TriplestoreResourceServiceTest {
+class TriplestoreResourceServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
@@ -85,26 +84,26 @@ public class TriplestoreResourceServiceTest {
     private RDFConnection mockRdfConnection;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
     }
 
     @Test
-    public void testIdentifierService() {
+    void testIdentifierService() {
         final ResourceService svc = new TriplestoreResourceService();
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier(), "Not unique identifiers!");
         assertNotEquals(svc.generateIdentifier(), svc.generateIdentifier(), "Not unique identifiers!");
     }
 
     @Test
-    public void testResourceNotFound() {
+    void testResourceNotFound() {
         final ResourceService svc = new TriplestoreResourceService();
         assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "missing")).toCompletableFuture()
                 .join(), "Not a missing resource!");
     }
 
     @Test
-    public void testNoRoot() {
+    void testNoRoot() {
         final ResourceService svc = new TriplestoreResourceService();
 
         assertEquals(MISSING_RESOURCE, svc.get(rdf.createIRI(TRELLIS_DATA_PREFIX)).toCompletableFuture().join(),
@@ -112,7 +111,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testInitializeRoot() {
+    void testInitializeRoot() {
         final Instant early = now();
         final TriplestoreResourceService svc = new TriplestoreResourceService();
         svc.initialize();
@@ -123,7 +122,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testInitializeRoot2() {
+    void testInitializeRoot2() {
         final Instant early = now();
         final JenaDataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferServerManaged, root, RDF.type, LDP.BasicContainer);
@@ -139,7 +138,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testUpdateRoot() throws Exception {
+    void testUpdateRoot() {
         final Instant early = now();
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
@@ -169,7 +168,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testRDFConnectionError() throws Exception {
+    void testRDFConnectionError() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(mockRdfConnection);
         svc.initialize();
         doThrow(new RuntimeException("Expected exception")).when(mockRdfConnection).update(any(UpdateRequest.class));
@@ -191,7 +190,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpRs() throws Exception {
+    void testPutLdpRs() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -216,7 +215,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpRsWithoutBaseUrl() throws Exception {
+    void testPutLdpRsWithoutBaseUrl() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -238,7 +237,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpNr() throws Exception {
+    void testPutLdpNr() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -288,7 +287,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpC() throws Exception {
+    void testPutLdpC() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -352,7 +351,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testAddAuditTriples() throws Exception {
+    void testAddAuditTriples() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -379,7 +378,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutDeleteLdpC() throws Exception {
+    void testPutDeleteLdpC() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -442,7 +441,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpBc() throws Exception {
+    void testPutLdpBc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -504,7 +503,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpDcSelf() throws Exception {
+    void testPutLdpDcSelf() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -553,7 +552,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpDc() throws Exception {
+    void testPutLdpDc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -622,7 +621,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpDcMultiple() throws Exception {
+    void testPutLdpDcMultiple() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -748,7 +747,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpDcMultipleInverse() throws Exception {
+    void testPutLdpDcMultipleInverse() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -872,7 +871,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpIc() throws Exception {
+    void testPutLdpIc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -957,7 +956,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpIcDefaultContent() throws Exception {
+    void testPutLdpIcDefaultContent() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -1033,7 +1032,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpIcMultipleStatements() throws Exception {
+    void testPutLdpIcMultipleStatements() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -1116,7 +1115,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testPutLdpIcMultipleResources() throws Exception {
+    void testPutLdpIcMultipleResources() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
@@ -1261,7 +1260,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testBuildRDFConnectionMemory() {
+    void testBuildRDFConnectionMemory() {
 
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(null);
         assertNotNull(rdfConnection, "Missing RDFConnection, using in-memory dataset!");
@@ -1270,7 +1269,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testBuildRDFConnectionTDB() throws Exception {
+    void testBuildRDFConnectionTDB() throws Exception {
         final File dir = new File(new File(getClass().getResource("/logback-test.xml").toURI()).getParent(), "data");
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(dir.getAbsolutePath());
         assertNotNull(rdfConnection, "Missing RDFConnection, using local file!");
@@ -1279,7 +1278,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testBuildRDFConnectionRemote() {
+    void testBuildRDFConnectionRemote() {
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection("http://localhost/sparql");
         assertNotNull(rdfConnection, "Missing RDFConnection, using local HTTP!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
@@ -1287,7 +1286,7 @@ public class TriplestoreResourceServiceTest {
     }
 
     @Test
-    public void testBuildRDFConnectionRemoteHTTPS() {
+    void testBuildRDFConnectionRemoteHTTPS() {
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection("https://localhost/sparql");
         assertNotNull(rdfConnection, "Missing RDFConnection, using local HTTP!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");

@@ -23,18 +23,18 @@ import org.mockito.Mock;
 /**
  * Test the no-op event service.
  */
-public class NoopEventServiceTest {
+class NoopEventServiceTest {
 
     @Mock
     private Event mockEvent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
     }
 
     @Test
-    public void testNoopEventSvc() {
+    void testNoopEventSvc() {
         try {
             final EventService svc = new NoopEventService();
             svc.emit(mockEvent);

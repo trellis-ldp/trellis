@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-public class WebSubHeaderFilterTest {
+class WebSubHeaderFilterTest {
 
     @Mock
     private ContainerRequestContext mockRequest;
@@ -41,12 +41,12 @@ public class WebSubHeaderFilterTest {
     private MultivaluedMap<String, Object> mockHeaders;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
     }
 
     @Test
-    public void testWebSubNull() throws Exception {
+    void testWebSubNull() {
 
         when(mockRequest.getMethod()).thenReturn(GET);
         when(mockResponse.getStatusInfo()).thenReturn(OK);
@@ -58,7 +58,7 @@ public class WebSubHeaderFilterTest {
     }
 
     @Test
-    public void testWebSubHead() throws Exception {
+    void testWebSubHead() {
 
         when(mockRequest.getMethod()).thenReturn(HEAD);
         when(mockResponse.getStatusInfo()).thenReturn(OK);

@@ -42,7 +42,7 @@ import org.trellisldp.dropwizard.config.TrellisConfiguration;
 /**
  * @author acoburn
  */
-public class TrellisUtilsTest {
+class TrellisUtilsTest {
 
     @Mock
     private Environment mockEnv;
@@ -51,13 +51,13 @@ public class TrellisUtilsTest {
     private LifecycleEnvironment mockLifecycle;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
     }
 
     @Test
-    public void testGetCORSConfig() throws Exception {
+    void testGetCORSConfig() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -71,7 +71,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetWebacCache() throws Exception {
+    void testGetWebacCache() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -84,7 +84,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetAuthFilters() throws Exception {
+    void testGetAuthFilters() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -101,7 +101,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetJwksAuthenticator() throws Exception {
+    void testGetJwksAuthenticator() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -110,7 +110,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetJwtAuthenticator() throws Exception {
+    void testGetJwtAuthenticator() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -121,7 +121,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetJwtAuthenticatorNoKeyIds() throws Exception {
+    void testGetJwtAuthenticatorNoKeyIds() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -133,7 +133,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetJwtAuthenticatorFederated() throws Exception {
+    void testGetJwtAuthenticatorFederated() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -145,7 +145,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetJwtAuthenticatorBadKeystore() throws Exception {
+    void testGetJwtAuthenticatorBadKeystore() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -156,7 +156,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetJwtAuthenticatorNoKeystore() throws Exception {
+    void testGetJwtAuthenticatorNoKeystore() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -168,7 +168,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetNoJwtAuthenticator() throws Exception {
+    void testGetNoJwtAuthenticator() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));

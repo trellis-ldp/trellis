@@ -24,7 +24,6 @@ import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -55,7 +54,7 @@ import org.mockito.Mock;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class OAuthFilterTest {
+class OAuthFilterTest {
 
     private static final String WEBID1 = "https://people.apache.org/~acoburn/#i";
     private static final String WEBID2 = "https://user.example.com/#me";
@@ -70,13 +69,13 @@ public class OAuthFilterTest {
     private ArgumentCaptor<SecurityContext> securityArgument;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
     }
 
     @Test
-    public void testFilterAuth() throws Exception {
+    void testFilterAuth() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().setSubject(WEBID1).signWith(key).compact();
         final ContainerRequestContext mockCtx = mock(ContainerRequestContext.class);
@@ -93,7 +92,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterNoAuth() throws Exception {
+    void testFilterNoAuth() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final ContainerRequestContext mockCtx = mock(ContainerRequestContext.class);
         when(mockCtx.getSecurityContext()).thenReturn(mockSecurityContext);
@@ -105,7 +104,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterWebid() throws Exception {
+    void testFilterWebid() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().claim("webid", WEBID2).signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
@@ -121,7 +120,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterAdminWebid() throws Exception {
+    void testFilterAdminWebid() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().claim("webid", WEBID2).signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
@@ -138,7 +137,7 @@ public class OAuthFilterTest {
 
 
     @Test
-    public void testFilterInvalidAuth() throws Exception {
+    void testFilterInvalidAuth() {
         final String key = "BdEaIIfv67jl8mRL+/vnuf3RzfVfpkxtel8icx2B8uSudOcwVXr7zpwj92UtKCOkVGi2FaE+O4q55P3p7UE7Eg==";
         final String token = Jwts.builder().setSubject(WEBID1).signWith(hmacShaKeyFor(key.getBytes(UTF_8))).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
@@ -149,7 +148,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterExpiredJwt() throws Exception {
+    void testFilterExpiredJwt() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().claim("webid", WEBID1).setExpiration(from(now().minusSeconds(10)))
             .signWith(key).compact();
@@ -160,7 +159,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterGenericWebid() throws Exception {
+    void testFilterGenericWebid() {
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
@@ -178,7 +177,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterGenericJwtSecret() throws Exception {
+    void testFilterGenericJwtSecret() {
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
@@ -196,7 +195,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterNotBasicAuth() throws Exception {
+    void testFilterNotBasicAuth() {
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
@@ -215,7 +214,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterNoToken() throws Exception {
+    void testFilterNoToken() {
         try {
             System.setProperty(OAuthFilter.CONFIG_AUTH_OAUTH_SHARED_SECRET,
                     "y7MCBmoOx7TH70q1fabSGLzOrEYx+liUmLWPkwIPUTfWMXn/J5MDZuepBd8mcRObUDYYQN3MIS8p40ZT5EhvWw==");
@@ -231,7 +230,7 @@ public class OAuthFilterTest {
 
 
     @Test
-    public void testFilterGenericNoAuth() throws Exception {
+    void testFilterGenericNoAuth() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().claim("webid", WEBID1).signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
@@ -241,7 +240,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterGenericJwks() throws Exception {
+    void testFilterGenericJwks() throws Exception {
         final BigInteger exponent = new BigInteger(1, getUrlDecoder().decode("VRPRBm9dCoAJfBbEz5oAHEz7Tnm0i0O6m5yj7N" +
             "wqAZOj9i4ZwgZ8VZQo88oxZQWNaYd1yKeoQhUsJija_vxQEPXO1Q2q6OqMcwTBH0wyGhIFp--z2dAyRlDVLUTQbJUXyqammdh7b16-i" +
             "gH-BB67jfolM-cw-O7YaN7GrxCCYX5bI38IipeYfcroeIUXdLYmmUdNy7c8P2_K4O-iHQ6A4AUtQRUOzt2FGOdmlGZihupI9YprshIy" +
@@ -271,7 +270,7 @@ public class OAuthFilterTest {
     }
 
     @Test
-    public void testFilterGenericFederated() throws Exception {
+    void testFilterGenericFederated() throws Exception {
         final String passphrase = "password";
         try {
             final String keystorePath = OAuthUtilsTest.class.getResource("/keystore.jks").getPath();

@@ -15,7 +15,6 @@ package org.trellisldp.dropwizard;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -30,25 +29,25 @@ import org.mockito.Mock;
 /**
  * @author acoburn
  */
-public class TrellisCacheTest {
+class TrellisCacheTest {
 
     @Mock
     private Cache<String, String> mockCache;
 
     @BeforeEach
-    public void setUp() throws ExecutionException {
+    void setUp() throws ExecutionException {
         initMocks(this);
         when(mockCache.get(any(), any())).thenThrow(ExecutionException.class);
     }
 
     @Test
-    public void testCache() {
+    void testCache() {
         final TrellisCache<String, String> cache = new TrellisCache<>(newBuilder().maximumSize(5).build());
         assertEquals("longer", cache.get("long", x -> x + "er"), "Incorrect cache response!");
     }
 
     @Test
-    public void testCacheException() throws Exception {
+    void testCacheException() {
         final TrellisCache<String, String> cache = new TrellisCache<>(mockCache);
         assertNull(cache.get("long", x -> x + "er"), "Exception wasn't swallowed!");
     }

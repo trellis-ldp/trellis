@@ -25,7 +25,6 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -54,7 +53,7 @@ import org.trellisldp.api.RDFaWriterService;
 /**
  * @author acoburn
  */
-public class DefaultRdfaWriterServiceTest {
+class DefaultRdfaWriterServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
 
@@ -67,8 +66,7 @@ public class DefaultRdfaWriterServiceTest {
     private RDFaWriterService service;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dc", DCTerms.NS);
@@ -81,14 +79,14 @@ public class DefaultRdfaWriterServiceTest {
     }
 
     @Test
-    public void testWriteError() throws IOException {
+    void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
         assertThrows(UncheckedIOException.class, () -> service.write(getTriples(), mockOutputStream, ""),
                 "IOException in write operation doesn't cause failure!");
     }
 
     @Test
-    public void testDefaultSerializer() {
+    void testDefaultSerializer() {
         final RDFaWriterService svc = new DefaultRdfaWriterService();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         svc.write(getTriples2(), out, "http://example.com/");
@@ -96,21 +94,21 @@ public class DefaultRdfaWriterServiceTest {
     }
 
     @Test
-    public void testDefaultRdfaWriterService() {
+    void testDefaultRdfaWriterService() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, null);
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
-    public void testDefaultRdfaWriterService2() {
+    void testDefaultRdfaWriterService2() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
-    public void testDefaultRdfaWriterService3() {
+    void testDefaultRdfaWriterService3() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, "/resource-test.mustache",
                 "//www.trellisldp.org/assets/css/trellis.css", "", "//www.trellisldp.org/assets/img/trellis.png");
@@ -120,7 +118,7 @@ public class DefaultRdfaWriterServiceTest {
     }
 
     @Test
-    public void testDefaultRdfaWriterService4() throws Exception {
+    void testDefaultRdfaWriterService4() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, path,
@@ -130,23 +128,22 @@ public class DefaultRdfaWriterServiceTest {
     }
 
     @Test
-    public void testDefaultRdfaWriterService5() throws Exception {
+    void testDefaultRdfaWriterService5() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new DefaultRdfaWriterService(new NoopNamespaceService(), path,
-                (String) null, (String) null, (String) null);
+                null, (String) null, null);
 
         service4.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
     }
 
     @Test
-    public void testHtmlNullSerializer() throws Exception {
+    void testHtmlNullSerializer() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final List<String> nullList = null;
         final RDFaWriterService service6 = new DefaultRdfaWriterService(new NoopNamespaceService(), path,
-                nullList, nullList, null);
+                (List<String>) null, null, null);
 
         service6.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));

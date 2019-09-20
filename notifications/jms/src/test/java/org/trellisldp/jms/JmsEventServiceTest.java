@@ -18,8 +18,6 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -53,7 +51,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class JmsEventServiceTest {
+class JmsEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final BrokerService BROKER = new BrokerService();
@@ -85,18 +83,18 @@ public class JmsEventServiceTest {
     private MessageProducer mockProducer, mockTopicProducer;
 
     @BeforeAll
-    public static void initialize() throws Exception {
+    static void initialize() throws Exception {
         BROKER.setPersistent(false);
         BROKER.start();
     }
 
     @AfterAll
-    public static void cleanUp() throws Exception {
+    static void cleanUp() throws Exception {
         BROKER.stop();
     }
 
     @BeforeEach
-    public void setUp() throws JMSException {
+    void setUp() throws JMSException {
         initMocks(this);
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getCreated()).thenReturn(time);
@@ -117,7 +115,7 @@ public class JmsEventServiceTest {
     }
 
     @Test
-    public void testJms() throws JMSException {
+    void testJms() throws JMSException {
         final EventService svc = new JmsEventService(serializer, mockConnection);
         svc.emit(mockEvent);
 
@@ -125,7 +123,7 @@ public class JmsEventServiceTest {
     }
 
     @Test
-    public void testQueue() throws JMSException {
+    void testQueue() throws JMSException {
         final EventService svc = new JmsEventService(serializer, mockSession, queueName, true);
         svc.emit(mockEvent);
 
@@ -134,7 +132,7 @@ public class JmsEventServiceTest {
     }
 
     @Test
-    public void testTopic() throws JMSException {
+    void testTopic() throws JMSException {
         final EventService svc = new JmsEventService(serializer, mockSession, queueName, false);
         svc.emit(mockEvent);
 
@@ -143,7 +141,7 @@ public class JmsEventServiceTest {
     }
 
     @Test
-    public void testError() throws JMSException {
+    void testError() throws JMSException {
         doThrow(JMSException.class).when(mockProducer).send(eq(mockMessage));
 
         final EventService svc = new JmsEventService(serializer, mockSession, queueName);

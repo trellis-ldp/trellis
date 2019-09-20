@@ -20,42 +20,43 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class RangeTest {
+class RangeTest {
 
     @Test
-    public void testRange() {
+    void testRange() {
         final Range range = Range.valueOf("bytes=1-10");
+        assertNotNull(range, "Range is not null!");
         assertEquals(1, range.getFrom(), "Check 'from' value");
         assertEquals(10, range.getTo(), "Check 'to' value");
     }
 
     @Test
-    public void testInvalidRange() {
+    void testInvalidRange() {
         assertNull(Range.valueOf("bytes=10-1"), "Check invalid range");
     }
 
     @Test
-    public void testInvalidNumbers() {
+    void testInvalidNumbers() {
         assertNull(Range.valueOf("bytes=1-15.5"), "Check invalid numbers");
     }
 
     @Test
-    public void testInvalidRange2() {
+    void testInvalidRange2() {
         assertNull(Range.valueOf("bytes=1-15, 20-24"), "Check invalid multiple ranges");
     }
 
     @Test
-    public void testInvalidNumbers3() {
+    void testInvalidNumbers3() {
         assertNull(Range.valueOf("bytes=1-foo"), "Check invalid values");
     }
 
     @Test
-    public void testBadInput() {
+    void testBadInput() {
         assertNull(Range.valueOf("blahblahblah"), "Check invalid input");
     }
 
     @Test
-    public void testNullInput() {
+    void testNullInput() {
         assertNull(Range.valueOf(null), "Check null input");
     }
 }

@@ -19,10 +19,10 @@ import java.security.Principal;
 
 import org.junit.jupiter.api.Test;
 
-public class OAuthPrincipalTest {
+class OAuthPrincipalTest {
 
     @Test
-    public void testPrincipal() {
+    void testPrincipal() {
         final String name = "TestPrincipal";
         final Principal principal = new OAuthPrincipal(name);
         assertEquals(name, principal.getName());

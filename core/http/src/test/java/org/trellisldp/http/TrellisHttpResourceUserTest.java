@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -23,10 +24,10 @@ import org.glassfish.jersey.server.ResourceConfig;
 /**
  * @author acoburn
  */
-public class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest {
+class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest {
 
     @Override
-    public Application configure() {
+    protected Application configure() {
 
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
@@ -40,7 +41,7 @@ public class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
-        config.register(new CrossOriginResourceSharingFilter(asList(origin), asList("PATCH", "POST", "PUT"),
+        config.register(new CrossOriginResourceSharingFilter(singletonList(origin), asList("PATCH", "POST", "PUT"),
                         asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
                         asList("Link", "Content-Type", "Memento-Datetime"), true, 100));
         return config;
