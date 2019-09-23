@@ -36,9 +36,9 @@ import org.junit.jupiter.api.function.Executable;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseCrossOriginResourceSharingFilterTest extends BaseTrellisHttpResourceTest {
 
-    protected static final String ORIGIN = "http://example.com";
+    static final String ORIGIN = "http://example.com";
 
-    protected void init() {
+    void init() {
         initMocks(this);
     }
 
@@ -49,7 +49,7 @@ abstract class BaseCrossOriginResourceSharingFilterTest extends BaseTrellisHttpR
         return ClientBuilder.newClient(clientConfig);
     }
 
-    protected Stream<Executable> checkAllowMethods(final Response res, final List<String> expected) {
+    Stream<Executable> checkAllowMethods(final Response res, final List<String> expected) {
         final List<String> actual = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
             .collect(toList());
         return Stream.concat(
@@ -59,7 +59,7 @@ abstract class BaseCrossOriginResourceSharingFilterTest extends BaseTrellisHttpR
                         "Method " + method + " not in expected -Allow-Methods header!")));
     }
 
-    protected Stream<Executable> checkNoCORSHeaders(final Response res) {
+    Stream<Executable> checkNoCORSHeaders(final Response res) {
         return Stream.of(
                 () -> assertNull(res.getHeaderString("Access-Control-Allow-Origin"), "Unexpected -Allow-Origin!"),
                 () -> assertNull(res.getHeaderString("Access-Control-Allow-Credentials"),

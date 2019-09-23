@@ -22,7 +22,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
@@ -65,7 +64,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class HttpUtilsTest {
+class HttpUtilsTest {
 
     private static final RDF rdf = getInstance();
     private static final IOService ioService = new JenaIOService();
@@ -81,12 +80,12 @@ public class HttpUtilsTest {
     private Dataset mockDataset;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
     }
 
     @Test
-    public void testGetSyntax() {
+    void testGetSyntax() {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -96,13 +95,13 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testGetSyntaxEmpty() {
+    void testGetSyntaxEmpty() {
         assertNull(HttpUtils.getSyntax(ioService, emptyList(), "some/type"), "Syntax not rejected!");
         assertEquals(TURTLE, HttpUtils.getSyntax(ioService, emptyList(), null), "Turtle not default syntax!");
     }
 
     @Test
-    public void testGetSyntaxFallback() {
+    void testGetSyntaxFallback() {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -113,7 +112,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testCheckIfModifiedSince() {
+    void testCheckIfModifiedSince() {
         final String time = "Wed, 21 Oct 2015 07:28:00 GMT";
         assertThrows(RedirectionException.class, () ->
                 HttpUtils.checkIfModifiedSince("GET", time, ofEpochSecond(1445412479)));
@@ -121,14 +120,14 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testDefaultProfile() {
+    void testDefaultProfile() {
         final String defaultProfile = "http://example.com/profile";
         final IRI profile = HttpUtils.getDefaultProfile(JSONLD, identifier, defaultProfile);
         assertEquals(rdf.createIRI(defaultProfile), profile);
     }
 
     @Test
-    public void testGetSyntaxError() {
+    void testGetSyntaxError() {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"));
@@ -138,7 +137,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testFilterPrefer1() {
+    void testFilterPrefer1() {
         final Set<IRI> filtered = HttpUtils.triplePreferences(
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferServerManaged.getIRIString() + "\""));
@@ -149,7 +148,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testFilterPrefer2() {
+    void testFilterPrefer2() {
         final Set<IRI> filtered2 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation"));
 
         assertTrue(filtered2.contains(Trellis.PreferUserManaged), "Prefer filter omits quad!");
@@ -157,7 +156,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testFilterPrefer3() {
+    void testFilterPrefer3() {
         final Set<IRI> filtered3 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferAudit.getIRIString() + "\""));
 
@@ -168,7 +167,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testFilterPrefer4() {
+    void testFilterPrefer4() {
         final Set<IRI> filtered4 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferUserManaged.getIRIString() + "\""));
 
@@ -179,7 +178,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testSkolemize() {
+    void testSkolemize() {
         final String baseUrl = "http://example.org/";
         final Literal literal = rdf.createLiteral("A title");
         final BlankNode bnode = rdf.createBlankNode("foo");
@@ -194,10 +193,10 @@ public class HttpUtilsTest {
                 if (uri.startsWith(TRELLIS_BNODE_PREFIX)) {
                     return bnode;
                 }
-                return (IRI) inv.getArgument(0);
+                return inv.getArgument(0);
             });
         when(mockResourceService.toExternal(any(RDFTerm.class), eq(baseUrl))).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            final RDFTerm term = inv.getArgument(0);
             if (term instanceof IRI) {
                 final String identifierString = ((IRI) term).getIRIString();
                 if (identifierString.startsWith(TRELLIS_DATA_PREFIX)) {
@@ -207,7 +206,7 @@ public class HttpUtilsTest {
             return term;
         });
         when(mockResourceService.toInternal(any(RDFTerm.class), eq(baseUrl))).thenAnswer(inv -> {
-            final RDFTerm term = (RDFTerm) inv.getArgument(0);
+            final RDFTerm term = inv.getArgument(0);
             if (term instanceof IRI) {
                 final String identifierString = ((IRI) term).getIRIString();
                 if (identifierString.startsWith(baseUrl)) {
@@ -239,7 +238,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testProfile() {
+    void testProfile() {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -248,7 +247,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testMultipleProfiles() {
+    void testMultipleProfiles() {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -257,7 +256,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testNoProfile() {
+    void testNoProfile() {
         final List<MediaType> types = asList(
                 new MediaType("application", "json"),
                 new MediaType("text", "xml"),
@@ -266,7 +265,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testCloseInputStreamWithError() throws IOException {
+    void testCloseInputStreamWithError() throws IOException {
         doThrow(new IOException()).when(mockInputStream).close();
         assertThrows(UncheckedIOException.class, () ->
                 HttpUtils.closeInputStreamAsync(mockInputStream).accept(null, null),
@@ -274,7 +273,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testRequirePreconditions() {
+    void testRequirePreconditions() {
         assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(true, "*", null));
         assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(true, null, "Mon, 17 Dec 2018 07:28:00 GMT"));
         assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(false, null, null));
@@ -284,7 +283,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testCloseDataset() throws Exception {
+    void testCloseDataset() throws Exception {
         doThrow(new IOException()).when(mockDataset).close();
         assertThrows(RuntimeTrellisException.class, () -> HttpUtils.closeDataset(mockDataset));
     }

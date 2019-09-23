@@ -17,20 +17,20 @@ package org.trellisldp.vocabulary;
  * Test the JSONLD Vocabulary Class
  * @author acoburn
  */
-public class JSONLDTest extends AbstractVocabularyTest {
+class JSONLDTest extends AbstractVocabularyTest {
 
     @Override
-    public boolean isStrict() {
+    boolean isStrict() {
         return false;
     }
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/ns/json-ld#";
     }
 
     @Override
-    public Class<JSONLD> vocabulary() {
+    Class<JSONLD> vocabulary() {
         return JSONLD.class;
     }
 }

@@ -17,10 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class AuditServiceTest {
+class AuditServiceTest {
 
     @Test
-    public void testNullAuditService() {
+    void testNullAuditService() {
         final AuditService svc = new NoopAuditService();
         assertTrue(svc.creation(null, null).isEmpty(), "Audit triples were generated for a create event");
         assertTrue(svc.deletion(null, null).isEmpty(), "Audit triples were generated for a delete event");

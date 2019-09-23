@@ -26,7 +26,7 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class ConstraintViolationTest {
+class ConstraintViolationTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final Triple triple = rdf.createTriple(rdf.createIRI("ex:subject"), LDP.contains,
@@ -35,7 +35,7 @@ public class ConstraintViolationTest {
             rdf.createIRI("ex:object2"));
 
     @Test
-    public void testSingleConstraint() {
+    void testSingleConstraint() {
         final ConstraintViolation violation = new ConstraintViolation(InvalidProperty, triple);
 
         assertEquals(InvalidProperty, violation.getConstraint(), "Incorrect constraint IRI");
@@ -44,7 +44,7 @@ public class ConstraintViolationTest {
     }
 
     @Test
-    public void testMultipleConstraint() {
+    void testMultipleConstraint() {
         final ConstraintViolation violation = new ConstraintViolation(InvalidProperty, asList(triple, triple2));
 
         assertEquals(InvalidProperty, violation.getConstraint(), "Incorrect constraint IRI");
@@ -54,7 +54,7 @@ public class ConstraintViolationTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         final ConstraintViolation violation = new ConstraintViolation(InvalidProperty, triple);
         assertEquals("http://www.trellisldp.org/ns/trellis#InvalidProperty: " +
                 "[<ex:subject> <http://www.w3.org/ns/ldp#contains> <ex:object> .]", violation.toString(),

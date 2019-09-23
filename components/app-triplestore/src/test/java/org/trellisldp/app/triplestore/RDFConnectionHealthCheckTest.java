@@ -27,12 +27,12 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class RDFConnectionHealthCheckTest {
+class RDFConnectionHealthCheckTest {
 
     private static final JenaRDF rdf = new JenaRDF();
 
     @Test
-    public void testIsConnected() throws Exception {
+    void testIsConnected() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final HealthCheck check = new RDFConnectionHealthCheck(rdfConnection);
@@ -40,7 +40,7 @@ public class RDFConnectionHealthCheckTest {
     }
 
     @Test
-    public void testNonConnected() throws Exception {
+    void testNonConnected() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         rdfConnection.close();

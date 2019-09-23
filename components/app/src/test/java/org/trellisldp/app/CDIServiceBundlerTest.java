@@ -13,6 +13,7 @@
  */
 package org.trellisldp.app;
 
+import static java.util.stream.StreamSupport.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 import javax.inject.Inject;
@@ -33,7 +34,7 @@ import org.trellisldp.io.NoopProfileCache;
 import org.trellisldp.rdfa.DefaultRdfaWriterService;
 
 @ExtendWith(WeldJunit5Extension.class)
-public class CDIServiceBundlerTest {
+class CDIServiceBundlerTest {
 
     @WeldSetup
     private WeldInitiator weld = WeldInitiator.of(WeldInitiator.createWeld()
@@ -61,46 +62,42 @@ public class CDIServiceBundlerTest {
     private ServiceBundler serviceBundler;
 
     @Test
-    public void testResourceService() {
+    void testResourceService() {
         assertNotNull(serviceBundler.getResourceService());
     }
 
     @Test
-    public void testBinaryService() {
+    void testBinaryService() {
         assertNotNull(serviceBundler.getBinaryService());
     }
 
     @Test
-    public void testAuditService() {
+    void testAuditService() {
         assertNotNull(serviceBundler.getAuditService());
     }
 
     @Test
-    public void testTimemapGenerator() {
+    void testTimemapGenerator() {
         assertNotNull(serviceBundler.getTimemapGenerator());
     }
 
     @Test
-    public void testIOService() {
+    void testIOService() {
         assertNotNull(serviceBundler.getIOService());
     }
 
     @Test
-    public void testConstraintServices() {
-        int counter = 0;
-        for (final ConstraintService c : serviceBundler.getConstraintServices()) {
-            counter++;
-        }
-        assertEquals(1, counter);
+    void testConstraintServices() {
+        assertEquals(1, stream(serviceBundler.getConstraintServices().spliterator(), false).count());
     }
 
     @Test
-    public void testMementoService() {
+    void testMementoService() {
         assertNotNull(serviceBundler.getMementoService());
     }
 
     @Test
-    public void testEventService() {
+    void testEventService() {
         assertNotNull(serviceBundler.getEventService());
     }
 }

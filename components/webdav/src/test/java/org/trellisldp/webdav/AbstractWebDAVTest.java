@@ -40,7 +40,6 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.io.IOUtils.readLines;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -100,7 +99,7 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.XSD;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public abstract class AbstractWebDAVTest extends JerseyTest {
+abstract class AbstractWebDAVTest extends JerseyTest {
 
     private static final Logger LOGGER = getLogger(WebDAVTest.class);
     private static final int SC_MULTI_STATUS = 207;
@@ -149,7 +148,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     private Resource mockResource, mockRootResource, mockBinaryResource, mockOtherResource;
 
     @BeforeAll
-    public void before() throws Exception {
+    void before() throws Exception {
         super.setUp();
     }
 
@@ -159,12 +158,12 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @AfterAll
-    public void after() throws Exception {
+    void after() throws Exception {
         super.tearDown();
     }
 
     @BeforeEach
-    public void setUpMocks() throws Exception {
+    void setUpMocks() {
         setUpBundler();
         setUpResourceService();
         setUpBinaryService();
@@ -175,7 +174,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           MKCOL Tests
      * ****************************** */
     @Test
-    public void testMkcol() {
+    void testMkcol() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
 
         final Response res = target(CHILD_PATH).request().method("MKCOL");
@@ -185,19 +184,19 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMkcolRoot() {
+    void testMkcolRoot() {
         final Response res = target().request().method("MKCOL");
         assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testMkcolExisting() {
+    void testMkcolExisting() {
         final Response res = target(RESOURCE_PATH).request().method("MKCOL");
         assertEquals(SC_CONFLICT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testMkcolNotContainer() {
+    void testMkcolNotContainer() {
         final Response res = target(CHILD_PATH).request().method("MKCOL");
         assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), "Unexpected response code!");
     }
@@ -207,7 +206,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           PROPFIND Tests
      * ****************************** */
     @Test
-    public void testPropFindAll() throws IOException {
+    void testPropFindAll() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPFIND", xml("<D:propfind xmlns:D=\"DAV:\">"
                         + "  <D:allprop/>"
@@ -229,7 +228,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropFindNamesOnly() throws IOException {
+    void testPropFindNamesOnly() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPFIND", xml("<D:propfind xmlns:D=\"DAV:\">"
                         + "  <D:propname/>"
@@ -258,7 +257,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropFind() throws IOException {
+    void testPropFind() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPFIND", xml("<D:propfind xmlns:D=\"DAV:\">\n"
                         + "  <D:prop xmlns:dc=\"http://purl.org/dc/terms/\">\n"
@@ -280,7 +279,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropFindContainer() throws IOException {
+    void testPropFindContainer() throws IOException {
         when(mockRootResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(LDP.PreferContainment, root, LDP.contains, identifier),
                 rdf.createQuad(LDP.PreferContainment, root, LDP.contains, binaryIdentifier)));
@@ -304,7 +303,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropFindDeleted() {
+    void testPropFindDeleted() {
         final Response res = target(DELETED_PATH).request()
             .method("PROPFIND", xml("<D:propfind xmlns:D=\"DAV:\">\n"
                         + "  <D:prop xmlns:dc=\"http://purl.org/dc/terms/\">\n"
@@ -315,7 +314,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropFindNonExistent() {
+    void testPropFindNonExistent() {
         final Response res = target(NON_EXISTENT_PATH).request()
             .method("PROPFIND", xml("<D:propfind xmlns:D=\"DAV:\">\n"
                         + "  <D:prop xmlns:dc=\"http://purl.org/dc/terms/\">\n"
@@ -326,7 +325,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropFindBadXMl() {
+    void testPropFindBadXMl() {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPFIND", xml("<D:propfind xmlns:D=\"DAV:\">\n"
                         + "  <D:prop xmlns:dc=\"http://purl.org/dc/terms/\">\n"
@@ -341,7 +340,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           PROPPATCH Tests
      * ****************************** */
     @Test
-    public void testPropPatchAddRemove() throws IOException {
+    void testPropPatchAddRemove() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPPATCH", xml("<D:propertyupdate xmlns:D=\"DAV:\">\n"
                         + "  <D:set>"
@@ -381,7 +380,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropPatchAdd() throws IOException {
+    void testPropPatchAdd() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPPATCH", xml("<D:propertyupdate xmlns:D=\"DAV:\">\n"
                         + "  <D:set>"
@@ -407,7 +406,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropPatchRemove() throws IOException {
+    void testPropPatchRemove() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPPATCH", xml("<D:propertyupdate xmlns:D=\"DAV:\">\n"
                         + "  <D:remove>"
@@ -430,7 +429,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPropPatchRemoveWithEmptySet() throws IOException {
+    void testPropPatchRemoveWithEmptySet() throws IOException {
         final Response res = target(RESOURCE_PATH).request()
             .method("PROPPATCH", xml("<D:propertyupdate xmlns:D=\"DAV:\">\n"
                         + "  <D:set>"
@@ -458,7 +457,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           PUT Tests
      * ****************************** */
     @Test
-    public void testPut() {
+    void testPut() {
         final Response res = target(BINARY_PATH).request().put(entity("a text document.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
@@ -470,7 +469,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPutNew() {
+    void testPutNew() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         final Response res = target(CHILD_PATH).request().put(entity("a text document.", TEXT_PLAIN_TYPE));
 
@@ -482,7 +481,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPutPreviouslyDeleted() {
+    void testPutPreviouslyDeleted() {
         when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         final Response res = target(CHILD_PATH).request().put(entity("another text document.", TEXT_PLAIN_TYPE));
@@ -495,7 +494,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testPutRoot() {
+    void testPutRoot() {
         when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         final Response res = target().request().put(entity("another text document.", TEXT_PLAIN_TYPE));
 
@@ -510,14 +509,14 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           DELETE Tests
      * ****************************** */
     @Test
-    public void testDeleteExisting() {
+    void testDeleteExisting() {
         final Response res = target(RESOURCE_PATH).request().delete();
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testDeleteRecursive() {
+    void testDeleteRecursive() {
 
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
@@ -533,7 +532,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           MOVE Tests
      * ****************************** */
     @Test
-    public void testMove() {
+    void testMove() {
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .method("MOVE");
 
@@ -541,14 +540,14 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveNoDestination() {
+    void testMoveNoDestination() {
         final Response res = target(RESOURCE_PATH).request().method("MOVE");
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testMoveToExisting() {
+    void testMoveToExisting() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Destination", getBaseUri() + BINARY_PATH).method("MOVE");
 
@@ -556,7 +555,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveToDeleted() {
+    void testMoveToDeleted() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Destination", getBaseUri() + DELETED_PATH).method("MOVE");
 
@@ -564,7 +563,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveFromDeleted() {
+    void testMoveFromDeleted() {
         final Response res = target(DELETED_PATH).request()
             .header("Destination", getBaseUri() + DELETED_PATH).method("MOVE");
 
@@ -572,7 +571,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveOutOfDomain() {
+    void testMoveOutOfDomain() {
         final Response res = target(RESOURCE_PATH).request().header("Destination", "http://example.com/location")
             .method("MOVE");
 
@@ -580,7 +579,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveError() {
+    void testMoveError() {
         when(mockResourceService.get(root)).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected");
         }));
@@ -591,7 +590,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveToRoot() {
+    void testMoveToRoot() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -603,7 +602,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveToDeletedParent() {
+    void testMoveToDeletedParent() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
@@ -615,7 +614,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testMoveToMissingParent() {
+    void testMoveToMissingParent() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -630,7 +629,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           COPY Tests
      * ****************************** */
     @Test
-    public void testCopy() {
+    void testCopy() {
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .method("COPY");
 
@@ -638,7 +637,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyDepth0() {
+    void testCopyDepth0() {
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .header("Depth", "0").method("COPY");
 
@@ -646,7 +645,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyDepth1() {
+    void testCopyDepth1() {
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .header("Depth", "1").method("COPY");
 
@@ -654,7 +653,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyDepthInfinity() {
+    void testCopyDepthInfinity() {
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .header("Depth", "infinity").method("COPY");
 
@@ -662,7 +661,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyFromDeleted() {
+    void testCopyFromDeleted() {
         final Response res = target(DELETED_PATH).request()
             .header("Destination", getBaseUri() + DELETED_PATH).method("COPY");
 
@@ -670,7 +669,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyFromRoot() {
+    void testCopyFromRoot() {
         final Response res = target().request()
             .header("Destination", getBaseUri() + NON_EXISTENT_PATH).method("COPY");
 
@@ -678,14 +677,14 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyNoDestination() {
+    void testCopyNoDestination() {
         final Response res = target(RESOURCE_PATH).request().method("COPY");
 
         assertEquals(SC_BAD_REQUEST, res.getStatus(), "Unexpected response code!");
     }
 
     @Test
-    public void testCopyToExisting() {
+    void testCopyToExisting() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Destination", getBaseUri() + BINARY_PATH).method("COPY");
 
@@ -693,7 +692,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyToDeleted() {
+    void testCopyToDeleted() {
         final Response res = target(RESOURCE_PATH).request()
             .header("Destination", getBaseUri() + DELETED_PATH).method("COPY");
 
@@ -701,7 +700,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyOutOfDomain() {
+    void testCopyOutOfDomain() {
         final Response res = target(RESOURCE_PATH).request().header("Destination", "http://example.com/location")
             .method("COPY");
 
@@ -709,7 +708,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyMissingResource() {
+    void testCopyMissingResource() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .method("COPY");
@@ -718,7 +717,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyRecursive() {
+    void testCopyRecursive() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
@@ -732,7 +731,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyRecursiveDepth0() {
+    void testCopyRecursiveDepth0() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
@@ -746,7 +745,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyRecursiveDepth1() {
+    void testCopyRecursiveDepth1() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
@@ -760,7 +759,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyToRoot() {
+    void testCopyToRoot() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -772,7 +771,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyToDeletedParent() {
+    void testCopyToDeletedParent() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
@@ -784,7 +783,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     @Test
-    public void testCopyToMissingParent() {
+    void testCopyToMissingParent() {
 
         when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -799,7 +798,7 @@ public abstract class AbstractWebDAVTest extends JerseyTest {
      *           OPTIONS Tests
      * ****************************** */
     @Test
-    public void testOptions() {
+    void testOptions() {
         final Response res = target(RESOURCE_PATH).request().options();
         assertEquals("1,3", res.getHeaderString("DAV"));
     }

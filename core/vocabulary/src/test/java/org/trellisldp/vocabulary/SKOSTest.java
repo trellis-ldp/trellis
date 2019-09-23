@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the SKOS Vocabulary Class
  * @author acoburn
  */
-public class SKOSTest extends AbstractVocabularyTest {
+class SKOSTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/2004/02/skos/core#";
     }
 
     @Override
-    public Class<SKOS> vocabulary() {
+    Class<SKOS> vocabulary() {
         return SKOS.class;
     }
 }

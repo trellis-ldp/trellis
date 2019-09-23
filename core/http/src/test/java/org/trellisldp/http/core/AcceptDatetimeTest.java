@@ -20,22 +20,22 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class AcceptDatetimeTest {
+class AcceptDatetimeTest {
 
     @Test
-    public void testDatetime() {
+    void testDatetime() {
         final AcceptDatetime datetime = AcceptDatetime.valueOf("Mon, 1 May 2017 13:43:22 GMT");
         assertEquals("2017-05-01T13:43:22Z", datetime.toString(), "Incorrect datetime string!");
         assertEquals("2017-05-01T13:43:22Z", datetime.getInstant().toString(), "Incorrect stringified datetime!");
     }
 
     @Test
-    public void testInvalidDatetime() {
+    void testInvalidDatetime() {
         assertNull(AcceptDatetime.valueOf("Mon, 2 May 2017 13:43:22 GMT"), "Unexpected invalid datetime!");
     }
 
     @Test
-    public void testNullDatetime() {
+    void testNullDatetime() {
         assertNull(AcceptDatetime.valueOf(null), "Check null datetime");
     }
 }

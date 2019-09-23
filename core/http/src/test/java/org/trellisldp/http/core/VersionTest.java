@@ -20,27 +20,27 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class VersionTest {
+class VersionTest {
 
     @Test
-    public void testVersion() {
+    void testVersion() {
         final Version v = Version.valueOf("1493646202");
         assertEquals("2017-05-01T13:43:22Z", v.getInstant().toString(), "Check datetime string");
         assertEquals("2017-05-01T13:43:22Z", v.toString(), "Check stringified version");
     }
 
     @Test
-    public void testInvalidVersion() {
+    void testInvalidVersion() {
         assertNull(Version.valueOf("blah"), "Check parsing an invalid version");
     }
 
     @Test
-    public void testBadValue() {
+    void testBadValue() {
         assertNull(Version.valueOf("-13.12"), "Check parsing an invalid date");
     }
 
     @Test
-    public void testNullValue() {
+    void testNullValue() {
         assertNull(Version.valueOf(null), "Check parsing a null value");
     }
 }

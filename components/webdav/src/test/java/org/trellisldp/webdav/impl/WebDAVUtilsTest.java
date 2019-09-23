@@ -36,12 +36,12 @@ import org.trellisldp.api.RuntimeTrellisException;
 /**
  * @author acoburn
  */
-public class WebDAVUtilsTest {
+class WebDAVUtilsTest {
 
     private static final RDF rdf = getInstance();
 
     @Test
-    public void testPathLastSegments() {
+    void testPathLastSegments() {
         assertEquals("", WebDAVUtils.getLastSegment(emptyList()));
         assertEquals("foo", WebDAVUtils.getLastSegment(singletonList(asPathSegment("foo"))));
         assertEquals("bar", WebDAVUtils.getLastSegment(asList(asPathSegment("foo"), asPathSegment("bar"))));
@@ -50,7 +50,7 @@ public class WebDAVUtilsTest {
     }
 
     @Test
-    public void testEmptyPathSegments() {
+    void testEmptyPathSegments() {
         assertEquals("", WebDAVUtils.getAllButLastSegment(emptyList()));
         assertEquals("", WebDAVUtils.getAllButLastSegment(singletonList(asPathSegment("foo"))));
         assertEquals("foo", WebDAVUtils.getAllButLastSegment(asList(asPathSegment("foo"), asPathSegment("bar"))));
@@ -59,14 +59,14 @@ public class WebDAVUtilsTest {
     }
 
     @Test
-    public void testBaseUrl() {
+    void testBaseUrl() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         assertEquals("https://example.com/resource", WebDAVUtils.externalUrl(identifier, "https://example.com"));
         assertEquals("https://example.com/resource", WebDAVUtils.externalUrl(identifier, "https://example.com/"));
     }
 
     @Test
-    public void testCloseDataset() throws Exception {
+    void testCloseDataset() throws Exception {
         final Dataset mockDataset = mock(Dataset.class);
         doThrow(new IOException()).when(mockDataset).close();
         assertThrows(RuntimeTrellisException.class, () -> WebDAVUtils.closeDataset(mockDataset));

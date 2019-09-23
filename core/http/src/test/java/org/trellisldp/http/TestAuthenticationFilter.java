@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import java.io.IOException;
 import java.security.Principal;
 
 import javax.annotation.Priority;
@@ -32,22 +31,17 @@ class TestAuthenticationFilter implements ContainerRequestFilter {
     private final String principal;
     private final String userRole;
 
-    public TestAuthenticationFilter(final String principal, final String role) {
+    TestAuthenticationFilter(final String principal, final String role) {
         this.principal = principal;
         this.userRole = role;
     }
 
     @Override
-    public void filter(final ContainerRequestContext requestContext) throws IOException {
+    public void filter(final ContainerRequestContext requestContext) {
         requestContext.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
-                return new Principal() {
-                    @Override
-                    public String getName() {
-                        return principal;
-                    }
-                };
+                return () -> principal;
             }
 
             @Override

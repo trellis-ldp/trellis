@@ -27,7 +27,7 @@ import org.trellisldp.vocabulary.PROV;
 /**
  * @author acoburn
  */
-public class AuthorizationTest {
+class AuthorizationTest {
 
     private static final RDF rdf = new SimpleRDF();
 
@@ -36,7 +36,7 @@ public class AuthorizationTest {
     private final IRI subject = rdf.createIRI("trellis:data/resource");
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         final IRI other = rdf.createIRI("trellis:data/other");
 
@@ -69,7 +69,7 @@ public class AuthorizationTest {
     }
 
     @Test
-    public void testGraph() {
+    void testGraph() {
         final Authorization auth = Authorization.from(subject, graph);
 
         assertEquals(subject, auth.getIdentifier(), "Incorrect identifier!");

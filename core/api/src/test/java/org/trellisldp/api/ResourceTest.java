@@ -17,7 +17,6 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -35,7 +34,7 @@ import org.trellisldp.vocabulary.DC;
 /**
  * @author acoburn
  */
-public class ResourceTest {
+class ResourceTest {
 
     private static final RDF rdf = new SimpleRDF();
 
@@ -45,7 +44,7 @@ public class ResourceTest {
     private Resource mockResource;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         doCallRealMethod().when(mockResource).getMembershipResource();
         doCallRealMethod().when(mockResource).getMemberRelation();
@@ -63,7 +62,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void testResource() {
+    void testResource() {
         assertEquals(0L, mockResource.stream(prefer).count(), "Resource stream has extra triples!");
         assertEquals(0L, mockResource.stream(singleton(prefer)).count(), "Resource stream has extra triples!");
         assertNotNull(mockResource.getRevision(), "Resource revision should not be null!");
@@ -77,7 +76,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void testResourceWithQuads() {
+    void testResourceWithQuads() {
         final IRI subject = rdf.createIRI("ex:subject");
         when(mockResource.stream()).thenAnswer((x) -> of(
                     rdf.createQuad(prefer, subject, DC.title, rdf.createLiteral("A title")),
@@ -89,14 +88,14 @@ public class ResourceTest {
     }
 
     @Test
-    public void testSingletons() {
+    void testSingletons() {
         assertEquals(MISSING_RESOURCE, MISSING_RESOURCE, "Missing resource singleton doesn't act like a singleton!");
         assertEquals(DELETED_RESOURCE, DELETED_RESOURCE, "Deleted resource singleton doesn't act like a singleton!");
         assertNotEquals(MISSING_RESOURCE, DELETED_RESOURCE, "Deleted and missing resources match each other!");
     }
 
     @Test
-    public void testMissingResource() {
+    void testMissingResource() {
         assertNull(MISSING_RESOURCE.getIdentifier(), "Missing resource has an identifier!");
         assertNull(MISSING_RESOURCE.getInteractionModel(), "Missing resource has an interaction model!");
         assertNull(MISSING_RESOURCE.getModified(), "Missing resource has a last modified date!");
@@ -107,7 +106,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void testDeletedResource() {
+    void testDeletedResource() {
         assertNull(DELETED_RESOURCE.getIdentifier(), "Deleted resource has an identifier!");
         assertNull(DELETED_RESOURCE.getInteractionModel(), "Deleted resource has an interaction model!");
         assertNull(DELETED_RESOURCE.getModified(), "Deleted resource has a modification date!");

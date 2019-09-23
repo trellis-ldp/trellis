@@ -35,7 +35,7 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * @author acoburn
  */
-public class SimpleEventTest {
+class SimpleEventTest {
 
     private static final RDF rdf = getInstance();
 
@@ -43,7 +43,7 @@ public class SimpleEventTest {
     private final IRI agent = rdf.createIRI("http://example.org/agent");
 
     @Test
-    public void testSimpleEvent() {
+    void testSimpleEvent() {
         final IRI resource = rdf.createIRI(identifier);
         final Instant time = now();
 
@@ -66,7 +66,7 @@ public class SimpleEventTest {
     }
 
     @Test
-    public void testEmptyEvent() {
+    void testEmptyEvent() {
         final IRI resource = rdf.createIRI(identifier);
 
         final Event event = new SimpleEvent(identifier, agent, emptyList(), emptyList());

@@ -70,26 +70,26 @@ import org.trellisldp.test.AbstractApplicationMementoTests;
  * Integration tests for Trellis.
  */
 @TestInstance(PER_CLASS)
-public class TrellisApplicationTest implements MessageListener {
+class TrellisApplicationTest implements MessageListener {
 
     private static final Logger LOGGER = getLogger(TrellisApplicationTest.class);
     private static final RDF rdf = getInstance();
     private static final BrokerService BROKER = new BrokerService();
 
-    protected static final DropwizardTestSupport<AppConfiguration> APP = buildApplication();
-    protected static final String JWT_KEY
+    private static final DropwizardTestSupport<AppConfiguration> APP = buildApplication();
+    private static final String JWT_KEY
         = "EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA==";
 
     private final Set<Graph> MESSAGES = new CopyOnWriteArraySet<>();
 
-    protected Client CLIENT;
+    private Client CLIENT;
 
     private MessageConsumer consumer;
     private Connection connection;
 
 
     @BeforeAll
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         BROKER.setPersistent(false);
         BROKER.start();
 
@@ -101,13 +101,13 @@ public class TrellisApplicationTest implements MessageListener {
     }
 
     @AfterAll
-    public void cleanup() throws Exception {
+    void cleanup() throws Exception {
         APP.after();
         BROKER.stop();
     }
 
     @BeforeEach
-    public void aquireConnection() throws Exception {
+    void aquireConnection() throws Exception {
         final ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost");
         connection = connectionFactory.createConnection();
         connection.start();
@@ -118,7 +118,7 @@ public class TrellisApplicationTest implements MessageListener {
     }
 
     @AfterEach
-    public void releaseConnection() throws Exception {
+    void releaseConnection() throws Exception {
         consumer.setMessageListener(msg -> { });
         consumer.close();
         connection.close();
@@ -131,18 +131,18 @@ public class TrellisApplicationTest implements MessageListener {
 
 
     @Test
-    public void testGetName() {
+    void testGetName() {
         final Application<AppConfiguration> app = new TrellisApplication();
         assertEquals("Trellis LDP", app.getName(), "Incorrect application name!");
     }
 
     @Nested
     @DisplayName("Trellis Audit Tests")
-    public class AuditTests extends AbstractApplicationAuditTests {
+    class AuditTests extends AbstractApplicationAuditTests {
 
         @Override
         public String getJwtSecret() {
-            return TrellisApplicationTest.this.JWT_KEY;
+            return JWT_KEY;
         }
 
         @Override
@@ -152,13 +152,13 @@ public class TrellisApplicationTest implements MessageListener {
 
         @Override
         public String getBaseURL() {
-            return "http://localhost:" + TrellisApplicationTest.this.APP.getLocalPort() + "/";
+            return "http://localhost:" + APP.getLocalPort() + "/";
         }
     }
 
     @Nested
     @DisplayName("Trellis LDP Tests")
-    public class LdpTests extends AbstractApplicationLdpTests {
+    class LdpTests extends AbstractApplicationLdpTests {
 
         @Override
         public Client getClient() {
@@ -167,7 +167,7 @@ public class TrellisApplicationTest implements MessageListener {
 
         @Override
         public String getBaseURL() {
-            return "http://localhost:" + TrellisApplicationTest.this.APP.getLocalPort() + "/";
+            return "http://localhost:" + APP.getLocalPort() + "/";
         }
 
         @Override
@@ -178,7 +178,7 @@ public class TrellisApplicationTest implements MessageListener {
 
     @Nested
     @DisplayName("Trellis Memento Tests")
-    public class MementoTests extends AbstractApplicationMementoTests {
+    class MementoTests extends AbstractApplicationMementoTests {
 
         @Override
         public Client getClient() {
@@ -187,13 +187,13 @@ public class TrellisApplicationTest implements MessageListener {
 
         @Override
         public String getBaseURL() {
-            return "http://localhost:" + TrellisApplicationTest.this.APP.getLocalPort() + "/";
+            return "http://localhost:" + APP.getLocalPort() + "/";
         }
     }
 
     @Nested
     @DisplayName("Trellis Event Tests")
-    public class EventTests extends AbstractApplicationEventTests {
+    class EventTests extends AbstractApplicationEventTests {
         @Override
         public Client getClient() {
             return TrellisApplicationTest.this.CLIENT;
@@ -201,7 +201,7 @@ public class TrellisApplicationTest implements MessageListener {
 
         @Override
         public String getBaseURL() {
-            return "http://localhost:" + TrellisApplicationTest.this.APP.getLocalPort() + "/";
+            return "http://localhost:" + APP.getLocalPort() + "/";
         }
 
         @Override
@@ -211,13 +211,13 @@ public class TrellisApplicationTest implements MessageListener {
 
         @Override
         public String getJwtSecret() {
-            return TrellisApplicationTest.this.JWT_KEY;
+            return JWT_KEY;
         }
     }
 
     @Nested
     @DisplayName("Trellis AuthZ Tests")
-    public class AuthorizationTests extends AbstractApplicationAuthTests {
+    class AuthorizationTests extends AbstractApplicationAuthTests {
 
         @Override
         public Client getClient() {
@@ -226,7 +226,7 @@ public class TrellisApplicationTest implements MessageListener {
 
         @Override
         public String getBaseURL() {
-            return "http://localhost:" + TrellisApplicationTest.this.APP.getLocalPort() + "/";
+            return "http://localhost:" + APP.getLocalPort() + "/";
         }
 
         @Override
@@ -246,12 +246,12 @@ public class TrellisApplicationTest implements MessageListener {
 
         @Override
         public String getJwtSecret() {
-            return TrellisApplicationTest.this.JWT_KEY;
+            return JWT_KEY;
         }
     }
 
     private static DropwizardTestSupport<AppConfiguration> buildApplication() {
-        return new DropwizardTestSupport<AppConfiguration>(TrellisApplication.class,
+        return new DropwizardTestSupport<>(TrellisApplication.class,
                 resourceFilePath("trellis-config.yml"),
                 config("notifications.type", "JMS"),
                 config("notifications.connectionString", "vm://localhost"),

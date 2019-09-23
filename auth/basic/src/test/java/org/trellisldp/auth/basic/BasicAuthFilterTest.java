@@ -18,7 +18,6 @@ import static java.util.Collections.singleton;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -35,7 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-public class BasicAuthFilterTest {
+class BasicAuthFilterTest {
 
     @Mock
     private ContainerRequestContext mockContext;
@@ -47,13 +46,13 @@ public class BasicAuthFilterTest {
     private ArgumentCaptor<SecurityContext> securityArgument;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
     }
 
     @Test
-    public void testCredentials() throws Exception {
+    void testCredentials() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         final String webid = "https://people.apache.org/~acoburn/#i";
         final String token = encodeCredentials("acoburn", "secret");
@@ -68,7 +67,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testAdminCredentials() throws Exception {
+    void testAdminCredentials() {
         final String webid = "https://people.apache.org/~acoburn/#i";
         final BasicAuthFilter filter = new BasicAuthFilter(new File(getAuthFile()), "trellis", singleton(webid));
         final String token = encodeCredentials("acoburn", "secret");
@@ -83,7 +82,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testNoHeader() throws Exception {
+    void testNoHeader() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn(null);
         filter.filter(mockContext);
@@ -91,7 +90,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testOtherCredentials() throws Exception {
+    void testOtherCredentials() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         when(mockContext.getHeaderString(AUTHORIZATION))
             .thenReturn("Basic " + encodeCredentials("user", "password"));
@@ -105,7 +104,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testSecureCredentials() throws Exception {
+    void testSecureCredentials() {
         when(mockSecurityContext.isSecure()).thenReturn(true);
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         final String webid = "https://people.apache.org/~acoburn/#i";
@@ -120,7 +119,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testNoSecurityContext() throws Exception {
+    void testNoSecurityContext() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         when(mockContext.getSecurityContext()).thenReturn(null);
         when(mockContext.getHeaderString(AUTHORIZATION))
@@ -135,7 +134,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testCredentialsViaConfiguration() throws Exception {
+    void testCredentialsViaConfiguration() {
         try {
             System.setProperty(BasicAuthFilter.CONFIG_AUTH_BASIC_CREDENTIALS, getAuthFile());
             final BasicAuthFilter filter = new BasicAuthFilter();
@@ -154,7 +153,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testNoCredentials() throws Exception {
+    void testNoCredentials() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         final String token = encodeCredentials("acoburn", "secret");
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
@@ -163,7 +162,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testBadCredentials() throws Exception {
+    void testBadCredentials() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         final String token = encodeCredentials("acoburn", "wrong");
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
@@ -171,7 +170,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testBadCredentialsFile() throws Exception {
+    void testBadCredentialsFile() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile() + ".non-existent");
         final String token = encodeCredentials("acoburn", "secret");
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
@@ -179,7 +178,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testNoToken() throws Exception {
+    void testNoToken() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BASIC");
         filter.filter(mockContext);
@@ -187,7 +186,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testBadToken() throws Exception {
+    void testBadToken() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         final String token = "blahblah";
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
@@ -195,7 +194,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testTokenWithBadChars() throws Exception {
+    void testTokenWithBadChars() {
         final BasicAuthFilter filter = new BasicAuthFilter(getAuthFile());
         final String token = "&=!*#$";
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Basic " + token);
@@ -203,7 +202,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testUnreadableFile() throws Exception {
+    void testUnreadableFile() {
         final File file = new File(getAuthFile(), "nonexistent");
         final BasicAuthFilter filter = new BasicAuthFilter(file);
         final String token = encodeCredentials("acoburn", "secret");
@@ -212,7 +211,7 @@ public class BasicAuthFilterTest {
     }
 
     @Test
-    public void testCredentialsObject() {
+    void testCredentialsObject() {
         final Credentials credentials = new Credentials("acoburn", "secret");
         assertFalse(credentials.toString().contains("secret"));
         assertTrue(credentials.toString().contains("acoburn"));

@@ -29,10 +29,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class TrellisConfigurationTest {
+class TrellisConfigurationTest {
 
     @Test
-    public void testConfigurationGeneral1() throws Exception {
+    void testConfigurationGeneral1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -60,7 +60,7 @@ public class TrellisConfigurationTest {
 
         // Other tests
         assertEquals("my.cluster.address", config.any().get("cassandraAddress"), "Incorrect custom property!");
-        assertEquals((Integer)245994, config.any().get("cassandraPort"), "Incorrect custom Integer property!");
+        assertEquals(245994, config.any().get("cassandraPort"), "Incorrect custom Integer property!");
         @SuppressWarnings("unchecked")
         final Map<String, Object> extraConfig = (Map<String, Object>) config.any().get("extraConfigValues");
         assertTrue((Boolean) extraConfig.get("first"), "Incorrect boolean nested custom properties!");
@@ -71,7 +71,7 @@ public class TrellisConfigurationTest {
 
 
     @Test
-    public void testConfigurationAssets1() throws Exception {
+    void testConfigurationAssets1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -82,7 +82,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationNotifications() throws Exception {
+    void testConfigurationNotifications() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -97,7 +97,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationLocations() throws Exception {
+    void testConfigurationLocations() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -107,7 +107,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationAuth1() throws Exception {
+    void testConfigurationAuth1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -136,7 +136,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationCORS1() throws Exception {
+    void testConfigurationCORS1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));

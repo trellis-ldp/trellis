@@ -46,12 +46,12 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test a file-based memento service.
  */
-public class FileMementoServiceTest {
+class FileMementoServiceTest {
 
     private static final RDF rdf = new JenaRDF();
 
     @AfterAll
-    public static void cleanUp() throws IOException {
+    static void cleanUp() throws IOException {
         final File dir = new File(FileMementoServiceTest.class.getResource("/versions").getFile()).getParentFile();
         final File vDir = new File(dir, "versions2");
         if (vDir.exists()) {
@@ -60,7 +60,7 @@ public class FileMementoServiceTest {
     }
 
     @Test
-    public void testPutThenDelete() throws Exception {
+    void testPutThenDelete() {
         final File dir = new File(getClass().getResource("/versions").getFile());
         final FileMementoService svc = new FileMementoService(dir.getAbsolutePath());
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "another-resource");
@@ -98,7 +98,7 @@ public class FileMementoServiceTest {
 
 
     @Test
-    public void testList() {
+    void testList() {
         final Instant time = parse("2017-02-16T11:15:01Z");
         final Instant time2 = parse("2017-02-16T11:15:11Z");
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
@@ -130,7 +130,7 @@ public class FileMementoServiceTest {
     }
 
     @Test
-    public void testPutBinary() {
+    void testPutBinary() {
         final File dir = new File(getClass().getResource("/versions").getFile());
         final MementoService svc = new FileMementoService(dir.getAbsolutePath());
         final IRI identifier = rdf.createIRI("trellis:data/a-binary");
@@ -175,7 +175,7 @@ public class FileMementoServiceTest {
     }
 
     @Test
-    public void testPutIndirectContainer() {
+    void testPutIndirectContainer() {
         final File dir = new File(getClass().getResource("/versions").getFile());
         final MementoService svc = new FileMementoService(dir.getAbsolutePath());
         final IRI identifier = rdf.createIRI("trellis:data/a-resource");
@@ -214,7 +214,7 @@ public class FileMementoServiceTest {
     }
 
     @Test
-    public void testListNonExistent() {
+    void testListNonExistent() {
         final File dir = new File(getClass().getResource("/versions").getFile());
 
         try {
@@ -235,7 +235,7 @@ public class FileMementoServiceTest {
     }
 
     @Test
-    public void testListNone() {
+    void testListNone() {
         final File dir = new File(getClass().getResource("/versions").getFile());
 
         try {
@@ -256,7 +256,7 @@ public class FileMementoServiceTest {
     }
 
     @Test
-    public void testNewVersionSystem() {
+    void testNewVersionSystem() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File dir = new File(getClass().getResource("/versions").getFile()).getParentFile();
         assertTrue(dir.exists(), "Resource directory doesn't exist!");

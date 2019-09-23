@@ -25,12 +25,12 @@ import org.trellisldp.vocabulary.DC;
 /**
  * @author acoburn
  */
-public class LabelledTripleTest {
+class LabelledTripleTest {
 
     private static final RDF rdf = new JenaRDF();
 
     @Test
-    public void testOrdinaryLabelledTriple() {
+    void testOrdinaryLabelledTriple() {
         final Triple triple = rdf.createTriple(
                 rdf.createIRI("test:value"), DC.title, rdf.createLiteral("A title"));
         final LabelledTriple t = new LabelledTriple(triple, "title", null);
@@ -41,7 +41,7 @@ public class LabelledTripleTest {
     }
 
     @Test
-    public void testOrdinaryLabelledTriple2() {
+    void testOrdinaryLabelledTriple2() {
         final Triple triple = rdf.createTriple(
                 rdf.createIRI("test:value"), DC.title, rdf.createLiteral("A title"));
         final LabelledTriple t = new LabelledTriple(triple, null, null);
@@ -52,7 +52,7 @@ public class LabelledTripleTest {
     }
 
     @Test
-    public void testOrdinaryLabelledTriple3() {
+    void testOrdinaryLabelledTriple3() {
         final Triple triple = rdf.createTriple(
                 rdf.createIRI("test:value"), DC.title, rdf.createLiteral("A title"));
         final LabelledTriple t = new LabelledTriple(triple, null, null);
@@ -64,7 +64,7 @@ public class LabelledTripleTest {
     }
 
     @Test
-    public void testBnodes() {
+    void testBnodes() {
         final BlankNode bn1 = rdf.createBlankNode();
         final BlankNode bn2 = rdf.createBlankNode();
         final Triple triple = rdf.createTriple(bn1, DC.subject, bn2);

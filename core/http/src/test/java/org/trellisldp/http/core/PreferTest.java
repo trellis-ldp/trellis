@@ -24,10 +24,10 @@ import org.junit.jupiter.api.function.Executable;
 /**
  * @author acoburn
  */
-public class PreferTest {
+class PreferTest {
 
     @Test
-    public void testPreferNullValues() {
+    void testPreferNullValues() {
         final Prefer prefer = new Prefer(null, null, null, null, null);
         assertFalse(prefer.getPreference().isPresent());
         assertFalse(prefer.getHandling().isPresent());
@@ -37,31 +37,31 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer1() {
+    void testPrefer1() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test\"");
         assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
-    public void testPrefer1b() {
+    void testPrefer1b() {
         final Prefer prefer = Prefer.ofInclude("http://example.org/test");
         assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
-    public void testPrefer1c() {
+    void testPrefer1c() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=http://example.org/test");
         assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
-    public void testPrefer2() {
+    void testPrefer2() {
         final Prefer prefer = Prefer.valueOf("return  =  representation;   include =  \"http://example.org/test\"");
         assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
     }
 
     @Test
-    public void testPrefer3() {
+    void testPrefer3() {
         final Prefer prefer = Prefer.valueOf("return=minimal");
         assertEquals(of("minimal"), prefer.getPreference(), "Check preference value");
         assertTrue(prefer.getInclude().isEmpty(), "Check that there are no includes");
@@ -71,7 +71,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer4() {
+    void testPrefer4() {
         final Prefer prefer = Prefer.valueOf("return=other");
         assertTrue(prefer.getInclude().isEmpty(), "Check includes is empty");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits is empty");
@@ -81,7 +81,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer5() {
+    void testPrefer5() {
         final Prefer prefer = Prefer.valueOf("return=representation; omit=\"http://example.org/test\"");
         assertEquals(of("representation"), prefer.getPreference(), "Check preference value");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
@@ -92,7 +92,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer5b() {
+    void testPrefer5b() {
         final Prefer prefer = Prefer.ofOmit("http://example.org/test");
         assertEquals(of("representation"), prefer.getPreference(), "Check preference value");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
@@ -103,7 +103,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer6() {
+    void testPrefer6() {
         final Prefer prefer = Prefer.valueOf("handling=lenient; return=minimal");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
@@ -113,7 +113,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer7() {
+    void testPrefer7() {
         final Prefer prefer = Prefer.valueOf("respond-async; random-param");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
@@ -123,7 +123,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer8() {
+    void testPrefer8() {
         final Prefer prefer = Prefer.valueOf("handling=strict; return=minimal");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
@@ -133,7 +133,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPrefer9() {
+    void testPrefer9() {
         final Prefer prefer = Prefer.valueOf("handling=blah; return=minimal");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
@@ -143,7 +143,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testStaticInclude() {
+    void testStaticInclude() {
         final Prefer prefer = Prefer.ofInclude();
         assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
@@ -151,7 +151,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testStaticOmit() {
+    void testStaticOmit() {
         final Prefer prefer = Prefer.ofOmit();
         assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
         assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
@@ -159,7 +159,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPreferBadQuotes() {
+    void testPreferBadQuotes() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test");
         assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
         assertEquals(1L, prefer.getInclude().size(), "Check includes count");
@@ -170,7 +170,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testPreferBadQuotes2() {
+    void testPreferBadQuotes2() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"");
         assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
         assertEquals(1L, prefer.getInclude().size(), "Check for includes size");
@@ -181,7 +181,7 @@ public class PreferTest {
     }
 
     @Test
-    public void testNullPrefer() {
+    void testNullPrefer() {
         assertNull(Prefer.valueOf(null), "Check null value");
     }
 

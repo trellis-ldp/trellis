@@ -21,20 +21,20 @@ import org.junit.jupiter.api.Test;
  * Test the LDP Vocabulary Class
  * @author acoburn
  */
-public class LDPTest extends AbstractVocabularyTest {
+class LDPTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/ns/ldp#";
     }
 
     @Override
-    public Class<LDP> vocabulary() {
+    Class<LDP> vocabulary() {
         return LDP.class;
     }
 
     @Test
-    public void testSuperclass() {
+    void testSuperclass() {
         assertEquals(LDP.Resource, LDP.getSuperclassOf(LDP.NonRDFSource), "LDP-R isn't a superclass of LDP-NR!");
         assertEquals(LDP.Container, LDP.getSuperclassOf(LDP.BasicContainer), "LDP-C isn't a superclass of LDP-BC!");
         assertNull(LDP.getSuperclassOf(LDP.Resource), "Astonishingly, LDP-R has a superclass!");

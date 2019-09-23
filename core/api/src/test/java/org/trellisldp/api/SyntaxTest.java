@@ -19,10 +19,10 @@ import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 
 import org.junit.jupiter.api.Test;
 
-public class SyntaxTest {
+class SyntaxTest {
 
     @Test
-    public void testSparqlUpdate() {
+    void testSparqlUpdate() {
         assertEquals("SPARQL-Update", SPARQL_UPDATE.name(), "Incorrect name for SPARQL-Update!");
         assertEquals("SPARQL 1.1 Update", SPARQL_UPDATE.title(), "Incorrect title for SPARQL-Update!");
         assertEquals("application/sparql-update", SPARQL_UPDATE.mediaType(), "Incorrect mediaType for SPARQL-Update!");
@@ -39,7 +39,7 @@ public class SyntaxTest {
     }
 
     @Test
-    public void testLDPatch() {
+    void testLDPatch() {
         assertEquals("LD-Patch", LD_PATCH.name(), "Incorrect name for LD-Patch");
         assertEquals("Linked Data Patch Format", LD_PATCH.title(), "Incorrect title for LD-Patch!");
         assertEquals("text/ldpatch", LD_PATCH.mediaType(), "Incorrect mediaType for LD-Patch!");

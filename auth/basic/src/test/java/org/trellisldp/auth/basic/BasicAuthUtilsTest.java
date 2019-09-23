@@ -20,19 +20,18 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-public class BasicAuthUtilsTest {
+class BasicAuthUtilsTest {
 
     @Test
-    public void uncheckedLinesTest() {
+    void uncheckedLinesTest() {
         final File file = new File(getClass().getResource("/users.auth").getFile());
         assertEquals(5L, BasicAuthUtils.uncheckedLines(file.toPath()).count());
     }
 
     @Test
-    public void uncheckedLinesNonexistentTest() {
+    void uncheckedLinesNonexistentTest() {
         final File file = new File(getClass().getResource("/users.auth").getFile()).getParentFile();
         final Path path = new File(file, "nonexistent.file").toPath();
         assertEquals(0L, BasicAuthUtils.uncheckedLines(path).count());
     }
-
 }

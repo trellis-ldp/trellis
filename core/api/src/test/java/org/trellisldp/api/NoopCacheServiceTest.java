@@ -22,10 +22,10 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-public class NoopCacheServiceTest {
+class NoopCacheServiceTest {
 
     @Test
-    public void testPassthroughCache() {
+    void testPassthroughCache() {
         final List<String> list = new CopyOnWriteArrayList<>();
         final Function<String, String> mapper = key -> {
             list.add(key);

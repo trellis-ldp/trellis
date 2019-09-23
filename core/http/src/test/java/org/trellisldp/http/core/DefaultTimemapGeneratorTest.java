@@ -26,12 +26,11 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class DefaultTimemapGeneratorTest {
-
-    private final String url = "http://example.com/resource/memento";
+class DefaultTimemapGeneratorTest {
 
     @Test
-    public void testIsMementoLink() {
+    void testIsMementoLink() {
+        final String url = "http://example.com/resource/memento";
         final TimemapGenerator svc = new DefaultTimemapGenerator();
         final List<Link> links = asList(
             fromUri(url).rel("memento").param("datetime", "Fri, 11 May 2018 15:29:25 GMT").build(),

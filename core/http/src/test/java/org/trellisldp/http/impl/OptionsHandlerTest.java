@@ -42,10 +42,10 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class OptionsHandlerTest extends BaseTestHandler {
+class OptionsHandlerTest extends BaseTestHandler {
 
     @Test
-    public void testOptionsLdprs() {
+    void testOptionsLdprs() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
@@ -58,7 +58,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testOptionsLdpc() {
+    void testOptionsLdpc() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
 
@@ -77,7 +77,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testOptionsLdpnr() {
+    void testOptionsLdpnr() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
@@ -89,7 +89,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testOptionsAcl() {
+    void testOptionsAcl() {
         when(mockTrellisRequest.getExt()).thenReturn("acl");
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, baseUrl);
@@ -102,7 +102,7 @@ public class OptionsHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testOptionsMemento() {
+    void testOptionsMemento() {
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, true, null);
         final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
 

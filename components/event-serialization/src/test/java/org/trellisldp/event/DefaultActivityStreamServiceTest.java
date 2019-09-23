@@ -46,7 +46,7 @@ import org.trellisldp.vocabulary.AS;
 /**
  * @author acoburn
  */
-public class DefaultActivityStreamServiceTest {
+class DefaultActivityStreamServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
 
@@ -58,7 +58,7 @@ public class DefaultActivityStreamServiceTest {
     private Event mockEvent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("info:event/12345"));
         when(mockEvent.getAgents()).thenReturn(singleton(rdf.createIRI("info:user/test")));
@@ -70,14 +70,14 @@ public class DefaultActivityStreamServiceTest {
     }
 
     @Test
-    public void testSerialization() {
+    void testSerialization() {
         final Optional<String> json = svc.serialize(mockEvent);
         assertTrue(json.isPresent(), "Serialization not present!");
         assertTrue(json.get().contains("\"inbox\":\"info:ldn/inbox\""), "ldp:inbox not in serialization!");
     }
 
     @Test
-    public void testError() {
+    void testError() {
         when(mockEvent.getIdentifier()).thenAnswer(inv -> {
             sneakyJsonException();
             return rdf.createIRI("info:event/12456");
@@ -88,7 +88,7 @@ public class DefaultActivityStreamServiceTest {
     }
 
     @Test
-    public void testSerializationStructure() throws Exception {
+    void testSerializationStructure() throws Exception {
         when(mockEvent.getTypes()).thenReturn(asList(Create, Activity));
 
         final Optional<String> json = svc.serialize(mockEvent);
@@ -114,13 +114,13 @@ public class DefaultActivityStreamServiceTest {
         final List<?> actor = (List<?>) map.get("actor");
         assertTrue(actor.contains("info:user/test"), "actor property has incorrect value!");
 
-        assertTrue(map.get("id").equals("info:event/12345"), "id property has incorrect value!");
-        assertTrue(map.get("inbox").equals("info:ldn/inbox"), "inbox property has incorrect value!");
-        assertTrue(map.get("published").equals(time.toString()), "published property has incorrect value!");
+        assertEquals("info:event/12345", map.get("id"), "id property has incorrect value!");
+        assertEquals("info:ldn/inbox", map.get("inbox"), "inbox property has incorrect value!");
+        assertEquals(time.toString(), map.get("published"), "published property has incorrect value!");
     }
 
     @Test
-    public void testSerializationStructureNoEmptyElements() throws Exception {
+    void testSerializationStructureNoEmptyElements() throws Exception {
         when(mockEvent.getInbox()).thenReturn(empty());
         when(mockEvent.getAgents()).thenReturn(emptyList());
         when(mockEvent.getTargetTypes()).thenReturn(emptyList());
@@ -149,8 +149,8 @@ public class DefaultActivityStreamServiceTest {
 
         assertTrue(AS.getNamespace().contains((String) map.get("@context")), "AS namespace not in @context!");
 
-        assertTrue(map.get("id").equals("info:event/12345"), "id property has incorrect value!");
-        assertTrue(map.get("published").equals(time.toString()), "published property has incorrect value!");
+        assertEquals("info:event/12345", map.get("id"), "id property has incorrect value!");
+        assertEquals(time.toString(), map.get("published"), "published property has incorrect value!");
     }
 
     @SuppressWarnings("unchecked")

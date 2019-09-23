@@ -33,7 +33,6 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Syntax.LD_PATCH;
@@ -78,7 +77,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 /**
  * @author acoburn
  */
-public class JenaIOServiceTest {
+class JenaIOServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
     private IOService service, service2, service3;
@@ -103,7 +102,7 @@ public class JenaIOServiceTest {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dcterms", DCTerms.NS);
@@ -126,7 +125,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdDefaultSerializer() throws UnsupportedEncodingException {
+    void testJsonLdDefaultSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service3.write(getTriples(), out, JSONLD);
         final String output = out.toString("UTF-8");
@@ -136,7 +135,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdExpandedSerializer() throws UnsupportedEncodingException {
+    void testJsonLdExpandedSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, expanded);
         final String output = out.toString("UTF-8");
@@ -146,7 +145,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdExpandedFlatSerializer() throws UnsupportedEncodingException {
+    void testJsonLdExpandedFlatSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, expanded, flattened);
         final String output = out.toString("UTF-8");
@@ -156,7 +155,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdCustomSerializer() throws UnsupportedEncodingException {
+    void testJsonLdCustomSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
         final String output = out.toString("UTF-8");
@@ -172,7 +171,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdCustomSerializerNoopCache() throws UnsupportedEncodingException {
+    void testJsonLdCustomSerializerNoopCache() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final IOService svc = new JenaIOService(mockNamespaceService, null, new NoopProfileCache(),
                 "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/");
@@ -186,7 +185,7 @@ public class JenaIOServiceTest {
 
 
     @Test
-    public void testJsonLdCustomSerializer2() throws UnsupportedEncodingException {
+    void testJsonLdCustomSerializer2() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service2.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
         final String output = out.toString("UTF-8");
@@ -202,7 +201,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdCustomUnrecognizedSerializer() throws UnsupportedEncodingException {
+    void testJsonLdCustomUnrecognizedSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.example.org/context.jsonld"));
         final String output = out.toString("UTF-8");
@@ -212,7 +211,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdNullCache() throws UnsupportedEncodingException {
+    void testJsonLdNullCache() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final IOService myservice = new JenaIOService();
         myservice.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
@@ -223,7 +222,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdCustomUnrecognizedSerializer2() throws UnsupportedEncodingException {
+    void testJsonLdCustomUnrecognizedSerializer2() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service2.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.example.org/context.jsonld"));
         final String output = out.toString("UTF-8");
@@ -233,7 +232,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdCustomUnrecognizedSerializer3() throws UnsupportedEncodingException {
+    void testJsonLdCustomUnrecognizedSerializer3() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.trellisldp.org/ns/nonexistent.jsonld"));
         final String output = out.toString("UTF-8");
@@ -243,7 +242,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdCompactedSerializer() throws UnsupportedEncodingException {
+    void testJsonLdCompactedSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, compacted);
         final String output = out.toString("UTF-8");
@@ -253,7 +252,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdFlattenedSerializer() throws UnsupportedEncodingException {
+    void testJsonLdFlattenedSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, flattened);
         final String output = out.toString("UTF-8");
@@ -263,7 +262,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdFlattenedSerializer2() throws UnsupportedEncodingException {
+    void testJsonLdFlattenedSerializer2() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, compacted_flattened);
         final String output = out.toString("UTF-8");
@@ -273,7 +272,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdFlattenedSerializer3() throws UnsupportedEncodingException {
+    void testJsonLdFlattenedSerializer3() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, expanded_flattened);
         final String output = out.toString("UTF-8");
@@ -283,7 +282,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testJsonLdFlattenedSerializer4() throws UnsupportedEncodingException {
+    void testJsonLdFlattenedSerializer4() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, compacted, flattened);
         final String output = out.toString("UTF-8");
@@ -293,14 +292,14 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testMalformedInput() {
+    void testMalformedInput() {
         final ByteArrayInputStream in = new ByteArrayInputStream("<> <ex:test> a Literal\" . ".getBytes(UTF_8));
         assertThrows(RuntimeTrellisException.class, () ->
                 service.read(in, TURTLE, null), "No exception on malformed input!");
     }
 
     @Test
-    public void testNTriplesSerializer() {
+    void testNTriplesSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service3.write(getTriples(), out, NTRIPLES);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -310,7 +309,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testBufferedSerializer() {
+    void testBufferedSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, RDFXML);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -320,7 +319,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testTurtleSerializer() {
+    void testTurtleSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, TURTLE);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -330,7 +329,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testTurtleReaderWithContext() {
+    void testTurtleReaderWithContext() {
         final Graph graph = rdf.createGraph();
         service.read(getClass().getResourceAsStream("/testRdf.ttl"), TURTLE, "trellis:data/resource")
             .forEach(graph::add);
@@ -338,7 +337,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testHtmlSerializer() throws Exception {
+    void testHtmlSerializer() {
         final IOService service4 = new JenaIOService(mockNamespaceService, mockRdfaWriterService);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -347,7 +346,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testHtmlSerializer2() throws Exception {
+    void testHtmlSerializer2() {
         final IOService service4 = new JenaIOService(mockNamespaceService, mockRdfaWriterService);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -356,7 +355,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testNullHtmlSerializer() {
+    void testNullHtmlSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, RDFA);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -366,7 +365,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testUpdateError() {
+    void testUpdateError() {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size(), "Incorrect graph size!");
@@ -375,21 +374,21 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testReadError() throws IOException {
+    void testReadError() throws IOException {
         doThrow(new IOException()).when(mockInputStream).read(any(byte[].class), anyInt(), anyInt());
         assertThrows(RuntimeTrellisException.class, () -> service.read(mockInputStream, TURTLE, "context"),
                 "No read exception on bad input stream!");
     }
 
     @Test
-    public void testWriteError() throws IOException {
+    void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
         assertThrows(RuntimeTrellisException.class, () -> service.write(getTriples(), mockOutputStream, TURTLE),
                 "No write exception on bad input stream!");
     }
 
     @Test
-    public void testUpdate() {
+    void testUpdate() {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size(), "Incorrect graph size!");
@@ -408,7 +407,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testUpdateInvalidSyntax() {
+    void testUpdateInvalidSyntax() {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         final String patch = "UpdateList <#> <http://example.org/vocab#preferredLanguages> 1..2 ( \"fr\" ) .";
@@ -417,7 +416,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testWriteInvalidSyntax() {
+    void testWriteInvalidSyntax() {
         when(mockSyntax.mediaType()).thenReturn("fake/mediatype");
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -426,7 +425,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testReadInvalidSyntax() {
+    void testReadInvalidSyntax() {
         when(mockSyntax.mediaType()).thenReturn("fake/mediatype");
         final String output = "blah blah blah";
 
@@ -436,7 +435,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testReadSyntaxes() {
+    void testReadSyntaxes() {
         assertTrue(service.supportedReadSyntaxes().contains(TURTLE), "Turtle not supported for reading!");
         assertTrue(service.supportedReadSyntaxes().contains(JSONLD), "JSON-LD not supported for reading!");
         assertTrue(service.supportedReadSyntaxes().contains(NTRIPLES), "N-Triples not supported for reading!");
@@ -446,7 +445,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testWriteSyntaxes() {
+    void testWriteSyntaxes() {
         assertTrue(service.supportedWriteSyntaxes().contains(TURTLE), "Turtle not supported for writing!");
         assertTrue(service.supportedWriteSyntaxes().contains(JSONLD), "JSON-LD not supported for writing!");
         assertTrue(service.supportedWriteSyntaxes().contains(NTRIPLES), "N-Triples not supported for writing!");
@@ -456,7 +455,7 @@ public class JenaIOServiceTest {
     }
 
     @Test
-    public void testUpdateSyntaxes() {
+    void testUpdateSyntaxes() {
         assertTrue(service.supportedUpdateSyntaxes().contains(SPARQL_UPDATE), "SPARQL-Update not supported!");
         assertFalse(service.supportedUpdateSyntaxes().contains(LD_PATCH), "LD-PATCH unexpectedly supported!");
     }

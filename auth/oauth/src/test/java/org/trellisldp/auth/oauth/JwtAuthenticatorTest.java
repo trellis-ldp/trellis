@@ -35,10 +35,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class JwtAuthenticatorTest {
+class JwtAuthenticatorTest {
 
     @Test
-    public void testAuthenticate() {
+    void testAuthenticate() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS256);
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
              .signWith(key).compact();
@@ -51,7 +51,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateEC() {
+    void testAuthenticateEC() {
         final KeyPair keypair = EllipticCurveProvider.generateKeyPair(SignatureAlgorithm.ES256);
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
              .signWith(keypair.getPrivate(), SignatureAlgorithm.ES256).compact();
@@ -64,7 +64,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateRSA() {
+    void testAuthenticateRSA() {
         final KeyPair keypair = RsaProvider.generateKeyPair();
         final String token = Jwts.builder().setSubject("https://people.apache.org/~acoburn/#i")
              .signWith(keypair.getPrivate(), SignatureAlgorithm.RS256).compact();
@@ -77,7 +77,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateKeystore() throws Exception {
+    void testAuthenticateKeystore() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
@@ -94,7 +94,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateKeystoreRSA() throws Exception {
+    void testAuthenticateKeystoreRSA() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
@@ -111,7 +111,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateKeystoreEC() throws Exception {
+    void testAuthenticateKeystoreEC() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
@@ -128,7 +128,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateKeystoreECWebsite() throws Exception {
+    void testAuthenticateKeystoreECWebsite() throws Exception {
         final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(getClass().getResourceAsStream("/keystore.jks"), "password".toCharArray());
 
@@ -146,7 +146,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateNoSub() {
+    void testAuthenticateNoSub() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS384);
         final String token = Jwts.builder().setIssuer("http://localhost").signWith(key).compact();
 
@@ -157,7 +157,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateSubIss() {
+    void testAuthenticateSubIss() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().setSubject("acoburn").setIssuer("http://localhost")
              .signWith(key).compact();
@@ -170,7 +170,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateSubNoWebIss() {
+    void testAuthenticateSubNoWebIss() {
         final Key key = secretKeyFor(SignatureAlgorithm.HS512);
         final String token = Jwts.builder().setSubject("acoburn").setIssuer("some org").signWith(key).compact();
 
@@ -181,7 +181,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateToken() {
+    void testAuthenticateToken() {
         final String key = "N0NuokWWb5XjMP+V3XLfyLkaSArwxNm17VeAvv7+y4+Y/DmxBLenvwOPO404lfl6UfyyEGgQ02ETDEPRMwV/+Q==";
         final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJodHRwczovL3Blb3BsZS5hcGFjaGUub3JnL35" +
             "hY29idXJuLyNpIn0.n-C7xhjVyn3WEWGfSXfuqrjXVSoAnD08sO5K8mDsBiZF6Z8lwiksGos6lR-6RjD5jI25d1yPJ47LKBWqMlMm_A";
@@ -194,7 +194,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateTokenIssSub() {
+    void testAuthenticateTokenIssSub() {
         final String key = "N0NuokWWb5XjMP+V3XLfyLkaSArwxNm17VeAvv7+y4+Y/DmxBLenvwOPO404lfl6UfyyEGgQ02ETDEPRMwV/+Q==";
         final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVyb" +
             "iIsImlzcyI6Imh0dHA6Ly9leGFtcGxlLm9yZy8ifQ.4Srityp5iPScGyqvkPakD3DmtXYWhkyHjr0K6B7kpcR2ll8MC-hGpYoIDM8ar" +
@@ -208,7 +208,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticationTokenWebid() {
+    void testAuthenticationTokenWebid() {
         final String key = "N0NuokWWb5XjMP+V3XLfyLkaSArwxNm17VeAvv7+y4+Y/DmxBLenvwOPO404lfl6UfyyEGgQ02ETDEPRMwV/+Q==";
         final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vcGVvcGxlLmFwYWNoZS5vcmcvfm" +
             "Fjb2J1cm4vI2kiLCJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVybiIsImlzcyI6Imh0dHA6Ly9leGFtcGxlLm9yZy8ifQ" +
@@ -222,7 +222,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticationTokenWebidBadKey() {
+    void testAuthenticationTokenWebidBadKey() {
         final String key = "2YuUlb+t36yVzrTkYLl8xBlBJSC41CE7uNF3somMDxdYDfcACv9JYIU54z17s4Ah313uKu/4Ll+vDNKpxx6v4Q==";
         final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ3ZWJpZCI6Imh0dHBzOi8vcGVvcGxlLmFwYWNoZS5vcmcvfm" +
             "Fjb2J1cm4vI2kiLCJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9uIENvYnVybiIsImlzcyI6Imh0dHA6Ly9leGFtcGxlLm9yZy8ifQ" +
@@ -234,7 +234,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticationNoPrincipal() {
+    void testAuthenticationNoPrincipal() {
         final String key = "w8+z9hrcbr3ktQ5WTr9xNZknke3L/RAj8r8RieriWozGu1M4RDgkpJcfTEg90pqYyadbIBLy+qFHu1JJ8O0rjw==";
         final String token = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY29idXJuIiwibmFtZSI6IkFhcm9" +
             "uIENvYnVybiJ9.srs7gSbix8nLDuFmwYCEN0In-5pa6-59D5nqF1UgRD-hsJBS2UoieYoBJZNGGKj1hO1DaboqtuS_36bE9QGdCw";
@@ -246,7 +246,7 @@ public class JwtAuthenticatorTest {
     }
 
     @Test
-    public void testGarbledToken() {
+    void testGarbledToken() {
         final String key = "thj983z1fiqAiaV7Nv4nWpjaDi6eVTd7jOGxbs92mp8=";
         final String token = "blahblah";
 

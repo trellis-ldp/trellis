@@ -15,6 +15,7 @@ package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -31,26 +32,26 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCrossOriginResourceSharingFilterTest {
+class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCrossOriginResourceSharingFilterTest {
 
     private static final String MAX_AGE = "180";
     private static final String TRUE = "true";
 
     @Override
-    public Application configure() {
+    protected Application configure() {
         init();
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler));
-        config.register(new CrossOriginResourceSharingFilter(asList(ORIGIN),
+        config.register(new CrossOriginResourceSharingFilter(singletonList(ORIGIN),
                     asList("GET", "HEAD", "PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Patch"),
-                    asList("Accept-Patch"), true, 180));
+                    singletonList("Accept-Patch"), true, 180));
         return config;
     }
 
     @Test
-    public void testGetCORSInvalid() {
+    void testGetCORSInvalid() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
         final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
@@ -62,7 +63,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testGetCORS() {
+    void testGetCORS() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").get();
@@ -78,7 +79,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testGetCORSSimple() {
+    void testGetCORSSimple() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").get();
@@ -94,7 +95,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testOptionsPreflightSimple() {
+    void testOptionsPreflightSimple() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "POST")
             .header("Access-Control-Request-Headers", "Accept").options();
@@ -113,7 +114,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testCorsPreflight() {
+    void testCorsPreflight() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Language, Content-Type, Link").options();
@@ -135,7 +136,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
    }
 
     @Test
-    public void testCorsPreflightNoRequestHeaders() {
+    void testCorsPreflightNoRequestHeaders() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PUT").options();
 
@@ -149,7 +150,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testCorsPreflightNoMatch() {
+    void testCorsPreflightNoMatch() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Language").options();
@@ -164,7 +165,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testOptionsPreflightInvalid() {
+    void testOptionsPreflightInvalid() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", "http://foo.com")
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link").options();
@@ -174,7 +175,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testOptionsPreflightInvalid2() {
+    void testOptionsPreflightInvalid2() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "PUT")
             .header("Access-Control-Request-Headers", "Content-Type, Link, Bar").options();
@@ -184,7 +185,7 @@ public class CrossOriginResourceSharingFilterSpecificOriginTest extends BaseCros
     }
 
     @Test
-    public void testOptionsPreflightInvalid3() {
+    void testOptionsPreflightInvalid3() {
         final Response res = target(RESOURCE_PATH).request().header("Origin", ORIGIN)
             .header("Access-Control-Request-Method", "FOO")
             .header("Access-Control-Request-Headers", "Content-Type, Link").options();

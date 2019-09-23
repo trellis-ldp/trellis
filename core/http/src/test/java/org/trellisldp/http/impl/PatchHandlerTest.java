@@ -23,7 +23,6 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
@@ -59,12 +58,12 @@ import org.trellisldp.vocabulary.RDFS;
 /**
  * @author acoburn
  */
-public class PatchHandlerTest extends BaseTestHandler {
+class PatchHandlerTest extends BaseTestHandler {
 
     private static final String insert = "INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}";
 
     @Test
-    public void testPatchNoSparql() {
+    void testPatchNoSparql() {
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, null, mockBundler, null, null);
         final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.initialize(mockParent, mockResource),
@@ -73,7 +72,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadAudit() {
+    void testBadAudit() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
@@ -89,7 +88,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testPatchLdprs() {
+    void testPatchLdprs() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
 
@@ -101,7 +100,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testEntity() {
+    void testEntity() {
         final Quad quad = rdf.createQuad(PreferUserManaged, identifier, RDFS.label, rdf.createLiteral("A label"));
 
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
@@ -120,7 +119,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testAcl() {
+    void testAcl() {
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
@@ -143,7 +142,7 @@ public class PatchHandlerTest extends BaseTestHandler {
 
 
     @Test
-    public void testPreferRepresentation() {
+    void testPreferRepresentation() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
@@ -163,7 +162,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testPreferHTMLRepresentation() {
+    void testPreferHTMLRepresentation() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
@@ -185,7 +184,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testError() {
+    void testError() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
@@ -197,7 +196,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testNoLdpRsSupport() {
+    void testNoLdpRsSupport() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
 
@@ -212,7 +211,7 @@ public class PatchHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testError2() {
+    void testError2() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         doThrow(RuntimeTrellisException.class).when(mockIoService)

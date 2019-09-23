@@ -23,10 +23,10 @@ import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.CacheService;
 
-public class NoopProfileCacheTest {
+class NoopProfileCacheTest {
 
     @Test
-    public void testPassthroughCache() {
+    void testPassthroughCache() {
         final List<String> list = new CopyOnWriteArrayList<>();
         final Function<String, String> mapper = key -> {
             list.add(key);

@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the Trellis Vocabulary Class
  * @author acoburn
  */
-public class TrellisTest extends AbstractVocabularyTest {
+class TrellisTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.trellisldp.org/ns/trellis#";
     }
 
     @Override
-    public Class<Trellis> vocabulary() {
+    Class<Trellis> vocabulary() {
         return Trellis.class;
     }
 }

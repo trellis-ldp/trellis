@@ -16,7 +16,6 @@ package org.trellisldp.api;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -35,11 +34,9 @@ import org.mockito.Mock;
 /**
  * @author acoburn
  */
-public class BinaryServiceTest {
+class BinaryServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
-
-    private final IRI identifier = rdf.createIRI("trellis:data/resource");
 
     @Mock
     private BinaryService mockBinaryService;
@@ -48,12 +45,13 @@ public class BinaryServiceTest {
     private Binary mockBinary;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
     }
 
     @Test
-    public void testGetContent() throws IOException {
+    void testGetContent() throws IOException {
+        final IRI identifier = rdf.createIRI("trellis:data/resource");
         final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
         when(mockBinaryService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(anyInt(), anyInt())).thenReturn(inputStream);

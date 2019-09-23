@@ -25,48 +25,48 @@ import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.vocabulary.LDP;
 
-public class NoopResourceServiceTest {
+class NoopResourceServiceTest {
 
     private static final ResourceService testService = new NoopResourceService();
     private static final RDF rdf = getInstance();
     private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
 
     @Test
-    public void testGetResource() {
+    void testGetResource() {
         assertEquals(MISSING_RESOURCE, testService.get(identifier).toCompletableFuture().join());
     }
 
     @Test
-    public void testReplaceResource() {
+    void testReplaceResource() {
         final Metadata metadata = Metadata.builder(identifier).interactionModel(LDP.RDFSource).build();
         final Dataset dataset = rdf.createDataset();
         assertDoesNotThrow(() -> testService.replace(metadata, dataset).toCompletableFuture().join());
     }
 
     @Test
-    public void testDeleteResource() {
+    void testDeleteResource() {
         final Metadata metadata = Metadata.builder(identifier).interactionModel(LDP.RDFSource).build();
         assertDoesNotThrow(() -> testService.delete(metadata).toCompletableFuture().join());
     }
 
     @Test
-    public void testAddResource() {
+    void testAddResource() {
         final Dataset dataset = rdf.createDataset();
         assertDoesNotThrow(() -> testService.add(identifier, dataset).toCompletableFuture().join());
     }
 
     @Test
-    public void testTouchResource() {
+    void testTouchResource() {
         assertDoesNotThrow(() -> testService.touch(identifier).toCompletableFuture().join());
     }
 
     @Test
-    public void testSupportedModels() {
+    void testSupportedModels() {
         assertTrue(testService.supportedInteractionModels().isEmpty());
     }
 
     @Test
-    public void testGetIdentifier() {
+    void testGetIdentifier() {
         assertEquals(TRELLIS_DATA_PREFIX, testService.generateIdentifier());
     }
 }

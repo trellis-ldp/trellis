@@ -40,24 +40,23 @@ import org.slf4j.Logger;
 /**
  * @author acoburn
  */
-public abstract class AbstractVocabularyTest {
+abstract class AbstractVocabularyTest {
 
-    protected static final Logger LOGGER = getLogger(AbstractVocabularyTest.class);
+    static final Logger LOGGER = getLogger(AbstractVocabularyTest.class);
 
-    private static final String ACCEPT = "text/turtle, application/rdf+xml, application/ld+json";
+    abstract String namespace();
 
-    public abstract String namespace();
+    abstract Class<?> vocabulary();
 
-    public abstract Class<?> vocabulary();
-
-    public boolean isStrict() {
+    boolean isStrict() {
         return true;
     }
 
-    protected Graph getVocabulary(final String url) {
+    Graph getVocabulary(final String url) {
+        final String accept = "text/turtle, application/rdf+xml, application/ld+json";
         final Graph graph = createDefaultGraph();
         try {
-            RDFParser.source(url).httpAccept(ACCEPT).parse(graph);
+            RDFParser.source(url).httpAccept(accept).parse(graph);
         } catch (final HttpException | RiotNotFoundException ex) {
             LOGGER.warn("Could not fetch {}: {}", url, ex.getMessage());
         } catch (final RiotException ex) {
@@ -68,7 +67,7 @@ public abstract class AbstractVocabularyTest {
     }
 
     @Test
-    public void testVocabulary() {
+    void testVocabulary() {
         final Graph graph = getVocabulary(namespace());
 
         final Set<String> subjects = graph.find(ANY, ANY, ANY).mapWith(Triple::getSubject)
@@ -86,7 +85,7 @@ public abstract class AbstractVocabularyTest {
     }
 
     @Test
-    public void testVocabularyRev() {
+    void testVocabularyRev() {
         final Graph graph = getVocabulary(namespace());
 
         final Set<String> subjects = fields().map(namespace()::concat).collect(toSet());
@@ -96,13 +95,12 @@ public abstract class AbstractVocabularyTest {
         graph.find(ANY, ANY, ANY).mapWith(Triple::getSubject).filterKeep(Node::isURI).mapWith(Node::getURI)
                 .filterKeep(Objects::nonNull)
                 .filterKeep(uri -> uri.startsWith(namespace())).filterDrop(namespace()::equals)
-                .filterDrop(subjects::contains).forEachRemaining(uri -> {
-            LOGGER.debug("{} not defined in {} class", uri, vocabulary().getName());
-        });
+                .filterDrop(subjects::contains)
+                .forEachRemaining(uri -> LOGGER.debug("{} not defined in {} class", uri, vocabulary().getName()));
     }
 
     @Test
-    public void testNamespace() throws Exception {
+    void testNamespace() throws Exception {
         final Method m = vocabulary().getMethod("getNamespace");
         assertEquals(namespace(), m.invoke(null), "Namespaces do not match!");
     }

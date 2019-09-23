@@ -17,7 +17,6 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Set;
@@ -33,7 +32,7 @@ import org.trellisldp.vocabulary.RDFS;
 /**
  * @author acoburn
  */
-public class ConstraintServiceTest {
+class ConstraintServiceTest {
 
     private static final RDF rdf = TrellisUtils.getInstance();
     private static final String INCORRECT_LDP_TYPES = "Incorrect number of LDP types found";
@@ -48,7 +47,7 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testResource() {
+    void testResource() {
         assertEquals(1, ldpResourceTypes(LDP.Resource).count(), INCORRECT_LDP_TYPES);
         final Set<IRI> types = ldpResourceTypes(LDP.Resource).collect(toSet());
         assertEquals(1, types.size(), INCORRECT_UNIQUE_LDP_TYPES);
@@ -56,12 +55,12 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testNonLDP() {
+    void testNonLDP() {
         assertEquals(0, ldpResourceTypes(RDFS.label).count(), "ldp types found when they shouldn't be");
     }
 
     @Test
-    public void testRDFSource() {
+    void testRDFSource() {
         assertEquals(2, ldpResourceTypes(LDP.RDFSource).count(), INCORRECT_LDP_TYPES);
         final Set<IRI> types = ldpResourceTypes(LDP.RDFSource).collect(toSet());
         assertEquals(2, types.size(), INCORRECT_UNIQUE_LDP_TYPES);
@@ -70,7 +69,7 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testNonRDFSource() {
+    void testNonRDFSource() {
         assertEquals(2, ldpResourceTypes(LDP.NonRDFSource).count(), INCORRECT_LDP_TYPES);
         final Set<IRI> types = ldpResourceTypes(LDP.NonRDFSource).collect(toSet());
         assertEquals(2, types.size(), INCORRECT_UNIQUE_LDP_TYPES);
@@ -79,7 +78,7 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testContainer() {
+    void testContainer() {
         assertEquals(3, ldpResourceTypes(LDP.Container).count(), INCORRECT_LDP_TYPES);
         final Set<IRI> types = ldpResourceTypes(LDP.Container).collect(toSet());
         assertEquals(3, types.size(), INCORRECT_UNIQUE_LDP_TYPES);
@@ -89,7 +88,7 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testBasicContainer() {
+    void testBasicContainer() {
         assertEquals(4, ldpResourceTypes(LDP.BasicContainer).count(), INCORRECT_LDP_TYPES);
         final Set<IRI> types = ldpResourceTypes(LDP.BasicContainer).collect(toSet());
         assertEquals(4, types.size(), INCORRECT_UNIQUE_LDP_TYPES);
@@ -100,7 +99,7 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testDirectContainer() {
+    void testDirectContainer() {
         assertEquals(4, ldpResourceTypes(LDP.DirectContainer).count(), INCORRECT_LDP_TYPES);
         final Set<IRI> types = ldpResourceTypes(LDP.DirectContainer).collect(toSet());
         assertEquals(4, types.size(), INCORRECT_UNIQUE_LDP_TYPES);
@@ -111,7 +110,7 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testIndirectContainer() {
+    void testIndirectContainer() {
         assertEquals(4, ldpResourceTypes(LDP.IndirectContainer).count(), INCORRECT_LDP_TYPES);
         final Set<IRI> types = ldpResourceTypes(LDP.IndirectContainer).collect(toSet());
         assertEquals(4, types.size(), INCORRECT_UNIQUE_LDP_TYPES);
@@ -122,7 +121,7 @@ public class ConstraintServiceTest {
     }
 
     @Test
-    public void testConstrainedBy() {
+    void testConstrainedBy() {
         final ConstraintService svc = mock(ConstraintService.class);
 
         doCallRealMethod().when(svc).constrainedBy(eq(LDP.RDFSource), any(Graph.class));

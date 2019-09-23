@@ -32,7 +32,7 @@ import java.security.spec.RSAPrivateKeySpec;
 
 import org.junit.jupiter.api.Test;
 
-public class JwksAuthenticatorTest {
+class JwksAuthenticatorTest {
 
     private static final String url = "https://www.trellisldp.org/tests/jwks.json";
     private static final String keyid = "trellis-test";
@@ -50,7 +50,7 @@ public class JwksAuthenticatorTest {
             "aahEQ"));
 
     @Test
-    public void testAuthenticateJwks() throws Exception {
+    void testAuthenticateJwks() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
 
         final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
@@ -65,7 +65,7 @@ public class JwksAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateJwksAsWebid() throws Exception {
+    void testAuthenticateJwksAsWebid() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
 
         final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
@@ -80,7 +80,7 @@ public class JwksAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateJwksExpired() throws Exception {
+    void testAuthenticateJwksExpired() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
 
         final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
@@ -93,7 +93,7 @@ public class JwksAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateJwksWrongKeyid() throws Exception {
+    void testAuthenticateJwksWrongKeyid() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
 
         final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
@@ -106,7 +106,7 @@ public class JwksAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateJwksNoKeyid() throws Exception {
+    void testAuthenticateJwksNoKeyid() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
 
         final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
@@ -118,7 +118,7 @@ public class JwksAuthenticatorTest {
     }
 
     @Test
-    public void testAuthenticateJwksInvalidKeyLocation() throws Exception {
+    void testAuthenticateJwksInvalidKeyLocation() throws Exception {
         final String webid = "https://people.apache.org/~acoburn/#i";
 
         final Key key = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));

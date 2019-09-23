@@ -41,19 +41,18 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * @author acoburn
  */
-public class DefaultAuditServiceTest {
+class DefaultAuditServiceTest {
 
-    private static RDF rdf = new SimpleRDF();
+    private static final RDF rdf = new SimpleRDF();
 
     private final Instant created = now();
-
     private final IRI subject = rdf.createIRI("trellis:data/resource");
 
     @Mock
     private Session mockSession;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getCreated()).thenReturn(created);
@@ -61,7 +60,7 @@ public class DefaultAuditServiceTest {
     }
 
     @Test
-    public void testAuditCreation() {
+    void testAuditCreation() {
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.creation(subject, mockSession).forEach(dataset::add);
@@ -72,7 +71,7 @@ public class DefaultAuditServiceTest {
     }
 
     @Test
-    public void testAuditDeletion() {
+    void testAuditDeletion() {
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.deletion(subject, mockSession).forEach(dataset::add);
@@ -83,7 +82,7 @@ public class DefaultAuditServiceTest {
     }
 
     @Test
-    public void testAuditUpdate() {
+    void testAuditUpdate() {
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.update(subject, mockSession).forEach(dataset::add);

@@ -19,7 +19,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
@@ -41,10 +40,10 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * @author acoburn
  */
-public class DeleteHandlerTest extends BaseTestHandler {
+class DeleteHandlerTest extends BaseTestHandler {
 
     @Test
-    public void testDelete() {
+    void testDelete() {
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, null);
         final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource))
             .toCompletableFuture().join().build();
@@ -52,7 +51,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testBadAudit() {
+    void testBadAudit() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
@@ -67,7 +66,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDeleteError() {
+    void testDeleteError() {
         when(mockResourceService.delete(any(Metadata.class))).thenReturn(asyncException());
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
         assertThrows(CompletionException.class, () ->
@@ -76,7 +75,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDeletePersistenceSupport() {
+    void testDeletePersistenceSupport() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
         final Response res = assertThrows(WebApplicationException.class, () ->
@@ -88,7 +87,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDeleteACLError() {
+    void testDeleteACLError() {
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
@@ -98,7 +97,7 @@ public class DeleteHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    public void testDeleteACLAuditError() {
+    void testDeleteACLAuditError() {
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);

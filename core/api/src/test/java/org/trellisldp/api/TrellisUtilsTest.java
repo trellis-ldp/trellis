@@ -32,7 +32,7 @@ import org.junit.jupiter.api.condition.EnabledOnJre;
 /**
  * @author acoburn
  */
-public class TrellisUtilsTest {
+class TrellisUtilsTest {
 
     private static final RDF rdf = getInstance();
     private static final long size = 10000L;
@@ -40,12 +40,12 @@ public class TrellisUtilsTest {
         .withinRange('a', 'z').build();
 
     @Test
-    public void testGetInstance() {
+    void testGetInstance() {
         assertNotNull(rdf, "RDF instance is null!");
     }
 
     @Test
-    public void testCollectGraph() {
+    void testCollectGraph() {
         final Graph graph = generate(() -> rdf.createTriple(getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toGraph());
 
@@ -53,7 +53,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testCollectDataset() {
+    void testCollectDataset() {
         final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toDataset());
 
@@ -61,7 +61,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testDatasetCollectorFinisher() {
+    void testDatasetCollectorFinisher() {
         final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
             .parallel().limit(size).collect(toDataset());
 
@@ -74,7 +74,7 @@ public class TrellisUtilsTest {
     }
 
     @Test
-    public void testGetContainer() {
+    void testGetContainer() {
         final IRI root = rdf.createIRI("trellis:data/");
         final IRI resource = rdf.createIRI("trellis:data/resource");
         final IRI child = rdf.createIRI("trellis:data/resource/child");
@@ -85,7 +85,7 @@ public class TrellisUtilsTest {
 
     @Test
     @EnabledOnJre(JAVA_8)
-    public void testGetService() {
+    void testGetService() {
         assertTrue(TrellisUtils.findFirst(RDF.class).isPresent());
         assertFalse(TrellisUtils.findFirst(String.class).isPresent());
     }

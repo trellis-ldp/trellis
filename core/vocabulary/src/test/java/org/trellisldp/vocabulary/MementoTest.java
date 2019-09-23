@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the Memento Vocabulary Class
  * @author acoburn
  */
-public class MementoTest extends AbstractVocabularyTest {
+class MementoTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://mementoweb.org/ns#";
     }
 
     @Override
-    public Class<Memento> vocabulary() {
+    Class<Memento> vocabulary() {
         return Memento.class;
     }
 }

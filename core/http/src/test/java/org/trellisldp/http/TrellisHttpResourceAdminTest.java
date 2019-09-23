@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.ws.rs.core.Application;
@@ -23,15 +24,15 @@ import org.glassfish.jersey.server.ResourceConfig;
 /**
  * @author acoburn
  */
-public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTest {
+class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTest {
 
     @Override
-    protected String getBaseUrl() {
+    String getBaseUrl() {
         return getBaseUri().toString();
     }
 
     @Override
-    public Application configure() {
+    protected Application configure() {
 
         initMocks(this);
 
@@ -44,7 +45,7 @@ public class TrellisHttpResourceAdminTest extends AbstractTrellisHttpResourceTes
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
-        config.register(new CrossOriginResourceSharingFilter(asList(origin),
+        config.register(new CrossOriginResourceSharingFilter(singletonList(origin),
                     asList("PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Datetime"),
                     asList("Link", "Content-Type", "Pragma", "Memento-Datetime"), true, 100));

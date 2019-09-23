@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the ACL Vocabulary Class
  * @author acoburn
  */
-public class ACLTest extends AbstractVocabularyTest {
+class ACLTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/ns/auth/acl#";
     }
 
     @Override
-    public Class<ACL> vocabulary() {
+    Class<ACL> vocabulary() {
         return ACL.class;
     }
 }

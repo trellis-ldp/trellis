@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the FOAF Vocabulary Class
  * @author acoburn
  */
-public class FOAFTest extends AbstractVocabularyTest {
+class FOAFTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://xmlns.com/foaf/0.1/";
     }
 
     @Override
-    public Class<FOAF> vocabulary() {
+    Class<FOAF> vocabulary() {
         return FOAF.class;
     }
 }

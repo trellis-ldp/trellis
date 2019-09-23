@@ -18,10 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class NoopNamespaceServiceTest {
+class NoopNamespaceServiceTest {
 
     @Test
-    public void noAction() {
+    void noAction() {
         final NamespaceService testService = new NoopNamespaceService();
         testService.setPrefix("foo", "http://bar/");
         assertTrue(testService.getNamespaces().isEmpty(), "Namespace list not empty in no-op service!");

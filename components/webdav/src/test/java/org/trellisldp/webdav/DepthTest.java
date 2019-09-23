@@ -23,47 +23,46 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class DepthTest {
+class DepthTest {
 
     @Test
-    public void testDepthInfinity() {
+    void testDepthInfinity() {
         final Depth depth = Depth.valueOf("infinity");
         assertEquals(INFINITY, depth.getDepth());
     }
 
     @Test
-    public void testDepthInfinity2() {
+    void testDepthInfinity2() {
         final Depth depth = Depth.valueOf("INFINITY");
         assertEquals(INFINITY, depth.getDepth());
     }
 
     @Test
-    public void testDepthZero() {
+    void testDepthZero() {
         final Depth depth = Depth.valueOf("0");
         assertEquals(ZERO, depth.getDepth());
     }
 
     @Test
-    public void testDepthOne() {
+    void testDepthOne() {
         final Depth depth = Depth.valueOf("1");
         assertEquals(ONE, depth.getDepth());
     }
 
     @Test
-    public void testDepthOther() {
+    void testDepthOther() {
         final Depth depth = new Depth("blah");
         assertEquals(ZERO, depth.getDepth());
     }
 
     @Test
-    public void testDepthOther2() {
+    void testDepthOther2() {
         final Depth depth = Depth.valueOf("blah");
         assertNull(depth);
     }
 
     @Test
-    public void testDepthNull() {
-        final Depth depth = Depth.valueOf(null);
-        assertNull(depth);
+    void testDepthNull() {
+        assertNull(Depth.valueOf(null));
     }
 }

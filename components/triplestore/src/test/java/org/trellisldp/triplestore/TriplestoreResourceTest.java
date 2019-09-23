@@ -56,7 +56,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Test the TriplestoreResource class.
  */
-public class TriplestoreResourceTest {
+class TriplestoreResourceTest {
 
     private static final JenaRDF rdf = getInstance();
     private static final IRI root = rdf.createIRI("trellis:");
@@ -79,7 +79,7 @@ public class TriplestoreResourceTest {
     private Session mockSession;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getCreated()).thenReturn(created);
@@ -87,14 +87,14 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testEmptyResource() {
+    void testEmptyResource() {
         final TriplestoreResource res = new TriplestoreResource(connect(create()), identifier, false);
         res.fetchData();
         assertFalse(res.exists(), "Unexpected resource!");
     }
 
     @Test
-    public void testPartialResource() {
+    void testPartialResource() {
         final JenaDataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
@@ -104,7 +104,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testMinimalResource() {
+    void testMinimalResource() {
         final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
                 identifier, false);
@@ -117,7 +117,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testResourceWithAuditQuads() {
+    void testResourceWithAuditQuads() {
         final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
@@ -132,7 +132,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testResourceWithAuditQuads2() {
+    void testResourceWithAuditQuads2() {
         final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
@@ -147,7 +147,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testResourceWithAclQuads() {
+    void testResourceWithAclQuads() {
         final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(aclId, aclSubject, ACL.mode, ACL.Read);
         dataset.add(aclId, aclSubject, ACL.agentClass, FOAF.Agent);
@@ -165,7 +165,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testBinaryResource() {
+    void testBinaryResource() {
         final String mimeType = "image/jpeg";
         final IRI binaryIdentifier = rdf.createIRI("file:///binary");
         final JenaDataset dataset = buildLdpDataset(LDP.NonRDFSource);
@@ -189,7 +189,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testResourceWithChildren() {
+    void testResourceWithChildren() {
         final JenaDataset dataset = buildLdpDataset(LDP.Container);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         getChildIRIs().forEach(c -> dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier));
@@ -205,7 +205,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testResourceWithoutChildren() {
+    void testResourceWithoutChildren() {
         final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         getChildIRIs().forEach(c -> dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier));
@@ -220,7 +220,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testDirectContainer() {
+    void testDirectContainer() {
         final JenaDataset dataset = buildLdpDataset(LDP.DirectContainer);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.member, member);
@@ -252,7 +252,7 @@ public class TriplestoreResourceTest {
     }
 
     @Test
-    public void testIndirectContainer() {
+    void testIndirectContainer() {
         final JenaDataset dataset = buildLdpDataset(LDP.IndirectContainer);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.member, member);

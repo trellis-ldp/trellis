@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class DefaultIdentifierServiceTest {
+class DefaultIdentifierServiceTest {
 
     @Test
-    public void testSupplier() {
+    void testSupplier() {
         final String prefix = "trellis:data/";
         final Supplier<String> supplier = new DefaultIdentifierService().getSupplier(prefix);
         final String id1 = supplier.get();
@@ -37,13 +37,12 @@ public class DefaultIdentifierServiceTest {
     }
 
     @Test
-    public void testGenerator() {
+    void testGenerator() {
         final String prefix1 = "http://example.org/";
         final String prefix2 = "trellis:data/a/b/c/";
         final IdentifierService svc = new DefaultIdentifierService();
         final Supplier<String> gen1 = svc.getSupplier(prefix1);
         final Supplier<String> gen2 = svc.getSupplier(prefix2);
-
         final String id1 = gen1.get();
         final String id2 = gen2.get();
 
@@ -54,13 +53,12 @@ public class DefaultIdentifierServiceTest {
     }
 
     @Test
-    public void testGenerator2() {
+    void testGenerator2() {
         final IdentifierService svc = new DefaultIdentifierService();
         final Supplier<String> gen = svc.getSupplier("", 4, 2);
-
         final String id = gen.get();
-
         final String[] parts = id.split("/");
+
         assertEquals(5L, parts.length, "hierarchical supplier has wrong number of levels!");
         assertEquals(parts[0], parts[4].substring(0, 2), "hierarchical supplier has wrong first section!");
         assertEquals(parts[1], parts[4].substring(2, 4), "hierarchical supplier has wrong second section!");
@@ -69,7 +67,7 @@ public class DefaultIdentifierServiceTest {
     }
 
     @Test
-    public void testSupplier2() {
+    void testSupplier2() {
         final Supplier<String> supplier = new DefaultIdentifierService().getSupplier();
         final String id1 = supplier.get();
         final String id2 = supplier.get();

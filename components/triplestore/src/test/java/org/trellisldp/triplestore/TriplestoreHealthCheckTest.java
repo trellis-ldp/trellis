@@ -24,18 +24,18 @@ import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.junit.jupiter.api.Test;
 
-public class TriplestoreHealthCheckTest {
+class TriplestoreHealthCheckTest {
 
     private static final JenaRDF rdf = new JenaRDF();
 
     @Test
-    public void testUnhealthyDefault() {
+    void testUnhealthyDefault() {
         final HealthCheck check = new TriplestoreHealthCheck();
         assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(), "RDFConnection isn't healthy!");
     }
 
     @Test
-    public void testHealthy() {
+    void testHealthy() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final HealthCheck check = new TriplestoreHealthCheck(rdfConnection);
@@ -43,7 +43,7 @@ public class TriplestoreHealthCheckTest {
     }
 
     @Test
-    public void testUnhealthy() {
+    void testUnhealthy() {
         final JenaDataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         rdfConnection.close();

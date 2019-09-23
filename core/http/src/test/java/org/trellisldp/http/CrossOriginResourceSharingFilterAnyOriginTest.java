@@ -16,6 +16,7 @@ package org.trellisldp.http;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -32,15 +33,15 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOriginResourceSharingFilterTest {
+class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOriginResourceSharingFilterTest {
 
     @Override
-    public Application configure() {
+    protected Application configure() {
         init();
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler));
-        config.register(new CrossOriginResourceSharingFilter(asList("*"),
+        config.register(new CrossOriginResourceSharingFilter(singletonList("*"),
                     asList("GET", "HEAD", "PATCH", "POST", "PUT"),
                     asList("Link", "Content-Type", "Accept", "Accept-Language", "Accept-Datetime"),
                     emptyList(), false, 0));
@@ -48,7 +49,7 @@ public class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOrig
     }
 
     @Test
-    public void testGetCORS() {
+    void testGetCORS() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
         final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
@@ -64,7 +65,7 @@ public class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOrig
     }
 
     @Test
-    public void testGetCORSSimple() {
+    void testGetCORSSimple() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
         final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
@@ -80,7 +81,7 @@ public class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOrig
     }
 
     @Test
-    public void testOptionsPreflightSimple() {
+    void testOptionsPreflightSimple() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
         final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
@@ -101,7 +102,7 @@ public class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOrig
 
 
     @Test
-    public void testCorsPreflight() {
+    void testCorsPreflight() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
         final Response res = target(RESOURCE_PATH).request().header("Origin", origin)
@@ -131,7 +132,7 @@ public class CrossOriginResourceSharingFilterAnyOriginTest extends BaseCrossOrig
     }
 
     @Test
-    public void testCorsPreflightNoMatch() {
+    void testCorsPreflightNoMatch() {
         final String baseUri = getBaseUri().toString();
         final String origin = baseUri.substring(0, baseUri.length() - 1);
         final Response res = target(RESOURCE_PATH).request().header("Origin", origin)

@@ -71,8 +71,8 @@ public class WebApplication extends Application {
     private void printBanner(final String name) {
         try (final InputStream resourceStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("banner.txt");
-             final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream);
-             final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream);
+            final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             final String banner = bufferedReader.lines().collect(joining(String.format("%n")));
             LOGGER.info("Starting {}\n{}", name, banner);
         } catch (final IllegalArgumentException | IOException ignored) {

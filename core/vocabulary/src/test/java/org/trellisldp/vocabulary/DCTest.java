@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the DC Vocabulary Class
  * @author acoburn
  */
-public class DCTest extends AbstractVocabularyTest {
+class DCTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://purl.org/dc/terms/";
     }
 
     @Override
-    public Class<DC> vocabulary() {
+    Class<DC> vocabulary() {
         return DC.class;
     }
 }

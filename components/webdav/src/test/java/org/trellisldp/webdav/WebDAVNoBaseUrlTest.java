@@ -15,7 +15,6 @@ package org.trellisldp.webdav;
 
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.IOException;
 import java.security.Principal;
 
 import javax.annotation.Priority;
@@ -30,7 +29,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.http.TrellisHttpResource;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
+class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
 
     @PreMatching
     @Priority(500)
@@ -38,22 +37,17 @@ public class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
         private final String principal;
         private final String userRole;
 
-        public TestAuthnFilter(final String principal, final String role) {
+        TestAuthnFilter(final String principal, final String role) {
             this.principal = principal;
             this.userRole = role;
         }
 
         @Override
-        public void filter(final ContainerRequestContext requestContext) throws IOException {
+        public void filter(final ContainerRequestContext requestContext) {
             requestContext.setSecurityContext(new SecurityContext() {
                 @Override
                 public Principal getUserPrincipal() {
-                    return new Principal() {
-                        @Override
-                        public String getName() {
-                            return principal;
-                        }
-                    };
+                    return () -> principal;
                 }
 
                 @Override

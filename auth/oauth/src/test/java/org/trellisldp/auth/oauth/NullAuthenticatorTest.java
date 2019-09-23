@@ -17,13 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-public class NullAuthenticatorTest {
+class NullAuthenticatorTest {
 
     @Test
-    public void testNullAuthenticator() {
+    void testNullAuthenticator() {
         final Authenticator authenticator = new NullAuthenticator();
         assertNull(authenticator.authenticate("blah"), "Unexpected principal found!");
         assertNull(authenticator.parse("credentials"), "Credentials were not null!");
     }
-
 }

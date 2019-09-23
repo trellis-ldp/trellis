@@ -16,7 +16,6 @@ package org.trellisldp.test;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -29,17 +28,17 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-public class TestUtilsTest {
+class TestUtilsTest {
 
     @Test
-    public void testReadEntityAsString() {
+    void testReadEntityAsString() {
         final String text = "some text";
         final InputStream is = new ByteArrayInputStream(text.getBytes(UTF_8));
         assertEquals(text, TestUtils.readEntityAsString(is), "Verify that the input stream matches");
     }
 
     @Test
-    public void testReadEntityAsStringError() throws IOException {
+    void testReadEntityAsStringError() throws IOException {
         final InputStream mockInputStream = mock(InputStream.class);
         when(mockInputStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException("Expected"));
         assertThrows(UncheckedIOException.class, () -> TestUtils.readEntityAsString(mockInputStream),
@@ -47,19 +46,20 @@ public class TestUtilsTest {
     }
 
     @Test
-    public void testGetResourceAsString() {
-        assertTrue(TestUtils.getResourceAsString("/annotation.ttl").contains("<> a oa:Annotation"),
-                "Check the resource loader works as expected");
+    void testGetResourceAsString() {
+        final String resource = TestUtils.getResourceAsString("/annotation.ttl");
+        assertNotNull(resource, "Resource is null!");
+        assertTrue(resource.contains("<> a oa:Annotation"),"Check the resource loader works as expected");
     }
 
     @Test
-    public void testGetResourceAsStringNull() {
+    void testGetResourceAsStringNull() {
         assertNull(TestUtils.getResourceAsString("/non-existent-resource.ttl"),
                 "Check loading a non-existent resource");
     }
 
     @Test
-    public void testReadEntityAsJson() {
+    void testReadEntityAsJson() {
         final Map<String, Object> data = singletonMap("foo", "bar");
         final InputStream is = new ByteArrayInputStream("{\"foo\" : \"bar\" }".getBytes(UTF_8));
         assertEquals(data, TestUtils.readEntityAsJson(is, new TypeReference<Map<String, Object>>(){}),
@@ -67,7 +67,7 @@ public class TestUtilsTest {
     }
 
     @Test
-    public void testReadEntityAsJsonError() {
+    void testReadEntityAsJsonError() {
         final InputStream is = new ByteArrayInputStream("{\"invalid JSON\" }".getBytes(UTF_8));
         assertThrows(UncheckedIOException.class, () ->
                 TestUtils.readEntityAsJson(is, new TypeReference<Map<String, Object>>(){}),

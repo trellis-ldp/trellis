@@ -14,13 +14,11 @@
 package org.trellisldp.webac;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
+import static java.util.Collections.*;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -55,7 +53,7 @@ import org.trellisldp.vocabulary.Trellis;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class WebAcFilterTest {
+class WebAcFilterTest {
 
     private static final Set<IRI> allModes = new HashSet<>();
 
@@ -88,21 +86,21 @@ public class WebAcFilterTest {
     private Principal mockPrincipal;
 
     @BeforeAll
-    public static void setUpProperties() {
+    static void setUpProperties() {
         System.setProperty(WebAcFilter.CONFIG_WEBAC_METHOD_READABLE, "READ");
         System.setProperty(WebAcFilter.CONFIG_WEBAC_METHOD_WRITABLE, "WRITE");
         System.setProperty(WebAcFilter.CONFIG_WEBAC_METHOD_APPENDABLE, "APPEND");
     }
 
     @AfterAll
-    public static void cleanUpProperties() {
+    static void cleanUpProperties() {
         System.clearProperty(WebAcFilter.CONFIG_WEBAC_METHOD_READABLE);
         System.clearProperty(WebAcFilter.CONFIG_WEBAC_METHOD_WRITABLE);
         System.clearProperty(WebAcFilter.CONFIG_WEBAC_METHOD_APPENDABLE);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         initMocks(this);
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
@@ -115,7 +113,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterUnknownMethod() throws Exception {
+    void testFilterUnknownMethod() {
         when(mockContext.getMethod()).thenReturn("FOO");
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService);
@@ -123,7 +121,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterRead() throws Exception {
+    void testFilterRead() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -142,7 +140,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterCustomRead() throws Exception {
+    void testFilterCustomRead() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("READ");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -162,7 +160,7 @@ public class WebAcFilterTest {
 
 
     @Test
-    public void testFilterWrite() throws Exception {
+    void testFilterWrite() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("PUT");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -181,7 +179,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterCustomWrite() throws Exception {
+    void testFilterCustomWrite() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("WRITE");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -200,7 +198,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterAppend() throws Exception {
+    void testFilterAppend() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -225,7 +223,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterCustomAppend() throws Exception {
+    void testFilterCustomAppend() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("APPEND");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -250,7 +248,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterControl() throws Exception {
+    void testFilterControl() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -275,7 +273,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterControl2() throws Exception {
+    void testFilterControl2() {
         final Set<IRI> modes = new HashSet<>();
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
@@ -284,7 +282,7 @@ public class WebAcFilterTest {
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(asList("acl"));
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(singletonList("acl"));
 
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
@@ -299,7 +297,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterChallenges() throws Exception {
+    void testFilterChallenges() {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
@@ -314,7 +312,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterResponse() throws Exception {
+    void testFilterResponse() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
@@ -333,7 +331,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterResponseDelete() throws Exception {
+    void testFilterResponseDelete() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockContext.getMethod()).thenReturn(DELETE);
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
@@ -348,7 +346,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterResponseBaseUrl() throws Exception {
+    void testFilterResponseBaseUrl() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
@@ -367,7 +365,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterResponseWebac2() throws Exception {
+    void testFilterResponseWebac2() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         final MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
         params.add("ext", "foo");
@@ -385,7 +383,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testFilterResponseForbidden() throws Exception {
+    void testFilterResponseForbidden() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockResponseContext.getStatusInfo()).thenReturn(FORBIDDEN);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
@@ -398,7 +396,7 @@ public class WebAcFilterTest {
     }
 
     @Test
-    public void testNoParamCtor() {
+    void testNoParamCtor() {
         assertDoesNotThrow(() -> new WebAcFilter());
     }
 }

@@ -23,7 +23,7 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 @ApplicationScoped
 public class TestCollector {
 
-    private List<String> list = new ArrayList<>();
+    private final List<String> list = new ArrayList<>();
 
     @Incoming(ReactiveEventService.REACTIVE_DESTINATION)
     public void sink(final String message) {

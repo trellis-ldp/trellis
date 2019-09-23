@@ -27,7 +27,7 @@ import org.trellisldp.dropwizard.config.TrellisConfiguration;
 /**
  * LDP-related tests for Trellis.
  */
-public class NoInitTrellisApplicationTest extends TrellisApplicationTest {
+class NoInitTrellisApplicationTest extends TrellisApplicationTest {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<TrellisConfiguration>(SimpleNoInitTrellisApp.class,

@@ -17,8 +17,6 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -51,7 +49,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
-public class AmqpEventServiceTest {
+class AmqpEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
     private static final SystemLauncher broker = new SystemLauncher();
@@ -68,7 +66,7 @@ public class AmqpEventServiceTest {
     private Event mockEvent;
 
     @BeforeAll
-    public static void initialize() throws Exception {
+    static void initialize() throws Exception {
         final Map<String, Object> brokerOptions = new HashMap<>();
         brokerOptions.put("qpid.broker.defaultPreferenceStoreAttributes", "{\"type\": \"Noop\"}");
         brokerOptions.put(SystemConfig.TYPE, "Memory");
@@ -78,12 +76,12 @@ public class AmqpEventServiceTest {
     }
 
     @AfterAll
-    public static void cleanup() throws Exception {
+    static void cleanup() {
         broker.shutdown();
     }
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         initMocks(this);
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getCreated()).thenReturn(time);
@@ -97,7 +95,7 @@ public class AmqpEventServiceTest {
     }
 
     @Test
-    public void testAmqp() throws IOException {
+    void testAmqp() throws IOException {
         final EventService svc = new AmqpEventService(serializer, mockChannel, exchangeName, queueName);
         svc.emit(mockEvent);
 
@@ -106,7 +104,7 @@ public class AmqpEventServiceTest {
     }
 
     @Test
-    public void testAmqpConfiguration() throws IOException {
+    void testAmqpConfiguration() throws IOException {
         final EventService svc = new AmqpEventService(serializer, mockChannel);
         svc.emit(mockEvent);
 
@@ -115,7 +113,7 @@ public class AmqpEventServiceTest {
     }
 
     @Test
-    public void testError() throws IOException {
+    void testError() throws IOException {
         doThrow(IOException.class).when(mockChannel).basicPublish(eq(exchangeName), eq(queueName),
                 anyBoolean(), anyBoolean(), any(BasicProperties.class), any(byte[].class));
 

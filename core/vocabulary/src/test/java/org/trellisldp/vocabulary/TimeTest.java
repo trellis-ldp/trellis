@@ -17,15 +17,15 @@ package org.trellisldp.vocabulary;
  * Test the Time Vocabulary Class
  * @author acoburn
  */
-public class TimeTest extends AbstractVocabularyTest {
+class TimeTest extends AbstractVocabularyTest {
 
     @Override
-    public String namespace() {
+    String namespace() {
         return "http://www.w3.org/2006/time#";
     }
 
     @Override
-    public Class<Time> vocabulary() {
+    Class<Time> vocabulary() {
         return Time.class;
     }
 }

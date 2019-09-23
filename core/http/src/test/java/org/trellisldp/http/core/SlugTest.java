@@ -20,57 +20,57 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-public class SlugTest {
+class SlugTest {
 
     @Test
-    public void testSlug() {
+    void testSlug() {
         final Slug slug = Slug.valueOf("slugValue");
         assertEquals("slugValue", slug.getValue(), "Check slug value");
     }
 
     @Test
-    public void testEncodedInput() {
+    void testEncodedInput() {
         final Slug slug = Slug.valueOf("slug%3Avalue");
         assertEquals("slug:value", slug.getValue(), "Check decoding slug value");
     }
 
     @Test
-    public void testSpaceNormalization() {
+    void testSpaceNormalization() {
         final Slug slug = Slug.valueOf("slug  value");
         assertEquals("slug_value", slug.getValue(), "Check slug value");
     }
 
     @Test
-    public void testSlashNormalization() {
+    void testSlashNormalization() {
         final Slug slug = Slug.valueOf("slug/value");
         assertEquals("slug_value", slug.getValue(), "Check slug value");
     }
 
     @Test
-    public void testSpaceSlashNormalization() {
+    void testSpaceSlashNormalization() {
         final Slug slug = Slug.valueOf("slug\t/ value");
         assertEquals("slug_value", slug.getValue(), "Check slug value");
     }
 
     @Test
-    public void testHashUri() {
+    void testHashUri() {
         final Slug slug = Slug.valueOf("slugValue#foo");
         assertEquals("slugValue", slug.getValue(), "Check slug value");
     }
 
     @Test
-    public void testQueryParam() {
+    void testQueryParam() {
         final Slug slug = Slug.valueOf("slugValue?bar=baz");
         assertEquals("slugValue", slug.getValue(), "Check slug value");
     }
 
     @Test
-    public void testBadInput() {
+    void testBadInput() {
         assertNull(Slug.valueOf("An invalid % value"), "Check invalid input");
     }
 
     @Test
-    public void testNullInput() {
+    void testNullInput() {
         assertNull(Slug.valueOf(null), "Check null input");
     }
 }

@@ -30,10 +30,10 @@ import org.trellisldp.dropwizard.config.NotificationsConfiguration;
 /**
  * @author acoburn
  */
-public class TrellisConfigurationTest {
+class TrellisConfigurationTest {
 
     @Test
-    public void testConfigurationGeneral1() throws Exception {
+    void testConfigurationGeneral1() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -52,7 +52,7 @@ public class TrellisConfigurationTest {
         assertEquals(2, config.getBinaryHierarchyLevels(), "Incorrect binaryHierarchyLevels value!");
         assertEquals(1, config.getBinaryHierarchyLength(), "Incorrect binaryHierarchyLength value!");
         assertEquals("my.cluster.node", config.any().get("cassandraAddress"), "Incorrect custom value!");
-        assertEquals((Integer)245993, config.any().get("cassandraPort"), "Incorrect custom value (2)!");
+        assertEquals(245993, config.any().get("cassandraPort"), "Incorrect custom value (2)!");
         @SuppressWarnings("unchecked")
         final Map<String, Object> extraConfig = (Map<String, Object>) config.any().get("extraConfigValues");
         assertTrue((Boolean) extraConfig.get("one"), "Invalid nested custom values as boolean!");
@@ -63,7 +63,7 @@ public class TrellisConfigurationTest {
 
 
     @Test
-    public void testConfigurationAssets1() throws Exception {
+    void testConfigurationAssets1() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -74,7 +74,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationNotifications() throws Exception {
+    void testConfigurationNotifications() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -89,7 +89,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationLocations() throws Exception {
+    void testConfigurationLocations() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -105,7 +105,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationAuth1() throws Exception {
+    void testConfigurationAuth1() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -132,7 +132,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationNamespaces1() throws Exception {
+    void testConfigurationNamespaces1() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
@@ -141,7 +141,7 @@ public class TrellisConfigurationTest {
     }
 
     @Test
-    public void testConfigurationCORS1() throws Exception {
+    void testConfigurationCORS1() throws Exception {
         final AppConfiguration config = new YamlConfigurationFactory<>(AppConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
