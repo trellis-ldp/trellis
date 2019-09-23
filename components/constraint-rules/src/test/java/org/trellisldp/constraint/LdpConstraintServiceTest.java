@@ -270,7 +270,7 @@ class LdpConstraintServiceTest {
                     .findFirst().isPresent())
                 .count(), "unexpected constraint violation found!");
 
-        models.stream().forEach(type -> {
+        models.forEach(type -> {
             final String subject = domain + "foo";
             final Optional<ConstraintViolation> res = svc.constrainedBy(type, asGraph("/invalidCardinality.ttl",
                         subject), domain).findFirst();

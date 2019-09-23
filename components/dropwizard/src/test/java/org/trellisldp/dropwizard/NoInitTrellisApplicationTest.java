@@ -30,7 +30,7 @@ import org.trellisldp.dropwizard.config.TrellisConfiguration;
 class NoInitTrellisApplicationTest extends TrellisApplicationTest {
 
     private static final DropwizardTestSupport<TrellisConfiguration> APP
-        = new DropwizardTestSupport<TrellisConfiguration>(SimpleNoInitTrellisApp.class,
+        = new DropwizardTestSupport<>(SimpleNoInitTrellisApp.class,
                     resourceFilePath("trellis-config.yml"));
 
     private static final Client CLIENT;
