@@ -77,11 +77,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test creating a resource.
-     * @throws Exception if the operation failed
      */
     @Test
     @DisplayName("Test creating resource")
-    default void testCreateResource() throws Exception {
+    default void testCreateResource() {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset = buildDataset(identifier, "Creation Test", SUBJECT1);
@@ -98,11 +97,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test replacing a resource.
-     * @throws Exception if the operation failed
      */
     @Test
     @DisplayName("Test replacing resource")
-    default void testReplaceResource() throws Exception {
+    default void testReplaceResource() {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset = buildDataset(identifier, "Replacement Test", SUBJECT2);
@@ -129,11 +127,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test deleting a resource.
-     * @throws Exception if the operation failed
      */
     @Test
     @DisplayName("Test deleting resource")
-    default void testDeleteResource() throws Exception {
+    default void testDeleteResource() {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset = buildDataset(identifier, "Deletion Test", SUBJECT1);
@@ -157,11 +154,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test adding immutable data.
-     * @throws Exception if the operation failed
      */
     @Test
     @DisplayName("Test adding immutable data")
-    default void testAddImmutableData() throws Exception {
+    default void testAddImmutableData() {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         final Dataset dataset0 = buildDataset(identifier, "Immutable Resource Test", SUBJECT2);
@@ -208,11 +204,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test an LDP:RDFSource.
-     * @throws Exception if the create operation fails
      */
     @Test
     @DisplayName("Test LDP-RS")
-    default void testLdpRs() throws Exception {
+    default void testLdpRs() {
         final Instant time = now();
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
@@ -230,11 +225,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test an LDP:NonRDFSource.
-     * @throws Exception if the create operation fails
      */
     @Test
     @DisplayName("Test LDP-NR")
-    default void testLdpNr() throws Exception {
+    default void testLdpNr() {
         final Instant time = now();
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
@@ -259,11 +253,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test an LDP:Container.
-     * @throws Exception if the create operation fails
      */
     @Test
     @DisplayName("Test LDP-C")
-    default void testLdpC() throws Exception {
+    default void testLdpC() {
         final Instant time = now();
         final RDF rdf = getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();
@@ -306,11 +299,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test an LDP:BasicContainer.
-     * @throws Exception if the create operation fails
      */
     @Test
     @DisplayName("Test LDP-BC")
-    default void testLdpBC() throws Exception {
+    default void testLdpBC() {
         final Instant time = now();
         final RDF rdf = getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();
@@ -353,11 +345,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test an LDP:DirectContainer.
-     * @throws Exception if the create operation fails
      */
     @Test
     @DisplayName("Test LDP-DC")
-    default void testLdpDC() throws Exception {
+    default void testLdpDC() {
         // Only test DC if the backend supports it
         assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.DirectContainer));
 
@@ -412,11 +403,10 @@ public interface ResourceServiceTests {
 
     /**
      * Test an LDP:IndirectContainer.
-     * @throws Exception if the create operation fails
      */
     @Test
     @DisplayName("Test LDP-IC")
-    default void testLdpIC() throws Exception {
+    default void testLdpIC() {
         // Only execute this test if the backend supports it
         assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.IndirectContainer));
 
@@ -472,6 +462,8 @@ public interface ResourceServiceTests {
     /**
      * Test identifier generation.
      */
+    @Test
+    @DisplayName("Test identifier generation")
     default void testIdentifierGeneration() {
         final int size = 1000;
         final Set<String> identifiers = generate(getResourceService()::generateIdentifier).limit(size).collect(toSet());

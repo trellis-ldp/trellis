@@ -62,8 +62,8 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     default void testTimeGateLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
-            assertTrue(getLinks(res).stream().filter(l -> l.getRels().contains("timegate")
-                        && l.getUri().toString().equals(getResourceLocation())).findFirst().isPresent(),
+            assertTrue(getLinks(res).stream().anyMatch(l -> l.getRels().contains("timegate")
+                        && l.getUri().toString().equals(getResourceLocation())),
                     "Check for a rel=timegate Link header");
         }
     }
@@ -76,8 +76,8 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     default void testOriginalLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
-            assertTrue(getLinks(res).stream().filter(l -> l.getRels().contains("original")
-                        && l.getUri().toString().equals(getResourceLocation())).findFirst().isPresent(),
+            assertTrue(getLinks(res).stream().anyMatch(l -> l.getRels().contains("original")
+                        && l.getUri().toString().equals(getResourceLocation())),
                     "Check for a rel=original Link header");
         }
     }

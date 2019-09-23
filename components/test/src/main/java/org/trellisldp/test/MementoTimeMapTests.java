@@ -52,9 +52,9 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     default void testTimeMapLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful timemap response");
-            assertTrue(getLinks(res).stream().filter(l -> l.getRels().contains("timemap")
-                        && l.getUri().toString().equals(getResourceLocation() + TIMEMAP_QUERY_ARG)).findFirst()
-                    .isPresent(), "Check for a rel=timemap Link header");
+            assertTrue(getLinks(res).stream().anyMatch(l -> l.getRels().contains("timemap")
+                        && l.getUri().toString().equals(getResourceLocation() + TIMEMAP_QUERY_ARG)),
+                    "Check for a rel=timemap Link header");
         }
     }
 
@@ -66,9 +66,9 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     default void testTimeMapResponseHasTimeMapLink() {
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
-            assertTrue(getLinks(res).stream().filter(l -> l.getRels().contains("timemap")
-                        && l.getUri().toString().equals(getResourceLocation() + TIMEMAP_QUERY_ARG)).findFirst()
-                    .isPresent(), "Check for a rel=timemap Link header");
+            assertTrue(getLinks(res).stream().anyMatch(l -> l.getRels().contains("timemap")
+                        && l.getUri().toString().equals(getResourceLocation() + TIMEMAP_QUERY_ARG)),
+                    "Check for a rel=timemap Link header");
         }
     }
 
