@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
+import io.smallrye.config.inject.ConfigProducer;
 import io.smallrye.reactive.messaging.MediatorFactory;
 import io.smallrye.reactive.messaging.extension.MediatorManager;
 import io.smallrye.reactive.messaging.extension.ReactiveMessagingExtension;
@@ -64,7 +65,8 @@ class ReactiveEventServiceTest {
                                            ConfiguredChannelFactory.class,
                                            TestCollector.class,
                                            ReactiveEventService.class,
-                                           DefaultActivityStreamService.class)
+                                           DefaultActivityStreamService.class,
+                                           ConfigProducer.class)
                                        .extensions(new ReactiveMessagingExtension()));
 
     @Inject
