@@ -57,7 +57,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -86,7 +85,6 @@ import org.trellisldp.vocabulary.LDP;
  *
  * @author acoburn
  */
-@Provider
 @ApplicationScoped
 @Path("{path: .*}")
 public class TrellisHttpResource {
