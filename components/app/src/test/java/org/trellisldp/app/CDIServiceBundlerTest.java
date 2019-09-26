@@ -48,15 +48,8 @@ class CDIServiceBundlerTest {
                                            FileMementoService.class,
                                            JenaIOService.class,
                                            LdpConstraintService.class,
-                                           NoopAuditService.class,
-                                           NoopEventService.class,
-                                           NoopNamespaceService.class,
                                            NoopProfileCache.class,
-                                           NoopResourceService.class)
-                                       .alternatives(NoopAuditService.class,
-                                           NoopEventService.class,
-                                           NoopNamespaceService.class,
-                                           NoopResourceService.class));
+                                           TestServices.class));
 
     @Inject
     private ServiceBundler serviceBundler;
