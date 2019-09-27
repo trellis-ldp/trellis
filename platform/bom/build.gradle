@@ -7,6 +7,7 @@ dependencies {
     implementation project(':trellis-amqp')
     implementation project(':trellis-jms')
     implementation project(':trellis-kafka')
+    implementation project(':trellis-reactive')
 
     implementation project(':trellis-auth-basic')
     implementation project(':trellis-auth-oauth')
