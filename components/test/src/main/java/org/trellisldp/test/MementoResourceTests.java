@@ -14,7 +14,6 @@
 package org.trellisldp.test;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
@@ -113,11 +112,11 @@ public interface MementoResourceTests extends MementoCommonTests {
             try (final Response res = target(location).request().header(ACCEPT_DATETIME, date).head()) {
                 assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
                                 "Check for a successful memento request");
+                assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
                 final ZonedDateTime zdt1 = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
                 final ZonedDateTime zdt2 = ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME),
                         RFC_1123_DATE_TIME);
-                final long diff = Math.abs(zdt1.until(zdt2, SECONDS));
-                assertTrue(diff <= 2, "Check that the memento-datetime header is correct, within two seconds. "
+                assertFalse(zdt2.isBefore(zdt1), "Invalid datetime header. "
                         + " Request header: " + date
                         + " Response header: " + res.getHeaderString(MEMENTO_DATETIME));
             }
