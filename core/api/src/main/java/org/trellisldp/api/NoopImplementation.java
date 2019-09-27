@@ -23,8 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Stereotype;
 import javax.inject.Qualifier;
 
 /**
@@ -32,10 +30,8 @@ import javax.inject.Qualifier;
  *
  * <p>Such implementations are expected to avoid persisting any data beyond the lifetime of the running application.
  */
-@Stereotype
 @Qualifier
-@ApplicationScoped
-@Alternative
 @Retention(RUNTIME)
 @Target({TYPE, METHOD, FIELD, PARAMETER})
+@ApplicationScoped
 public @interface NoopImplementation {}
