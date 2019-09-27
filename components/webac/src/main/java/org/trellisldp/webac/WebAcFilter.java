@@ -97,7 +97,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      */
     public static final String CONFIG_WEBAC_METHOD_APPENDABLE = "trellis.webac.method.appendable";
 
-    /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. **/
+    /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. */
     public static final String CONFIG_WEBAC_REALM = "trellis.webac.realm";
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);

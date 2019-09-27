@@ -38,19 +38,19 @@ public class AmqpEventService implements EventService {
 
     private static final Logger LOGGER = getLogger(AmqpEventService.class);
 
-    /** The configuration key controlling the AMQP exchange name. **/
+    /** The configuration key controlling the AMQP exchange name. */
     public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
 
-    /** The configuration key controlling the AMQP routing key. **/
+    /** The configuration key controlling the AMQP routing key. */
     public static final String CONFIG_AMQP_ROUTING_KEY = "trellis.amqp.routingkey";
 
-    /** The configuration key controlling whether publishing is mandatory. **/
+    /** The configuration key controlling whether publishing is mandatory. */
     public static final String CONFIG_AMQP_MANDATORY = "trellis.amqp.mandatory";
 
-    /** The configuration key controlling whether publishing is immediate. **/
+    /** The configuration key controlling whether publishing is immediate. */
     public static final String CONFIG_AMQP_IMMEDIATE = "trellis.amqp.immediate";
 
-    /** The configuration key controlling the AMQP connection URI. **/
+    /** The configuration key controlling the AMQP connection URI. */
     public static final String CONFIG_AMQP_URI = "trellis.amqp.uri";
 
     private final ActivityStreamService service;

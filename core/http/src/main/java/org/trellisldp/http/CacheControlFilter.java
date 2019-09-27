@@ -37,11 +37,11 @@ import org.eclipse.microprofile.config.Config;
 @Provider
 public class CacheControlFilter implements ContainerResponseFilter {
 
-    /** The configuration key for setting a cache-control max-age header. **/
+    /** The configuration key for setting a cache-control max-age header. */
     public static final String CONFIG_HTTP_CACHE_AGE = "trellis.http.cache.maxage";
-    /** The configuration key for setting a cache-control must-revalidate header. **/
+    /** The configuration key for setting a cache-control must-revalidate header. */
     public static final String CONFIG_HTTP_CACHE_REVALIDATE = "trellis.http.cache.revalidate";
-    /** The configuration key for setting a cache-control no-cache header. **/
+    /** The configuration key for setting a cache-control no-cache header. */
     public static final String CONFIG_HTTP_CACHE_NOCACHE = "trellis.http.cache.nocache";
 
     private final int cacheAge;

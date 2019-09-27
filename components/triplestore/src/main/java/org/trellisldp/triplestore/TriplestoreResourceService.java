@@ -94,9 +94,9 @@ import org.trellisldp.vocabulary.XSD;
 @ApplicationScoped
 public class TriplestoreResourceService implements ResourceService {
 
-    /** The configuration key used to set where the RDF is stored. **/
+    /** The configuration key used to set where the RDF is stored. */
     public static final String CONFIG_TRIPLESTORE_RDF_LOCATION = "trellis.triplestore.rdf.location";
-    /** The configuration key used to set whether the LDP type should be included in the body of the RDF. **/
+    /** The configuration key used to set whether the LDP type should be included in the body of the RDF. */
     public static final String CONFIG_TRIPLESTORE_LDP_TYPE = "trellis.triplestore.ldp.type";
 
     private static final String MODIFIED = "modified";

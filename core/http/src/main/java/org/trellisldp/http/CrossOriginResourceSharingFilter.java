@@ -51,17 +51,17 @@ import org.slf4j.Logger;
 @Provider
 public class CrossOriginResourceSharingFilter implements ContainerResponseFilter {
 
-    /** The configuration key controlling the CORS -Allow-Origin header. **/
+    /** The configuration key controlling the CORS -Allow-Origin header. */
     public static final String CONFIG_HTTP_CORS_ALLOW_ORIGIN = "trellis.http.cors.alloworigin";
-    /** The configuration key controlling the CORS -Allow-Methods header. **/
+    /** The configuration key controlling the CORS -Allow-Methods header. */
     public static final String CONFIG_HTTP_CORS_ALLOW_METHODS = "trellis.http.cors.allowmethods";
-    /** The configuration key controlling the CORS -Allow-Headers header. **/
+    /** The configuration key controlling the CORS -Allow-Headers header. */
     public static final String CONFIG_HTTP_CORS_ALLOW_HEADERS = "trellis.http.cors.allowheaders";
-    /** The configuration key controlling the CORS -Expose-Headers header. **/
+    /** The configuration key controlling the CORS -Expose-Headers header. */
     public static final String CONFIG_HTTP_CORS_EXPOSE_HEADERS = "trellis.http.cors.exposeheaders";
-    /** The configuration key controlling the CORS -Allow-Credentials header. **/
+    /** The configuration key controlling the CORS -Allow-Credentials header. */
     public static final String CONFIG_HTTP_CORS_ALLOW_CREDENTIALS = "trellis.http.cors.allowcredentials";
-    /** The configuration key controlling the CORS -Max-Age header. **/
+    /** The configuration key controlling the CORS -Max-Age header. */
     public static final String CONFIG_HTTP_CORS_MAX_AGE = "trellis.http.cors.maxage";
 
     private static final Logger LOGGER = getLogger(CrossOriginResourceSharingFilter.class);

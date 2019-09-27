@@ -94,10 +94,10 @@ import org.trellisldp.api.RuntimeTrellisException;
 @ApplicationScoped
 public class JenaIOService implements IOService {
 
-    /** The configuration key listing valid JSON-LD profile documents. **/
+    /** The configuration key listing valid JSON-LD profile documents. */
     public static final String CONFIG_IO_JSONLD_PROFILES = "trellis.io.jsonld.profiles";
 
-    /** The configuration key listing valid JSON-LD profile domains. **/
+    /** The configuration key listing valid JSON-LD profile domains. */
     public static final String CONFIG_IO_JSONLD_DOMAINS = "trellis.io.jsonld.domains";
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);

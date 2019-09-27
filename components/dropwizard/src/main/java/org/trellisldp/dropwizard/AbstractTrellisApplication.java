@@ -51,7 +51,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
     private static final Logger LOGGER = getLogger(AbstractTrellisApplication.class);
 
-    /** The configuration key controlling whether an application should initialize its own root resource. **/
+    /** The configuration key controlling whether an application should initialize its own root resource. */
     public static final String CONFIG_DROPWIZARD_INITIALIZE_ROOT = "trellis.dropwizard.initialize.root";
 
     /**

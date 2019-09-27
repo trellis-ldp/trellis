@@ -39,7 +39,7 @@ import org.trellisldp.api.NamespaceService;
  */
 public class JsonNamespaceService implements NamespaceService {
 
-    /** The configuration key controlling the path to a JSON-formatted namespace file. **/
+    /** The configuration key controlling the path to a JSON-formatted namespace file. */
     public static final String CONFIG_NAMESPACES_PATH = "trellis.namespaces.path";
 
     private static final Logger LOGGER = getLogger(JsonNamespaceService.class);

@@ -37,19 +37,19 @@ import org.trellisldp.api.EventService;
  */
 public class JmsEventService implements EventService {
 
-    /** The configuration key controlling the JMS queue name. **/
+    /** The configuration key controlling the JMS queue name. */
     public static final String CONFIG_JMS_QUEUE_NAME = "trellis.jms.queue";
 
-    /** The configuration key controlling the JMS broker URL. **/
+    /** The configuration key controlling the JMS broker URL. */
     public static final String CONFIG_JMS_URL = "trellis.jms.url";
 
-    /** The configuration key controlling the JMS username. **/
+    /** The configuration key controlling the JMS username. */
     public static final String CONFIG_JMS_USERNAME = "trellis.jms.username";
 
-    /** The configuration key controlling the JMS password. **/
+    /** The configuration key controlling the JMS password. */
     public static final String CONFIG_JMS_PASSWORD = "trellis.jms.password";
 
-    /** The configuration key controlling whether to use a topic or queue. **/
+    /** The configuration key controlling whether to use a topic or queue. */
     public static final String CONFIG_JMS_USE_QUEUE = "trellis.jms.use.queue";
 
     private static final Logger LOGGER = getLogger(JmsEventService.class);

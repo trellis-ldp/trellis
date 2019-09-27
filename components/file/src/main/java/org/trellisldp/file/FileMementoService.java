@@ -43,7 +43,7 @@ import org.trellisldp.api.Resource;
  */
 public class FileMementoService implements MementoService {
 
-    /** The configuration key controlling the base filesystem path for memento storage. **/
+    /** The configuration key controlling the base filesystem path for memento storage. */
     public static final String CONFIG_FILE_MEMENTO_BASE_PATH = "trellis.file.memento.basepath";
 
     private static final Logger LOGGER = getLogger(FileMementoService.class);

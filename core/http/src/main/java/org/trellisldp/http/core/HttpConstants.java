@@ -31,91 +31,91 @@ import org.apache.commons.rdf.api.IRI;
  */
 public final class HttpConstants {
 
-    /** The name of the HTTP request header used for Memento datetime negotiation. **/
+    /** The name of the HTTP request header used for Memento datetime negotiation. */
     public static final String ACCEPT_DATETIME = "Accept-Datetime";
 
-    /** The name of the HTTP response header used to indicate the acceptable formats for PATCH requests. **/
+    /** The name of the HTTP response header used to indicate the acceptable formats for PATCH requests. */
     public static final String ACCEPT_PATCH = "Accept-Patch";
 
-    /** The name of the HTTP response header used to indicate the acceptable RDF formats in POST requests. **/
+    /** The name of the HTTP response header used to indicate the acceptable RDF formats in POST requests. */
     public static final String ACCEPT_POST = "Accept-Post";
 
-    /** The name of the HTTP response header used to indicate the acceptable forms of range requests. **/
+    /** The name of the HTTP response header used to indicate the acceptable forms of range requests. */
     public static final String ACCEPT_RANGES = "Accept-Ranges";
 
-    /** The ext parameter for ACL resources. **/
+    /** The ext parameter for ACL resources. */
     public static final String ACL = "acl";
 
-    /** The query parameter for ACL resources. **/
+    /** The query parameter for ACL resources. */
     public static final String ACL_QUERY_PARAM = "?ext=acl";
 
-    /** The default Memento TimeMap output format. **/
+    /** The default Memento TimeMap output format. */
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 
-    /** Configuration key defining the server's base URL. **/
+    /** Configuration key defining the server's base URL. */
     public static final String CONFIG_HTTP_BASE_URL = "trellis.http.baseUrl";
 
-    /** Configuration key defining whether to include dates in memento headers. **/
+    /** Configuration key defining whether to include dates in memento headers. */
     public static final String CONFIG_HTTP_MEMENTO_HEADER_DATES = "trellis.http.memento.headerdates";
 
-    /** Configuration key defining whether to use weak ETags for RDF responses. **/
+    /** Configuration key defining whether to use weak ETags for RDF responses. */
     public static final String CONFIG_HTTP_WEAK_ETAG = "trellis.http.weak.etag";
 
-    /** Configuration key defining the default JSON-LD profile. **/
+    /** Configuration key defining the default JSON-LD profile. */
     public static final String CONFIG_HTTP_JSONLD_PROFILE = "trellis.http.jsonld.profile";
 
-    /** Configuration key defining whether to require precondition headers for PUT operations. **/
+    /** Configuration key defining whether to require precondition headers for PUT operations. */
     public static final String CONFIG_HTTP_PRECONDITION_REQUIRED = "trellis.http.precondition.required";
 
-    /** Configuration key defining whether PUT-on-create generates contained or uncontained resources. **/
+    /** Configuration key defining whether PUT-on-create generates contained or uncontained resources. */
     public static final String CONFIG_HTTP_PUT_UNCONTAINED = "trellis.http.put.uncontained";
 
-    /** The Trellis query parameter for extended features of a given resource. **/
+    /** The Trellis query parameter for extended features of a given resource. */
     public static final String EXT = "ext";
 
-    /** The Memento link parameter to indicate the datetime of a Memento. **/
+    /** The Memento link parameter to indicate the datetime of a Memento. */
     public static final String DATETIME = "datetime";
 
-    /** The Trellis ext parameter value used for accessing the description of an LDP-NR. **/
+    /** The Trellis ext parameter value used for accessing the description of an LDP-NR. */
     public static final String DESCRIPTION = "description";
 
-    /** The Memento link parameter indicating the beginning range of a TimeMap. **/
+    /** The Memento link parameter indicating the beginning range of a TimeMap. */
     public static final String FROM = "from";
 
-    /** The Memento link relation for mementos. **/
+    /** The Memento link relation for mementos. */
     public static final String MEMENTO = "memento";
 
-    /** The name of the HTTP response header used to indicate the date of a Memento resource. **/
+    /** The name of the HTTP response header used to indicate the date of a Memento resource. */
     public static final String MEMENTO_DATETIME = "Memento-Datetime";
 
-    /** The Memento link relation for original resources. **/
+    /** The Memento link relation for original resources. */
     public static final String ORIGINAL = "original";
 
-    /** The name of the HTTP verb used to update resources. **/
+    /** The name of the HTTP verb used to update resources. */
     public static final String PATCH = "PATCH";
 
-    /** The name of the HTTP response code for a Precondition Required error. **/
+    /** The name of the HTTP response code for a Precondition Required error. */
     public static final int PRECONDITION_REQUIRED = 428;
 
-    /** The name of the HTTP request header used to influence what information is included in responses. **/
+    /** The name of the HTTP request header used to influence what information is included in responses. */
     public static final String PREFER = "Prefer";
 
-    /** The name of the HTTP response header used to indicate how the Prefer header was applied. **/
+    /** The name of the HTTP response header used to indicate how the Prefer header was applied. */
     public static final String PREFERENCE_APPLIED = "Preference-Applied";
 
-    /** The name of the HTTP request header used to make range requests. **/
+    /** The name of the HTTP request header used to make range requests. */
     public static final String RANGE = "Range";
 
-    /** The name of the HTTP request header used to indicate the desired name for a new resource. **/
+    /** The name of the HTTP request header used to indicate the desired name for a new resource. */
     public static final String SLUG = "Slug";
 
-    /** The Memento link relation for TimeGate resources. **/
+    /** The Memento link relation for TimeGate resources. */
     public static final String TIMEGATE = "timegate";
 
-    /** The Memento link relation for TimeMap resources. **/
+    /** The Memento link relation for TimeMap resources. */
     public static final String TIMEMAP = "timemap";
 
-    /** The Memento link parameter indicating the ending range of a TimeMap. **/
+    /** The Memento link parameter indicating the ending range of a TimeMap. */
     public static final String UNTIL = "until";
 
     private static final Set<IRI> DEFAULT_REPRESENTATION_ELEMENTS = new HashSet<>();
@@ -124,7 +124,7 @@ public final class HttpConstants {
         addAll(DEFAULT_REPRESENTATION_ELEMENTS, PreferContainment, PreferMembership, PreferUserManaged);
     }
 
-    /** The implied or default set of IRIs used with a Prefer header. **/
+    /** The implied or default set of IRIs used with a Prefer header. */
     public static final Set<IRI> DEFAULT_REPRESENTATION = unmodifiableSet(DEFAULT_REPRESENTATION_ELEMENTS);
 
     private HttpConstants() {

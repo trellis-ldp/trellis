@@ -38,7 +38,7 @@ public class KafkaEventService implements EventService {
 
     private static final Logger LOGGER = getLogger(KafkaEventService.class);
 
-    /** The configuration key controlling the name of the kafka topic. **/
+    /** The configuration key controlling the name of the kafka topic. */
     public static final String CONFIG_KAFKA_TOPIC = "trellis.kafka.topic";
 
     private final ActivityStreamService serializer;

@@ -81,7 +81,7 @@ import org.trellisldp.vocabulary.VCARD;
 @ApplicationScoped
 public class WebAcService {
 
-    /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. **/
+    /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. */
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
     private static final Logger LOGGER = getLogger(WebAcService.class);
@@ -91,7 +91,7 @@ public class WebAcService {
     private static final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
     private static final Set<IRI> allModes = new HashSet<>();
 
-    /** The permissive Authorizations in effect when no ACL is present on the root node. **/
+    /** The permissive Authorizations in effect when no ACL is present on the root node. */
     private static final List<Authorization> defaultRootAuthorizations =
         unmodifiableList(getDefaultRootAuthorizations());
 

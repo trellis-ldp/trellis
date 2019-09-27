@@ -52,16 +52,16 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
 
     private static final MustacheFactory mf = new DefaultMustacheFactory();
 
-    /** The configuration key controlling the HTML template to use. **/
+    /** The configuration key controlling the HTML template to use. */
     public static final String CONFIG_RDFA_TEMPLATE = "trellis.rdfa.template";
 
-    /** The configuration key controlling the CSS URLs to use. **/
+    /** The configuration key controlling the CSS URLs to use. */
     public static final String CONFIG_RDFA_CSS = "trellis.rdfa.css";
 
-    /** The configuration key controlling the web icon to use. **/
+    /** The configuration key controlling the web icon to use. */
     public static final String CONFIG_RDFA_ICON = "trellis.rdfa.icon";
 
-    /** The configuration key controlling the JS URLs to use. **/
+    /** The configuration key controlling the JS URLs to use. */
     public static final String CONFIG_RDFA_JS = "trellis.rdfa.js";
 
     private final NamespaceService namespaceService;
