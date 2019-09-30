@@ -329,21 +329,20 @@ public class WebAcService {
 
     private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
-        if ( resource.hasAcl() ) {
+        if (resource.hasAcl()) {
             try (final Graph graph = resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
                         .collect(toGraph())) {
                 final List<Authorization> authorizations = getAuthorizationFromGraph(graph);
                 // Check for any acl:default statements if checking for inheritance
-                if (inherited && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
+                if (inherited) {
                     return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
-                // If not inheriting, just return the relevant Authorizations in the ACL
-                } else if (!inherited) {
-                    return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
                 }
+                // If not inheriting, just return the relevant Authorizations in the ACL
+                return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
             } catch (final Exception ex) {
                 throw new RuntimeTrellisException("Error closing graph", ex);
             }
-        } else if ( root.equals(resource.getIdentifier()) ) {
+        } else if (root.equals(resource.getIdentifier())) {
             return WebAcService.defaultRootAuthorizations.stream();
         }
         // Nothing here, check the parent
