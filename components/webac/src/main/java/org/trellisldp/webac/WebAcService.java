@@ -252,10 +252,6 @@ public class WebAcService {
         return join("||", identifier.getIRIString(), agent.getIRIString());
     }
 
-    private boolean hasWritableMode(final Set<IRI> modes) {
-        return modes.contains(ACL.Write) || modes.contains(ACL.Append);
-    }
-
     private Set<IRI> getAuthz(final IRI identifier, final IRI agent) {
         final Set<IRI> modes = getModesFor(identifier, agent);
         // consider membership resources, if relevant
@@ -281,10 +277,6 @@ public class WebAcService {
             .flatMap(auth -> auth.getMode().stream()).collect(toSet());
     }
 
-    private boolean resourceExists(final Resource res) {
-        return !MISSING_RESOURCE.equals(res) && !DELETED_RESOURCE.equals(res);
-    }
-
     private Optional<Resource> getNearestResource(final IRI identifier) {
         final Resource res = resourceService.get(identifier).toCompletableFuture().join();
         if (resourceExists(res)) {
@@ -299,14 +291,6 @@ public class WebAcService {
             auth.getAgent().contains(agent) || auth.getAgentGroup().stream().anyMatch(isAgentInGroup(agent));
     }
 
-    private Predicate<Authorization> getInheritedAuth(final IRI identifier) {
-        return auth -> root.equals(identifier) || auth.getDefault().contains(identifier);
-    }
-
-    private Predicate<Authorization> getAccessToAuth(final IRI identifier) {
-        return auth -> auth.getAccessTo().contains(identifier);
-    }
-
     private Predicate<IRI> isAgentInGroup(final IRI agent) {
         return group -> resourceService.get(cleanIdentifier(group)).thenApply(res -> {
             try (final Stream<RDFTerm> triples = res.stream(Trellis.PreferUserManaged)
@@ -317,33 +301,23 @@ public class WebAcService {
         }).toCompletableFuture().join();
     }
 
-    private static List<Authorization> getAuthorizationFromGraph(final Graph graph) {
-        return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
-                try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
-                    return Authorization.from(subject, subGraph);
-                } catch (final Exception ex) {
-                    throw new RuntimeTrellisException("Error closing graph", ex);
-                }
-            }).collect(toList());
-    }
-
     private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
-        if ( resource.hasAcl() ) {
+        if (resource.hasAcl()) {
             try (final Graph graph = resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
                         .collect(toGraph())) {
-                final List<Authorization> authorizations = getAuthorizationFromGraph(graph);
+                // Get the relevant Authorizations in the ACL resource
+                final List<Authorization> authorizations = getAuthorizationFromGraph(resource.getIdentifier(), graph);
                 // Check for any acl:default statements if checking for inheritance
-                if (inherited && authorizations.stream().anyMatch(getInheritedAuth(resource.getIdentifier()))) {
+                if (inherited) {
                     return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
-                // If not inheriting, just return the relevant Authorizations in the ACL
-                } else if (!inherited) {
-                    return authorizations.stream().filter(getAccessToAuth(resource.getIdentifier()));
                 }
+                // If not inheriting, just return the relevant Authorizations
+                return authorizations.stream();
             } catch (final Exception ex) {
                 throw new RuntimeTrellisException("Error closing graph", ex);
             }
-        } else if ( root.equals(resource.getIdentifier()) ) {
+        } else if (root.equals(resource.getIdentifier())) {
             return WebAcService.defaultRootAuthorizations.stream();
         }
         // Nothing here, check the parent
@@ -351,6 +325,28 @@ public class WebAcService {
         return getContainer(resource.getIdentifier()).map(resourceService::get)
             .map(CompletionStage::toCompletableFuture).map(CompletableFuture::join)
             .map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
+    }
+
+    private static List<Authorization> getAuthorizationFromGraph(final IRI identifier, final Graph graph) {
+        return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
+                try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
+                    return Authorization.from(subject, subGraph);
+                } catch (final Exception ex) {
+                    throw new RuntimeTrellisException("Error closing graph", ex);
+                }
+            }).filter(auth -> auth.getAccessTo().contains(identifier)).collect(toList());
+    }
+
+    private static boolean hasWritableMode(final Set<IRI> modes) {
+        return modes.contains(ACL.Write) || modes.contains(ACL.Append);
+    }
+
+    private static boolean resourceExists(final Resource res) {
+        return !MISSING_RESOURCE.equals(res) && !DELETED_RESOURCE.equals(res);
+    }
+
+    private static Predicate<Authorization> getInheritedAuth(final IRI identifier) {
+        return auth -> root.equals(identifier) || auth.getDefault().contains(identifier);
     }
 
     /**

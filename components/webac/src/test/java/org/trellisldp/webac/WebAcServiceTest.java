@@ -503,7 +503,7 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI4, type, ACL.Authorization)));
 
         assertAll("Test default ACL writability",
-                checkCanWrite(resourceIRI),
+                checkCannotWrite(resourceIRI),
                 checkCanWrite(childIRI),
                 checkCanWrite(parentIRI),
                 checkCanWrite(rootIRI));
@@ -618,10 +618,9 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.accessTo, childIRI),
 
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Read),
-                rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Write),
-                rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Control),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.agentGroup, groupIRI),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.accessTo, childIRI),
+                rdf.createQuad(PreferAccessControl, authIRI3, ACL.default_, childIRI),
 
                 rdf.createQuad(PreferAccessControl, authIRI4, ACL.agentGroup, groupIRI),
                 rdf.createQuad(PreferAccessControl, authIRI4, type, ACL.Authorization)));
@@ -658,10 +657,9 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Control),
 
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Read),
-                rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Write),
-                rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Control),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.accessTo, childIRI),
+                rdf.createQuad(PreferAccessControl, authIRI2, ACL.default_, childIRI),
 
                 rdf.createQuad(PreferAccessControl, authIRI4, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI4, type, ACL.Authorization)));
