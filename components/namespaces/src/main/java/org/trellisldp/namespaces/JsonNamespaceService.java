@@ -26,6 +26,7 @@ import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -37,6 +38,7 @@ import org.trellisldp.api.NamespaceService;
  *
  * @author acoburn
  */
+@ApplicationScoped
 public class JsonNamespaceService implements NamespaceService {
 
     /** The configuration key controlling the path to a JSON-formatted namespace file. */

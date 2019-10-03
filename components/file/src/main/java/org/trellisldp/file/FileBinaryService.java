@@ -28,6 +28,7 @@ import java.net.URI;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
@@ -43,6 +44,7 @@ import org.trellisldp.api.IdentifierService;
 /**
  * A {@link BinaryService} implementation that stores LDP-NR resources as files on a local filesystem.
  */
+@ApplicationScoped
 public class FileBinaryService implements BinaryService {
 
     /** The configuration key controlling the base filesystem path for the binary service. */

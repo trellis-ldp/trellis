@@ -79,6 +79,11 @@ liberty {
         configFile = file("src/main/liberty/config/server.xml")
         bootstrapProperties = ['default.http.port': testServerHttpPort,
                                'default.https.port': testServerHttpsPort,
+                               'trellis.namespaces.path': "data/namespaces.json",
+                               'trellis.triplestore.rdf.location': 'data/resources',
+                               'trellis.file.memento.basepath': 'data/mementos',
+                               'trellis.file.binary.basepath': 'data/binary',
+
                                'app.context.root': warContext]
         packageLiberty {
             archive = "$buildDir/${appName}.zip"
