@@ -41,6 +41,7 @@ ext {
     guavaVersion = '28.0-jre'
     jacksonVersion = '2.9.10'
     jaxbVersion = '2.4.0-b180830.0359'
+    jsonbVersion = '1.0'
     jenaVersion = '3.12.0'
     // version 2.28+ uses the jakarta-based jax-rs API
     jerseyVersion = '2.27'
@@ -60,6 +61,7 @@ ext {
     bouncycastleVersion = '1.63'
     commonsTextVersion = '1.8'
     cxfVersion = '3.3.3'
+    glassfishJsonVersion = '1.1.4'
     junitVersion = '5.5.2'
     junitLauncherVersion = '1.5.2'
     hamcrestVersion = '2.1'
@@ -72,6 +74,7 @@ ext {
     smallryeReactiveVersion = '1.0.6'
     smallryeReactiveOperatorsVersion = '1.0.9'
     weldVersion = '2.0.0.Final'
+    yassonVersion = '1.0.5'
 
     /* OSGi */
     glassfishInjectVersion = '2.5.0-b62'
