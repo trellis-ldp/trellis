@@ -13,13 +13,13 @@ dependencies {
     api project(':trellis-api')
     api project(':trellis-http')
 
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("javax.enterprise:cdi-api:$cdiApiVersion")
+    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
 
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
-    testImplementation("org.slf4j:slf4j-api:$slf4jVersion")
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
     testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
