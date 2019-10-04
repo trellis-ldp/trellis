@@ -49,6 +49,7 @@ ext {
     jsonldVersion = '0.12.5'
     kafkaVersion = '2.3.0'
     mustacheVersion = '0.9.6'
+    quarkusVersion = '0.23.2'
     rabbitMqVersion = '5.7.3'
     rxjavaVersion = '2.2.12'
     validationVersion = '2.0.1.Final'
