@@ -14,13 +14,9 @@
 package org.trellisldp.app.mp.triplestore;
 
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
-import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.app.AppUtils.printBanner;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,7 +26,6 @@ import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.slf4j.Logger;
 import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.http.*;
 
@@ -40,8 +35,6 @@ import org.trellisldp.http.*;
 @ApplicationPath("/")
 @ApplicationScoped
 public class WebApplication extends Application {
-
-    private static final Logger LOGGER = getLogger(WebApplication.class);
 
     @Inject
     private TrellisHttpResource httpResource;
@@ -59,24 +52,12 @@ public class WebApplication extends Application {
     private OAuthFilter oauthFilter;
 
     @PostConstruct
-    private void init() {
-        printBanner("Trellis Triplestore Application");
+    private void init() throws IOException {
+        printBanner("Trellis Triplestore Application", "banner.txt");
     }
 
     @Override
     public Set<Object> getSingletons() {
         return new HashSet<>(asList(httpResource, httpFilter, corsFilter, cacheFilter, oauthFilter));
-    }
-
-    private void printBanner(final String name) {
-        try (final InputStream resourceStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("banner.txt");
-            final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream);
-            final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            final String banner = bufferedReader.lines().collect(joining(String.format("%n")));
-            LOGGER.info("Starting {}\n{}", name, banner);
-        } catch (final IllegalArgumentException | IOException ignored) {
-            LOGGER.info("Starting {}", name);
-        }
     }
 }
