@@ -54,7 +54,7 @@
     <bundle>mvn:org.trellisldp/trellis-constraint-rules/${project.version}</bundle>
   </feature>
 
-  <feature name="trellis-event-serialization" version="${project.version}">
+  <feature name="trellis-event-jackson" version="${project.version}">
     <details>Installs the Trellis Event Serialization bundle</details>
 
     <feature dependency="true">trellis-api</feature>
@@ -65,7 +65,7 @@
     <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion}</bundle>
     <bundle dependency="true">mvn:com.fasterxml.jackson.datatype/jackson-datatype-jsr310/${jacksonVersion}</bundle>
 
-    <bundle>mvn:org.trellisldp/trellis-event-serialization/${project.version}</bundle>
+    <bundle>mvn:org.trellisldp/trellis-event-jackson/${project.version}</bundle>
   </feature>
 
   <feature name="trellis-http" version="${project.version}">

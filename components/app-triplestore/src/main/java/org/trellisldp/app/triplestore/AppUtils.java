@@ -35,7 +35,7 @@ import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.dropwizard.config.NotificationsConfiguration;
-import org.trellisldp.event.DefaultActivityStreamService;
+import org.trellisldp.event.jackson.DefaultActivityStreamService;
 import org.trellisldp.jms.JmsEventService;
 import org.trellisldp.kafka.KafkaEventService;
 

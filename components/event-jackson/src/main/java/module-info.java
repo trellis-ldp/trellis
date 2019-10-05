@@ -11,8 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module org.trellisldp.event {
-    exports org.trellisldp.event;
+module org.trellisldp.event.jackson {
+    exports org.trellisldp.event.jackson;
 
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.vocabulary;
@@ -24,8 +24,8 @@ module org.trellisldp.event {
     requires com.fasterxml.jackson.annotation;
     requires cdi.api;
 
-    opens org.trellisldp.event to com.fasterxml.jackson.databind;
+    opens org.trellisldp.event.jackson to com.fasterxml.jackson.databind;
 
     provides org.trellisldp.api.ActivityStreamService
-        with org.trellisldp.event.DefaultActivityStreamService;
+        with org.trellisldp.event.jackson.DefaultActivityStreamService;
 }

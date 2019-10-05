@@ -34,7 +34,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')
-    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-io-jena')
 
     testRuntimeClasspath("javax.activation:javax.activation-api:$activationApiVersion")

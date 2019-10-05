@@ -9,7 +9,7 @@ configurations {
 
 ext {
     moduleName = 'org.trellisldp.jms'
-    testModules = ['smallrye.config', 'org.trellisldp.vocabulary', 'org.trellisldp.event', 'org.apache.commons.rdf.simple']
+    testModules = ['smallrye.config', 'org.trellisldp.vocabulary', 'org.trellisldp.event.jackson', 'org.apache.commons.rdf.simple']
 }
 
 dependencies {
@@ -25,7 +25,7 @@ dependencies {
     testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation project(':trellis-event-serialization')
+    testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-vocabulary')
 
     activemq("org.apache.activemq:activemq-broker:$activeMqVersion") {
