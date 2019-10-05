@@ -63,6 +63,11 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
@@ -195,6 +200,20 @@ public class TrellisHttpResource {
      */
     @GET
     @Timed
+    @Operation(summary = "Get a linked data resource")
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "404",
+                description = "Missing resource"),
+            @APIResponse(
+                responseCode = "200",
+                description = "The linked data resource, serialized as Turtle",
+                content = @Content(mediaType = "text/turtle")),
+            @APIResponse(
+                responseCode = "200",
+                description = "The linked data resource, serialized as JSON-LD",
+                content = @Content(mediaType = "application/ld+json"))})
     public void getResource(@Suspended final AsyncResponse response, @Context final Request request,
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
         fetchResource(new TrellisRequest(request, uriInfo, headers))
@@ -213,6 +232,8 @@ public class TrellisHttpResource {
      */
     @HEAD
     @Timed
+    @Operation(summary = "Get the headers for a linked data resource")
+    @APIResponse(description = "The headers for a linked data resource")
     public void getResourceHeaders(@Suspended final AsyncResponse response, @Context final Request request,
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
         fetchResource(new TrellisRequest(request, uriInfo, headers))
@@ -229,6 +250,8 @@ public class TrellisHttpResource {
      */
     @OPTIONS
     @Timed
+    @Operation(summary = "Get the interaction options for a linked data resource")
+    @APIResponse(description = "The interaction options for a linked data resource")
     public void options(@Suspended final AsyncResponse response, @Context final Request request,
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
@@ -253,9 +276,13 @@ public class TrellisHttpResource {
      */
     @PATCH
     @Timed
+    @Operation(summary = "Update a linked data resource")
     public void updateResource(@Suspended final AsyncResponse response, @Context final Request request,
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext, final String body) {
+            @Context final SecurityContext secContext,
+            @RequestBody(description = "The update request for RDF resources, typically as SPARQL-Update",
+                         required = true,
+                         content = @Content(mediaType = "application/sparql-update")) final String body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
@@ -277,6 +304,7 @@ public class TrellisHttpResource {
      */
     @DELETE
     @Timed
+    @Operation(summary = "Delete a linked data resource")
     public void deleteResource(@Suspended final AsyncResponse response, @Context final Request request,
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
             @Context final SecurityContext secContext) {
@@ -302,9 +330,11 @@ public class TrellisHttpResource {
      */
     @POST
     @Timed
+    @Operation(summary = "Create a linked data resource")
     public void createResource(@Suspended final AsyncResponse response, @Context final Request request,
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext, final InputStream body) {
+            @Context final SecurityContext secContext,
+            @RequestBody(description = "The new resource") final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
@@ -333,9 +363,11 @@ public class TrellisHttpResource {
      */
     @PUT
     @Timed
+    @Operation(summary = "Create or update a linked data resource")
     public void setResource(@Suspended final AsyncResponse response, @Context final Request request,
             @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext, final InputStream body) {
+            @Context final SecurityContext secContext,
+            @RequestBody(description = "The updated resource") final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
