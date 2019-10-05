@@ -8,6 +8,6 @@
       id="defaultHttpEndpoint" host="*">
       <accessLogging filepath="${server.output.dir}/logs/access.log"/>
     </httpEndpoint>
-    <webApplication location="trellis-app-mp-triplestore.war" contextRoot="/"/>
+    <webApplication location="trellis-openliberty.war" contextRoot="/"/>
 </server>
 

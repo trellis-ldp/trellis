@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.mp.triplestore;
+package org.trellisldp.openliberty;
 
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.triplestore.TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION;
