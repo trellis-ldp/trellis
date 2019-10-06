@@ -11,8 +11,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.trellisldp.openliberty;
 
-/**
- * A microprofile-based Trellis application.
- */
-package org.trellisldp.app.mp.triplestore;
+import java.util.Iterator;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+
+import org.trellisldp.api.ConstraintService;
+import org.trellisldp.app.ConstraintServices;
+
+@ApplicationScoped
+public class CDIConstraintServices implements ConstraintServices {
+
+    @Inject
+    protected Instance<ConstraintService> constraintServices;
+
+    @Override
+    public Iterator<ConstraintService> iterator() {
+        return constraintServices.iterator();
+    }
+}

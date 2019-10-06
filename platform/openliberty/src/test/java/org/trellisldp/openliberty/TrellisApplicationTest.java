@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.app.mp.triplestore;
+package org.trellisldp.openliberty;
 
 import static java.lang.Integer.getInteger;
 import static javax.ws.rs.client.ClientBuilder.newBuilder;

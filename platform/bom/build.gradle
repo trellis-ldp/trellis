@@ -26,6 +26,7 @@ dependencies {
     implementation project(':trellis-webac')
     implementation project(':trellis-webdav')
 
+    implementation project(':trellis-openliberty')
     implementation project(':trellis-quarkus')
 }
 
