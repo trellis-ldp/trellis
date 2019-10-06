@@ -13,20 +13,14 @@
  */
 package org.trellisldp.quarkus;
 
-import static java.util.stream.Collectors.joining;
-import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.app.AppUtils.printBanner;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
-
-import org.slf4j.Logger;
 
 /**
  * Web Application wrapper.
@@ -35,19 +29,8 @@ import org.slf4j.Logger;
 @ApplicationScoped
 public class TrellisApplication extends Application {
 
-    private static final Logger LOGGER = getLogger(TrellisApplication.class);
-
     @PostConstruct
-    void init() {
-        final String name = "Trellis Database Application";
-        try (final InputStream resourceStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("banner.txt");
-             final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream);
-             final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            final String banner = bufferedReader.lines().collect(joining(String.format("%n")));
-            LOGGER.info("Starting {}\n{}", name, banner);
-        } catch (final IllegalArgumentException | IOException ignored) {
-            LOGGER.info("Starting {}", name);
-        }
+    void init() throws IOException {
+        printBanner("Trellis Application", "banner.txt");
     }
 }
