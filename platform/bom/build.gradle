@@ -16,7 +16,7 @@ dependencies {
     implementation project(':trellis-audit')
     implementation project(':trellis-constraint-rules')
     implementation project(':trellis-dropwizard')
-    implementation project(':trellis-event-serialization')
+    implementation project(':trellis-event-jackson')
     implementation project(':trellis-file')
     implementation project(':trellis-io-jena')
     implementation project(':trellis-namespaces')

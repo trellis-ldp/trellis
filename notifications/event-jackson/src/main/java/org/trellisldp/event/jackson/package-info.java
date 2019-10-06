@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 /**
- * Trellis Event Serialization Implementation
+ * Trellis Event Serialization Implementation, based on Jackson
  * 
  * <p>A package used for serializing Events into an Activity Stream JSON-LD representation.</p>
  *
@@ -20,4 +20,4 @@
  *
  * @author acoburn
  */
-package org.trellisldp.event;
+package org.trellisldp.event.jackson;

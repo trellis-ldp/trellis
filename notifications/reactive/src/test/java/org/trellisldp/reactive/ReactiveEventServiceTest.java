@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.trellisldp.api.*;
-import org.trellisldp.event.DefaultActivityStreamService;
+import org.trellisldp.event.jackson.DefaultActivityStreamService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;

@@ -44,7 +44,7 @@ dependencies {
     compile project(':trellis-file')
     compile project(':trellis-namespaces')
     compile project(':trellis-audit')
-    compile project(':trellis-event-serialization')
+    compile project(':trellis-event-jackson')
     compile project(':trellis-webac')
     compile project(':trellis-triplestore')
     compile project(':trellis-jms')

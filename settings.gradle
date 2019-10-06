@@ -19,6 +19,7 @@ include ':trellis-http'
 include ':trellis-vocabulary'
 
 include ':trellis-amqp'
+include ':trellis-event-jackson'
 include ':trellis-jms'
 include ':trellis-kafka'
 include ':trellis-reactive'
@@ -30,7 +31,6 @@ include ':trellis-app'
 include ':trellis-audit'
 include ':trellis-constraint-rules'
 include ':trellis-dropwizard'
-include ':trellis-event-serialization'
 include ':trellis-file'
 include ':trellis-io-jena'
 include ':trellis-namespaces'
@@ -53,6 +53,7 @@ project(':trellis-http').projectDir = "$rootDir/core/http" as File
 project(':trellis-vocabulary').projectDir = "$rootDir/core/vocabulary" as File
 
 project(':trellis-amqp').projectDir = "$rootDir/notifications/amqp" as File
+project(':trellis-event-jackson').projectDir = "$rootDir/notifications/event-jackson" as File
 project(':trellis-jms').projectDir = "$rootDir/notifications/jms" as File
 project(':trellis-kafka').projectDir = "$rootDir/notifications/kafka" as File
 project(':trellis-reactive').projectDir = "$rootDir/notifications/reactive" as File
@@ -65,7 +66,6 @@ project(':trellis-app-triplestore').projectDir = "$rootDir/components/app-triple
 project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
 project(':trellis-constraint-rules').projectDir = "$rootDir/components/constraint-rules" as File
 project(':trellis-dropwizard').projectDir = "$rootDir/components/dropwizard" as File
-project(':trellis-event-serialization').projectDir = "$rootDir/components/event-serialization" as File
 project(':trellis-file').projectDir = "$rootDir/components/file" as File
 project(':trellis-io-jena').projectDir = "$rootDir/components/io-jena" as File
 project(':trellis-namespaces').projectDir = "$rootDir/components/namespaces" as File

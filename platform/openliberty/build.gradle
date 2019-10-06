@@ -28,7 +28,7 @@ dependencies {
     implementation project(':trellis-auth-basic')
     implementation project(':trellis-auth-oauth')
     implementation project(':trellis-constraint-rules')
-    implementation project(':trellis-event-serialization')
+    implementation project(':trellis-event-jackson')
     implementation project(':trellis-file')
     implementation project(':trellis-http')
     implementation project(':trellis-io-jena')

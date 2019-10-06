@@ -52,7 +52,7 @@ dependencies {
     testCompile project(':trellis-amqp')
     testCompile project(':trellis-audit')
     testCompile project(':trellis-constraint-rules')
-    testCompile project(':trellis-event-serialization')
+    testCompile project(':trellis-event-jackson')
     testCompile project(':trellis-file')
     testCompile project(':trellis-jms')
     testCompile project(':trellis-kafka')
