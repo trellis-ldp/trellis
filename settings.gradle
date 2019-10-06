@@ -1,3 +1,17 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'io.quarkus') {
+                useModule("io.quarkus:quarkus-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+
 rootProject.name = 'trellis'
 
 include ':trellis-api'
@@ -30,6 +44,7 @@ include ':trellis-app-triplestore'
 include ':trellis-bom'
 include ':trellis-karaf'
 include ':trellis-osgi'
+include ':trellis-quarkus'
 include ':trellis-server'
 include ':trellis-test'
 
@@ -63,6 +78,7 @@ project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
 
 project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
 project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File
+project(':trellis-quarkus').projectDir = "$rootDir/platform/quarkus" as File
 project(':trellis-server').projectDir = "$rootDir/platform/server" as File
 project(':trellis-app-mp-triplestore').projectDir = "$rootDir/platform/app-mp-triplestore" as File
 project(':trellis-bom').projectDir = "$rootDir/platform/bom" as File
