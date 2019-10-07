@@ -21,6 +21,6 @@ module org.trellisldp.event.jsonb {
     requires java.json.bind;
     requires org.apache.commons.rdf.api;
 
-    provides org.trellisldp.api.ActivityStreamService
-        with org.trellisldp.event.jsonb.DefaultActivityStreamService;
+    provides org.trellisldp.api.EventSerializationService
+        with org.trellisldp.event.jsonb.DefaultEventSerializationService;
 }

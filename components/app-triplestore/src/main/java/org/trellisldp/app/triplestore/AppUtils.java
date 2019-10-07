@@ -30,12 +30,12 @@ import javax.jms.JMSException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
-import org.trellisldp.api.ActivityStreamService;
+import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.dropwizard.config.NotificationsConfiguration;
-import org.trellisldp.event.jackson.DefaultActivityStreamService;
+import org.trellisldp.event.jackson.DefaultEventSerializationService;
 import org.trellisldp.jms.JmsEventService;
 import org.trellisldp.kafka.KafkaEventService;
 
@@ -44,7 +44,7 @@ final class AppUtils {
     private static final String UN_KEY = "username";
     private static final String PW_KEY = "password";
     private static final Logger LOGGER = getLogger(AppUtils.class);
-    private static final ActivityStreamService serializer = new DefaultActivityStreamService();
+    private static final EventSerializationService serializer = new DefaultEventSerializationService();
 
     public static Properties getKafkaProperties(final NotificationsConfiguration config) {
         final Properties p = new Properties();

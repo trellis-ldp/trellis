@@ -26,6 +26,6 @@ module org.trellisldp.event.jackson {
 
     opens org.trellisldp.event.jackson to com.fasterxml.jackson.databind;
 
-    provides org.trellisldp.api.ActivityStreamService
-        with org.trellisldp.event.jackson.DefaultActivityStreamService;
+    provides org.trellisldp.api.EventSerializationService
+        with org.trellisldp.event.jackson.DefaultEventSerializationService;
 }

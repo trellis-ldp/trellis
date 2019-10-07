@@ -14,28 +14,25 @@
 package org.trellisldp.event.jackson;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import java.util.Optional;
-
 import javax.enterprise.context.ApplicationScoped;
 
-import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.EventSerializationService;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
- * An {@link ActivityStreamService} that serializes an {@link Event} object
+ * An {@link EventSerializationService} that serializes an {@link Event} object
  * into an ActivityStream-compliant JSON string.
  *
  * @author acoburn
  */
 @ApplicationScoped
-public class DefaultActivityStreamService implements ActivityStreamService {
+public class DefaultEventSerializationService implements EventSerializationService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -45,11 +42,11 @@ public class DefaultActivityStreamService implements ActivityStreamService {
     }
 
     @Override
-    public Optional<String> serialize(final Event event) {
+    public String serialize(final Event event) {
         try {
-            return of(MAPPER.writeValueAsString(ActivityStreamMessage.from(event)));
+            return MAPPER.writeValueAsString(ActivityStreamMessage.from(event));
         } catch (final JsonProcessingException ex) {
-            return empty();
+            throw new RuntimeTrellisException("Error serializing event", ex);
         }
     }
 }

@@ -15,5 +15,5 @@ Require-Capability:     osgi.extender; \
                             filter:="(osgi.extender=osgi.serviceloader.registrar)"; \
                             resolution:=optional
 Provide-Capability:     osgi.serviceloader; \
-                            osgi.serviceloader=org.trellisldp.api.ActivityStreamService
+                            osgi.serviceloader=org.trellisldp.api.EventSerializationService
 

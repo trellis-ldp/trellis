@@ -14,6 +14,7 @@
 package org.trellisldp.reactive;
 
 import static java.util.Objects.requireNonNull;
+import static org.eclipse.microprofile.reactive.messaging.Message.of;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -34,7 +35,7 @@ public class ReactiveEventService implements EventService {
 
     public static final String REACTIVE_DESTINATION = "trellis";
 
-    private final ActivityStreamService serializer;
+    private final EventSerializationService serializer;
     private final PublishSubject<Message<String>> subject = PublishSubject.create();
 
     /**
@@ -43,7 +44,7 @@ public class ReactiveEventService implements EventService {
      * <p>Note: this is used by CDI proxies and should not be invoked directly.
      */
     public ReactiveEventService() {
-        this(new NoopActivityStreamService());
+        this(new NoopEventSerializationService());
     }
 
     /**
@@ -51,13 +52,13 @@ public class ReactiveEventService implements EventService {
      * @param serializer the event serializer
      */
     @Inject
-    public ReactiveEventService(final ActivityStreamService serializer) {
+    public ReactiveEventService(final EventSerializationService serializer) {
         this.serializer = requireNonNull(serializer, "serializer may not be null!");
     }
 
     @Override
     public void emit(final Event event) {
-        serializer.serialize(event).map(Message::of).ifPresent(subject::onNext);
+        subject.onNext(of(serializer.serialize(event)));
     }
 
     /**

@@ -27,10 +27,10 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
-import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
-import org.trellisldp.api.NoopActivityStreamService;
+import org.trellisldp.api.NoopEventSerializationService;
 
 /**
  * A Kafka message producer capable of publishing messages to a Kafka cluster.
@@ -42,7 +42,7 @@ public class KafkaEventService implements EventService {
     /** The configuration key controlling the name of the kafka topic. */
     public static final String CONFIG_KAFKA_TOPIC = "trellis.kafka.topic";
 
-    private final ActivityStreamService serializer;
+    private final EventSerializationService serializer;
     private final Producer<String, String> producer;
     private final String topic;
 
@@ -52,7 +52,7 @@ public class KafkaEventService implements EventService {
      * <p>Note: this is used by CDI proxies and should not be invoked directly.
      */
     public KafkaEventService() {
-        this(new NoopActivityStreamService());
+        this(new NoopEventSerializationService());
     }
 
     /**
@@ -60,11 +60,11 @@ public class KafkaEventService implements EventService {
      * @param serializer the event serializer
      */
     @Inject
-    public KafkaEventService(final ActivityStreamService serializer) {
+    public KafkaEventService(final EventSerializationService serializer) {
         this(serializer, getConfig());
     }
 
-    private KafkaEventService(final ActivityStreamService serializer, final Config config) {
+    private KafkaEventService(final EventSerializationService serializer, final Config config) {
         this(serializer, buildProducer(config), config.getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
@@ -73,7 +73,7 @@ public class KafkaEventService implements EventService {
      * @param serializer the event serializer
      * @param producer the producer
      */
-    public KafkaEventService(final ActivityStreamService serializer, final Producer<String, String> producer) {
+    public KafkaEventService(final EventSerializationService serializer, final Producer<String, String> producer) {
         this(serializer, producer, getConfig().getValue(CONFIG_KAFKA_TOPIC, String.class));
     }
 
@@ -83,7 +83,7 @@ public class KafkaEventService implements EventService {
      * @param producer the producer
      * @param topic the name of the kafka topic
      */
-    public KafkaEventService(final ActivityStreamService serializer, final Producer<String, String> producer,
+    public KafkaEventService(final EventSerializationService serializer, final Producer<String, String> producer,
             final String topic) {
         this.serializer = requireNonNull(serializer, "The Event serializer may not be null!");
         this.producer = requireNonNull(producer, "Kafka producer may not be null!");
@@ -94,12 +94,9 @@ public class KafkaEventService implements EventService {
     public void emit(final Event event) {
         requireNonNull(event, "Cannot emit a null event!");
 
-        serializer.serialize(event).ifPresent(message -> {
-            LOGGER.debug("Sending message to Kafka topic: {}", topic);
-            producer.send(
-                new ProducerRecord<>(topic, event.getTarget().map(IRI::getIRIString).orElse(null),
-                        message));
-        });
+        LOGGER.debug("Sending message to Kafka topic: {}", topic);
+        producer.send(new ProducerRecord<>(topic, event.getTarget().map(IRI::getIRIString).orElse(null),
+                    serializer.serialize(event)));
     }
 
     private static Producer<String, String> buildProducer(final Config config) {

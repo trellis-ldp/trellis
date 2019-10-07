@@ -13,15 +13,19 @@
  */
 package org.trellisldp.api;
 
-import java.util.Optional;
-
 /**
- * For use when event serialization is not desired.
+ * A service interface for serializing an {@link Event} object into a
+ * {@link String} suitable for an external notification processor.
+ *
+ * @author acoburn
  */
-@NoopImplementation
-public class NoopActivityStreamService implements ActivityStreamService {
-    @Override
-    public Optional<String> serialize(final Event event) {
-        return Optional.empty();
-    }
+public interface EventSerializationService {
+
+    /**
+     * Serialize an event object into some concrete syntax.
+     *
+     * @param event the event
+     * @return a serialization
+     */
+    String serialize(Event event);
 }

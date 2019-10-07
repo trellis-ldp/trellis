@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
 
-description = 'Trellis Activity Stream Serialization'
+description = 'Trellis Event Serialization (jsonb)'
 
 configurations {
     jsonb

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.event.jsonb;
+package org.trellisldp.event.jackson;
 
 import static java.time.Instant.now;
 import static java.util.Arrays.asList;
@@ -26,31 +26,31 @@ import static org.trellisldp.vocabulary.AS.Create;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.PROV.Activity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.EventSerializationService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.AS;
 
 /**
  * @author acoburn
  */
-class DefaultActivityStreamServiceTest {
+class DefaultEventSerializationServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
 
-    private final ActivityStreamService svc = new DefaultActivityStreamService();
+    private final EventSerializationService svc = new DefaultEventSerializationService();
 
     private final Instant time = now();
 
@@ -71,21 +71,29 @@ class DefaultActivityStreamServiceTest {
 
     @Test
     void testSerialization() {
-        final Optional<String> json = svc.serialize(mockEvent);
-        assertTrue(json.isPresent(), "Serialization not present!");
-        assertTrue(json.get().contains("\"inbox\":\"info:ldn/inbox\""), "ldp:inbox not in serialization!");
+        final String json = svc.serialize(mockEvent);
+        assertTrue(json.contains("\"inbox\":\"info:ldn/inbox\""), "ldp:inbox not in serialization!");
+    }
+
+    @Test
+    void testError() {
+        when(mockEvent.getIdentifier()).thenAnswer(inv -> {
+            sneakyJsonException();
+            return rdf.createIRI("info:event/12456");
+        });
+
+        assertThrows(RuntimeTrellisException.class, () -> svc.serialize(mockEvent));
     }
 
     @Test
     void testSerializationStructure() throws Exception {
         when(mockEvent.getTypes()).thenReturn(asList(Create, Activity));
 
-        final Optional<String> json = svc.serialize(mockEvent);
-        assertTrue(json.isPresent(), "Serialization not present!");
+        final String json = svc.serialize(mockEvent);
 
-        final Jsonb jsonb = JsonbBuilder.create();
+        final ObjectMapper mapper = new ObjectMapper();
         @SuppressWarnings("unchecked")
-        final Map<String, Object> map = jsonb.fromJson(json.get(), Map.class);
+        final Map<String, Object> map = mapper.readValue(json, Map.class);
         assertTrue(map.containsKey("@context"), "@context property not in JSON structure!");
         assertTrue(map.containsKey("id"), "id property not in JSON structure!");
         assertTrue(map.containsKey("type"), "type property not in JSON structure!");
@@ -114,12 +122,11 @@ class DefaultActivityStreamServiceTest {
         when(mockEvent.getAgents()).thenReturn(emptyList());
         when(mockEvent.getTargetTypes()).thenReturn(emptyList());
 
-        final Optional<String> json = svc.serialize(mockEvent);
-        assertTrue(json.isPresent(), "Serialization not present!");
+        final String json = svc.serialize(mockEvent);
 
-        final Jsonb jsonb = JsonbBuilder.create();
+        final ObjectMapper mapper = new ObjectMapper();
         @SuppressWarnings("unchecked")
-        final Map<String, Object> map = jsonb.fromJson(json.get(), Map.class);
+        final Map<String, Object> map = mapper.readValue(json, Map.class);
         assertTrue(map.containsKey("@context"), "@context property not in JSON structure!");
         assertTrue(map.containsKey("id"), "id property not in JSON structure!");
         assertTrue(map.containsKey("type"), "type property not in JSON strucutre!");
@@ -140,5 +147,14 @@ class DefaultActivityStreamServiceTest {
 
         assertEquals("info:event/12345", map.get("id"), "id property has incorrect value!");
         assertEquals(time.toString(), map.get("published"), "published property has incorrect value!");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> void sneakyThrow(final Throwable e) throws T {
+        throw (T) e;
+    }
+
+    private static void sneakyJsonException() {
+        sneakyThrow(new JsonProcessingException("expected"){});
     }
 }

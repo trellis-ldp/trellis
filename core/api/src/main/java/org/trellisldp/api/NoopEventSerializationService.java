@@ -13,18 +13,17 @@
  */
 package org.trellisldp.api;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.mock;
-
-import org.junit.jupiter.api.Test;
-
-class NoopActivityStreamServiceTest {
-
-    @Test
-    void testNoopEventSerializationService() {
-        final Event event = mock(Event.class);
-        final ActivityStreamService svc = new NoopActivityStreamService();
-        assertFalse(svc.serialize(event).isPresent());
+/**
+ * For use when event serialization is not desired.
+ */
+@NoopImplementation
+public class NoopEventSerializationService implements EventSerializationService {
+    @Override
+    public String serialize(final Event event) {
+        return "{" +
+            "\n  \"@context\": \"https://www.w3.org/ns/activitystreams\"" +
+            event.getTarget().map(obj -> ",\n  \"object\": \"" + obj.getIRIString() + "\"").orElse("") +
+            ",\n  \"id\": \"" + event.getIdentifier().getIRIString() + "\"" +
+            "\n}";
     }
 }
-
