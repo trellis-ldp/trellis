@@ -20,6 +20,7 @@ include ':trellis-vocabulary'
 
 include ':trellis-amqp'
 include ':trellis-event-jackson'
+include ':trellis-event-jsonb'
 include ':trellis-jms'
 include ':trellis-kafka'
 include ':trellis-reactive'
@@ -54,6 +55,7 @@ project(':trellis-vocabulary').projectDir = "$rootDir/core/vocabulary" as File
 
 project(':trellis-amqp').projectDir = "$rootDir/notifications/amqp" as File
 project(':trellis-event-jackson').projectDir = "$rootDir/notifications/event-jackson" as File
+project(':trellis-event-jsonb').projectDir = "$rootDir/notifications/event-jsonb" as File
 project(':trellis-jms').projectDir = "$rootDir/notifications/jms" as File
 project(':trellis-kafka').projectDir = "$rootDir/notifications/kafka" as File
 project(':trellis-reactive').projectDir = "$rootDir/notifications/reactive" as File
