@@ -15,6 +15,7 @@ dependencies {
     api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api("org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion")
+    api("org.eclipse.microprofile.openapi:microprofile-openapi-api:$microprofileOpenapiVersion")
     api project(':trellis-api')
 
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
