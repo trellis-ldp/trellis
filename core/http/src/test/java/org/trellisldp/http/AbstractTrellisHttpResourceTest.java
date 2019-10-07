@@ -588,7 +588,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES, MEMENTO_DATETIME)));
 
         final String entity = IOUtils.toString((InputStream) res.getEntity(), UTF_8);
-        System.out.println(entity);
         final List<Link> entityLinks = stream(entity.split(",\n")).map(Link::valueOf).collect(toList());
         assertEquals(5L, entityLinks.size(), "Incorrect number of Link headers!");
         final List<Link> links = getLinks(res);
