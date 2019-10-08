@@ -21,7 +21,6 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
@@ -30,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -82,10 +82,12 @@ class MutatingLdpHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param trellis the Trellis application bundle
+     * @param extensions the extension mapping
      * @param baseUrl the base URL
      */
-    protected MutatingLdpHandler(final TrellisRequest req, final ServiceBundler trellis, final String baseUrl) {
-        this(req, trellis, baseUrl, null);
+    protected MutatingLdpHandler(final TrellisRequest req, final ServiceBundler trellis,
+            final Map<String, IRI> extensions, final String baseUrl) {
+        this(req, trellis, extensions, baseUrl, null);
     }
 
     /**
@@ -93,12 +95,13 @@ class MutatingLdpHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param trellis the Trellis application bundle
+     * @param extensions the extension mapping
      * @param baseUrl the base URL
      * @param entity the entity
      */
     protected MutatingLdpHandler(final TrellisRequest req, final ServiceBundler trellis,
-            final String baseUrl, final InputStream entity) {
-        super(req, trellis, baseUrl);
+            final Map<String, IRI> extensions, final String baseUrl, final InputStream entity) {
+        super(req, trellis, extensions, baseUrl);
         this.entity = entity;
         this.session = HttpSession.from(req.getSecurityContext());
     }
@@ -186,8 +189,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
         getServices().getEventService().emit(new SimpleEvent(getUrl(identifier), getSession().getAgent(),
                     asList(PROV.Activity, activityType), ldpResourceTypes(resourceType).collect(toList())));
 
-        // Further notifications are only relevant for non-ACL resources
-        if (!isAclRequest()) {
+        // Further notifications are only relevant for non-extension resources
+        if (getExtensionGraphName() == null) {
             // If this was an update and the parent is an ldp:IndirectContainer,
             // notify about the member resource (if it exists)
             if (AS.Update.equals(activityType) && LDP.IndirectContainer.equals(getParentModel())) {
@@ -306,6 +309,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     private String getUrl(final IRI identifier) {
         final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
-        return isAclRequest() ? url + ACL_QUERY_PARAM : url;
+        final String ext = getRequest().getExt();
+        return ext != null ? url + "?ext=" + ext : url;
     }
 }

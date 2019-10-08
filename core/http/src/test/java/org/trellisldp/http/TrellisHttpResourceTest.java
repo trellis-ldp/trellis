@@ -24,6 +24,8 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import java.net.URI;
 import java.util.stream.Stream;
@@ -82,7 +84,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         initMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new TrellisHttpResource(mockBundler, null));
+        config.register(new TrellisHttpResource(mockBundler, singletonMap(ACL, PreferAccessControl), null));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
@@ -96,7 +98,8 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
     @Test
     void testNoBaseURL() throws Exception {
-        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
+        final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler,
+                singletonMap(ACL, PreferAccessControl), null);
 
         when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>(singletonMap("path", "resource")));
         when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));

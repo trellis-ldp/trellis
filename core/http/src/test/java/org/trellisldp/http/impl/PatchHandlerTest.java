@@ -68,7 +68,8 @@ class PatchHandlerTest extends BaseTestHandler {
 
     @Test
     void testPatchNoSparql() {
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, null, mockBundler, null, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, null, mockBundler, extensions,
+                null, null);
         try (final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.initialize(mockParent, mockResource),
                 "No exception thrown with a null input!").getResponse()) {
@@ -85,7 +86,7 @@ class PatchHandlerTest extends BaseTestHandler {
         // will never store audit
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
-        final PatchHandler handler = new PatchHandler(mockTrellisRequest, "", mockBundler, null, null);
+        final PatchHandler handler = new PatchHandler(mockTrellisRequest, "", mockBundler, extensions, null, null);
 
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.updateResource(handler.initialize(mockParent, mockResource))),
@@ -97,7 +98,8 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, baseUrl);
         try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -113,11 +115,11 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, null);
         try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
-
             verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
                     eq("http://localhost/resource"));
             verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
@@ -131,7 +133,8 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, null);
         try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -153,7 +156,8 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf(RETURN_REPRESENTATION));
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, null);
         try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -175,7 +179,8 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getAcceptableMediaTypes())
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, null);
         try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -195,7 +200,8 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, null);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend triggers an exception!");
@@ -206,7 +212,8 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, null);
         try (final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.initialize(mockParent, mockResource),
                 "No exception for an unsupported IXN model!").getResponse()) {
@@ -224,7 +231,8 @@ class PatchHandlerTest extends BaseTestHandler {
         doThrow(RuntimeTrellisException.class).when(mockIoService)
             .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(baseUrl + RESOURCE_NAME));
 
-        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                null, baseUrl);
         try (final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join(), "No exception when the update triggers an error!").getResponse()) {

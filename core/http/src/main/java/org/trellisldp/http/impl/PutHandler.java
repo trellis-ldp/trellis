@@ -30,8 +30,6 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
-import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
@@ -43,6 +41,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -78,8 +77,6 @@ public class PutHandler extends MutatingLdpHandler {
     private final IRI internalId;
     private final RDFSyntax rdfSyntax;
     private final IRI heuristicType;
-    private final IRI graphName;
-    private final IRI otherGraph;
     private final boolean preconditionRequired;
     private final boolean createUncontained;
 
@@ -89,18 +86,18 @@ public class PutHandler extends MutatingLdpHandler {
      * @param req the LDP request
      * @param entity the entity
      * @param trellis the Trellis application bundle
+     * @param extensions the extension graph mapping
      * @param preconditionRequired whether preconditions are required for PUT operations
      * @param createUncontained whether PUT creates uncontained resources
      * @param baseUrl the base URL
      */
     public PutHandler(final TrellisRequest req, final InputStream entity, final ServiceBundler trellis,
-                    final boolean preconditionRequired, final boolean createUncontained, final String baseUrl) {
-        super(req, trellis, baseUrl, entity);
+                    final Map<String, IRI> extensions, final boolean preconditionRequired,
+                    final boolean createUncontained, final String baseUrl) {
+        super(req, trellis, extensions, baseUrl, entity);
         this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         this.rdfSyntax = getRdfSyntax(req.getContentType(), trellis.getIOService().supportedWriteSyntaxes());
         this.heuristicType = req.getContentType() != null && rdfSyntax == null ? LDP.NonRDFSource : LDP.RDFSource;
-        this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
-        this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
         this.preconditionRequired = preconditionRequired;
         this.createUncontained = createUncontained;
     }
@@ -124,8 +121,8 @@ public class PutHandler extends MutatingLdpHandler {
             checkCache(modified, generateEtag(getResource()));
         }
 
-        // One cannot put binaries into the ACL graph
-        if (isAclRequest() && rdfSyntax == null) {
+        // One cannot put binaries into extension graphs
+        if (getExtensionGraphName() != null && rdfSyntax == null) {
             throw new NotAcceptableException();
         }
 
@@ -184,7 +181,7 @@ public class PutHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (isAclRequest() ? ACL_QUERY_PARAM : "");
+        return super.getIdentifier() + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
 
     private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> syntaxes) {
@@ -238,10 +235,12 @@ public class PutHandler extends MutatingLdpHandler {
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             final RDFSyntax s = rdfSyntax != null ? rdfSyntax : TURTLE;
+            final IRI ext = getExtensionGraphName();
+            final IRI graphName = ext != null ? ext : PreferUserManaged;
             readEntityIntoDataset(graphName, s, mutable);
 
             // Check for any constraints
-            if (isAclRequest()) {
+            if (getExtensionGraphName() != null) {
                 mutable.getGraph(PreferAccessControl).ifPresent(graph -> checkConstraint(graph, LDP.RDFSource, s));
             } else {
                 mutable.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, s));
@@ -258,7 +257,7 @@ public class PutHandler extends MutatingLdpHandler {
             getResource().getContainer().ifPresent(metadata::container);
             metadata.revision(getResource().getRevision());
             LOGGER.debug("Resource {} found in persistence", getIdentifier());
-            try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
+            try (final Stream<Quad> remaining = getResource().stream(getNonCurrentGraphNames())) {
                 remaining.forEachOrdered(mutable::add);
             }
         } else if (!createUncontained) {
@@ -291,12 +290,13 @@ public class PutHandler extends MutatingLdpHandler {
 
     private CompletionStage<Void> handleUpdateEvent(final IRI ldpType) {
         return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update,
-                isAclRequest() ? LDP.RDFSource : ldpType);
+                getExtensionGraphName() != null ? LDP.RDFSource : ldpType);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {
         LOGGER.trace("Determining effective LDP type from offered type {}", ldpType.getIRIString());
-        return isAclRequest() || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
+        return getExtensionGraphName() != null
+            || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
     }
 
     private CompletionStage<Void> createOrReplace(final Metadata metadata, final Dataset dataset) {

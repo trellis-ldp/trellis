@@ -47,31 +47,31 @@ class PreferTest {
 
     @Test
     void testPrefer1() {
-        final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test\"");
+        final Prefer prefer = valueOf("return=representation; include=\"http://example.org/test\"");
         assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer1b() {
-        final Prefer prefer = Prefer.ofInclude(URL);
+        final Prefer prefer = ofInclude(URL);
         assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer1c() {
-        final Prefer prefer = Prefer.valueOf("return=representation; include=http://example.org/test");
+        final Prefer prefer = valueOf("return=representation; include=http://example.org/test");
         assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer2() {
-        final Prefer prefer = Prefer.valueOf("return  =  representation;   include =  \"http://example.org/test\"");
+        final Prefer prefer = valueOf("return  =  representation;   include =  \"http://example.org/test\"");
         assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer3() {
-        final Prefer prefer = Prefer.valueOf("return=minimal");
+        final Prefer prefer = valueOf("return=minimal");
         assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
         assertTrue(prefer.getInclude().isEmpty(), "Check that there are no includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits count is zero");
@@ -81,7 +81,7 @@ class PreferTest {
 
     @Test
     void testPrefer4() {
-        final Prefer prefer = Prefer.valueOf("return=other");
+        final Prefer prefer = valueOf("return=other");
         assertTrue(prefer.getInclude().isEmpty(), "Check includes is empty");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits is empty");
         assertFalse(prefer.getPreference().isPresent(), CHECK_PREF_TYPE);
@@ -91,7 +91,7 @@ class PreferTest {
 
     @Test
     void testPrefer5() {
-        final Prefer prefer = Prefer.valueOf("return=representation; omit=\"http://example.org/test\"");
+        final Prefer prefer = valueOf("return=representation; omit=\"http://example.org/test\"");
         assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertFalse(prefer.getOmit().isEmpty(), "Check for omits");
@@ -102,7 +102,7 @@ class PreferTest {
 
     @Test
     void testPrefer5b() {
-        final Prefer prefer = Prefer.ofOmit(URL);
+        final Prefer prefer = ofOmit(URL);
         assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertFalse(prefer.getOmit().isEmpty(), "Check for omit values");
@@ -113,7 +113,7 @@ class PreferTest {
 
     @Test
     void testPrefer6() {
-        final Prefer prefer = Prefer.valueOf("handling=lenient; return=minimal");
+        final Prefer prefer = valueOf("handling=lenient; return=minimal");
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
         assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
@@ -123,7 +123,7 @@ class PreferTest {
 
     @Test
     void testPrefer7() {
-        final Prefer prefer = Prefer.valueOf("respond-async; random-param");
+        final Prefer prefer = valueOf("respond-async; random-param");
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
         assertFalse(prefer.getPreference().isPresent(), CHECK_PREF_TYPE);
@@ -133,7 +133,7 @@ class PreferTest {
 
     @Test
     void testPrefer8() {
-        final Prefer prefer = Prefer.valueOf("handling=strict; return=minimal");
+        final Prefer prefer = valueOf("handling=strict; return=minimal");
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
         assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
@@ -143,7 +143,7 @@ class PreferTest {
 
     @Test
     void testPrefer9() {
-        final Prefer prefer = Prefer.valueOf("handling=blah; return=minimal");
+        final Prefer prefer = valueOf("handling=blah; return=minimal");
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
         assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
@@ -152,8 +152,44 @@ class PreferTest {
     }
 
     @Test
+    void testRoundTrip1() {
+        final Prefer prefer = valueOf("return=minimal; handling=lenient; respond-async");
+        final String prefString = prefer.toString();
+        final Prefer prefer2 = valueOf(prefString);
+        assertEquals(prefer.getInclude(), prefer2.getInclude());
+        assertEquals(prefer.getOmit(), prefer2.getOmit());
+        assertEquals(prefer.getPreference(), prefer2.getPreference());
+        assertEquals(prefer.getHandling(), prefer2.getHandling());
+        assertEquals(prefer.getRespondAsync(), prefer2.getRespondAsync());
+    }
+
+    @Test
+    void testRoundTrip2() {
+        final Prefer prefer = valueOf("return=representation; include=\"https://example.com/Prefer\"");
+        final String prefString = prefer.toString();
+        final Prefer prefer2 = valueOf(prefString);
+        assertEquals(prefer.getInclude(), prefer2.getInclude());
+        assertEquals(prefer.getOmit(), prefer2.getOmit());
+        assertEquals(prefer.getPreference(), prefer2.getPreference());
+        assertEquals(prefer.getHandling(), prefer2.getHandling());
+        assertEquals(prefer.getRespondAsync(), prefer2.getRespondAsync());
+    }
+
+    @Test
+    void testRoundTrip3() {
+        final Prefer prefer = valueOf("return=representation; omit=\"https://example.com/Prefer\"");
+        final String prefString = prefer.toString();
+        final Prefer prefer2 = valueOf(prefString);
+        assertEquals(prefer.getInclude(), prefer2.getInclude());
+        assertEquals(prefer.getOmit(), prefer2.getOmit());
+        assertEquals(prefer.getPreference(), prefer2.getPreference());
+        assertEquals(prefer.getHandling(), prefer2.getHandling());
+        assertEquals(prefer.getRespondAsync(), prefer2.getRespondAsync());
+    }
+
+    @Test
     void testStaticInclude() {
-        final Prefer prefer = Prefer.ofInclude();
+        final Prefer prefer = ofInclude();
         assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
@@ -161,7 +197,7 @@ class PreferTest {
 
     @Test
     void testStaticOmit() {
-        final Prefer prefer = Prefer.ofOmit();
+        final Prefer prefer = ofOmit();
         assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
@@ -169,7 +205,7 @@ class PreferTest {
 
     @Test
     void testPreferBadQuotes() {
-        final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test");
+        final Prefer prefer = valueOf("return=representation; include=\"http://example.org/test");
         assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertEquals(1L, prefer.getInclude().size(), "Check includes count");
         assertTrue(prefer.getInclude().contains("\"http://example.org/test"));
@@ -180,7 +216,7 @@ class PreferTest {
 
     @Test
     void testPreferBadQuotes2() {
-        final Prefer prefer = Prefer.valueOf("return=representation; include=\"");
+        final Prefer prefer = valueOf("return=representation; include=\"");
         assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertEquals(1L, prefer.getInclude().size(), "Check for includes size");
         assertTrue(prefer.getInclude().contains("\""), "Check for weird quote in includes");
@@ -191,7 +227,7 @@ class PreferTest {
 
     @Test
     void testNullPrefer() {
-        assertNull(Prefer.valueOf(null), "Check null value");
+        assertNull(valueOf(null), "Check null value");
     }
 
     private Stream<Executable> checkPreferInclude(final Prefer prefer, final String url) {

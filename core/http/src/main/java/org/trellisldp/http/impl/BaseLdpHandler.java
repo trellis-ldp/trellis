@@ -13,15 +13,19 @@
  */
 package org.trellisldp.http.impl;
 
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Map;
 
 import javax.ws.rs.core.EntityTag;
 
@@ -41,6 +45,7 @@ class BaseLdpHandler {
     private final String requestBaseUrl;
     private final TrellisRequest request;
     private final ServiceBundler services;
+    private final Map<String, IRI> extensions;
 
     private Resource resource;
 
@@ -49,12 +54,15 @@ class BaseLdpHandler {
      *
      * @param request the LDP request
      * @param services the Trellis service bundle
+     * @param extensions the extension graph mapping
      * @param baseUrl the base URL
      */
-    protected BaseLdpHandler(final TrellisRequest request, final ServiceBundler services, final String baseUrl) {
+    protected BaseLdpHandler(final TrellisRequest request, final ServiceBundler services,
+            final Map<String, IRI> extensions, final String baseUrl) {
+        this.request = requireNonNull(request, "request may not be null!");
+        this.services = requireNonNull(services, "services may not be null!");
+        this.extensions = requireNonNull(extensions, "extensions may not be null!");
         this.requestBaseUrl = getRequestBaseUrl(request, baseUrl);
-        this.request = request;
-        this.services = services;
     }
 
     /**
@@ -130,11 +138,28 @@ class BaseLdpHandler {
     }
 
     /**
-     * Determine whether the request is for an ACL resource.
-     * @return true if the request targeted an ACL resource; false otherwise
+     * Get the graph mapping for the ext url, if one exists.
+     *
+     * <p>Note: for example the "acl" extension may map to trellis:PreferAccessControl
+     *
+     * @return the graph IRI for the extension or null if the extension is undefined
      */
-    protected boolean isAclRequest() {
-        return ACL.equals(getRequest().getExt());
+    protected IRI getExtensionGraphName() {
+        final String ext = getRequest().getExt();
+        if (ext != null) {
+            return extensions.get(ext);
+        }
+        return null;
+    }
+
+    /**
+     * Get all the graph names registered graph extension names.
+     *
+     * @return the graph names not currently being operated upon
+     */
+    protected Collection<IRI> getNonCurrentGraphNames() {
+        final IRI ext = getExtensionGraphName();
+        return extensions.values().stream().map(iri -> iri.equals(ext) ? PreferUserManaged : iri).collect(toSet());
     }
 
     /**

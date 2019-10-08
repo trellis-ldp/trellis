@@ -24,8 +24,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
@@ -41,6 +39,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -79,8 +78,6 @@ public class PatchHandler extends MutatingLdpHandler {
     private static final Logger LOGGER = getLogger(PatchHandler.class);
 
     private final String updateBody;
-    private final IRI graphName;
-    private final IRI otherGraph;
     private final RDFSyntax syntax;
     private final String preference;
     private final String defaultJsonLdProfile;
@@ -91,16 +88,15 @@ public class PatchHandler extends MutatingLdpHandler {
      * @param req the LDP request
      * @param updateBody the sparql update body
      * @param trellis the Trellis application bundle
+     * @param extensions the extension graph mapping
      * @param defaultJsonLdProfile a user-supplied default JSON-LD profile
      * @param baseUrl the base URL
      */
     public PatchHandler(final TrellisRequest req, final String updateBody, final ServiceBundler trellis,
-            final String defaultJsonLdProfile, final String baseUrl) {
-        super(req, trellis, baseUrl);
+            final Map<String, IRI> extensions, final String defaultJsonLdProfile, final String baseUrl) {
+        super(req, trellis, extensions, baseUrl);
 
         this.updateBody = updateBody;
-        this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
-        this.otherGraph = ACL.equals(req.getExt()) ? PreferUserManaged : PreferAccessControl;
         this.syntax = getServices().getIOService().supportedUpdateSyntaxes().stream()
             .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
         this.defaultJsonLdProfile = defaultJsonLdProfile;
@@ -152,7 +148,7 @@ public class PatchHandler extends MutatingLdpHandler {
         LOGGER.debug("Updating {} via PATCH", getIdentifier());
 
         // Add the LDP link types
-        if (isAclRequest()) {
+        if (getExtensionGraphName() != null) {
             getLinkTypes(LDP.RDFSource).forEach(type -> builder.link(type, "type"));
         } else {
             getLinkTypes(getResource().getInteractionModel()).forEach(type -> builder.link(type, "type"));
@@ -168,7 +164,7 @@ public class PatchHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (isAclRequest() ? ACL_QUERY_PARAM : "");
+        return super.getIdentifier() + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
 
     private List<Triple> updateGraph(final RDFSyntax syntax, final IRI graphName) {
@@ -181,8 +177,8 @@ public class PatchHandler extends MutatingLdpHandler {
                       .forEachOrdered(graph::add);
             }
 
-            getServices().getIOService().update(graph, updateBody, syntax,
-                getBaseUrl() + getRequest().getPath() + (isAclRequest() ? ACL_QUERY_PARAM : ""));
+            getServices().getIOService().update(graph, updateBody, syntax, getBaseUrl() + getRequest().getPath() +
+                (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : ""));
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                 || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         } catch (final Exception ex) {
@@ -194,6 +190,9 @@ public class PatchHandler extends MutatingLdpHandler {
 
     private CompletionStage<ResponseBuilder> assembleResponse(final Dataset mutable,
             final Dataset immutable, final ResponseBuilder builder) {
+
+        final IRI ext = getExtensionGraphName();
+        final IRI graphName = ext != null ? ext : PreferUserManaged;
 
         // Put triples in buffer, short-circuit on exception
         final List<Triple> triples;
@@ -220,8 +219,8 @@ public class PatchHandler extends MutatingLdpHandler {
             throw new ClientErrorException(err.build());
         }
 
-        // When updating User or ACL triples, be sure to add the other category to the dataset
-        try (final Stream<Quad> remaining = getResource().stream(otherGraph)) {
+        // When updating one particular graph, be sure to add the other category to the dataset
+        try (final Stream<Quad> remaining = getResource().stream(getNonCurrentGraphNames())) {
             remaining.forEachOrdered(mutable::add);
         }
 
@@ -229,7 +228,7 @@ public class PatchHandler extends MutatingLdpHandler {
         getAuditUpdateData().forEachOrdered(immutable::add);
         return handleResourceReplacement(mutable, immutable)
             .thenCompose(future -> emitEvent(getInternalId(), AS.Update,
-                        isAclRequest() ? LDP.RDFSource : getResource().getInteractionModel()))
+                        getExtensionGraphName() != null ? LDP.RDFSource : getResource().getInteractionModel()))
             .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
                         getRequest().getAcceptableMediaTypes(), null);

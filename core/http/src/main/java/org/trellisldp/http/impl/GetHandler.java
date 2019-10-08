@@ -14,11 +14,9 @@
 package org.trellisldp.http.impl;
 
 import static java.lang.String.join;
-import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
@@ -59,7 +57,6 @@ import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.triplePreferences;
 import static org.trellisldp.http.impl.HttpUtils.unskolemizeTriples;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
-import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +64,7 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.CompletionStage;
@@ -115,16 +112,17 @@ public class GetHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param trellis the Trellis application bundle
+     * @param extensions the extension mapping
      * @param isMemento true if the resource is a memento; false otherwise
      * @param weakEtags whether to use weak ETags for RDF responses
      * @param includeMementoDates whether to include date strings in memento link headers
      * @param defaultJsonLdProfile a default json-ld profile
      * @param baseUrl the base URL
      */
-    public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
-            final boolean weakEtags, final boolean includeMementoDates, final String defaultJsonLdProfile,
-            final String baseUrl) {
-        super(req, trellis, baseUrl);
+    public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final Map<String, IRI> extensions,
+            final boolean isMemento, final boolean weakEtags, final boolean includeMementoDates,
+            final String defaultJsonLdProfile, final String baseUrl) {
+        super(req, trellis, extensions, baseUrl);
         this.isMemento = isMemento;
         this.weakEtags = weakEtags;
         this.includeMementoDates = includeMementoDates;
@@ -151,8 +149,12 @@ public class GetHandler extends BaseLdpHandler {
                 .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
                 .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
 
-        if (isAclRequest() && !resource.hasAcl()) {
-            throw new NotFoundException();
+        final IRI ext = getExtensionGraphName();
+        if (ext != null) {
+            final boolean noAcl = PreferAccessControl.equals(ext) && !resource.hasAcl();
+            if (noAcl && !resource.stream(ext).findAny().isPresent()) {
+                throw new NotFoundException();
+            }
         }
 
         setResource(resource);
@@ -180,7 +182,7 @@ public class GetHandler extends BaseLdpHandler {
             model = getResource().getBinaryMetadata().isPresent() && syntax != null
                 ? LDP.RDFSource : getResource().getInteractionModel();
             // Link headers from User data
-            getResource().getExtraLinkRelations().collect(toMap(Entry::getKey, Entry::getValue))
+            getResource().getExtraLinkRelations().collect(toMap(Map.Entry::getKey, Map.Entry::getValue))
                     .forEach((key, value) -> builder.link(key, join(" ", value)));
         } else {
             model = LDP.RDFSource;
@@ -202,8 +204,8 @@ public class GetHandler extends BaseLdpHandler {
      * @return the response builder
      */
     public CompletionStage<ResponseBuilder> getRepresentation(final ResponseBuilder builder) {
-        // Add NonRDFSource-related "describe*" link headers, provided this isn't an ACL resource
-        getResource().getBinaryMetadata().filter(ds -> !isAclRequest()).ifPresent(ds -> {
+        // Add NonRDFSource-related "describe*" link headers, provided this isn't an extension resource
+        getResource().getBinaryMetadata().filter(ds -> getExtensionGraphName() == null).ifPresent(ds -> {
             final String base = getBaseBinaryIdentifier();
             final String description = base + (base.contains("?") ? "&" : "?") + "ext=description";
             if (syntax != null) {
@@ -235,8 +237,8 @@ public class GetHandler extends BaseLdpHandler {
      * @return the response builder
      */
     public ResponseBuilder addMementoHeaders(final ResponseBuilder builder, final SortedSet<Instant> mementos) {
-        // Only show memento links for the user-managed graph (not ACL)
-        if (!isAclRequest()) {
+        // Only show memento links for the user-managed graph (not extension graphs)
+        if (getExtensionGraphName() == null) {
             builder.link(getIdentifier(), "original timegate")
                 .links(MementoResource.getMementoHeaders(getIdentifier(), mementos, isMemento ?
                             getResource().getModified() : null)
@@ -256,8 +258,8 @@ public class GetHandler extends BaseLdpHandler {
                 query.add("version=" + v.getInstant().getEpochSecond());
             }
 
-            if (isAclRequest()) {
-                query.add("ext=acl");
+            if (getExtensionGraphName() != null) {
+                query.add("ext=" + getRequest().getExt());
             } else if (DESCRIPTION.equals(getRequest().getExt())) {
                 query.add("ext=description");
             }
@@ -277,7 +279,7 @@ public class GetHandler extends BaseLdpHandler {
     private void addAllowHeaders(final ResponseBuilder builder) {
         if (isMemento) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
-        } else if (isAclRequest()) {
+        } else if (getExtensionGraphName() != null) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH));
         } else if (getResource().getInteractionModel().equals(LDP.RDFSource)) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
@@ -288,10 +290,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private ResponseBuilder getLdpRs(final ResponseBuilder builder, final RDFSyntax syntax,
             final IRI profile) {
-        final Prefer prefer = isAclRequest() ?
-            new Prefer(PREFER_REPRESENTATION, singletonList(PreferAccessControl.getIRIString()),
-                    of(PreferUserManaged, LDP.PreferContainment, LDP.PreferMembership).map(IRI::getIRIString)
-                        .collect(toList()), null, null) : getRequest().getPrefer();
+        final Prefer prefer = getRequest().getPrefer();
 
         // Check for a cache hit
         final EntityTag etag = generateEtag(getResource(), weakEtags);
@@ -323,12 +322,11 @@ public class GetHandler extends BaseLdpHandler {
         });
     }
 
-    // Don't allow access control triples unless the request is for an ACL resource
+    // Don't allow triples from other graphs
     private Set<IRI> getPreferredGraphs(final Prefer prefer) {
         final Set<IRI> p = triplePreferences(prefer);
-        if (!isAclRequest()) {
-            p.remove(PreferAccessControl);
-        }
+        // Remove non-current extension graphs
+        p.removeAll(getNonCurrentGraphNames());
         return p;
     }
 

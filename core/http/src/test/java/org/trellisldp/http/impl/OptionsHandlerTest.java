@@ -26,9 +26,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.core.HttpConstants.PATCH;
+import static org.trellisldp.http.core.HttpConstants.*;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -51,7 +49,8 @@ class OptionsHandlerTest extends BaseTestHandler {
     void testOptionsLdprs() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
+                false, null);
         try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
@@ -65,7 +64,8 @@ class OptionsHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, baseUrl);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
+                false, baseUrl);
         try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
@@ -83,7 +83,8 @@ class OptionsHandlerTest extends BaseTestHandler {
     void testOptionsLdpnr() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
+                false, null);
         try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
@@ -95,7 +96,8 @@ class OptionsHandlerTest extends BaseTestHandler {
     void testOptionsAcl() {
         when(mockTrellisRequest.getExt()).thenReturn("acl");
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, baseUrl);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
+                false, baseUrl);
         try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
@@ -106,7 +108,8 @@ class OptionsHandlerTest extends BaseTestHandler {
 
     @Test
     void testOptionsMemento() {
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, true, null);
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
+                true, null);
         try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header on Memento!");
