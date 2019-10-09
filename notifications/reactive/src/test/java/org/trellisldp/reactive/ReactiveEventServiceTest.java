@@ -92,6 +92,12 @@ class ReactiveEventServiceTest {
     }
 
     @Test
+    void testNoargCtor() {
+        final ReactiveEventService svc = new ReactiveEventService();
+        assertDoesNotThrow(() -> svc.emit(mockEvent));
+    }
+
+    @Test
     void testReactiveStream() {
         service.emit(mockEvent);
         await().atMost(5, SECONDS).until(() -> collector.getResults().size() == 1);

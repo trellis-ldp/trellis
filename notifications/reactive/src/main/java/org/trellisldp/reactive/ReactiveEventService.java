@@ -13,6 +13,8 @@
  */
 package org.trellisldp.reactive;
 
+import static java.util.Objects.requireNonNull;
+
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.subjects.PublishSubject;
@@ -36,12 +38,21 @@ public class ReactiveEventService implements EventService {
     private final PublishSubject<Message<String>> subject = PublishSubject.create();
 
     /**
+     * Create a new Reactive Stream Event Service with a no-op serializer.
+     *
+     * <p>Note: this is used by CDI proxies and should not be invoked directly.
+     */
+    public ReactiveEventService() {
+        this(new NoopActivityStreamService());
+    }
+
+    /**
      * Create a new Reactive Stream Event Service.
      * @param serializer the event serializer
      */
     @Inject
     public ReactiveEventService(final ActivityStreamService serializer) {
-        this.serializer = serializer;
+        this.serializer = requireNonNull(serializer, "serializer may not be null!");
     }
 
     @Override

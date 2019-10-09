@@ -81,6 +81,12 @@ class KafkaEventServiceTest {
     }
 
     @Test
+    void testNoargCtor() {
+        final EventService svc = new KafkaEventService();
+        assertDoesNotThrow(() -> svc.emit(mockEvent));
+    }
+
+    @Test
     void testDefaultKafka() {
         assertDoesNotThrow(() -> new KafkaEventService(serializer));
     }
