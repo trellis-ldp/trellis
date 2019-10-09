@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventService;
+import org.trellisldp.api.NoopActivityStreamService;
 
 /**
  * A Kafka message producer capable of publishing messages to a Kafka cluster.
@@ -44,6 +45,15 @@ public class KafkaEventService implements EventService {
     private final ActivityStreamService serializer;
     private final Producer<String, String> producer;
     private final String topic;
+
+    /**
+     * Create a new Kafka Event Service with a no-op serializer.
+     *
+     * <p>Note: this is used by CDI proxies and should not be invoked directly.
+     */
+    public KafkaEventService() {
+        this(new NoopActivityStreamService());
+    }
 
     /**
      * Create a new Kafka Event Service.
