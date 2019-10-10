@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.util.Collections.emptySet;
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static javax.ws.rs.core.Link.fromUri;
@@ -95,7 +96,7 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
 
-        final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
+        final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null, false);
         final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
             .toCompletableFuture().join().build();
 
@@ -111,6 +112,7 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPath()).thenReturn("resource");
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+        when(mockResource.getContainer()).thenReturn(empty());
 
         final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
         final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
@@ -129,8 +131,7 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
 
-        final PutHandler handler = new PutHandler(mockTrellisRequest,
-                getClass().getResource("/simpleTriple.ttl").openStream(), mockBundler, false, false, null);
+        final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null, false);
         final Response res = handler.setResource(handler.initialize(mockParent, MISSING_RESOURCE))
             .toCompletableFuture().join().build();
 
@@ -139,6 +140,23 @@ class PutHandlerTest extends BaseTestHandler {
 
         verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
+    }
+
+    @Test
+    void testPutLdpResourceContainerUncontained() throws IOException {
+        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+
+        final PutHandler handler = buildPutHandler("/simpleTriple.ttl", null);
+        final Response res = handler.setResource(handler.initialize(mockParent, MISSING_RESOURCE))
+            .toCompletableFuture().join().build();
+
+        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code");
+        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
+
+        verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + "resource"));
+        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
     }
 
     @Test
@@ -304,9 +322,13 @@ class PutHandlerTest extends BaseTestHandler {
     }
 
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl) {
+        return buildPutHandler(resourceName, baseUrl, true);
+    }
+
+    private PutHandler buildPutHandler(final String resourceName, final String baseUrl, final boolean uncontained) {
         try {
             return new PutHandler(mockTrellisRequest, getClass().getResource(resourceName).openStream(), mockBundler,
-                            false, true, baseUrl);
+                            false, uncontained, baseUrl);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -98,6 +98,11 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
+    void testNoArgCtor() {
+        assertDoesNotThrow(() -> new TrellisHttpResource());
+    }
+
+    @Test
     void testNoBaseURL() throws Exception {
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler, null);
 

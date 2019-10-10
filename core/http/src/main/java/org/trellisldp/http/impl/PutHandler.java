@@ -132,7 +132,7 @@ public class PutHandler extends MutatingLdpHandler {
         // For operations that modify resources, the parent resource may need to be updated via
         // ResourceService::touch. This allows us to keep a reference to the parent resource
         // since it has already been looked up. However, access to the parent resource is not necessary
-        // if, in the case of creation/deletion, PUT operations are configured as 'uncontained' (the default)
+        // if, in the case of creation/deletion, PUT operations are configured as 'uncontained' (not the default)
         // or, in the case of updates, the resource has no parent container.
         // Here, the `resource` object is used directly rather than doing a null check on `getResource()` since
         // in this case, they amount to the same thing.
