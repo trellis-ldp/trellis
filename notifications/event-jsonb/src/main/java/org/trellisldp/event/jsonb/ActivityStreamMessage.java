@@ -34,12 +34,12 @@ import org.trellisldp.vocabulary.AS;
 @JsonbPropertyOrder({"@context","id", "type", "inbox", "actor", "object", "published"})
 public class ActivityStreamMessage {
 
-    private String id;
-    private List<String> type;
+    private String identifier;
     private String inbox;
+    private String published;
+    private List<String> type;
     private List<String> actor;
     private EventResource object;
-    private String published;
 
     /**
      * The JSON-LD context.
@@ -48,20 +48,20 @@ public class ActivityStreamMessage {
     public String context = "https://www.w3.org/ns/activitystreams";
 
     /**
-     * The target resource of a message.
+     * The resource that is the object of this message.
      */
     public static class EventResource {
-        private final String id;
+        private final String identifier;
         private final List<String> type;
 
         /**
-         * Create a new event resource target.
+         * Create a new event resource.
          *
          * @param id the identifier
          * @param type the types
          */
         public EventResource(final String id, final List<String> type) {
-            this.id = id;
+            this.identifier = id;
             this.type = type.isEmpty() ? null : type;
         }
 
@@ -69,7 +69,7 @@ public class ActivityStreamMessage {
          * @return the identifier
          */
         public String getId() {
-            return id;
+            return identifier;
         }
 
         /**
@@ -84,14 +84,7 @@ public class ActivityStreamMessage {
      * @return the event identifier
      */
     public String getId() {
-        return id;
-    }
-
-    /**
-     * @return the event types
-     */
-    public List<String> getType() {
-        return type;
+        return identifier;
     }
 
     /**
@@ -102,6 +95,21 @@ public class ActivityStreamMessage {
     }
 
     /**
+     * @return the created date
+     */
+    @JsonbProperty("published")
+    public String getPublished() {
+        return published;
+    }
+
+    /**
+     * @return the event types
+     */
+    public List<String> getType() {
+        return type;
+    }
+
+    /**
      * @return the actors associated with this event
      */
     public List<String> getActor() {
@@ -109,18 +117,10 @@ public class ActivityStreamMessage {
     }
 
     /**
-     * @return the target resource
+     * @return the resource that is the object of this message
      */
     public EventResource getObject() {
         return object;
-    }
-
-    /**
-     * @return the created date
-     */
-    @JsonbProperty("published")
-    public String getPublished() {
-        return published;
     }
 
     /**
@@ -133,7 +133,7 @@ public class ActivityStreamMessage {
 
         final ActivityStreamMessage msg = new ActivityStreamMessage();
 
-        msg.id = event.getIdentifier().getIRIString();
+        msg.identifier = event.getIdentifier().getIRIString();
         msg.type = event.getTypes().stream().map(IRI::getIRIString)
             .map(type -> type.startsWith(AS.getNamespace()) ? type.substring(AS.getNamespace().length()) : type)
             .collect(toList());
@@ -141,11 +141,13 @@ public class ActivityStreamMessage {
         msg.published = event.getCreated().toString();
 
         final List<String> actors = event.getAgents().stream().map(IRI::getIRIString).collect(toList());
-        msg.actor = actors.isEmpty() ? null : actors;
+        if (!actors.isEmpty()) {
+            msg.actor = actors;
+        }
 
         event.getInbox().map(IRI::getIRIString).ifPresent(inbox -> msg.inbox = inbox);
-        event.getTarget().map(IRI::getIRIString).ifPresent(target ->
-            msg.object = new EventResource(target,
+        event.getTarget().map(IRI::getIRIString).ifPresent(object ->
+            msg.object = new EventResource(object,
                     event.getTargetTypes().stream().map(IRI::getIRIString).collect(toList())));
 
         return msg;
