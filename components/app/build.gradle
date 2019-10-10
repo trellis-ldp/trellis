@@ -10,13 +10,12 @@ ext {
 }
 
 dependencies {
+    api("javax.enterprise:cdi-api:$cdiApiVersion")
     api project(':trellis-api')
     api project(':trellis-http')
+    api project(':trellis-vocabulary')
 
-    implementation("javax.enterprise:cdi-api:$cdiApiVersion")
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation project(':trellis-vocabulary')
 
     testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
 
