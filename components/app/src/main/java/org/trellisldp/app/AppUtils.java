@@ -35,7 +35,8 @@ public final class AppUtils {
      * @throws IOException if there is an error reading the resource
      */
     public static void printBanner(final String name, final String resource) throws IOException {
-        LOGGER.info("Starting {}\n{}", name, readResource(resource));
+        final String banner = readResource(resource);
+        LOGGER.info("Starting {}\n{}", name, banner);
     }
 
     private static String readResource(final String resource) throws IOException {
