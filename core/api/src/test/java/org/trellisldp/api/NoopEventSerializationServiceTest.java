@@ -13,6 +13,9 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -21,6 +24,8 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.vocabulary.AS;
+import org.trellisldp.vocabulary.PROV;
 
 class NoopEventSerializationServiceTest {
 
@@ -30,22 +35,42 @@ class NoopEventSerializationServiceTest {
     @Test
     void testNoopEventSerializationService() {
         final Event event = mock(Event.class);
+        when(event.getTypes()).thenReturn(emptyList());
         when(event.getIdentifier()).thenReturn(rdf.createIRI(identifier));
         final EventSerializationService svc = new NoopEventSerializationService();
+        System.out.println(svc.serialize(event));
         assertEquals("{\n  \"@context\": \"https://www.w3.org/ns/activitystreams\",\n" +
                 "  \"id\": \"" + identifier + "\"\n}", svc.serialize(event));
     }
 
     @Test
-    void testNoopEventSerializationWithEventIRI() {
-        final String target = "http://example.com/resource";
+    void testNoopEventSerializationWithEventIRIAndType() {
+        final String object = "http://example.com/resource";
         final Event event = mock(Event.class);
-        when(event.getTarget()).thenReturn(of(rdf.createIRI(target)));
+        when(event.getTarget()).thenReturn(of(rdf.createIRI(object)));
+        when(event.getTypes()).thenReturn(singletonList(AS.Update));
         when(event.getIdentifier()).thenReturn(rdf.createIRI(identifier));
         final EventSerializationService svc = new NoopEventSerializationService();
         assertEquals("{\n  \"@context\": \"https://www.w3.org/ns/activitystreams\",\n" +
-                "  \"object\": \"" + target + "\",\n" +
-                "  \"id\": \"" + identifier + "\"\n}", svc.serialize(event));
+                "  \"id\": \"" + identifier + "\",\n" +
+                "  \"type\": \"Update\",\n" +
+                "  \"object\": \"" + object + "\"\n}",
+                svc.serialize(event));
+    }
+
+    @Test
+    void testNoopEventSerializationWithEventIRIAndMultipleTypes() {
+        final String object = "http://example.com/resource";
+        final Event event = mock(Event.class);
+        when(event.getTarget()).thenReturn(of(rdf.createIRI(object)));
+        when(event.getTypes()).thenReturn(asList(AS.Update, PROV.Activity));
+        when(event.getIdentifier()).thenReturn(rdf.createIRI(identifier));
+        final EventSerializationService svc = new NoopEventSerializationService();
+        assertEquals("{\n  \"@context\": \"https://www.w3.org/ns/activitystreams\",\n" +
+                "  \"id\": \"" + identifier + "\",\n" +
+                "  \"type\": [\"Update\",\"http://www.w3.org/ns/prov#Activity\"],\n" +
+                "  \"object\": \"" + object + "\"\n}",
+                svc.serialize(event));
     }
 }
 

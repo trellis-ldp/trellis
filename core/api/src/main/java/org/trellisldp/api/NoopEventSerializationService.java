@@ -13,17 +13,38 @@
  */
 package org.trellisldp.api;
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
+
+import org.apache.commons.rdf.api.IRI;
+
 /**
  * For use when event serialization is not desired.
  */
 @NoopImplementation
 public class NoopEventSerializationService implements EventSerializationService {
+    private static final String AS_NAMESPACE = "https://www.w3.org/ns/activitystreams#";
+
     @Override
     public String serialize(final Event event) {
         return "{" +
             "\n  \"@context\": \"https://www.w3.org/ns/activitystreams\"" +
-            event.getTarget().map(obj -> ",\n  \"object\": \"" + obj.getIRIString() + "\"").orElse("") +
             ",\n  \"id\": \"" + event.getIdentifier().getIRIString() + "\"" +
+            getTypesAsJsonFragment(event) +
+            event.getTarget().map(obj -> ",\n  \"object\": \"" + obj.getIRIString() + "\"").orElse("") +
             "\n}";
+    }
+
+    private String getTypesAsJsonFragment(final Event event) {
+        final List<String> types = event.getTypes().stream().map(IRI::getIRIString)
+            .map(type -> type.startsWith(AS_NAMESPACE) ? type.substring(AS_NAMESPACE.length()) : type)
+            .map(type -> "\"" + type + "\"").collect(toList());
+        if (types.isEmpty()) {
+            return "";
+        } else if (types.size() == 1) {
+            return ",\n  \"type\": " + types.get(0);
+        }
+        return ",\n  \"type\": [" + String.join(",", types) + "]";
     }
 }
