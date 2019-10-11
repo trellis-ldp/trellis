@@ -13,30 +13,26 @@
  */
 package org.trellisldp.event.jsonb;
 
-import static java.util.Optional.of;
-
-import java.util.Optional;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 
-import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.EventSerializationService;
 
 /**
- * An {@link ActivityStreamService} that serializes an {@link Event} object
+ * An {@link EventSerializationService} that serializes an {@link Event} object
  * into an ActivityStream-compliant JSON string.
  *
  * @author acoburn
  */
 @ApplicationScoped
-public class DefaultActivityStreamService implements ActivityStreamService {
+public class DefaultEventSerializationService implements EventSerializationService {
 
     private static Jsonb jsonb = JsonbBuilder.create();
 
     @Override
-    public Optional<String> serialize(final Event event) {
-        return of(jsonb.toJson(ActivityStreamMessage.from(event)));
+    public String serialize(final Event event) {
+        return jsonb.toJson(ActivityStreamMessage.from(event));
     }
 }

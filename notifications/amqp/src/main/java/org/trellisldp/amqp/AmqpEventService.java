@@ -26,8 +26,8 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
-import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
 
 /**
@@ -53,7 +53,7 @@ public class AmqpEventService implements EventService {
     /** The configuration key controlling the AMQP connection URI. */
     public static final String CONFIG_AMQP_URI = "trellis.amqp.uri";
 
-    private final ActivityStreamService service;
+    private final EventSerializationService service;
     private final Channel channel;
     private final String exchangeName;
     private final String routingKey;
@@ -66,11 +66,11 @@ public class AmqpEventService implements EventService {
      * @param channel the channel
      */
     @Inject
-    public AmqpEventService(final ActivityStreamService serializer, final Channel channel) {
+    public AmqpEventService(final EventSerializationService serializer, final Channel channel) {
         this(serializer, channel, getConfig());
     }
 
-    private AmqpEventService(final ActivityStreamService serializer, final Channel channel, final Config config) {
+    private AmqpEventService(final EventSerializationService serializer, final Channel channel, final Config config) {
         this(serializer, channel, config.getValue(CONFIG_AMQP_EXCHANGE_NAME, String.class),
                 config.getValue(CONFIG_AMQP_ROUTING_KEY, String.class),
             config.getOptionalValue(CONFIG_AMQP_MANDATORY, Boolean.class).orElse(Boolean.TRUE),
@@ -84,8 +84,8 @@ public class AmqpEventService implements EventService {
      * @param exchangeName the exchange name
      * @param routingKey the routing key
      */
-    public AmqpEventService(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
-            final String routingKey) {
+    public AmqpEventService(final EventSerializationService serializer, final Channel channel,
+            final String exchangeName, final String routingKey) {
         this(serializer, channel, exchangeName, routingKey, true, false);
     }
 
@@ -98,8 +98,8 @@ public class AmqpEventService implements EventService {
      * @param mandatory the mandatory setting
      * @param immediate the immediate setting
      */
-    public AmqpEventService(final ActivityStreamService serializer, final Channel channel, final String exchangeName,
-            final String routingKey, final boolean mandatory, final boolean immediate) {
+    public AmqpEventService(final EventSerializationService serializer, final Channel channel,
+            final String exchangeName, final String routingKey, final boolean mandatory, final boolean immediate) {
         this.service = requireNonNull(serializer, "Event serializer may not be null!");
         this.channel = requireNonNull(channel, "AMQP Channel may not be null!");
         this.exchangeName = requireNonNull(exchangeName, "AMQP exchange name may not be null!");
@@ -116,12 +116,11 @@ public class AmqpEventService implements EventService {
         final BasicProperties props = new BasicProperties().builder()
                 .contentType("application/ld+json").contentEncoding("UTF-8").build();
 
-        service.serialize(event).ifPresent(message -> {
-            try {
-                channel.basicPublish(exchangeName, routingKey, mandatory, immediate, props, message.getBytes());
-            } catch (final IOException ex) {
-                LOGGER.error("Error writing to broker: {}", ex.getMessage());
-            }
-        });
+        try {
+            channel.basicPublish(exchangeName, routingKey, mandatory, immediate, props,
+                    service.serialize(event).getBytes());
+        } catch (final IOException ex) {
+            LOGGER.error("Error writing to broker: {}", ex.getMessage());
+        }
     }
 }

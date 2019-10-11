@@ -26,8 +26,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.slf4j.Logger;
-import org.trellisldp.api.ActivityStreamService;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
 
 /**
@@ -54,7 +54,7 @@ public class JmsEventService implements EventService {
 
     private static final Logger LOGGER = getLogger(JmsEventService.class);
 
-    private final ActivityStreamService serializer;
+    private final EventSerializationService serializer;
     private final MessageProducer producer;
     private final Session session;
 
@@ -65,7 +65,7 @@ public class JmsEventService implements EventService {
      * @throws JMSException when there is a connection error
      */
     @Inject
-    public JmsEventService(final ActivityStreamService serializer, final Connection conn) throws JMSException {
+    public JmsEventService(final EventSerializationService serializer, final Connection conn) throws JMSException {
         this(serializer, conn.createSession(false, AUTO_ACKNOWLEDGE),
                 getConfig().getValue(CONFIG_JMS_QUEUE_NAME, String.class),
                 getConfig().getOptionalValue(CONFIG_JMS_USE_QUEUE, Boolean.class).orElse(Boolean.TRUE));
@@ -78,7 +78,7 @@ public class JmsEventService implements EventService {
      * @param queueName the name of the queue
      * @throws JMSException when there is a connection error
      */
-    public JmsEventService(final ActivityStreamService serializer, final Session session, final String queueName)
+    public JmsEventService(final EventSerializationService serializer, final Session session, final String queueName)
             throws JMSException {
         this(serializer, session, queueName, true);
     }
@@ -91,7 +91,7 @@ public class JmsEventService implements EventService {
      * @param useQueue whether to use a queue or a topic
      * @throws JMSException when there is a connection error
      */
-    public JmsEventService(final ActivityStreamService serializer, final Session session, final String queueName,
+    public JmsEventService(final EventSerializationService serializer, final Session session, final String queueName,
             final boolean useQueue) throws JMSException {
         requireNonNull(queueName, "JMS Queue name may not be null!");
         this.serializer = requireNonNull(serializer, "Event serializer may not be null!");
@@ -107,14 +107,12 @@ public class JmsEventService implements EventService {
     public void emit(final Event event) {
         requireNonNull(event, "Cannot emit a null event!");
 
-        serializer.serialize(event).ifPresent(json -> {
-            try {
-                final Message message = session.createTextMessage(json);
-                message.setStringProperty("Content-Type", "application/ld+json");
-                producer.send(message);
-            } catch (final JMSException ex) {
-                LOGGER.error("Error writing to broker: {}", ex.getMessage());
-            }
-        });
+        try {
+            final Message message = session.createTextMessage(serializer.serialize(event));
+            message.setStringProperty("Content-Type", "application/ld+json");
+            producer.send(message);
+        } catch (final JMSException ex) {
+            LOGGER.error("Error writing to broker: {}", ex.getMessage());
+        }
     }
 }
