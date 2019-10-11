@@ -141,11 +141,10 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         ofNullable(config.getHubUrl()).ifPresent(hub -> environment.jersey().register(new WebSubHeaderFilter(hub)));
 
         // CORS
-        ofNullable(getCorsConfiguration(config)).ifPresent(cors -> {
+        ofNullable(getCorsConfiguration(config)).ifPresent(cors ->
             environment.jersey().register(new CrossOriginResourceSharingFilter(cors.getAllowOrigin(),
                         cors.getAllowMethods(), cors.getAllowHeaders(), cors.getExposeHeaders(),
-                        cors.getAllowCredentials(), cors.getMaxAge()));
-        });
+                        cors.getAllowCredentials(), cors.getMaxAge())));
 
         // Additional components
         getComponents().forEach(environment.jersey()::register);
