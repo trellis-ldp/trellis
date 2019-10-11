@@ -9,6 +9,7 @@ dependencies {
     implementation project(":trellis-app")
     implementation project(":trellis-audit")
     implementation project(":trellis-auth-oauth")
+    implementation project(":trellis-cdi")
     implementation project(":trellis-constraint-rules")
     implementation project(":trellis-event-jsonb")
     implementation project(":trellis-file")

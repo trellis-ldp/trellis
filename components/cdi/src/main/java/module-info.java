@@ -11,25 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.quarkus;
+module org.trellisldp.cdi {
+    exports org.trellisldp.cdi;
 
-import java.util.Iterator;
+    requires transitive org.trellisldp.api;
+    requires transitive org.trellisldp.app;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+    requires javax.inject;
+    requires cdi.api;
 
-import org.trellisldp.api.ConstraintService;
-import org.trellisldp.app.ConstraintServices;
-
-@ApplicationScoped
-public class CDIConstraintServices implements ConstraintServices {
-
-    @Inject
-    protected Instance<ConstraintService> constraintServices;
-
-    @Override
-    public Iterator<ConstraintService> iterator() {
-        return constraintServices.iterator();
-    }
+    opens org.trellisldp.cdi;
 }
