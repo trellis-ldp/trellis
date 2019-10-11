@@ -47,7 +47,7 @@ class NoopEventSerializationServiceTest {
     void testNoopEventSerializationWithEventIRIAndType() {
         final String object = "http://example.com/resource";
         final Event event = mock(Event.class);
-        when(event.getTarget()).thenReturn(of(rdf.createIRI(object)));
+        when(event.getObject()).thenReturn(of(rdf.createIRI(object)));
         when(event.getTypes()).thenReturn(singletonList(AS.Update));
         when(event.getIdentifier()).thenReturn(rdf.createIRI(identifier));
         final EventSerializationService svc = new NoopEventSerializationService();
@@ -62,7 +62,7 @@ class NoopEventSerializationServiceTest {
     void testNoopEventSerializationWithEventIRIAndMultipleTypes() {
         final String object = "http://example.com/resource";
         final Event event = mock(Event.class);
-        when(event.getTarget()).thenReturn(of(rdf.createIRI(object)));
+        when(event.getObject()).thenReturn(of(rdf.createIRI(object)));
         when(event.getTypes()).thenReturn(asList(AS.Update, PROV.Activity));
         when(event.getIdentifier()).thenReturn(rdf.createIRI(identifier));
         final EventSerializationService svc = new NoopEventSerializationService();

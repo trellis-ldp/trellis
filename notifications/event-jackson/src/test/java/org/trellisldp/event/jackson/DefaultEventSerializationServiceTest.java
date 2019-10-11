@@ -62,9 +62,9 @@ class DefaultEventSerializationServiceTest {
         initMocks(this);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("info:event/12345"));
         when(mockEvent.getAgents()).thenReturn(singleton(rdf.createIRI("info:user/test")));
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getTypes()).thenReturn(singleton(Create));
-        when(mockEvent.getTargetTypes()).thenReturn(singleton(Container));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(Container));
         when(mockEvent.getInbox()).thenReturn(of(rdf.createIRI("info:ldn/inbox")));
         when(mockEvent.getCreated()).thenReturn(time);
     }
@@ -120,7 +120,7 @@ class DefaultEventSerializationServiceTest {
     void testSerializationStructureNoEmptyElements() throws Exception {
         when(mockEvent.getInbox()).thenReturn(empty());
         when(mockEvent.getAgents()).thenReturn(emptyList());
-        when(mockEvent.getTargetTypes()).thenReturn(emptyList());
+        when(mockEvent.getObjectTypes()).thenReturn(emptyList());
 
         final String json = svc.serialize(mockEvent);
 

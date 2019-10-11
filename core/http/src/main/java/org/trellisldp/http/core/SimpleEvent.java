@@ -37,27 +37,27 @@ public class SimpleEvent implements Event {
     private static final RDF rdf = getInstance();
 
     private final IRI identifier;
-    private final IRI target;
+    private final IRI object;
     private final Instant created;
     private final IRI agent;
     private final List<IRI> activityTypes;
-    private final List<IRI> targetTypes;
+    private final List<IRI> objectTypes;
 
     /**
      * Create a new notification.
-     * @param target the target resource
+     * @param object the resource
      * @param agent the agent associated with this event
      * @param activityTypes the activity types associated with this event
-     * @param targetTypes the rdf types of the resource
+     * @param objectTypes the rdf types of the resource
      */
-    public SimpleEvent(final String target, final IRI agent, final List<IRI> activityTypes,
-            final List<IRI> targetTypes) {
-        this.target = rdf.createIRI(target);
+    public SimpleEvent(final String object, final IRI agent, final List<IRI> activityTypes,
+            final List<IRI> objectTypes) {
+        this.object = rdf.createIRI(object);
         this.identifier = rdf.createIRI("urn:uuid:" + randomUUID());
         this.agent = agent;
         this.activityTypes = activityTypes;
         this.created = now();
-        this.targetTypes = targetTypes;
+        this.objectTypes = objectTypes;
     }
 
     @Override
@@ -71,8 +71,8 @@ public class SimpleEvent implements Event {
     }
 
     @Override
-    public Optional<IRI> getTarget() {
-        return of(target);
+    public Optional<IRI> getObject() {
+        return of(object);
     }
 
     @Override
@@ -81,8 +81,8 @@ public class SimpleEvent implements Event {
     }
 
     @Override
-    public Collection<IRI> getTargetTypes() {
-        return targetTypes;
+    public Collection<IRI> getObjectTypes() {
+        return objectTypes;
     }
 
     @Override

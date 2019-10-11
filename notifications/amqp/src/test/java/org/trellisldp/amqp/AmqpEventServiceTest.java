@@ -87,8 +87,8 @@ class AmqpEventServiceTest {
         when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:amqp:test"));
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
-        when(mockEvent.getTargetTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
         doNothing().when(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));

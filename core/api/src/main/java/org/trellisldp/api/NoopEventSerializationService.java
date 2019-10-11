@@ -32,7 +32,7 @@ public class NoopEventSerializationService implements EventSerializationService 
             "\n  \"@context\": \"https://www.w3.org/ns/activitystreams\"" +
             ",\n  \"id\": \"" + event.getIdentifier().getIRIString() + "\"" +
             getTypesAsJsonFragment(event) +
-            event.getTarget().map(obj -> ",\n  \"object\": \"" + obj.getIRIString() + "\"").orElse("") +
+            event.getObject().map(obj -> ",\n  \"object\": \"" + obj.getIRIString() + "\"").orElse("") +
             "\n}";
     }
 

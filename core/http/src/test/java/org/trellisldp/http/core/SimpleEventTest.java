@@ -51,10 +51,10 @@ class SimpleEventTest {
                 asList(PROV.Activity, AS.Create), asList(LDP.RDFSource, SKOS.Concept));
         assertFalse(time.isAfter(event.getCreated()), "Non-sequential events!");
         assertTrue(event.getIdentifier().getIRIString().startsWith("urn:uuid:"), "Incorrect ID prefix for event!");
-        assertEquals(of(resource), event.getTarget(), "Incorrect target resource!");
+        assertEquals(of(resource), event.getObject(), "Incorrect target resource!");
         assertEquals(1L, event.getAgents().size(), "Incorrect agent count!");
         assertTrue(event.getAgents().contains(agent), "Incorrect agent value!");
-        final Collection<IRI> targetTypes = event.getTargetTypes();
+        final Collection<IRI> targetTypes = event.getObjectTypes();
         assertEquals(2L, targetTypes.size(), "Incorrect target type size!");
         assertTrue(targetTypes.contains(LDP.RDFSource), "Missing ldp:RDFSource type!");
         assertTrue(targetTypes.contains(SKOS.Concept), "Missing skos:Concept type!");
@@ -70,9 +70,9 @@ class SimpleEventTest {
         final IRI resource = rdf.createIRI(identifier);
 
         final Event event = new SimpleEvent(identifier, agent, emptyList(), emptyList());
-        assertEquals(of(resource), event.getTarget(), "Incorrect target resource!");
+        assertEquals(of(resource), event.getObject(), "Incorrect target resource!");
         assertTrue(event.getAgents().contains(agent), "Unexpected agent list!");
-        assertTrue(event.getTargetTypes().isEmpty(), "Unexpected target types!");
+        assertTrue(event.getObjectTypes().isEmpty(), "Unexpected target types!");
         assertTrue(event.getTypes().isEmpty(), "Unexpected event types!");
         assertFalse(event.getInbox().isPresent());
     }

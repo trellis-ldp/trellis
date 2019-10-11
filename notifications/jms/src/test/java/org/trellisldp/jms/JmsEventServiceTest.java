@@ -100,8 +100,8 @@ class JmsEventServiceTest {
         when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:jms:test"));
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
-        when(mockEvent.getTargetTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
 
         when(mockConnection.createSession(anyBoolean(), eq(AUTO_ACKNOWLEDGE))).thenReturn(mockSession);
