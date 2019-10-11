@@ -71,7 +71,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.PATCH;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -162,9 +161,10 @@ public class TrellisHttpResource {
      *          initialize itself independently of this method. In either case, if the
      *          persistence backend has already been initialized with a root resoure and
      *          root ACL, this method will make no changes to the storage layer.
+     * @throws Exception if there was an error initializing the root resource
      */
     @PostConstruct
-    public void initialize() {
+    public void initialize() throws Exception {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         try (final Dataset dataset = rdf.createDataset()) {
             LOGGER.debug("Preparing to initialize Trellis at {}", root);
@@ -174,8 +174,6 @@ public class TrellisHttpResource {
                     LOGGER.debug("Error auto-initializing Trellis", err);
                     return null;
                 }).toCompletableFuture().join();
-        } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing dataset", ex);
         }
     }
 

@@ -14,8 +14,6 @@
 package org.trellisldp.dropwizard;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.google.common.cache.Cache;
@@ -24,13 +22,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.container.ContainerRequestFilter;
 
 import org.apache.commons.rdf.api.IRI;
-import org.trellisldp.api.CacheService;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.basic.BasicAuthFilter;
 import org.trellisldp.auth.oauth.Authenticator;
 import org.trellisldp.auth.oauth.NullAuthenticator;
@@ -40,6 +38,7 @@ import org.trellisldp.dropwizard.config.AuthConfiguration;
 import org.trellisldp.dropwizard.config.CORSConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
+import org.trellisldp.webac.WebAcService;
 
 /**
  * Convenience utilities for the trellis-dropwizard component.
@@ -67,14 +66,21 @@ final class TrellisUtils {
         return new NullAuthenticator();
     }
 
-    public static Optional<CacheService<String, Set<IRI>>> getWebacCache(final TrellisConfiguration config) {
+    public static WebAcService getWebacService(final TrellisConfiguration config,
+            final ResourceService resourceService) {
         if (config.getAuth().getWebac().getEnabled()) {
             final Cache<String, Set<IRI>> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
                     .getCacheSize()).expireAfterWrite(config.getAuth().getWebac()
                     .getCacheExpireSeconds(), SECONDS).build();
-            return of(new TrellisCache<>(authCache));
+            final WebAcService webac = new WebAcService(resourceService, new TrellisCache<>(authCache));
+            try {
+                webac.initialize();
+            } catch (final Exception ex) {
+                throw new RuntimeTrellisException("Error initializing Access Control system", ex);
+            }
+            return webac;
         }
-        return empty();
+        return null;
     }
 
     public static List<ContainerRequestFilter> getAuthFilters(final TrellisConfiguration config) {
@@ -95,11 +101,11 @@ final class TrellisUtils {
         return filters;
     }
 
-    public static Optional<CORSConfiguration> getCorsConfiguration(final TrellisConfiguration config) {
+    public static CORSConfiguration getCorsConfiguration(final TrellisConfiguration config) {
         if (config.getCors().getEnabled()) {
-            return of(config.getCors());
+            return config.getCors();
         }
-        return empty();
+        return null;
     }
 
     private TrellisUtils() {

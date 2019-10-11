@@ -15,7 +15,10 @@ package org.trellisldp.dropwizard;
 
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -33,6 +36,9 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.api.Resource;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.oauth.FederatedJwtAuthenticator;
 import org.trellisldp.auth.oauth.JwksAuthenticator;
 import org.trellisldp.auth.oauth.JwtAuthenticator;
@@ -50,6 +56,12 @@ class TrellisUtilsTest {
     @Mock
     private LifecycleEnvironment mockLifecycle;
 
+    @Mock
+    private ResourceService mockResourceService;
+
+    @Mock
+    private Resource mockResource;
+
     @BeforeEach
     void setUp() {
         initMocks(this);
@@ -63,24 +75,38 @@ class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
 
-        assertTrue(TrellisUtils.getCorsConfiguration(config).isPresent(), "CORS configuration is missing!");
+        assertNotNull(TrellisUtils.getCorsConfiguration(config), "CORS configuration is missing!");
 
         config.getCors().setEnabled(false);
 
-        assertFalse(TrellisUtils.getCorsConfiguration(config).isPresent(), "CORS config persists after disabling it!");
+        assertNull(TrellisUtils.getCorsConfiguration(config), "CORS config persists after disabling it!");
     }
 
     @Test
-    void testGetWebacCache() throws Exception {
+    void testGetWebacService() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
-        assertTrue(TrellisUtils.getWebacCache(config).isPresent(), "WebAC configuration not present!");
+        when(mockResourceService.get(any())).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResource.hasAcl()).thenReturn(true);
+
+        assertNotNull(TrellisUtils.getWebacService(config, mockResourceService), "WebAC configuration not present!");
 
         config.getAuth().getWebac().setEnabled(false);
 
-        assertFalse(TrellisUtils.getWebacCache(config).isPresent(), "WebAC config persists after disabling it!");
+        assertNull(TrellisUtils.getWebacService(config, mockResourceService),
+                "WebAC config persists after disabling it!");
+
+        config.getAuth().getWebac().setEnabled(true);
+
+        final ResourceService mockRS = mock(ResourceService.class, inv -> {
+            throw new RuntimeTrellisException("expected");
+        });
+        assertThrows(RuntimeTrellisException.class, () -> TrellisUtils.getWebacService(config, mockRS));
+        config.getAuth().getWebac().setEnabled(false);
+        assertNull(TrellisUtils.getWebacService(config, mockRS),
+                "WebAC config persists after disabling it!");
     }
 
     @Test

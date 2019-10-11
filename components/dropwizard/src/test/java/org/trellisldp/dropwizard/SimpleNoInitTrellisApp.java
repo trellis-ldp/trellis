@@ -21,7 +21,7 @@ import org.trellisldp.dropwizard.config.TrellisConfiguration;
 public class SimpleNoInitTrellisApp extends SimpleTrellisApp {
 
     @Override
-    protected Object getLdpComponent(final TrellisConfiguration config, final boolean initialize) {
+    protected Object getLdpComponent(final TrellisConfiguration config, final boolean initialize) throws Exception {
         return super.getLdpComponent(config, false);
     }
 }

@@ -20,7 +20,7 @@ import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.dropwizard.TrellisUtils.getAuthFilters;
 import static org.trellisldp.dropwizard.TrellisUtils.getCorsConfiguration;
-import static org.trellisldp.dropwizard.TrellisUtils.getWebacCache;
+import static org.trellisldp.dropwizard.TrellisUtils.getWebacService;
 
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -42,7 +42,6 @@ import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.webac.WebAcFilter;
-import org.trellisldp.webac.WebAcService;
 
 /**
  * A base class for Dropwizard-based Trellis applications.
@@ -76,9 +75,10 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      *
      * @param config the configuration
      * @param initialize true if the TrellisHttpResource object should be initialized; false otherwise
+     * @throws Exception if there was an error initializing the LDP component
      * @return the LDP resource matcher
      */
-    protected Object getLdpComponent(final T config, final boolean initialize) {
+    protected Object getLdpComponent(final T config, final boolean initialize) throws Exception {
         final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(), config.getBaseUrl());
         if (initialize) {
             ldpResource.initialize();
@@ -112,7 +112,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
     }
 
     @Override
-    public void run(final T config, final Environment environment) {
+    public void run(final T config, final Environment environment) throws Exception {
         initialize(config, environment);
 
         getAuthFilters(config).forEach(environment.jersey()::register);
@@ -127,9 +127,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
 
         // Authorization
-        getWebacCache(config).ifPresent(cache -> {
-            final WebAcService webac = new WebAcService(getServiceBundler().getResourceService(), cache);
-            webac.initialize();
+        ofNullable(getWebacService(config, getServiceBundler().getResourceService())).ifPresent(webac -> {
             final List<String> challenges = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
                 .ifPresent(challenges::add);
@@ -143,9 +141,11 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
         ofNullable(config.getHubUrl()).ifPresent(hub -> environment.jersey().register(new WebSubHeaderFilter(hub)));
 
         // CORS
-        getCorsConfiguration(config).ifPresent(cors -> environment.jersey().register(
-                new CrossOriginResourceSharingFilter(cors.getAllowOrigin(), cors.getAllowMethods(),
-                    cors.getAllowHeaders(), cors.getExposeHeaders(), cors.getAllowCredentials(), cors.getMaxAge())));
+        ofNullable(getCorsConfiguration(config)).ifPresent(cors -> {
+            environment.jersey().register(new CrossOriginResourceSharingFilter(cors.getAllowOrigin(),
+                        cors.getAllowMethods(), cors.getAllowHeaders(), cors.getExposeHeaders(),
+                        cors.getAllowCredentials(), cors.getMaxAge()));
+        });
 
         // Additional components
         getComponents().forEach(environment.jersey()::register);

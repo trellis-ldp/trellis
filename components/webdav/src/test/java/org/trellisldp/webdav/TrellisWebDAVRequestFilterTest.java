@@ -18,6 +18,7 @@ import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -90,6 +91,11 @@ class TrellisWebDAVRequestFilterTest {
         when(mockPathSegment.getPath()).thenReturn(PATH);
 
         filter = new TrellisWebDAVRequestFilter(mockBundler, true, null);
+    }
+
+    @Test
+    void testNoArgCtor() {
+        assertDoesNotThrow(() -> new TrellisWebDAVRequestFilter());
     }
 
     @Test

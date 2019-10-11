@@ -122,7 +122,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    void testInitializeExistingLdpResourceWithFailure() {
+    void testInitializeExistingLdpResourceWithFailure() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> runAsync(() -> {
@@ -130,12 +130,12 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         }));
 
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);
-        matcher.initialize();
+        assertDoesNotThrow(() -> matcher.initialize());
         assertAll("Verify interactions with init-errored resource service", verifyInteractions(mockService));
     }
 
     @Test
-    void testInitializeExistingLdpResource() {
+    void testInitializeExistingLdpResource() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
@@ -146,7 +146,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    void testInitializeoNoLdpResource() {
+    void testInitializeoNoLdpResource() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -163,7 +163,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     }
 
     @Test
-    void testInitializeoDeletedLdpResource() {
+    void testInitializeoDeletedLdpResource() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));

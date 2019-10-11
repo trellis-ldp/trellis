@@ -803,6 +803,14 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         assertEquals("1,3", res.getHeaderString("DAV"));
     }
 
+    /* ***************************** *
+     *      Other tests
+     * ***************************** */
+    @Test
+    void testNoargCtor() {
+        assertDoesNotThrow(() -> new TrellisWebDAV());
+    }
+
     private static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         final List<String> links = res.getStringHeaders().get(LINK);
