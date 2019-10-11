@@ -49,6 +49,10 @@ test {
 
 quarkusBuild.enabled = false
 
+sonarqube {
+    skipProject = true
+}
+
 java {
     // because this isn't built as a JPMS module
     if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {

@@ -107,6 +107,10 @@ test.dependsOn 'libertyStart'
 test.finalizedBy 'libertyStop'
 libertyPackage.dependsOn 'libertyStop'
 
+sonarqube {
+    skipProject = true
+}
+
 java {
     // because this isn't built as a JPMS module
     if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
