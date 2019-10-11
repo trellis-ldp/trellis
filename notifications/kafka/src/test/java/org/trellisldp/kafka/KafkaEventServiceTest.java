@@ -61,12 +61,12 @@ class KafkaEventServiceTest {
     @BeforeEach
     void setUp() {
         initMocks(this);
-        when(mockEvent.getTarget()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
         when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
-        when(mockEvent.getTargetTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
     }
 

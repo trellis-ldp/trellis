@@ -47,9 +47,9 @@ public interface Event {
     /**
      * Get the resource identifier, if one exists.
      *
-     * @return an identifier for the target resource
+     * @return an identifier for the resource that is the object of this event
      */
-    Optional<IRI> getTarget();
+    Optional<IRI> getObject();
 
     /**
      * Get types for this event.
@@ -59,11 +59,11 @@ public interface Event {
     Collection<IRI> getTypes();
 
     /**
-     * Get the types for the target resource.
+     * Get the types for the resource that is the object of this event.
      *
-     * @return the types for the target resource
+     * @return the types for the resource related to this event
      */
-    Collection<IRI> getTargetTypes();
+    Collection<IRI> getObjectTypes();
 
     /**
      * Get the created date for this event.
@@ -73,7 +73,7 @@ public interface Event {
     Instant getCreated();
 
     /**
-     * Get the inbox corresponding to the target, if one exists.
+     * Get the inbox corresponding to the resource corresponding to this event, if one exists.
      *
      * @return the inbox
      */

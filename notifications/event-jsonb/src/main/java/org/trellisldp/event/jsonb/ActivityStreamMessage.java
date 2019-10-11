@@ -146,9 +146,9 @@ public class ActivityStreamMessage {
         }
 
         event.getInbox().map(IRI::getIRIString).ifPresent(inbox -> msg.inbox = inbox);
-        event.getTarget().map(IRI::getIRIString).ifPresent(object ->
+        event.getObject().map(IRI::getIRIString).ifPresent(object ->
             msg.object = new EventResource(object,
-                    event.getTargetTypes().stream().map(IRI::getIRIString).collect(toList())));
+                    event.getObjectTypes().stream().map(IRI::getIRIString).collect(toList())));
 
         return msg;
     }

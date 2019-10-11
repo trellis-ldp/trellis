@@ -95,7 +95,7 @@ public class KafkaEventService implements EventService {
         requireNonNull(event, "Cannot emit a null event!");
 
         LOGGER.debug("Sending message to Kafka topic: {}", topic);
-        producer.send(new ProducerRecord<>(topic, event.getTarget().map(IRI::getIRIString).orElse(null),
+        producer.send(new ProducerRecord<>(topic, event.getObject().map(IRI::getIRIString).orElse(null),
                     serializer.serialize(event)));
     }
 

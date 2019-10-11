@@ -134,7 +134,7 @@ class PatchHandlerTest extends BaseTestHandler {
         final ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
         verify(mockEventService).emit(event.capture());
         assertEquals(Optional.of("http://localhost/resource?ext=acl"),
-                event.getValue().getTarget().map(IRI::getIRIString));
+                event.getValue().getObject().map(IRI::getIRIString));
         verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
                 eq("http://localhost/resource?ext=acl"));
         verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));

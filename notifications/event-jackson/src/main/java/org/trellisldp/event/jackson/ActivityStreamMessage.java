@@ -51,7 +51,7 @@ class ActivityStreamMessage {
     public String context = "https://www.w3.org/ns/activitystreams";
 
     /**
-     * The target resource of a message.
+     * The resource that is the object of a message.
      */
     @JsonInclude(NON_ABSENT)
     static class EventResource {
@@ -59,7 +59,7 @@ class ActivityStreamMessage {
         private final List<String> type;
 
         /**
-         * Create a new event resource target.
+         * Create a new resource for the event.
          *
          * @param id the identifier
          * @param type the types
@@ -113,7 +113,7 @@ class ActivityStreamMessage {
     }
 
     /**
-     * @return the target resource
+     * @return the resource that is the object of this event
      */
     public EventResource getObject() {
         return object;
@@ -148,9 +148,9 @@ class ActivityStreamMessage {
         msg.actor = actors.isEmpty() ? null : actors;
 
         event.getInbox().map(IRI::getIRIString).ifPresent(inbox -> msg.inbox = inbox);
-        event.getTarget().map(IRI::getIRIString).ifPresent(target ->
-            msg.object = new EventResource(target,
-                    event.getTargetTypes().stream().map(IRI::getIRIString).collect(toList())));
+        event.getObject().map(IRI::getIRIString).ifPresent(object ->
+            msg.object = new EventResource(object,
+                    event.getObjectTypes().stream().map(IRI::getIRIString).collect(toList())));
 
         return msg;
     }
