@@ -1,0 +1,39 @@
+apply plugin: 'java-library'
+apply plugin: 'biz.aQute.bnd.builder'
+
+description = 'Trellis CDI component'
+
+ext {
+    moduleName = 'org.trellisldp.cdi'
+    testModules = ['org.trellisldp.constraint']
+}
+
+dependencies {
+    api("javax.enterprise:cdi-api:$cdiApiVersion")
+    api project(':trellis-api')
+    api project(':trellis-app')
+
+    testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
+
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
+        exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
+        exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
+    }
+
+    testImplementation project(':trellis-constraint-rules')
+}
+
+if (project.sourceCompatibility.isJava11Compatible()) {
+    test {
+        inputs.property("moduleName", moduleName)
+        doFirst {
+            jvmArgs += [
+                '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
+                '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
+            ]
+        }
+    }
+}

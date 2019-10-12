@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.quarkus;
+package org.trellisldp.cdi;
 
 import java.util.Iterator;
 
@@ -22,6 +22,10 @@ import javax.inject.Inject;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.app.ConstraintServices;
 
+/**
+ * A CDI-based implementation of the {@link ConstraintServices} interface, suitable
+ * for any CDI or microprofile-based application.
+ */
 @ApplicationScoped
 public class CDIConstraintServices implements ConstraintServices {
 
