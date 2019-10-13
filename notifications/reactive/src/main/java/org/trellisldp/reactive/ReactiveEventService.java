@@ -41,7 +41,8 @@ public class ReactiveEventService implements EventService {
     /**
      * Create a new Reactive Stream Event Service with a no-op serializer.
      *
-     * <p>Note: this is used by CDI proxies and should not be invoked directly.
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
     public ReactiveEventService() {
         this(new NoopEventSerializationService());

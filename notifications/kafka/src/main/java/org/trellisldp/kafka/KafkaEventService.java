@@ -49,7 +49,8 @@ public class KafkaEventService implements EventService {
     /**
      * Create a new Kafka Event Service with a no-op serializer.
      *
-     * <p>Note: this is used by CDI proxies and should not be invoked directly.
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
      */
     public KafkaEventService() {
         this(new NoopEventSerializationService());
