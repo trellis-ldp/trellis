@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
+import org.trellisldp.api.NoopEventSerializationService;
 
 /**
  * A JMS message producer capable of publishing messages to a JMS broker such as ActiveMQ.
@@ -57,6 +58,18 @@ public class JmsEventService implements EventService {
     private final EventSerializationService serializer;
     private final MessageProducer producer;
     private final Session session;
+
+    /**
+     * Create a new JMS Publisher.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
+     */
+    public JmsEventService() {
+        this.serializer = new NoopEventSerializationService();
+        this.session = null;
+        this.producer = null;
+    }
 
     /**
      * Create a new JMS Publisher.

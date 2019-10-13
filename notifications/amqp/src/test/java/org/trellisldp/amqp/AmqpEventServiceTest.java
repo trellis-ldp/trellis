@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -122,5 +123,10 @@ class AmqpEventServiceTest {
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));
+    }
+
+    @Test
+    void testNoargCtor() {
+        assertDoesNotThrow(() -> new AmqpEventService());
     }
 }

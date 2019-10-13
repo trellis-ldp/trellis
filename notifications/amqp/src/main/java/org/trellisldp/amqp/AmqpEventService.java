@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
+import org.trellisldp.api.NoopEventSerializationService;
 
 /**
  * An AMQP message producer capable of publishing messages to an AMQP broker such as
@@ -59,6 +60,21 @@ public class AmqpEventService implements EventService {
     private final String routingKey;
     private final boolean mandatory;
     private final boolean immediate;
+
+    /**
+     * Create an AMQP publisher.
+     *
+     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
+     *          It should not be invoked directly in user code.
+     */
+    public AmqpEventService() {
+        this.service = new NoopEventSerializationService();
+        this.channel = null;
+        this.exchangeName = null;
+        this.routingKey = null;
+        this.mandatory = false;
+        this.immediate = false;
+    }
 
     /**
      * Create an AMQP publisher.
