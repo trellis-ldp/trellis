@@ -1,0 +1,15 @@
+apply plugin: 'java-library'
+
+description = "Trellis Cache Implementation"
+
+ext {
+    moduleName = 'org.trellisldp.cache'
+}
+
+dependencies {
+    api project(':trellis-api')
+    api "com.google.guava:guava:$guavaVersion"
+
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+}
+

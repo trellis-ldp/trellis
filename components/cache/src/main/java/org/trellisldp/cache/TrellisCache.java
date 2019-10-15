@@ -11,17 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.dropwizard;
-
-import static org.slf4j.LoggerFactory.getLogger;
+package org.trellisldp.cache;
 
 import com.google.common.cache.Cache;
 
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * A simple Guava-based cache service.
@@ -30,8 +28,6 @@ import org.trellisldp.api.CacheService;
  * @param <V> the value type
  */
 public class TrellisCache<K, V> implements CacheService<K, V> {
-
-    private static final Logger LOGGER = getLogger(TrellisCache.class);
 
     private final Cache<K, V> cache;
 
@@ -53,8 +49,7 @@ public class TrellisCache<K, V> implements CacheService<K, V> {
         try {
             return cache.get(key, () -> mapper.apply(key));
         } catch (final ExecutionException ex) {
-            LOGGER.warn("Error fetching {} from cache: {}", key, ex.getMessage());
-            return null;
+            throw new RuntimeTrellisException("Error fetching " + key + " from cache", ex);
         }
     }
 }

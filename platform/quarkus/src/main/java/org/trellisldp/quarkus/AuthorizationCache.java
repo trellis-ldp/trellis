@@ -25,6 +25,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.commons.rdf.api.IRI;
 import org.eclipse.microprofile.config.Config;
+import org.trellisldp.cache.TrellisCache;
 import org.trellisldp.webac.WebAcService.TrellisAuthorizationCache;
 
 

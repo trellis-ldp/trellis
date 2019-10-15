@@ -10,6 +10,7 @@ dependencies {
     api("io.dropwizard:dropwizard-core:$dropwizardVersion")
     api project(':trellis-api')
     api project(':trellis-http')
+    api project(':trellis-cache')
 
     implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("javax.validation:validation-api:2.0.1.Final")

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.dropwizard;
+package org.trellisldp.cache;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * @author acoburn
@@ -49,6 +50,6 @@ class TrellisCacheTest {
     @Test
     void testCacheException() {
         final TrellisCache<String, String> cache = new TrellisCache<>(mockCache);
-        assertNull(cache.get("long", x -> x + "er"), "Exception wasn't swallowed!");
+        assertThrows(RuntimeTrellisException.class, () -> cache.get("long", x -> x + "er"));
     }
 }

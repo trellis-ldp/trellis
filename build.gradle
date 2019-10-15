@@ -103,6 +103,7 @@ ext {
             'trellis-audit',
             'trellis-auth-oauth',
             'trellis-auth-basic',
+            'trellis-cache',
             'trellis-cdi',
             'trellis-constraint-rules',
             'trellis-dropwizard',

@@ -34,6 +34,7 @@ import org.trellisldp.auth.oauth.Authenticator;
 import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.auth.oauth.OAuthUtils;
+import org.trellisldp.cache.TrellisCache;
 import org.trellisldp.dropwizard.config.AuthConfiguration;
 import org.trellisldp.dropwizard.config.CORSConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
