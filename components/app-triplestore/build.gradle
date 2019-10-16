@@ -8,7 +8,6 @@ ext {
 
 configurations.all {
     exclude group: 'javax.el', module: 'javax.el-api'
-    exclude group: 'com.google.code.findbugs', module: 'jsr305'
 }
 
 dependencies {

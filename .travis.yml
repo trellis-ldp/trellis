@@ -49,7 +49,7 @@ jobs:
     - name: "Java 8"
       stage: test
       jdk: openjdk8
-      script: travis_retry ./gradlew check install jacocoRootReport --scan
+      script: travis_retry ./gradlew check install jacocoRootReport -x pmdMain -x spotbugsMain --scan
       after_success: ./gradlew coveralls sonarqube
 
     # JDK 11
@@ -57,7 +57,7 @@ jobs:
       stage: test
       jdk: openjdk11
       dist: xenial
-      script: travis_retry ./gradlew check install
+      script: travis_retry ./gradlew check install -x pmdMain -x spotbugsMain
 
     # JDK 11 (modules)
     - name: "Java 11 (modules)"
@@ -65,7 +65,7 @@ jobs:
       jdk: openjdk11
       dist: xenial
       env: JOB=jpms
-      script: travis_retry ./gradlew clean check install -Pjpms
+      script: travis_retry ./gradlew clean check install -x pmdMain -x spotbugsMain -Pjpms
 
     # deploy JDK 8 builds to Sonatype
     - name: "Publish to Sonatype"
