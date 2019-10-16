@@ -5,6 +5,7 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 [![Build Status](https://travis-ci.com/trellis-ldp/trellis.svg?branch=master)](https://travis-ci.com/trellis-ldp/trellis)
 [![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/09f8d4ae61764bd9a1fead16514b6db2)](https://www.codacy.com/app/Trellis-LDP/trellis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=trellis-ldp/trellis&amp;utm_campaign=Badge_Grade)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/trellis-ldp/trellis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/trellis-ldp/trellis/alerts/)
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 
 Trellis is a rock-solid, enterprise-ready linked data server.
