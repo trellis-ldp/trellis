@@ -29,10 +29,6 @@ dependencies {
 
     implementation "com.github.spullara.mustache.java:compiler:$mustacheVersion"
     implementation "com.google.guava:guava:$guavaVersion"
-    implementation "org.apache.jena:jena-arq:$jenaVersion"
-    implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
-    implementation "org.apache.jena:jena-tdb2:$jenaVersion"
-    implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     runtime "javax.activation:javax.activation-api:$activationApiVersion"
     runtime "javax.xml.bind:jaxb-api:$jaxbVersion"

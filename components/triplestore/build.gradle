@@ -11,6 +11,7 @@ ext {
 dependencies {
     api("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
     api("javax.inject:javax.inject:$javaxInjectVersion")
+    api("org.apache.jena:jena-rdfconnection:$jenaVersion")
     api("org.eclipse.microprofile.health:microprofile-health-api:$microprofileHealthVersion")
     api project(':trellis-api')
 
@@ -18,9 +19,8 @@ dependencies {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
-    implementation("org.apache.jena:jena-rdfconnection:$jenaVersion")
-    implementation("org.apache.jena:jena-tdb2:$jenaVersion")
     implementation("org.apache.jena:jena-arq:$jenaVersion")
+    implementation("org.apache.jena:jena-tdb2:$jenaVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
