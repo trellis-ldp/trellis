@@ -5,7 +5,8 @@ description = 'Trellis HTTP'
 
 ext {
     moduleName = 'org.trellisldp.http'
-    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.constraint', 'smallrye.config']
+    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.constraint', 'smallrye.config',
+        'com.fasterxml.jackson.databind', 'com.fasterxml.jackson.core']
 }
 
 dependencies {
