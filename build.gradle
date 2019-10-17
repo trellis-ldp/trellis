@@ -2,6 +2,7 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.27.0'
     id 'com.github.hierynomus.license' version '0.15.0'
     id 'com.github.kt3k.coveralls' version '2.8.4'
+    id 'com.github.spotbugs' version '2.0.0'
     id 'com.gradle.build-scan' version '2.4.2'
     id 'net.researchgate.release' version '2.8.1'
     id 'org.owasp.dependencycheck' version '5.2.2'
@@ -134,7 +135,9 @@ allprojects { subproj ->
     apply plugin: 'jacoco'
     apply plugin: 'java'
     apply plugin: 'maven-publish'
+    apply plugin: 'pmd'
     apply plugin: 'signing'
+    apply plugin: 'com.github.spotbugs'
 
     ext {
         vendor = 'Trellis LDP'
@@ -144,6 +147,8 @@ allprojects { subproj ->
 
         jacocoVersion = '0.8.4'
         checkstyleVersion = '8.18'
+        pmdVersion = '6.18.0'
+        spotbugsVersion = '3.1.12'
     }
 
     jacoco.toolVersion = jacocoVersion
@@ -276,6 +281,16 @@ subprojects { subproj ->
         useJUnitPlatform()
     }
 
+    pmd {
+        ignoreFailures = true
+        consoleOutput = true
+        incrementalAnalysis = true
+        toolVersion = pmdVersion
+        sourceSets = [sourceSets.main]
+        ruleSets = []
+        ruleSetConfig = resources.text.fromFile(rootProject.file('buildtools/src/main/resources/pmd/pmd.xml'))
+    }
+
     checkstyle {
         configFile = rootProject.file('buildtools/src/main/resources/checkstyle/checkstyle.xml')
         configProperties.checkstyleConfigDir = rootProject.file('buildtools/src/main/resources/checkstyle/')
@@ -312,6 +327,19 @@ subprojects { subproj ->
     artifacts {
         archives javadocJar
         archives sourceJar
+    }
+
+    spotbugs {
+        ignoreFailures = true
+        toolVersion = spotbugsVersion
+        sourceSets = [sourceSets.main]
+    }
+
+    tasks.withType(com.github.spotbugs.SpotBugsTask) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
     }
 
     license {
