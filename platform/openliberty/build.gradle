@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'net.wasdev.wlp.gradle.plugins:liberty-gradle-plugin:2.6.5'
+        classpath 'net.wasdev.wlp.gradle.plugins:liberty-gradle-plugin:2.7'
     }
 }
 

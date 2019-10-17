@@ -1,5 +1,5 @@
 plugins {
-    id 'io.quarkus' version "0.23.2"
+    id 'io.quarkus' version "0.25.0"
 }
 
 dependencies {
@@ -24,6 +24,7 @@ dependencies {
 
     implementation 'io.quarkus:quarkus-jsonb'
     implementation 'io.quarkus:quarkus-resteasy'
+    implementation 'io.quarkus:quarkus-security'
     implementation 'io.quarkus:quarkus-smallrye-health'
     implementation 'io.quarkus:quarkus-smallrye-reactive-messaging'
 
