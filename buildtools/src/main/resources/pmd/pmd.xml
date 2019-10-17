@@ -8,4 +8,12 @@
     <description>
         Trellis PMD rules
     </description>
+
+    <rule ref="category/java/security.xml"/>
+    <rule ref="category/java/multithreading.xml"/>
+    <rule ref="category/java/performance.xml"/>
+    <rule ref="category/java/bestpractices.xml"/>
+    <rule ref="category/java/errorprone.xml">
+      <exclude name="BeanMembersShouldSerialize"/>
+    </rule>
 </ruleset>
