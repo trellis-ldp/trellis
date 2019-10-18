@@ -94,38 +94,19 @@ ext {
     // ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = '4.1.0'
 
-    jacocoTestProjects = [
-            'trellis-agent',
-            'trellis-amqp',
-            'trellis-api',
-            'trellis-app',
-            'trellis-app-triplestore',
-            'trellis-audit',
-            'trellis-auth-oauth',
-            'trellis-auth-basic',
-            'trellis-cache',
-            'trellis-cdi',
-            'trellis-constraint-rules',
-            'trellis-dropwizard',
-            'trellis-event-jackson',
-            'trellis-event-jsonb',
-            'trellis-file',
-            'trellis-http',
-            'trellis-io-jena',
-            'trellis-jms',
-            'trellis-kafka',
-            'trellis-namespaces',
-            'trellis-reactive',
-            'trellis-rdfa',
-            'trellis-triplestore',
-            'trellis-vocabulary',
-            'trellis-webac',
-            'trellis-webdav'
+    omitFromJacocoReporting = [
+        'trellis-bom',
+        'trellis-karaf',
+        'trellis-openliberty',
+        'trellis-osgi',
+        'trellis-quarkus',
+        'trellis-server',
+        'trellis-test'
     ]
 
     omitFromMavenPublishing = [
-        'trellis-server',
-        'trellis-osgi'
+        'trellis-osgi',
+        'trellis-server'
     ]
 }
 
@@ -495,7 +476,7 @@ subprojects { subproj ->
     afterReleaseBuild.dependsOn assemble
 
     afterEvaluate {
-        if (subproj.name in jacocoTestProjects) {
+        if (! omitFromJacocoReporting.contains(subproj.name)) {
             jacoco {
                 applyTo subproj.tasks.matching { it.name == 'junitPlatformTest' }
             }
@@ -561,7 +542,7 @@ configure(rootProject) {
     }
 
     task jacocoMerge(type: JacocoMerge) {
-        subprojects.findAll { it.name in jacocoTestProjects }
+        subprojects.findAll { ! omitFromJacocoReporting.contains(it.name) }
                 .each { subproj ->
             executionData fileTree(dir: "${subproj.buildDir}/jacoco", include: '*.exec')
             dependsOn subproj.tasks.withType(Test)
@@ -570,10 +551,10 @@ configure(rootProject) {
 
     task jacocoRootReport(type: JacocoReport, dependsOn: jacocoMerge) {
         sourceDirectories.from(files(subprojects
-                .findAll { it.name in jacocoTestProjects }
+                .findAll { ! omitFromJacocoReporting.contains(it.name) }
                 .sourceSets.main.allSource.srcDirs))
         classDirectories.from(files(subprojects
-                .findAll { it.name in jacocoTestProjects }
+                .findAll { ! omitFromJacocoReporting.contains(it.name) }
                 .sourceSets.main.output))
         executionData jacocoMerge.destinationFile
         reports {
