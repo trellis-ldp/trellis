@@ -30,6 +30,7 @@ include ':trellis-auth-basic'
 
 include ':trellis-app'
 include ':trellis-audit'
+include ':trellis-cache'
 include ':trellis-cdi'
 include ':trellis-constraint-rules'
 include ':trellis-dropwizard'
@@ -67,6 +68,7 @@ project(':trellis-auth-basic').projectDir = "$rootDir/auth/basic" as File
 project(':trellis-app').projectDir = "$rootDir/components/app" as File
 project(':trellis-app-triplestore').projectDir = "$rootDir/components/app-triplestore" as File
 project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
+project(':trellis-cache').projectDir = "$rootDir/components/cache" as File
 project(':trellis-cdi').projectDir = "$rootDir/components/cdi" as File
 project(':trellis-constraint-rules').projectDir = "$rootDir/components/constraint-rules" as File
 project(':trellis-dropwizard').projectDir = "$rootDir/components/dropwizard" as File

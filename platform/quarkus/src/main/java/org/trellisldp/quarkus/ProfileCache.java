@@ -23,6 +23,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.CacheService.TrellisProfileCache;
+import org.trellisldp.cache.TrellisCache;
 
 /** A JSON-LD context/profile cache. */
 @ApplicationScoped
