@@ -37,15 +37,10 @@ public class ActivityStreamMessage {
     private String identifier;
     private String inbox;
     private String published;
+    private String context = "https://www.w3.org/ns/activitystreams";
     private List<String> type;
     private List<String> actor;
     private EventResource object;
-
-    /**
-     * The JSON-LD context.
-     */
-    @JsonbProperty("@context")
-    public String context = "https://www.w3.org/ns/activitystreams";
 
     /**
      * The resource that is the object of this message.
@@ -100,6 +95,14 @@ public class ActivityStreamMessage {
     @JsonbProperty("published")
     public String getPublished() {
         return published;
+    }
+
+    /**
+     * @return the JSON-LD context
+     */
+    @JsonbProperty("@context")
+    public String getContext() {
+        return context;
     }
 
     /**

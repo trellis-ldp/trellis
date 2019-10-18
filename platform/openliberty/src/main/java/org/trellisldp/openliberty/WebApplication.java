@@ -52,7 +52,7 @@ public class WebApplication extends Application {
     private OAuthFilter oauthFilter;
 
     @PostConstruct
-    private void init() throws IOException {
+    void init() throws IOException {
         printBanner("Trellis Triplestore Application", "banner.txt");
     }
 

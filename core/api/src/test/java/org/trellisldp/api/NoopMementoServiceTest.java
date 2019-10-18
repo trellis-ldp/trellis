@@ -74,13 +74,13 @@ class NoopMementoServiceTest {
     @Test
     void testPutResourceServiceNoop() {
         testService.put(mockResourceService, identifier).toCompletableFuture().join();
-        verifyZeroInteractions(mockResourceService);
+        verifyNoInteractions(mockResourceService);
     }
 
     @Test
     void testPutResourceNoop() {
         testService.put(mockResource).toCompletableFuture().join();
-        verifyZeroInteractions(mockResource);
+        verifyNoInteractions(mockResource);
     }
 
     @Test

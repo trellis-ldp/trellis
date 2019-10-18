@@ -13,6 +13,7 @@
  */
 package org.trellisldp.amqp;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -134,7 +135,7 @@ public class AmqpEventService implements EventService {
 
         try {
             channel.basicPublish(exchangeName, routingKey, mandatory, immediate, props,
-                    service.serialize(event).getBytes());
+                    service.serialize(event).getBytes(UTF_8));
         } catch (final IOException ex) {
             LOGGER.error("Error writing to broker: {}", ex.getMessage());
         }
