@@ -32,7 +32,7 @@ public class NotificationsConfiguration {
     private final Map<String, String> other = new HashMap<>();
 
     private String topic = "trellis";
-    private boolean enabled = false;
+    private boolean enabled;
     private Type type = Type.NONE;
     private String connectionString;
 

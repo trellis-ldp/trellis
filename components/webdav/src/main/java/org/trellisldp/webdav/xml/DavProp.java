@@ -13,6 +13,8 @@
  */
 package org.trellisldp.webdav.xml;
 
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
+
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAnyElement;
@@ -23,7 +25,7 @@ import org.w3c.dom.Element;
 /**
  * A PROPFIND prop class.
  */
-@XmlRootElement(name = "prop", namespace = "DAV:")
+@XmlRootElement(name = "prop", namespace = DAV_NAMESPACE)
 public class DavProp {
     private List<Element> nodes;
 

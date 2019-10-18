@@ -14,6 +14,9 @@
 package org.trellisldp.auth.oauth;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import io.jsonwebtoken.Claims;
@@ -30,8 +33,9 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.Key;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Base64;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -73,24 +77,22 @@ public class JwksAuthenticator implements Authenticator {
     }
 
     private static Map<String, Key> buildKeys(final String location) {
-        final Map<String, Key> keys = new HashMap<>();
         // TODO eventually, this will become part of the JJWT library
         final Deserializer<Map<String, List<Map<String, String>>>> deserializer = new JacksonDeserializer<>();
-        final Map<String, List<Map<String, String>>> data = new HashMap<>();
         try (final InputStream input = new URL(location).openConnection().getInputStream()) {
-            deserializer.deserialize(IOUtils.toByteArray(input)).forEach(data::put);
+            return deserializer.deserialize(IOUtils.toByteArray(input)).getOrDefault("keys", emptyList()).stream()
+                .map(jwk -> new SimpleEntry<>(jwk.get("kid"), buildKey(jwk))).filter(entry -> entry.getValue() != null)
+                .collect(collectingAndThen(
+                            toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
         } catch (final IOException ex) {
             LOGGER.error("Error fetching/parsing jwk document", ex);
         }
+        return emptyMap();
+    }
 
-        for (final Map<String, String> jwk : data.getOrDefault("keys", emptyList())) {
-            final BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("n")));
-            final BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("e")));
-            final Key key = OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
-            if (key != null) {
-                keys.put(jwk.get("kid"), key);
-            }
-        }
-        return keys;
+    private static Key buildKey(final Map<String, String> jwk) {
+        final BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("n")));
+        final BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("e")));
+        return OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
     }
 }

@@ -16,6 +16,7 @@ package org.trellisldp.webdav;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -59,7 +60,7 @@ public class Depth {
      * @return the Depth object or null
      */
     public static Depth valueOf(final String value) {
-        if (value != null && values.contains(value.toLowerCase())) {
+        if (value != null && values.contains(value.toLowerCase(Locale.ENGLISH))) {
             return new Depth(value);
         }
         return null;

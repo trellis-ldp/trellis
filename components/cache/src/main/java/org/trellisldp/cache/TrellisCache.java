@@ -39,12 +39,7 @@ public class TrellisCache<K, V> implements CacheService<K, V> {
         this.cache = cache;
     }
 
-    /**
-     * Lazily get a value from the cache.
-     * @param key the cache key
-     * @param mapper the function for deriving the value
-     * @return the value
-     */
+    @Override
     public V get(final K key, final Function<K, V> mapper) {
         try {
             return cache.get(key, () -> mapper.apply(key));

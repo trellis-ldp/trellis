@@ -20,9 +20,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 import io.jsonwebtoken.Claims;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -140,9 +141,9 @@ public final class OAuthUtils {
         if (keystorePath != null) {
             final File file = new File(keystorePath);
             if (file.exists()) {
-                try (final FileInputStream fis = new FileInputStream(file)) {
+                try (final InputStream is = Files.newInputStream(file.toPath())) {
                     final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-                    ks.load(fis, keystorePassword);
+                    ks.load(is, keystorePassword);
                     final List<String> keyIds = filterKeyIds(ks, keyids);
                     switch (keyIds.size()) {
                         case 0:

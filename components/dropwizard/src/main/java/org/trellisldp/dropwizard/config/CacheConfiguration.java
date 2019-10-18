@@ -24,7 +24,7 @@ public class CacheConfiguration {
 
     private boolean mustRevalidate = true;
 
-    private boolean noCache = false;
+    private boolean noCache;
 
     /**
      * Set the cache max-age value.

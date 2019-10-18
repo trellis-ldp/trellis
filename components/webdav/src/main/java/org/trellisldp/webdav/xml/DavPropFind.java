@@ -13,13 +13,15 @@
  */
 package org.trellisldp.webdav.xml;
 
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * A PROPFIND query class.
  */
-@XmlRootElement(name = "propfind", namespace = "DAV:")
+@XmlRootElement(name = "propfind", namespace = DAV_NAMESPACE)
 public class DavPropFind {
 
     private DavPropName propname;
@@ -30,7 +32,7 @@ public class DavPropFind {
      * Get the allprop element.
      * @return the allprop element
      */
-    @XmlElement(name = "allprop", namespace = "DAV:")
+    @XmlElement(name = "allprop", namespace = DAV_NAMESPACE)
     public DavAllProp getAllProp() {
         return allprop;
     }
@@ -47,7 +49,7 @@ public class DavPropFind {
      * Get the propname element.
      * @return the propname element
      */
-    @XmlElement(name = "propname", namespace = "DAV:")
+    @XmlElement(name = "propname", namespace = DAV_NAMESPACE)
     public DavPropName getPropName() {
         return propname;
     }
@@ -64,7 +66,7 @@ public class DavPropFind {
      * Get the propname element.
      * @return the propname element
      */
-    @XmlElement(name = "prop", namespace = "DAV:")
+    @XmlElement(name = "prop", namespace = DAV_NAMESPACE)
     public DavProp getProp() {
         return prop;
     }

@@ -35,7 +35,7 @@ class AppConfiguration extends TrellisConfiguration {
 
     private int length =  2;
 
-    private String resourceLocation = null;
+    private String resourceLocation;
 
     /**
      * Get the Memento configuration.

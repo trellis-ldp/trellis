@@ -52,9 +52,9 @@ public class TrellisConfiguration extends Configuration {
     @NotNull
     private NotificationsConfiguration notifications = new NotificationsConfiguration();
 
-    private String hubUrl = null;
+    private String hubUrl;
 
-    private String baseUrl = null;
+    private String baseUrl;
 
     private final Map<String, Object> extras = synchronizedMap(new HashMap<>());
 
