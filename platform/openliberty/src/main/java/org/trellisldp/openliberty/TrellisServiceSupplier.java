@@ -17,7 +17,6 @@ import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.triplestore.TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION;
 import static org.trellisldp.triplestore.TriplestoreResourceService.buildRDFConnection;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
@@ -30,15 +29,18 @@ import org.trellisldp.api.*;
 @ApplicationScoped
 public class TrellisServiceSupplier {
 
-    @Produces
-    private RDFConnection rdfConnection;
+    private RDFConnection rdfConnection = buildRDFConnection(getConfig()
+            .getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class).orElse(null));
 
-    @Produces
     private EventService eventService = new NoopEventService();
 
-    @PostConstruct
-    private void init() {
-        rdfConnection = buildRDFConnection(getConfig().getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class)
-            .orElse(null));
+    @Produces
+    RDFConnection getRdfConnection() {
+        return rdfConnection;
+    }
+
+    @Produces
+    EventService getEventService() {
+        return eventService;
     }
 }

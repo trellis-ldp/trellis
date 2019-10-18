@@ -288,6 +288,7 @@ subprojects { subproj ->
         incrementalAnalysis = true
         toolVersion = pmdVersion
         sourceSets = [sourceSets.main]
+        rulePriority = 4
         ruleSets = []
         ruleSetConfig = resources.text.fromFile(rootProject.file('buildtools/src/main/resources/pmd/pmd.xml'))
     }
@@ -332,6 +333,7 @@ subprojects { subproj ->
 
     spotbugs {
         ignoreFailures = true
+        excludeFilter = rootProject.file('buildtools/src/main/resources/spotbugs/exclusions.xml')
         toolVersion = spotbugsVersion
         sourceSets = [sourceSets.main]
     }

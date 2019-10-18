@@ -13,6 +13,8 @@
  */
 package org.trellisldp.app;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -35,7 +37,7 @@ public final class AppUtils {
      * @throws IOException if there is an error reading the resource
      */
     public static void printBanner(final String name, final String resource) throws IOException {
-        final String banner = readResource(resource);
+        final String banner = readResource(requireNonNull(resource, "resource cannot be null!"));
         LOGGER.info("Starting {}\n{}", name, banner);
     }
 
@@ -51,7 +53,7 @@ public final class AppUtils {
     }
 
     private static String readResource(final InputStream resourceStream) throws IOException {
-        try (final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream);
+        try (final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream, UTF_8);
             final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             return bufferedReader.lines().collect(joining(String.format("%n")));
         }

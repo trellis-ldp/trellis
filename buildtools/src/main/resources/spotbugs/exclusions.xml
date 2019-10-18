@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FindBugsFilter>
+
+    <Match>
+        <Or>
+            <!-- Ignore checking for test suite classes -->
+            <Package name="org.trellisldp.test"/>
+        </Or>
+    </Match>
+
+    <!-- There are way too many false positives to these -->
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+    </Match>
+    <Match>
+        <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
+    </Match>
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"/>
+    </Match>
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+
+</FindBugsFilter>
+

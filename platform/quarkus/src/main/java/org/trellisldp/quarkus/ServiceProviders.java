@@ -25,8 +25,11 @@ import org.apache.jena.rdfconnection.RDFConnection;
 @ApplicationScoped
 class ServiceProducers {
 
-    @Produces
-    RDFConnection rdfConnection = buildRDFConnection(getConfig()
+    private RDFConnection rdfConnection = buildRDFConnection(getConfig()
             .getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class).orElse(null));
 
+    @Produces
+    RDFConnection getRdfConnection() {
+        return rdfConnection;
+    }
 }
