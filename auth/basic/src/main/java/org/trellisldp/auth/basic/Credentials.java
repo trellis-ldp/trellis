@@ -21,7 +21,7 @@ import java.util.Base64;
 import org.slf4j.Logger;
 
 public class Credentials {
-    private static Logger LOGGER = getLogger(Credentials.class);
+    private static final Logger LOGGER = getLogger(Credentials.class);
 
     private final String username;
     private final String password;
