@@ -43,9 +43,6 @@ public class WebApplication extends Application {
     private TrellisHttpFilter httpFilter;
 
     @Inject
-    private CrossOriginResourceSharingFilter corsFilter;
-
-    @Inject
     private CacheControlFilter cacheFilter;
 
     @Inject
@@ -58,6 +55,6 @@ public class WebApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return new HashSet<>(asList(httpResource, httpFilter, corsFilter, cacheFilter, oauthFilter));
+        return new HashSet<>(asList(httpResource, httpFilter, cacheFilter, oauthFilter));
     }
 }

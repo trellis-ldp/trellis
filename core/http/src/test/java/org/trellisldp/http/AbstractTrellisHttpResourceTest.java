@@ -808,18 +808,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
-    void testGetCORSInvalid() {
-        final Response res = target(RESOURCE_PATH).request().header("Origin", "http://foo.com")
-            .header("Access-Control-Request-Method", "PUT")
-            .header("Access-Control-Request-Headers", "Content-Type, Link").get();
-
-        assertEquals(SC_OK, res.getStatus(), "Unexpected response code!");
-        assertAll("Check null headers", checkNullHeaders(res, asList("Access-Control-Allow-Origin",
-                        "Access-Control-Allow-Credentials", "Access-Control-Max-Age",
-                        "Access-Control-Allow-Headers", "Access-Control-Allow-Methods")));
-    }
-
-    @Test
     void testGetException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
             throw new RuntimeTrellisException("Expected exception");

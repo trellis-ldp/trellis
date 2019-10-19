@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.http;
+package org.trellisldp.dropwizard;
 
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
@@ -22,7 +22,6 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.HttpMethod.OPTIONS;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
@@ -31,13 +30,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
-import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 
 /**
@@ -51,19 +48,6 @@ import org.slf4j.Logger;
 @Provider
 public class CrossOriginResourceSharingFilter implements ContainerResponseFilter {
 
-    /** The configuration key controlling the CORS -Allow-Origin header. */
-    public static final String CONFIG_HTTP_CORS_ALLOW_ORIGIN = "trellis.http.cors.alloworigin";
-    /** The configuration key controlling the CORS -Allow-Methods header. */
-    public static final String CONFIG_HTTP_CORS_ALLOW_METHODS = "trellis.http.cors.allowmethods";
-    /** The configuration key controlling the CORS -Allow-Headers header. */
-    public static final String CONFIG_HTTP_CORS_ALLOW_HEADERS = "trellis.http.cors.allowheaders";
-    /** The configuration key controlling the CORS -Expose-Headers header. */
-    public static final String CONFIG_HTTP_CORS_EXPOSE_HEADERS = "trellis.http.cors.exposeheaders";
-    /** The configuration key controlling the CORS -Allow-Credentials header. */
-    public static final String CONFIG_HTTP_CORS_ALLOW_CREDENTIALS = "trellis.http.cors.allowcredentials";
-    /** The configuration key controlling the CORS -Max-Age header. */
-    public static final String CONFIG_HTTP_CORS_MAX_AGE = "trellis.http.cors.maxage";
-
     private static final Logger LOGGER = getLogger(CrossOriginResourceSharingFilter.class);
     private static final Set<String> simpleResponseHeaders = unmodifiableSet(new HashSet<>(asList("cache-control",
                     "content-language", "expires", "last-modified", "pragma")));
@@ -76,27 +60,6 @@ public class CrossOriginResourceSharingFilter implements ContainerResponseFilter
     private final Set<String> exposedHeaders;
     private final boolean credentials;
     private final int cacheSeconds;
-
-    /**
-     * Create a CORS filter with default values.
-     */
-    @Inject
-    public CrossOriginResourceSharingFilter() {
-        this(getConfig());
-    }
-
-    private CrossOriginResourceSharingFilter(final Config config) {
-        this(populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_ORIGIN, String.class).orElse("*")),
-             populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_METHODS, String.class)
-                 .orElse("GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE")),
-             populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_HEADERS, String.class)
-                 .orElse("Content-Type,Link,Accept,Accept-DateTime,Prefer,Slug,Origin")),
-             populateFieldNames(config.getOptionalValue(CONFIG_HTTP_CORS_EXPOSE_HEADERS, String.class)
-                 .orElse("Content-Type,Link,Memento-Datetime,Preference-Applied,Location,Accept-Patch,Accept-Post," +
-                         "Accept-Ranges,ETag,Vary")),
-             config.getOptionalValue(CONFIG_HTTP_CORS_ALLOW_CREDENTIALS, Boolean.class).orElse(Boolean.TRUE),
-             config.getOptionalValue(CONFIG_HTTP_CORS_MAX_AGE, Integer.class).orElse(180));
-    }
 
     /**
      * Create a CORS filter.

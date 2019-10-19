@@ -12,6 +12,7 @@ logging:
   level: WARN
   loggers:
     org.trellisldp: INFO
+    org.trellisldp.dropwizard: DEBUG
     io.dropwizard: INFO
 
 # Path to binaries

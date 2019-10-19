@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -91,9 +90,6 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
-        config.register(new CrossOriginResourceSharingFilter(singletonList(origin), asList("PATCH", "POST", "PUT"),
-                        asList("Link", "Content-Type", "Accept-Datetime", "Accept"),
-                        asList("Link", "Content-Type", "Memento-Datetime"), true, 100));
         return config;
     }
 
