@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class CORSConfiguration {
 
-    private boolean enabled = false;
+    private boolean enabled;
 
     private List<String> origins = singletonList("*");
 

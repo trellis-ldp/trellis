@@ -13,11 +13,13 @@
  */
 package org.trellisldp.webdav.xml;
 
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * A PROPFIND propname class.
  */
-@XmlRootElement(name = "propname", namespace = "DAV:")
+@XmlRootElement(name = "propname", namespace = DAV_NAMESPACE)
 public class DavPropName {
 }

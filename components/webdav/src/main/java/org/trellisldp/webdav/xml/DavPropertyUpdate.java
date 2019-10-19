@@ -13,13 +13,15 @@
  */
 package org.trellisldp.webdav.xml;
 
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * A PROPPATCH update class.
  */
-@XmlRootElement(name = "propertyupdate", namespace = "DAV:")
+@XmlRootElement(name = "propertyupdate", namespace = DAV_NAMESPACE)
 public class DavPropertyUpdate {
 
     private DavSet set;
@@ -29,7 +31,7 @@ public class DavPropertyUpdate {
      * Get the set element.
      * @return the set element
      */
-    @XmlElement(name = "set", namespace = "DAV:")
+    @XmlElement(name = "set", namespace = DAV_NAMESPACE)
     public DavSet getSet() {
         return set;
     }
@@ -46,7 +48,7 @@ public class DavPropertyUpdate {
      * Get the remove element.
      * @return the remove element
      */
-    @XmlElement(name = "remove", namespace = "DAV:")
+    @XmlElement(name = "remove", namespace = DAV_NAMESPACE)
     public DavRemove getRemove() {
         return remove;
     }

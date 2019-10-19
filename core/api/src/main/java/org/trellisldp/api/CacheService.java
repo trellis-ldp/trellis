@@ -35,7 +35,7 @@ public interface CacheService<K, V> {
      *
      * @param key the key
      * @param mappingFunction attempts to compute a mapping for the specified key
-     * @return a value for that key or null
+     * @return a value for that key, never {@code null}
      */
     V get(K key, Function<K, V> mappingFunction);
 

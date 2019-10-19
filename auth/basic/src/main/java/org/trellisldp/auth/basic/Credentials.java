@@ -14,10 +14,15 @@
 package org.trellisldp.auth.basic;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Base64;
 
+import org.slf4j.Logger;
+
 public class Credentials {
+    private static final Logger LOGGER = getLogger(Credentials.class);
+
     private final String username;
     private final String password;
 
@@ -60,7 +65,7 @@ public class Credentials {
                 return new Credentials(parts[0], parts[1]);
             }
         } catch (final IllegalArgumentException ex) {
-            // log error
+            LOGGER.warn("Invalid credentials provided: {}", ex.getMessage());
         }
         return null;
     }

@@ -13,6 +13,8 @@
  */
 package org.trellisldp.webdav.xml;
 
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
+
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -21,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * A PROPFIND response class.
  */
-@XmlRootElement(name = "response", namespace = "DAV:")
+@XmlRootElement(name = "response", namespace = DAV_NAMESPACE)
 public class DavResponse {
     private String href;
     private List<DavPropStat> propstats;
@@ -31,7 +33,7 @@ public class DavResponse {
      * Get the href element.
      * @return the href value
      */
-    @XmlElement(name = "href", namespace = "DAV:")
+    @XmlElement(name = "href", namespace = DAV_NAMESPACE)
     public String getHref() {
         return href;
     }
@@ -48,7 +50,7 @@ public class DavResponse {
      * Get the propstat element.
      * @return the propstat element
      */
-    @XmlElement(name = "propstat", namespace = "DAV:")
+    @XmlElement(name = "propstat", namespace = DAV_NAMESPACE)
     public List<DavPropStat> getPropStats() {
         return propstats;
     }
@@ -65,7 +67,7 @@ public class DavResponse {
      * Get the description of the responses.
      * @return the response description
      */
-    @XmlElement(name = "responsedescription", namespace = "DAV:")
+    @XmlElement(name = "responsedescription", namespace = DAV_NAMESPACE)
     public String getDescription() {
         return description;
     }

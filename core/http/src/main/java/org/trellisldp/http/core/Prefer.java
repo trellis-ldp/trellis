@@ -19,6 +19,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.ofNullable;
 
 import java.util.HashMap;
@@ -78,9 +79,9 @@ public class Prefer {
         this.preference = PREFER_MINIMAL.equals(preference) || PREFER_REPRESENTATION.equals(preference)
             ? preference : null;
         this.handling = PREFER_LENIENT.equals(handling) || PREFER_STRICT.equals(handling) ? handling : null;
-        this.include = include != null ? include : emptyList();
-        this.omit = omit != null ? omit : emptyList();
-        this.params = params != null ? params : emptySet();
+        this.include = include != null ? unmodifiableList(include) : emptyList();
+        this.omit = omit != null ? unmodifiableList(omit) : emptyList();
+        this.params = params != null ? unmodifiableSet(params) : emptySet();
     }
 
     /**
@@ -139,7 +140,7 @@ public class Prefer {
      * @return the list of IRIs to be included in the representation
      */
     public List<String> getInclude() {
-        return unmodifiableList(include);
+        return include;
     }
 
     /**
@@ -148,7 +149,7 @@ public class Prefer {
      * @return the list of IRIs to be omitted from the representation
      */
     public List<String> getOmit() {
-        return unmodifiableList(omit);
+        return omit;
     }
 
     /**

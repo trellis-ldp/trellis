@@ -52,6 +52,7 @@ import static org.trellisldp.webdav.impl.WebDAVUtils.externalUrl;
 import static org.trellisldp.webdav.impl.WebDAVUtils.recursiveCopy;
 import static org.trellisldp.webdav.impl.WebDAVUtils.recursiveDelete;
 import static org.trellisldp.webdav.impl.WebDAVUtils.skolemizeQuads;
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -123,7 +124,6 @@ import org.w3c.dom.Node;
 public class TrellisWebDAV {
 
     private static final String SUCCESS = "HTTP/1.1 200 OK";
-    private static final String DAV = "DAV:";
     private static final int MULTI_STATUS = 207;
     private static final RDF rdf = getInstance();
     private static final Logger LOGGER = getLogger(TrellisWebDAV.class);
@@ -536,7 +536,7 @@ public class TrellisWebDAV {
     }
 
     private static Element getContentTypeElement(final Document doc, final Resource res, final boolean propname) {
-        final Element el = doc.createElementNS(DAV, "getcontenttype");
+        final Element el = doc.createElementNS(DAV_NAMESPACE, "getcontenttype");
         if (!propname) {
             el.setTextContent(res.getBinaryMetadata().flatMap(BinaryMetadata::getMimeType)
                 .orElse("text/turtle"));
@@ -545,7 +545,7 @@ public class TrellisWebDAV {
     }
 
     private static Element getLastModifiedElement(final Document doc, final Resource res, final boolean propname) {
-        final Element el = doc.createElementNS(DAV, "getlastmodified");
+        final Element el = doc.createElementNS(DAV_NAMESPACE, "getlastmodified");
         if (!propname) {
             el.setTextContent(ofInstant(res.getModified().truncatedTo(SECONDS), UTC).format(RFC_1123_DATE_TIME));
         }
@@ -555,8 +555,8 @@ public class TrellisWebDAV {
     private static Optional<Element> getResourceTypeElement(final Document doc, final Resource res,
             final boolean propname) {
         if (!propname && res.getInteractionModel().getIRIString().endsWith("Container")) {
-            final Element el = doc.createElementNS(DAV, "resourcetype");
-            el.appendChild(doc.createElementNS(DAV, "collection"));
+            final Element el = doc.createElementNS(DAV_NAMESPACE, "resourcetype");
+            el.appendChild(doc.createElementNS(DAV_NAMESPACE, "collection"));
             return Optional.of(el);
         }
         return empty();

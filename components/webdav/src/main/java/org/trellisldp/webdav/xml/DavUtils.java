@@ -11,19 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.test;
+package org.trellisldp.webdav.xml;
 
-import org.trellisldp.api.ResourceService;
+public final class DavUtils {
 
-/**
- * A convenience class for running the ResourceService tests.
- */
-public abstract class AbstractResourceServiceTests implements ResourceServiceTests {
+    /** A namespace value to use for WebDAV XML elements. */
+    public static final String DAV_NAMESPACE = "DAV:";
 
-    /**
-     * Get the ResourceService.
-     * @return the resource service
-     */
-    @Override
-    public abstract ResourceService getResourceService();
+    private DavUtils() {
+        // prevent instantiation
+    }
 }

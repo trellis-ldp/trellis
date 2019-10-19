@@ -13,13 +13,15 @@
  */
 package org.trellisldp.webdav.xml;
 
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * A PROPFIND propstat class.
  */
-@XmlRootElement(name = "propstat", namespace = "DAV:")
+@XmlRootElement(name = "propstat", namespace = DAV_NAMESPACE)
 public class DavPropStat {
     private DavProp prop;
     private String status;
@@ -28,7 +30,7 @@ public class DavPropStat {
      * Get the the prop element from a propstat response.
      * @return the property element
      */
-    @XmlElement(name = "prop", namespace = "DAV:")
+    @XmlElement(name = "prop", namespace = DAV_NAMESPACE)
     public DavProp getProp() {
         return prop;
     }
@@ -45,7 +47,7 @@ public class DavPropStat {
      * Get the HTTP status value.
      * @return the status
      */
-    @XmlElement(name = "status", namespace = "DAV:")
+    @XmlElement(name = "status", namespace = DAV_NAMESPACE)
     public String getStatus() {
         return status;
     }

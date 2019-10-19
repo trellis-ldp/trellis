@@ -15,11 +15,10 @@
 package org.trellisldp.file;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 
 import org.trellisldp.api.Binary;
 
@@ -42,16 +41,16 @@ public class FileBinary implements Binary {
     @Override
     public InputStream getContent() {
         try {
-            return new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            throw new UncheckedIOException(e);
+            return Files.newInputStream(file.toPath());
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
         }
     }
 
     @Override
     public InputStream getContent(final int from, final int to) {
         try {
-            return FileUtils.getBoundedStream(new FileInputStream(file), from, to);
+            return FileUtils.getBoundedStream(Files.newInputStream(file.toPath()), from, to);
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }

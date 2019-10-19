@@ -13,6 +13,8 @@
  */
 package org.trellisldp.webdav.xml;
 
+import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
+
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -21,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * A PROPFIND response class.
  */
-@XmlRootElement(name = "multistatus", namespace = "DAV:")
+@XmlRootElement(name = "multistatus", namespace = DAV_NAMESPACE)
 public class DavMultiStatus {
     private List<DavResponse> responses;
     private String description;
@@ -30,7 +32,7 @@ public class DavMultiStatus {
      * Get the list of responses.
      * @return the response list
      */
-    @XmlElement(name = "response", namespace = "DAV:")
+    @XmlElement(name = "response", namespace = DAV_NAMESPACE)
     public List<DavResponse> getResponses() {
         return responses;
     }
@@ -47,7 +49,7 @@ public class DavMultiStatus {
      * Get the overall description of the responses.
      * @return the response description
      */
-    @XmlElement(name = "responsedescription", namespace = "DAV:")
+    @XmlElement(name = "responsedescription", namespace = DAV_NAMESPACE)
     public String getDescription() {
         return description;
     }
