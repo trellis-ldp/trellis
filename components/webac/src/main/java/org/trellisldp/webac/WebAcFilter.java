@@ -184,8 +184,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) {
         if (SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && !DELETE.equals(req.getMethod())
-                && (!req.getUriInfo().getQueryParameters().containsKey(HttpConstants.EXT)
-                    || !req.getUriInfo().getQueryParameters().get(HttpConstants.EXT).contains(HttpConstants.ACL))) {
+                && !req.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
+                    .contains(HttpConstants.ACL)) {
             res.getHeaders().add(LINK, fromUri(getRequestUri(req).queryParam(HttpConstants.EXT, HttpConstants.ACL)
                         .build()).rel(HttpConstants.ACL).build());
         }

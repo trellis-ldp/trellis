@@ -71,7 +71,41 @@ class OAuthFilterTest {
     @BeforeEach
     void setUp() {
         initMocks(this);
-        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
+    }
+
+    @Test
+    void testFilterNoSecCtx() {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS512);
+        final String token = Jwts.builder().setSubject(WEBID1).signWith(key).compact();
+        final ContainerRequestContext mockCtx = mock(ContainerRequestContext.class);
+        when(mockCtx.getSecurityContext()).thenReturn(null);
+        when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
+
+        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        filter.filter(mockCtx);
+        verify(mockCtx).setSecurityContext(securityArgument.capture());
+        assertEquals(WEBID1, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
+        assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
+    }
+
+    @Test
+    void testFilterNotSecureSecCtx() {
+        final Key key = secretKeyFor(SignatureAlgorithm.HS512);
+        final String token = Jwts.builder().setSubject(WEBID1).signWith(key).compact();
+        final ContainerRequestContext mockCtx = mock(ContainerRequestContext.class);
+        when(mockCtx.getSecurityContext()).thenReturn(mockSecurityContext);
+        when(mockSecurityContext.isSecure()).thenReturn(true);
+        when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
+
+        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        filter.filter(mockCtx);
+        verify(mockCtx).setSecurityContext(securityArgument.capture());
+        assertEquals(WEBID1, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
+        assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
+        assertTrue(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
+        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
     }
 
     @Test

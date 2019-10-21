@@ -38,6 +38,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -81,8 +82,7 @@ public class JwksAuthenticator implements Authenticator {
         final Deserializer<Map<String, List<Map<String, String>>>> deserializer = new JacksonDeserializer<>();
         try (final InputStream input = new URL(location).openConnection().getInputStream()) {
             return deserializer.deserialize(IOUtils.toByteArray(input)).getOrDefault("keys", emptyList()).stream()
-                .map(jwk -> new SimpleEntry<>(jwk.get("kid"), buildKey(jwk))).filter(entry -> entry.getValue() != null)
-                .collect(collectingAndThen(
+                .map(JwksAuthenticator::buildKeyEntry).filter(Objects::nonNull).collect(collectingAndThen(
                             toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
         } catch (final IOException ex) {
             LOGGER.error("Error fetching/parsing jwk document", ex);
@@ -90,9 +90,13 @@ public class JwksAuthenticator implements Authenticator {
         return emptyMap();
     }
 
-    private static Key buildKey(final Map<String, String> jwk) {
+    private static Map.Entry<String, Key> buildKeyEntry(final Map<String, String> jwk) {
         final BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("n")));
         final BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("e")));
-        return OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
+        final Key key = OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
+        if (key != null && jwk.containsKey("kid")) {
+            return new SimpleEntry<>(jwk.get("kid"), key);
+        }
+        return null;
     }
 }
