@@ -45,9 +45,10 @@ class DeleteHandlerTest extends BaseTestHandler {
     @Test
     void testDelete() {
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, null);
-        final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource))
-            .toCompletableFuture().join().build();
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect delete response!");
+        try (final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join().build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+        }
     }
 
     @Test
@@ -78,12 +79,13 @@ class DeleteHandlerTest extends BaseTestHandler {
     void testDeletePersistenceSupport() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
-        final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.initialize(mockParent, mockResource)).getResponse();
-        assertTrue(res.getLinks().stream().anyMatch(link ->
-            link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
-            link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing Link headers");
-        assertEquals(TEXT_PLAIN_TYPE, res.getMediaType(), "Incorrect media type");
+        try (final Response res = assertThrows(WebApplicationException.class, () ->
+                handler.initialize(mockParent, mockResource)).getResponse()) {
+            assertTrue(res.getLinks().stream().anyMatch(link ->
+                link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
+                link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing Link headers");
+            assertEquals(TEXT_PLAIN_TYPE, res.getMediaType(), "Incorrect media type");
+        }
     }
 
     @Test

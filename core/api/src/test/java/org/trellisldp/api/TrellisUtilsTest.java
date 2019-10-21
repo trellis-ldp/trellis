@@ -45,28 +45,28 @@ class TrellisUtilsTest {
     }
 
     @Test
-    void testCollectGraph() {
-        final Graph graph = generate(() -> rdf.createTriple(getIRI(), getIRI(), getIRI()))
-            .parallel().limit(size).collect(toGraph());
-
-        assertTrue(size >= graph.size(), "Generated graph has too many triples!");
+    void testCollectGraph() throws Exception {
+        try (final Graph graph = generate(() -> rdf.createTriple(getIRI(), getIRI(), getIRI()))
+                .parallel().limit(size).collect(toGraph())) {
+            assertTrue(size >= graph.size(), "Generated graph has too many triples!");
+        }
     }
 
     @Test
-    void testCollectDataset() {
-        final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
-            .parallel().limit(size).collect(toDataset());
-
-        assertTrue(size >= dataset.size(), "Generated dataset has too many triples!");
+    void testCollectDataset() throws Exception {
+        try (final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
+                .parallel().limit(size).collect(toDataset())) {
+            assertTrue(size >= dataset.size(), "Generated dataset has too many triples!");
+        }
     }
 
     @Test
-    void testDatasetCollectorFinisher() {
-        final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
-            .parallel().limit(size).collect(toDataset());
-
-        final TrellisUtils.DatasetCollector collector = toDataset();
-        assertEquals(dataset, collector.finisher().apply(dataset), "Dataset finisher returns the wrong object!");
+    void testDatasetCollectorFinisher() throws Exception {
+        try (final Dataset dataset = generate(() -> rdf.createQuad(getIRI(), getIRI(), getIRI(), getIRI()))
+                .parallel().limit(size).collect(toDataset())) {
+            final TrellisUtils.DatasetCollector collector = toDataset();
+            assertEquals(dataset, collector.finisher().apply(dataset), "Dataset finisher returns the wrong object!");
+        }
     }
 
     private IRI getIRI() {

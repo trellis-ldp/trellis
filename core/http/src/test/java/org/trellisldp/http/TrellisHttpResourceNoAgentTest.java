@@ -36,7 +36,6 @@ class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceTest {
         initMocks(this);
 
         final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, baseUri));

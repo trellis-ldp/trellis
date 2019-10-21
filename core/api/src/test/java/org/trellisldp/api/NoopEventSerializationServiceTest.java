@@ -38,7 +38,6 @@ class NoopEventSerializationServiceTest {
         when(event.getTypes()).thenReturn(emptyList());
         when(event.getIdentifier()).thenReturn(rdf.createIRI(identifier));
         final EventSerializationService svc = new NoopEventSerializationService();
-        System.out.println(svc.serialize(event));
         assertEquals("{\n  \"@context\": \"https://www.w3.org/ns/activitystreams\",\n" +
                 "  \"id\": \"" + identifier + "\"\n}", svc.serialize(event));
     }

@@ -37,10 +37,11 @@ class NoopResourceServiceTest {
     }
 
     @Test
-    void testReplaceResource() {
+    void testReplaceResource() throws Exception {
         final Metadata metadata = Metadata.builder(identifier).interactionModel(LDP.RDFSource).build();
-        final Dataset dataset = rdf.createDataset();
-        assertDoesNotThrow(() -> testService.replace(metadata, dataset).toCompletableFuture().join());
+        try (final Dataset dataset = rdf.createDataset()) {
+            assertDoesNotThrow(() -> testService.replace(metadata, dataset).toCompletableFuture().join());
+        }
     }
 
     @Test
@@ -50,9 +51,10 @@ class NoopResourceServiceTest {
     }
 
     @Test
-    void testAddResource() {
-        final Dataset dataset = rdf.createDataset();
-        assertDoesNotThrow(() -> testService.add(identifier, dataset).toCompletableFuture().join());
+    void testAddResource() throws Exception {
+        try (final Dataset dataset = rdf.createDataset()) {
+            assertDoesNotThrow(() -> testService.add(identifier, dataset).toCompletableFuture().join());
+        }
     }
 
     @Test

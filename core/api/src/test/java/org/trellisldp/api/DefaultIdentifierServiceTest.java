@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
  */
 class DefaultIdentifierServiceTest {
 
+    private static final String WRONG_PREFIX = "Generated id has wrong prefix!";
+
     @Test
     void testSupplier() {
         final String prefix = "trellis:data/";
@@ -31,8 +33,8 @@ class DefaultIdentifierServiceTest {
         final String id1 = supplier.get();
         final String id2 = supplier.get();
 
-        assertTrue(id1.startsWith(prefix), "Generated id has wrong prefix!");
-        assertTrue(id2.startsWith(prefix), "Generated id has wrong prefix!");
+        assertTrue(id1.startsWith(prefix), WRONG_PREFIX);
+        assertTrue(id2.startsWith(prefix), WRONG_PREFIX);
         assertNotEquals(id1, id2, "Generated ids shouldn't match!");
     }
 
@@ -46,9 +48,9 @@ class DefaultIdentifierServiceTest {
         final String id1 = gen1.get();
         final String id2 = gen2.get();
 
-        assertTrue(id1.startsWith(prefix1), "Generated id has wrong prefix!");
+        assertTrue(id1.startsWith(prefix1), WRONG_PREFIX);
         assertNotEquals(prefix1, id1, "Generated id shouldn't equal prefix!");
-        assertTrue(id2.startsWith(prefix2), "Generated id has wrong prefix!");
+        assertTrue(id2.startsWith(prefix2), WRONG_PREFIX);
         assertNotEquals(prefix2, id2, "Generated id shouldn't equal prefix!");
     }
 

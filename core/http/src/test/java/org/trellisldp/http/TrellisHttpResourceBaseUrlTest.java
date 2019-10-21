@@ -39,9 +39,6 @@ class TrellisHttpResourceBaseUrlTest extends AbstractTrellisHttpResourceTest {
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
 
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, URL));
         config.register(new TestAuthenticationFilter("testUser", "group"));
