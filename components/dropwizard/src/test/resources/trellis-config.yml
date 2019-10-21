@@ -45,6 +45,14 @@ cors:
     allowOrigin:
         - "*"
     maxAge: 180
+    allowHeaders:
+        - "Content-Type"
+        - "Link"
+        - "Accept"
+        - "Accept-Datetime"
+        - "Prefer"
+        - "Slug"
+    exposeHeaders: []
 
 notifications:
     enabled: true

@@ -37,6 +37,15 @@ import org.trellisldp.dropwizard.config.TrellisConfiguration;
  */
 class AnyOriginTest extends TrellisApplicationTest {
 
+    private static final String ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    private static final String ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+    private static final String ALLOW_HEADERS = "Access-Control-Allow-Headers";
+    private static final String ALLOW_METHODS = "Access-Control-Allow-Methods";
+    private static final String EXPOSE_HEADERS = "Access-Control-Expose-Headers";
+    private static final String MAX_AGE = "Access-Control-Max-Age";
+    private static final String REQUEST_HEADERS = "Access-Control-Request-Headers";
+    private static final String REQUEST_METHOD = "Access-Control-Request-Method";
+
     private static final DropwizardTestSupport<TrellisConfiguration> APP
         = new DropwizardTestSupport<>(SimpleTrellisApp.class,
                     resourceFilePath("trellis-config.yml"));
@@ -56,7 +65,12 @@ class AnyOriginTest extends TrellisApplicationTest {
         final String origin = "https://example.com";
         try (final Response res = CLIENT.target(baseUrl).request().header("Origin", origin).get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
-            assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
+            assertEquals(origin, res.getHeaderString(ALLOW_ORIGIN), "Incorrect -Allow-Origin header!");
+            assertEquals("true", res.getHeaderString(ALLOW_CREDENTIALS), "Incorrect -Allow-Credentials!");
+            assertNull(res.getHeaderString(ALLOW_HEADERS), "Unexpected -Allow-Headers!");
+            assertNull(res.getHeaderString(ALLOW_METHODS), "Unexpected -Allow-Methods!");
+            assertNull(res.getHeaderString(MAX_AGE), "Unexpected -Max-Age header!");
+            assertNull(res.getHeaderString(EXPOSE_HEADERS), "Unexpected -Expose-Headers!");
         }
     }
 
@@ -65,20 +79,19 @@ class AnyOriginTest extends TrellisApplicationTest {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         final String origin = "https://example.com";
         try (final Response res = CLIENT.target(baseUrl).request().header("Origin", origin)
-                .header("Access-Control-Request-Method", "PUT")
-                .header("Access-Control-Request-Headers", "Content-Language, Link").options()) {
+                .header(REQUEST_METHOD, "PUT").header(REQUEST_HEADERS, "Content-Language, Link").options()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
-            assertEquals(origin, res.getHeaderString("Access-Control-Allow-Origin"), "Incorrect -Allow-Origin header!");
+            assertEquals(origin, res.getHeaderString(ALLOW_ORIGIN), "Incorrect -Allow-Origin header!");
+            assertEquals("180", res.getHeaderString(MAX_AGE), "Incorrect -Max-Age header!");
+            assertEquals("true", res.getHeaderString(ALLOW_CREDENTIALS), "Incorrect -Allow-Credentials!");
 
-            final List<String> headers = stream(res.getHeaderString("Access-Control-Allow-Headers").split(","))
-                .collect(toList());
+            final List<String> headers = stream(res.getHeaderString(ALLOW_HEADERS).split(",")).collect(toList());
             assertTrue(headers.contains("accept"), "Accept missing from -Allow-Headers!");
             assertTrue(headers.contains("link"), "Link missing from -Allow-Headers!");
             assertTrue(headers.contains("content-type"), "Content-Type missing from -Allow-Headers!");
             assertTrue(headers.contains("accept-datetime"), "Accept-Datetime missing from -Allow-Headers!");
 
-            final List<String> methods = stream(res.getHeaderString("Access-Control-Allow-Methods").split(","))
-                .collect(toList());
+            final List<String> methods = stream(res.getHeaderString(ALLOW_METHODS).split(",")).collect(toList());
             assertTrue(methods.contains("PUT"), "Missing PUT method in CORS header!");
             assertTrue(methods.contains("PATCH"), "Missing PATCH method in CORS header!");
             assertTrue(methods.contains("GET"), "Missing GET method in CORS header!");
@@ -91,10 +104,13 @@ class AnyOriginTest extends TrellisApplicationTest {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         final String origin = "https://example.com";
         try (final Response res = CLIENT.target(baseUrl).request().header("Origin", origin)
-                .header("Access-Control-Request-Method", "FOO")
-                .header("Access-Control-Request-Headers", "Content-Language, Link").options()) {
+                .header(REQUEST_METHOD, "FOO").header(REQUEST_HEADERS, "Content-Language, Link").options()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
-            assertNull(res.getHeaderString("Access-Control-Allow-Origin"), "Unexpected -Allow-Origin header!");
+            assertNull(res.getHeaderString(ALLOW_ORIGIN), "Unexpected -Allow-Origin header!");
+            assertNull(res.getHeaderString(MAX_AGE), "Unexpected -Max-Age header!");
+            assertNull(res.getHeaderString(ALLOW_HEADERS), "Unexpected -Allow-Headers!");
+            assertNull(res.getHeaderString(ALLOW_METHODS), "Unexpected -Allow-Methods!");
+            assertNull(res.getHeaderString(ALLOW_CREDENTIALS), "Unexpected -Allow-Credentials!");
         }
     }
 
@@ -103,10 +119,13 @@ class AnyOriginTest extends TrellisApplicationTest {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         final String origin = "https://example.com";
         try (final Response res = CLIENT.target(baseUrl).request().header("Origin", origin)
-                .header("Access-Control-Request-Method", "PATCH")
-                .header("Access-Control-Request-Headers", "X-FakeHeader, X-OtherHeader").options()) {
+                .header(REQUEST_METHOD, "PATCH").header(REQUEST_HEADERS, "X-FakeHeader, X-OtherHeader").options()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
-            assertNull(res.getHeaderString("Access-Control-Allow-Origin"), "Unexpected -Allow-Origin header!");
+            assertNull(res.getHeaderString(ALLOW_CREDENTIALS), "Unexpected -Allow-Credentials!");
+            assertNull(res.getHeaderString(ALLOW_ORIGIN), "Unexpected -Allow-Origin header!");
+            assertNull(res.getHeaderString(MAX_AGE), "Unexpected -Max-Age header!");
+            assertNull(res.getHeaderString(ALLOW_HEADERS), "Unexpected -Allow-Headers!");
+            assertNull(res.getHeaderString(ALLOW_METHODS), "Unexpected -Allow-Methods!");
         }
     }
 
@@ -115,7 +134,11 @@ class AnyOriginTest extends TrellisApplicationTest {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
         try (final Response res = CLIENT.target(baseUrl).request().options()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
-            assertNull(res.getHeaderString("Access-Control-Allow-Origin"), "Unexpected -Allow-Origin header!");
+            assertNull(res.getHeaderString(ALLOW_ORIGIN), "Unexpected -Allow-Origin header!");
+            assertNull(res.getHeaderString(MAX_AGE), "Unexpected -Max-Age header!");
+            assertNull(res.getHeaderString(ALLOW_HEADERS), "Unexpected -Allow-Headers!");
+            assertNull(res.getHeaderString(ALLOW_METHODS), "Unexpected -Allow-Methods!");
+            assertNull(res.getHeaderString(ALLOW_CREDENTIALS), "Unexpected -Allow-Credentials!");
         }
     }
 }
