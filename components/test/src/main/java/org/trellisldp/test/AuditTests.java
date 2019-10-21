@@ -118,39 +118,42 @@ public interface AuditTests extends CommonTests {
 
     /**
      * Check the absense of audit triples.
+     * @throws Exception if the RDF resource didn't close cleanly
      */
     @Test
     @DisplayName("Check the absense of audit triples.")
-    default void testNoAuditTriples() {
-        try (final Response res = target(getResourceLocation()).request().get()) {
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+    default void testNoAuditTriples() throws Exception {
+        try (final Response res = target(getResourceLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertEquals(2L, g.size(), "Check that the graph has 2 triples");
         }
     }
 
     /**
      * Check the explicit absense of audit triples.
+     * @throws Exception if the RDF resource didn't close cleanly
      */
     @Test
     @DisplayName("Check the explicit absense of audit triples.")
-    default void testOmitAuditTriples() {
+    default void testOmitAuditTriples() throws Exception {
         try (final Response res = target(getResourceLocation()).request().header("Prefer",
-                    "return=representation; omit=\"" + Trellis.PreferAudit.getIRIString() + "\"").get()) {
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+                    "return=representation; omit=\"" + Trellis.PreferAudit.getIRIString() + "\"").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertEquals(2L, g.size(), "Check that the graph has only 2 triples");
         }
     }
 
     /**
      * Check the presence of audit triples.
+     * @throws Exception if the RDF resource didn't close cleanly
      */
     @Test
     @DisplayName("Check the presence of audit triples.")
-    default void testAuditTriples() {
+    default void testAuditTriples() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getResourceLocation()).request().header("Prefer",
-                    "return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"").get()) {
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
+                    "return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertEquals(3L, g.stream(rdf.createIRI(getResourceLocation()), PROV.wasGeneratedBy, null).count(),
                     "Check for the presence of audit triples in the graph");
             assertAll("Check the graph triples",
