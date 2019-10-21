@@ -20,9 +20,7 @@ import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 
@@ -65,7 +63,8 @@ class TrellisApplicationTest {
     @Test
     void testGET() {
         final String baseUrl = "http://localhost:" + APP.getLocalPort();
-        try (final Response res = CLIENT.target(baseUrl).request().get()) {
+        final String origin = "https://example.com";
+        try (final Response res = CLIENT.target(baseUrl).request().header("Origin", origin).get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Wrong content-type " + res.getMediaType());
             assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
@@ -86,6 +85,14 @@ class TrellisApplicationTest {
             assertTrue(res.getStringHeaders().get(LINK).stream().map(Link::valueOf).anyMatch(link ->
                         TYPE.equals(link.getRel()) && LDP.RDFSource.getIRIString().equals(link.getUri().toString())),
                     "Missing ldp:RDFSource link header!");
+        }
+    }
+
+    @Test
+    void testOPTIONS() {
+        final String baseUrl = "http://localhost:" + APP.getLocalPort();
+        try (final Response res = CLIENT.target(baseUrl).request().options()) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Incorrect response family!");
         }
     }
 }

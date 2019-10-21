@@ -36,7 +36,6 @@ import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.http.CacheControlFilter;
-import org.trellisldp.http.CrossOriginResourceSharingFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebSubHeaderFilter;

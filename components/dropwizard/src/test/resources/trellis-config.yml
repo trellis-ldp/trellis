@@ -12,6 +12,7 @@ logging:
   level: WARN
   loggers:
     org.trellisldp: INFO
+    org.trellisldp.dropwizard: DEBUG
     io.dropwizard: INFO
 
 # Path to binaries
@@ -44,6 +45,14 @@ cors:
     allowOrigin:
         - "*"
     maxAge: 180
+    allowHeaders:
+        - "Content-Type"
+        - "Link"
+        - "Accept"
+        - "Accept-Datetime"
+        - "Prefer"
+        - "Slug"
+    exposeHeaders: []
 
 notifications:
     enabled: true
