@@ -48,3 +48,7 @@ jar {
     }
 }
 
+pmd {
+    consoleOutput = false
+}
+

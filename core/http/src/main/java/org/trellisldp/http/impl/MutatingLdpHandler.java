@@ -168,9 +168,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
                         rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject()))
                 .forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
-            throw new BadRequestException("Invalid RDF content: " + ex.getMessage());
+            throw new BadRequestException("Invalid RDF content: " + ex.getMessage(), ex);
         } catch (final IOException ex) {
-            throw new WebApplicationException("Error processing input: " + ex.getMessage());
+            throw new WebApplicationException("Error processing input: " + ex.getMessage(), ex);
         }
     }
 
