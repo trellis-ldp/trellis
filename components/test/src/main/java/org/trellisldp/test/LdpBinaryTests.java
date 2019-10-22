@@ -92,16 +92,17 @@ public interface LdpBinaryTests extends CommonTests {
 
     /**
      * Test fetching a binary description.
+     * @throws Exception if the RDF resource didn't close cleanly
      */
     @Test
     @DisplayName("Test fetching a binary description")
-    default void testGetBinaryDescription() {
+    default void testGetBinaryDescription() throws Exception {
         final EntityTag etag = getETag(getResourceLocation());
 
         // Fetch the description
-        try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get()) {
+        try (final Response res = target(getResourceLocation()).request().accept("text/turtle").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check binary description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.size() >= 0L, "Assert that the graph isn't empty");
             assertTrue(res.getEntityTag().isWeak(), "Check for a weak ETag");
             assertNotEquals(etag, res.getEntityTag(), "Check for different ETag values");
@@ -126,10 +127,11 @@ public interface LdpBinaryTests extends CommonTests {
 
     /**
      * Test modifying a binary's description via PATCH.
+     * @throws Exception if the RDF resource did not close cleanly
      */
     @Test
     @DisplayName("Test modifying a binary's description via PATCH")
-    default void testPatchBinaryDescription() {
+    default void testPatchBinaryDescription() throws Exception {
         final RDF rdf = getInstance();
         final EntityTag descriptionETag;
         final long size;
@@ -141,9 +143,9 @@ public interface LdpBinaryTests extends CommonTests {
         }
 
         // Fetch the description
-        try (final Response res = target(descriptionLocation).request().accept("text/turtle").get()) {
+        try (final Response res = target(descriptionLocation).request().accept("text/turtle").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check an LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             size = g.size();
             descriptionETag = res.getEntityTag();
             assertTrue(descriptionETag.isWeak(), "Check for a weak ETag");
@@ -160,9 +162,9 @@ public interface LdpBinaryTests extends CommonTests {
         await().until(() -> !descriptionETag.equals(getETag(descriptionLocation)));
 
         // Fetch the new description
-        try (final Response res = target(descriptionLocation).request().accept("text/turtle").get()) {
+        try (final Response res = target(descriptionLocation).request().accept("text/turtle").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check the new LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.size() > size, "Check the graph size is greater than " + size);
             assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
@@ -178,15 +180,16 @@ public interface LdpBinaryTests extends CommonTests {
 
     /**
      * Test that the binary appears in the parent container.
+     * @throws Exception if the RDF resource did not close cleanly
      */
     @Test
     @DisplayName("Test that the binary appears in the parent container")
-    default void testBinaryIsInContainer() {
+    default void testBinaryIsInContainer() throws Exception {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
-        try (final Response res = target().request().get()) {
+        try (final Response res = target().request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Check that the container is RDF");
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
                         rdf.createIRI(getResourceLocation())), "Check for an ldp:contains triple");
         }

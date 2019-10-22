@@ -9,7 +9,10 @@
         Trellis PMD rules
     </description>
 
-    <rule ref="category/java/bestpractices.xml"/>
+    <rule ref="category/java/bestpractices.xml">
+      <exclude name="JUnitTestContainsTooManyAsserts"/>
+      <exclude name="JUnitAssertionsShouldIncludeMessage"/>
+    </rule>
     <rule ref="category/java/multithreading.xml">
       <exclude name="UseConcurrentHashMap"/>
     </rule>

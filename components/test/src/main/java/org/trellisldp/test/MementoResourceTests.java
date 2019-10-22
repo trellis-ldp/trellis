@@ -151,47 +151,49 @@ public interface MementoResourceTests extends MementoCommonTests {
 
     /**
      * Test the content of memento resources.
+     * @throws Exception if the RDF resources did not exit cleanly
      */
     @Test
     @DisplayName("Test the content of memento resources")
-    default void testMementoContent() {
+    default void testMementoContent() throws Exception {
         final RDF rdf = getInstance();
-        final Dataset dataset = rdf.createDataset();
-        final Map<String, String> mementos = getMementos();
-        mementos.forEach((memento, date) -> {
-            try (final Response res = target(memento).request().get()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful request");
-                readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE).stream().forEach(triple ->
-                        dataset.add(rdf.createIRI(memento), triple.getSubject(), triple.getPredicate(),
-                            triple.getObject()));
-            }
-        });
+        try (final Dataset dataset = rdf.createDataset()) {
+            final Map<String, String> mementos = getMementos();
+            mementos.forEach((memento, date) -> {
+                try (final Response res = target(memento).request().get()) {
+                    assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful request");
+                    readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE).stream().forEach(triple ->
+                            dataset.add(rdf.createIRI(memento), triple.getSubject(), triple.getPredicate(),
+                                triple.getObject()));
+                }
+            });
 
-        final IRI subject = rdf.createIRI(getResourceLocation());
-        final List<IRI> urls = mementos.keySet().stream().sorted().map(rdf::createIRI).collect(toList());
-        assertEquals(2L, urls.size(), "Check that two mementos were found");
-        assertTrue(dataset.getGraph(urls.get(0)).isPresent(), "Check that the first graph is present");
-        dataset.getGraph(urls.get(0)).ifPresent(g -> {
-            assertTrue(g.contains(subject, type, SKOS.Concept), "Check for a skos:Concept type");
-            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
-                    "Check for a skos:prefLabel property");
-            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
-                    "Check for a dc:subject property");
-            assertEquals(3L, g.size(), "Check for three triples");
-        });
+            final IRI subject = rdf.createIRI(getResourceLocation());
+            final List<IRI> urls = mementos.keySet().stream().sorted().map(rdf::createIRI).collect(toList());
+            assertEquals(2L, urls.size(), "Check that two mementos were found");
+            assertTrue(dataset.getGraph(urls.get(0)).isPresent(), "Check that the first graph is present");
+            dataset.getGraph(urls.get(0)).ifPresent(g -> {
+                assertTrue(g.contains(subject, type, SKOS.Concept), "Check for a skos:Concept type");
+                assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
+                        "Check for a skos:prefLabel property");
+                assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
+                        "Check for a dc:subject property");
+                assertEquals(3L, g.size(), "Check for three triples");
+            });
 
-        assertTrue(dataset.getGraph(urls.get(1)).isPresent(), "Check that the last graph is present");
-        dataset.getGraph(urls.get(1)).ifPresent(g -> {
-            assertTrue(g.contains(subject, type, SKOS.Concept), "Check for a skos:Concept type");
-            assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
-                    "Check for a skos:prefLabel property");
-            assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
-                    "Check for a dc:subject property");
-            assertTrue(g.contains(subject, DC.title, rdf.createLiteral("Title")),
-                    "Check for a dc:title property");
-            assertTrue(g.contains(subject, DC.alternative, rdf.createLiteral("Alternative Title")),
-                    "Check for a dc:alternative property");
-            assertEquals(5L, g.size(), "Check for five triples");
-        });
+            assertTrue(dataset.getGraph(urls.get(1)).isPresent(), "Check that the last graph is present");
+            dataset.getGraph(urls.get(1)).ifPresent(g -> {
+                assertTrue(g.contains(subject, type, SKOS.Concept), "Check for a skos:Concept type");
+                assertTrue(g.contains(subject, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
+                        "Check for a skos:prefLabel property");
+                assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
+                        "Check for a dc:subject property");
+                assertTrue(g.contains(subject, DC.title, rdf.createLiteral("Title")),
+                        "Check for a dc:title property");
+                assertTrue(g.contains(subject, DC.alternative, rdf.createLiteral("Alternative Title")),
+                        "Check for a dc:alternative property");
+                assertEquals(5L, g.size(), "Check for five triples");
+            });
+        }
     }
 }

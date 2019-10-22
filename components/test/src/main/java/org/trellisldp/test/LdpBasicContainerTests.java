@@ -85,16 +85,17 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test with ldp:PreferMinimalContainer Prefer header.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
-    default void testGetEmptyContainer() {
+    default void testGetEmptyContainer() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
-                    "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                    "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check a container response", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertAll("Check the graph for triples", checkRdfGraph(g, identifier));
             assertFalse(g.contains(identifier, LDP.contains, null), "Verify that no ldp:contains triples are present");
         }
@@ -102,15 +103,16 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test with ldp:PreferMinimalContainer Prefer header.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
-    default void testGetInverseEmptyContainer() {
+    default void testGetInverseEmptyContainer() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
-                    "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get()) {
+                    "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check a container response", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
             assertFalse(g.contains(identifier, DC.description, null), "Check for no dc:description triple");
             assertFalse(g.contains(identifier, SKOS.prefLabel, null), "Check for no skos:prefLabel triple");
@@ -120,39 +122,41 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test that no membership triples are present.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test with ldp:PreferMembership Prefer header")
-    default void testGetEmptyContainerMembership() {
+    default void testGetEmptyContainerMembership() throws Exception {
         final long size;
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
                     "return=representation; include=\"" + LDP.PreferMembership.getIRIString() + "\"; " +
                     "omit=\"" + LDP.PreferMinimalContainer.getIRIString() + " " + LDP.PreferContainment.getIRIString() +
-                    "\"").get()) {
+                    "\"").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check a container response (1)", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             size = g.size();
         }
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
                     "return=representation; omit=\"" + LDP.PreferMembership.getIRIString() + " " +
                     LDP.PreferMinimalContainer.getIRIString() + " " + LDP.PreferContainment.getIRIString() +
-                    "\"").get()) {
+                    "\"").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check a container response (2)", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertEquals(size, g.size(), "Verify that no membership triples are present");
         }
     }
 
     /**
      * Test fetching a basic container.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test fetching a basic container")
-    default void testGetContainer() {
+    default void testGetContainer() throws Exception {
         final RDF rdf = getInstance();
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target(getContainerLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check an LDP-BC response", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
             assertAll("Check the RDF graph", checkRdfGraph(g, identifier));
             assertTrue(res.getEntityTag().isWeak(), "Verify that the ETag is weak");
@@ -161,10 +165,11 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test creating a basic container via POST.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test creating a basic container via POST")
-    default void testCreateContainerViaPost() {
+    default void testCreateContainerViaPost() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child3;
@@ -186,9 +191,9 @@ public interface LdpBasicContainerTests extends CommonTests {
         await().until(() -> !initialETag.equals(getETag(getContainerLocation())));
 
         // Now fetch the container
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target(getContainerLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check the LDP-BC again", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
             final EntityTag etag = res.getEntityTag();
             assertAll("Check the LDP-BC graph", checkRdfGraph(g, identifier));
@@ -200,10 +205,11 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test creating a child resource via PUT.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test creating a child resource via PUT")
-    default void testCreateContainerViaPut() {
+    default void testCreateContainerViaPut() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child4 = getContainerLocation() + "/child4";
@@ -220,9 +226,9 @@ public interface LdpBasicContainerTests extends CommonTests {
         }
 
         // Now fetch the resource
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target(getContainerLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check an LDP-BC after PUT", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
             final EntityTag etag = res.getEntityTag();
             assertAll("Check the resulting graph", checkRdfGraph(g, identifier));
@@ -241,10 +247,11 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test creating a child resource with a Slug header.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test creating a child resource with a Slug header")
-    default void testCreateContainerWithSlug() {
+    default void testCreateContainerWithSlug() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child5 = getContainerLocation() + "/child5";
@@ -263,9 +270,9 @@ public interface LdpBasicContainerTests extends CommonTests {
         await().until(() -> !initialETag.equals(getETag(getContainerLocation())));
 
         // Now fetch the resource
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target(getContainerLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check GETting the new resource", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             final IRI identifier = rdf.createIRI(getContainerLocation());
             final EntityTag etag = res.getEntityTag();
             assertAll("Check the resulting Graph", checkRdfGraph(g, identifier));
@@ -277,10 +284,11 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test deleting a basic container.
+     * @throws Exception when the RDF resource doesn not close cleanly
      */
     @Test
     @DisplayName("Test deleting a basic container")
-    default void testDeleteContainer() {
+    default void testDeleteContainer() throws Exception {
         final RDF rdf = getInstance();
         final String childResource;
 
@@ -294,10 +302,10 @@ public interface LdpBasicContainerTests extends CommonTests {
         await().until(() -> !initialETag.equals(getETag(getContainerLocation())));
 
         final EntityTag etag;
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target(getContainerLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check for an LDP-BC", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final IRI identifier = rdf.createIRI(getContainerLocation());
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertAll("Verify the resulting graph", checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(childResource)),
                     "Check for the presence of an ldp:contains triple");
@@ -315,9 +323,9 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for an expected error");
         }
 
-        try (final Response res = target(getContainerLocation()).request().get()) {
+        try (final Response res = target(getContainerLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check the parent container", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertFalse(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
                         rdf.createIRI(childResource)), "Check the graph doesn't contain the deleted resource");
             assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");

@@ -58,7 +58,7 @@ public class InMemoryBinaryService implements BinaryService {
     @Override
     public CompletionStage<Void> setContent(final BinaryMetadata meta, final InputStream bytes) {
         try {
-            final InMemoryBinary binary = new InMemoryBinary(toByteArray(bytes));
+            final InMemoryBinary binary = new InMemoryBinary(bytes);
             data.put(meta.getIdentifier(), binary);
             return DONE;
         } catch (final IOException e) {
@@ -81,8 +81,13 @@ public class InMemoryBinaryService implements BinaryService {
 
         private final byte[] data;
 
-        private InMemoryBinary(final byte[] data) {
-            this.data = data;
+        /**
+         * Create an in-memory binary object.
+         *
+         * @implNote The provided {@link InputStream} is consumed in the constructor of this object
+         */
+        private InMemoryBinary(final InputStream data) throws IOException {
+            this.data = toByteArray(data);
         }
 
         @Override

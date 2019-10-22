@@ -37,10 +37,7 @@ import org.trellisldp.vocabulary.LDP;
 @TestInstance(PER_CLASS)
 public interface MementoBinaryTests extends MementoResourceTests {
 
-    /**
-     * Build a list of all Mementos.
-     * @return the resource mementos
-     */
+    @Override
     default Map<String, String> getMementos() {
         final Map<String, String> mementos = new HashMap<>();
         try (final Response res = target(getBinaryLocation()).request().head()) {
@@ -93,11 +90,8 @@ public interface MementoBinaryTests extends MementoResourceTests {
         });
     }
 
-    /**
-     * Test the content of a binary memento resource.
-     */
     @Test
-    @DisplayName("Test the content of memento resources")
+    @Override
     default void testMementoContent() {
         final Map<String, String> mementos = getMementos();
         final Map<String, String> responses = new HashMap<>();
@@ -115,11 +109,8 @@ public interface MementoBinaryTests extends MementoResourceTests {
         assertEquals(2L, values.size(), "Check the number of distinct Memento responses");
     }
 
-    /**
-     * Test that memento resources are also LDP resources.
-     */
     @Test
-    @DisplayName("Test that memento resources are also LDP resources")
+    @Override
     default void testMementoLdpResource() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().head()) {

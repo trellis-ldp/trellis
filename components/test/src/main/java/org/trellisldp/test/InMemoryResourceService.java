@@ -87,8 +87,8 @@ public class InMemoryResourceService implements ResourceService {
         if (resources.containsKey(identifier)) {
             LOG.debug("Retrieving resource: {}", identifier);
             final Resource resource = resources.get(identifier);
-            final Dataset auditQuads = auditData.getOrDefault(identifier, rdfFactory.createDataset());
-            auditQuads.stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q)).forEach(resource.dataset()::add);
+            getAudit(identifier).stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q))
+                .forEach(resource.dataset()::add);
             final Set<IRI> contained = containment.getOrDefault(identifier, emptySet());
             contained.stream().map(c -> containmentQuad(c, identifier)).forEach(resource.dataset()::add);
             return completedFuture(resource);
@@ -125,14 +125,17 @@ public class InMemoryResourceService implements ResourceService {
         return containment.computeIfAbsent(container, dummy -> concurrentHashSet());
     }
 
+    private Dataset getAudit(final IRI identifier) {
+        return auditData.computeIfAbsent(identifier, dummy -> rdfFactory.createDataset());
+    }
+
     private static <T> Set<T> concurrentHashSet() {
         return ConcurrentHashMap.newKeySet();
     }
 
     @Override
     public CompletionStage<Void> add(final IRI identifier, final Dataset newData) {
-        final Dataset oldData = auditData.computeIfAbsent(identifier, dummy -> rdfFactory.createDataset());
-        newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q)).forEach(oldData::add);
+        newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q)).forEach(getAudit(identifier)::add);
         return DONE;
     }
 

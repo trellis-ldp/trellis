@@ -232,15 +232,16 @@ public interface LdpRdfTests extends CommonTests {
 
     /**
      * Test fetching an RDF resource.
+     * @throws Exception if the RDF resource didn't close cleanly
      */
     @Test
     @DisplayName("Test fetching an RDF resource")
-    default void testGetRDF() {
+    default void testGetRDF() throws Exception {
         final RDF rdf = getInstance();
         // Fetch the new resource
-        try (final Response res = target(getResourceLocation()).request().get()) {
+        try (final Response res = target(getResourceLocation()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check an LDP-RS resource", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertEquals(3L, g.size(), "Check the size of the resulting graph");
             final IRI identifier = rdf.createIRI(getResourceLocation());
             assertTrue(g.contains(identifier, type, SKOS.Concept), "Check for a rdf:type triple");
@@ -254,10 +255,11 @@ public interface LdpRdfTests extends CommonTests {
 
     /**
      * Test modifying an RDF document via PATCH.
+     * @throws Exception if the RDF resource didn't close cleanly
      */
     @Test
     @DisplayName("Test modifying an RDF document via PATCH")
-    default void testPatchRDF() {
+    default void testPatchRDF() throws Exception {
         final RDF rdf = getInstance();
         final EntityTag initialETag = getETag(getResourceLocation());
 
@@ -273,9 +275,9 @@ public interface LdpRdfTests extends CommonTests {
         await().until(() -> !initialETag.equals(etag2));
 
         // Fetch the updated resource
-        try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
+        try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES)) {
             assertAll("Check an updated resource", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES);
             assertEquals(4L, g.size(), "Check the graph size");
             assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
@@ -293,9 +295,9 @@ public interface LdpRdfTests extends CommonTests {
         await().until(() -> !etag2.equals(getETag(getResourceLocation())));
 
         // Fetch the updated resource
-        try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
+        try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES)) {
             assertAll("Check an updated resource", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES);
             assertEquals(3L, g.size(), "Check the graph size");
             assertFalse(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
@@ -306,17 +308,18 @@ public interface LdpRdfTests extends CommonTests {
 
     /**
      * Verify that the correct containment triples exist.
+     * @throws Exception if the RDF resource didn't close cleanly
      */
     @Test
     @DisplayName("Verify that the correct containment triples exist")
-    default void testRdfContainment() {
+    default void testRdfContainment() throws Exception {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
-        try (final Response res = target().request().get()) {
+        try (final Response res = target().request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Check that the container is RDF");
-            final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE);
             assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
-                        rdf.createIRI(getResourceLocation())), "Check for an ldp:contains property");
+                    rdf.createIRI(getResourceLocation())), "Check for an ldp:contains property");
         }
     }
 
