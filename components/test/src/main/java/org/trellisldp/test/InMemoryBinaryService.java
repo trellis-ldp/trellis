@@ -81,6 +81,11 @@ public class InMemoryBinaryService implements BinaryService {
 
         private final byte[] data;
 
+        /**
+         * Create an in-memory binary object.
+         *
+         * @implNote The provided {@link InputStream} is consumed in the constructor of this object
+         */
         private InMemoryBinary(final InputStream data) throws IOException {
             this.data = toByteArray(data);
         }
