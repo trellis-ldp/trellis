@@ -16,7 +16,6 @@ package org.trellisldp.openliberty;
 import static java.util.Arrays.asList;
 import static org.trellisldp.app.AppUtils.printBanner;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,7 +48,7 @@ public class WebApplication extends Application {
     private OAuthFilter oauthFilter;
 
     @PostConstruct
-    void init() throws IOException {
+    void init() {
         printBanner("Trellis Triplestore Application", "banner.txt");
     }
 
