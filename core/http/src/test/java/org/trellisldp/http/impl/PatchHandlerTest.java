@@ -16,6 +16,7 @@ package org.trellisldp.http.impl;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Stream.of;
+import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -60,21 +61,25 @@ import org.trellisldp.vocabulary.RDFS;
  */
 class PatchHandlerTest extends BaseTestHandler {
 
+    private static final String ERR_CONTENT_TYPE = "Incorrect content-type header!";
+    private static final String RETURN_REPRESENTATION = "return=representation";
+
     private static final String insert = "INSERT { <> <http://purl.org/dc/terms/title> \"A title\" } WHERE {}";
 
     @Test
     void testPatchNoSparql() {
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, null, mockBundler, null, null);
-        final Response res = assertThrows(BadRequestException.class, () ->
+        try (final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.initialize(mockParent, mockResource),
-                "No exception thrown with a null input!").getResponse();
-        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
+                "No exception thrown with a null input!").getResponse()) {
+            assertEquals(BAD_REQUEST, res.getStatusInfo(), ERR_RESPONSE_CODE);
+        }
     }
 
     @Test
     void testBadAudit() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build());
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         // will never store audit
@@ -90,13 +95,13 @@ class PatchHandlerTest extends BaseTestHandler {
     @Test
     void testPatchLdprs() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .toCompletableFuture().join().build();
-
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
+        try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join().build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+        }
     }
 
     @Test
@@ -105,88 +110,89 @@ class PatchHandlerTest extends BaseTestHandler {
 
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(quad));
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .toCompletableFuture().join().build();
+        try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join().build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
 
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-
-        verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq("http://localhost/resource"));
-        verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
+            verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
+                    eq("http://localhost/resource"));
+            verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
+        }
     }
 
     @Test
     void testAcl() {
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .toCompletableFuture().join().build();
+        try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join().build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
 
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-
-        final ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
-        verify(mockEventService).emit(event.capture());
-        assertEquals(Optional.of("http://localhost/resource?ext=acl"),
-                event.getValue().getObject().map(IRI::getIRIString));
-        verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
-                eq("http://localhost/resource?ext=acl"));
-        verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
+            final ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
+            verify(mockEventService).emit(event.capture());
+            assertEquals(Optional.of("http://localhost/resource?ext=acl"),
+                    event.getValue().getObject().map(IRI::getIRIString));
+            verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
+                    eq("http://localhost/resource?ext=acl"));
+            verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
+        }
     }
 
 
     @Test
     void testPreferRepresentation() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
-        when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
+        when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf(RETURN_REPRESENTATION));
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .toCompletableFuture().join().build();
-
-        assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
-                "Incorrect Preference-Applied header!");
-        assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type header!");
-        assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Incorrect content-type header!");
-        assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
-        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
+        try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join().build()) {
+            assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(RETURN_REPRESENTATION, res.getHeaderString(PREFERENCE_APPLIED),
+                    "Incorrect Preference-Applied header!");
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), ERR_CONTENT_TYPE);
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), ERR_CONTENT_TYPE);
+            assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
+            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
+            assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
+        }
     }
 
     @Test
     void testPreferHTMLRepresentation() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
-        when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=representation"));
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
+        when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf(RETURN_REPRESENTATION));
         when(mockTrellisRequest.getAcceptableMediaTypes())
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
-        final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-            .toCompletableFuture().join().build();
-
-        assertEquals(OK, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals("return=representation", res.getHeaderString(PREFERENCE_APPLIED),
-                "Incorrect Preference-Applied header!");
-        assertTrue(TEXT_HTML_TYPE.isCompatible(res.getMediaType()), "Incorrect content-type header!");
-        assertTrue(res.getMediaType().isCompatible(TEXT_HTML_TYPE), "Incorrect content-type header!");
-        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
-        assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
-        assertAll("Check LDP type link headers", checkLdpType(res, LDP.RDFSource));
+        try (final Response res = patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join().build()) {
+            assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(RETURN_REPRESENTATION, res.getHeaderString(PREFERENCE_APPLIED),
+                    "Incorrect Preference-Applied header!");
+            assertTrue(TEXT_HTML_TYPE.isCompatible(res.getMediaType()), ERR_CONTENT_TYPE);
+            assertTrue(res.getMediaType().isCompatible(TEXT_HTML_TYPE), ERR_CONTENT_TYPE);
+            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
+            assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
+            assertAll("Check LDP type link headers", checkLdpType(res, LDP.RDFSource));
+        }
     }
 
     @Test
     void testError() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
@@ -201,26 +207,28 @@ class PatchHandlerTest extends BaseTestHandler {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, null);
-        final Response res = assertThrows(BadRequestException.class, () ->
+        try (final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.initialize(mockParent, mockResource),
-                "No exception for an unsupported IXN model!").getResponse();
-        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
-        assertTrue(res.getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
-                link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing Link header with constraint!");
+                "No exception for an unsupported IXN model!").getResponse()) {
+            assertEquals(BAD_REQUEST, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertTrue(res.getLinks().stream().anyMatch(link ->
+                    link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
+                    link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing Link header with constraint!");
+        }
     }
 
     @Test
     void testError2() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockTrellisRequest.getPath()).thenReturn("resource");
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         doThrow(RuntimeTrellisException.class).when(mockIoService)
-            .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(baseUrl + "resource"));
+            .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(baseUrl + RESOURCE_NAME));
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, null, baseUrl);
-        final Response res = assertThrows(BadRequestException.class, () ->
+        try (final Response res = assertThrows(BadRequestException.class, () ->
                 patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-                .toCompletableFuture().join(), "No exception when the update triggers an error!").getResponse();
-        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response type!");
+                .toCompletableFuture().join(), "No exception when the update triggers an error!").getResponse()) {
+            assertEquals(BAD_REQUEST, res.getStatusInfo(), ERR_RESPONSE_CODE);
+        }
     }
 }

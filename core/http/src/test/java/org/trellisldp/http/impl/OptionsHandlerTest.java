@@ -44,17 +44,20 @@ import org.trellisldp.vocabulary.LDP;
  */
 class OptionsHandlerTest extends BaseTestHandler {
 
+    private static final String ERR_ACCEPT_PATCH = "Incorrect Accept-Patch header!";
+    private static final String CHECK_ALLOW = "Check Allow headers";
+
     @Test
     void testOptionsLdprs() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
-        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
-
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
-        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
-        assertAll("Check Allow headers", checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
+        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
+            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
+        }
     }
 
     @Test
@@ -63,17 +66,17 @@ class OptionsHandlerTest extends BaseTestHandler {
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, baseUrl);
-        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
+        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
 
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
-
-        final String acceptPost = res.getHeaderString(ACCEPT_POST);
-        assertNotNull(acceptPost, "Missing Accept-Post header!");
-        assertTrue(acceptPost.contains(APPLICATION_LD_JSON), "JSON-LD missing from acceptable POST formats!");
-        assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES), "N-Triples missing from acceptable POST formats!");
-        assertTrue(acceptPost.contains(TEXT_TURTLE.split(";")[0]), "Turtle missing from acceptable POST formats!");
-        assertAll("Check Allow headers", checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST)));
+            final String acceptPost = res.getHeaderString(ACCEPT_POST);
+            assertNotNull(acceptPost, "Missing Accept-Post header!");
+            assertTrue(acceptPost.contains(APPLICATION_LD_JSON), "JSON-LD missing from acceptable POST formats!");
+            assertTrue(acceptPost.contains(APPLICATION_N_TRIPLES), "N-Triples missing from acceptable POST formats!");
+            assertTrue(acceptPost.contains(TEXT_TURTLE.split(";")[0]), "Turtle missing from acceptable POST formats!");
+            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH, POST)));
+        }
     }
 
     @Test
@@ -81,11 +84,11 @@ class OptionsHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, null);
-        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
-
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
-        assertAll("Check Allow headers", checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
+        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
+        }
     }
 
     @Test
@@ -93,22 +96,22 @@ class OptionsHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getExt()).thenReturn("acl");
 
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, false, baseUrl);
-        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
-
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), "Incorrect Accept-Patch header!");
-        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
-        assertAll("Check Allow headers", checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
+        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
+            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
+        }
     }
 
     @Test
     void testOptionsMemento() {
         final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, true, null);
-        final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build();
-
-        assertEquals(NO_CONTENT, res.getStatusInfo(), "Incorrect response code!");
-        assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header on Memento!");
-        assertNull(res.getHeaderString(ACCEPT_PATCH), "Unexpected Accept-Patch header on Memento!");
-        assertAll("Check Allow headers", checkAllowHeader(res, asList(GET, HEAD, OPTIONS)));
+        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header on Memento!");
+            assertNull(res.getHeaderString(ACCEPT_PATCH), "Unexpected Accept-Patch header on Memento!");
+            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS)));
+        }
     }
 }

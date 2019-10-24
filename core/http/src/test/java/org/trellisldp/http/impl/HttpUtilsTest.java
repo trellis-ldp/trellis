@@ -18,6 +18,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static javax.ws.rs.core.MediaType.TEXT_XML_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
@@ -86,9 +88,7 @@ class HttpUtilsTest {
 
     @Test
     void testGetSyntax() {
-        final List<MediaType> types = asList(
-                new MediaType("application", "json"),
-                new MediaType("text", "xml"),
+        final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("text", "turtle"));
 
         assertEquals(TURTLE, HttpUtils.getSyntax(ioService, types, null), "Cannot determine Turtle syntax!");
@@ -102,9 +102,7 @@ class HttpUtilsTest {
 
     @Test
     void testGetSyntaxFallback() {
-        final List<MediaType> types = asList(
-                new MediaType("application", "json"),
-                new MediaType("text", "xml"),
+        final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("text", "turtle"));
 
         assertNull(HttpUtils.getSyntax(ioService, types, "application/json"),
@@ -128,9 +126,7 @@ class HttpUtilsTest {
 
     @Test
     void testGetSyntaxError() {
-        final List<MediaType> types = asList(
-                new MediaType("application", "json"),
-                new MediaType("text", "xml"));
+        final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE);
 
         assertThrows(NotAcceptableException.class, () -> HttpUtils.getSyntax(ioService, types, null),
                 "Not-Acceptable Exception should be thrown when nothing matches");
@@ -142,8 +138,8 @@ class HttpUtilsTest {
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferServerManaged.getIRIString() + "\""));
 
-        assertFalse(filtered.contains(Trellis.PreferServerManaged), "Prefer filter doesn't catch quad!");
-        assertTrue(filtered.contains(Trellis.PreferUserManaged), "Prefer filter misses quad!");
+        assertFalse(filtered.contains(Trellis.PreferServerManaged), "Prefer filter doesn't catch server managed quad!");
+        assertTrue(filtered.contains(Trellis.PreferUserManaged), "Prefer filter misses user managed quad!");
         assertEquals(3, filtered.size(), "Incorrect size of filtered quad list");
     }
 
@@ -151,7 +147,7 @@ class HttpUtilsTest {
     void testFilterPrefer2() {
         final Set<IRI> filtered2 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation"));
 
-        assertTrue(filtered2.contains(Trellis.PreferUserManaged), "Prefer filter omits quad!");
+        assertTrue(filtered2.contains(Trellis.PreferUserManaged), "Prefer filter omits user managed quad!");
         assertEquals(3, filtered2.size(), "Incorrect size of filtered quad list!");
     }
 
@@ -160,9 +156,10 @@ class HttpUtilsTest {
         final Set<IRI> filtered3 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferAudit.getIRIString() + "\""));
 
-        assertTrue(filtered3.contains(Trellis.PreferAudit), "Prefer filter omits quad!");
-        assertFalse(filtered3.contains(Trellis.PreferServerManaged), "Prefer filter doesn't catch quad!");
-        assertTrue(filtered3.contains(Trellis.PreferUserManaged), "Prefer filter omits quad!");
+        assertTrue(filtered3.contains(Trellis.PreferAudit), "Prefer filter omits audit quad!");
+        assertFalse(filtered3.contains(Trellis.PreferServerManaged),
+                "Prefe filter doesn't catch server managed quad!");
+        assertTrue(filtered3.contains(Trellis.PreferUserManaged), "Prefer filter omits user managed quad!");
         assertEquals(4, filtered3.size(), "Incorrect size of filtered quad list!");
     }
 
@@ -171,14 +168,14 @@ class HttpUtilsTest {
         final Set<IRI> filtered4 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferUserManaged.getIRIString() + "\""));
 
-        assertFalse(filtered4.contains(Trellis.PreferAudit), "Prefer filter doesn't omit quad!");
-        assertFalse(filtered4.contains(Trellis.PreferServerManaged), "Prefer filter doesn't omit quad!");
-        assertTrue(filtered4.contains(Trellis.PreferUserManaged), "Prefer filter omits quad!");
+        assertFalse(filtered4.contains(Trellis.PreferAudit), "Prefer filter doesn't omit audit quad!");
+        assertFalse(filtered4.contains(Trellis.PreferServerManaged), "Prefer filter doesn't omit server managed quad!");
+        assertTrue(filtered4.contains(Trellis.PreferUserManaged), "Prefer filter omits user managed quad!");
         assertEquals(3, filtered4.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
-    void testSkolemize() {
+    void testSkolemize() throws Exception {
         final String baseUrl = "http://example.org/";
         final Literal literal = rdf.createLiteral("A title");
         final BlankNode bnode = rdf.createBlankNode("foo");
@@ -219,47 +216,43 @@ class HttpUtilsTest {
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
 
         final IRI subject = rdf.createIRI("http://example.org/resource");
-        final Graph graph = rdf.createGraph();
-        graph.add(rdf.createTriple(subject, DC.title, literal));
-        graph.add(rdf.createTriple(subject, DC.subject, bnode));
-        graph.add(rdf.createTriple(bnode, DC.title, literal));
+        try (final Graph graph = rdf.createGraph()) {
+            graph.add(rdf.createTriple(subject, DC.title, literal));
+            graph.add(rdf.createTriple(subject, DC.subject, bnode));
+            graph.add(rdf.createTriple(bnode, DC.title, literal));
 
-        final List<Triple> triples = graph.stream()
-            .map(HttpUtils.skolemizeTriples(mockResourceService, "http://example.org/"))
-            .collect(toList());
+            final List<Triple> triples = graph.stream()
+                .map(HttpUtils.skolemizeTriples(mockResourceService, "http://example.org/"))
+                .collect(toList());
 
-        assertTrue(triples.stream().anyMatch(t -> t.getSubject().equals(identifier)), "subject not in triple stream!");
-        assertTrue(triples.stream().anyMatch(t -> t.getObject().equals(literal)), "Literal not in triple stream!");
-        assertTrue(triples.stream().anyMatch(t -> t.getSubject().ntriplesString()
-                    .startsWith("<" + TRELLIS_BNODE_PREFIX)), "Skolemized bnode not in triple stream!");
+            assertTrue(triples.stream().anyMatch(t -> t.getSubject().equals(identifier)),
+                    "subject not in triple stream!");
+            assertTrue(triples.stream().anyMatch(t -> t.getObject().equals(literal)), "Literal not in triple stream!");
+            assertTrue(triples.stream().anyMatch(t -> t.getSubject().ntriplesString()
+                        .startsWith("<" + TRELLIS_BNODE_PREFIX)), "Skolemized bnode not in triple stream!");
 
-        assertAll(triples.stream().map(HttpUtils.unskolemizeTriples(mockResourceService, "http://example.org/"))
-            .map(t -> () -> assertTrue(graph.contains(t), "Graph doesn't include triple: " + t)));
+            assertAll(triples.stream().map(HttpUtils.unskolemizeTriples(mockResourceService, "http://example.org/"))
+                .map(t -> () -> assertTrue(graph.contains(t), "Graph doesn't include triple: " + t)));
+        }
     }
 
     @Test
     void testProfile() {
-        final List<MediaType> types = asList(
-                new MediaType("application", "json"),
-                new MediaType("text", "xml"),
+        final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("application", "ld+json", singletonMap("profile", compacted.getIRIString())));
         assertEquals(compacted, HttpUtils.getProfile(types, JSONLD), "Incorrect json-ld profile!");
     }
 
     @Test
     void testMultipleProfiles() {
-        final List<MediaType> types = asList(
-                new MediaType("application", "json"),
-                new MediaType("text", "xml"),
+        final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("application", "ld+json", singletonMap("profile", "first second")));
         assertEquals(rdf.createIRI("first"), HttpUtils.getProfile(types, JSONLD), "Incorrect json-ld profile!");
     }
 
     @Test
     void testNoProfile() {
-        final List<MediaType> types = asList(
-                new MediaType("application", "json"),
-                new MediaType("text", "xml"),
+        final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("application", "ld+json"));
         assertNull(HttpUtils.getProfile(types, JSONLD), "Unexpected json-ld profile!");
     }
@@ -277,9 +270,10 @@ class HttpUtilsTest {
         assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(true, "*", null));
         assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(true, null, "Mon, 17 Dec 2018 07:28:00 GMT"));
         assertDoesNotThrow(() -> HttpUtils.checkRequiredPreconditions(false, null, null));
-        final Response res = assertThrows(ClientErrorException.class, () ->
-                HttpUtils.checkRequiredPreconditions(true, null, null)).getResponse();
-        assertEquals(PRECONDITION_REQUIRED, res.getStatus());
+        try (final Response res = assertThrows(ClientErrorException.class, () ->
+                HttpUtils.checkRequiredPreconditions(true, null, null)).getResponse()) {
+            assertEquals(PRECONDITION_REQUIRED, res.getStatus());
+        }
     }
 
     @Test

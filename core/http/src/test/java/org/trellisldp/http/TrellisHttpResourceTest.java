@@ -81,11 +81,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
         initMocks(this);
 
-        final String baseUri = getBaseUri().toString();
-        final String origin = baseUri.substring(0, baseUri.length() - 1);
-
         final ResourceConfig config = new ResourceConfig();
-
         config.register(new TrellisHttpResource(mockBundler, null));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter(HUB));
@@ -111,10 +107,11 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         matcher.getResourceHeaders(mockResponse, mockRequest, mockUriInfo, mockHttpHeaders);
         verify(mockResponse).resume(captor.capture());
 
-        final Response res = captor.getValue();
-        assertTrue(getLinks(res).stream().anyMatch(l ->
-                    l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")),
-                "Missing rel=self header with correct prefix!");
+        try (final Response res = captor.getValue()) {
+            assertTrue(getLinks(res).stream().anyMatch(l ->
+                        l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")),
+                    "Missing rel=self header with correct prefix!");
+        }
     }
 
     @Test

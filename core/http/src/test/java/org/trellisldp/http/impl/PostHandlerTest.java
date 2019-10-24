@@ -17,7 +17,10 @@ import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.of;
+import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -56,28 +59,31 @@ import org.trellisldp.vocabulary.LDP;
  */
 class PostHandlerTest extends BaseTestHandler {
 
+    private static final String ERR_LOCATION = "Incorrect Location header!";
+    private static final String NEW_RESOURCE = "newresource";
+
     @Test
     void testPostLdprs() throws IOException {
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel(TYPE).build());
 
-        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.Container));
+        final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.Container));
+        }
     }
 
     @Test
     void testBadAudit() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build());
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
-        final PostHandler handler = buildPostHandler("/simpleTriple.ttl", null, null);
+        final PostHandler handler = buildPostHandler(RESOURCE_TURTLE, null, null);
 
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))),
@@ -86,134 +92,133 @@ class PostHandlerTest extends BaseTestHandler {
 
     @Test
     void testDefaultType1() throws IOException {
-        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
+        final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.RDFSource));
+        }
     }
 
     @Test
     void testDefaultType2() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
 
-        final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, DELETED_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
+        final PostHandler handler = buildPostHandler(RESOURCE_SIMPLE, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, DELETED_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.NonRDFSource));
+        }
     }
 
     @Test
     void testDefaultType3() throws IOException {
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel(TYPE).build());
 
-        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
+        final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.RDFSource));
+        }
     }
 
     @Test
     void testDefaultType4() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel(TYPE).build());
 
-        final PostHandler handler = buildPostHandler("/simpleData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
+        final PostHandler handler = buildPostHandler(RESOURCE_SIMPLE, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.NonRDFSource));
+        }
     }
 
     @Test
     void testDefaultType5() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
-        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "newresource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
+        final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.RDFSource));
+        }
     }
 
     @Test
     void testUnsupportedType() throws IOException {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel(TYPE).build());
 
-        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", null);
-        final Response res = assertThrows(BadRequestException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-                .toCompletableFuture().join(), "No exception thrown when the IXN model isn't supported!").getResponse();
-
-        assertEquals(BAD_REQUEST, res.getStatusInfo(), "Incorrect response code!");
-        assertTrue(res.getLinks().stream().anyMatch(link ->
-                link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
-                link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing constraint Link header!");
+        final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
+        try (final Response res = assertThrows(BadRequestException.class, () ->
+                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).toCompletableFuture().join(),
+                "No exception thrown when the IXN model isn't supported!").getResponse()) {
+            assertEquals(BAD_REQUEST, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertTrue(res.getLinks().stream().anyMatch(link ->
+                    link.getUri().toString().equals(UnsupportedInteractionModel.getIRIString()) &&
+                    link.getRel().equals(LDP.constrainedBy.getIRIString())), "Missing constraint Link header!");
+        }
     }
 
     @Test
     void testRdfEntity() throws IOException {
-        final String path = "newresource";
-        final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + path), DC.title,
+        final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + NEW_RESOURCE), DC.title,
                         rdf.createLiteral("A title"));
 
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
         when(mockIoService.read(any(), eq(TURTLE), any())).thenAnswer(x -> Stream.of(triple));
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
-        final PostHandler handler = buildPostHandler("/simpleTriple.ttl", "newresource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
+        final PostHandler handler = buildPostHandler(RESOURCE_TURTLE, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.RDFSource));
 
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + path), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.RDFSource));
-
-        verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
-        verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + path));
-        verify(mockResourceService).create(any(Metadata.class), any(Dataset.class));
+            verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
+            verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + NEW_RESOURCE));
+            verify(mockResourceService).create(any(Metadata.class), any(Dataset.class));
+        }
     }
 
     @Test
     void testBinaryEntity() throws IOException {
-        when(mockTrellisRequest.getContentType()).thenReturn("text/plain");
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
 
-        final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "new-resource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
-        assertAll("Check Binary response", checkBinaryEntityResponse("text/plain"));
+        final PostHandler handler = buildPostHandler(RESOURCE_SIMPLE, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.NonRDFSource));
+            assertAll("Check Binary response", checkBinaryEntityResponse(TEXT_PLAIN));
+        }
     }
 
     @Test
     void testBinaryEntityNoContentType() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn(null);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel("type").build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.NonRDFSource.getIRIString()).rel(TYPE).build());
 
-        final PostHandler handler = buildPostHandler("/simpleData.txt", "new-resource", null);
-        final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
-            .toCompletableFuture().join().build();
-
-        assertEquals(CREATED, res.getStatusInfo(), "Incorrect response code!");
-        assertEquals(create(baseUrl + "new-resource"), res.getLocation(), "Incorrect Location header!");
-        assertAll("Check LDP type Link headers", checkLdpType(res, LDP.NonRDFSource));
-        assertAll("Check Binary response", checkBinaryEntityResponse("application/octet-stream"));
+        final PostHandler handler = buildPostHandler(RESOURCE_SIMPLE, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.NonRDFSource));
+            assertAll("Check Binary response", checkBinaryEntityResponse(APPLICATION_OCTET_STREAM));
+        }
     }
 
     @Test
@@ -221,7 +226,7 @@ class PostHandlerTest extends BaseTestHandler {
         when(mockResourceService.create(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
-        final PostHandler handler = buildPostHandler("/emptyData.txt", "newresource", baseUrl);
+        final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, baseUrl);
 
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))),
@@ -230,23 +235,25 @@ class PostHandlerTest extends BaseTestHandler {
 
     @Test
     void testBadRdfInputStream() {
-        final InputStream mockInputStream = mock(InputStream.class, inv -> {
-            throw new IOException("Expected exception");
-        });
-
-        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "bad-resource", mockInputStream,
-                mockBundler, null);
-        final Response res = assertThrows(WebApplicationException.class, () ->
+        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "bad-resource",
+                buildThrowingInputStream(), mockBundler, null);
+        try (final Response res = assertThrows(WebApplicationException.class, () ->
                 handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).toCompletableFuture().join())
-            .getResponse();
-        assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), "Incorrect response code!");
+                .getResponse()) {
+            assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), ERR_RESPONSE_CODE);
+        }
     }
 
+    private InputStream buildThrowingInputStream() {
+        return mock(InputStream.class, inv -> {
+            throw new IOException("Expected exception");
+        });
+    }
 
     private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl)
                     throws IOException {
-        final InputStream entity = getClass().getResource(resourceName).openStream();
-        return new PostHandler(mockTrellisRequest, root, id, entity, mockBundler, baseUrl);
+        return new PostHandler(mockTrellisRequest, root, id, getClass().getResource(resourceName).openStream(),
+                mockBundler, baseUrl);
     }
 
     private Stream<Executable> checkBinaryEntityResponse(final String contentType) {

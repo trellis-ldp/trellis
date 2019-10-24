@@ -22,10 +22,14 @@ import org.junit.jupiter.api.Test;
  */
 class SlugTest {
 
+    private static final String SLUG_VALUE = "slugValue";
+    private static final String SLUG_UNDERSCORE_VALUE = "slug_value";
+    private static final String CHECK_SLUG_VALUE = "Check slug value";
+
     @Test
     void testSlug() {
-        final Slug slug = Slug.valueOf("slugValue");
-        assertEquals("slugValue", slug.getValue(), "Check slug value");
+        final Slug slug = Slug.valueOf(SLUG_VALUE);
+        assertEquals(SLUG_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test
@@ -37,31 +41,31 @@ class SlugTest {
     @Test
     void testSpaceNormalization() {
         final Slug slug = Slug.valueOf("slug  value");
-        assertEquals("slug_value", slug.getValue(), "Check slug value");
+        assertEquals(SLUG_UNDERSCORE_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test
     void testSlashNormalization() {
         final Slug slug = Slug.valueOf("slug/value");
-        assertEquals("slug_value", slug.getValue(), "Check slug value");
+        assertEquals(SLUG_UNDERSCORE_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test
     void testSpaceSlashNormalization() {
         final Slug slug = Slug.valueOf("slug\t/ value");
-        assertEquals("slug_value", slug.getValue(), "Check slug value");
+        assertEquals(SLUG_UNDERSCORE_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test
     void testHashUri() {
         final Slug slug = Slug.valueOf("slugValue#foo");
-        assertEquals("slugValue", slug.getValue(), "Check slug value");
+        assertEquals(SLUG_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test
     void testQueryParam() {
         final Slug slug = Slug.valueOf("slugValue?bar=baz");
-        assertEquals("slugValue", slug.getValue(), "Check slug value");
+        assertEquals(SLUG_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test

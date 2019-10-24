@@ -81,15 +81,16 @@ class ResourceServiceTest {
     }
 
     @Test
-    void testDefaultCreate() {
+    void testDefaultCreate() throws Exception {
         final IRI root = rdf.createIRI("trellis:data/");
-        final Dataset dataset = rdf.createDataset();
         final Metadata metadata = Metadata.builder(existing).container(root).interactionModel(LDP.RDFSource).build();
 
-        when(mockResourceService.replace(eq(metadata), eq(dataset))).thenReturn(completedFuture(null));
+        try (final Dataset dataset = rdf.createDataset()) {
+            when(mockResourceService.replace(eq(metadata), eq(dataset))).thenReturn(completedFuture(null));
 
-        assertDoesNotThrow(() -> mockResourceService.create(metadata, dataset).toCompletableFuture().join());
-        verify(mockResourceService).replace(eq(metadata), eq(dataset));
+            assertDoesNotThrow(() -> mockResourceService.create(metadata, dataset).toCompletableFuture().join());
+            verify(mockResourceService).replace(eq(metadata), eq(dataset));
+        }
     }
 
     @Test

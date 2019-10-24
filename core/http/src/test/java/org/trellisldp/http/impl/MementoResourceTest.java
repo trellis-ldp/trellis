@@ -38,6 +38,8 @@ import org.junit.jupiter.api.Test;
 
 class MementoResourceTest {
 
+    private static final String URL = "http://example.com/resource";
+
     @Test
     void testFilteredMementoLink() {
         final Link link = fromUri("http://example.com/resource/memento/1").rel(MEMENTO)
@@ -59,7 +61,7 @@ class MementoResourceTest {
 
     @Test
     void testFilteredOtherLink() {
-        final Link link = fromUri("http://example.com/resource").rel(TYPE)
+        final Link link = fromUri(URL).rel(TYPE)
             .param(FROM, ofInstant(now().minusSeconds(1000), UTC).format(RFC_1123_DATE_TIME))
             .param(UNTIL, ofInstant(now(), UTC).format(RFC_1123_DATE_TIME)).build();
         assertTrue(MementoResource.filterLinkParams(link, false).getParams().containsKey(FROM));
@@ -78,27 +80,24 @@ class MementoResourceTest {
 
     @Test
     void testMementoHeadersSingle() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
         mementos.add(time);
 
-        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time).collect(toList());
+        final List<Link> links = MementoResource.getMementoHeaders(URL, mementos, time).collect(toList());
         assertEquals(2L, links.size());
         checkMementoHeaders(links, 0L, 0L, 1L);
     }
 
     @Test
     void testMementoHeadersMultipleFirst() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
         mementos.add(time);
         mementos.add(time.plusSeconds(1L));
         mementos.add(time.plusSeconds(2L));
 
-        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time)
-            .collect(toList());
+        final List<Link> links = MementoResource.getMementoHeaders(URL, mementos, time).collect(toList());
         assertEquals(4L, links.size());
         checkMementoHeaders(links, 0L, 1L, 3L);
     }
@@ -106,14 +105,13 @@ class MementoResourceTest {
 
     @Test
     void testMementoHeadersMultipleMiddle() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
         mementos.add(time);
         mementos.add(time.plusSeconds(1L));
         mementos.add(time.plusSeconds(2L));
 
-        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.plusSeconds(1L))
+        final List<Link> links = MementoResource.getMementoHeaders(URL, mementos, time.plusSeconds(1L))
             .collect(toList());
         assertEquals(3L, links.size());
         checkMementoHeaders(links, 1L, 1L, 2L);
@@ -121,14 +119,13 @@ class MementoResourceTest {
 
     @Test
     void testMementoHeadersMultipleLast() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
         mementos.add(time);
         mementos.add(time.plusSeconds(1L));
         mementos.add(time.plusSeconds(2L));
 
-        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.plusSeconds(2L))
+        final List<Link> links = MementoResource.getMementoHeaders(URL, mementos, time.plusSeconds(2L))
             .collect(toList());
         assertEquals(4L, links.size());
         checkMementoHeaders(links, 1L, 0L, 3L);
@@ -136,14 +133,13 @@ class MementoResourceTest {
 
     @Test
     void testMementoHeadersMultipleBeyond() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
         mementos.add(time);
         mementos.add(time.plusSeconds(1L));
         mementos.add(time.plusSeconds(2L));
 
-        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.plusSeconds(3L))
+        final List<Link> links = MementoResource.getMementoHeaders(URL, mementos, time.plusSeconds(3L))
             .collect(toList());
         assertEquals(3L, links.size());
         checkMementoHeaders(links, 0L, 0L, 2L);
@@ -151,14 +147,13 @@ class MementoResourceTest {
 
     @Test
     void testMementoHeadersMultiplePrecede() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
         mementos.add(time);
         mementos.add(time.plusSeconds(1L));
         mementos.add(time.plusSeconds(2L));
 
-        final List<Link> links = MementoResource.getMementoHeaders(identifier, mementos, time.minusSeconds(1L))
+        final List<Link> links = MementoResource.getMementoHeaders(URL, mementos, time.minusSeconds(1L))
             .collect(toList());
         assertEquals(3L, links.size());
         checkMementoHeaders(links, 0L, 0L, 2L);
@@ -166,19 +161,17 @@ class MementoResourceTest {
 
     @Test
     void testMementoLinksEmpty() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
-        final List<Link> links = MementoResource.getMementoLinks(identifier, mementos).collect(toList());
+        final List<Link> links = MementoResource.getMementoLinks(URL, mementos).collect(toList());
         assertTrue(links.isEmpty());
     }
 
     @Test
     void testMementoLinksSingle() {
-        final String identifier = "http://example.com/resource";
         final SortedSet<Instant> mementos = new TreeSet<>();
         final Instant time = now();
         mementos.add(time);
-        final List<Link> links = MementoResource.getMementoLinks(identifier, mementos).collect(toList());
+        final List<Link> links = MementoResource.getMementoLinks(URL, mementos).collect(toList());
         assertEquals(3L, links.size());
         checkMementoHeaders(links, 0L, 0L, 1L);
         assertEquals(1L, links.stream().filter(l -> l.getRels().contains("timegate")).count());

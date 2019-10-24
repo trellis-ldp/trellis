@@ -97,12 +97,19 @@ import org.trellisldp.vocabulary.LDP;
 /**
  * Base class for the HTTP handler tests.
  */
-abstract class BaseTestHandler {
+class BaseTestHandler {
+
+    static final String ERR_RESPONSE_CODE = "Incorrect response code!";
+    static final String CHECK_LINK_TYPES = "Check LDP type link headers";
+    static final String RESOURCE_SIMPLE = "/simpleData.txt";
+    static final String RESOURCE_TURTLE = "/simpleTriple.ttl";
+    static final String RESOURCE_EMPTY = "/emptyData.txt";
+    static final String RESOURCE_NAME = "resource";
 
     static final String baseUrl = "http://example.org/";
     static final RDF rdf = getInstance();
     static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-    static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+    static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_NAME);
     static final Instant time = ofEpochSecond(1496262729);
 
     private static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,

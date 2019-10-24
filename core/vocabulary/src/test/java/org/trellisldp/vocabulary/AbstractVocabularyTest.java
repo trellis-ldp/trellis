@@ -90,7 +90,7 @@ abstract class AbstractVocabularyTest {
 
         final Set<String> subjects = fields().map(namespace()::concat).collect(toSet());
 
-        assertTrue(subjects.size() > 0, "Unable to extract field definitions!");
+        assertFalse(subjects.isEmpty(), "Unable to extract field definitions!");
 
         graph.find(ANY, ANY, ANY).mapWith(Triple::getSubject).filterKeep(Node::isURI).mapWith(Node::getURI)
                 .filterKeep(Objects::nonNull)

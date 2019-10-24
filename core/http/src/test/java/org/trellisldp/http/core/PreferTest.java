@@ -15,6 +15,7 @@ package org.trellisldp.http.core;
 
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.trellisldp.http.core.Prefer.*;
 
 import java.util.stream.Stream;
 
@@ -25,6 +26,14 @@ import org.junit.jupiter.api.function.Executable;
  * @author acoburn
  */
 class PreferTest {
+
+    private static final String CHECK_ASYNC = "Check respond async";
+    private static final String CHECK_HANDLING = "Check handling";
+    private static final String CHECK_NO_OMIT = "Check for no omits";
+    private static final String CHECK_NO_INCLUDE = "Check for no includes";
+    private static final String CHECK_PREF_TYPE = "Check preference type";
+    private static final String CHECK_SIMPLE_PARSING = "Check simple Prefer parsing";
+    private static final String URL = "http://example.org/test";
 
     @Test
     void testPreferNullValues() {
@@ -39,35 +48,35 @@ class PreferTest {
     @Test
     void testPrefer1() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test\"");
-        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
+        assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer1b() {
-        final Prefer prefer = Prefer.ofInclude("http://example.org/test");
-        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
+        final Prefer prefer = Prefer.ofInclude(URL);
+        assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer1c() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=http://example.org/test");
-        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
+        assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer2() {
         final Prefer prefer = Prefer.valueOf("return  =  representation;   include =  \"http://example.org/test\"");
-        assertAll("Check simple Prefer parsing", checkPreferInclude(prefer, "http://example.org/test"));
+        assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
     @Test
     void testPrefer3() {
         final Prefer prefer = Prefer.valueOf("return=minimal");
-        assertEquals(of("minimal"), prefer.getPreference(), "Check preference value");
+        assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
         assertTrue(prefer.getInclude().isEmpty(), "Check that there are no includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits count is zero");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
@@ -75,109 +84,109 @@ class PreferTest {
         final Prefer prefer = Prefer.valueOf("return=other");
         assertTrue(prefer.getInclude().isEmpty(), "Check includes is empty");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits is empty");
-        assertFalse(prefer.getPreference().isPresent(), "Check preference type");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling type");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertFalse(prefer.getPreference().isPresent(), CHECK_PREF_TYPE);
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testPrefer5() {
         final Prefer prefer = Prefer.valueOf("return=representation; omit=\"http://example.org/test\"");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference value");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
+        assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertFalse(prefer.getOmit().isEmpty(), "Check for omits");
-        assertTrue(prefer.getOmit().contains("http://example.org/test"), "Check omit value");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertTrue(prefer.getOmit().contains(URL), "Check omit value");
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testPrefer5b() {
-        final Prefer prefer = Prefer.ofOmit("http://example.org/test");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference value");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
+        final Prefer prefer = Prefer.ofOmit(URL);
+        assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
         assertFalse(prefer.getOmit().isEmpty(), "Check for omit values");
-        assertTrue(prefer.getOmit().contains("http://example.org/test"), "Check omit value");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertTrue(prefer.getOmit().contains(URL), "Check omit value");
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testPrefer6() {
         final Prefer prefer = Prefer.valueOf("handling=lenient; return=minimal");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
-        assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
-        assertEquals(of("minimal"), prefer.getPreference(), "Check preference value");
-        assertEquals(of("lenient"), prefer.getHandling(), "Check handling value");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
+        assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
+        assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
+        assertEquals(of(PREFER_LENIENT), prefer.getHandling(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testPrefer7() {
         final Prefer prefer = Prefer.valueOf("respond-async; random-param");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
-        assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
-        assertFalse(prefer.getPreference().isPresent(), "Check preference type");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling value");
-        assertTrue(prefer.getRespondAsync(), "Check respond async");
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
+        assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
+        assertFalse(prefer.getPreference().isPresent(), CHECK_PREF_TYPE);
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertTrue(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testPrefer8() {
         final Prefer prefer = Prefer.valueOf("handling=strict; return=minimal");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
-        assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
-        assertEquals(of("minimal"), prefer.getPreference(), "Check preference value");
-        assertEquals(of("strict"), prefer.getHandling(), "Check handling value");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
+        assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
+        assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
+        assertEquals(of(PREFER_STRICT), prefer.getHandling(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testPrefer9() {
         final Prefer prefer = Prefer.valueOf("handling=blah; return=minimal");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
-        assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
-        assertEquals(of("minimal"), prefer.getPreference(), "Check preference type");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
+        assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
+        assertEquals(of(PREFER_MINIMAL), prefer.getPreference(), CHECK_PREF_TYPE);
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testStaticInclude() {
         final Prefer prefer = Prefer.ofInclude();
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
-        assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
+        assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
+        assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
     }
 
     @Test
     void testStaticOmit() {
         final Prefer prefer = Prefer.ofOmit();
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
-        assertTrue(prefer.getInclude().isEmpty(), "Check for no includes");
-        assertTrue(prefer.getOmit().isEmpty(), "Check for no omits");
+        assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
+        assertTrue(prefer.getInclude().isEmpty(), CHECK_NO_INCLUDE);
+        assertTrue(prefer.getOmit().isEmpty(), CHECK_NO_OMIT);
     }
 
     @Test
     void testPreferBadQuotes() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"http://example.org/test");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
+        assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertEquals(1L, prefer.getInclude().size(), "Check includes count");
         assertTrue(prefer.getInclude().contains("\"http://example.org/test"));
         assertTrue(prefer.getOmit().isEmpty(), "Check omits count is zero");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
     void testPreferBadQuotes2() {
         final Prefer prefer = Prefer.valueOf("return=representation; include=\"");
-        assertEquals(of("representation"), prefer.getPreference(), "Check preference type");
+        assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE);
         assertEquals(1L, prefer.getInclude().size(), "Check for includes size");
         assertTrue(prefer.getInclude().contains("\""), "Check for weird quote in includes");
         assertTrue(prefer.getOmit().isEmpty(), "Check omits count is zero");
-        assertFalse(prefer.getHandling().isPresent(), "Check handling");
-        assertFalse(prefer.getRespondAsync(), "Check respond async");
+        assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING);
+        assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
     @Test
@@ -187,11 +196,11 @@ class PreferTest {
 
     private Stream<Executable> checkPreferInclude(final Prefer prefer, final String url) {
         return Stream.of(
-                () -> assertEquals(of("representation"), prefer.getPreference(), "Check preference"),
+                () -> assertEquals(of(PREFER_REPRESENTATION), prefer.getPreference(), CHECK_PREF_TYPE),
                 () -> assertEquals(1L, prefer.getInclude().size(), "Check includes count"),
                 () -> assertTrue(prefer.getInclude().contains(url), "Check includes value"),
                 () -> assertTrue(prefer.getOmit().isEmpty(), "Check omits count"),
-                () -> assertFalse(prefer.getHandling().isPresent(), "Check handling"),
-                () -> assertFalse(prefer.getRespondAsync(), "Check respond async"));
+                () -> assertFalse(prefer.getHandling().isPresent(), CHECK_HANDLING),
+                () -> assertFalse(prefer.getRespondAsync(), CHECK_ASYNC));
     }
 }
