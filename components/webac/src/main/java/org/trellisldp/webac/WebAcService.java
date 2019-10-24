@@ -136,10 +136,9 @@ public class WebAcService {
 
     /**
      * Initializes the root ACL, if there is no root ACL.
-     * @throws Exception if there was an error writing the root ACL
      */
     @PostConstruct
-    public void initialize() throws Exception {
+    public void initialize() {
         try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
             this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
                 .exceptionally(err -> {
@@ -147,6 +146,8 @@ public class WebAcService {
                     LOGGER.debug("Error auto-initializing Trellis", err);
                     return null;
                 }).toCompletableFuture().join();
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error initializing Trellis ACL", ex);
         }
     }
 

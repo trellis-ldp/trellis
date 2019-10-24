@@ -15,8 +15,6 @@ package org.trellisldp.quarkus;
 
 import static org.trellisldp.app.AppUtils.printBanner;
 
-import java.io.IOException;
-
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.ApplicationPath;
@@ -30,7 +28,7 @@ import javax.ws.rs.core.Application;
 public class TrellisApplication extends Application {
 
     @PostConstruct
-    void init() throws IOException {
+    void init() {
         printBanner("Trellis Application", "banner.txt");
     }
 }

@@ -34,20 +34,21 @@ public final class AppUtils {
      *
      * @param name the application name
      * @param resource the classpath resource to use
-     * @throws IOException if there is an error reading the resource
      */
-    public static void printBanner(final String name, final String resource) throws IOException {
+    public static void printBanner(final String name, final String resource) {
         final String banner = readResource(requireNonNull(resource, "resource cannot be null!"));
         LOGGER.info("Starting {}\n{}", name, banner);
     }
 
-    private static String readResource(final String resource) throws IOException {
+    private static String readResource(final String resource) {
         try (final InputStream resourceStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(resource)) {
             if (resourceStream != null) {
                 return readResource(resourceStream);
             }
             LOGGER.warn("Banner resource {} could not be read", resource);
+        } catch (final IOException ex) {
+            LOGGER.error("Error reading banner resource at {}: {}", resource, ex.getMessage());
         }
         return "";
     }
