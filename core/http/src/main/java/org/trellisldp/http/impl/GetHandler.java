@@ -113,20 +113,15 @@ public class GetHandler extends BaseLdpHandler {
      * @param req the LDP request
      * @param trellis the Trellis application bundle
      * @param extensions the extension mapping
-     * @param isMemento true if the resource is a memento; false otherwise
-     * @param weakEtags whether to use weak ETags for RDF responses
-     * @param includeMementoDates whether to include date strings in memento link headers
-     * @param defaultJsonLdProfile a default json-ld profile
-     * @param baseUrl the base URL
+     * @param config configuration for the get hander
      */
     public GetHandler(final TrellisRequest req, final ServiceBundler trellis, final Map<String, IRI> extensions,
-            final boolean isMemento, final boolean weakEtags, final boolean includeMementoDates,
-            final String defaultJsonLdProfile, final String baseUrl) {
-        super(req, trellis, extensions, baseUrl);
-        this.isMemento = isMemento;
-        this.weakEtags = weakEtags;
-        this.includeMementoDates = includeMementoDates;
-        this.defaultJsonLdProfile = defaultJsonLdProfile;
+            final GetConfiguration config) {
+        super(req, trellis, extensions, config.getBaseUrl());
+        this.isMemento = config.isMemento();
+        this.weakEtags = config.useWeakEtags();
+        this.includeMementoDates = config.includeMementoDates();
+        this.defaultJsonLdProfile = config.defaultJsonLdProfile();
     }
 
     /**

@@ -14,6 +14,7 @@
 package org.trellisldp.dropwizard;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonMap;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -40,6 +41,7 @@ import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.webac.WebAcFilter;
 
 /**
@@ -78,7 +80,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      * @return the LDP resource matcher
      */
     protected Object getLdpComponent(final T config, final boolean initialize) throws Exception {
-        final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(), config.getBaseUrl());
+        final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(),
+                singletonMap("acl", Trellis.PreferAccessControl), config.getBaseUrl());
         if (initialize) {
             ldpResource.initialize();
         }

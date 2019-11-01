@@ -73,6 +73,7 @@ import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.http.core.Version;
 import org.trellisldp.http.impl.DeleteHandler;
+import org.trellisldp.http.impl.GetConfiguration;
 import org.trellisldp.http.impl.GetHandler;
 import org.trellisldp.http.impl.HttpUtils;
 import org.trellisldp.http.impl.MementoResource;
@@ -127,20 +128,6 @@ public class TrellisHttpResource {
     private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
         this(trellis, buildExtensionMapFromConfig(config),
                 config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
-    }
-
-    /**
-     * Create a Trellis HTTP resource matcher.
-     *
-     * @param trellis the Trellis application bundle
-     * @param baseUrl a base URL
-     */
-    public TrellisHttpResource(final ServiceBundler trellis, final String baseUrl) {
-        this(trellis, baseUrl, getConfig());
-    }
-
-    private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Config config) {
-        this(trellis, buildExtensionMapFromConfig(config), baseUrl, config);
     }
 
     /**
@@ -411,8 +398,9 @@ public class TrellisHttpResource {
     private CompletionStage<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, trellis, extensions, req.getVersion() != null, weakEtags,
-                includeMementoDates, defaultJsonLdProfile, urlBase);
+        final GetConfiguration config = new GetConfiguration(req.getVersion() != null,
+                weakEtags, includeMementoDates, defaultJsonLdProfile, urlBase);
+        final GetHandler getHandler = new GetHandler(req, trellis, extensions, config);
 
         // Fetch a memento
         if (req.getVersion() != null) {
