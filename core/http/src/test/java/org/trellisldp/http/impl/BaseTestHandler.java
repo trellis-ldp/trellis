@@ -17,6 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -44,6 +45,7 @@ import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 
@@ -52,6 +54,7 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
@@ -93,6 +96,7 @@ import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * Base class for the HTTP handler tests.
@@ -111,6 +115,7 @@ class BaseTestHandler {
     static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_NAME);
     static final Instant time = ofEpochSecond(1496262729);
+    static final Map<String, IRI> extensions = singletonMap(ACL, Trellis.PreferAccessControl);
 
     private static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
             LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));

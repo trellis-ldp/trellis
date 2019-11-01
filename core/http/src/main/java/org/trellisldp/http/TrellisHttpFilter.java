@@ -14,8 +14,10 @@
 package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static javax.ws.rs.HttpMethod.DELETE;
+import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
@@ -26,10 +28,16 @@ import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.EXT;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
+import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
+import static org.trellisldp.vocabulary.LDP.PreferContainment;
+import static org.trellisldp.vocabulary.LDP.PreferMembership;
+import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
+import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.util.List;
 
@@ -41,6 +49,7 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
 import org.trellisldp.http.core.AcceptDatetime;
+import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.Range;
 import org.trellisldp.http.core.Version;
 
@@ -76,6 +85,14 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
         // Validate query parameters
         validateVersion(ctx);
         validateTimeMap(ctx);
+
+        // Unconditionally set the Prefer header for ACL requests
+        if (ACL.equals(ctx.getUriInfo().getQueryParameters().getFirst(EXT)) && GET.equals(ctx.getMethod())) {
+            ctx.getHeaders().putSingle(PREFER, new Prefer(Prefer.PREFER_REPRESENTATION,
+                        singletonList(PreferAccessControl.getIRIString()),
+                        asList(PreferUserManaged.getIRIString(), PreferContainment.getIRIString(),
+                            PreferMembership.getIRIString()), null, null).toString());
+        }
     }
 
     private void checkTrailingSlash(final ContainerRequestContext ctx) {

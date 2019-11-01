@@ -22,12 +22,11 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.core.HttpConstants.ACL_QUERY_PARAM;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
-import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -36,6 +35,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
@@ -59,15 +59,18 @@ public class DeleteHandler extends MutatingLdpHandler {
      *
      * @param req the LDP request
      * @param trellis the Trellis application bundle
+     * @param extensions the extention graph mapping
      * @param baseUrl the base URL
      */
-    public DeleteHandler(final TrellisRequest req, final ServiceBundler trellis, final String baseUrl) {
-        super(req, trellis, baseUrl);
+    public DeleteHandler(final TrellisRequest req, final ServiceBundler trellis,
+            final Map<String, IRI> extensions, final String baseUrl) {
+        super(req, trellis, extensions, baseUrl);
     }
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (isAclRequest() ? ACL_QUERY_PARAM : "");
+        final String ext = getRequest().getExt();
+        return super.getIdentifier() + (ext != null ? "?ext=" + ext : "");
     }
 
     /**
@@ -120,21 +123,21 @@ public class DeleteHandler extends MutatingLdpHandler {
     }
 
     private CompletionStage<Void> handleDeletion(final Dataset mutable, final Dataset immutable) {
-        if (isAclRequest()) {
-            return handleAclDeletion(mutable, immutable);
+        if (getExtensionGraphName() != null) {
+            return handleSubGraphDeletion(mutable, immutable);
         }
         return handleResourceDeletion(immutable).thenCompose(future ->
                 emitEvent(getInternalId(), AS.Delete, getResource().getInteractionModel()));
     }
 
-    private CompletionStage<Void> handleAclDeletion(final Dataset mutable, final Dataset immutable) {
+    private CompletionStage<Void> handleSubGraphDeletion(final Dataset mutable, final Dataset immutable) {
 
-        // When deleting just the ACL graph, keep the user managed triples intact
-        try (final Stream<Quad> quads = getResource().stream(PreferUserManaged)) {
+        // When deleting just an extension graph, keep the other graphs intact
+        try (final Stream<Quad> quads = getResource().stream(getNonCurrentGraphNames())) {
             quads.forEachOrdered(mutable::add);
         }
 
-        // Note: when deleting ACL resources, the resource itself is not removed and so this is really
+        // Note: when deleting extension resources, the resource itself is not removed and so this is really
         // more of an update operation. As such, the `replace` method is used and an `update` Audit event
         // is generated.
 

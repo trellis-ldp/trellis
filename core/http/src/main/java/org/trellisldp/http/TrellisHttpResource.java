@@ -13,6 +13,7 @@
  */
 package org.trellisldp.http;
 
+import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -21,15 +22,11 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_JSONLD_PROFILE;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_MEMENTO_HEADER_DATES;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PRECONDITION_REQUIRED;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_WEAK_ETAG;
-import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
+import static org.trellisldp.http.core.HttpConstants.*;
+import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -77,6 +74,7 @@ import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.http.core.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetHandler;
+import org.trellisldp.http.impl.HttpUtils;
 import org.trellisldp.http.impl.MementoResource;
 import org.trellisldp.http.impl.OptionsHandler;
 import org.trellisldp.http.impl.PatchHandler;
@@ -98,6 +96,7 @@ public class TrellisHttpResource {
     protected static final RDF rdf = getInstance();
 
     protected final ServiceBundler trellis;
+    protected final Map<String, IRI> extensions;
     protected final String baseUrl;
     protected final String defaultJsonLdProfile;
     protected final boolean weakEtags;
@@ -126,7 +125,8 @@ public class TrellisHttpResource {
     }
 
     private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
-        this(trellis, config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
+        this(trellis, buildExtensionMapFromConfig(config),
+                config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
     }
 
     /**
@@ -140,8 +140,25 @@ public class TrellisHttpResource {
     }
 
     private TrellisHttpResource(final ServiceBundler trellis, final String baseUrl, final Config config) {
+        this(trellis, buildExtensionMapFromConfig(config), baseUrl, config);
+    }
+
+    /**
+     * Create a Trellis HTTP resource matcher.
+     *
+     * @param trellis the Trellis application bundle
+     * @param extensions the extension graph mapping
+     * @param baseUrl a base URL
+     */
+    public TrellisHttpResource(final ServiceBundler trellis, final Map<String, IRI> extensions, final String baseUrl) {
+        this(trellis, extensions, baseUrl, getConfig());
+    }
+
+    private TrellisHttpResource(final ServiceBundler trellis, final Map<String, IRI> extensions, final String baseUrl,
+            final Config config) {
         this.baseUrl = baseUrl;
         this.trellis = trellis;
+        this.extensions = extensions;
         this.defaultJsonLdProfile = config.getOptionalValue(CONFIG_HTTP_JSONLD_PROFILE, String.class).orElse(null);
         this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.TRUE);
         this.includeMementoDates = config.getOptionalValue(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class)
@@ -153,14 +170,14 @@ public class TrellisHttpResource {
     }
 
     /**
-     * Initialize the Trellis backend with a root container and default ACL quads.
+     * Initialize the Trellis backend with a root container quads.
      *
      * @apiNote In a CDI context, this initialization step will be called automatically.
      *          In a Java SE context, however, it may be necessary to invoke this method
      *          in code, though a ResourceService implementation may still choose to
      *          initialize itself independently of this method. In either case, if the
-     *          persistence backend has already been initialized with a root resoure and
-     *          root ACL, this method will make no changes to the storage layer.
+     *          persistence backend has already been initialized with a root resource,
+     *          this method will make no changes to the storage layer.
      * @throws Exception if there was an error initializing the root resource
      */
     @PostConstruct
@@ -255,7 +272,8 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, req.getVersion() != null, urlBase);
+        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, extensions, req.getVersion() != null,
+                urlBase);
 
         fetchTrellisResource(identifier, req.getVersion()).thenApply(optionsHandler::initialize)
             .thenApply(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
@@ -284,7 +302,8 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, defaultJsonLdProfile, urlBase);
+        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, extensions, defaultJsonLdProfile,
+                urlBase);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)
@@ -309,7 +328,7 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, urlBase);
+        final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, extensions, urlBase);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), deleteHandler::initialize)
             .thenCompose(deleteHandler::deleteResource).thenApply(ResponseBuilder::build)
@@ -341,7 +360,7 @@ public class TrellisHttpResource {
 
         final IRI parent = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier);
-        final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, urlBase);
+        final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, extensions, urlBase);
 
         trellis.getResourceService().get(parent)
             .thenCombine(trellis.getResourceService().get(child), postHandler::initialize)
@@ -369,8 +388,8 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PutHandler putHandler = new PutHandler(req, body, trellis, preconditionRequired, createUncontained,
-                urlBase);
+        final PutHandler putHandler = new PutHandler(req, body, trellis, extensions, preconditionRequired,
+                createUncontained, urlBase);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)
@@ -392,7 +411,7 @@ public class TrellisHttpResource {
     private CompletionStage<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final GetHandler getHandler = new GetHandler(req, trellis, req.getVersion() != null, weakEtags,
+        final GetHandler getHandler = new GetHandler(req, trellis, extensions, req.getVersion() != null, weakEtags,
                 includeMementoDates, defaultJsonLdProfile, urlBase);
 
         // Fetch a memento
@@ -456,5 +475,10 @@ public class TrellisHttpResource {
         return cause instanceof WebApplicationException
                         ? ((WebApplicationException) cause).getResponse()
                         : new WebApplicationException(err).getResponse();
+    }
+
+    private static Map<String, IRI> buildExtensionMapFromConfig(final Config config) {
+        return config.getOptionalValue(CONFIG_HTTP_EXTENSION_GRAPHS, String.class).map(HttpUtils::buildExtensionMap)
+            .orElseGet(() -> singletonMap("acl", PreferAccessControl));
     }
 }

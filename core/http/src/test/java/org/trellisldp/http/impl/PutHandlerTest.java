@@ -318,8 +318,8 @@ class PutHandlerTest extends BaseTestHandler {
             .thenReturn(asyncException());
 
         try (final InputStream entity = getClass().getResource(RESOURCE_SIMPLE).openStream()) {
-            final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, false, true, null);
-
+            final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, extensions,
+                    false, true, null);
             assertThrows(CompletionException.class,
                             () -> unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
                             "No exception when there's a problem with the backend binary service!");
@@ -333,7 +333,7 @@ class PutHandlerTest extends BaseTestHandler {
     private PutHandler buildPutHandler(final String resourceName, final String baseUrl, final boolean uncontained) {
         try {
             return new PutHandler(mockTrellisRequest, getClass().getResource(resourceName).openStream(), mockBundler,
-                            false, uncontained, baseUrl);
+                            extensions, false, uncontained, baseUrl);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -44,7 +44,7 @@ class DeleteHandlerTest extends BaseTestHandler {
 
     @Test
     void testDelete() {
-        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, null);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, null);
         try (final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -60,7 +60,7 @@ class DeleteHandlerTest extends BaseTestHandler {
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
-        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, null);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, null);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend reports an exception!");
@@ -69,7 +69,7 @@ class DeleteHandlerTest extends BaseTestHandler {
     @Test
     void testDeleteError() {
         when(mockResourceService.delete(any(Metadata.class))).thenReturn(asyncException());
-        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, baseUrl);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when the backend reports an exception!");
@@ -78,7 +78,7 @@ class DeleteHandlerTest extends BaseTestHandler {
     @Test
     void testDeletePersistenceSupport() {
         when(mockResourceService.supportedInteractionModels()).thenReturn(emptySet());
-        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, baseUrl);
         try (final Response res = assertThrows(WebApplicationException.class, () ->
                 handler.initialize(mockParent, mockResource)).getResponse()) {
             assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -92,7 +92,7 @@ class DeleteHandlerTest extends BaseTestHandler {
     void testDeleteACLError() {
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
-        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, baseUrl);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when an ACL couldn't be deleted!");
@@ -103,7 +103,7 @@ class DeleteHandlerTest extends BaseTestHandler {
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
-        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, baseUrl);
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, baseUrl);
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
                 "No exception thrown when an ACL audit stream couldn't be written!");

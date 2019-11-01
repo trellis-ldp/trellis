@@ -55,6 +55,9 @@ public final class HttpConstants {
     /** Configuration key defining the server's base URL. */
     public static final String CONFIG_HTTP_BASE_URL = "trellis.http.baseUrl";
 
+    /** Configuration key defining the extension graph mapping. */
+    public static final String CONFIG_HTTP_EXTENSION_GRAPHS = "trellis.http.extension.graphs";
+
     /** Configuration key defining whether to include dates in memento headers. */
     public static final String CONFIG_HTTP_MEMENTO_HEADER_DATES = "trellis.http.memento.headerdates";
 

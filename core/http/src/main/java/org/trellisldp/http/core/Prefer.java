@@ -55,6 +55,8 @@ public class Prefer {
 
     public static final String PREFER_HANDLING = "handling";
 
+    private static final String WS = " ";
+
     private final String preference;
 
     private final String handling;
@@ -152,6 +154,15 @@ public class Prefer {
         return omit;
     }
 
+    @Override
+    public String toString() {
+        final String includeParam = include.isEmpty() ? "" : "include=\"" + join(WS, include) + "\";";
+        final String omitParam = omit.isEmpty() ? "" : "omit=\"" + join(WS, omit) + "\";";
+        return getPreference().map(pref -> "return=" + pref + ";").orElse("") + includeParam + omitParam +
+            getHandling().map(pref -> "handling=" + pref + ";").orElse("") +
+            (getRespondAsync() ? "respond-async" : "");
+    }
+
     /**
      * Build a Prefer object with a set of included IRIs.
      *
@@ -164,7 +175,7 @@ public class Prefer {
             return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION));
         }
         return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION) + "; " + PREFER_INCLUDE + "=\"" +
-                join(" ", iris) + "\"");
+                join(WS, iris) + "\"");
     }
 
     /**
@@ -179,7 +190,7 @@ public class Prefer {
             return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION));
         }
         return valueOf(join("=", PREFER_RETURN, PREFER_REPRESENTATION) + "; " + PREFER_OMIT + "=\"" +
-                join(" ", iris) + "\"");
+                join(WS, iris) + "\"");
     }
 
     private static List<String> parseParameter(final String param) {

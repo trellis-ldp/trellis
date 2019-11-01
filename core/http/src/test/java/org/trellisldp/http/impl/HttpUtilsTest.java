@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.ClientErrorException;
@@ -280,5 +281,16 @@ class HttpUtilsTest {
     void testCloseDataset() throws Exception {
         doThrow(new IOException()).when(mockDataset).close();
         assertThrows(RuntimeTrellisException.class, () -> HttpUtils.closeDataset(mockDataset));
+    }
+
+    @Test
+    void testExtMapBuilder() {
+        assertTrue(HttpUtils.buildExtensionMap("").isEmpty());
+        assertTrue(HttpUtils.buildExtensionMap("    ").isEmpty());
+        assertTrue(HttpUtils.buildExtensionMap(", , = ,foo=  ,, =bar,baz").isEmpty());
+        final Map<String, IRI> data1 = HttpUtils.buildExtensionMap(
+                "ex = https://example.com/  ,acl=http://www.trellisldp.org/ns/trellis#PreferAccessControl");
+        assertEquals(rdf.createIRI("https://example.com/"), data1.get("ex"));
+        assertEquals(Trellis.PreferAccessControl, data1.get("acl"));
     }
 }

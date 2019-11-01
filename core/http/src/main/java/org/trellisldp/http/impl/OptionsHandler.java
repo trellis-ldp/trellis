@@ -33,17 +33,15 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
-import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
@@ -66,7 +64,6 @@ public class OptionsHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(OptionsHandler.class);
 
-    private final IRI graphName;
     private final boolean isMemento;
 
     /**
@@ -74,13 +71,13 @@ public class OptionsHandler extends BaseLdpHandler {
      *
      * @param req the LDP request
      * @param trellis the Trellis application bundle
+     * @param extensions the extension graph mapping
      * @param isMemento true if the resource is a memento; false otherwise
      * @param baseUrl the base URL
      */
-    public OptionsHandler(final TrellisRequest req, final ServiceBundler trellis, final boolean isMemento,
-            final String baseUrl) {
-        super(req, trellis, baseUrl);
-        this.graphName = ACL.equals(req.getExt()) ? PreferAccessControl : PreferUserManaged;
+    public OptionsHandler(final TrellisRequest req, final ServiceBundler trellis,
+            final Map<String, IRI> extensions, final boolean isMemento, final String baseUrl) {
+        super(req, trellis, extensions, baseUrl);
         this.isMemento = isMemento;
     }
 
@@ -122,9 +119,9 @@ public class OptionsHandler extends BaseLdpHandler {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
         } else {
             builder.header(ACCEPT_PATCH, APPLICATION_SPARQL_UPDATE);
-            // ACL resources allow a limited set of methods (no DELETE or POST)
+            // Extension resources allow a limited set of methods (no POST)
             // If it's not a container, POST isn't allowed
-            if (PreferAccessControl.equals(graphName) || getResource().getInteractionModel().equals(RDFSource) ||
+            if (getExtensionGraphName() != null || getResource().getInteractionModel().equals(RDFSource) ||
                     getResource().getInteractionModel().equals(NonRDFSource)) {
                 builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
             } else {
@@ -142,7 +139,7 @@ public class OptionsHandler extends BaseLdpHandler {
 
     private boolean hasDescription() {
         return NonRDFSource.equals(getResource().getInteractionModel()) && !TIMEMAP.equals(getRequest().getExt())
-            && !isAclRequest();
+            && getExtensionGraphName() == null;
     }
 
     private String getDescription() {

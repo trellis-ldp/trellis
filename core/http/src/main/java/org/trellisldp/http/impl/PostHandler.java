@@ -41,6 +41,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -88,11 +89,12 @@ public class PostHandler extends MutatingLdpHandler {
      * @param id the new resource's identifier
      * @param entity the entity
      * @param trellis the Trellis application bundle
+     * @param extensions the extension graph mapping
      * @param baseUrl the base URL
      */
     public PostHandler(final TrellisRequest req, final IRI parentIdentifier, final String id, final InputStream entity,
-            final ServiceBundler trellis, final String baseUrl) {
-        super(req, trellis, baseUrl, entity);
+            final ServiceBundler trellis, final Map<String, IRI> extensions, final String baseUrl) {
+        super(req, trellis, extensions, baseUrl, entity);
 
         final String separator = req.getPath().isEmpty() ? "" : "/";
 
@@ -144,7 +146,7 @@ public class PostHandler extends MutatingLdpHandler {
         } else if (DELETED_RESOURCE.equals(parent)) {
             // Can't POST to a deleted resource
             throw new ClientErrorException(GONE);
-        } else if (isAclRequest()
+        } else if (getExtensionGraphName() != null
                 || ldpResourceTypes(parent.getInteractionModel()).noneMatch(LDP.Container::equals)) {
             // Can't POST to an ACL resource or non-Container
             throw new NotAllowedException(GET, Stream.of(HEAD, OPTIONS, PATCH, PUT, DELETE).toArray(String[]::new));

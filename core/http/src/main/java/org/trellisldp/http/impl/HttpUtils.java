@@ -19,6 +19,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.function.Predicate.isEqual;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.notModified;
@@ -39,6 +40,7 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -378,6 +380,17 @@ public final class HttpUtils {
         } catch (final Exception ex) {
             throw new RuntimeTrellisException("Error closing dataset", ex);
         }
+    }
+
+    /**
+     * Build a map suitable for extension graphs from a config string.
+     * @param extensions the config value
+     * @return the formatted map
+     */
+    public static Map<String, IRI> buildExtensionMap(final String extensions) {
+        return stream(extensions.split(",")).map(item -> item.split("=")).filter(kv -> kv.length == 2)
+            .filter(kv -> !kv[0].trim().isEmpty() && !kv[1].trim().isEmpty())
+            .collect(toMap(kv -> kv[0].trim(), kv -> rdf.createIRI(kv[1].trim())));
     }
 
     private HttpUtils() {

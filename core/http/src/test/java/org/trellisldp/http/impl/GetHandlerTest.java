@@ -109,7 +109,8 @@ class GetHandlerTest extends BaseTestHandler {
     void testGetLdprs() {
         when(mockTrellisRequest.getBaseUrl()).thenReturn("http://example.org");
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, null);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                 .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -140,7 +141,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getPrefer())
             .thenReturn(Prefer.valueOf("return=representation; include=\"http://www.w3.org/ns/ldp#PreferContainment"));
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, null);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -158,7 +160,8 @@ class GetHandlerTest extends BaseTestHandler {
 
     @Test
     void testGetVersionedLdprs() {
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, true, true, true, null, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, true, true, true,
+                null, null);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -195,7 +198,8 @@ class GetHandlerTest extends BaseTestHandler {
                 new SimpleEntry<>(SKOS.Concept.getIRIString(), "type"),
                 new SimpleEntry<>(inbox, "inbox")));
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, baseUrl);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -211,7 +215,8 @@ class GetHandlerTest extends BaseTestHandler {
     void testNotAcceptableLdprs() {
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_JSON_TYPE));
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, baseUrl);
 
         try (final Response res = assertThrows(NotAcceptableException.class, () ->
                 handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource))),
@@ -225,7 +230,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(APPLICATION_LD_JSON_TYPE));
         when(mockTrellisRequest.getPrefer()).thenReturn(Prefer.valueOf("return=minimal"));
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, baseUrl);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -258,7 +264,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(
                     MediaType.valueOf(APPLICATION_LD_JSON + "; profile=\"" + compacted.getIRIString() + "\"")));
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, null);
 
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
@@ -301,7 +308,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getAcceptableMediaTypes())
             .thenReturn(singletonList(MediaType.valueOf(RDFA.mediaType())));
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, null);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -319,7 +327,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockResource.getBinaryMetadata()).thenReturn(of(testBinary));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true,
+                true, null, null);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertAll("Check binary description", checkBinaryDescription(res));
@@ -332,7 +341,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getExt()).thenReturn(DESCRIPTION);
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, null);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, null);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertAll("Check binary description", checkBinaryDescription(res));
@@ -360,7 +370,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, baseUrl);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -381,7 +392,8 @@ class GetHandlerTest extends BaseTestHandler {
         when(mockResource.hasAcl()).thenReturn(true);
         when(mockTrellisRequest.getExt()).thenReturn("acl");
 
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, true, null, baseUrl);
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, true,
+                null, baseUrl);
         try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
                         .toCompletableFuture().join().build()) {
             assertEquals(OK, res.getStatusInfo(), ERR_RESPONSE_CODE);
@@ -397,7 +409,7 @@ class GetHandlerTest extends BaseTestHandler {
         final SortedSet<Instant> mementos = new TreeSet<>();
         mementos.add(time1);
         mementos.add(time2);
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, false,
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, false,
                 null, baseUrl);
         try (final Response res = handler.addMementoHeaders(handler.standardHeaders(handler.initialize(mockResource)),
                 mementos).build()) {
@@ -419,7 +431,7 @@ class GetHandlerTest extends BaseTestHandler {
         mementos.add(time3);
         mementos.add(time4);
         mementos.add(time5);
-        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, false, true, false,
+        final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, false, true, false,
                 null, baseUrl);
         try (final Response res = handler.addMementoHeaders(handler.standardHeaders(handler.initialize(mockResource)),
                 mementos).build()) {
