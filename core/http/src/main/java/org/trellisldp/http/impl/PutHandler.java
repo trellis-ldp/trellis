@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
@@ -26,15 +25,12 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
-import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
+import static org.trellisldp.http.impl.HttpUtils.exists;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
-import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -109,7 +105,7 @@ public class PutHandler extends MutatingLdpHandler {
      * @return the response builder
      */
     public ResponseBuilder initialize(final Resource parent, final Resource resource) {
-        setResource(DELETED_RESOURCE.equals(resource) || MISSING_RESOURCE.equals(resource) ? null : resource);
+        setResource(exists(resource) ? resource : null);
 
         // Check the cache
         if (getResource() != null) {
@@ -201,7 +197,7 @@ public class PutHandler extends MutatingLdpHandler {
             return LDP.NonRDFSource;
         }
         final Link link = getRequest().getLink();
-        if (link != null && "type".equals(link.getRel())) {
+        if (link != null && Link.TYPE.equals(link.getRel())) {
             final String uri = link.getUri().toString();
             if (uri.startsWith(LDP.getNamespace()) && !uri.equals(LDP.Resource.getIRIString())) {
                 return rdf.createIRI(uri);
@@ -239,13 +235,9 @@ public class PutHandler extends MutatingLdpHandler {
             final IRI graphName = ext != null ? ext : PreferUserManaged;
             readEntityIntoDataset(graphName, s, mutable);
 
-            // Check for any constraints
-            if (getExtensionGraphName() != null) {
-                mutable.getGraph(PreferAccessControl).ifPresent(graph -> checkConstraint(graph, LDP.RDFSource, s));
-            } else {
-                mutable.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, s));
-            }
-            LOGGER.trace("Successfully checked for constraint violations");
+            // Check the mutable dataset for any constraints
+            checkConstraints(mutable, ldpType, s);
+
             metadata = metadataBuilder(internalId, ldpType, mutable);
             if (getResource() != null) {
                 getResource().getBinaryMetadata().ifPresent(metadata::binary);
@@ -264,21 +256,28 @@ public class PutHandler extends MutatingLdpHandler {
             getContainer(internalId).ifPresent(metadata::container);
         }
 
-        auditQuads().stream().map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))
-            .forEachOrdered(immutable::add);
+        getAuditQuadData().forEachOrdered(immutable::add);
         LOGGER.trace("Successfully calculated and skolemized immutable data");
 
         ldpResourceTypes(effectiveLdpType(ldpType)).map(IRI::getIRIString).forEach(type -> {
-                LOGGER.debug("Adding link for type {}", type);
-                builder.link(type, "type");
+                LOGGER.trace("Adding link for type {}", type);
+                builder.link(type, Link.TYPE);
             });
         LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
 
-        return persistPromise.thenCompose(future -> allOf(
-                createOrReplace(metadata.build(), mutable).toCompletableFuture(),
-                getServices().getResourceService().add(internalId, immutable).toCompletableFuture()))
+        return persistPromise.thenCompose(future -> createOrReplace(metadata.build(), mutable, immutable))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
+    }
+
+    private void checkConstraints(final Dataset dataset, final IRI ldpType, final RDFSyntax syntax) {
+        // Check for any constraints
+        if (getExtensionGraphName() != null) {
+            dataset.getGraph(getExtensionGraphName()).ifPresent(graph -> checkConstraint(graph, LDP.RDFSource, syntax));
+        } else {
+            dataset.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, syntax));
+        }
+        LOGGER.trace("Successfully checked for constraint violations");
     }
 
     private ResponseBuilder decorateResponse(final ResponseBuilder builder) {
@@ -297,23 +296,6 @@ public class PutHandler extends MutatingLdpHandler {
         LOGGER.trace("Determining effective LDP type from offered type {}", ldpType.getIRIString());
         return getExtensionGraphName() != null
             || (LDP.NonRDFSource.equals(ldpType) && isBinaryDescription()) ? LDP.RDFSource : ldpType;
-    }
-
-    private CompletionStage<Void> createOrReplace(final Metadata metadata, final Dataset dataset) {
-        if (getResource() == null) {
-            LOGGER.debug("Creating new resource {}", internalId);
-            return getServices().getResourceService().create(metadata, dataset);
-        } else {
-            LOGGER.debug("Replacing old resource {}", internalId);
-            return getServices().getResourceService().replace(metadata, dataset);
-        }
-    }
-
-    private List<Quad> auditQuads() {
-        if (getResource() != null) {
-            return getServices().getAuditService().update(internalId, getSession());
-        }
-        return getServices().getAuditService().creation(internalId, getSession());
     }
 
     private boolean isBinaryDescription() {

@@ -142,8 +142,15 @@ public class DeleteHandler extends MutatingLdpHandler {
         // is generated.
 
         // Collect the audit data
-        getAuditUpdateData().forEachOrdered(immutable::add);
-        return handleResourceReplacement(mutable, immutable);
+        getAuditQuadData().forEachOrdered(immutable::add);
+
+        final Metadata.Builder metadata = metadataBuilder(getResource().getIdentifier(),
+                getResource().getInteractionModel(), mutable);
+        getResource().getContainer().ifPresent(metadata::container);
+        getResource().getBinaryMetadata().ifPresent(metadata::binary);
+        metadata.revision(getResource().getRevision());
+
+        return handleResourceReplacement(metadata.build(), mutable, immutable);
     }
 
     private CompletionStage<Void> handleResourceDeletion(final Dataset immutable) {

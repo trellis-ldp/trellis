@@ -28,6 +28,8 @@ import static org.apache.commons.lang3.StringUtils.strip;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.DEFAULT_REPRESENTATION;
 import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
@@ -62,6 +64,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.Prefer;
@@ -95,10 +98,10 @@ public final class HttpUtils {
     public static Stream<IRI> ldpResourceTypes(final IRI ixnModel) {
         final Stream.Builder<IRI> supertypes = Stream.builder();
         if (ixnModel != null) {
-            LOGGER.debug("Finding types that subsume {}", ixnModel.getIRIString());
+            LOGGER.trace("Finding types that subsume {}", ixnModel.getIRIString());
             supertypes.accept(ixnModel);
             final IRI superClass = LDP.getSuperclassOf(ixnModel);
-            LOGGER.debug("... including {}", superClass);
+            LOGGER.trace("... including {}", superClass);
             ldpResourceTypes(superClass).forEach(supertypes);
         }
         return supertypes.build();
@@ -368,6 +371,15 @@ public final class HttpUtils {
         if (required && ifMatch == null && ifUnmodifiedSince == null) {
             throw new ClientErrorException(status(PRECONDITION_REQUIRED).build());
         }
+    }
+
+    /**
+     * Check whether a resource exists.
+     * @param resource the resource
+     * @return true if the resource isn't missing or deleted; false otherwise
+     */
+    public static boolean exists(final Resource resource) {
+        return !DELETED_RESOURCE.equals(resource) && !MISSING_RESOURCE.equals(resource);
     }
 
     /**

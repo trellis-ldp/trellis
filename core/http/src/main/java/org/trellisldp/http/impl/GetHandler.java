@@ -56,7 +56,6 @@ import static org.trellisldp.http.impl.HttpUtils.getSyntax;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.triplePreferences;
 import static org.trellisldp.http.impl.HttpUtils.unskolemizeTriples;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -145,11 +144,9 @@ public class GetHandler extends BaseLdpHandler {
                 .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
 
         final IRI ext = getExtensionGraphName();
-        if (ext != null) {
-            final boolean noAcl = PreferAccessControl.equals(ext) && !resource.hasAcl();
-            if (noAcl && !resource.stream(ext).findAny().isPresent()) {
-                throw new NotFoundException();
-            }
+        if (ext != null && !resource.stream(ext).findAny().isPresent()) {
+            LOGGER.trace("No stream for extention: {}", ext);
+            throw new NotFoundException();
         }
 
         setResource(resource);
@@ -370,7 +367,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {
         ldpResourceTypes(model).forEach(type -> {
-            builder.link(type.getIRIString(), "type");
+            builder.link(type.getIRIString(), Link.TYPE);
             // Mementos don't accept POST or PATCH
             if (LDP.Container.equals(type) && !isMemento) {
                 final List<RDFSyntax> rdfSyntaxes = getServices().getIOService().supportedWriteSyntaxes();

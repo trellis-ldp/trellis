@@ -267,22 +267,41 @@ class MutatingLdpHandler extends BaseLdpHandler {
         return builder;
     }
 
-    protected CompletionStage<Void> handleResourceReplacement(final Dataset mutable, final Dataset immutable) {
-        final Metadata.Builder metadata = metadataBuilder(getResource().getIdentifier(),
-                getResource().getInteractionModel(), mutable);
-        getResource().getContainer().ifPresent(metadata::container);
-        getResource().getBinaryMetadata().ifPresent(metadata::binary);
-        metadata.revision(getResource().getRevision());
-        // update the resource
-        return allOf(
-            getServices().getResourceService().replace(metadata.build(), mutable).toCompletableFuture(),
-            getServices().getResourceService().add(getResource().getIdentifier(),
-                immutable).toCompletableFuture());
+    protected CompletionStage<Void> createOrReplace(final Metadata metadata, final Dataset mutable,
+            final Dataset immutable) {
+        if (getResource() == null) {
+            LOGGER.debug("Creating new resource {}", metadata.getIdentifier());
+            return handleResourceCreation(metadata, mutable, immutable);
+        } else {
+            LOGGER.debug("Replacing old resource {}", metadata.getIdentifier());
+            return handleResourceReplacement(metadata, mutable, immutable);
+        }
     }
 
-    protected Stream<Quad> getAuditUpdateData() {
-        return getServices().getAuditService().update(getResource().getIdentifier(), getSession()).stream()
-            .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()));
+    protected CompletionStage<Void> handleResourceCreation(final Metadata metadata, final Dataset mutable,
+            final Dataset immutable) {
+        return allOf(
+            getServices().getResourceService().create(metadata, mutable).toCompletableFuture(),
+            getServices().getResourceService().add(metadata.getIdentifier(), immutable).toCompletableFuture());
+    }
+
+    protected CompletionStage<Void> handleResourceReplacement(final Metadata metadata, final Dataset mutable,
+            final Dataset immutable) {
+        return allOf(
+            getServices().getResourceService().replace(metadata, mutable).toCompletableFuture(),
+            getServices().getResourceService().add(metadata.getIdentifier(), immutable).toCompletableFuture());
+    }
+
+    private List<Quad> auditQuads() {
+        if (getResource() != null) {
+            return getServices().getAuditService().update(getInternalId(), getSession());
+        }
+        return getServices().getAuditService().creation(getInternalId(), getSession());
+    }
+
+    protected Stream<Quad> getAuditQuadData() {
+        return auditQuads().stream()
+                .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()));
     }
 
     /*

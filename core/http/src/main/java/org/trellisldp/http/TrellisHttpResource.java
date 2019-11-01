@@ -17,8 +17,7 @@ import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
-import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.api.Resource.SpecialResources.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
@@ -104,6 +103,7 @@ public class TrellisHttpResource {
     protected final boolean includeMementoDates;
     protected final boolean preconditionRequired;
     protected final boolean createUncontained;
+    protected final boolean supportsCreateOnPatch;
 
     /**
      * Create a Trellis HTTP resource matcher.
@@ -154,6 +154,8 @@ public class TrellisHttpResource {
             .orElse(Boolean.FALSE);
         this.createUncontained = config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
             .orElse(Boolean.FALSE);
+        this.supportsCreateOnPatch = config.getOptionalValue(CONFIG_HTTP_PATCH_CREATE, Boolean.class)
+            .orElse(Boolean.TRUE);
     }
 
     /**
@@ -289,8 +291,8 @@ public class TrellisHttpResource {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, extensions, defaultJsonLdProfile,
-                urlBase);
+        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, extensions, supportsCreateOnPatch,
+                defaultJsonLdProfile, urlBase);
 
         getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)

@@ -44,6 +44,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Syntax.LD_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
@@ -80,9 +81,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.http.core.Prefer;
+import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
 import org.trellisldp.vocabulary.SKOS;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -389,7 +392,8 @@ class GetHandlerTest extends BaseTestHandler {
     @Test
     void testGetAcl() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResource.hasAcl()).thenReturn(true);
+        when(mockResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                    rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Read)));
         when(mockTrellisRequest.getExt()).thenReturn("acl");
 
         final GetConfiguration config = new GetConfiguration(false, true, true, null, baseUrl);

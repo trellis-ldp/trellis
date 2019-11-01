@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.rdf.api.IRI;
@@ -108,7 +109,7 @@ public class OptionsHandler extends BaseLdpHandler {
         LOGGER.debug("OPTIONS request for {}", getIdentifier());
 
         ldpResourceTypes(getResource().getInteractionModel())
-            .forEach(type -> builder.link(type.getIRIString(), "type"));
+            .forEach(type -> builder.link(type.getIRIString(), Link.TYPE));
 
         if (hasDescription()) {
             builder.link(getDescription(), "describedby");

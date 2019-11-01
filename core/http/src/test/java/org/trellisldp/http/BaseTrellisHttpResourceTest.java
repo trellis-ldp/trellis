@@ -93,6 +93,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
     static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
     static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+    static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
     static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
     static final IRI newresourceIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE);
     static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
@@ -106,7 +107,6 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     private static final IRI userDeletedIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + USER_DELETED_PATH);
     private static final Set<IRI> allInteractionModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource,
             LDP.NonRDFSource, LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer));
-    private static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
     private static final IRI nonexistentIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + NON_EXISTENT_PATH);
     private static final String BASE_URL = "http://example.org/";
     private static final BinaryMetadata testBinary = BinaryMetadata.builder(binaryInternalIdentifier)

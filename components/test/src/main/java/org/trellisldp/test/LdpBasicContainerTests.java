@@ -23,11 +23,14 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PATCH_CREATE;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
@@ -85,7 +88,7 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test with ldp:PreferMinimalContainer Prefer header.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
@@ -103,7 +106,7 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test with ldp:PreferMinimalContainer Prefer header.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
@@ -122,7 +125,7 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test that no membership triples are present.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test with ldp:PreferMembership Prefer header")
@@ -148,7 +151,7 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test fetching a basic container.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test fetching a basic container")
@@ -164,8 +167,35 @@ public interface LdpBasicContainerTests extends CommonTests {
     }
 
     /**
+     * Test PATCHing a new resource.
+     * @throws Exception when the RDF resource does not close cleanly
+     */
+    @Test
+    @DisplayName("Test PATCHing a new RDF resource")
+    default void testPatchNewRDF() throws Exception {
+        final RDF rdf = getInstance();
+        // PATCH an LDP-RS
+        final String location = getContainerLocation() + "/" + generateRandomValue("PATCH");
+        assumeTrue(getConfig().getOptionalValue(CONFIG_HTTP_PATCH_CREATE, Boolean.class)
+            .orElse(Boolean.TRUE));
+        try (final Response res = target(location).request()
+                    .method("PATCH", entity("INSERT { <> a <http://www.w3.org/ns/ldp#Container> ; "
+                        + "<http://purl.org/dc/terms/title> \"Title\" } WHERE {}",
+                        APPLICATION_SPARQL_UPDATE))) {
+            assertAll("Check PATCHing an RDF resource", checkRdfResponse(res, LDP.RDFSource, null));
+        }
+
+        try (final Response res = target(location).request().get();
+                final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
+            assertAll("Check an LDP-RS response", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
+            assertTrue(g.contains(rdf.createIRI(location), DC.title, rdf.createLiteral("Title")));
+        }
+    }
+
+
+    /**
      * Test creating a basic container via POST.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test creating a basic container via POST")
@@ -205,7 +235,7 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test creating a child resource via PUT.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test creating a child resource via PUT")
@@ -247,7 +277,7 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test creating a child resource with a Slug header.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test creating a child resource with a Slug header")
@@ -284,7 +314,7 @@ public interface LdpBasicContainerTests extends CommonTests {
 
     /**
      * Test deleting a basic container.
-     * @throws Exception when the RDF resource doesn not close cleanly
+     * @throws Exception when the RDF resource does not close cleanly
      */
     @Test
     @DisplayName("Test deleting a basic container")

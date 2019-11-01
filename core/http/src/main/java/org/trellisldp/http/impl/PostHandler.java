@@ -14,7 +14,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
@@ -35,7 +34,6 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
-import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -121,7 +119,7 @@ public class PostHandler extends MutatingLdpHandler {
     }
 
     private static IRI getLdpType(final Link link, final RDFSyntax syntax, final String contentType) {
-        if (link != null && "type".equals(link.getRel())) {
+        if (link != null && Link.TYPE.equals(link.getRel())) {
             final String uri = link.getUri().toString();
             if (uri.startsWith(LDP.getNamespace())) {
                 final IRI iri = rdf.createIRI(uri);
@@ -209,16 +207,12 @@ public class PostHandler extends MutatingLdpHandler {
             persistPromise = completedFuture(null);
         }
 
-        // Should this come from the parent resource data?
-        getServices().getAuditService().creation(internalId, getSession()).stream()
-            .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl())).forEachOrdered(immutable::add);
+        getAuditQuadData().forEachOrdered(immutable::add);
 
-        return persistPromise.thenCompose(future -> allOf(
-                getServices().getResourceService().create(metadata.build(), mutable).toCompletableFuture(),
-                getServices().getResourceService().add(internalId, immutable).toCompletableFuture()))
+        return persistPromise.thenCompose(future -> handleResourceCreation(metadata.build(), mutable, immutable))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
-                ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, "type"));
+                ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, Link.TYPE));
                 return builder.location(create(getIdentifier()));
             });
     }
