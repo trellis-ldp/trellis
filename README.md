@@ -58,8 +58,6 @@ $ ./gradlew install
 
   * [py-ldnlib](https://github.com/trellis-ldp/py-ldnlib) A Python3 library for linked data notifications
   * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
-  * [trellis-ui](https://github.com/trellis-ldp/trellis-ui) A JavaScript single page app for managing Trellis
   * [trellis-extensions](https://github.com/trellis-ldp/trellis-extensions) Trellis extension modules, including high performance persistence layers
-  * [trellis-cassandra](https://github.com/trellis-ldp/trellis-cassandra) A Trellis application using [Apache Cassandra](https://cassandra.apache.org) as a persistence layer.
   * [camel-ldp-recipes](https://github.com/trellis-ldp/camel-ldp-recipes) Integration workflows built with [Apache Camel](https://camel.apache.org)
 
