@@ -51,6 +51,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -81,6 +82,7 @@ class JenaIOServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
     private IOService service, service2, service3;
+    private static final String identifier = "http://example.com/resource";
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -331,7 +333,7 @@ class JenaIOServiceTest {
     @Test
     void testTurtleReaderWithContext() {
         final Graph graph = rdf.createGraph();
-        service.read(getClass().getResourceAsStream("/testRdf.ttl"), TURTLE, "trellis:data/resource")
+        service.read(getClass().getResourceAsStream("/testRdf.ttl"), TURTLE, identifier)
             .forEach(graph::add);
         assertTrue(validateGraph(graph), "Failed round-trip for Turtle using a context value!");
     }
@@ -460,8 +462,31 @@ class JenaIOServiceTest {
         assertFalse(service.supportedUpdateSyntaxes().contains(LD_PATCH), "LD-PATCH unexpectedly supported!");
     }
 
+    @Test
+    void testShouldSkipNamespace() {
+        final String foo = "http://example.com/foo";
+        final String ns = "http://example.com/namespace#";
+        final Set<String> namespaces = singleton(ns);
+        assertFalse(JenaIOService.shouldAddNamespace(namespaces, ns, null),
+                "Added namespace that already exists");
+        assertFalse(JenaIOService.shouldAddNamespace(namespaces, foo, null),
+                "Added namespace with null base definition");
+        assertFalse(JenaIOService.shouldAddNamespace(namespaces, foo, "http://example.com/bar"),
+                "Added namespace with matching scheme/host/port");
+        assertFalse(JenaIOService.shouldAddNamespace(namespaces, "not a url", "also not a url"),
+                "Added invalid namespace");
+        assertTrue(JenaIOService.shouldAddNamespace(namespaces, foo, "http://example.com:80/bar"),
+                "Missed namespace with different port definition!");
+        assertTrue(JenaIOService.shouldAddNamespace(namespaces, foo, "https://example.com/bar"),
+                "Missed namespace with different scheme!");
+        assertTrue(JenaIOService.shouldAddNamespace(namespaces, foo, "http://example.com:8080/bar"),
+                "Missed namespace with different port definition!");
+        assertTrue(JenaIOService.shouldAddNamespace(namespaces, "http://test.example/foo", "http://example.com/bar"),
+                "Missed namespace with different host!");
+    }
+
     private static Stream<Triple> getTriples() {
-        final Node sub = createURI("trellis:data/resource");
+        final Node sub = createURI(identifier);
         return of(
                 create(sub, title.asNode(), createLiteral("A title")),
                 create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
@@ -470,7 +495,7 @@ class JenaIOServiceTest {
     }
 
     private static Stream<Triple> getComplexTriples() {
-        final Node sub = createURI("trellis:data/resource");
+        final Node sub = createURI(identifier);
         final Node bn = createBlankNode();
         return of(
                 create(sub, title.asNode(), createLiteral("A title")),
