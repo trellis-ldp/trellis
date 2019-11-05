@@ -48,7 +48,3 @@ jar {
     }
 }
 
-pmd {
-    consoleOutput = false
-}
-
