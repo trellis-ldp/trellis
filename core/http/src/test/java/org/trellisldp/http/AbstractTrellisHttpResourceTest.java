@@ -749,7 +749,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetBinaryAcl() {
-        when(mockBinaryResource.hasAcl()).thenReturn(true);
+        when(mockBinaryResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                    rdf.createQuad(PreferAccessControl, binaryIdentifier, ACL.mode, ACL.Read)));
         try (final Response res = target(BINARY_PATH).queryParam(EXT, ACL_PARAM).request().get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertFalse(getLinks(res).stream().anyMatch(l -> l.getRel().equals(DESCRIBES)),
@@ -792,7 +793,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetAclJsonCompact() throws IOException {
-        when(mockResource.hasAcl()).thenReturn(true);
+        when(mockResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                    rdf.createQuad(PreferAccessControl, binaryIdentifier, ACL.mode, ACL.Read)));
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, ACL_PARAM).request()
                 .accept(COMPACT_JSONLD).get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2131,7 +2133,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPatchMissing() {
         try (final Response res = target(NON_EXISTENT_PATH).request()
                 .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SC_NOT_FOUND, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
         }
     }
 
@@ -2139,7 +2141,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPatchGone() {
         try (final Response res = target(DELETED_PATH).request()
                 .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SC_GONE, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
         }
     }
 
@@ -2229,7 +2231,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH + TEST_PATH).request()
                 .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
-            assertEquals(SC_NOT_FOUND, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
         }
     }

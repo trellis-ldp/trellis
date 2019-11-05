@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.ok;
@@ -24,16 +25,17 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
+import static org.trellisldp.http.impl.HttpUtils.exists;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 import static org.trellisldp.http.impl.HttpUtils.unskolemizeTriples;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -47,6 +49,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -59,6 +62,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.Prefer;
@@ -81,6 +85,8 @@ public class PatchHandler extends MutatingLdpHandler {
     private final RDFSyntax syntax;
     private final String preference;
     private final String defaultJsonLdProfile;
+    private final boolean supportsCreate;
+    private final IRI internalId;
 
     /**
      * Create a handler for PATCH operations.
@@ -89,11 +95,13 @@ public class PatchHandler extends MutatingLdpHandler {
      * @param updateBody the sparql update body
      * @param trellis the Trellis application bundle
      * @param extensions the extension graph mapping
+     * @param supportsCreate whether the handler supports create operations
      * @param defaultJsonLdProfile a user-supplied default JSON-LD profile
      * @param baseUrl the base URL
      */
     public PatchHandler(final TrellisRequest req, final String updateBody, final ServiceBundler trellis,
-            final Map<String, IRI> extensions, final String defaultJsonLdProfile, final String baseUrl) {
+            final Map<String, IRI> extensions, final boolean supportsCreate, final String defaultJsonLdProfile,
+            final String baseUrl) {
         super(req, trellis, extensions, baseUrl);
 
         this.updateBody = updateBody;
@@ -101,6 +109,8 @@ public class PatchHandler extends MutatingLdpHandler {
             .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
         this.defaultJsonLdProfile = defaultJsonLdProfile;
         this.preference = getPreference(req.getPrefer());
+        this.supportsCreate = supportsCreate;
+        this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
     }
 
     /**
@@ -112,14 +122,13 @@ public class PatchHandler extends MutatingLdpHandler {
      */
     public ResponseBuilder initialize(final Resource parent, final Resource resource) {
 
-        if (MISSING_RESOURCE.equals(resource)) {
+        if (!supportsCreate && MISSING_RESOURCE.equals(resource)) {
             // Can't patch non-existent resources
             throw new NotFoundException();
-        } else if (DELETED_RESOURCE.equals(resource)) {
+        } else if (!supportsCreate && DELETED_RESOURCE.equals(resource)) {
             // Can't patch non-existent resources
             throw new ClientErrorException(GONE);
         } else if (updateBody == null) {
-            LOGGER.error("Missing body for update: {}", resource.getIdentifier());
             throw new BadRequestException("Missing body for update");
         } else if (!supportsInteractionModel(LDP.RDFSource)) {
             throw new BadRequestException(status(BAD_REQUEST)
@@ -131,10 +140,15 @@ public class PatchHandler extends MutatingLdpHandler {
             throw new NotSupportedException();
         }
         // Check the cache headers
-        checkCache(resource.getModified(), generateEtag(resource));
+        if (exists(resource)) {
+            checkCache(resource.getModified(), generateEtag(resource));
 
-        setResource(resource);
-        resource.getContainer().ifPresent(p -> setParent(parent));
+            setResource(resource);
+            resource.getContainer().ifPresent(p -> setParent(parent));
+        } else {
+            setResource(null);
+            setParent(parent);
+        }
         return ok();
     }
 
@@ -149,9 +163,9 @@ public class PatchHandler extends MutatingLdpHandler {
 
         // Add the LDP link types
         if (getExtensionGraphName() != null) {
-            getLinkTypes(LDP.RDFSource).forEach(type -> builder.link(type, "type"));
+            getLinkTypes(LDP.RDFSource).forEach(type -> builder.link(type, Link.TYPE));
         } else {
-            getLinkTypes(getResource().getInteractionModel()).forEach(type -> builder.link(type, "type"));
+            getLinkTypes(getLdpType()).forEach(type -> builder.link(type, Link.TYPE));
         }
 
         final Dataset mutable = rdf.createDataset();
@@ -163,6 +177,11 @@ public class PatchHandler extends MutatingLdpHandler {
     }
 
     @Override
+    protected IRI getInternalId() {
+        return getResource() != null ? getResource().getIdentifier() : internalId;
+    }
+
+    @Override
     protected String getIdentifier() {
         return super.getIdentifier() + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
@@ -171,10 +190,12 @@ public class PatchHandler extends MutatingLdpHandler {
         final List<Triple> triples;
         // Update existing graph
         try (final Graph graph = rdf.createGraph()) {
-            try (final Stream<Quad> stream = getResource().stream(graphName)) {
-                stream.map(Quad::asTriple)
-                      .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
-                      .forEachOrdered(graph::add);
+            if (getResource() != null) {
+                try (final Stream<Quad> stream = getResource().stream(graphName)) {
+                    stream.map(Quad::asTriple)
+                          .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl()))
+                          .forEachOrdered(graph::add);
+                }
             }
 
             getServices().getIOService().update(graph, updateBody, syntax, getBaseUrl() + getRequest().getPath() +
@@ -186,6 +207,10 @@ public class PatchHandler extends MutatingLdpHandler {
         }
 
         return triples;
+    }
+
+    private IRI getLdpType() {
+        return getResource() != null ? getResource().getInteractionModel() : LDP.RDFSource;
     }
 
     private CompletionStage<ResponseBuilder> assembleResponse(final Dataset mutable,
@@ -209,7 +234,7 @@ public class PatchHandler extends MutatingLdpHandler {
         // Check any constraints on the resulting dataset
         final List<ConstraintViolation> violations = new ArrayList<>();
         getServices().getConstraintServices()
-            .forEach(svc -> handleConstraintViolation(svc, mutable, graphName, getResource().getInteractionModel())
+            .forEach(svc -> handleConstraintViolation(svc, mutable, graphName, getLdpType())
                     .forEach(violations::add));
 
         // Short-ciruit if there is a constraint violation
@@ -220,15 +245,31 @@ public class PatchHandler extends MutatingLdpHandler {
         }
 
         // When updating one particular graph, be sure to add the other category to the dataset
-        try (final Stream<Quad> remaining = getResource().stream(getNonCurrentGraphNames())) {
-            remaining.forEachOrdered(mutable::add);
+        if (getResource() != null) {
+            try (final Stream<Quad> remaining = getResource().stream(getNonCurrentGraphNames())) {
+                remaining.forEachOrdered(mutable::add);
+            }
         }
 
         // Collect the audit data
-        getAuditUpdateData().forEachOrdered(immutable::add);
-        return handleResourceReplacement(mutable, immutable)
-            .thenCompose(future -> emitEvent(getInternalId(), AS.Update,
-                        getExtensionGraphName() != null ? LDP.RDFSource : getResource().getInteractionModel()))
+        getAuditQuadData().forEachOrdered(immutable::add);
+
+        final Metadata metadata;
+        if (getResource() == null) {
+            metadata = metadataBuilder(getInternalId(), LDP.RDFSource, mutable)
+                .container(getParentIdentifier()).build();
+        } else {
+            final Metadata.Builder mbuilder = metadataBuilder(getResource().getIdentifier(),
+                    getResource().getInteractionModel(), mutable);
+            getResource().getContainer().ifPresent(mbuilder::container);
+            getResource().getBinaryMetadata().ifPresent(mbuilder::binary);
+            mbuilder.revision(getResource().getRevision());
+            metadata = mbuilder.build();
+        }
+
+        return createOrReplace(metadata, mutable, immutable)
+            .thenCompose(future -> emitEvent(metadata.getIdentifier(), getResource() == null ? AS.Create : AS.Update,
+                        getExtensionGraphName() != null ? LDP.RDFSource : getLdpType()))
             .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
                         getRequest().getAcceptableMediaTypes(), null);
@@ -240,7 +281,7 @@ public class PatchHandler extends MutatingLdpHandler {
                                         .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
                                         out, outputSyntax, profile));
                 }
-                return builder.status(NO_CONTENT);
+                return builder.status(getResource() == null ? CREATED : NO_CONTENT);
             });
     }
 
@@ -254,7 +295,7 @@ public class PatchHandler extends MutatingLdpHandler {
 
     private static Stream<ConstraintViolation> handleConstraintViolation(final ConstraintService service,
             final Dataset dataset, final IRI graphName, final IRI interactionModel) {
-        final IRI model = PreferAccessControl.equals(graphName) ? LDP.RDFSource : interactionModel;
+        final IRI model = PreferUserManaged.equals(graphName) ? interactionModel : LDP.RDFSource;
         return dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
                 .flatMap(g -> service.constrainedBy(model, g));
     }
