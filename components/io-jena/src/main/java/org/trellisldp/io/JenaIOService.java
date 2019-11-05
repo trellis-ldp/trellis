@@ -46,6 +46,8 @@ import static org.trellisldp.vocabulary.JSONLD.getNamespace;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Stream;
@@ -326,7 +328,7 @@ public class JenaIOService implements IOService {
             // Check the graph for any new namespace definitions
             final Set<String> namespaces = new HashSet<>(nsService.getNamespaces().values());
             graph.getPrefixMapping().getNsPrefixMap().forEach((prefix, namespace) -> {
-                if (!namespaces.contains(namespace)) {
+                if (shouldAddNamespace(namespaces, namespace, base)) {
                     LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
                     nsService.setPrefix(prefix, namespace);
                 }
@@ -354,11 +356,11 @@ public class JenaIOService implements IOService {
         }
     }
 
-    private static Set<String> intoSet(final String property) {
+    static Set<String> intoSet(final String property) {
         return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toSet());
     }
 
-    private static IRI mergeProfiles(final IRI... profiles) {
+    static IRI mergeProfiles(final IRI... profiles) {
         boolean isExpanded = false;
         boolean isFlattened = false;
 
@@ -381,7 +383,22 @@ public class JenaIOService implements IOService {
         return isExpanded ? expanded : compacted;
     }
 
-    private static RDFFormat getJsonLdProfile(final IRI... profiles) {
+    static RDFFormat getJsonLdProfile(final IRI... profiles) {
         return JSONLD_FORMATS.get(mergeProfiles(profiles));
+    }
+
+    static boolean shouldAddNamespace(final Set<String> namespaces, final String namespace, final String base) {
+        if (!namespaces.contains(namespace) && base != null) {
+            try {
+                final URL url1 = new URL(namespace);
+                final URL url2 = new URL(base);
+                return !url1.getProtocol().equals(url2.getProtocol()) ||
+                    !url1.getHost().equals(url2.getHost()) ||
+                    url1.getPort() != url2.getPort();
+            } catch (final MalformedURLException ex) {
+                LOGGER.debug("Skipping malformed URL: {}", ex.getMessage());
+            }
+        }
+        return false;
     }
 }
