@@ -20,6 +20,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -42,6 +43,7 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.http.core.TrellisExtensions.buildExtensionMapFromConfig;
 import static org.trellisldp.webdav.Depth.DEPTH.INFINITY;
 import static org.trellisldp.webdav.Depth.DEPTH.ONE;
 import static org.trellisldp.webdav.Depth.DEPTH.ZERO;
@@ -57,6 +59,7 @@ import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -90,6 +93,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
@@ -129,6 +133,7 @@ public class TrellisWebDAV {
     private static final Logger LOGGER = getLogger(TrellisWebDAV.class);
 
     private final ServiceBundler services;
+    private final Map<String, IRI> extensions;
     private final String userBaseUrl;
 
     /**
@@ -138,7 +143,7 @@ public class TrellisWebDAV {
      */
     @Inject
     public TrellisWebDAV(final ServiceBundler services) {
-        this(services, getConfig().getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
+        this(services, getConfig());
     }
 
     /**
@@ -151,13 +156,20 @@ public class TrellisWebDAV {
         this(null);
     }
 
+    private TrellisWebDAV(final ServiceBundler services, final Config config) {
+        this(services, buildExtensionMapFromConfig(config), config.getOptionalValue(CONFIG_HTTP_BASE_URL,
+                    String.class).orElse(null));
+    }
+
     /**
      * Create a Trellis HTTP resource matcher.
      *
      * @param services the Trellis application bundle
+     * @param extensions the extension graphs
      * @param baseUrl the base URL
      */
-    public TrellisWebDAV(final ServiceBundler services, final String baseUrl) {
+    public TrellisWebDAV(final ServiceBundler services, final Map<String, IRI> extensions, final String baseUrl) {
+        this.extensions = requireNonNull(extensions, "Extensions may not be null!");
         this.services = services;
         this.userBaseUrl = baseUrl;
     }
@@ -371,8 +383,8 @@ public class TrellisWebDAV {
             final DavResponse response = new DavResponse();
             final Set<IRI> modifiedProperties = new HashSet<>();
             response.setHref(location);
-            // Keep any ACL data
-            try (final Stream<Quad> stream = resource.stream(Trellis.PreferAccessControl)) {
+            // Keep any extension data
+            try (final Stream<Quad> stream = resource.stream(extensions.values())) {
                 stream.forEach(dataset::add);
             }
             // Filter out any removable properties
