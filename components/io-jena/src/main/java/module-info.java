@@ -21,10 +21,10 @@ module org.trellisldp.io {
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
-    requires javax.inject;
+    requires jakarta.enterprise.cdi.api;
+    requires jakarta.inject.api;
     requires microprofile.config.api;
     requires org.slf4j;
-    requires cdi.api;
     requires org.apache.jena.core;
     requires org.apache.jena.base;
 

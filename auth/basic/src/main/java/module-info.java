@@ -14,7 +14,7 @@
 module org.trellisldp.auth.basic {
     exports org.trellisldp.auth.basic;
 
-    requires javax.inject;
+    requires jakarta.inject.api;
     requires java.ws.rs;
     requires java.xml.bind;
     requires java.annotation;

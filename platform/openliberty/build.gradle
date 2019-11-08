@@ -18,9 +18,9 @@ ext {
 }
 
 dependencies {
-    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationsVersion")
-    implementation("javax.enterprise:cdi-api:${cdiApiVersion}")
-    implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    implementation("jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}")
+    implementation("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
+    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
 
     implementation project(':trellis-api')
     implementation project(':trellis-app')
@@ -56,9 +56,9 @@ dependencies {
     }
 
     runtime("ch.qos.logback:logback-classic:$logbackVersion")
-    runtime("javax.xml.bind:jaxb-api:$jaxbVersion")
-    runtime("javax.activation:javax.activation-api:$activationApiVersion")
-    runtime("javax.validation:validation-api:$validationVersion")
+    runtime("jakarta.activation:jakarta.activation-api:$activationApiVersion")
+    runtime("jakarta.validation:jakarta.validation-api:$validationApiVersion")
+    runtime("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
 
     testImplementation project(':trellis-test')
 

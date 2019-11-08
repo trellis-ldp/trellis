@@ -14,7 +14,7 @@ ext {
 
 dependencies {
     api project(':trellis-api')
-    api "javax.json.bind:javax.json.bind-api:$jsonbVersion"
+    api "jakarta.json.bind:jakarta.json.bind-api:$jsonbVersion"
 
     implementation project(':trellis-vocabulary')
 
@@ -22,10 +22,10 @@ dependencies {
     testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
     testImplementation "org.eclipse:yasson:$yassonVersion"
 
-    jsonb "org.glassfish:javax.json:$glassfishJsonVersion"
+    jsonb "org.glassfish:jakarta.json:$glassfishJsonVersion"
 
     if (!project.sourceCompatibility.isJava11Compatible()) {
-        testImplementation "org.glassfish:javax.json:$glassfishJsonVersion"
+        testImplementation "org.glassfish:jakarta.json:$glassfishJsonVersion"
     }
 }
 

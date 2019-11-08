@@ -10,14 +10,14 @@ ext {
 }
 
 dependencies {
-    api("javax.enterprise:cdi-api:$cdiApiVersion")
+    api("jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion")
     api project(':trellis-api')
     api project(':trellis-http')
     api project(':trellis-vocabulary')
 
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
-    testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
+    testRuntime("jakarta.activation:jakarta.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")

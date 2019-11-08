@@ -16,17 +16,16 @@ dependencies {
         exclude group: 'org.apache.httpcomponents', module: 'httpcore-osgi'
     }
     compile("commons-codec:commons-codec:$commonsCodecVersion")
-    compile("javax.activation:javax.activation-api:$activationApiVersion")
-    compile("javax.jms:javax.jms-api:$jmsApiVersion")
+    compile("jakarta.activation:jakarta.activation-api:$activationApiVersion")
+    compile("jakarta.jms:jakarta.jms-api:$jmsApiVersion")
     compile("org.apache.activemq:activemq-client:$activeMqVersion")
     compile("org.apache.jena:jena-arq:$jenaVersion")
     compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
     compile("org.apache.jena:jena-tdb2:$jenaVersion")
     compile("io.smallrye:smallrye-config:$smallryeConfigVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
-    compile("javax.jms:javax.jms-api:$jmsApiVersion")
-    compile("javax.xml.bind:jaxb-api:$jaxbVersion")
-    compile("javax.validation:validation-api:$validationVersion")
+    compile("jakarta.validation:jakarta.validation-api:$validationApiVersion")
+    compile("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
     compile("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'

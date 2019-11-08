@@ -17,12 +17,12 @@ module org.trellisldp.event.jackson {
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.vocabulary;
 
-    requires org.apache.commons.rdf.api;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.fasterxml.jackson.annotation;
-    requires cdi.api;
+    requires jakarta.enterprise.cdi.api;
+    requires org.apache.commons.rdf.api;
 
     opens org.trellisldp.event.jackson to com.fasterxml.jackson.databind;
 

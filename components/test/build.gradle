@@ -14,8 +14,8 @@ dependencies {
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    implementation("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
-    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
+    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
     implementation("org.apache.commons:commons-text:$commonsTextVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: "org.apache.jena", module: "jena-osgi"
@@ -23,7 +23,6 @@ dependencies {
     }
     implementation("org.apache.jena:jena-arq:$jenaVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
     implementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'

@@ -13,8 +13,8 @@ ext {
 }
 
 dependencies {
-    api("javax.inject:javax.inject:$javaxInjectVersion")
-    api("javax.jms:javax.jms-api:$jmsApiVersion")
+    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
+    api("jakarta.jms:jakarta.jms-api:$jmsApiVersion")
     api project(':trellis-api')
 
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")

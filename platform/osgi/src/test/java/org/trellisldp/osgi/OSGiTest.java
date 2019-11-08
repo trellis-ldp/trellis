@@ -160,16 +160,6 @@ public class OSGiTest {
     }
 
     @Test
-    public void testAgentInstallation() throws Exception {
-        assertFalse("trellis-agent already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
-        featuresService.installFeature("trellis-agent");
-        checkTrellisBundlesAreActive();
-        assertTrue("trellis-agent not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-agent")));
-    }
-
-    @Test
     public void testFileInstallation() throws Exception {
         assertFalse("trellis-file already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-file")));
@@ -191,19 +181,19 @@ public class OSGiTest {
 
     @Test
     public void testEventSerializationInstallation() throws Exception {
-        if (!featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization"))) {
-            featuresService.installFeature("trellis-event-serialization");
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-event-jackson"))) {
+            featuresService.installFeature("trellis-event-jackson");
         }
         checkTrellisBundlesAreActive();
-        assertTrue("trellis-event-serialization not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-event-serialization")));
+        assertTrue("trellis-event-jackson not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-event-jackson")));
     }
 
     @Test
     public void testKafkaInstallation() throws Exception {
         assertFalse("trellis-kafka already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
-        featuresService.installFeature("trellis-event-serialization");
+        featuresService.installFeature("trellis-event-jackson");
         featuresService.installFeature("trellis-kafka");
         assertTrue("trellis-kafka not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
@@ -213,7 +203,7 @@ public class OSGiTest {
     public void testAmqpInstallation() throws Exception {
         assertFalse("trellis-amqp already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
-        featuresService.installFeature("trellis-event-serialization");
+        featuresService.installFeature("trellis-event-jackson");
         featuresService.installFeature("trellis-amqp");
         checkTrellisBundlesAreActive();
         assertTrue("trellis-amqp not installed!",
@@ -224,7 +214,7 @@ public class OSGiTest {
     public void testJmsInstallation() throws Exception {
         assertFalse("trellis-jms already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
-        featuresService.installFeature("trellis-event-serialization");
+        featuresService.installFeature("trellis-event-jackson");
         featuresService.installFeature("trellis-jms");
         assertTrue("trellis-jms not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));

@@ -29,6 +29,6 @@ module org.trellisldp.test {
     requires java.annotation;
     requires java.ws.rs;
     requires java.xml.bind;
-    requires javax.inject;
+    requires jakarta.inject.api;
     requires org.slf4j;
 }

@@ -17,7 +17,7 @@ module org.trellisldp.event.jsonb {
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.vocabulary;
 
-    requires cdi.api;
+    requires jakarta.enterprise.cdi.api;
     requires java.json.bind;
     requires org.apache.commons.rdf.api;
 
