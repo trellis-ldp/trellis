@@ -1,27 +1,47 @@
 plugins {
-    id 'io.quarkus' version "0.25.0"
+    id 'io.quarkus' version "0.28.1"
 }
+
+def installForQuarkus = [
+    "trellis-api",
+    "trellis-app",
+    "trellis-audit",
+    "trellis-auth-oauth",
+    "trellis-cache",
+    "trellis-cdi",
+    "trellis-constraint-rules",
+    "trellis-event-jsonb",
+    "trellis-file",
+    "trellis-http",
+    "trellis-io-jena",
+    "trellis-namespaces",
+    "trellis-rdfa",
+    "trellis-reactive",
+    "trellis-triplestore",
+    "trellis-vocabulary",
+    "trellis-webac"
+]
 
 dependencies {
     implementation enforcedPlatform("io.quarkus:quarkus-bom:$quarkusVersion")
 
-    implementation project(":trellis-api")
-    implementation project(":trellis-app")
-    implementation project(":trellis-audit")
-    implementation project(":trellis-auth-oauth")
-    implementation project(":trellis-cache")
-    implementation project(":trellis-cdi")
-    implementation project(":trellis-constraint-rules")
-    implementation project(":trellis-event-jsonb")
-    implementation project(":trellis-file")
-    implementation project(":trellis-http")
-    implementation project(":trellis-io-jena")
-    implementation project(":trellis-namespaces")
-    implementation project(":trellis-rdfa")
-    implementation project(":trellis-reactive")
-    implementation project(":trellis-triplestore")
-    implementation project(":trellis-vocabulary")
-    implementation project(":trellis-webac")
+    implementation "org.trellisldp:trellis-api:${project.version}"
+    implementation "org.trellisldp:trellis-app:${project.version}"
+    implementation "org.trellisldp:trellis-audit:${project.version}"
+    implementation "org.trellisldp:trellis-auth-oauth:${project.version}"
+    implementation "org.trellisldp:trellis-cache:${project.version}"
+    implementation "org.trellisldp:trellis-cdi:${project.version}"
+    implementation "org.trellisldp:trellis-constraint-rules:${project.version}"
+    implementation "org.trellisldp:trellis-event-jsonb:${project.version}"
+    implementation "org.trellisldp:trellis-file:${project.version}"
+    implementation "org.trellisldp:trellis-http:${project.version}"
+    implementation "org.trellisldp:trellis-io-jena:${project.version}"
+    implementation "org.trellisldp:trellis-namespaces:${project.version}"
+    implementation "org.trellisldp:trellis-rdfa:${project.version}"
+    implementation "org.trellisldp:trellis-reactive:${project.version}"
+    implementation "org.trellisldp:trellis-triplestore:${project.version}"
+    implementation "org.trellisldp:trellis-vocabulary:${project.version}"
+    implementation "org.trellisldp:trellis-webac:${project.version}"
 
     implementation 'io.quarkus:quarkus-jsonb'
     implementation 'io.quarkus:quarkus-resteasy'
@@ -46,10 +66,17 @@ test {
     systemProperty 'trellis.namespaces.path', "$buildDir/resources/test/namespaces.json"
 }
 
-quarkusBuild.enabled = false
-
 sonarqube {
     skipProject = true
+}
+
+// This requires Graal-VM to be installed
+buildNative.enabled = project.hasProperty("hasGraalVm")
+
+rootProject.childProjects.each { n, p ->
+    if (installForQuarkus.contains(p.name)) {
+        tasks.compileJava.dependsOn p.tasks.install
+    }
 }
 
 java {
