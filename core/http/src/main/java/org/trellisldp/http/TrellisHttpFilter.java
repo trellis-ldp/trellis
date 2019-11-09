@@ -27,19 +27,15 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.EXT;
-import static org.trellisldp.http.core.HttpConstants.PATCH;
-import static org.trellisldp.http.core.HttpConstants.PREFER;
-import static org.trellisldp.http.core.HttpConstants.RANGE;
-import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
+import static org.trellisldp.http.core.HttpConstants.*;
+import static org.trellisldp.http.core.TrellisExtensions.buildExtensionMapFromConfig;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.PreferMembership;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -48,6 +44,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.http.core.AcceptDatetime;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.Range;
@@ -58,21 +55,24 @@ import org.trellisldp.http.core.Version;
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private final List<String> mutatingMethods;
+    private final Map<String, IRI> extensions;
 
     /**
      * Create a simple pre-matching filter.
      */
     @Inject
     public TrellisHttpFilter() {
-        this(asList(POST, PUT, DELETE, PATCH));
+        this(asList(POST, PUT, DELETE, PATCH), buildExtensionMapFromConfig(getConfig()));
     }
 
     /**
      * Create a simple pre-matching filter with a custom method list.
      * @param mutatingMethods a list of mutating HTTP methods
+     * @param extensions a map of named graph extensions
      */
-    public TrellisHttpFilter(final List<String> mutatingMethods) {
+    public TrellisHttpFilter(final List<String> mutatingMethods, final Map<String, IRI> extensions) {
         this.mutatingMethods = unmodifiableList(mutatingMethods);
+        this.extensions = extensions;
     }
 
     @Override
@@ -86,10 +86,11 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
         validateVersion(ctx);
         validateTimeMap(ctx);
 
-        // Unconditionally set the Prefer header for ACL requests
-        if (ACL.equals(ctx.getUriInfo().getQueryParameters().getFirst(EXT)) && GET.equals(ctx.getMethod())) {
+        // Unconditionally set the Prefer header for extension requests
+        final String ext = ctx.getUriInfo().getQueryParameters().getFirst(EXT);
+        if (ext != null && extensions.containsKey(ext) && GET.equals(ctx.getMethod())) {
             ctx.getHeaders().putSingle(PREFER, new Prefer(Prefer.PREFER_REPRESENTATION,
-                        singletonList(PreferAccessControl.getIRIString()),
+                        singletonList(extensions.get(ext).getIRIString()),
                         asList(PreferUserManaged.getIRIString(), PreferContainment.getIRIString(),
                             PreferMembership.getIRIString()), null, null).toString());
         }

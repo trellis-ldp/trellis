@@ -13,7 +13,6 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -22,7 +21,6 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.*;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -69,12 +67,12 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.http.core.PATCH;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.http.core.TrellisExtensions;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.http.core.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetConfiguration;
 import org.trellisldp.http.impl.GetHandler;
-import org.trellisldp.http.impl.HttpUtils;
 import org.trellisldp.http.impl.MementoResource;
 import org.trellisldp.http.impl.OptionsHandler;
 import org.trellisldp.http.impl.PatchHandler;
@@ -126,7 +124,7 @@ public class TrellisHttpResource {
     }
 
     private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
-        this(trellis, buildExtensionMapFromConfig(config),
+        this(trellis, TrellisExtensions.buildExtensionMapFromConfig(config),
                 config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
     }
 
@@ -465,10 +463,5 @@ public class TrellisHttpResource {
         return cause instanceof WebApplicationException
                         ? ((WebApplicationException) cause).getResponse()
                         : new WebApplicationException(err).getResponse();
-    }
-
-    private static Map<String, IRI> buildExtensionMapFromConfig(final Config config) {
-        return config.getOptionalValue(CONFIG_HTTP_EXTENSION_GRAPHS, String.class).map(HttpUtils::buildExtensionMap)
-            .orElseGet(() -> singletonMap("acl", PreferAccessControl));
     }
 }
