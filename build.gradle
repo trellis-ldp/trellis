@@ -15,44 +15,44 @@ plugins {
 ext {
 
     /* Core dependencies */
-    annotationApiVersion = '1.3.5'
     commonsCodecVersion = '1.13'
     commonsIoVersion = '2.6'
     commonsLangVersion = '3.9'
     commonsRdfVersion = '0.5.0'
+    slf4jVersion = '1.7.28'
+
+    /* JavaEE */
+    activationApiVersion = '1.2.1'
+    annotationApiVersion = '1.3.5'
+    cdiApiVersion = '2.0.2'
     injectApiVersion = '1.0'
+    jaxbVersion = '2.3.2'
     jaxrsVersion = '2.1.6'
+    jmsApiVersion = '2.0.3'
+    jsonbVersion = '1.0.2'
+    managementApiVersion = '1.1.4'
+    validationApiVersion = '2.0.2'
+
+    /* Microprofile */
     microprofileConfigVersion = '1.3'
     microprofileHealthVersion = '2.1'
     microprofileMetricsVersion = '2.1.0'
     microprofileOpenapiVersion = '1.1.2'
     microprofileReactiveMessagingVersion = '1.0'
-    slf4jVersion = '1.7.28'
-
-    /* Wiring */
-    cdiApiVersion = '2.0.2'
 
     /* Component dependencies */
-    activationApiVersion = '1.2.1'
     activeMqVersion = '5.15.9'
-    commonsCompressVersion = '1.19'
     dropwizardVersion = '1.3.15'
     guavaVersion = '28.1-jre'
     jacksonVersion = '2.10.0'
-    jaxbVersion = '2.3.2'
-    jsonbVersion = '1.0.2'
     jenaVersion = '3.13.1'
-    jerseyVersion = '2.29.1'
     jjwtVersion = '0.10.7'
-    jmsApiVersion = '2.0.3'
     jsonldVersion = '0.12.5'
     kafkaVersion = '2.3.0'
-    managementApiVersion = '1.1.4'
     mustacheVersion = '0.9.6'
     quarkusVersion = '0.25.0'
     rabbitMqVersion = '5.7.3'
     rxjavaVersion = '2.2.13'
-    validationApiVersion = '2.0.2'
 
     /* Testing */
     apiguardianVersion = '1.1.0'
@@ -62,6 +62,7 @@ ext {
     cxfVersion = '3.3.3'
     glassfishJaxbVersion = '2.3.2'
     glassfishJsonVersion = '1.1.6'
+    jerseyVersion = '2.29.1'
     junitVersion = '5.5.2'
     junitLauncherVersion = '1.5.2'
     hamcrestVersion = '2.1'
@@ -77,8 +78,8 @@ ext {
     yassonVersion = '1.0.5'
 
     /* OSGi */
+    commonsCompressVersion = '1.19'
     glassfishInjectVersion = '2.5.0-b62'
-    jaxbOsgiVersion = '2.3.2'
     elVersion = '3.0.3'
     interceptorVersion = '1.2.5'
     jenaOsgiVersion = '3.13.1'
