@@ -20,6 +20,11 @@
     <property name="fileExtensions" value="java,css,js,xml"/>
   </module>
 
+  <!-- Checks for long lines. -->
+  <module name="LineLength">
+    <property name="max" value="120"/>
+  </module>
+
   <!-- Check that every module has a package-info.java file. -->
   <module name="JavadocPackage"/>
 
@@ -70,11 +75,6 @@
     <!-- <module name="AvoidStarImport">
       <property name="excludes" value="javax.ws.rs,javax.ws.rs.core,org.junit.jupiter.api.Assertions,org.mockito.Mockito,org.mockito.ArgumentMatchers"/>
     </module> -->
-
-    <!-- Checks for long lines. -->
-    <module name="LineLength">
-      <property name="max" value="120"/>
-    </module>
 
     <!-- Javadoc Checks -->
     <module name="JavadocParagraph"/>

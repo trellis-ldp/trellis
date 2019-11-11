@@ -14,6 +14,6 @@
 /**
  * Reusable dropwizard-based Trellis application components.
  *
- * This package implements common components for building a deployable dropwizard-based Trellis server.
+ * <p>This package implements common components for building a deployable dropwizard-based Trellis server.
  */
 package org.trellisldp.dropwizard;

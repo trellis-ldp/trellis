@@ -128,7 +128,7 @@ allprojects { subproj ->
         license = 'Apache 2'
 
         jacocoVersion = '0.8.5'
-        checkstyleVersion = '8.18'
+        checkstyleVersion = '8.26'
         pmdVersion = '6.19.0'
         spotbugsVersion = '3.1.12'
     }
