@@ -14,7 +14,7 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("jakarta.validation:jakarta.validation-api:$validationApiVersion")
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')

@@ -14,7 +14,7 @@ ext {
 
 dependencies {
     api project(':trellis-api')
-    api "jakarta.json.bind:jakarta.json.bind-api:$jsonbVersion"
+    api "jakarta.json.bind:jakarta.json.bind-api:$jsonbApiVersion"
 
     implementation project(':trellis-vocabulary')
 

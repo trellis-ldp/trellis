@@ -14,8 +14,8 @@ dependencies {
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
+    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
     implementation("org.apache.commons:commons-text:$commonsTextVersion")
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: "org.apache.jena", module: "jena-osgi"

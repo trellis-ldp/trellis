@@ -13,7 +13,7 @@ application {
 dependencies {
     compile project(':trellis-app-triplestore')
 
-    runtime("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
+    runtime("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
 
     if (project.sourceCompatibility.isJava11Compatible()) {
         runtime("io.dropwizard:dropwizard-core:$dropwizardVersion")

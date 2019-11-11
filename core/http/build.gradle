@@ -13,7 +13,7 @@ dependencies {
     api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
     api("jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}")
     api("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
-    api("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
+    api("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion")
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api("org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion")
     api("org.eclipse.microprofile.openapi:microprofile-openapi-api:$microprofileOpenapiVersion")
@@ -21,7 +21,7 @@ dependencies {
 
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
     implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")

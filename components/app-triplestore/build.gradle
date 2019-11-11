@@ -25,7 +25,7 @@ dependencies {
     compile("io.smallrye:smallrye-config:$smallryeConfigVersion")
     compile("org.slf4j:slf4j-api:$slf4jVersion")
     compile("jakarta.validation:jakarta.validation-api:$validationApiVersion")
-    compile("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
+    compile("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
     compile("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'

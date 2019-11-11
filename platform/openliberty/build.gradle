@@ -20,7 +20,7 @@ ext {
 dependencies {
     implementation("jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}")
     implementation("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
-    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
+    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion")
 
     implementation project(':trellis-api')
     implementation project(':trellis-app')
@@ -58,7 +58,7 @@ dependencies {
     runtime("ch.qos.logback:logback-classic:$logbackVersion")
     runtime("jakarta.activation:jakarta.activation-api:$activationApiVersion")
     runtime("jakarta.validation:jakarta.validation-api:$validationApiVersion")
-    runtime("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
+    runtime("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
 
     testImplementation project(':trellis-test')
 
