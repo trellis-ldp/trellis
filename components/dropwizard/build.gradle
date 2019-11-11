@@ -12,9 +12,9 @@ dependencies {
     api project(':trellis-http')
     api project(':trellis-cache')
 
-    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
-    implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("jakarta.validation:jakarta.validation-api:$validationApiVersion")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation project(':trellis-vocabulary')
@@ -23,11 +23,10 @@ dependencies {
     implementation project(':trellis-auth-basic')
     implementation project(':trellis-auth-oauth')
 
-    testRuntime("javax.activation:javax.activation-api:$activationApiVersion")
+    testRuntime("jakarta.activation:jakarta.activation-api:$activationApiVersion")
 
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
-    testImplementation("javax.enterprise:cdi-api:$cdiApiVersion")
     testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'

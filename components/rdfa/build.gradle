@@ -9,7 +9,7 @@ ext {
 }
 
 dependencies {
-    api("javax.inject:javax.inject:$javaxInjectVersion")
+    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
     api project(':trellis-api')
 
     implementation("com.github.spullara.mustache.java:compiler:$mustacheVersion")

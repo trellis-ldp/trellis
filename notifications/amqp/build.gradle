@@ -14,7 +14,7 @@ ext {
 
 dependencies {
     api("com.rabbitmq:amqp-client:$rabbitMqVersion")
-    api("javax.inject:javax.inject:$javaxInjectVersion")
+    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
     api project(':trellis-api')
 
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")

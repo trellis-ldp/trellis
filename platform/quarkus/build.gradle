@@ -52,8 +52,8 @@ dependencies {
     implementation "com.github.spullara.mustache.java:compiler:$mustacheVersion"
     implementation "com.google.guava:guava:$guavaVersion"
 
-    runtime "javax.activation:javax.activation-api:$activationApiVersion"
-    runtime "javax.xml.bind:jaxb-api:$jaxbVersion"
+    runtime "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    runtime "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion"
 
     testImplementation "io.quarkus:quarkus-junit5"
     testImplementation "io.rest-assured:rest-assured"

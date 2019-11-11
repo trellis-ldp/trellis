@@ -9,14 +9,14 @@ ext {
 }
 
 dependencies {
-    api("javax.enterprise:cdi-api:${cdiApiVersion}")
-    api("javax.inject:javax.inject:$javaxInjectVersion")
-    api("javax.ws.rs:javax.ws.rs-api:$jaxrsVersion")
+    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
+    api("jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}")
+    api("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsVersion")
     api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
     api project(':trellis-api')
     api project(':trellis-http')
 
-    implementation("javax.xml.bind:jaxb-api:$jaxbVersion")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
     implementation project(':trellis-vocabulary')

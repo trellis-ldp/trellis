@@ -18,11 +18,11 @@ module org.trellisldp.rdfa {
     requires transitive org.trellisldp.vocabulary;
 
     requires com.github.mustachejava;
+    requires jakarta.enterprise.cdi.api;
+    requires jakarta.inject.api;
+    requires microprofile.config.api;
     requires org.apache.commons.rdf.api;
     requires org.apache.jena.arq;
-    requires javax.inject;
-    requires microprofile.config.api;
-    requires cdi.api;
     requires org.apache.jena.core;
 
     uses org.trellisldp.api.NamespaceService;

@@ -18,8 +18,8 @@ module org.trellisldp.app {
     requires transitive org.trellisldp.http;
     requires transitive org.trellisldp.vocabulary;
 
-    requires javax.inject;
-    requires cdi.api;
+    requires jakarta.inject.api;
+    requires jakarta.enterprise.cdi.api;
 
     opens org.trellisldp.app;
 }

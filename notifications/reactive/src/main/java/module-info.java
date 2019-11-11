@@ -15,7 +15,7 @@ module org.trellisldp.reactive {
     exports org.trellisldp.reactive;
 
     requires io.reactivex.rxjava2;
-    requires javax.inject;
+    requires jakarta.inject.api;
     requires microprofile.reactive.messaging.api;
     requires org.slf4j;
     requires org.apache.commons.rdf.api;

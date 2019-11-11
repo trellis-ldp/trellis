@@ -26,11 +26,11 @@ module org.trellisldp.webdav {
     requires microprofile.metrics.api;
 
     requires microprofile.config.api;
-    requires javax.inject;
+    requires jakarta.enterprise.cdi.api;
+    requires jakarta.inject.api;
+    requires java.annotation;
     requires java.ws.rs;
     requires java.xml.bind;
-    requires java.annotation;
-    requires cdi.api;
 
     opens org.trellisldp.webdav.xml to java.xml.bind;
 }

@@ -21,12 +21,12 @@ module org.trellisldp.webac {
     requires org.apache.commons.rdf.api;
     requires org.slf4j;
 
-    requires javax.inject;
-    requires java.ws.rs;
-    requires java.xml.bind;
-    requires microprofile.config.api;
+    requires jakarta.enterprise.cdi.api;
+    requires jakarta.inject.api;
     requires java.annotation;
-    requires cdi.api;
+    requires java.xml.bind;
+    requires java.ws.rs;
+    requires microprofile.config.api;
 
     uses org.trellisldp.api.ResourceService;
 }
