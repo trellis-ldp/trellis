@@ -2,14 +2,14 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.27.0'
     id 'com.github.hierynomus.license' version '0.15.0'
     id 'com.github.kt3k.coveralls' version '2.8.4'
-    id 'com.github.spotbugs' version '2.0.0'
-    id 'com.gradle.build-scan' version '2.4.2'
+    id 'com.github.spotbugs' version '2.0.1'
+    id 'com.gradle.build-scan' version '3.0'
     id 'net.researchgate.release' version '2.8.1'
-    id 'org.owasp.dependencycheck' version '5.2.2'
+    id 'org.owasp.dependencycheck' version '5.2.3'
     id 'org.sonarqube' version '2.8'
     id 'biz.aQute.bnd.builder' version '4.1.0' apply false
     id 'com.palantir.docker' version '0.22.1' apply false
-    id 'nebula.ospackage' version '7.6.3' apply false
+    id 'nebula.ospackage' version '8.0.3' apply false
 }
 
 ext {
@@ -19,7 +19,7 @@ ext {
     commonsIoVersion = '2.6'
     commonsLangVersion = '3.9'
     commonsRdfVersion = '0.5.0'
-    slf4jVersion = '1.7.28'
+    slf4jVersion = '1.7.29'
 
     /* JavaEE */
     activationApiVersion = '1.2.1'
@@ -36,23 +36,23 @@ ext {
     /* Microprofile */
     microprofileConfigVersion = '1.3'
     microprofileHealthVersion = '2.1'
-    microprofileMetricsVersion = '2.1.0'
+    microprofileMetricsVersion = '2.2'
     microprofileOpenapiVersion = '1.1.2'
     microprofileReactiveMessagingVersion = '1.0'
 
     /* Component dependencies */
     activeMqVersion = '5.15.9'
-    dropwizardVersion = '1.3.15'
+    dropwizardVersion = '1.3.16'
     guavaVersion = '28.1-jre'
-    jacksonVersion = '2.10.0'
+    jacksonVersion = '2.10.1'
     jenaVersion = '3.13.1'
     jjwtVersion = '0.10.7'
     jsonldVersion = '0.12.5'
-    kafkaVersion = '2.3.0'
+    kafkaVersion = '2.3.1'
     mustacheVersion = '0.9.6'
     quarkusVersion = '0.28.1'
     rabbitMqVersion = '5.7.3'
-    rxjavaVersion = '2.2.13'
+    rxjavaVersion = '2.2.1'
 
     /* Testing */
     apiguardianVersion = '1.1.0'
@@ -65,13 +65,13 @@ ext {
     jerseyVersion = '2.29.1'
     junitVersion = '5.5.2'
     junitLauncherVersion = '1.5.2'
-    hamcrestVersion = '2.1'
+    hamcrestVersion = '2.2'
     logbackVersion = '1.2.3'
     mockitoVersion = '3.1.0'
     qpidVersion = '7.1.5'
     sleepycatVersion = '18.3.12'
-    smallryeConfigVersion = '1.3.9'
-    smallryeHealthVersion = '2.0.0'
+    smallryeConfigVersion = '1.3.11'
+    smallryeHealthVersion = '2.1.0'
     smallryeReactiveVersion = '1.0.8'
     smallryeReactiveOperatorsVersion = '1.0.10'
     weldVersion = '2.0.1.Final'
@@ -85,7 +85,7 @@ ext {
     jenaOsgiVersion = '3.13.1'
     jenaVersionRange = '[3.13,4)'
     kafkaOsgiVersion = '2.2.0_1'
-    karafVersion = '4.2.6'
+    karafVersion = '4.2.7'
     mustacheOsgiVersion = '0.9.6_1'
     osgiVersion = '6.0.0'
     osgiCompendiumVersion = '5.0.0'
@@ -127,7 +127,7 @@ allprojects { subproj ->
         docURL = 'https://www.trellisldp.org/docs/trellis/current/apidocs/'
         license = 'Apache 2'
 
-        jacocoVersion = '0.8.4'
+        jacocoVersion = '0.8.5'
         checkstyleVersion = '8.18'
         pmdVersion = '6.19.0'
         spotbugsVersion = '3.1.12'
