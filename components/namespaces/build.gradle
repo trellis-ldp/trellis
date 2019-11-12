@@ -19,5 +19,6 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
     testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
     testImplementation project(':trellis-vocabulary')
 }

@@ -13,9 +13,12 @@
  */
 package org.trellisldp.namespaces;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.net.URL;
@@ -57,11 +60,19 @@ class JsonNamespaceServiceTest {
     }
 
     @Test
-    void testWriteError() {
+    void testWriteNonexistent() {
         final File file = new File(getClass().getResource(nsDoc).getFile());
         final File nonexistent = new File(file.getParentFile(), "nonexistent/dir/file.json");
-        assertThrows(UncheckedIOException.class, () -> new JsonNamespaceService(nonexistent.getAbsolutePath()),
-                    "Loaded namespaces from invalid file!");
+        assertDoesNotThrow(() -> new JsonNamespaceService(nonexistent.getAbsolutePath()),
+                    "Loaded namespaces from nonexistent directory!");
+    }
+
+    @Test
+    void testWriteBadFile() throws IOException {
+        final File mockFile = mock(File.class, inv -> {
+            throw new IOException("Expected exception.");
+        });
+        assertThrows(UncheckedIOException.class, () -> JsonNamespaceService.write(mockFile, emptyMap()));
     }
 
     @Test

@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -98,7 +99,7 @@ public class JsonNamespaceService implements NamespaceService {
         data.forEach((k, v) -> dataRev.put(v, k));
     }
 
-    private static Map<String, String> read(final String filePath) {
+    static Map<String, String> read(final String filePath) {
         final File file = new File(filePath);
         final Map<String, String> namespaces = new ConcurrentHashMap<>();
         if (file.exists()) {
@@ -119,9 +120,16 @@ public class JsonNamespaceService implements NamespaceService {
         return namespaces;
     }
 
-    private static void write(final String filePath, final Map<String, String> data) {
+    static void write(final String filePath, final Map<String, String> data) {
+        write(new File(filePath), data);
+    }
+
+    static void write(final File file, final Map<String, String> data) {
         try {
-            MAPPER.writerWithDefaultPrettyPrinter().writeValue(new File(filePath), data);
+            if (!file.exists()) {
+                Files.createDirectories(file.getParentFile().toPath());
+            }
+            MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, data);
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
