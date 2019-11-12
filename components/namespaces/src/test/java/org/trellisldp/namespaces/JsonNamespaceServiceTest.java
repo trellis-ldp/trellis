@@ -68,6 +68,14 @@ class JsonNamespaceServiceTest {
     }
 
     @Test
+    void testCreateHierarchy() {
+        final File dir = new File(getClass().getResource(nsDoc).getFile()).getParentFile();
+        assertFalse(JsonNamespaceService.shouldCreateDirectories(null));
+        assertFalse(JsonNamespaceService.shouldCreateDirectories(dir));
+        assertTrue(JsonNamespaceService.shouldCreateDirectories(new File("nonexistent/other")));
+    }
+
+    @Test
     void testWriteBadFile() throws IOException {
         final File mockFile = mock(File.class, inv -> {
             throw new IOException("Expected exception.");

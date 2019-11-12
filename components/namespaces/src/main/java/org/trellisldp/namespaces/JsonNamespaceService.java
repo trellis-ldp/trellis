@@ -126,12 +126,16 @@ public class JsonNamespaceService implements NamespaceService {
 
     static void write(final File file, final Map<String, String> data) {
         try {
-            if (!file.exists()) {
+            if (shouldCreateDirectories(file.getParentFile())) {
                 Files.createDirectories(file.getParentFile().toPath());
             }
             MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, data);
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
+    }
+
+    static boolean shouldCreateDirectories(final File parent) {
+        return parent != null && !parent.exists();
     }
 }
