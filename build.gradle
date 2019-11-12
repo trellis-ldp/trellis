@@ -99,7 +99,6 @@ ext {
         'trellis-karaf',
         'trellis-openliberty',
         'trellis-osgi',
-        'trellis-quarkus',
         'trellis-server',
         'trellis-test'
     ]

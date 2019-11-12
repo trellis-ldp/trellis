@@ -1,0 +1,27 @@
+####
+# This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
+#
+# Before building the docker image run:
+#
+# ./gradlew assemble
+#
+# Then, build the image with:
+#
+# docker build -f src/main/docker/Dockerfile.jvm -t trellisldp/trellis-triplestore .
+#
+# Then run the container using:
+#
+# docker run -i --rm -p 8080:8080 trellisldp/trellis-triplestore
+#
+###
+FROM fabric8/java-alpine-openjdk8-jre
+LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
+
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV AB_ENABLED=jmx_exporter
+
+COPY build/lib/* /deployments/lib/
+COPY build/*-runner.jar /deployments/app.jar
+
+ENTRYPOINT [ "/deployments/run-java.sh" ]
+
