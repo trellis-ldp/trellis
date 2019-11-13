@@ -65,6 +65,6 @@ class ApplicationTest {
     @Test
     void rootResourceBody() {
         final String body = get("/").getBody().asString();
-        assertTrue(body.contains("<http://www.w3.org/ns/ldp#>"));
+        assertTrue(body.contains("ldp:BasicContainer"));
     }
 }

@@ -14,7 +14,6 @@ def installForQuarkus = [
     "trellis-file",
     "trellis-http",
     "trellis-io-jena",
-    "trellis-namespaces",
     "trellis-rdfa",
     "trellis-reactive",
     "trellis-triplestore",
@@ -36,7 +35,6 @@ dependencies {
     implementation "org.trellisldp:trellis-file:${project.version}"
     implementation "org.trellisldp:trellis-http:${project.version}"
     implementation "org.trellisldp:trellis-io-jena:${project.version}"
-    implementation "org.trellisldp:trellis-namespaces:${project.version}"
     implementation "org.trellisldp:trellis-rdfa:${project.version}"
     implementation "org.trellisldp:trellis-reactive:${project.version}"
     implementation "org.trellisldp:trellis-triplestore:${project.version}"
@@ -48,10 +46,18 @@ dependencies {
     implementation 'io.quarkus:quarkus-security'
     implementation 'io.quarkus:quarkus-smallrye-health'
     implementation 'io.quarkus:quarkus-smallrye-metrics'
+    implementation 'io.quarkus:quarkus-smallrye-openapi'
     implementation 'io.quarkus:quarkus-smallrye-reactive-messaging'
 
     implementation "com.github.spullara.mustache.java:compiler:$mustacheVersion"
     implementation "com.google.guava:guava:$guavaVersion"
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+    implementation("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    implementation "org.apache.jena:jena-arq:$jenaVersion"
+    implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
+    implementation "org.apache.jena:jena-tdb2:$jenaVersion"
+
 
     runtime "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     runtime "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
@@ -64,15 +70,15 @@ test {
     systemProperty 'com.arjuna.ats.arjuna.objectstore.objectStoreDir', "$buildDir/data/ObjectStore"
     systemProperty 'trellis.file.binary.basepath', "$buildDir/data/binaries"
     systemProperty 'trellis.file.memento.basepath', "$buildDir/data/mementos"
-    systemProperty 'trellis.namespaces.path', "$buildDir/resources/test/namespaces.json"
+    systemProperty 'trellis.triplestore.rdf.location', "$buildDir/data/rdf"
+    systemProperty 'trellis.namespace.prefixes', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
 }
 
 sonarqube {
     skipProject = true
 }
 
-// This requires Graal-VM to be installed
-buildNative.enabled = project.hasProperty("hasGraalVm")
+buildNative.enabled = false
 
 rootProject.childProjects.each { n, p ->
     if (installForQuarkus.contains(p.name)) {

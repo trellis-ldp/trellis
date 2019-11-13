@@ -84,7 +84,9 @@ jobs:
       env: JOB=docker
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       # Note: for maintenance branches, remove the dockerPushLatest task
-      script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew dockerPush dockerPushDevelop; else ./gradlew dockerPush dockerPushLatest; fi
+      script:
+          - if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew dockerPush dockerPushDevelop; else ./gradlew dockerPush dockerPushLatest; fi
+          - ./buildtools/src/main/resources/docker/publishToDockerHub.sh
 
     # deploy to AWS
     - name: "Publish JavaDocs"
