@@ -32,15 +32,11 @@ import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.*;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -191,21 +187,6 @@ public final class HttpUtils {
         }
         LOGGER.debug("Valid syntax not found among {} or {}", acceptableTypes, mimeType);
         throw new NotAcceptableException();
-    }
-
-    /**
-     * Close an input stream in an async chain.
-     * @param input the input stream
-     * @return a bifunction that closes the stream
-     */
-    public static BiConsumer<Object, Throwable> closeInputStreamAsync(final InputStream input) {
-        return (val, err) -> {
-            try {
-                input.close();
-            } catch (final IOException ex) {
-                throw new UncheckedIOException("Error closing input stream", ex);
-            }
-        };
     }
 
     /**

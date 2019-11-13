@@ -25,7 +25,6 @@ import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,6 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -162,8 +160,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param dataset the dataset
      */
     protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax, final Dataset dataset) {
-        try (final InputStream input = entity) {
-            getServices().getIOService().read(input, syntax, getIdentifier())
+        try {
+            getServices().getIOService().read(entity, syntax, getIdentifier())
                 .map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
                         || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace()))
@@ -172,8 +170,6 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .forEachOrdered(dataset::add);
         } catch (final RuntimeTrellisException ex) {
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage(), ex);
-        } catch (final IOException ex) {
-            throw new WebApplicationException("Error processing input: " + ex.getMessage(), ex);
         }
     }
 
@@ -244,8 +240,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     protected CompletionStage<Void> persistContent(final BinaryMetadata metadata) {
-        return getServices().getBinaryService().setContent(metadata, entity)
-                        .whenComplete(HttpUtils.closeInputStreamAsync(entity));
+        return getServices().getBinaryService().setContent(metadata, entity);
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final Dataset mutable) {

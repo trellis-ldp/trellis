@@ -34,7 +34,6 @@ import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Set;
 
@@ -255,14 +254,6 @@ class HttpUtilsTest {
         final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("application", "ld+json"));
         assertNull(HttpUtils.getProfile(types, JSONLD), "Unexpected json-ld profile!");
-    }
-
-    @Test
-    void testCloseInputStreamWithError() throws IOException {
-        doThrow(new IOException()).when(mockInputStream).close();
-        assertThrows(UncheckedIOException.class, () ->
-                HttpUtils.closeInputStreamAsync(mockInputStream).accept(null, null),
-                "No exception on bad InputStream!");
     }
 
     @Test

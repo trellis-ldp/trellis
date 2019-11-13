@@ -23,7 +23,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -40,7 +39,6 @@ import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -231,23 +229,6 @@ class PostHandlerTest extends BaseTestHandler {
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))),
                 "No exception thrown when the backend errors!");
-    }
-
-    @Test
-    void testBadRdfInputStream() {
-        final PostHandler handler = new PostHandler(mockTrellisRequest, root, "bad-resource",
-                buildThrowingInputStream(), mockBundler, extensions, null);
-        try (final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).toCompletableFuture().join())
-                .getResponse()) {
-            assertEquals(INTERNAL_SERVER_ERROR, res.getStatusInfo(), ERR_RESPONSE_CODE);
-        }
-    }
-
-    private InputStream buildThrowingInputStream() {
-        return mock(InputStream.class, inv -> {
-            throw new IOException("Expected exception");
-        });
     }
 
     private PostHandler buildPostHandler(final String resourceName, final String id, final String baseUrl)
