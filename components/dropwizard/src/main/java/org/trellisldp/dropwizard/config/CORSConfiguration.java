@@ -36,7 +36,7 @@ public class CORSConfiguration {
             "Accept-Datetime", "Authorization", "Prefer", "Slug", "Origin");
 
     private List<String> exposeHeaders = asList("Content-Type", "Link",
-            "Memento-Datetime", "Preference-Applied", "Location",
+            "Memento-Datetime", "Preference-Applied", "Location", "WWW-Authenticate",
             "Accept-Patch", "Accept-Post", "Accept-Ranges", "ETag", "Vary");
 
     private boolean allowCredentials = true;
