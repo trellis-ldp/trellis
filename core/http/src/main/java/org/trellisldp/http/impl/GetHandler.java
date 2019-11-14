@@ -161,13 +161,12 @@ public class GetHandler extends BaseLdpHandler {
     public ResponseBuilder standardHeaders(final ResponseBuilder builder) {
 
         // Standard HTTP Headers
-        builder.lastModified(from(getResource().getModified())).header(VARY, ACCEPT);
+        builder.lastModified(from(getResource().getModified()));
 
         final IRI model;
 
         if (getRequest().getExt() == null || DESCRIPTION.equals(getRequest().getExt())) {
             if (syntax != null) {
-                builder.header(VARY, PREFER);
                 builder.type(syntax.mediaType());
             }
 
@@ -184,7 +183,9 @@ public class GetHandler extends BaseLdpHandler {
         addLdpHeaders(builder, model);
 
         // Memento-related headers
-        addMementoHeaders(builder);
+        if (isMemento) {
+            builder.header(MEMENTO_DATETIME, from(getResource().getModified()));
+        }
 
         return builder;
     }
@@ -214,12 +215,12 @@ public class GetHandler extends BaseLdpHandler {
 
         // NonRDFSources responses (strong ETags, etc)
         if (getResource().getBinaryMetadata().isPresent() && syntax == null) {
-            return getLdpNr(builder);
+            return getLdpNr(builder.header(VARY, buildVaryHeader(false)));
         }
 
         // RDFSource responses (weak ETags, etc)
         final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), syntax);
-        return completedFuture(getLdpRs(builder, syntax, profile));
+        return completedFuture(getLdpRs(builder.header(VARY, buildVaryHeader(true)), syntax, profile));
     }
 
     /**
@@ -337,7 +338,7 @@ public class GetHandler extends BaseLdpHandler {
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);
 
         // Add standard headers
-        builder.header(VARY, RANGE).header(ACCEPT_RANGES, "bytes").tag(etag)
+        builder.header(ACCEPT_RANGES, "bytes").tag(etag)
             .header(ALLOW, isMemento ? join(",", GET, HEAD, OPTIONS) : join(",", GET, HEAD, OPTIONS, PUT, DELETE));
 
         // Short circuit HEAD requests
@@ -365,6 +366,21 @@ public class GetHandler extends BaseLdpHandler {
                         .thenApply(b -> b.getContent(req.getRange().getFrom(), req.getRange().getTo()));
     }
 
+    private String buildVaryHeader(final boolean isLdpRs) {
+        final List<String> variants = new ArrayList<>();
+        variants.add(ACCEPT);
+        if (!isMemento) {
+            variants.add(ACCEPT_DATETIME);
+        }
+        if (!isLdpRs) {
+            variants.add(RANGE);
+        } else if (getRequest().getExt() == null || DESCRIPTION.equals(getRequest().getExt())) {
+            variants.add(PREFER);
+        }
+
+        return join(",", variants);
+    }
+
     private void addLdpHeaders(final ResponseBuilder builder, final IRI model) {
         ldpResourceTypes(model).forEach(type -> {
             builder.link(type.getIRIString(), Link.TYPE);
@@ -379,13 +395,5 @@ public class GetHandler extends BaseLdpHandler {
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             }
         });
-    }
-
-    private void addMementoHeaders(final ResponseBuilder builder) {
-        if (isMemento) {
-            builder.header(MEMENTO_DATETIME, from(getResource().getModified()));
-        } else {
-            builder.header(VARY, ACCEPT_DATETIME);
-        }
     }
 }

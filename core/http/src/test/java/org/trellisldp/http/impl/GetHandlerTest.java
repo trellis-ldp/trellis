@@ -18,6 +18,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
 import static java.util.Optional.of;
@@ -131,7 +132,7 @@ class GetHandlerTest extends BaseTestHandler {
             assertTrue(etag.isWeak(), "ETag isn't weak for an RDF document!");
             assertEquals(md5Hex(mockResource.getRevision()), etag.getValue(), "Unexpected ETag value!");
 
-            final List<Object> varies = res.getHeaders().get(VARY);
+            final List<String> varies = getVaryHeaders(res);
             assertFalse(varies.contains(RANGE), ERR_VARY_RANGE);
             assertTrue(varies.contains(ACCEPT_DATETIME), ERR_VARY_ACCEPT_DATETIME);
             assertTrue(varies.contains(PREFER), ERR_VARY_PREFER);
@@ -184,7 +185,7 @@ class GetHandlerTest extends BaseTestHandler {
             assertTrue(etag.isWeak(), "ETag header is not weak for an RDF resource!");
             assertEquals(md5Hex(mockResource.getRevision()), etag.getValue(), "Unexpected ETag value!");
 
-            final List<Object> varies = res.getHeaders().get(VARY);
+            final List<String> varies = getVaryHeaders(res);
             assertTrue(varies.contains(PREFER), "Missing Vary: prefer header!");
             assertFalse(varies.contains(RANGE), ERR_VARY_RANGE);
             assertFalse(varies.contains(ACCEPT_DATETIME), ERR_VARY_ACCEPT_DATETIME);
@@ -253,7 +254,7 @@ class GetHandlerTest extends BaseTestHandler {
             assertTrue(etag.isWeak(), "ETag header isn't weak for LDP-RS!");
             assertEquals(md5Hex(mockResource.getRevision()), etag.getValue(), "Unexpected ETag value!");
 
-            final List<Object> varies = res.getHeaders().get(VARY);
+            final List<String> varies = getVaryHeaders(res);
             assertTrue(varies.contains(ACCEPT_DATETIME), "Missing Vary: accept-datetime header!");
             assertTrue(varies.contains(PREFER), "Missing Vary: prefer header!");
             assertFalse(varies.contains(RANGE), ERR_VARY_RANGE);
@@ -298,7 +299,7 @@ class GetHandlerTest extends BaseTestHandler {
             assertTrue(etag.isWeak(), "ETag isn't weak for RDF!");
             assertEquals(md5Hex(mockResource.getRevision()), etag.getValue(), "Incorrect ETag value for LDP-C!");
 
-            final List<Object> varies = res.getHeaders().get(VARY);
+            final List<String> varies = getVaryHeaders(res);
             assertTrue(varies.contains(ACCEPT_DATETIME), "Missing Vary: accept-datetime header!");
             assertTrue(varies.contains(PREFER), "Missing Vary: prefer header!");
             assertFalse(varies.contains(RANGE), ERR_VARY_RANGE);
@@ -449,5 +450,9 @@ class GetHandlerTest extends BaseTestHandler {
                 () -> assertEquals(2L, links.stream().filter(link -> link.getRels().contains("memento")).count()),
                 () -> assertEquals(1L, links.stream().filter(link -> link.getRels().contains("first")).count()),
                 () -> assertEquals(1L, links.stream().filter(link -> link.getRels().contains("last")).count()));
+    }
+
+    private List<String> getVaryHeaders(final Response res) {
+        return stream(res.getHeaderString(VARY).split(",")).map(String::trim).collect(toList());
     }
 }

@@ -2402,7 +2402,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     private Stream<Executable> checkVary(final Response res, final List<String> vary) {
-        final List<String> vheaders = res.getStringHeaders().get(VARY);
+        final List<String> vheaders = stream(res.getHeaderString(VARY).split(",")).map(String::trim).collect(toList());
         return Stream.of(RANGE, ACCEPT_DATETIME, PREFER).map(header -> vary.contains(header)
                 ? () -> assertTrue(vheaders.contains(header), "Missing Vary header: " + header)
                 : () -> assertFalse(vheaders.contains(header), "Unexpected Vary header: " + header));
