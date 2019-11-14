@@ -14,14 +14,15 @@
 # docker run -i --rm -p 8080:8080 trellisldp/trellis-triplestore
 #
 ###
-FROM fabric8/java-alpine-openjdk8-jre
+FROM openjdk:8-jre-alpine
 LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 
-ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-ENV AB_ENABLED=jmx_exporter
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:MaxHeapFreeRatio=40 -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:+ExitOnOutOfMemeoryError"
 
-COPY build/lib/* /deployments/lib/
-COPY build/*-runner.jar /deployments/app.jar
+COPY build/lib/* /trellis/lib/
+COPY build/*-runner.jar /trellis/app.jar
 
-ENTRYPOINT [ "/deployments/run-java.sh" ]
+WORKDIR /trellis/
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 
