@@ -14,6 +14,7 @@ baseUrl: http://localhost:8080/
 hubUrl: http://hub.example.com/
 
 auth:
+    scope: "openid"
     adminUsers:
         - zoyd
         - wheeler

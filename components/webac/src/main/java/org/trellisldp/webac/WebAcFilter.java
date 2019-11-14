@@ -100,6 +100,9 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. */
     public static final String CONFIG_WEBAC_REALM = "trellis.webac.realm";
 
+    /** The configuration key controlling the scope(s) used in a WWW-Authenticate header. */
+    public static final String CONFIG_WEBAC_SCOPE = "trellis.webac.scope";
+
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final RDF rdf = getInstance();
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
@@ -134,6 +137,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         this(accessService,
                 asList(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
                 config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
+                config.getOptionalValue(CONFIG_WEBAC_SCOPE, String.class).orElse(""),
                 config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
@@ -143,14 +147,20 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param accessService the access service
      * @param challengeTypes the WWW-Authenticate challenge types
      * @param realm the authentication realm
+     * @param scope the authentication scope
      * @param baseUrl the base URL, may be null
      */
     public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
-            final String realm, final String baseUrl) {
+            final String realm, final String scope, final String baseUrl) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
+        requireNonNull(scope, "Scope may not be null!");
+
+        final String realmParam = " realm=\"" + realm + "\"";
+        final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
+
         this.accessService = accessService;
-        this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + " realm=\"" + realm + "\"")
+        this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + realmParam + scopeParam)
             .collect(toList());
         this.baseUrl = baseUrl;
         final Config config = getConfig();
