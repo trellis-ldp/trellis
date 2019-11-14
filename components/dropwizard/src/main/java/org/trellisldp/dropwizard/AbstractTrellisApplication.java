@@ -136,7 +136,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
             of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled).map(x -> "Basic")
                 .ifPresent(challenges::add);
             environment.jersey().register(new WebAcFilter(webac, challenges, config.getAuth().getRealm(),
-                        config.getBaseUrl()));
+                        config.getAuth().getScope(), config.getBaseUrl()));
         });
 
         // WebSub

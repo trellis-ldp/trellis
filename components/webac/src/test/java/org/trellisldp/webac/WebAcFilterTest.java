@@ -301,14 +301,14 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm",
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "my-scope",
                 "http://example.com/");
 
         final List<Object> challenges = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No auth exception thrown with no access modes!").getChallenges();
 
-        assertTrue(challenges.contains("Foo realm=\"my-realm\""), "Foo not among challenges!");
-        assertTrue(challenges.contains("Bar realm=\"my-realm\""), "Bar not among challenges!");
+        assertTrue(challenges.contains("Foo realm=\"my-realm\" scope=\"my-scope\""), "Foo not among challenges!");
+        assertTrue(challenges.contains("Bar realm=\"my-realm\" scope=\"my-scope\""), "Bar not among challenges!");
     }
 
     @Test
@@ -318,7 +318,7 @@ class WebAcFilterTest {
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", null);
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -338,7 +338,7 @@ class WebAcFilterTest {
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", null);
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -351,7 +351,7 @@ class WebAcFilterTest {
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm",
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "",
                 "http://example.com/");
 
         assertTrue(headers.isEmpty());
@@ -375,7 +375,7 @@ class WebAcFilterTest {
         when(mockUriInfo.getQueryParameters()).thenReturn(params);
         when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", null);
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -388,7 +388,7 @@ class WebAcFilterTest {
         when(mockResponseContext.getStatusInfo()).thenReturn(FORBIDDEN);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", null);
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);

@@ -118,9 +118,12 @@ class TrellisConfigurationTest {
         assertTrue(config.getAuth().getBasic().getEnabled(), "basic auth not enabled!");
         assertEquals("users.auth", config.getAuth().getBasic().getUsersFile(), "Incorrect basic users file!");
         assertEquals("trellis", config.getAuth().getRealm(), "Incorrect auth realm!");
+        assertEquals("openid", config.getAuth().getScope(), "Incorrect auth scope!");
 
         config.getAuth().setRealm("foobar");
+        config.getAuth().setScope("baz");
         assertEquals("foobar", config.getAuth().getRealm(), "Incorrect auth/basic/realm value!");
+        assertEquals("baz", config.getAuth().getScope(), "Incorrect auth scope!");
         assertTrue(config.getAuth().getJwt().getEnabled(), "auth/jwt not enabled!");
         assertEquals("Mz4DGzFLQysSGC98ESAnSafMLbxa71ls/zzUFOdCIJw9L0J8Q0Gt7+yCM+Ag73Tm5OTwpBemFOqPFiZ5BeBo4Q==",
                 config.getAuth().getJwt().getKey(), "Incorrect auth/jwt/key");

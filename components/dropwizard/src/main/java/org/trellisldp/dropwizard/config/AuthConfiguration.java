@@ -32,6 +32,9 @@ public class AuthConfiguration {
     private String realm = "trellis";
 
     @NotNull
+    private String scope = "";
+
+    @NotNull
     private List<String> adminUsers = new ArrayList<>();
 
     /**
@@ -122,5 +125,23 @@ public class AuthConfiguration {
     @JsonProperty
     public void setRealm(final String realm) {
         this.realm = realm;
+    }
+
+    /**
+     * Set the security scope.
+     * @param scope the security scope
+     */
+    @JsonProperty
+    public void setScope(final String scope) {
+        this.scope = scope;
+    }
+
+    /**
+     * Get the security scope.
+     * @return the scope
+     */
+    @JsonProperty
+    public String getScope() {
+        return scope;
     }
 }
