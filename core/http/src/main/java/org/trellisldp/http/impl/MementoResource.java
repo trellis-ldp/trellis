@@ -30,13 +30,11 @@ import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.HttpMethod.OPTIONS;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
-import static javax.ws.rs.core.HttpHeaders.VARY;
 import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.core.HttpConstants.DATETIME;
 import static org.trellisldp.http.core.HttpConstants.FROM;
@@ -142,8 +140,7 @@ public final class MementoResource {
         return status(FOUND)
             .location(fromUri(identifier + VERSION_PARAM + req.getDatetime().getInstant().getEpochSecond()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)
-            .links(getMementoHeaders(identifier, mementos).map(this::filterLinkParams).toArray(Link[]::new))
-            .header(VARY, ACCEPT_DATETIME);
+            .links(getMementoHeaders(identifier, mementos).map(this::filterLinkParams).toArray(Link[]::new));
     }
 
     /**
