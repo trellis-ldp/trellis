@@ -17,7 +17,7 @@
 FROM openjdk:8-jre-alpine
 LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 
-ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:MaxHeapFreeRatio=40 -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:+ExitOnOutOfMemeoryError"
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:+ExitOnOutOfMemeoryError"
 
 COPY build/lib/* /trellis/lib/
 COPY build/*-runner.jar /trellis/app.jar
