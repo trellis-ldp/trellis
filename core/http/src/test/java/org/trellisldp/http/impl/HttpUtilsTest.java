@@ -33,7 +33,6 @@ import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
@@ -73,9 +72,6 @@ class HttpUtilsTest {
 
     @Mock
     private ResourceService mockResourceService;
-
-    @Mock
-    private InputStream mockInputStream;
 
     @Mock
     private Dataset mockDataset;
