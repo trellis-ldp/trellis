@@ -51,16 +51,16 @@ dependencies {
 
     implementation "com.github.spullara.mustache.java:compiler:$mustacheVersion"
     implementation "com.google.guava:guava:$guavaVersion"
-    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    implementation("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
-    implementation("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+    implementation "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
+    implementation "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
     implementation "org.apache.jena:jena-arq:$jenaVersion"
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
 
 
-    runtime "jakarta.activation:jakarta.activation-api:$activationApiVersion"
-    runtime "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    runtimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
     testImplementation "io.quarkus:quarkus-junit5"
     testImplementation "io.rest-assured:rest-assured"

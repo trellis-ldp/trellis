@@ -10,17 +10,17 @@ ext {
 }
 
 dependencies {
-    api("jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion")
+    api "jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion"
     api project(':trellis-api')
     api project(':trellis-http')
     api project(':trellis-vocabulary')
 
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
-    testRuntime("jakarta.activation:jakarta.activation-api:$activationApiVersion")
+    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
     testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
         exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
         exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"

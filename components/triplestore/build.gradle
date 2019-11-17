@@ -9,31 +9,31 @@ ext {
 }
 
 dependencies {
-    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
-    api("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
-    api("org.apache.jena:jena-rdfconnection:$jenaVersion")
-    api("org.apache.jena:jena-arq:$jenaVersion")
+    api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
+    api "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
+    api "org.apache.jena:jena-rdfconnection:$jenaVersion"
+    api "org.apache.jena:jena-arq:$jenaVersion"
     api("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
-    api("org.eclipse.microprofile.health:microprofile-health-api:$microprofileHealthVersion")
+    api "org.eclipse.microprofile.health:microprofile-health-api:$microprofileHealthVersion"
     api project(':trellis-api')
 
-    implementation("org.apache.jena:jena-tdb2:$jenaVersion")
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation "org.apache.jena:jena-tdb2:$jenaVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-vocabulary')
 
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
-    testImplementation("io.smallrye:smallrye-health:$smallryeHealthVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye:smallrye-health:$smallryeHealthVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-test')
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
     }
-    testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
+    testImplementation "org.hamcrest:hamcrest:$hamcrestVersion"
 }

@@ -11,12 +11,12 @@ ext {
 dependencies {
     api project(':trellis-api')
 
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
+    implementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
     implementation project(':trellis-vocabulary')
 
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
-    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
 }

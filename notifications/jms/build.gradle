@@ -13,18 +13,18 @@ ext {
 }
 
 dependencies {
-    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
-    api("jakarta.jms:jakarta.jms-api:$jmsApiVersion")
+    api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
+    api "jakarta.jms:jakarta.jms-api:$jmsApiVersion"
     api project(':trellis-api')
 
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
-    testImplementation("org.apache.activemq:activemq-client:$activeMqVersion")
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
-    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation "org.apache.activemq:activemq-client:$activeMqVersion"
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-vocabulary')
 
@@ -34,7 +34,7 @@ dependencies {
     }
 
     if (!project.sourceCompatibility.isJava11Compatible()) {
-        testImplementation("org.apache.activemq:activemq-broker:$activeMqVersion")
+        testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
     }
 }
 

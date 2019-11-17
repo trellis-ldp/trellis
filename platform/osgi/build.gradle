@@ -29,40 +29,41 @@ sonarqube {
 }
 
 dependencies {
-    compile("org.apache.jena:jena-osgi:$jenaVersion")
-    compile("org.apache.commons:commons-compress:$commonsCompressVersion")
-    compile("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
-    compile project(':trellis-api')
-    compile project(':trellis-http')
-    compile project(':trellis-io-jena')
-    compile project(':trellis-namespaces')
-    compile project(':trellis-vocabulary')
-    compile project(':trellis-triplestore')
+    implementation "org.apache.jena:jena-osgi:$jenaVersion"
+    implementation "org.apache.commons:commons-compress:$commonsCompressVersion"
+    implementation project(':trellis-api')
+    implementation project(':trellis-http')
+    implementation project(':trellis-io-jena')
+    implementation project(':trellis-namespaces')
+    implementation project(':trellis-vocabulary')
+    implementation project(':trellis-triplestore')
 
-    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
-    testCompile("org.apache.karaf.features:standard:$karafVersion")
-    testCompile("org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion")
-    testCompile("org.ops4j.pax.exam:pax-exam:$paxExamVersion")
-    testCompile("org.ops4j.pax.exam:pax-exam-junit4:$paxExamVersion")
-    testCompile("org.ops4j.pax.exam:pax-exam-container-karaf:$paxExamVersion")
-    testCompile("org.osgi:org.osgi.core:$osgiVersion")
-    testCompile("org.osgi:org.osgi.compendium:$osgiCompendiumVersion")
-    testCompile("org.mockito:mockito-core:$mockitoVersion")
-    testCompile("org.glassfish.hk2.external:javax.inject:$glassfishInjectVersion")
-    testCompile project(':trellis-amqp')
-    testCompile project(':trellis-audit')
-    testCompile project(':trellis-constraint-rules')
-    testCompile project(':trellis-event-jackson')
-    testCompile project(':trellis-file')
-    testCompile project(':trellis-jms')
-    testCompile project(':trellis-kafka')
-    testCompile project(':trellis-triplestore')
-    testCompile project(':trellis-webac')
-    testCompile project(':trellis-karaf')
+    runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
-    testCompile group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "org.apache.karaf.features:standard:$karafVersion"
+    testImplementation "org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion"
+    testImplementation "org.ops4j.pax.exam:pax-exam:$paxExamVersion"
+    testImplementation "org.ops4j.pax.exam:pax-exam-junit4:$paxExamVersion"
+    testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:$paxExamVersion"
+    testImplementation "org.osgi:org.osgi.core:$osgiVersion"
+    testImplementation "org.osgi:org.osgi.compendium:$osgiCompendiumVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.glassfish.hk2.external:javax.inject:$glassfishInjectVersion"
+    testImplementation project(':trellis-amqp')
+    testImplementation project(':trellis-audit')
+    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-event-jackson')
+    testImplementation project(':trellis-file')
+    testImplementation project(':trellis-jms')
+    testImplementation project(':trellis-kafka')
+    testImplementation project(':trellis-triplestore')
+    testImplementation project(':trellis-webac')
+    testImplementation project(':trellis-karaf')
 
-    testRuntime("org.junit.vintage:junit-vintage-engine:${junitVersion}")
+    testImplementation group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
+
+    testRuntimeClasspath "org.junit.vintage:junit-vintage-engine:${junitVersion}"
 
     karafDistro group: 'org.apache.karaf', name: 'apache-karaf', version: karafVersion, ext: 'zip'
 }
@@ -85,7 +86,7 @@ task generateDependsFile {
         properties.setProperty( "${project.group}/${project.name}/version", "${project.version}" )
 
         // then for all our deps
-        project.configurations.testRuntime.resolvedConfiguration.resolvedArtifacts.each {
+        project.configurations.testRuntimeClasspath.resolvedConfiguration.resolvedArtifacts.each {
             final String keyBase = it.moduleVersion.id.group + '/' + it.moduleVersion.id.name
             properties.setProperty( "${keyBase}/scope", "compile" )
             properties.setProperty( "${keyBase}/type", it.extension )

@@ -9,37 +9,37 @@ ext {
 }
 
 dependencies {
-    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
-    api("jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}")
-    api("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
-    api("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion")
-    api("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
-    api("org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion")
+    api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
+    api "jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}"
+    api "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
+    api "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
+    api "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
+    api "org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion"
     api project(':trellis-api')
 
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
-    implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
-    implementation("org.apache.jena:jena-arq:$jenaVersion")
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
+    implementation "org.apache.jena:jena-arq:$jenaVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
 
-    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
-    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
-    testImplementation("org.glassfish.jersey.core:jersey-server:$jerseyVersion")
-    testImplementation("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion")
-    testImplementation("org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion")
-    testImplementation("org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
+    testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
+    testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion"
+    testImplementation "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
+    testImplementation "org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-io-jena')
 
-    testRuntimeClasspath("jakarta.activation:jakarta.activation-api:$activationApiVersion")
-    testRuntimeClasspath("ch.qos.logback:logback-classic:$logbackVersion")
-    testRuntimeClasspath("org.glassfish.jaxb:jaxb-runtime:$glassfishJaxbVersion")
+    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
+    testRuntimeClasspath "org.glassfish.jaxb:jaxb-runtime:$glassfishJaxbVersion"
 }
 
 if (project.sourceCompatibility.isJava11Compatible()) {
