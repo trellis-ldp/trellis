@@ -259,6 +259,45 @@ public class OSGiTest {
                 featuresService.isInstalled(featuresService.getFeature("trellis-webdav")));
     }
 
+    @Test
+    public void testEventJsonbInstallation() throws Exception {
+        assertFalse("trellis-event-jsonb already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-event-jsonb")));
+        featuresService.installFeature("trellis-event-jsonb");
+        assertTrue("trellis-event-jsonb not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-event-jsonb")));
+        checkTrellisBundlesAreActive();
+    }
+
+    @Test
+    public void testAppInstallation() throws Exception {
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-app"))) {
+            featuresService.installFeature("trellis-app");
+        }
+        assertTrue("trellis-app not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-app")));
+        checkTrellisBundlesAreActive();
+    }
+
+    @Test
+    public void testCdiInstallation() throws Exception {
+        assertFalse("trellis-cdi already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-cdi")));
+        featuresService.installFeature("trellis-cdi");
+        assertTrue("trellis-cdi not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-cdi")));
+        checkTrellisBundlesAreActive();
+    }
+
+    @Test
+    public void testCacheInstallation() throws Exception {
+        assertFalse("trellis-cache already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-cache")));
+        featuresService.installFeature("trellis-cache");
+        assertTrue("trellis-cache not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-cache")));
+        checkTrellisBundlesAreActive();
+    }
 
     private void checkTrellisBundlesAreActive() {
         stream(bundleContext.getBundles()).filter(b -> b.getSymbolicName().startsWith("org.trellisldp")).forEach(b ->
