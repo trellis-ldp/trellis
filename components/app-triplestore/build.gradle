@@ -11,62 +11,62 @@ configurations.all {
 }
 
 dependencies {
-    compile("com.github.jsonld-java:jsonld-java:$jsonldVersion") {
+    implementation("com.github.jsonld-java:jsonld-java:$jsonldVersion") {
         exclude group: 'org.apache.httpcomponents', module: 'httpclient-osgi'
         exclude group: 'org.apache.httpcomponents', module: 'httpcore-osgi'
     }
-    compile("commons-codec:commons-codec:$commonsCodecVersion")
-    compile("jakarta.activation:jakarta.activation-api:$activationApiVersion")
-    compile("jakarta.jms:jakarta.jms-api:$jmsApiVersion")
-    compile("org.apache.activemq:activemq-client:$activeMqVersion")
-    compile("org.apache.jena:jena-arq:$jenaVersion")
-    compile("org.apache.jena:jena-rdfconnection:$jenaVersion")
-    compile("org.apache.jena:jena-tdb2:$jenaVersion")
-    compile("io.smallrye:smallrye-config:$smallryeConfigVersion")
-    compile("org.slf4j:slf4j-api:$slf4jVersion")
-    compile("jakarta.validation:jakarta.validation-api:$validationApiVersion")
-    compile("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
-    compile("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
-    compile("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
+    implementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    implementation "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    implementation "jakarta.jms:jakarta.jms-api:$jmsApiVersion"
+    implementation "jakarta.validation:jakarta.validation-api:$validationApiVersion"
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    implementation "org.apache.activemq:activemq-client:$activeMqVersion"
+    implementation "org.apache.jena:jena-arq:$jenaVersion"
+    implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
+    implementation "org.apache.jena:jena-tdb2:$jenaVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    implementation "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
+    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
 
-    compile project(':trellis-constraint-rules')
-    compile project(':trellis-io-jena')
-    compile project(':trellis-api')
-    compile project(':trellis-http')
-    compile project(':trellis-app')
-    compile project(':trellis-cache')
-    compile project(':trellis-dropwizard')
-    compile project(':trellis-vocabulary')
-    compile project(':trellis-file')
-    compile project(':trellis-namespaces')
-    compile project(':trellis-audit')
-    compile project(':trellis-event-jackson')
-    compile project(':trellis-webac')
-    compile project(':trellis-triplestore')
-    compile project(':trellis-jms')
-    compile project(':trellis-rdfa')
-    compile project(':trellis-kafka')
-    compile project(':trellis-auth-oauth')
-    compile project(':trellis-auth-basic')
+    implementation project(':trellis-constraint-rules')
+    implementation project(':trellis-io-jena')
+    implementation project(':trellis-api')
+    implementation project(':trellis-http')
+    implementation project(':trellis-app')
+    implementation project(':trellis-cache')
+    implementation project(':trellis-dropwizard')
+    implementation project(':trellis-vocabulary')
+    implementation project(':trellis-file')
+    implementation project(':trellis-namespaces')
+    implementation project(':trellis-audit')
+    implementation project(':trellis-event-jackson')
+    implementation project(':trellis-webac')
+    implementation project(':trellis-triplestore')
+    implementation project(':trellis-jms')
+    implementation project(':trellis-rdfa')
+    implementation project(':trellis-kafka')
+    implementation project(':trellis-auth-oauth')
+    implementation project(':trellis-auth-basic')
 
-    compile("io.dropwizard:dropwizard-core:$dropwizardVersion")
-    compile("io.dropwizard:dropwizard-metrics:$dropwizardVersion")
-    compile("io.dropwizard:dropwizard-http2:$dropwizardVersion")
+    implementation "io.dropwizard:dropwizard-core:$dropwizardVersion"
+    implementation "io.dropwizard:dropwizard-metrics:$dropwizardVersion"
+    implementation "io.dropwizard:dropwizard-http2:$dropwizardVersion"
 
-    testCompile("org.awaitility:awaitility:$awaitilityVersion") {
+    testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
     }
-    testCompile("org.hamcrest:hamcrest:$hamcrestVersion")
-    testCompile("ch.qos.logback:logback-classic:$logbackVersion")
-    testCompile("org.mockito:mockito-core:$mockitoVersion")
-    testCompile project(':trellis-test')
-    testCompile("io.dropwizard:dropwizard-client:$dropwizardVersion")
-    testCompile("io.dropwizard:dropwizard-testing:$dropwizardVersion")
-    testCompile("org.apache.activemq:activemq-broker:$activeMqVersion")
+    testImplementation "org.hamcrest:hamcrest:$hamcrestVersion"
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation project(':trellis-test')
+    testImplementation "io.dropwizard:dropwizard-client:$dropwizardVersion"
+    testImplementation "io.dropwizard:dropwizard-testing:$dropwizardVersion"
+    testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
 }
 
 jar {

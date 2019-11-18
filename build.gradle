@@ -143,10 +143,10 @@ allprojects { subproj ->
     }
 
     dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-        testImplementation("org.apiguardian:apiguardian-api:${apiguardianVersion}")
-        testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
-        testRuntime("org.junit.platform:junit-platform-launcher:${junitLauncherVersion}")
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+        testImplementation "org.apiguardian:apiguardian-api:${apiguardianVersion}"
+        testRuntimeClasspath "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+        testRuntimeClasspath "org.junit.platform:junit-platform-launcher:${junitLauncherVersion}"
     }
 
     gradle.projectsEvaluated {

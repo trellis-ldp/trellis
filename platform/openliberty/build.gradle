@@ -18,9 +18,9 @@ ext {
 }
 
 dependencies {
-    implementation("jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}")
-    implementation("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
-    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion")
+    implementation "jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}"
+    implementation "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
+    implementation "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
 
     implementation project(':trellis-api')
     implementation project(':trellis-app')
@@ -43,22 +43,22 @@ dependencies {
         exclude group: 'org.apache.httpcomponents', module: 'httpclient-osgi'
         exclude group: 'org.apache.httpcomponents', module: 'httpcore-osgi'
     }
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")
-    implementation("org.apache.jena:jena-arq:$jenaVersion")
-    implementation("org.apache.jena:jena-rdfconnection:$jenaVersion")
-    implementation("org.apache.jena:jena-tdb2:$jenaVersion")
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation("org.apache.commons:commons-rdf-api:$commonsRdfVersion")
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
+    implementation "org.apache.jena:jena-arq:$jenaVersion"
+    implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
+    implementation "org.apache.jena:jena-tdb2:$jenaVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    implementation "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
 
-    runtime("ch.qos.logback:logback-classic:$logbackVersion")
-    runtime("jakarta.activation:jakarta.activation-api:$activationApiVersion")
-    runtime("jakarta.validation:jakarta.validation-api:$validationApiVersion")
-    runtime("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
+    runtimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
+    runtimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    runtimeClasspath "jakarta.validation:jakarta.validation-api:$validationApiVersion"
+    runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
     testImplementation project(':trellis-test')
 

@@ -11,34 +11,34 @@ sonarqube {
 }
 
 dependencies {
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")
-    implementation("commons-io:commons-io:$commonsIoVersion")
-    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    implementation("jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion")
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
-    implementation("org.apache.commons:commons-text:$commonsTextVersion")
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
+    implementation "commons-io:commons-io:$commonsIoVersion"
+    implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+    implementation "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    implementation "org.apache.commons:commons-text:$commonsTextVersion"
     implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: "org.apache.jena", module: "jena-osgi"
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
-    implementation("org.apache.jena:jena-arq:$jenaVersion")
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
+    implementation "org.apache.jena:jena-arq:$jenaVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
     implementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
-    implementation("org.hamcrest:hamcrest:$hamcrestVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    implementation "org.hamcrest:hamcrest:$hamcrestVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    implementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     implementation project(':trellis-api')
     implementation project(':trellis-http')
     implementation project(':trellis-io-jena')
     implementation project(':trellis-vocabulary')
 
-    runtime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    runtimeClasspath "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
 }
 
 jar {

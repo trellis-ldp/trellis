@@ -9,17 +9,17 @@ ext {
 }
 
 dependencies {
-    api("jakarta.inject:jakarta.inject-api:$injectApiVersion")
-    api("org.apache.kafka:kafka-clients:$kafkaVersion")
+    api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
+    api "org.apache.kafka:kafka-clients:$kafkaVersion"
     api project(':trellis-api')
 
-    implementation("org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion")
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
-    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
-    testImplementation("org.apache.commons:commons-rdf-simple:$commonsRdfVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-vocabulary')
 }
