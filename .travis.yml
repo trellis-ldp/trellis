@@ -65,7 +65,7 @@ jobs:
       stage: test
       jdk: openjdk8
       env: JOB=osgi
-      script: gradle -p platform/osgi -x pmdMain -x spotbugsMain check -Posgi
+      script: ./gradlew -p platform/osgi -x pmdMain -x spotbugsMain check -Posgi
 
     # JDK 11 (modules)
     - name: "Java 11 (modules)"
