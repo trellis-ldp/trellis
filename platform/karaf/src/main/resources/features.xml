@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="trellis-${project.version}">
 
+  <!-- Core features -->
   <feature name="trellis-api" version="${project.version}">
     <details>Installs the Trellis API bundle</details>
 
@@ -14,6 +15,45 @@
     <bundle>mvn:org.trellisldp/trellis-api/${project.version}</bundle>
   </feature>
 
+  <feature name="trellis-http" version="${project.version}">
+    <details>Installs the Trellis HTTP bundle</details>
+
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
+    <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
+    <bundle dependency="true">mvn:jakarta.ws.rs/jakarta.ws.rs-api/${jaxrsApiVersion}</bundle>
+    <bundle dependency="true">mvn:jakarta.xml.bind/jakarta.xml.bind-api/${jaxbApiVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.metrics/microprofile-metrics-api/${microprofileMetricsVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.openapi/microprofile-openapi-api/${microprofileOpenapiVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-vocabulary" version="${project.version}">
+    <details>Installs the Trellis Vocabulary bundle</details>
+
+    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-vocabulary/${project.version}</bundle>
+  </feature>
+
+  <!-- Component features -->
+  <feature name="trellis-app" version="${project.version}">
+    <details>Installs the Trellis App bundle</details>
+
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-http</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+
+    <bundle>mvn:org.trellisldp/trellis-app/${project.version}</bundle>
+  </feature>
+
   <feature name="trellis-audit" version="${project.version}">
     <details>Installs the Trellis Audit bundle</details>
 
@@ -21,6 +61,26 @@
     <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle>mvn:org.trellisldp/trellis-audit/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-cache" version="${project.version}">
+    <details>Installs the Trellis Cache bundle</details>
+
+    <feature prerequisite="true">wrap</feature>
+
+    <feature dependency="true">trellis-api</feature>
+    <bundle dependency="true">mvn:com.google.guava/guava/${guavaVersion}</bundle>
+    <bundle dependency="true">mvn:com.google.guava/failureaccess/${failureaccessVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-cache/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-cdi" version="${project.version}">
+    <details>Installs the Trellis CDI bundle</details>
+
+    <feature dependency="true">trellis-app</feature>
+
+    <bundle>mvn:org.trellisldp/trellis-cdi/${project.version}</bundle>
   </feature>
 
   <feature name="trellis-file" version="${project.version}">
@@ -43,39 +103,6 @@
     <feature dependency="true">trellis-vocabulary</feature>
 
     <bundle>mvn:org.trellisldp/trellis-constraint-rules/${project.version}</bundle>
-  </feature>
-
-  <feature name="trellis-event-jackson" version="${project.version}">
-    <details>Installs the Trellis Event Serialization bundle</details>
-
-    <feature dependency="true">trellis-api</feature>
-    <feature dependency="true">trellis-vocabulary</feature>
-
-    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
-    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
-    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion}</bundle>
-    <bundle dependency="true">mvn:com.fasterxml.jackson.datatype/jackson-datatype-jsr310/${jacksonVersion}</bundle>
-
-    <bundle>mvn:org.trellisldp/trellis-event-jackson/${project.version}</bundle>
-  </feature>
-
-  <feature name="trellis-http" version="${project.version}">
-    <details>Installs the Trellis HTTP bundle</details>
-
-    <feature dependency="true">trellis-api</feature>
-    <feature dependency="true">trellis-vocabulary</feature>
-
-    <bundle dependency="true">mvn:commons-codec/commons-codec/${commonsCodecVersion}</bundle>
-    <bundle dependency="true">mvn:commons-io/commons-io/${commonsIoVersion}</bundle>
-    <bundle dependency="true">mvn:jakarta.ws.rs/jakarta.ws.rs-api/${jaxrsApiVersion}</bundle>
-    <bundle dependency="true">mvn:jakarta.xml.bind/jakarta.xml.bind-api/${jaxbApiVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commonsLangVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
-    <bundle dependency="true">mvn:org.eclipse.microprofile.metrics/microprofile-metrics-api/${microprofileMetricsVersion}</bundle>
-    <bundle dependency="true">mvn:org.eclipse.microprofile.openapi/microprofile-openapi-api/${microprofileOpenapiVersion}</bundle>
-
-    <bundle>mvn:org.trellisldp/trellis-http/${project.version}</bundle>
   </feature>
 
   <feature name="trellis-io-jena" version="${project.version}">
@@ -133,28 +160,6 @@
     <bundle>mvn:org.trellisldp/trellis-triplestore/${project.version}</bundle>
   </feature>
 
-  <feature name="trellis-vocabulary" version="${project.version}">
-    <details>Installs the Trellis Vocabulary bundle</details>
-
-    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
-
-    <bundle>mvn:org.trellisldp/trellis-vocabulary/${project.version}</bundle>
-  </feature>
-
-  <feature name="trellis-webac" version="${project.version}">
-    <details>Installs the Trellis WebAC bundle</details>
-
-    <feature dependency="true">trellis-api</feature>
-    <feature dependency="true">trellis-vocabulary</feature>
-    <feature dependency="true">trellis-http</feature>
-
-    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
-
-    <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
-  </feature>
-
   <feature name="trellis-webdav" version="${project.version}">
     <details>Installs the Trellis WebDAV bundle</details>
 
@@ -184,6 +189,7 @@
     <bundle>mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
   </feature>
 
+  <!-- notification features -->
   <feature name="trellis-kafka" version="${project.version}">
     <details>Installs the Trellis Kafka service bundle</details>
 
@@ -222,6 +228,32 @@
     <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
   </feature>
 
+  <feature name="trellis-event-jackson" version="${project.version}">
+    <details>Installs the Trellis jackson Event Serialization bundle</details>
+
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-core/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-databind/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion}</bundle>
+    <bundle dependency="true">mvn:com.fasterxml.jackson.datatype/jackson-datatype-jsr310/${jacksonVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-event-jackson/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-event-jsonb" version="${project.version}">
+    <details>Installs the Trellis jsonb Event Serialization bundle</details>
+
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:jakarta.json.bind/jakarta.json.bind-api/${jsonbApiVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-event-jackson/${project.version}</bundle>
+  </feature>
+
+  <!-- auth features -->
   <feature name="trellis-auth-oauth" version="${project.version}">
     <details>Installs the OAuth package</details>
 
@@ -259,5 +291,18 @@
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-auth-basic/${project.version}</bundle>
+  </feature>
+
+  <feature name="trellis-webac" version="${project.version}">
+    <details>Installs the Trellis WebAC bundle</details>
+
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+    <feature dependency="true">trellis-http</feature>
+
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-webac/${project.version}</bundle>
   </feature>
 </features>

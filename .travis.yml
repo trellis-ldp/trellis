@@ -43,6 +43,7 @@ jobs:
     - env: JOB=docker
     - env: JOB=aws
     - env: JOB=jpms
+    - env: JOB=osgi
 
   include:
     # JDK 8
@@ -58,6 +59,13 @@ jobs:
       jdk: openjdk11
       dist: xenial
       script: travis_retry ./gradlew check install -x pmdMain -x spotbugsMain
+
+    # JDK 8 (OSGi)
+    - name: "Java 8 (OSGi)"
+      stage: test
+      jdk: openjdk8
+      env: JOB=osgi
+      script: gradle -p platform/osgi -x pmdMain -x spotbugsMain check -Posgi
 
     # JDK 11 (modules)
     - name: "Java 11 (modules)"

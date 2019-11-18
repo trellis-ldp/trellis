@@ -81,6 +81,7 @@ ext {
     commonsCompressVersion = '1.19'
     glassfishInjectVersion = '2.5.0-b62'
     elVersion = '3.0.3'
+    failureaccessVersion = '1.0.1'
     interceptorVersion = '1.2.5'
     jenaOsgiVersion = '3.13.1'
     jenaVersionRange = '[3.13,4)'

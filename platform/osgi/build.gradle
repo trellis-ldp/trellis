@@ -51,9 +51,13 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.glassfish.hk2.external:javax.inject:$glassfishInjectVersion"
     testImplementation project(':trellis-amqp')
+    testImplementation project(':trellis-app')
     testImplementation project(':trellis-audit')
+    testImplementation project(':trellis-cache')
+    testImplementation project(':trellis-cdi')
     testImplementation project(':trellis-constraint-rules')
     testImplementation project(':trellis-event-jackson')
+    testImplementation project(':trellis-event-jsonb')
     testImplementation project(':trellis-file')
     testImplementation project(':trellis-jms')
     testImplementation project(':trellis-kafka')
