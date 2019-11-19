@@ -11,6 +11,8 @@ sonarqube {
 }
 
 dependencies {
+    implementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "commons-io:commons-io:$commonsIoVersion"
     implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
