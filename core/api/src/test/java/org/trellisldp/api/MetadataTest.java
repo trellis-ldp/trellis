@@ -109,26 +109,29 @@ class MetadataTest {
     @Test
     void testMetadataLdpNrResource() {
         final IRI binaryId = rdf.createIRI("http://example.com/binary");
-        final BinaryMetadata binary = BinaryMetadata.builder(binaryId).mimeType("text/plain").build();
+        final String mimeType = "text/plain";
+        final String revision = "lh2RdovVvkK3xY7mBpxnMwk7bas";
+        final BinaryMetadata binary = BinaryMetadata.builder(binaryId).mimeType(mimeType).build();
 
         final Resource mockResource = mock(Resource.class);
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinaryMetadata()).thenReturn(of(binary));
+        when(mockResource.getRevision()).thenReturn(revision);
+        when(mockResource.hasAcl()).thenReturn(true);
 
         final Metadata metadata = Metadata.builder(mockResource).build();
         assertEquals(identifier, metadata.getIdentifier());
         assertEquals(LDP.NonRDFSource, metadata.getInteractionModel());
         assertEquals(of(root), metadata.getContainer());
-        assertTrue(metadata.getBinary().isPresent());
-        assertEquals(binaryId, metadata.getBinary().map(BinaryMetadata::getIdentifier).get());
-        assertEquals("text/plain", metadata.getBinary().flatMap(BinaryMetadata::getMimeType).get());
+        assertEquals(of(binaryId), metadata.getBinary().map(BinaryMetadata::getIdentifier));
+        assertEquals(of(mimeType), metadata.getBinary().flatMap(BinaryMetadata::getMimeType));
         assertFalse(metadata.getMembershipResource().isPresent());
         assertFalse(metadata.getMemberOfRelation().isPresent());
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
-        assertFalse(metadata.getRevision().isPresent());
-        assertFalse(metadata.getHasAcl());
+        assertEquals(of(revision), metadata.getRevision());
+        assertTrue(metadata.getHasAcl());
     }
 }
