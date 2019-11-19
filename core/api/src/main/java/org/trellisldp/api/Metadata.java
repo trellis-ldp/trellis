@@ -87,6 +87,7 @@ public final class Metadata {
         return builder(r.getIdentifier()).interactionModel(r.getInteractionModel())
                         .revision(r.getRevision()).hasAcl(r.hasAcl())
                         .container(r.getContainer().orElse(null))
+                        .binary(r.getBinaryMetadata().orElse(null))
                         .memberRelation(r.getMemberRelation().orElse(null))
                         .membershipResource(r.getMembershipResource().orElse(null))
                         .memberOfRelation(r.getMemberOfRelation().orElse(null))
