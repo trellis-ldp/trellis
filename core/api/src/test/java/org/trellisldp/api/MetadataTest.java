@@ -105,4 +105,33 @@ class MetadataTest {
         assertFalse(metadata.getRevision().isPresent());
         assertFalse(metadata.getHasAcl());
     }
+
+    @Test
+    void testMetadataLdpNrResource() {
+        final IRI binaryId = rdf.createIRI("http://example.com/binary");
+        final String mimeType = "text/plain";
+        final String revision = "lh2RdovVvkK3xY7mBpxnMwk7bas";
+        final BinaryMetadata binary = BinaryMetadata.builder(binaryId).mimeType(mimeType).build();
+
+        final Resource mockResource = mock(Resource.class);
+        when(mockResource.getContainer()).thenReturn(of(root));
+        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
+        when(mockResource.getIdentifier()).thenReturn(identifier);
+        when(mockResource.getBinaryMetadata()).thenReturn(of(binary));
+        when(mockResource.getRevision()).thenReturn(revision);
+        when(mockResource.hasAcl()).thenReturn(true);
+
+        final Metadata metadata = Metadata.builder(mockResource).build();
+        assertEquals(identifier, metadata.getIdentifier());
+        assertEquals(LDP.NonRDFSource, metadata.getInteractionModel());
+        assertEquals(of(root), metadata.getContainer());
+        assertEquals(of(binaryId), metadata.getBinary().map(BinaryMetadata::getIdentifier));
+        assertEquals(of(mimeType), metadata.getBinary().flatMap(BinaryMetadata::getMimeType));
+        assertFalse(metadata.getMembershipResource().isPresent());
+        assertFalse(metadata.getMemberOfRelation().isPresent());
+        assertFalse(metadata.getInsertedContentRelation().isPresent());
+        assertFalse(metadata.getMemberRelation().isPresent());
+        assertEquals(of(revision), metadata.getRevision());
+        assertTrue(metadata.getHasAcl());
+    }
 }
