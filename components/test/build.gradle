@@ -11,6 +11,8 @@ sonarqube {
 }
 
 dependencies {
+    api "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+
     implementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
@@ -24,20 +26,18 @@ dependencies {
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
     implementation "org.apache.jena:jena-arq:$jenaVersion"
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
     implementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
     implementation "org.hamcrest:hamcrest:$hamcrestVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
-    implementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     implementation project(':trellis-api')
     implementation project(':trellis-http')
     implementation project(':trellis-io-jena')
     implementation project(':trellis-vocabulary')
-
-    runtimeClasspath "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
