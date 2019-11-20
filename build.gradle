@@ -107,7 +107,9 @@ ext {
 
     omitFromMavenPublishing = [
         'trellis-osgi',
-        'trellis-server'
+        'trellis-server',
+        'trellis-quarkus',
+        'trellis-openliberty'
     ]
 }
 
