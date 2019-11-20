@@ -19,16 +19,18 @@ module org.trellisldp.test {
     requires transitive org.trellisldp.io;
     requires transitive org.trellisldp.vocabulary;
 
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
     requires org.apache.commons.codec;
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
     requires org.junit.jupiter.api;
+    requires org.slf4j;
 
     requires java.annotation;
     requires java.ws.rs;
     requires java.xml.bind;
     requires jakarta.inject.api;
-    requires org.slf4j;
 }
