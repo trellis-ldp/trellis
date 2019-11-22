@@ -221,6 +221,16 @@ public class OSGiTest {
     }
 
     @Test
+    public void testJwtAuthAuthInstallation() throws Exception {
+        assertFalse("trellis-auth-jwt already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-auth-jwt")));
+        featuresService.installFeature("trellis-auth-jwt");
+        checkTrellisBundlesAreActive();
+        assertTrue("trellis-auth-jwt not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-auth-jwt")));
+    }
+
+    @Test
     public void testOAuthAuthInstallation() throws Exception {
         assertFalse("trellis-auth-oauth already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-auth-oauth")));
