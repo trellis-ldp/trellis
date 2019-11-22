@@ -3,10 +3,6 @@ apply plugin: 'biz.aQute.bnd.builder'
 
 description = 'Trellis Event Serialization (jsonb)'
 
-configurations {
-    jsonb
-}
-
 ext {
     moduleName = 'org.trellisldp.event.jsonb'
     testModules = ['org.apache.commons.rdf.simple']
@@ -21,26 +17,6 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
     testImplementation "org.eclipse:yasson:$yassonVersion"
-
-    jsonb "org.glassfish:jakarta.json:$glassfishJsonVersion"
-
-    if (!project.sourceCompatibility.isJava11Compatible()) {
-        testImplementation "org.glassfish:jakarta.json:$glassfishJsonVersion"
-    }
+    testImplementation "jakarta.json:jakarta.json-api:$jsonApiVersion"
 }
 
-if (project.sourceCompatibility.isJava11Compatible()) {
-    compileTestJava {
-        doFirst {
-            classpath = files(configurations.jsonb)
-        }
-    }
-
-    test {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            classpath = files(configurations.jsonb)
-        }
-    }
-
-}
