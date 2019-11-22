@@ -232,6 +232,18 @@ class HttpUtilsTest {
     }
 
     @Test
+    void testMatchIdentifier() {
+        final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI resourceSlash = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/");
+        assertTrue(HttpUtils.matchIdentifier(root, root));
+        assertTrue(HttpUtils.matchIdentifier(resourceSlash, resource));
+        assertFalse(HttpUtils.matchIdentifier(resource, resourceSlash));
+        assertFalse(HttpUtils.matchIdentifier(root, resource));
+        assertFalse(HttpUtils.matchIdentifier(rdf.createBlankNode(), root));
+    }
+
+    @Test
     void testProfile() {
         final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("application", "ld+json", singletonMap("profile", compacted.getIRIString())));

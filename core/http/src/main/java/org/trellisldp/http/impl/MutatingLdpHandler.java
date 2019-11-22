@@ -22,6 +22,7 @@ import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
+import static org.trellisldp.http.impl.HttpUtils.matchIdentifier;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
 
@@ -50,6 +51,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.SimpleEvent;
@@ -182,7 +184,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     protected CompletionStage<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
         // Always notify about updates for the resource in question
-        getServices().getEventService().emit(new SimpleEvent(getUrl(identifier), getSession().getAgent(),
+        getServices().getEventService().emit(new SimpleEvent(getUrl(identifier, resourceType), getSession().getAgent(),
                     asList(PROV.Activity, activityType), ldpResourceTypes(resourceType).collect(toList())));
 
         // Further notifications are only relevant for non-extension resources
@@ -197,12 +199,12 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 final IRI model = getParentModel();
                 final IRI id = getParentIdentifier();
                 if (HttpUtils.isContainer(model)) {
-                    getServices().getEventService().emit(new SimpleEvent(getUrl(id),
+                    getServices().getEventService().emit(new SimpleEvent(getUrl(id, model),
                                     getSession().getAgent(), asList(PROV.Activity, AS.Update),
                                     ldpResourceTypes(model).collect(toList())));
                     // If the parent's membership resource is different than the parent itself,
                     // notify about that membership resource, too (if it exists)
-                    if (!parent.getMembershipResource().map(MutatingLdpHandler::removeHashFragment).filter(isEqual(id))
+                    if (!parent.getMembershipResource().map(TrellisUtils::normalizeIdentifier).filter(isEqual(id))
                             .isPresent()) {
                         return allOf(getServices().getResourceService().touch(id).toCompletableFuture(),
                                 emitMembershipUpdateEvent().toCompletableFuture());
@@ -212,13 +214,6 @@ class MutatingLdpHandler extends BaseLdpHandler {
             }
         }
         return completedFuture(null);
-    }
-
-    private static IRI removeHashFragment(final IRI iri) {
-        if (iri.getIRIString().contains("#")) {
-            return rdf.createIRI(iri.getIRIString().split("#")[0]);
-        }
-        return iri;
     }
 
     /**
@@ -246,18 +241,20 @@ class MutatingLdpHandler extends BaseLdpHandler {
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final Dataset mutable) {
         final Metadata.Builder builder = Metadata.builder(identifier).interactionModel(ixnModel);
         mutable.getGraph(Trellis.PreferUserManaged).ifPresent(graph -> {
-            graph.stream(identifier, LDP.membershipResource, null).findFirst().map(Triple::getObject)
+            graph.stream(null, LDP.membershipResource, null)
+                .filter(triple -> matchIdentifier(triple.getSubject(), identifier)).findFirst().map(Triple::getObject)
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::membershipResource);
-            graph.stream(identifier, LDP.hasMemberRelation, null).findFirst().map(Triple::getObject)
+            graph.stream(null, LDP.hasMemberRelation, null)
+                .filter(triple -> matchIdentifier(triple.getSubject(), identifier)).findFirst().map(Triple::getObject)
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::memberRelation);
-            graph.stream(identifier, LDP.isMemberOfRelation, null).findFirst().map(Triple::getObject)
+            graph.stream(null, LDP.isMemberOfRelation, null)
+                .filter(triple -> matchIdentifier(triple.getSubject(), identifier)).findFirst().map(Triple::getObject)
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::memberOfRelation);
-            graph.stream(identifier, LDP.insertedContentRelation, null).findFirst().map(Triple::getObject)
+            graph.stream(null, LDP.insertedContentRelation, null)
+                .filter(triple -> matchIdentifier(triple.getSubject(), identifier)).findFirst().map(Triple::getObject)
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::insertedContentRelation);
             mutable.getGraph(Trellis.PreferAccessControl)
-                .map(Graph::size)
-                .map(s -> s > 0)
-                .ifPresent(builder::hasAcl);
+                .map(Graph::size).map(s -> s > 0).ifPresent(builder::hasAcl);
         });
         return builder;
     }
@@ -303,13 +300,14 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * Emit update events for the membership resource, if it exists.
      */
     private CompletionStage<Void> emitMembershipUpdateEvent() {
-        final IRI membershipResource = parent.getMembershipResource().map(MutatingLdpHandler::removeHashFragment)
+        final IRI membershipResource = parent.getMembershipResource().map(TrellisUtils::normalizeIdentifier)
             .orElse(null);
         if (membershipResource != null) {
             return allOf(getServices().getResourceService().touch(membershipResource).toCompletableFuture(),
                 getServices().getResourceService().get(membershipResource).thenAccept(res -> {
                     if (res.getIdentifier() != null) {
-                        getServices().getEventService().emit(new SimpleEvent(getUrl(res.getIdentifier()),
+                        getServices().getEventService()
+                            .emit(new SimpleEvent(getUrl(res.getIdentifier(), res.getInteractionModel()),
                                     getSession().getAgent(), asList(PROV.Activity, AS.Update),
                                     ldpResourceTypes(res.getInteractionModel()).collect(toList())));
                     }
@@ -321,8 +319,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
     /*
      * Convert an internal identifier to an external identifier, suitable for notifications.
      */
-    private String getUrl(final IRI identifier) {
-        final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
+    private String getUrl(final IRI identifier, final IRI interactionModel) {
+        final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString()
+                + (HttpUtils.isContainer(interactionModel) ? "/" : "");
         final String ext = getRequest().getExt();
         return ext != null ? url + "?ext=" + ext : url;
     }

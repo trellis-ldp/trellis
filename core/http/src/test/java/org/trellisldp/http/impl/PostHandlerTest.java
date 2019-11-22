@@ -62,13 +62,26 @@ class PostHandlerTest extends BaseTestHandler {
 
     @Test
     void testPostLdprs() throws IOException {
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel(TYPE).build());
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.RDFSource.getIRIString()).rel(TYPE).build());
 
         final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
         try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
                 .toCompletableFuture().join().build()) {
             assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertEquals(create(baseUrl + NEW_RESOURCE), res.getLocation(), ERR_LOCATION);
+            assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.RDFSource));
+        }
+    }
+
+    @Test
+    void testPostLdpc() throws IOException {
+        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel(TYPE).build());
+
+        final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
+        try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                .toCompletableFuture().join().build()) {
+            assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+            assertEquals(create(baseUrl + NEW_RESOURCE + "/"), res.getLocation(), ERR_LOCATION);
             assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.Container));
         }
     }

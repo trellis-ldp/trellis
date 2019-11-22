@@ -126,7 +126,7 @@ class PutHandlerTest extends BaseTestHandler {
             assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.Container));
 
             verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
-            verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + RESOURCE_NAME));
+            verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + RESOURCE_NAME + "/"));
         }
     }
 
@@ -143,7 +143,7 @@ class PutHandlerTest extends BaseTestHandler {
             assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.Container));
 
             verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
-            verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + RESOURCE_NAME));
+            verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + RESOURCE_NAME + "/"));
         }
     }
 
@@ -159,7 +159,7 @@ class PutHandlerTest extends BaseTestHandler {
             assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertAll(CHECK_LINK_TYPES, checkLdpType(res, LDP.Container));
 
-            verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + RESOURCE_NAME));
+            verify(mockIoService).read(any(InputStream.class), eq(TURTLE), eq(baseUrl + RESOURCE_NAME + "/"));
             verify(mockBinaryService, never()).setContent(any(BinaryMetadata.class), any(InputStream.class));
         }
     }

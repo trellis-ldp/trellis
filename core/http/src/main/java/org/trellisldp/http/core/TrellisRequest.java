@@ -37,6 +37,7 @@ import javax.ws.rs.core.UriInfo;
  */
 public class TrellisRequest {
 
+    private final boolean trailingSlash;
     private final String path;
     private final String baseUrl;
     private final String method;
@@ -73,6 +74,7 @@ public class TrellisRequest {
         this.parameters = uriInfo.getQueryParameters();
         this.baseUrl = uriInfo.getBaseUri().toString();
         this.path = uriInfo.getPathParameters().getFirst("path");
+        this.trailingSlash = uriInfo.getPath().endsWith("/");
 
         // Extract request method
         this.method = request.getMethod();
@@ -146,10 +148,26 @@ public class TrellisRequest {
     /**
      * Get the path.
      *
-     * @return the path
+     * <p>This method returns a normalized resource path for use with internal
+     * identifiers. That means that any trailing slash will not be present. Please
+     * see the {@link #hasTrailingSlash} method to check for a trailing slash.
+     *
+     * @return the normalized path
      */
     public String getPath() {
+        if (path.endsWith("/")) {
+            return path.substring(0, path.length() - 1);
+        }
         return path;
+    }
+
+    /**
+     * Test whether the path has a trailing slash.
+     *
+     * @return true if the request path ends in a slash
+     */
+    public boolean hasTrailingSlash() {
+        return trailingSlash;
     }
 
     /**

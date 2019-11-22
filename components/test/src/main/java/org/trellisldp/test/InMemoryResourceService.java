@@ -84,28 +84,31 @@ public class InMemoryResourceService implements ResourceService {
 
     @Override
     public CompletionStage<? extends Resource> get(final IRI identifier) {
-        if (resources.containsKey(identifier)) {
-            LOG.debug("Retrieving resource: {}", identifier);
-            final Resource resource = resources.get(identifier);
-            getAudit(identifier).stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q))
+        final IRI normalized = TrellisUtils.normalizeIdentifier(identifier);
+        if (resources.containsKey(normalized)) {
+            LOG.debug("Retrieving resource: {}", normalized);
+            final Resource resource = resources.get(normalized);
+            getAudit(normalized).stream().peek(q -> LOG.debug("Retrieved audit tuple: {}", q))
                 .forEach(resource.dataset()::add);
-            final Set<IRI> contained = containment.getOrDefault(identifier, emptySet());
+            final Set<IRI> contained = containment.getOrDefault(normalized, emptySet());
             contained.stream().map(c -> containmentQuad(c, identifier)).forEach(resource.dataset()::add);
             return completedFuture(resource);
         }
-        LOG.debug("Resource: {} not found.", identifier);
+        LOG.debug("Resource: {} not found.", normalized);
         return completedFuture(MISSING_RESOURCE);
     }
 
     private static Quad containmentQuad(final IRI container, final IRI identifier) {
-        return rdfFactory.createQuad(PreferContainment, identifier, contains, container);
+        final IRI c = identifier.getIRIString().endsWith("/")
+            ? identifier : rdfFactory.createIRI(identifier.getIRIString() + "/");
+        return rdfFactory.createQuad(PreferContainment, c, contains, container);
     }
 
     @Override
     public CompletionStage<Void> replace(final Metadata metadata, final Dataset data) {
-        final IRI identifier = metadata.getIdentifier();
+        final IRI identifier = TrellisUtils.normalizeIdentifier(metadata.getIdentifier());
         final IRI ixnModel = metadata.getInteractionModel();
-        final IRI container = metadata.getContainer().orElse(null);
+        final IRI container = metadata.getContainer().map(TrellisUtils::normalizeIdentifier).orElse(null);
         final BinaryMetadata binary = metadata.getBinary().orElse(null);
         final InMemoryResource newResource = new InMemoryResource(identifier, ixnModel, container, now(), data, binary);
         resources.put(identifier, newResource);
@@ -115,7 +118,7 @@ public class InMemoryResourceService implements ResourceService {
 
     @Override
     public CompletionStage<Void> delete(final Metadata metadata) {
-        final IRI identifier = metadata.getIdentifier();
+        final IRI identifier = TrellisUtils.normalizeIdentifier(metadata.getIdentifier());
         resources.remove(identifier);
         metadata.getContainer().map(this::getContained).ifPresent(contained -> contained.remove(identifier));
         return DONE;
@@ -135,13 +138,14 @@ public class InMemoryResourceService implements ResourceService {
 
     @Override
     public CompletionStage<Void> add(final IRI identifier, final Dataset newData) {
-        newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q)).forEach(getAudit(identifier)::add);
+        newData.stream().peek(q -> LOG.debug("Received audit tuple: {}", q))
+            .forEach(getAudit(TrellisUtils.normalizeIdentifier(identifier))::add);
         return DONE;
     }
 
     @Override
     public CompletionStage<Void> touch(final IRI identifier) {
-        resources.get(identifier).modified = now();
+        resources.get(TrellisUtils.normalizeIdentifier(identifier)).modified = now();
         return DONE;
     }
 

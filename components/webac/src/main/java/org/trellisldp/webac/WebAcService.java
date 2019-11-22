@@ -64,6 +64,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
@@ -258,7 +259,7 @@ public class WebAcService {
         if (checkMembershipResources && hasWritableMode(modes)) {
             getContainer(identifier).map(resourceService::get).map(CompletionStage::toCompletableFuture)
                 .map(CompletableFuture::join).flatMap(Resource::getMembershipResource)
-                .map(WebAcService::cleanIdentifier).map(member -> getModesFor(member, agent))
+                .map(TrellisUtils::normalizeIdentifier).map(member -> getModesFor(member, agent))
                 .ifPresent(memberModes -> {
                     if (!memberModes.contains(ACL.Write)) {
                         modes.remove(ACL.Write);
@@ -292,7 +293,7 @@ public class WebAcService {
     }
 
     private Predicate<IRI> isAgentInGroup(final IRI agent) {
-        return group -> resourceService.get(cleanIdentifier(group)).thenApply(res -> {
+        return group -> resourceService.get(TrellisUtils.normalizeIdentifier(group)).thenApply(res -> {
             try (final Stream<RDFTerm> triples = res.stream(Trellis.PreferUserManaged)
                     .filter(t -> t.getSubject().equals(group) && t.getPredicate().equals(VCARD.hasMember))
                     .map(Quad::getObject)) {
@@ -347,30 +348,6 @@ public class WebAcService {
 
     private static Predicate<Authorization> getInheritedAuth(final IRI identifier) {
         return auth -> root.equals(identifier) || auth.getDefault().contains(identifier);
-    }
-
-    /**
-     * Clean the identifier.
-     *
-     * @param identifier the identifier
-     * @return the cleaned identifier
-     */
-    private static String cleanIdentifier(final String identifier) {
-        final String id = identifier.split("#")[0].split("\\?")[0];
-        if (id.endsWith("/")) {
-            return id.substring(0, id.length() - 1);
-        }
-        return id;
-    }
-
-    /**
-     * Clean the identifier.
-     *
-     * @param identifier the identifier
-     * @return the cleaned identifier
-     */
-    private static IRI cleanIdentifier(final IRI identifier) {
-        return rdf.createIRI(cleanIdentifier(identifier.getIRIString()));
     }
 
     @TrellisAuthorizationCache

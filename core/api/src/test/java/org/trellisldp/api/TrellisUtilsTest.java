@@ -17,6 +17,7 @@ import static java.util.Optional.of;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.JRE.JAVA_8;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toDataset;
 import static org.trellisldp.api.TrellisUtils.toGraph;
@@ -69,15 +70,31 @@ class TrellisUtilsTest {
         }
     }
 
+    @Test
+    void testNormalizeIdentifier() {
+        final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI resourceSlash = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/");
+        final IRI child = rdf.createIRI("trellis:data/resource/child");
+        final IRI childHash = rdf.createIRI("trellis:data/resource/child#hash");
+        final IRI childSlashHash = rdf.createIRI("trellis:data/resource/child/#hash");
+        assertEquals(root, TrellisUtils.normalizeIdentifier(root));
+        assertEquals(resource, TrellisUtils.normalizeIdentifier(resource));
+        assertEquals(resource, TrellisUtils.normalizeIdentifier(resourceSlash));
+        assertEquals(child, TrellisUtils.normalizeIdentifier(child));
+        assertEquals(child, TrellisUtils.normalizeIdentifier(childHash));
+        assertEquals(child, TrellisUtils.normalizeIdentifier(childSlashHash));
+    }
+
     private IRI getIRI() {
         return rdf.createIRI("ex:" + generator.generate(5));
     }
 
     @Test
     void testGetContainer() {
-        final IRI root = rdf.createIRI("trellis:data/");
-        final IRI resource = rdf.createIRI("trellis:data/resource");
-        final IRI child = rdf.createIRI("trellis:data/resource/child");
+        final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
+        final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/child");
         assertEquals(of(root), TrellisUtils.getContainer(resource), "Resource parent isn't the root resource!");
         assertEquals(of(resource), TrellisUtils.getContainer(child), "Child resource doesn't point to parent!");
         assertFalse(TrellisUtils.getContainer(root).isPresent(), "Root resource has a parent!");

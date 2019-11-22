@@ -27,6 +27,7 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.normalizeIdentifier;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
@@ -68,6 +69,8 @@ public interface ResourceServiceTests {
     String SUBJECT2 = "http://example.com/subject/2";
 
     IRI ROOT_CONTAINER = getInstance().createIRI(TRELLIS_DATA_PREFIX);
+
+    String SLASH = "/";
 
     /**
      * Get the resource service implementation.
@@ -267,18 +270,19 @@ public interface ResourceServiceTests {
     default void testLdpC() throws Exception {
         final Instant time = now();
         final RDF rdf = getInstance();
-        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();
+        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
-        final IRI child1 = rdf.createIRI(base + "/child01");
-        final IRI child2 = rdf.createIRI(base + "/child02");
+        final IRI child1 = rdf.createIRI(base + "child01");
+        final IRI child2 = rdf.createIRI(base + "child02");
+        final IRI normalized = normalizeIdentifier(identifier);
 
         try (final Dataset dataset0 = buildDataset(identifier, "Container Test", SUBJECT0);
              final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
              final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
              final Graph graph = rdf.createGraph()) {
-            assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
+            assertEquals(MISSING_RESOURCE, getResourceService().get(normalized).toCompletableFuture().join(),
                     "Check for no pre-existing LDP-C");
-            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(identifier)
+            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(normalized)
                         .interactionModel(LDP.Container).container(ROOT_CONTAINER).build(), dataset0)
                     .toCompletableFuture().join(), "Check that the LDP-C is created successfully");
 
@@ -287,7 +291,7 @@ public interface ResourceServiceTests {
                     "Check for no child1 resource");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child1)
                         .interactionModel(LDP.RDFSource)
-                        .container(identifier).build(), dataset1).toCompletableFuture().join(),
+                        .container(normalized).build(), dataset1).toCompletableFuture().join(),
                     "Check that the first child was successfully created in the LDP-C");
 
 
@@ -295,11 +299,11 @@ public interface ResourceServiceTests {
                     "Check for no child2 resource");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child2)
                         .interactionModel(LDP.RDFSource)
-                        .container(identifier).build(), dataset2).toCompletableFuture().join(),
+                        .container(normalized).build(), dataset2).toCompletableFuture().join(),
                     "Check that the second child was successfully created in the LDP-C");
 
-            final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
-            assertAll("Check the LDP-C resource", checkResource(res, identifier, LDP.Container, time, dataset0));
+            final Resource res = getResourceService().get(normalized).toCompletableFuture().join();
+            assertAll("Check the LDP-C resource", checkResource(res, normalized, LDP.Container, time, dataset0));
             assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
             res.stream(LDP.PreferContainment).map(Quad::asTriple).forEach(graph::add);
             assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-C");
@@ -317,18 +321,19 @@ public interface ResourceServiceTests {
     default void testLdpBC() throws Exception {
         final Instant time = now();
         final RDF rdf = getInstance();
-        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();
+        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
-        final IRI child1 = rdf.createIRI(base + "/child11");
-        final IRI child2 = rdf.createIRI(base + "/child12");
+        final IRI child1 = rdf.createIRI(base + "child11");
+        final IRI child2 = rdf.createIRI(base + "child12");
+        final IRI normalized = normalizeIdentifier(identifier);
 
         try (final Dataset dataset0 = buildDataset(identifier, "Basic Container Test", SUBJECT0);
              final Dataset dataset1 = buildDataset(child1, "Contained Child 1", SUBJECT1);
              final Dataset dataset2 = buildDataset(child2, "Contained Child2", SUBJECT2);
              final Graph graph = rdf.createGraph()) {
-            assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
+            assertEquals(MISSING_RESOURCE, getResourceService().get(normalized).toCompletableFuture().join(),
                     "Check for a pre-existing LDP-BC");
-            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(identifier)
+            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(normalized)
                         .interactionModel(LDP.BasicContainer).container(ROOT_CONTAINER).build(), dataset0)
                     .toCompletableFuture().join(), "Check that creating an LDP-BC succeeds");
 
@@ -336,18 +341,18 @@ public interface ResourceServiceTests {
             assertEquals(MISSING_RESOURCE, getResourceService().get(child1).toCompletableFuture().join(),
                     "Check for no child1 resource");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child1)
-                        .interactionModel(LDP.RDFSource).container(identifier).build(), dataset1)
+                        .interactionModel(LDP.RDFSource).container(normalized).build(), dataset1)
                     .toCompletableFuture().join(), "Check that child1 is created");
 
 
             assertEquals(MISSING_RESOURCE, getResourceService().get(child2).toCompletableFuture().join(),
                     "Check for no child2 resource");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child2)
-                        .interactionModel(LDP.RDFSource).container(identifier).build(), dataset2)
+                        .interactionModel(LDP.RDFSource).container(normalized).build(), dataset2)
                     .toCompletableFuture().join(), "Check that child2 is created");
 
-            final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
-            assertAll("Check the LDP-BC resource", checkResource(res, identifier, LDP.BasicContainer, time, dataset0));
+            final Resource res = getResourceService().get(normalized).toCompletableFuture().join();
+            assertAll("Check the LDP-BC resource", checkResource(res, normalized, LDP.BasicContainer, time, dataset0));
             assertEquals(2L, res.stream(LDP.PreferContainment).count(), "Check the containment triple count");
 
             res.stream(LDP.PreferContainment).map(Quad::asTriple).forEach(graph::add);
@@ -372,11 +377,12 @@ public interface ResourceServiceTests {
 
         final Instant time = now();
         final RDF rdf = getInstance();
-        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();
+        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
-        final IRI member = rdf.createIRI(base + "/member");
-        final IRI child1 = rdf.createIRI(base + "/child1");
-        final IRI child2 = rdf.createIRI(base + "/child2");
+        final IRI member = rdf.createIRI(base + "member");
+        final IRI child1 = rdf.createIRI(base + "child1");
+        final IRI child2 = rdf.createIRI(base + "child2");
+        final IRI normalized = normalizeIdentifier(identifier);
 
         try (final Dataset dataset0 = buildDataset(identifier, "Direct Container Test", SUBJECT0);
              final Dataset dataset1 = buildDataset(child1, "Child 1", SUBJECT1);
@@ -385,9 +391,9 @@ public interface ResourceServiceTests {
             dataset0.add(Trellis.PreferUserManaged, identifier, LDP.membershipResource, member);
             dataset0.add(Trellis.PreferUserManaged, identifier, LDP.isMemberOfRelation, DC.isPartOf);
 
-            assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
+            assertEquals(MISSING_RESOURCE, getResourceService().get(normalized).toCompletableFuture().join(),
                     "Check that the DC doesn't exist");
-            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(identifier)
+            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(normalized)
                         .membershipResource(member).memberOfRelation(DC.isPartOf)
                         .interactionModel(LDP.DirectContainer).container(ROOT_CONTAINER).build(), dataset0)
                     .toCompletableFuture().join(), "Check that creating the LDP-DC succeeds");
@@ -396,18 +402,18 @@ public interface ResourceServiceTests {
             assertEquals(MISSING_RESOURCE, getResourceService().get(child1).toCompletableFuture().join(),
                     "Check that no child resource exists");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child1)
-                        .interactionModel(LDP.RDFSource).container(identifier).build(), dataset1)
+                        .interactionModel(LDP.RDFSource).container(normalized).build(), dataset1)
                     .toCompletableFuture().join(), "Check that the child resource is successfully created");
 
 
             assertEquals(MISSING_RESOURCE, getResourceService().get(child2).toCompletableFuture().join(),
                     "Check that no child2 resource exists");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child2)
-                        .interactionModel(LDP.RDFSource).container(identifier).build(), dataset2)
+                        .interactionModel(LDP.RDFSource).container(normalized).build(), dataset2)
                     .toCompletableFuture().join(), "Check that the child2 resource is successfully created");
 
-            final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
-            assertAll("Check the resource", checkResource(res, identifier, LDP.DirectContainer, time, dataset0));
+            final Resource res = getResourceService().get(normalized).toCompletableFuture().join();
+            assertAll("Check the resource", checkResource(res, normalized, LDP.DirectContainer, time, dataset0));
             assertEquals(of(member), res.getMembershipResource(), "Check for ldp:membershipResource");
             assertEquals(of(DC.isPartOf), res.getMemberOfRelation(), "Check for ldp:isMemberOfRelation");
             assertFalse(res.getMemberRelation().isPresent(), "Check for no ldp:hasMemberRelation");
@@ -436,11 +442,12 @@ public interface ResourceServiceTests {
 
         final Instant time = now();
         final RDF rdf = getInstance();
-        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier();
+        final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
-        final IRI member = rdf.createIRI(base + "/member");
-        final IRI child1 = rdf.createIRI(base + "/child1");
-        final IRI child2 = rdf.createIRI(base + "/child2");
+        final IRI normalized = normalizeIdentifier(identifier);
+        final IRI member = rdf.createIRI(base + "member");
+        final IRI child1 = rdf.createIRI(base + "child1");
+        final IRI child2 = rdf.createIRI(base + "child2");
 
         try (final Dataset dataset0 = buildDataset(identifier, "Indirect Container Test", SUBJECT0);
              final Dataset dataset1 = buildDataset(child1, "Indirect Container Child 1", SUBJECT1);
@@ -450,9 +457,9 @@ public interface ResourceServiceTests {
             dataset0.add(Trellis.PreferUserManaged, identifier, LDP.hasMemberRelation, DC.relation);
             dataset0.add(Trellis.PreferUserManaged, identifier, LDP.insertedContentRelation, FOAF.primaryTopic);
 
-            assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
+            assertEquals(MISSING_RESOURCE, getResourceService().get(normalized).toCompletableFuture().join(),
                     "Check for a missing resource");
-            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(identifier)
+            assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(normalized)
                         .membershipResource(member).memberRelation(DC.relation)
                         .insertedContentRelation(FOAF.primaryTopic)
                         .interactionModel(LDP.IndirectContainer).container(ROOT_CONTAINER).build(), dataset0)
@@ -461,17 +468,17 @@ public interface ResourceServiceTests {
             assertEquals(MISSING_RESOURCE, getResourceService().get(child1).toCompletableFuture().join(),
                     "Check that the child resource doesn't exist");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child1)
-                        .interactionModel(LDP.RDFSource).container(identifier).build(), dataset1)
+                        .interactionModel(LDP.RDFSource).container(normalized).build(), dataset1)
                     .toCompletableFuture().join(), "Check that creating a child resource succeeds");
 
             assertEquals(MISSING_RESOURCE, getResourceService().get(child2).toCompletableFuture().join(),
                     "Check that the child resource doesn't exist");
             assertDoesNotThrow(() -> getResourceService().create(Metadata.builder(child2)
-                        .interactionModel(LDP.RDFSource).container(identifier).build(), dataset2)
+                        .interactionModel(LDP.RDFSource).container(normalized).build(), dataset2)
                     .toCompletableFuture().join(), "Check that creating the child resource succeeds");
 
-            final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
-            assertAll("Check the resource", checkResource(res, identifier, LDP.IndirectContainer, time, dataset0));
+            final Resource res = getResourceService().get(normalized).toCompletableFuture().join();
+            assertAll("Check the resource", checkResource(res, normalized, LDP.IndirectContainer, time, dataset0));
             assertEquals(of(member), res.getMembershipResource(), "Check for ldp:membershipResource");
             assertEquals(of(DC.relation), res.getMemberRelation(), "Check for ldp:hasMemberRelation");
             assertEquals(of(FOAF.primaryTopic), res.getInsertedContentRelation(),

@@ -13,6 +13,7 @@
  */
 package org.trellisldp.triplestore;
 
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.function.Predicate.isEqual;
@@ -21,23 +22,19 @@ import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
+import static org.apache.jena.vocabulary.RDF.type;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
-import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
-import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
-import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
-import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
-import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
-import static org.trellisldp.triplestore.TriplestoreUtils.getPredicate;
-import static org.trellisldp.triplestore.TriplestoreUtils.getSubject;
-import static org.trellisldp.triplestore.TriplestoreUtils.nodesToTriple;
+import static org.trellisldp.api.Resource.SpecialResources.*;
+import static org.trellisldp.api.TrellisUtils.normalizeIdentifier;
+import static org.trellisldp.triplestore.TriplestoreUtils.*;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -70,6 +67,16 @@ public class TriplestoreResource implements Resource {
 
     private static final Logger LOGGER = getLogger(TriplestoreResource.class);
     private static final JenaRDF rdf = getInstance();
+    private static final Set<IRI> containerTypes;
+
+    static {
+        final Set<IRI> types = new HashSet<>();
+        types.add(LDP.Container);
+        types.add(LDP.BasicContainer);
+        types.add(LDP.DirectContainer);
+        types.add(LDP.IndirectContainer);
+        containerTypes = unmodifiableSet(types);
+    }
 
     private final IRI identifier;
     private final RDFConnection rdfConnection;
@@ -108,7 +115,8 @@ public class TriplestoreResource implements Resource {
     public static CompletableFuture<Resource> findResource(final RDFConnection rdfConnection, final IRI identifier,
             final boolean includeLdpType) {
         return supplyAsync(() -> {
-            final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, includeLdpType);
+            final TriplestoreResource res = new TriplestoreResource(rdfConnection, normalizeIdentifier(identifier),
+                    includeLdpType);
             res.fetchData();
             if (!res.exists()) {
                 return MISSING_RESOURCE;
@@ -166,8 +174,7 @@ public class TriplestoreResource implements Resource {
 
         final ElementPathBlock epb2 = new ElementPathBlock();
         epb2.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.hasPart), binarySubject));
-        epb2.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(RDF.type),
-                    rdf.asJenaNode(LDP.NonRDFSource)));
+        epb2.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
         epb2.addTriple(create(binarySubject, binaryPredicate, binaryObject));
 
         final ElementGroup elg = new ElementGroup();
@@ -311,12 +318,12 @@ public class TriplestoreResource implements Resource {
      * SELECT ?subject ?predicate ?object
      * WHERE {
      *   GRAPH trellis:PreferServerManaged {
-     *      ?s ldp:member IDENTIFIER
-     *      ?s ldp:membershipResource ?subject
-     *      AND ?s rdf:type ldp:IndirectContainer
-     *      AND ?s ldp:membershipRelation ?predicate
-     *      AND ?s ldp:insertedContentRelation ?o
-     *      AND ?res dc:isPartOf ?s .
+     *      ?s ldp:member IDENTIFIER .
+     *      ?s ldp:membershipResource ?subject .
+     *      ?s rdf:type ldp:IndirectContainer .
+     *      ?s ldp:membershipRelation ?predicate .
+     *      ?s ldp:insertedContentRelation ?o .
+     *      ?res dc:isPartOf ?s .
      *   }
      *   GRAPH ?res { ?res ?o ?object }
      * }
@@ -360,14 +367,16 @@ public class TriplestoreResource implements Resource {
      * This code is equivalent to the SPARQL query below.
      *
      * <p><pre><code>
-     * SELECT ?subject ?predicate ?object
+     * SELECT ?subject ?predicate ?object ?type
      * WHERE {
      *   GRAPH trellis:PreferServerManaged {
      *      ?s ldp:member IDENTIFIER
      *      ?s ldp:membershipResource ?subject
-     *      AND ?s ldp:hasMemberRelation ?predicate
-     *      AND ?s ldp:insertedContentRelation ldp:MemberSubject
-     *      AND ?object dc:isPartOf ?s }
+     *      ?s ldp:hasMemberRelation ?predicate
+     *      ?s ldp:insertedContentRelation ldp:MemberSubject
+     *      ?object dc:isPartOf ?s
+     *      ?object rdf:type ?type .
+     *   }
      * }
      * </code></pre>
      */
@@ -377,6 +386,7 @@ public class TriplestoreResource implements Resource {
         q.addResultVar(SUBJECT);
         q.addResultVar(PREDICATE);
         q.addResultVar(OBJECT);
+        q.addResultVar(TYPE);
         final Var s = Var.alloc("s");
 
         final ElementPathBlock epb = new ElementPathBlock();
@@ -385,6 +395,7 @@ public class TriplestoreResource implements Resource {
         epb.addTriple(create(s, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
         epb.addTriple(create(s, rdf.asJenaNode(LDP.insertedContentRelation), rdf.asJenaNode(LDP.MemberSubject)));
         epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), s));
+        epb.addTriple(create(OBJECT, type.asNode(), TYPE));
 
         final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
 
@@ -394,8 +405,8 @@ public class TriplestoreResource implements Resource {
         q.setQueryPattern(elg);
 
         final Stream.Builder<Quad> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferMembership, getSubject(qs),
-                        getPredicate(qs), getObject(qs))));
+        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferMembership,
+                        getSubject(qs), getPredicate(qs), adjustIdentifier((IRI) getObject(qs), getType(qs)))));
         return builder.build();
     }
 
@@ -403,13 +414,14 @@ public class TriplestoreResource implements Resource {
      * This code is equivalent to the SPARQL query below.
      *
      * <p><pre><code>
-     * SELECT ?predicate ?object
+     * SELECT ?predicate ?object ?type
      * WHERE {
      *   GRAPH trellis:PreferServerManaged {
      *      IDENTIFIER dc:isPartOf ?subject .
      *      ?subject ldp:isMemberOfRelation ?predicate .
      *      ?subject ldp:membershipResource ?object .
      *      ?subject ldp:insertedContentRelation ldp:MemberSubject .
+     *      ?object rdf:type ?type .
      *   }
      * }
      * </code></pre>
@@ -419,12 +431,14 @@ public class TriplestoreResource implements Resource {
         q.setQuerySelectType();
         q.addResultVar(PREDICATE);
         q.addResultVar(OBJECT);
+        q.addResultVar(TYPE);
 
         final ElementPathBlock epb = new ElementPathBlock();
         epb.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), SUBJECT));
         epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.isMemberOfRelation), PREDICATE));
         epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.membershipResource), OBJECT));
         epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.insertedContentRelation), rdf.asJenaNode(LDP.MemberSubject)));
+        epb.addTriple(create(OBJECT, type.asNode(), TYPE));
 
         final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
 
@@ -434,7 +448,9 @@ public class TriplestoreResource implements Resource {
         q.setQueryPattern(elg);
 
         final Stream.Builder<Quad> builder = builder();
-        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferMembership, identifier,
+        final IRI ixnModel = getInteractionModel();
+        final IRI subject = adjustIdentifier(identifier, ixnModel);
+        rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferMembership, subject,
                         getPredicate(qs), getObject(qs))));
         return builder.build();
     }
@@ -443,9 +459,12 @@ public class TriplestoreResource implements Resource {
      * This code is equivalent to the SPARQL query below.
      *
      * <p><pre><code>
-     * SELECT ?object
+     * SELECT ?object ?type
      * WHERE {
-     *   GRAPH trellis:PreferServerManaged { ?object dc:isPartOf IDENTIFIER }
+     *   GRAPH trellis:PreferServerManaged {
+     *      ?object dc:isPartOf IDENTIFIER .
+     *      ?object rdf:type ?type .
+     *   }
      * }
      * </code></pre>
      */
@@ -454,9 +473,11 @@ public class TriplestoreResource implements Resource {
             final Query q = new Query();
             q.setQuerySelectType();
             q.addResultVar(OBJECT);
+            q.addResultVar(TYPE);
 
             final ElementPathBlock epb = new ElementPathBlock();
             epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), rdf.asJenaNode(identifier)));
+            epb.addTriple(create(OBJECT, type.asNode(), TYPE));
 
             final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
 
@@ -465,8 +486,10 @@ public class TriplestoreResource implements Resource {
             q.setQueryPattern(elg);
 
             final Stream.Builder<Quad> builder = builder();
+            final IRI ixnModel = getInteractionModel();
+            final IRI subject = adjustIdentifier(identifier, ixnModel);
             rdfConnection.querySelect(q, qs -> builder.accept(rdf.createQuad(LDP.PreferContainment,
-                            identifier, LDP.contains, getObject(qs))));
+                            subject, LDP.contains, adjustIdentifier((IRI) getObject(qs), getType(qs)))));
             return builder.build();
         }
         return Stream.empty();
@@ -482,10 +505,19 @@ public class TriplestoreResource implements Resource {
      */
     private Stream<Quad> fetchUserQuads() {
         if (includeLdpType) {
-            return concat(of(rdf.createQuad(Trellis.PreferUserManaged, identifier, RDF.type, getInteractionModel())),
+            final IRI ixnModel = getInteractionModel();
+            return concat(of(rdf.createQuad(Trellis.PreferUserManaged, adjustIdentifier(identifier, ixnModel),
+                            RDF.type, ixnModel)),
                     fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged));
         }
         return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
+    }
+
+    private static IRI adjustIdentifier(final IRI identifier, final IRI type) {
+        if (containerTypes.contains(type) && !identifier.getIRIString().endsWith("/")) {
+            return rdf.createIRI(identifier.getIRIString() + "/");
+        }
+        return identifier;
     }
 
     private Optional<IRI> asIRI(final IRI predicate) {

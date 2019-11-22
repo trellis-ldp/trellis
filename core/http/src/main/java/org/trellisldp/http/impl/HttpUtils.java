@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.notModified;
 import static javax.ws.rs.core.Response.status;
+import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.StringUtils.strip;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -60,6 +61,7 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.Prefer;
+import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -97,6 +99,19 @@ public final class HttpUtils {
             ldpResourceTypes(superClass).forEach(supertypes);
         }
         return supertypes.build();
+    }
+
+    /**
+     * Test matching an identifier, irrespective of trailing slash.
+     * @param subject the subject of a triple
+     * @param identifier the identifier
+     * @return a triple predicate
+     */
+    public static boolean matchIdentifier(final BlankNodeOrIRI subject, final IRI identifier) {
+        if (subject.equals(identifier)) {
+            return true;
+        }
+        return subject instanceof IRI && ((IRI) subject).getIRIString().equals(identifier.getIRIString() + "/");
     }
 
     /**
@@ -369,6 +384,16 @@ public final class HttpUtils {
         } catch (final Exception ex) {
             throw new RuntimeTrellisException("Error closing dataset", ex);
         }
+    }
+
+    /**
+     * Build a canonical url for a resource.
+     * @param req the trellis request
+     * @param baseUrl the base url
+     * @return an absolute URL
+     */
+    public static String buildResourceUrl(final TrellisRequest req, final String baseUrl) {
+        return fromUri(baseUrl).path(req.getPath() + (req.hasTrailingSlash() ? "/" : "")).build().toString();
     }
 
     private HttpUtils() {

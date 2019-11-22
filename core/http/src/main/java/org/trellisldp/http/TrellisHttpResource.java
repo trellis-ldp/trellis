@@ -457,9 +457,15 @@ public class TrellisHttpResource {
 
     private Response handleException(final Throwable err) {
         final Throwable cause = err.getCause();
-        if (cause instanceof ClientErrorException) LOGGER.debug("Client error: ", err);
-        else if (cause instanceof RedirectionException) LOGGER.debug("Redirection: ", err);
-        else LOGGER.error("Error:", err);
+        if (cause instanceof ClientErrorException) {
+            LOGGER.debug("Client error: {}", err.getMessage());
+            LOGGER.trace("Client error: ", err);
+        } else if (cause instanceof RedirectionException) {
+            LOGGER.debug("Redirection: {}", err.getMessage());
+            LOGGER.trace("Redirection: ", err);
+        } else {
+            LOGGER.error("Error:", err);
+        }
         return cause instanceof WebApplicationException
                         ? ((WebApplicationException) cause).getResponse()
                         : new WebApplicationException(err).getResponse();

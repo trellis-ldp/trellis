@@ -58,8 +58,8 @@ import org.trellisldp.vocabulary.Trellis;
 @DisplayName("Direct Container Tests")
 public interface LdpDirectContainerTests extends CommonTests {
 
-    String MEMBER_RESOURCE1 = "/members1";
-    String MEMBER_RESOURCE2 = "/members2";
+    String MEMBER_RESOURCE1 = "members1";
+    String MEMBER_RESOURCE2 = "members2/";
     String MEMBER_RESOURCE_HASH = "#members";
     String BASIC_CONTAINER = "/basicContainer.ttl";
     String DIRECT_CONTAINER = "/directContainer.ttl";

@@ -508,17 +508,18 @@ class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
 
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.alternative, rdf.createLiteral("alt title"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("LDP-DC pointing to self"));
-        dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, resource);
+        dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, container);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
 
         final Instant later = meanwhile();
 
         assertDoesNotThrow(() ->
-                allOf(svc.create(builder(resource).interactionModel(LDP.DirectContainer).membershipResource(resource)
+                allOf(svc.create(builder(resource).interactionModel(LDP.DirectContainer).membershipResource(container)
                         .memberRelation(DC.relation).container(root).build(), dataset).toCompletableFuture(),
                       svc.touch(root).toCompletableFuture()).join(), "Unsuccessful create operation!");
 
@@ -543,9 +544,9 @@ class TriplestoreResourceServiceTest {
                 assertAll("Check resource", checkResource(res, resource, LDP.DirectContainer, evenLater));
                 assertAll("Check resource stream", checkResourceStream(res, 5L, 0L, 0L, 1L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment).anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment,
-                                    resource, LDP.contains, child))), "Missing contains triple!");
+                                    container, LDP.contains, child))), "Missing contains triple!");
                 assertTrue(res.stream(LDP.PreferMembership).anyMatch(isEqual(rdf.createQuad(LDP.PreferMembership,
-                                    resource, DC.relation, child))), "Missing membership triple!");
+                                    container, DC.relation, child))), "Missing membership triple!");
             }).toCompletableFuture(),
             svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture(),
             svc.get(root).thenAccept(checkPredates(evenLater)).toCompletableFuture()).join();
@@ -605,12 +606,14 @@ class TriplestoreResourceServiceTest {
                       svc.touch(members).toCompletableFuture(), svc.touch(resource).toCompletableFuture()).join(),
                 "Unsuccessful create operation!");
 
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
+
         allOf(
             svc.get(child).thenAccept(checkChild(evenLater2, 1L, 0L)).toCompletableFuture(),
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.DirectContainer, 4L, 0L, 1L))
                 .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                     "Missing contains triple!")).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 0L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
@@ -702,11 +705,13 @@ class TriplestoreResourceServiceTest {
                       svc.touch(resource).toCompletableFuture(), svc.touch(members).toCompletableFuture()).join(),
                 "Unsuccessful create operation (multiple/primary direct containment)!");
 
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
+
         allOf(
             svc.get(child).thenAccept(checkChild(later4, 1L, 1L)).toCompletableFuture(),
             svc.get(resource).thenAccept(checkResource(later2, LDP.DirectContainer, 4L, 1L, 1L)).toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                     "Missing contains triple!")).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(later4, 2L, 1L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
@@ -721,6 +726,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("ldp-dc (2) child resource"));
 
         final Instant later5 = meanwhile();
+        final IRI container2 = rdf.createIRI(resource2.getIRIString() + "/");
 
         assertDoesNotThrow(() -> allOf(svc.create(builder(child2).interactionModel(LDP.RDFSource).container(resource2)
                         .build(), dataset).toCompletableFuture(),
@@ -736,7 +742,7 @@ class TriplestoreResourceServiceTest {
                 assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, later5));
                 assertAll("Check resource stream", checkResourceStream(res, 6L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment).anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment,
-                                    resource2, LDP.contains, child2))), "Missing contains triple!");
+                                    container2, LDP.contains, child2))), "Missing contains triple!");
             }).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(later5, 2L, 1L, 2L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
@@ -752,6 +758,8 @@ class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
 
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
+        final IRI container2 = rdf.createIRI(resource2.getIRIString() + "/");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("direct container inverse"));
         dataset.add(Trellis.PreferUserManaged, resource, RDFS.label, rdf.createLiteral("LDP-DC test"));
@@ -834,7 +842,7 @@ class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater3, LDP.DirectContainer, 5L, 1L, 1L))
                 .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                     "Missing contains triple!")).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)).toCompletableFuture(),
             svc.get(members).thenAccept(checkPredates(evenLater3)).toCompletableFuture(),
@@ -862,7 +870,7 @@ class TriplestoreResourceServiceTest {
                 assertAll("Check resource", checkResource(res, resource2, LDP.DirectContainer, evenLater4));
                 assertAll("Check resource stream", checkResourceStream(res, 3L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment).anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment,
-                                    resource2, LDP.contains, child2))), "Missing contains triple!");
+                                    container2, LDP.contains, child2))), "Missing contains triple!");
             }).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 1L, 0L)).toCompletableFuture(),
             svc.get(members).thenAccept(checkPredates(evenLater4)).toCompletableFuture(),
@@ -878,6 +886,7 @@ class TriplestoreResourceServiceTest {
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode0 = rdf.createBlankNode();
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("Indirect Container"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("Test LDP-IC"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.subject, rdf.createIRI("http://example.com/subject"));
@@ -945,7 +954,7 @@ class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 7L, 4L, 1L))
                     .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                     "Missing contains triple!")).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 4L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
@@ -961,6 +970,7 @@ class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
 
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("Indirect Container"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.description,
@@ -1021,7 +1031,7 @@ class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 5L, 1L, 1L))
                 .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                     "Missing contains triple!")).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 2L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
@@ -1037,6 +1047,7 @@ class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
 
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("LDP-IC with multiple stmts"));
@@ -1101,7 +1112,7 @@ class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater2, LDP.IndirectContainer, 4L, 2L, 1L))
                     .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                     "Missing contains triple!")).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater2, 1L, 3L, 2L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> {
@@ -1120,6 +1131,8 @@ class TriplestoreResourceServiceTest {
                 connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
         svc.initialize();
 
+        final IRI container = rdf.createIRI(resource.getIRIString() + "/");
+        final IRI container2 = rdf.createIRI(resource2.getIRIString() + "/");
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("First LDP-IC"));
@@ -1205,7 +1218,7 @@ class TriplestoreResourceServiceTest {
             svc.get(resource).thenAccept(checkResource(evenLater3, LDP.IndirectContainer, 5L, 3L, 1L))
                     .toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                    .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                     "Missing contains triple!")).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater3, 1L, 1L, 1L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> assertTrue(res.stream(LDP.PreferMembership)
@@ -1240,13 +1253,13 @@ class TriplestoreResourceServiceTest {
                 .toCompletableFuture(),
             svc.get(resource).thenAccept(checkPredates(evenLater4)).toCompletableFuture(),
             svc.get(resource).thenAccept(res -> assertTrue(res.stream(LDP.PreferContainment)
-                .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, resource, LDP.contains, child))),
+                .anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment, container, LDP.contains, child))),
                 "Missing containment triple!")).toCompletableFuture(),
             svc.get(resource2).thenAccept(res -> {
                 assertAll("Check resource", checkResource(res, resource2, LDP.IndirectContainer, evenLater4));
                 assertAll("Check resource stream", checkResourceStream(res, 4L, 0L, 1L, 0L, 1L));
                 assertTrue(res.stream(LDP.PreferContainment).anyMatch(isEqual(rdf.createQuad(LDP.PreferContainment,
-                                    resource2, LDP.contains, child2))), "Missing containment triple!");
+                                    container2, LDP.contains, child2))), "Missing containment triple!");
             }).toCompletableFuture(),
             svc.get(members).thenAccept(checkMember(evenLater4, 1L, 1L, 2L)).toCompletableFuture(),
             svc.get(members).thenAccept(res -> {

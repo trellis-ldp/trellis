@@ -183,7 +183,9 @@ public class PatchHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
+        final boolean isContainer = getResource() != null && HttpUtils.isContainer(getResource().getInteractionModel());
+        return super.getIdentifier() + (isContainer ? "/" : "")
+            + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
 
     private List<Triple> updateGraph(final RDFSyntax syntax, final IRI graphName) {
@@ -198,8 +200,7 @@ public class PatchHandler extends MutatingLdpHandler {
                 }
             }
 
-            getServices().getIOService().update(graph, updateBody, syntax, getBaseUrl() + getRequest().getPath() +
-                (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : ""));
+            getServices().getIOService().update(graph, updateBody, syntax, getIdentifier());
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                 || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         } catch (final Exception ex) {

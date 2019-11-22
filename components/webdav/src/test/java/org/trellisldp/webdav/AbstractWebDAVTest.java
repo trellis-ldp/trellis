@@ -180,7 +180,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         final Response res = target(CHILD_PATH).request().method("MKCOL");
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
-        assertEquals(getBaseUri() + CHILD_PATH, res.getLocation().toString(), "Incorrect Location header!");
+        assertEquals(getBaseUri() + CHILD_PATH + "/", res.getLocation().toString(), "Incorrect Location header!");
     }
 
     @Test

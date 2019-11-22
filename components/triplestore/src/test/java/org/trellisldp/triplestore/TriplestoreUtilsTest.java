@@ -74,19 +74,6 @@ class TriplestoreUtilsTest {
     }
 
     @Test
-    void testBaseIRItruncate() {
-        final IRI iri = jenaRdf.createIRI("http://example.com/resource#i");
-        assertEquals(jenaRdf.createIRI("http://example.com/resource"), TriplestoreUtils.getBaseIRI(iri),
-                "Check that fragment URLs are removed");
-    }
-
-    @Test
-    void testBaseIRInoTruncate() {
-        final IRI iri = jenaRdf.createIRI("http://example.com/resource");
-        assertEquals(iri, TriplestoreUtils.getBaseIRI(iri), "Check that fragment URLs are removed");
-    }
-
-    @Test
     void testNodeConversion() {
         final Resource s = createResource("http://example.com/Resource");
         final Property p = createProperty("http://example.com/prop");
@@ -99,11 +86,5 @@ class TriplestoreUtilsTest {
         assertFalse(TriplestoreUtils.nodesToTriple(s, null, o).isPresent(), "null node results in a valid triple!");
         assertFalse(TriplestoreUtils.nodesToTriple(null, p, o).isPresent(), "null node results in a valid triple!");
         assertTrue(TriplestoreUtils.nodesToTriple(s, p, o).isPresent(), "Nodes not converted to triple!");
-    }
-
-    @Test
-    void testBaseIRIliteral() {
-        final Literal l = jenaRdf.createLiteral("a literal");
-        assertEquals(l, TriplestoreUtils.getBaseIRI(l), "Incorrect literal value!");
     }
 }

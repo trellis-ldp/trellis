@@ -192,7 +192,10 @@ class TriplestoreResourceTest {
     void testResourceWithChildren() {
         final JenaDataset dataset = buildLdpDataset(LDP.Container);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
-        getChildIRIs().forEach(c -> dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier));
+        getChildIRIs().forEach(c -> {
+            dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier);
+            dataset.add(Trellis.PreferServerManaged, c, RDF.type, LDP.RDFSource);
+        });
 
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
                 identifier, false);
@@ -229,7 +232,10 @@ class TriplestoreResourceTest {
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.insertedContentRelation, LDP.MemberSubject);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
         dataset.add(Trellis.PreferServerManaged, member, DC.isPartOf, root);
-        getChildIRIs().forEach(c -> dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier));
+        getChildIRIs().forEach(c -> {
+            dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier);
+            dataset.add(Trellis.PreferServerManaged, c, RDF.type, LDP.RDFSource);
+        });
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, true);
@@ -264,6 +270,7 @@ class TriplestoreResourceTest {
         dataset.add(member, member, DC.alternative, rdf.createLiteral("A membership resource"));
         getChildIRIs().forEach(c -> {
             dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier);
+            dataset.add(Trellis.PreferServerManaged, c, RDF.type, LDP.RDFSource);
             dataset.add(c, c, DC.subject, rdf.createIRI("http://example.org/" + randomUUID()));
         });
 

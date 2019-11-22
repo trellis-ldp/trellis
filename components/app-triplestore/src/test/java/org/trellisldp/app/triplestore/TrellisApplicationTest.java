@@ -194,6 +194,12 @@ class TrellisApplicationTest implements MessageListener {
     @Nested
     @DisplayName("Trellis Event Tests")
     class EventTests extends AbstractApplicationEventTests {
+
+        @BeforeEach
+        public void before() {
+            TrellisApplicationTest.this.MESSAGES.clear();
+        }
+
         @Override
         public Client getClient() {
             return TrellisApplicationTest.this.CLIENT;

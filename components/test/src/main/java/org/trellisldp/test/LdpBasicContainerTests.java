@@ -175,7 +175,7 @@ public interface LdpBasicContainerTests extends CommonTests {
     default void testPatchNewRDF() throws Exception {
         final RDF rdf = getInstance();
         // PATCH an LDP-RS
-        final String location = getContainerLocation() + "/" + generateRandomValue("PATCH");
+        final String location = getContainerLocation() + generateRandomValue("PATCH");
         assumeTrue(getConfig().getOptionalValue(CONFIG_HTTP_PATCH_CREATE, Boolean.class)
             .orElse(Boolean.TRUE));
         try (final Response res = target(location).request()
@@ -242,14 +242,14 @@ public interface LdpBasicContainerTests extends CommonTests {
     default void testCreateContainerViaPut() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
-        final String child4 = getContainerLocation() + "/child4";
         final boolean createUncontained = getConfig().getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
             .orElse(Boolean.FALSE);
 
         // First fetch the container headers to get the initial ETag
         final EntityTag initialETag = getETag(getContainerLocation());
+        final String child4 = getContainerLocation() + "child4/";
 
-        try (final Response res = target(child4).request()
+        try (final Response res = target(getContainerLocation() + "child4").request()
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .put(entity(containerContent, TEXT_TURTLE))) {
             assertAll("Check PUTting an LDP-BC", checkRdfResponse(res, LDP.BasicContainer, null));
@@ -284,17 +284,17 @@ public interface LdpBasicContainerTests extends CommonTests {
     default void testCreateContainerWithSlug() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
-        final String child5 = getContainerLocation() + "/child5";
 
         // First fetch the container headers to get the initial ETag
         final EntityTag initialETag = getETag(getContainerLocation());
+        final String child5;
 
         // POST an LDP-BC
         try (final Response res = target(getContainerLocation()).request().header("Slug", "child5")
                 .header(LINK, fromUri(LDP.BasicContainer.getIRIString()).rel(TYPE).build())
                 .post(entity(containerContent, TEXT_TURTLE))) {
             assertAll("Check POSTing an LDP-BC", checkRdfResponse(res, LDP.BasicContainer, null));
-            assertEquals(child5, res.getLocation().toString(), "Check the resource location");
+            child5 = res.getLocation().toString();
         }
 
         await().until(() -> !initialETag.equals(getETag(getContainerLocation())));

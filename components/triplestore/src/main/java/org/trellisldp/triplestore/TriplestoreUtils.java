@@ -42,6 +42,7 @@ final class TriplestoreUtils {
     public static final Var SUBJECT = Var.alloc("subject");
     public static final Var PREDICATE = Var.alloc("predicate");
     public static final Var OBJECT = Var.alloc("object");
+    public static final Var TYPE = Var.alloc("type");
 
     public static JenaRDF getInstance() {
         return rdf;
@@ -59,12 +60,8 @@ final class TriplestoreUtils {
         return rdf.asRDFTerm(qs.get("object").asNode());
     }
 
-    public static RDFTerm getBaseIRI(final RDFTerm object) {
-        if (object instanceof IRI) {
-            final String iri = ((IRI) object).getIRIString().split("#")[0];
-            return rdf.createIRI(iri);
-        }
-        return object;
+    public static IRI getType(final QuerySolution qs) {
+        return (IRI) rdf.asRDFTerm(qs.get("type").asNode());
     }
 
     public static Optional<Triple> nodesToTriple(final RDFNode s, final RDFNode p, final RDFNode o) {
