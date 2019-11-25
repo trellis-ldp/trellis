@@ -10,6 +10,7 @@ plugins {
     id 'biz.aQute.bnd.builder' version '4.1.0' apply false
     id 'com.palantir.docker' version '0.22.1' apply false
     id 'nebula.ospackage' version '8.0.3' apply false
+    id 'io.quarkus' version '1.0.0.Final' apply false
 }
 
 ext {
@@ -52,7 +53,7 @@ ext {
     jsonldVersion = '0.12.5'
     kafkaVersion = '2.3.1'
     mustacheVersion = '0.9.6'
-    quarkusVersion = '0.28.1'
+    quarkusVersion = '1.0.0.Final'
     rabbitMqVersion = '5.7.3'
     rxjavaVersion = '2.2.14'
     thriftVersion = '0.13.0'
