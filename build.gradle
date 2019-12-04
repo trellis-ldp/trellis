@@ -110,6 +110,7 @@ ext {
     ]
 
     omitFromMavenPublishing = [
+        'trellis-dropwizard-triplestore',
         'trellis-osgi',
         'trellis-server',
         'trellis-quarkus',
