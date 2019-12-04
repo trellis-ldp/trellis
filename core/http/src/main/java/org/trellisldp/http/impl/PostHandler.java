@@ -95,7 +95,6 @@ public class PostHandler extends MutatingLdpHandler {
         super(req, trellis, extensions, baseUrl, entity);
 
         final String separator = req.getPath().isEmpty() ? "" : "/";
-
         this.idPath = separator + id;
         this.contentType = req.getContentType();
         this.parentIdentifier = parentIdentifier;
@@ -209,6 +208,7 @@ public class PostHandler extends MutatingLdpHandler {
 
         getAuditQuadData().forEachOrdered(immutable::add);
 
+        LOGGER.info("Creating resource");
         return persistPromise.thenCompose(future -> handleResourceCreation(metadata.build(), mutable, immutable))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
@@ -219,7 +219,7 @@ public class PostHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + idPath;
+        return super.getIdentifier() + idPath + (HttpUtils.isContainer(ldpType) ? "/" : "");
     }
 
     @Override

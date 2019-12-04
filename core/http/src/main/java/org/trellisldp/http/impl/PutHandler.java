@@ -163,7 +163,7 @@ public class PutHandler extends MutatingLdpHandler {
 
         final Dataset mutable = rdf.createDataset();
         final Dataset immutable = rdf.createDataset();
-        LOGGER.debug("Persisting {} with mutable data:\n{}\n and immutable data:\n{}", getIdentifier(), mutable,
+        LOGGER.trace("Persisting {} with mutable data:\n{}\n and immutable data:\n{}", getIdentifier(), mutable,
                         immutable);
         return handleResourceUpdate(mutable, immutable, builder, ldpType)
             .whenComplete((a, b) -> closeDataset(mutable))
@@ -177,7 +177,8 @@ public class PutHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
+        return super.getIdentifier() + (HttpUtils.isContainer(getLdpType()) ? "/" : "")
+            + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
 
     private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> syntaxes) {
@@ -263,7 +264,7 @@ public class PutHandler extends MutatingLdpHandler {
                 LOGGER.trace("Adding link for type {}", type);
                 builder.link(type, Link.TYPE);
             });
-        LOGGER.debug("Persisting mutable data for {} with data: {}", internalId, mutable);
+        LOGGER.trace("Persisting mutable data for {} with data: {}", internalId, mutable);
 
         return persistPromise.thenCompose(future -> createOrReplace(metadata.build(), mutable, immutable))
             .thenCompose(future -> handleUpdateEvent(ldpType))

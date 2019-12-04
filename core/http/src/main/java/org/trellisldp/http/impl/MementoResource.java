@@ -103,7 +103,7 @@ public final class MementoResource {
             final String baseUrl) {
 
         final List<MediaType> acceptableTypes = req.getAcceptableMediaTypes();
-        final String identifier = fromUri(baseUrl).path(req.getPath()).build().toString();
+        final String identifier = HttpUtils.buildResourceUrl(req, baseUrl);
         final List<Link> allLinks = getMementoLinks(identifier, mementos).collect(toList());
 
         final ResponseBuilder builder = ok().link(identifier, ORIGINAL + " " + TIMEGATE);
@@ -136,7 +136,7 @@ public final class MementoResource {
      */
     public ResponseBuilder getTimeGateBuilder(final SortedSet<Instant> mementos, final TrellisRequest req,
             final String baseUrl) {
-        final String identifier = fromUri(baseUrl).path(req.getPath()).build().toString();
+        final String identifier = HttpUtils.buildResourceUrl(req, baseUrl);
         return status(FOUND)
             .location(fromUri(identifier + VERSION_PARAM + req.getDatetime().getInstant().getEpochSecond()).build())
             .link(identifier, ORIGINAL + " " + TIMEGATE)

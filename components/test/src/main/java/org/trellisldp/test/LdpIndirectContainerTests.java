@@ -59,7 +59,7 @@ import org.trellisldp.vocabulary.Trellis;
 public interface LdpIndirectContainerTests extends CommonTests {
 
     String BASIC_CONTAINER = "/basicContainer.ttl";
-    String MEMBER_RESOURCE2 = "/members2";
+    String MEMBER_RESOURCE2 = "members2";
     String MEMBER_RESOURCE_HASH = "#members";
     String SIMPLE_RESOURCE = "/simpleResource.ttl";
     String DIRECT_CONTAINER = "/directContainer.ttl";
@@ -123,7 +123,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             setContainerLocation(res.getLocation().toString());
         }
 
-        setMemberLocation(getContainerLocation() + "/member");
+        setMemberLocation(getContainerLocation() + "member");
 
         final String content = getResourceAsString(INDIRECT_CONTAINER)
             + membershipResource(getMemberLocation());

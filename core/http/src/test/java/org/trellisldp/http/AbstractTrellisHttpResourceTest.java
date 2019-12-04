@@ -260,11 +260,24 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetTrailingSlash() {
+        assumeTrue(getBaseUrl().startsWith("http://localhost"));
         try (final Response res = target(RESOURCE_PATH + "/").request().get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
             assertTrue(hasTimeGateLink(res, RESOURCE_PATH), "Missing rel=timegate link!");
             assertTrue(hasOriginalLink(res, RESOURCE_PATH), "Missing rel=original link!");
+        }
+    }
+
+    @Test
+    void testGetNoTrailingSlash() {
+        assumeTrue(getBaseUrl().startsWith("http://localhost"));
+        when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+        try (final Response res = target(RESOURCE_PATH).request().get()) {
+            assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(from(time), res.getLastModified(), "Incorrect modified date!");
+            assertTrue(hasTimeGateLink(res, RESOURCE_PATH + "/"), "Missing rel=timegate link!");
+            assertTrue(hasOriginalLink(res, RESOURCE_PATH + "/"), "Missing rel=original link!");
         }
     }
 
@@ -502,7 +515,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPrefer2() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
-        try (final Response res = target(RESOURCE_PATH).request().header(PREFER,
+        try (final Response res = target(RESOURCE_PATH + "/").request().header(PREFER,
                     PREFER_PREFIX + LDP.PreferMinimalContainer.getIRIString() + "\"")
                 .accept(COMPACT_JSONLD).get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
@@ -520,7 +533,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPrefer3() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
-        try (final Response res = target(RESOURCE_PATH).request()
+        try (final Response res = target(RESOURCE_PATH + "/").request()
                 .header(PREFER, "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"")
                 .accept(COMPACT_JSONLD).get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
@@ -537,7 +550,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPrefer4() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockResource.stream()).thenAnswer(inv -> getPreferQuads());
-        try (final Response res = target(RESOURCE_PATH).request()
+        try (final Response res = target(RESOURCE_PATH + "/").request()
                 .header(PREFER, PREFER_PREFIX + PreferAccessControl.getIRIString() + "\"")
                 .accept(COMPACT_JSONLD).get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
@@ -727,14 +740,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testGetVersionContainerJson() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
-        try (final Response res = target(RESOURCE_PATH).queryParam(VAL_VERSION, timestamp).request()
+        try (final Response res = target(RESOURCE_PATH + "/").queryParam(VAL_VERSION, timestamp).request()
                 .accept(COMPACT_JSONLD).get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(from(time), res.getLastModified(), ERR_LAST_MODIFIED);
             assertEquals(time, parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME).toInstant(),
                     "Incorrect Memento-Datetime header!");
             assertAll(CHECK_JSONLD_SIMPLE, checkSimpleJsonLdResponse(res, LDP.Container));
-            assertAll(CHECK_MEMENTO_HEADERS, checkMementoHeaders(res, RESOURCE_PATH));
+            assertAll(CHECK_MEMENTO_HEADERS, checkMementoHeaders(res, RESOURCE_PATH + "/"));
             assertAll(CHECK_ALLOWED_METHODS, checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
             assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, ACCEPT_RANGES)));
         }
@@ -1128,7 +1141,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child")
+        try (final Response res = target(RESOURCE_PATH + "/").request().header(SLUG, "child")
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), ERR_LOCATION);
@@ -1481,14 +1494,6 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, TIMEMAP).request()
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), ERR_RESPONSE_CODE);
-        }
-    }
-
-    @Test
-    void testPostSlash() {
-        try (final Response res = target(RESOURCE_PATH + "/").request().header(SLUG, "test")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
         }
     }
 

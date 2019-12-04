@@ -20,6 +20,8 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toSet;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,6 +31,7 @@ import java.util.Set;
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.trellisldp.vocabulary.ACL;
 
@@ -50,6 +53,7 @@ import org.trellisldp.vocabulary.ACL;
  */
 public class Authorization {
 
+    private static final RDF rdf = getInstance();
     private static final Set<IRI> predicates = new HashSet<>(asList(ACL.agent, ACL.agentClass, ACL.agentGroup,
                 ACL.mode, ACL.accessTo, ACL.default_));
 
@@ -80,8 +84,21 @@ public class Authorization {
         this.dataMap = graph.stream(identifier, null, null)
             .filter(triple -> predicates.contains(triple.getPredicate()))
             .filter(triple -> triple.getObject() instanceof IRI)
-            .collect(groupingBy(Triple::getPredicate, mapping(triple -> (IRI) triple.getObject(),
+            .collect(groupingBy(Triple::getPredicate, mapping(Authorization::normalizeIdentifier,
                             collectingAndThen(toSet(), Collections::unmodifiableSet))));
+    }
+
+    static IRI normalizeIdentifier(final Triple triple) {
+        if (triple.getObject() instanceof IRI) {
+            if (triple.getPredicate().equals(ACL.accessTo) || triple.getPredicate().equals(ACL.default_)) {
+                final String obj = ((IRI) triple.getObject()).getIRIString();
+                if (obj.endsWith("/") && !obj.equals(TRELLIS_DATA_PREFIX)) {
+                    return rdf.createIRI(obj.substring(0, obj.length() - 1));
+                }
+            }
+            return (IRI) triple.getObject();
+        }
+        return null;
     }
 
     /**

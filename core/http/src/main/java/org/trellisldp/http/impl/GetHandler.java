@@ -14,6 +14,7 @@
 package org.trellisldp.http.impl;
 
 import static java.lang.String.join;
+import static java.net.URI.create;
 import static java.util.Date.from;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.joining;
@@ -53,6 +54,7 @@ import static org.trellisldp.http.core.Prefer.PREFER_RETURN;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
+import static org.trellisldp.http.impl.HttpUtils.isContainer;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.triplePreferences;
 import static org.trellisldp.http.impl.HttpUtils.unskolemizeTriples;
@@ -71,6 +73,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -135,6 +138,9 @@ public class GetHandler extends BaseLdpHandler {
         } else if (DELETED_RESOURCE.equals(resource)) {
             throw new ClientErrorException(GONE);
         }
+
+        // Redirect for certain trailing slash conditions
+        handleTrailingSlashRedirection(resource);
 
         LOGGER.debug("Acceptable media types: {}", getRequest().getAcceptableMediaTypes());
 
@@ -239,6 +245,11 @@ public class GetHandler extends BaseLdpHandler {
                         .toArray(Link[]::new));
         }
         return builder;
+    }
+
+    @Override
+    protected String getIdentifier() {
+        return HttpUtils.buildResourceUrl(getRequest(), getBaseUrl());
     }
 
     private String getSelfIdentifier() {
@@ -395,5 +406,14 @@ public class GetHandler extends BaseLdpHandler {
                         .map(RDFSyntax::mediaType).collect(joining(",")));
             }
         });
+    }
+
+    private void handleTrailingSlashRedirection(final Resource resource) {
+        if (getRequest().hasTrailingSlash() && !isContainer(resource.getInteractionModel())) {
+            throw new RedirectionException(303, create(getBaseUrl() + getRequest().getPath()));
+        } else if (!getRequest().hasTrailingSlash() && !getRequest().getPath().isEmpty()
+                && isContainer(resource.getInteractionModel())) {
+            throw new RedirectionException(303, create(getBaseUrl() + getRequest().getPath() + "/"));
+        }
     }
 }

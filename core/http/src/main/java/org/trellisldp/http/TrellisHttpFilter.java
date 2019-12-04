@@ -24,9 +24,7 @@ import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.http.core.HttpConstants.*;
 import static org.trellisldp.http.core.TrellisExtensions.buildExtensionMapFromConfig;
@@ -77,7 +75,6 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext ctx) {
-        checkTrailingSlash(ctx);
         // Validate headers
         validateAcceptDatetime(ctx);
         validateRange(ctx);
@@ -93,15 +90,6 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
                         singletonList(extensions.get(ext).getIRIString()),
                         asList(PreferUserManaged.getIRIString(), PreferContainment.getIRIString(),
                             PreferMembership.getIRIString()), null, null).toString());
-        }
-    }
-
-    private void checkTrailingSlash(final ContainerRequestContext ctx) {
-        final String slash = "/";
-        // Check for a trailing slash. If so, redirect
-        final String path = ctx.getUriInfo().getPath();
-        if (path.endsWith(slash) && !path.equals(slash)) {
-            ctx.abortWith(seeOther(fromUri(path.substring(0, path.length() - 1)).build()).build());
         }
     }
 

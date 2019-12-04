@@ -30,11 +30,11 @@ import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.normalizeIdentifier;
 import static org.trellisldp.triplestore.TriplestoreUtils.OBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.PREDICATE;
 import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.asJenaDataset;
-import static org.trellisldp.triplestore.TriplestoreUtils.getBaseIRI;
 import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
 import static org.trellisldp.vocabulary.Trellis.DeletedResource;
@@ -175,7 +175,7 @@ public class TriplestoreResourceService implements ResourceService {
 
         // Relocate some user-managed triples into the server-managed graph
         metadata.getMembershipResource().ifPresent(member -> {
-            dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.member, getBaseIRI(member));
+            dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.member, normalizeIdentifier(member));
             dataset.add(PreferServerManaged, metadata.getIdentifier(), LDP.membershipResource, member);
         });
 

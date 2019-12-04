@@ -94,4 +94,15 @@ class AuthorizationTest {
         assertEquals(1, auth.getDefault().size(), "Incorrect number of default values!");
         assertTrue(auth.getDefault().contains(rdf.createIRI("trellis:data/container")), "missing default value!");
     }
+
+    @Test
+    void testNormalizeIdentifier() {
+        final IRI iri = rdf.createIRI("trellis:data/resource");
+        final IRI iriSlash = rdf.createIRI("trellis:data/resource/");
+        final IRI root = rdf.createIRI("trellis:data/");
+        assertEquals(iri, Authorization.normalizeIdentifier(rdf.createTriple(subject, ACL.accessTo, iri)));
+        assertEquals(iri, Authorization.normalizeIdentifier(rdf.createTriple(subject, ACL.accessTo, iriSlash)));
+        assertEquals(root, Authorization.normalizeIdentifier(rdf.createTriple(subject, ACL.accessTo, root)));
+        assertNull(Authorization.normalizeIdentifier(rdf.createTriple(subject, ACL.accessTo, rdf.createBlankNode())));
+    }
 }

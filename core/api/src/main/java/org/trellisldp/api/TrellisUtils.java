@@ -98,6 +98,25 @@ public final class TrellisUtils {
     }
 
     /**
+     * For any identifier, normalize its form to remove any hashURIs or trailing slashes.
+     * @param identifier the identifier
+     * @return a normalized identifier
+     */
+    public static IRI normalizeIdentifier(final IRI identifier) {
+        final String iri = identifier.getIRIString();
+        if (iri.contains("#")) {
+            final String normalized = iri.split("#")[0];
+            if (normalized.endsWith("/")) {
+                return rdf.createIRI(normalized.substring(0, normalized.length() - 1));
+            }
+            return rdf.createIRI(normalized);
+        } else if (iri.endsWith("/") && !TRELLIS_DATA_PREFIX.equals(iri)) {
+            return rdf.createIRI(iri.substring(0, iri.length() - 1));
+        }
+        return identifier;
+    }
+
+    /**
      * Collect a stream of Triples into a Graph.
      *
      * @return a graph

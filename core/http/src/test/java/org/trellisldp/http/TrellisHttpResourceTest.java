@@ -102,6 +102,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
                 singletonMap(ACL, PreferAccessControl), null);
 
         when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>(singletonMap("path", "resource")));
+        when(mockUriInfo.getPath()).thenReturn("resource");
         when(mockUriInfo.getBaseUri()).thenReturn(new URI("http://my.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockHttpHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());

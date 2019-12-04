@@ -175,10 +175,11 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     @Override
     public void filter(final ContainerRequestContext ctx) {
         final String path = ctx.getUriInfo().getPath();
+        final String normalized = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
         final Session s = HttpSession.from(ctx.getSecurityContext());
         final String method = ctx.getMethod();
 
-        final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + path), s);
+        final Set<IRI> modes = accessService.getAccessModes(rdf.createIRI(TRELLIS_DATA_PREFIX + normalized), s);
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
                 .contains(HttpConstants.ACL) || reqAudit(ctx)) {
             verifyCanControl(modes, s, path);
